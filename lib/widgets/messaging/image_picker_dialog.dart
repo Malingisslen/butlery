@@ -57,7 +57,7 @@ class ImagePickerDialog extends StatelessWidget {
               _SourceOption(
                 icon: Icons.camera_alt,
                 label: context.l10n.commonTakePhoto,
-                color: cs.primary,
+                color: cs.onSurface,
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
 

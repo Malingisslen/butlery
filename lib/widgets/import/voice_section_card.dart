@@ -62,7 +62,7 @@ class VoiceSectionCard extends StatelessWidget {
             color: recording
                 ? cs.error
                 : isDone
-                ? cs.primary
+                ? cs.onSurface
                 : cs.outlineVariant,
             width: 4,
           ),
@@ -91,14 +91,14 @@ class VoiceSectionCard extends StatelessWidget {
               // single section is direction B's core promise ("gör om bara
               // ingredienserna" = one tap), so the mic never disappears
               // (review finding #5).
-              if (isDone) Icon(Icons.check, color: cs.primary),
+              if (isDone) Icon(Icons.check, color: cs.onSurface),
               if (!recording && !busy)
                 Semantics(
                   identifier: 'btn-voice-record-$index',
                   button: true,
                   label: prompt,
                   child: IconButton(
-                    icon: Icon(Icons.mic_none, color: cs.primary),
+                    icon: Icon(Icons.mic_none, color: cs.onSurface),
                     tooltip: prompt,
                     onPressed: enabled ? onMicTap : null,
                   ),

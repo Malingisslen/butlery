@@ -188,7 +188,7 @@ void main() {
       expect(detector.onTap, isNotNull);
     });
 
-    testWidgets('"!" glyph color uses theme primary', (tester) async {
+    testWidgets('"!" glyph color is text.primary (onSurface)', (tester) async {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
@@ -201,7 +201,8 @@ void main() {
           matching: find.text('!'),
         ),
       );
-      expect(text.style?.color, cs.primary);
+      // text.primary on the page; primary is ink in both modes (P4-T7).
+      expect(text.style?.color, cs.onSurface);
       expect(text.style?.fontSize, 24);
     });
 

@@ -72,7 +72,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(
                       context,
-                    ).colorScheme.surfaceContainerHighest,
+                    ).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
@@ -202,7 +202,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(
+              color: Theme.of(context).colorScheme.onSurface.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -210,7 +210,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
             child: Text(
               context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -296,7 +296,7 @@ class MenuRecipeListItem extends StatelessWidget {
         Text(
           recipe.mealType,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
         if (recipe.description.isNotEmpty) ...[
@@ -351,14 +351,17 @@ class MenuRecipeListItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Icon(
         Icons.restaurant_menu,
-        color: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.onSurface,
         size: AppDimensions.iconSizeAction,
       ),
     );

@@ -103,7 +103,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                 Icon(
                   Icons.folder_open,
                   size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
@@ -177,7 +177,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ),
           child: Icon(
             Icons.restaurant_menu,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         title: Text(

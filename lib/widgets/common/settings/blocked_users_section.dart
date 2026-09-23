@@ -84,7 +84,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
             child: Text(context.l10n.blockedUsersUnblock),
           ),
@@ -136,7 +136,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
             child: Text(context.l10n.blockedUsersUnblock),
           ),
@@ -180,7 +180,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -195,7 +195,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
             onPressed: count > 0 ? _unblockSelected : null,
             icon: const Icon(Icons.lock_open),
             label: Text(context.l10n.blockedUsersUnblockSelectedCount(count)),
-            style: TextButton.styleFrom(foregroundColor: cs.primary),
+            style: TextButton.styleFrom(foregroundColor: cs.onSurface),
           ),
         ],
       ),
@@ -321,7 +321,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
             TextButton(
               onPressed: () => _unblockUser(userId),
               style: TextButton.styleFrom(
-                foregroundColor: cs.primary,
+                foregroundColor: cs.onSurface,
                 padding: AppDimensions.paddingSymmetric16x8,
               ),
               child: Text(context.l10n.blockedUsersUnblock),

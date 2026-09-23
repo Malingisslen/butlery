@@ -33,7 +33,7 @@ class FilterChipsWidget extends StatelessWidget {
             title,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.bodyLarge.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),

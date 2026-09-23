@@ -142,7 +142,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
             ),
             leading: Icon(
               Icons.list_alt,
-              color: cs.primary,
+              color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),
             title: Text(name, style: AppTextStyles.titleMedium),
@@ -188,7 +188,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                       Icon(
                         Icons.check,
                         size: AppDimensions.iconSizeM,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
                       Text(context.l10n.shoppingTemplateUse),

@@ -88,8 +88,8 @@ class RelatedRecipesEditor extends StatelessWidget {
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
             ),
-            side: BorderSide(color: cs.primary),
-            foregroundColor: cs.primary,
+            side: BorderSide(color: cs.onSurface),
+            foregroundColor: cs.onSurface,
           ),
         ),
       ],
@@ -154,9 +154,9 @@ class _RelatedChip extends StatelessWidget {
       label: context.l10n.a11yRelatedRecipeChip(title),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
           border: Border.all(
-            color: cs.primary.withValues(
+            color: cs.onSurface.withValues(
               alpha: AppDimensions.opacityMediumLight,
             ),
           ),
@@ -174,7 +174,7 @@ class _RelatedChip extends StatelessWidget {
               child: Text(
                 title,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
             ),
@@ -193,7 +193,7 @@ class _RelatedChip extends StatelessWidget {
                   child: Icon(
                     Icons.close,
                     size: AppDimensions.iconSizeS,
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ),

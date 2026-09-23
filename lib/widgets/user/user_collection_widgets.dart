@@ -151,7 +151,7 @@ class UserCollectionWidgets {
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: textColor ?? cs.surfaceContainerHighest,
+              color: textColor ?? cs.onPrimary,
             ),
           ),
         );

@@ -120,7 +120,7 @@ class EditableListHeader extends StatelessWidget {
         Icon(
           icon,
           size: AppDimensions.iconSizeM,
-          color: theme.colorScheme.primary,
+          color: theme.colorScheme.onSurface,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Text(

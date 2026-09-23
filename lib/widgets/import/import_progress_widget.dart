@@ -182,7 +182,7 @@ class _StepIndicator extends StatelessWidget {
                 ? colorScheme.primary
                 : colorScheme.surfaceContainerHighest,
             border: Border.all(
-              color: isActive ? colorScheme.primary : colorScheme.outline,
+              color: isActive ? colorScheme.onSurface : colorScheme.outline,
               width: 2,
             ),
           ),
@@ -212,7 +212,7 @@ class _StepIndicator extends StatelessWidget {
               (isActive ? AppTextStyles.badgeLarge : AppTextStyles.labelSmall)
                   .copyWith(
                     color: isActive
-                        ? colorScheme.primary
+                        ? colorScheme.onSurface
                         : colorScheme.onSurfaceVariant,
                   ),
         ),
@@ -242,7 +242,7 @@ class _StepConnector extends StatelessWidget {
         ),
         width: 40,
         height: 2,
-        color: isActive ? colorScheme.primary : colorScheme.outlineVariant,
+        color: isActive ? colorScheme.onSurface : colorScheme.outlineVariant,
       ),
     );
   }

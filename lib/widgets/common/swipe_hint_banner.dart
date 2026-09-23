@@ -89,11 +89,11 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(widget.icon, size: AppDimensions.iconSizeM, color: cs.primary),
+          Icon(widget.icon, size: AppDimensions.iconSizeM, color: cs.onSurface),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(

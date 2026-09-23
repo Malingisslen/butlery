@@ -168,14 +168,14 @@ class _ShoppingListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color: cs.primary.withValues(
+              color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
             child: Icon(
               Icons.shopping_cart,
-              color: cs.primary,
+              color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),
           );
@@ -201,7 +201,7 @@ class _ShoppingListItem extends StatelessWidget {
           Text(
             context.l10n.dialogItemsProgress(completedCount, totalCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

@@ -61,12 +61,14 @@ class SocialFormatters {
   static Map<String, Color> getSocialColorScheme(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return {
-      'primary': cs.primary,
-      'secondary': cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-      'success': cs.primary,
+      'primary': cs.onSurface,
+      'secondary': cs.onSurface.withValues(
+        alpha: AppDimensions.opacityVeryLight,
+      ),
+      'success': cs.onSurface,
       'warning': cs.onSurfaceVariant,
       'danger': cs.error,
-      'info': cs.primary.withValues(alpha: AppDimensions.opacityDark),
+      'info': cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
       'muted': cs.onSurfaceVariant,
     };
   }

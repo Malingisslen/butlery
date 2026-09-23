@@ -461,7 +461,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
         onPressed: onPressed,
         tooltip: semanticLabel,
         backgroundColor: backgroundColor ?? cs.primary,
-        foregroundColor: foregroundColor ?? cs.surfaceContainerHighest,
+        foregroundColor: foregroundColor ?? cs.onPrimary,
         child: child,
       ),
     );

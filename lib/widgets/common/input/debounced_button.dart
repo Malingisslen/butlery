@@ -31,7 +31,8 @@ class DebouncedButton extends StatefulWidget {
   /// If this returns a Future, the button stays disabled until it completes.
   final FutureOr<void> Function()? onPressed;
 
-  /// The child widget (typically a button).
+  /// The child widget (typically a button). It draws its own disabled look
+  /// (for a Material button: onPressed null); the wrapper never dims it.
   final Widget child;
 
   /// Duration to wait before allowing another press.
@@ -165,10 +166,11 @@ class _DebouncedButtonState extends State<DebouncedButton> {
       behavior: HitTestBehavior.opaque,
       child: IgnorePointer(
         ignoring: !_canPress,
-        child: Opacity(
-          opacity: _canPress ? 1.0 : 0.6,
-          child: widget.child,
-        ),
+        // No opacity dimming: a state is never opacity (Komponentark v1:30,
+        // tokens.json:40-53). The child draws its own disabled look, as a
+        // Material button with onPressed null does (surface.disabled,
+        // button_themes.dart); the wrapper only stops the press.
+        child: widget.child,
       ),
     );
     if (widget.semanticLabel == null) return detector;

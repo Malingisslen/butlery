@@ -125,7 +125,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           decoration: BoxDecoration(
             color: cs.primaryContainer,
             border: BorderDirectional(
-              start: BorderSide(color: cs.primary, width: 4),
+              start: BorderSide(color: cs.onSurface, width: 4),
             ),
           ),
           child: Row(

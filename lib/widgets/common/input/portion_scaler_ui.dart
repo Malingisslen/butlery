@@ -130,7 +130,7 @@ class PortionScalerUI {
                   style: AppTextStyles.bodyBold.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -177,14 +177,14 @@ class PortionScalerUI {
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest,
               border: Border.all(
-                color: onPressed != null ? cs.primary : cs.outlineVariant,
+                color: onPressed != null ? cs.onSurface : cs.outlineVariant,
                 width: 2.0,
               ),
             ),
             child: Icon(
               icon,
               size: AppDimensions.iconSizeL,
-              color: onPressed != null ? cs.primary : cs.onSurfaceVariant,
+              color: onPressed != null ? cs.onSurface : cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -265,11 +265,11 @@ class PortionScalerUI {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: convertToSwedish
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.onSurface,
                 side: BorderSide(
                   color: convertToSwedish
-                      ? Theme.of(context).colorScheme.primary
+                      ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).colorScheme.outline,
                 ),
                 backgroundColor: convertToSwedish

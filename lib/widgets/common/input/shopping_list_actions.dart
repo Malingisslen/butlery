@@ -1,8 +1,8 @@
 // lib/widgets/common/input/shopping_list_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -132,18 +132,14 @@ class ShoppingListActions {
       final success = await viewModel.renameList(list.id, newName);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? '${context.l10n.shoppingRenameList} "$newName"'
-                  : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
-            ),
-            backgroundColor: success
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
+        final message = success
+            ? '${context.l10n.shoppingRenameList} "$newName"'
+            : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}';
+        if (success) {
+          SnackBarUtils.showSuccess(context, message);
+        } else {
+          SnackBarUtils.showError(context, message);
+        }
       }
     }
   }
@@ -158,29 +154,21 @@ class ShoppingListActions {
       final exportText = viewModel.exportList();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              exportText.isNotEmpty
-                  ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.commonExport}'
-                  : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
-            ),
-            backgroundColor: exportText.isNotEmpty
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
+        final message = exportText.isNotEmpty
+            ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.commonExport}'
+            : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}';
+        if (exportText.isNotEmpty) {
+          SnackBarUtils.showSuccess(context, message);
+        } else {
+          SnackBarUtils.showError(context, message);
+        }
       }
     } catch (e) {
       AppLogger.error('Export list failed', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.errorCouldNotUpdate(context.l10n.shoppingList),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.errorCouldNotUpdate(context.l10n.shoppingList),
         );
       }
     }
@@ -205,18 +193,14 @@ class ShoppingListActions {
       final success = await viewModel.deleteList(list.id);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.successItemDeleted(context.l10n.shoppingList).split(' ')[1]}'
-                  : '${context.l10n.errorCouldNotDelete(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
-            ),
-            backgroundColor: success
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
+        final message = success
+            ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.successItemDeleted(context.l10n.shoppingList).split(' ')[1]}'
+            : '${context.l10n.errorCouldNotDelete(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}';
+        if (success) {
+          SnackBarUtils.showSuccess(context, message);
+        } else {
+          SnackBarUtils.showError(context, message);
+        }
       }
     }
   }

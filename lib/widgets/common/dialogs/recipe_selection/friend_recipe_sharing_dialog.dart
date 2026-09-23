@@ -183,7 +183,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(
+                color: Theme.of(context).colorScheme.onSurface.withValues(
                   alpha: AppDimensions.opacityVeryLight,
                 ),
                 borderRadius: BorderRadius.zero,
@@ -191,7 +191,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
               child: Text(
                 context.l10n.dialogSelectedCount(viewModel.selectedCount),
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -336,7 +336,7 @@ class FriendRecipeListItem extends StatelessWidget {
                   color: cs.onSurfaceVariant,
                 )
               : AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
         ),
         if (recipe.description.isNotEmpty)
@@ -409,12 +409,12 @@ class FriendRecipeListItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: isAlreadyShared
             ? successColor.withValues(alpha: AppDimensions.opacityVeryLight)
-            : cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+            : cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Icon(
         Icons.restaurant_menu,
-        color: isAlreadyShared ? successColor : cs.primary,
+        color: isAlreadyShared ? successColor : cs.onSurface,
         size: AppDimensions.iconSizeAction,
       ),
     );

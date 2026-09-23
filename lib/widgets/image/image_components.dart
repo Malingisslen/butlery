@@ -376,7 +376,7 @@ class ImageComponents {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: index == currentIndex
-                          ? cs.primary
+                          ? cs.onSurface
                           : cs.surfaceContainerHighest.withValues(
                               alpha: AppDimensions.opacityMediumDark,
                             ),

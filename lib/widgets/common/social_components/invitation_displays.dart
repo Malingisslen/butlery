@@ -254,7 +254,7 @@ class InvitationDisplays {
       case 'expired':
         return context.butleryColors.warning;
       default:
-        return cs.primary;
+        return cs.onSurface;
     }
   }
 

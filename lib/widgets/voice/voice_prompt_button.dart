@@ -186,7 +186,7 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
       icon: Icon(
         recording ? Icons.stop : Icons.mic_none,
         size: AppDimensions.iconSizeAction,
-        color: recording ? cs.error : cs.primary,
+        color: recording ? cs.error : cs.onSurface,
       ),
       tooltip: recording
           ? context.l10n.voicePromptStop

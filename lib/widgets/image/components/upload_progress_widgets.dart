@@ -36,10 +36,12 @@ class UploadProgressWidgets {
         return Container(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
-            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: cs.onSurface.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: cs.primary.withValues(
+              color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityMediumLight,
               ),
             ),
@@ -58,7 +60,7 @@ class UploadProgressWidgets {
                         child: Text(
                           uploadQueueStatus,
                           style: AppTextStyles.metadataEmphasized.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                       ),
@@ -144,7 +146,7 @@ class UploadProgressWidgets {
               icon: Icons.refresh,
               label: context.l10n.uploadRetryAllCount(failed),
               onTap: onRetryAllFailed,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           );
         }
@@ -266,7 +268,7 @@ class UploadProgressWidgets {
                   child: Text(
                     detail,
                     style: AppTextStyles.textSm.copyWith(
-                      color: cs.primary.withValues(
+                      color: cs.onSurface.withValues(
                         alpha: AppDimensions.opacityVeryDark,
                       ),
                     ),
@@ -363,7 +365,7 @@ class UploadProgressWidgets {
                           icon: Icons.refresh,
                           label: context.l10n.commonRetry,
                           onTap: () => onRetryUpload(imageUrl),
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                       if (status.canRetry &&
                           onRetryUpload != null &&
@@ -434,7 +436,7 @@ class UploadProgressWidgets {
               ),
               child: Icon(
                 Icons.check,
-                color: cs.surfaceContainerHighest,
+                color: cs.onPrimary,
                 size: AppDimensions.iconSizeL,
               ),
             );

@@ -2,15 +2,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Utility for displaying operation results via snackbars.
+///
+/// Every result is the ink snackbar (Komponentark v1:745-750; produktbeslut
+/// PQ-09 = A): no green or red status fill (Komponentark v1:300), the
+/// message says what happened.
 class ResultDisplayer {
   /// Show an operation result with consistent styling.
   ///
   /// [context] - The build context.
-  /// [success] - Whether the operation was successful.
+  /// [success] - Whether the operation was successful. The look is the same
+  /// either way; the message carries the outcome.
   /// [message] - The message to display.
   /// [closeModal] - Whether to close the parent modal first.
   static void showResult(
@@ -20,42 +25,24 @@ class ResultDisplayer {
     bool closeModal = false,
   }) {
     if (closeModal) {
-      // Capture context-dependent values before async gap
+      // Capture the messenger before the async gap: the modal's context is
+      // gone once it has popped.
       final scaffoldMessenger = ScaffoldMessenger.of(context);
-      final successColor = context.butleryColors.success;
-      final errorColor = Theme.of(context).colorScheme.error;
 
       Navigator.of(context).pop();
 
       Future.delayed(AppDimensions.animationDurationCommon, () {
-        _showSnackBarDirect(
-          scaffoldMessenger,
-          success,
-          message,
-          successColor,
-          errorColor,
-        );
+        _showSnackBarDirect(scaffoldMessenger, message);
       });
     } else {
-      _showSnackBar(context, success, message);
+      _showSnackBar(context, message);
     }
   }
 
-  static void _showSnackBar(
-    BuildContext context,
-    bool success,
-    String message,
-  ) {
+  static void _showSnackBar(BuildContext context, String message) {
     try {
       if (!context.mounted) return;
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-      _showSnackBarDirect(
-        scaffoldMessenger,
-        success,
-        message,
-        context.butleryColors.success,
-        Theme.of(context).colorScheme.error,
-      );
+      _showSnackBarDirect(ScaffoldMessenger.of(context), message);
     } catch (e) {
       AppLogger.error('Failed to show result', e);
     }
@@ -63,16 +50,14 @@ class ResultDisplayer {
 
   static void _showSnackBarDirect(
     ScaffoldMessengerState messenger,
-    bool success,
     String message,
-    Color successColor,
-    Color errorColor,
   ) {
     try {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(message),
-          backgroundColor: success ? successColor : errorColor,
+          content: InkSnackBar(message: message),
+          padding: InkSnackBar.padding,
+          behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
         ),
       );

@@ -230,7 +230,7 @@ class _MenuListItem extends StatelessWidget {
           Text(
             context.l10n.recipeCountBadge(menu.totalRecipeCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

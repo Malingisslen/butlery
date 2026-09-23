@@ -288,10 +288,12 @@ class MenuCard extends StatelessWidget {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.onSurface.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
           width: AppDimensions.borderWidthThin,
         ),
       ),
@@ -300,7 +302,7 @@ class MenuCard extends StatelessWidget {
           Icon(
             Icons.people,
             size: AppDimensions.iconSizeS,
-            color: cs.primary,
+            color: cs.onSurface,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
@@ -331,7 +333,7 @@ class MenuCard extends StatelessWidget {
       child: Icon(
         Icons.people,
         size: AppDimensions.iconSizeS,
-        color: cs.surfaceContainerHighest,
+        color: cs.onPrimary,
       ),
     );
   }

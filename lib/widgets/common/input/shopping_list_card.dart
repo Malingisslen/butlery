@@ -44,9 +44,9 @@ class ShoppingListCard extends StatelessWidget {
       child: Material(
         elevation: AppDimensions.elevationMedium,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        color: isSelected
-            ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-            : null,
+        // A chosen list is surface.selected, never an ink tint (tokens.json:40-53,
+        // :116-119); surfaceContainerHighest carries its values in both modes.
+        color: isSelected ? cs.surfaceContainerHighest : null,
         child: Semantics(
           label: context.l10n.a11yShoppingList(list.name),
           button: true,
@@ -162,7 +162,7 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.people,
             context.l10n.friendMemberCount(list.memberCount),
-            cs.primary,
+            cs.onSurface,
           ),
           // User permission badge
           ..._buildUserPermissionBadge(context),
@@ -310,9 +310,9 @@ class ShoppingListCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     switch (list.type) {
       case ShoppingListType.personal:
-        return cs.primary;
+        return cs.onSurface;
       case ShoppingListType.collaborative:
-        return cs.primary;
+        return cs.onSurface;
       case ShoppingListType.template:
         return context.butleryColors.warning;
     }
@@ -337,7 +337,7 @@ class ShoppingListCard extends StatelessWidget {
     if (isOwner) {
       permissionLabel = context.l10n.shoppingOwner;
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = cs.primary;
+      permissionColor = cs.onSurface;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
@@ -353,7 +353,7 @@ class ShoppingListCard extends StatelessWidget {
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingAdmin;
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = cs.primary;
+          permissionColor = cs.onSurface;
           break;
         default:
           permissionLabel = context.l10n.shoppingCanEdit;

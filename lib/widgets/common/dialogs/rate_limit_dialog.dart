@@ -254,7 +254,7 @@ class _ActionTile extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: cs.primary,
+                color: cs.onSurface,
                 size: AppDimensions.iconSizeL,
               ),
               const SizedBox(width: AppDimensions.spacingM),

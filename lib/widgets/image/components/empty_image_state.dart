@@ -93,14 +93,14 @@ class EmptyImageState extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: cs.primary.withValues(
+              color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
             ),
             child: Icon(
               Icons.add_photo_alternate_outlined,
               size: AppDimensions.iconSizeXl,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           );
         },

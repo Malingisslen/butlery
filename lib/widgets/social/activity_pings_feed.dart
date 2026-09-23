@@ -212,7 +212,7 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed>
         color: cs.surface,
         border: Border(
           left: BorderSide(
-            color: cs.primary,
+            color: cs.onSurface,
             width: 3,
           ),
         ),

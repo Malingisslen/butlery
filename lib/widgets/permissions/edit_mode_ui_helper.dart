@@ -14,7 +14,7 @@ class EditModeUIHelper {
     switch (mode) {
       case EditMode.owner:
       case EditMode.edit:
-        return cs.primary;
+        return cs.onSurface;
       case EditMode.collaborative:
         return context.butleryColors.success;
       case EditMode.readOnlyWithFork:

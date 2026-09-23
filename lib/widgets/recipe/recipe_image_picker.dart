@@ -66,7 +66,7 @@ class RecipeImagePicker {
             ListTile(
               leading: Icon(
                 Icons.photo_camera,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               title: Text(context.l10n.imageTakePhoto),
               subtitle: Text(context.l10n.imageUseCamera),
@@ -75,7 +75,7 @@ class RecipeImagePicker {
             ListTile(
               leading: Icon(
                 Icons.photo_library,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               title: Text(context.l10n.imageFromGallery),
               subtitle: Text(

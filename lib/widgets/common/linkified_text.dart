@@ -50,7 +50,7 @@ class LinkifiedText {
         final effectiveLinkStyle =
             linkStyle ??
             (style ?? const TextStyle()).copyWith(
-              color: theme.colorScheme.primary,
+              color: theme.colorScheme.onSurface,
               decoration: TextDecoration.underline,
             );
 

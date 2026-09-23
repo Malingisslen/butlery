@@ -57,7 +57,7 @@ class PresenceOverview extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: Border(left: BorderSide(color: cs.primary, width: 3)),
+        border: Border(left: BorderSide(color: cs.onSurface, width: 3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

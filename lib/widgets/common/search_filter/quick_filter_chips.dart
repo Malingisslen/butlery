@@ -208,7 +208,7 @@ class _QuickChip extends StatelessWidget {
                     AppDimensions.borderRadius20,
                   ),
                   border: Border.all(
-                    color: isSelected ? cs.primary : cs.outlineVariant,
+                    color: isSelected ? cs.onSurface : cs.outlineVariant,
                     width: 1.5,
                   ),
                 ),
@@ -219,18 +219,14 @@ class _QuickChip extends StatelessWidget {
                       Icon(
                         icon,
                         size: AppDimensions.iconSizeS,
-                        color: isSelected
-                            ? cs.surfaceContainerHighest
-                            : cs.onSurfaceVariant,
+                        color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: AppDimensions.spacingXs),
                     ],
                     Text(
                       label,
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: isSelected
-                            ? cs.surfaceContainerHighest
-                            : cs.onSurface,
+                        color: isSelected ? cs.onPrimary : cs.onSurface,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.w500,

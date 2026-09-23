@@ -39,7 +39,7 @@ class CollectionInsightsCard extends StatelessWidget {
       child: ExpansionTile(
         leading: Icon(
           Icons.insights,
-          color: colorScheme.primary,
+          color: colorScheme.onSurface,
           size: AppDimensions.iconSizeM,
         ),
         title: Text(

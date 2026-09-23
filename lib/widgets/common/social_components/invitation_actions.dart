@@ -47,12 +47,15 @@ class InvitationActions {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).colorScheme.primary.withValues(
+            color: Theme.of(context).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityMediumLight,
             ),
           ),
@@ -386,7 +389,7 @@ class InvitationActions {
   }) {
     final cs = Theme.of(context).colorScheme;
     final resolvedLeftColor = leftColor ?? cs.error;
-    final resolvedRightColor = rightColor ?? cs.primary;
+    final resolvedRightColor = rightColor ?? cs.onSurface;
     final resolvedLeftLabel = leftLabel ?? context.l10n.commonDelete;
     final resolvedRightLabel = rightLabel ?? context.l10n.invitationInvite;
 

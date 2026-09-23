@@ -242,14 +242,14 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 Icon(
                   Icons.reply,
                   size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
                     context.l10n.commentReplyingTo,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),

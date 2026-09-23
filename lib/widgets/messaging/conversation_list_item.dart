@@ -128,7 +128,7 @@ class ConversationListItem extends StatelessWidget {
                               conversation.formattedLastActivity,
                               style: _hasUnreadMessages
                                   ? AppTextStyles.labelSmall.copyWith(
-                                      color: cs.primary,
+                                      color: cs.onSurface,
                                     )
                                   : AppTextStyles.labelSmall.copyWith(
                                       color: cs.onSurfaceVariant,
@@ -220,11 +220,11 @@ class ConversationListItem extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: Icon(
         Icons.group,
-        color: cs.primary,
+        color: cs.onSurface,
         size: AppDimensions.iconSizeL,
       ),
     );
@@ -254,7 +254,7 @@ class ConversationListItem extends StatelessWidget {
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
         style: AppTextStyles.sectionHeader.copyWith(
-          color: cs.primary,
+          color: cs.onSurface,
         ),
       ),
     );
@@ -267,7 +267,7 @@ class ConversationListItem extends StatelessWidget {
       width: AppDimensions.spacingSm,
       height: AppDimensions.spacingSm,
       decoration: BoxDecoration(
-        color: cs.primary,
+        color: cs.onSurface,
         shape: BoxShape.circle,
       ),
     );

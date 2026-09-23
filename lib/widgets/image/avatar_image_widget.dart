@@ -146,14 +146,14 @@ class AvatarImageWidget extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: cs.primary,
                 border: Border.all(
-                  color: cs.surfaceContainerHighest,
+                  color: cs.onPrimary,
                   width: 2,
                 ),
               ),
               child: Icon(
                 Icons.edit,
                 size: AppDimensions.iconSizeS,
-                color: cs.surfaceContainerHighest,
+                color: cs.onPrimary,
               ),
             ),
           ),
@@ -218,7 +218,7 @@ class AvatarImageWidget extends StatelessWidget {
         child: UserAvatarWidgets.initialsOrFallback(
           initials: initials,
           fontSize: _getFontSize(dimensions.width),
-          color: cs.surfaceContainerHighest,
+          color: cs.onPrimary,
           baseStyle: AppTextStyles.headlineMedium.copyWith(
             fontWeight: FontWeight.w600,
           ),

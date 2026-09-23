@@ -452,7 +452,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       child: Text(
                         context.l10n.socialLikeCount(comment.likeCount),
                         style: AppTextStyles.metadataEmphasized.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                           decoration: TextDecoration.underline,
                         ),
                       ),

@@ -487,7 +487,8 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationMedium));
 
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.side.color, equals(cs.primary));
+        // Chosen is a real text.primary border (Grafisk manual v6:209).
+        expect(shape.side.color, equals(cs.onSurface));
       });
 
       testWidgets('should show low elevation when not selected', (

@@ -61,7 +61,7 @@ class SocialBuilders {
             style:
                 valueStyle ??
                 AppTextStyles.bodyLargeBold.copyWith(
-                  color: textColor ?? Theme.of(context).colorScheme.primary,
+                  color: textColor ?? Theme.of(context).colorScheme.onSurface,
                 ),
           ),
           if (showLabels) ...[

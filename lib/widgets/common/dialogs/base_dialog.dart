@@ -53,7 +53,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
               widget.titleIcon!,
               color: widget.isDangerous
                   ? cs.error
-                  : widget.primaryActionColor ?? cs.primary,
+                  : widget.primaryActionColor ?? cs.onSurface,
               size: AppDimensions.iconSizeXxl,
             )
           : null,

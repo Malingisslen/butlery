@@ -241,13 +241,13 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                   Icon(
                     Icons.add_photo_alternate_outlined,
                     size: AppDimensions.iconSizeXl,
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     context.l10n.commonAdd,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                   ),
                 ],
@@ -272,7 +272,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(
               color: isSelected
-                  ? cs.primary
+                  ? cs.onSurface
                   : cs.outlineVariant.withValues(
                       alpha: AppDimensions.opacityLight,
                     ),
@@ -302,14 +302,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                         config: widget.config,
                       ),
                     ),
-
-                    // Selection overlay
-                    if (isSelected)
-                      Container(
-                        color: cs.primary.withValues(
-                          alpha: AppDimensions.opacityLight,
-                        ),
-                      ),
+                    // No tint over a chosen photo: opacity is never a state
+                    // (tokens.json:40-53). The 2 px text.primary border and
+                    // the checked circle carry the choice (Grafisk manual
+                    // v6:209, "Vald = riktig border").
                   ],
                 ),
               ),
@@ -341,7 +337,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 isSelected ? Icons.check : Icons.circle_outlined,
                 size: AppDimensions.iconSizeS,
                 color: isSelected
-                    ? cs.surfaceContainerHighest
+                    ? cs.onPrimary
                     : cs.onSurface.withValues(
                         alpha: AppDimensions.opacityMediumDark,
                       ),

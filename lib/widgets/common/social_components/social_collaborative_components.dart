@@ -492,19 +492,19 @@ class SocialCollaborativeComponents {
         return _PermissionConfig(
           icon: Icons.star,
           label: context?.l10n.socialPermissionOwner ?? 'Ägare',
-          color: cs?.primary ?? AppColors.forestGreen,
+          color: cs?.onSurface ?? AppColors.forestGreen,
         );
       case 'admin':
         return _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: context?.l10n.socialPermissionAdmin ?? 'Admin',
-          color: cs?.primary ?? AppColors.forestGreen,
+          color: cs?.onSurface ?? AppColors.forestGreen,
         );
       case 'editor':
         return _PermissionConfig(
           icon: Icons.edit,
           label: context?.l10n.socialPermissionEditor ?? 'Redigera',
-          color: cs?.primary ?? AppColors.forestGreen,
+          color: cs?.onSurface ?? AppColors.forestGreen,
         );
       case 'viewer':
         return _PermissionConfig(

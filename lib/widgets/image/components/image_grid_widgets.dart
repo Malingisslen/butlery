@@ -261,12 +261,12 @@ class ImageGridWidgets {
               decoration: BoxDecoration(
                 borderRadius: config.effectiveBorderRadius,
                 border: Border.all(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityMediumLight,
                   ),
                   width: AppDimensions.borderWidthThin,
                 ),
-                color: cs.primary.withValues(
+                color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityExtraVeryLight,
                 ),
               ),
@@ -285,7 +285,7 @@ class ImageGridWidgets {
                       child: Text(
                         context.l10n.imageAdding,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -293,7 +293,7 @@ class ImageGridWidgets {
                   ] else ...[
                     Icon(
                       Icons.add_photo_alternate_outlined,
-                      color: cs.primary,
+                      color: cs.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -301,7 +301,7 @@ class ImageGridWidgets {
                       child: Text(
                         context.l10n.imageAddCount(remainingSlots),
                         style: AppTextStyles.contentLabel.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),

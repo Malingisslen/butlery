@@ -440,7 +440,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
               Icon(
                 Icons.label,
                 size: AppDimensions.iconSizeS,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),

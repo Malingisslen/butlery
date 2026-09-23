@@ -217,7 +217,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       label: Text(
                         context.l10n.pollAddOption,
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                       ),
                     ),
@@ -232,7 +232,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   Switch(
                     value: _allowMultiple,
                     onChanged: (v) => setState(() => _allowMultiple = v),
-                    activeThumbColor: cs.primary,
+                    // The theme's switch: ink track, paper knob when on
+                    // (feedback_themes.dart switchTheme). An ink knob on the
+                    // ink track vanished in both modes.
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Text(
@@ -262,7 +264,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     onPressed: _isValid ? _submit : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
-                      foregroundColor: cs.surfaceContainerHighest,
+                      foregroundColor: cs.onPrimary,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(
                           Radius.circular(AppDimensions.borderRadiusS),

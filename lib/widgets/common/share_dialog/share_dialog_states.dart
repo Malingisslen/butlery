@@ -69,7 +69,7 @@ class ShareDialogStates {
             icon: const Icon(Icons.share),
             label: Text(context.l10n.socialInviteFriends),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
               side: BorderSide(color: Theme.of(context).colorScheme.outline),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingLg,

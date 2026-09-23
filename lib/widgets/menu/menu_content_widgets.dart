@@ -3,6 +3,7 @@
 // UI Redesign: Meal type headers with green left border (4px) + light green background
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -57,13 +58,13 @@ class MenuContentWidgets {
               Icon(
                 Icons.restaurant_menu,
                 size: AppDimensions.iconSizeAction,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 context.l10n.menuPromptQuestion,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
             ],
@@ -379,7 +380,7 @@ class MenuContentWidgets {
           ),
           decoration: BoxDecoration(
             // Light green background (8% opacity)
-            color: cs.primary.withValues(alpha: 0.08),
+            color: cs.onSurface.withValues(alpha: 0.08),
             // Rounded right corners only for left-border effect
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(AppDimensions.borderRadiusS),
@@ -388,7 +389,7 @@ class MenuContentWidgets {
             // 4px green left border
             border: Border(
               left: BorderSide(
-                color: cs.primary,
+                color: cs.onSurface,
                 width: 4,
               ),
             ),
@@ -405,7 +406,7 @@ class MenuContentWidgets {
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 3,
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                   ),
                 ),
@@ -436,7 +437,7 @@ class MenuContentWidgets {
                         size: AppDimensions.iconSizeM,
                         color: viewModel.isGenerating
                             ? cs.onSurfaceVariant
-                            : cs.primary,
+                            : cs.onSurface,
                       ),
                     ),
                   ),
@@ -721,7 +722,7 @@ class _MenuRecipeCard extends StatelessWidget {
                             child: Icon(
                               Icons.how_to_vote,
                               size: AppDimensions.iconSizeS,
-                              color: cs.primary,
+                              color: cs.onSurface,
                             ),
                           ),
                         ),
@@ -745,27 +746,22 @@ class _MenuRecipeCard extends StatelessWidget {
                                   recipe,
                                   category,
                                 );
+                                // The ink snackbar, never a saffron fill
+                                // (Komponentark v1:745-750, :300; PQ-09 = A).
                                 if (result.recipe == null && context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        result.exhaustedMessage ??
-                                            context.l10n.menuNoMoreRecipes,
-                                      ),
-                                      backgroundColor: cs.secondary,
-                                    ),
+                                  SnackBarUtils.showInfo(
+                                    context,
+                                    result.exhaustedMessage ??
+                                        context.l10n.menuNoMoreRecipes,
                                   );
                                 } else if (result.recipe != null &&
                                     context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        context.l10n.menuSwapAlternatives(
-                                          result.alternativesRemaining,
-                                        ),
-                                      ),
-                                      duration: const Duration(seconds: 2),
+                                  SnackBarUtils.showInfo(
+                                    context,
+                                    context.l10n.menuSwapAlternatives(
+                                      result.alternativesRemaining,
                                     ),
+                                    duration: const Duration(seconds: 2),
                                   );
                                 }
                               },
@@ -778,7 +774,7 @@ class _MenuRecipeCard extends StatelessWidget {
                             size: AppDimensions.iconSizeS,
                             color: viewModel.isGenerating
                                 ? cs.onSurfaceVariant
-                                : cs.primary,
+                                : cs.onSurface,
                           ),
                         ),
                       ),

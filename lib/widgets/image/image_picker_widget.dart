@@ -1,6 +1,7 @@
 // lib/widgets/image/image_picker_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -162,14 +163,14 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: cs.primary.withValues(
+                        color: cs.onSurface.withValues(
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                       ),
                       child: Icon(
                         Icons.add_photo_alternate_outlined,
                         size: AppDimensions.iconSizeXl,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(
@@ -386,11 +387,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       AppLogger.error('Failed to pick images: $e');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.imageFailedToSelect(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.imageFailedToSelect(e.toString()),
         );
       }
     } finally {

@@ -411,12 +411,13 @@ void main() {
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
-        // FAB uses cs.primary / cs.surfaceContainerHighest from the Butlery theme
+        // FAB is an ink fill with onPrimary (paper) on it: surfaceContainerHighest
+        // turned #2F4437 in dark mode and vanished on the ink fill (P4-T7).
         // Paket 1: FAB:en tar sina färger ur det kanoniska schemat.
         expect(fab.backgroundColor, equals(AppColors.lightColorScheme.primary));
         expect(
           fab.foregroundColor,
-          equals(AppColors.lightColorScheme.surfaceContainerHighest),
+          equals(AppColors.lightColorScheme.onPrimary),
         );
       });
 

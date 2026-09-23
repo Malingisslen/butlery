@@ -1,6 +1,7 @@
 // lib/widgets/universal_share_dialog.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -9,7 +10,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -436,31 +436,20 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         // Show success and close dialog
         Navigator.pop(context, true);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(successMessage),
-            backgroundColor: context.butleryColors.success,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, successMessage);
       } else if (widget.viewModel.hasError && mounted) {
         // PHASE 2: Show specific validation error from ViewModel
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.viewModel.errorMessage!),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(
-              seconds: 4,
-            ), // Longer duration for validation messages
-          ),
+        SnackBarUtils.showError(
+          context,
+          widget.viewModel.errorMessage!,
+          duration: const Duration(seconds: 4),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.shareFailed(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.shareFailed(e.toString()),
         );
       }
     }
