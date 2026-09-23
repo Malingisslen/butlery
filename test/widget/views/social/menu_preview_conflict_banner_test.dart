@@ -37,7 +37,10 @@ class _MockCoordinator extends Mock
 
 class _MockMenuViewModel extends Mock implements SharedMenuViewModel {}
 
-class _FakeResource extends Fake implements RealtimeResource {}
+class _FakeResource extends Fake implements RealtimeResource {
+  @override
+  String get lastEditedByDisplayName => 'Per';
+}
 
 class _FakeSharedMenu extends Fake implements SharedMenu {}
 
@@ -47,6 +50,7 @@ ConflictEvent _event({required String docId}) => ConflictEvent(
   localValue: _FakeResource(),
   remoteValue: _FakeResource(),
   chosenStrategy: ConflictResolutionStrategy.localWon,
+  entity: ConflictEntity.weekMenu,
   occurredAt: DateTime(2026, 5, 28),
 );
 
@@ -107,7 +111,7 @@ void main() {
                 value: coordinator,
                 child: Builder(
                   builder: (context) {
-                    bannerMessage = context.l10n.conflictBannerMessage;
+                    bannerMessage = context.l10n.conflictBannerTitleWeek;
                     return MenuPreviewView(sharedMenu: menu);
                   },
                 ),

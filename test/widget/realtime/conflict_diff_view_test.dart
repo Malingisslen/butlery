@@ -61,6 +61,7 @@ ConflictEvent _event({
     localValue: localRes,
     remoteValue: remoteRes,
     chosenStrategy: strategy,
+    entity: ConflictEntity.recipeOwn,
     occurredAt: DateTime(2026, 6, 13),
   );
 }

@@ -34,6 +34,10 @@ class SyncError {
 }
 
 /// Which side won during a collaborative-edit conflict resolution.
+///
+/// Despite the name this is the OUTCOME of one resolution, not a strategy:
+/// the strategy belongs to the entity ([ConflictEntity],
+/// produktregler.md:97-107) and is declared by the model.
 enum ConflictResolutionStrategy {
   localWon,
   remoteWon,
@@ -62,6 +66,11 @@ class ConflictEvent {
   /// Which side the resolver picked.
   final ConflictResolutionStrategy chosenStrategy;
 
+  /// Which conflict rule applies (produktregler.md:97-107), as declared by the
+  /// model through [RealtimeResource.conflictEntityFor]. Surfaces pick their
+  /// notice from this, never from [collectionPath].
+  final ConflictEntity entity;
+
   /// Wall-clock when resolution happened — used by listeners to dedup or
   /// auto-dismiss old banners.
   final DateTime occurredAt;
@@ -72,12 +81,13 @@ class ConflictEvent {
     required this.localValue,
     required this.remoteValue,
     required this.chosenStrategy,
+    required this.entity,
     required this.occurredAt,
   });
 
   @override
   String toString() =>
-      'ConflictEvent($chosenStrategy on $collectionPath/$docId)';
+      'ConflictEvent($chosenStrategy, $entity on $collectionPath/$docId)';
 }
 
 /// BUT-1163: a single field-level difference between the local and remote
