@@ -24,6 +24,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -185,5 +186,50 @@ void main() {
       findsNothing,
     );
     expect(find.text('Snabbt'), findsWidgets);
+  });
+
+  // P5-U31: "Välj" in the view's own bar from two tags (B-46;
+  // produktregler.md:870-876); the bar keeps its height in selection mode.
+  group('Välj (P5-U31)', () {
+    final enter = find.byKey(const ValueKey('personal-tags-select-enter'));
+
+    testWidgets('one tag shows no Välj', (tester) async {
+      fakeVm.setState(
+        tags: [PersonalTag.create(name: 'Snabbt')],
+        isLoading: false,
+      );
+      await pumpView(tester);
+
+      expect(enter, findsNothing);
+    });
+
+    testWidgets('two tags show Välj; it opens selection at zero with the '
+        'counter, Avbryt and the same bar height', (tester) async {
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Snabbt'),
+          PersonalTag.create(name: 'Vardag'),
+        ],
+        isLoading: false,
+      );
+      await pumpView(tester);
+      final bar = find.byType(ButleryTopBar);
+      final before = tester.getSize(bar).height;
+      expect(find.bySemanticsLabel('Välj taggar'), findsOneWidget);
+
+      await tester.tap(enter);
+      await tester.pump();
+
+      expect(find.text('0 valda'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('personal-tags-selection-cancel')),
+        findsOneWidget,
+      );
+      expect(tester.getSize(bar).height, before);
+      final delete = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.delete_outline),
+      );
+      expect(delete.onPressed, isNull);
+    });
   });
 }

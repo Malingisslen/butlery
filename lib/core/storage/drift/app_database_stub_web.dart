@@ -5,6 +5,9 @@ library;
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/cache/cache_dao_stub.dart';
+import 'package:butlery/core/storage/drift/queue_counts.dart';
+
+export 'package:butlery/core/storage/drift/queue_counts.dart';
 
 /// Stub implementation of AppDatabase for web platform.
 /// All operations are no-ops since SQLite is not available on web.
@@ -12,7 +15,8 @@ class AppDatabase {
   AppDatabase();
   AppDatabase.forTesting(dynamic e);
 
-  int get schemaVersion => 2;
+  /// Mirrors the native schema version (app_database.dart).
+  int get schemaVersion => 3;
 
   Future<void> clearAllData() async {}
   Future<void> clearUserData(String userId) async {}
@@ -28,6 +32,20 @@ class AppDatabase {
   }
 
   Future<void> close() async {}
+
+  /// The web has no offline queue, so nothing ever waits.
+  Stream<QueueCounts> watchQueueCounts(String userId) =>
+      Stream.value(QueueCounts.empty);
+
+  /// The combined pending count across both queues; always 0 on the web.
+  Stream<int> watchPendingCount(String userId) => Stream.value(0);
+
+  /// Nothing to mark on the web.
+  Future<Set<String>> markChainPermanentlyFailed(
+    String userId,
+    String opId, {
+    String? reason,
+  }) async => const {};
 
   // Stub DAOs - cacheDao uses shared CacheDao from cache_dao_stub.dart
   RecipeDaoStub get recipeDao => RecipeDaoStub();
@@ -60,6 +78,15 @@ class SyncQueueDaoStub {
   Future<void> deleteEntry(String id) async {}
   Future<void> deleteAllForUser(String userId) async {}
   Future<bool> hasPendingEntries(String userId) async => false;
+
+  // The native SyncQueueDao's count surface (sync_queue_dao.dart), so code
+  // written against it compiles on the web too.
+  Future<bool> hasPending(String userId) async => false;
+  Future<int> countPending(String userId) async => 0;
+  Stream<int> watchPendingCount(String userId) => Stream.value(0);
+  Stream<int> watchPermanentFailureCount(String userId) => Stream.value(0);
+  Future<bool> markPermanentlyFailed(String opId, {String? reason}) async =>
+      false;
 }
 
 // CacheDao is imported from cache_dao_stub.dart
@@ -72,6 +99,13 @@ class UploadQueueDaoStub {
   Future<void> updateUploadStatus(String id, String status) async {}
   Future<void> deleteUpload(String id) async {}
   Future<void> deleteAllForUser(String userId) async {}
+
+  // The native UploadQueueDao's count surface (upload_queue_dao.dart).
+  Future<bool> hasPendingUploads(String userId) async => false;
+  Future<int> countPendingUploads(String userId) async => 0;
+  Stream<int> watchPendingCount(String userId) => Stream.value(0);
+  Future<bool> markPermanentlyFailed(String id, {String? reason}) async =>
+      false;
 }
 
 /// Stub data classes for web compatibility

@@ -7,9 +7,11 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// Collapsible section showing blocked users with unblock actions.
 /// Used in consent/privacy settings to let users manage their block list.
@@ -106,9 +108,17 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     });
   }
 
+  /// "Välj" in the section's header row (B-46; Skarmar v12 etapp 9
+  /// #flervalingang: "sektionens rubrikrad").
+  void _startSelection() {
+    setState(() => _selectionMode = true);
+  }
+
+  /// Taking the last tick off leaves selection mode (produktregler.md:878).
   void _toggleSelection(String uid) {
     setState(() {
       if (!_selectedIds.remove(uid)) _selectedIds.add(uid);
+      if (_selectedIds.isEmpty) _selectionMode = false;
     });
   }
 
@@ -182,20 +192,41 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
         color: cs.primaryContainer,
         border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
+      // "2 valda · Avblockera 2" (Skarmar v12 etapp 9 "Blockerade — och den
+      // sjätte flervalsytan"): the counter in tabular figures and the
+      // action; Avbryt sits in the header row (produktregler.md:873, :876).
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: context.l10n.commonCancel,
-            visualDensity: VisualDensity.compact,
-            onPressed: _cancelSelection,
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: AppDimensions.spacingSm,
+            ),
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                context.l10n.bulkSelectedCount(count),
+                key: const ValueKey('blocked-users-selection-count'),
+                style: AppTextStyles.titleSmall.copyWith(
+                  color: cs.onSurface,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
           ),
           const Spacer(),
           TextButton.icon(
             onPressed: count > 0 ? _unblockSelected : null,
             icon: const Icon(Icons.lock_open),
             label: Text(context.l10n.blockedUsersUnblockSelectedCount(count)),
-            style: TextButton.styleFrom(foregroundColor: cs.onSurface),
+            style: TextButton.styleFrom(
+              foregroundColor: cs.onSurface,
+              // Off at zero with the name readable (produktregler.md:876), in
+              // the disabled role on surface.raised, never a fade
+              // (tokens.json:71-74, :198).
+              disabledForegroundColor: AppModeColors.textDisabled(
+                cs.brightness,
+              ),
+            ),
           ),
         ],
       ),
@@ -210,47 +241,30 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       color: cs.surface,
       child: Column(
         children: [
-          // Collapsible header
-          Semantics(
-            label: context.l10n.a11yBlockedUsersToggle,
-            button: true,
-            expanded: _isExpanded,
-            child: InkWell(
-              onTap: () => setState(() => _isExpanded = !_isExpanded),
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.block,
-                      color: cs.onSurfaceVariant,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.blockedUsersTitle,
-                            style: AppTextStyles.titleBold,
-                          ),
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          Text(
-                            '${_blockedUserIds.length} blockerade',
-                            style: AppTextStyles.metadataEmphasized,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      _isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ],
+          // Collapsible header. P5-U31: the section sits inside a settings
+          // view without a top bar of its own, so its header row carries
+          // "Välj", and Avbryt in the same place in selection mode (Skarmar
+          // v12 etapp 9 #flervalingang; produktregler.md:870-874). Shown
+          // while the list is open and has two or more people.
+          Row(
+            children: [
+              Expanded(child: _buildHeader(context, cs)),
+              if (_selectionMode)
+                ButleryCancelSelectionButton(
+                  key: const ValueKey('blocked-users-selection-cancel'),
+                  foregroundColor: cs.onSurface,
+                  onPressed: _cancelSelection,
+                )
+              else if (_isExpanded &&
+                  !_isLoading &&
+                  ButlerySelectButton.shownFor(_blockedUserIds.length))
+                ButlerySelectButton(
+                  key: const ValueKey('blocked-users-select-enter'),
+                  semanticLabel: context.l10n.selectionEnterBlockedUsers,
+                  foregroundColor: cs.onSurface,
+                  onPressed: _startSelection,
                 ),
-              ),
-            ),
+            ],
           ),
           // Expandable content
           if (_isExpanded) ...[
@@ -278,6 +292,50 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
             ],
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ColorScheme cs) {
+    return Semantics(
+      label: context.l10n.a11yBlockedUsersToggle,
+      button: true,
+      expanded: _isExpanded,
+      child: InkWell(
+        onTap: () => setState(() => _isExpanded = !_isExpanded),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          child: Row(
+            children: [
+              Icon(
+                Icons.block,
+                color: cs.onSurfaceVariant,
+                size: AppDimensions.iconSizeM,
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.blockedUsersTitle,
+                      style: AppTextStyles.titleBold,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      '${_blockedUserIds.length} blockerade',
+                      style: AppTextStyles.metadataEmphasized,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                _isExpanded ? Icons.expand_less : Icons.expand_more,
+                color: cs.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

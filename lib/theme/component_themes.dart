@@ -37,7 +37,35 @@ class ComponentThemes {
   static CardThemeData cardTheme(ColorScheme cs) => InputThemes.cardTheme(cs);
   static ListTileThemeData listTileTheme(ColorScheme cs) =>
       InputThemes.listTileTheme(cs);
-  static ChipThemeData chipTheme(ColorScheme cs) => InputThemes.chipTheme(cs);
+
+  /// The chip with its locked geometry (P5-U34): 13 px across and 7 px
+  /// down inside a 1 px edge, and a pill (tokens.json controls.chip,
+  /// :824-832; Komponentark v1:33 "Låst geometri" and §03 :134-140,
+  /// `padding:7px 13px`). That makes the visible chip 34 px high, as drawn
+  /// ("Synlig 80 × 34"), inside the 48 dp hit area.
+  ///
+  /// The 13 px is split into 7 px chip padding and 6 px label padding on
+  /// each side. A plain chip then has 13 px before and after its label; a
+  /// selected chip's 18 dp check box is followed by the 6 px gap, which puts
+  /// the label where the drawing's 12 px check and 6 px gap do. An avatar
+  /// or a delete icon gets the same 6 px gap to the label, so no label
+  /// touches its icon (interpretation: the drawing shows only the check).
+  static ChipThemeData chipTheme(ColorScheme cs) =>
+      InputThemes.chipTheme(cs).copyWith(
+        padding: chipPadding,
+        labelPadding: chipLabelPadding,
+      );
+
+  /// tokens.json controls.chip paddingY 7, and 7 of paddingX 13.
+  static const EdgeInsets chipPadding = EdgeInsets.symmetric(
+    horizontal: 7,
+    vertical: 7,
+  );
+
+  /// The other 6 of paddingX 13; also the gap between check, avatar or
+  /// delete icon and the label (Komponentark v1:142, `gap:6px` between check and label).
+  static const EdgeInsetsDirectional chipLabelPadding =
+      EdgeInsetsDirectional.symmetric(horizontal: 6);
 
   // Navigation
   static AppBarTheme appBarTheme(ColorScheme cs) =>

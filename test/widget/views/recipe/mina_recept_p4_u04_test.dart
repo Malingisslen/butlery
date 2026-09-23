@@ -78,6 +78,9 @@ void main() {
     when(() => viewModel.pantryOnly).thenReturn(false);
     when(() => viewModel.pantryMatches).thenReturn(const {});
     when(() => viewModel.pooledStats).thenReturn(const {});
+    // P5-U31: the kebab's "Markera alla" is a toggle that counts the list.
+    when(() => viewModel.allSelected).thenReturn(false);
+    when(() => viewModel.recipes).thenReturn([recipe(), recipe(), recipe()]);
   });
 
   group('selection bar', () {
@@ -191,7 +194,8 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('mina-recept-bulk-more')));
       await tester.pumpAndSettle();
-      expect(find.text('Välj alla'), findsOneWidget);
+      // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle (P5-U31).
+      expect(find.text('Markera alla 3'), findsOneWidget);
       expect(find.text('Exportera valda'), findsOneWidget);
       expect(find.byType(PopupMenuDivider), findsOneWidget);
       final delete = tester.widget<Text>(find.text('Ta bort valda'));

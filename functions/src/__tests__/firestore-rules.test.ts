@@ -23,6 +23,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { increment, serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-recipes-users";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -494,6 +495,117 @@ test(
     );
   }
 );
+
+// ============================================================================
+// PANTRY PER-FIELD WRITES (P5-U28) — produktregler.md:105, :142-148
+// The app writes only the changed fields plus updatedAt/updatedBy, sends a
+// partial tick-off as an increment, and allows a null quantity ("har hemma").
+// The pantry is owner-only, so the conflict is one user on two devices.
+// ============================================================================
+
+async function seedPantryItem(id: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`users/${OWNER_UID}/pantry/${id}`)
+      .set({ ingredientName: "Mjöl", quantity: 6, unit: "dl", location: "pantry" });
+  });
+}
+
+// P1: a per-field update with the server time and the owner as updatedBy.
+test("pantry: owner writes one changed field with updatedAt and updatedBy", async () => {
+  await seedPantryItem("p1");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p1`).update({
+      note: "öppnad",
+      updatedAt: serverTimestamp(),
+      updatedBy: OWNER_UID,
+    })
+  );
+});
+
+// P2: a partial tick-off is an increment, not a new total (§ 2.2).
+test("pantry: owner decrements quantity with an increment", async () => {
+  await seedPantryItem("p2");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p2`).update({
+      quantity: increment(-2),
+      updatedAt: serverTimestamp(),
+      updatedBy: OWNER_UID,
+    })
+  );
+});
+
+// P3: "har hemma" without an amount is a value of its own.
+test("pantry: quantity may be null, but not a string", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p3`).set({
+      ingredientName: "Salt",
+      quantity: null,
+      unit: "st",
+      location: "spiceRack",
+    })
+  );
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p3b`).set({
+      ingredientName: "Salt",
+      quantity: "mycket",
+      unit: "st",
+      location: "spiceRack",
+    })
+  );
+});
+
+// P4: updatedBy must name the writer.
+test("pantry: updatedBy naming someone else is denied", async () => {
+  await seedPantryItem("p4");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p4`).update({
+      note: "x",
+      updatedAt: serverTimestamp(),
+      updatedBy: OTHER_UID,
+    })
+  );
+});
+
+// P5: updatedAt is the server's time, never a device clock.
+test("pantry: a client-chosen updatedAt is denied", async () => {
+  await seedPantryItem("p5");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p5`).update({
+      note: "x",
+      updatedAt: new Date(2020, 0, 1),
+      updatedBy: OWNER_UID,
+    })
+  );
+});
+
+// P6: writes from app versions without the stamps still go through.
+test("pantry: an update without stamps is still allowed", async () => {
+  await seedPantryItem("p6");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p6`).update({ quantity: 4 })
+  );
+});
+
+// P7: still owner-only, stamps or not.
+test("pantry: a stranger cannot update the owner's item", async () => {
+  await seedPantryItem("p7");
+  const ctx = env.authenticatedContext(OTHER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p7`).update({
+      note: "x",
+      updatedAt: serverTimestamp(),
+      updatedBy: OTHER_UID,
+    })
+  );
+});
 
 // ============================================================================
 // ONBOARDING PROGRESS (BUT-675) — 5 assertions across 5 tests

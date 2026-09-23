@@ -130,12 +130,45 @@ class PantryService extends BaseService {
     );
   }
 
-  Future<void> updateItem(String userId, PantryItem item) async {
+  /// Saves an edited item, writing only the fields that differ from
+  /// [previous] (produktregler.md:105, :142). Without [previous] every
+  /// editable field is written, but a missing amount still never wipes a
+  /// known one (produktregler.md:148).
+  Future<void> updateItem(
+    String userId,
+    PantryItem item, {
+    PantryItem? previous,
+  }) async {
     _validateInput(item.ingredientName, item.quantity);
+    final changes = previous == null
+        ? item.editableFields()
+        : item.changesFrom(previous);
+    if (changes.isEmpty) return;
     await executeServiceOperation<void>(
-      () => _pantryRepository.update(userId, item),
+      () => _pantryRepository.updateFields(userId, item.id, changes),
       operationName: 'updateItem',
     );
+  }
+
+  /// Changes a known amount by [delta] — a relative change, never a new
+  /// total (produktregler.md:146). An item without an amount ("har hemma")
+  /// has nothing to count from, so it is left as it is. Returns whether the
+  /// change was written; false also for a zero [delta] and a failed write.
+  Future<bool> adjustQuantity(
+    String userId,
+    PantryItem item,
+    double delta,
+  ) async {
+    if (item.quantity == null || delta == 0) return false;
+    final written = await executeServiceOperation<bool>(
+      () async {
+        await _pantryRepository.adjustQuantity(userId, item.id, delta);
+        return true;
+      },
+      operationName: 'adjustQuantity',
+      defaultValue: false,
+    );
+    return written ?? false;
   }
 
   Future<void> removeItem(String userId, String itemId) async {
@@ -225,14 +258,15 @@ class PantryService extends BaseService {
     return result ?? const [];
   }
 
-  void _validateInput(String name, double quantity) {
+  /// A null [quantity] is "har hemma" without an amount and is valid.
+  void _validateInput(String name, double? quantity) {
     if (name.trim().isEmpty) {
       throw ValidationException(
         'Ingredient name cannot be empty',
         field: 'ingredientName',
       );
     }
-    if (quantity <= 0) {
+    if (quantity != null && quantity <= 0) {
       throw ValidationException(
         'Quantity must be positive',
         field: 'quantity',

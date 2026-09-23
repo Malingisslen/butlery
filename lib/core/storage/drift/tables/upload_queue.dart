@@ -12,7 +12,10 @@ enum UploadQueueStatus {
 /// Table for tracking pending image upload operations
 /// Ensures uploads survive app restarts and are resumed on reconnection
 class UploadQueueEntries extends Table {
-  /// Unique upload ID (UUID from the upload request)
+  /// Unique upload ID (UUID from the upload request). It is also the
+  /// operation's idempotency key, its `opId` (produktregler.md:185): it is
+  /// created on the device and never reused, so this table needs no separate
+  /// column for it.
   TextColumn get id => text()();
 
   /// User ID for data isolation
@@ -54,6 +57,19 @@ class UploadQueueEntries extends Table {
 
   /// Additional metadata as JSON string
   TextColumn get metadata => text().nullable()();
+
+  // ── Schema 3 (produktregler.md:183-193, § 3.1) ─────────────────────────
+
+  /// JSON array of the opIds this upload waits for, or null — for example
+  /// the recipe create in the sync queue that the image belongs to
+  /// (produktregler.md:187).
+  TextColumn get dependsOn => text().nullable()();
+
+  /// Set when the upload will never be retried ("Bilden är för stor",
+  /// produktregler.md:189). It stays in the queue for the user to decide on
+  /// and is never deleted without her (produktregler.md:192).
+  BoolColumn get permanentlyFailed =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};

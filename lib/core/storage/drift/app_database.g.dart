@@ -515,6 +515,55 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _opIdMeta = const VerificationMeta('opId');
+  @override
+  late final GeneratedColumn<String> opId = GeneratedColumn<String>(
+    'op_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+    clientDefault: () => const Uuid().v4(),
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(SyncQueueEntityType.recipe),
+  );
+  static const VerificationMeta _dependsOnMeta = const VerificationMeta(
+    'dependsOn',
+  );
+  @override
+  late final GeneratedColumn<String> dependsOn = GeneratedColumn<String>(
+    'depends_on',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _permanentlyFailedMeta = const VerificationMeta(
+    'permanentlyFailed',
+  );
+  @override
+  late final GeneratedColumn<bool> permanentlyFailed = GeneratedColumn<bool>(
+    'permanently_failed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("permanently_failed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -524,6 +573,10 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
     queuedAt,
     retryCount,
     lastError,
+    opId,
+    entityType,
+    dependsOn,
+    permanentlyFailed,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -584,6 +637,33 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
         lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
       );
     }
+    if (data.containsKey('op_id')) {
+      context.handle(
+        _opIdMeta,
+        opId.isAcceptableOrUnknown(data['op_id']!, _opIdMeta),
+      );
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    }
+    if (data.containsKey('depends_on')) {
+      context.handle(
+        _dependsOnMeta,
+        dependsOn.isAcceptableOrUnknown(data['depends_on']!, _dependsOnMeta),
+      );
+    }
+    if (data.containsKey('permanently_failed')) {
+      context.handle(
+        _permanentlyFailedMeta,
+        permanentlyFailed.isAcceptableOrUnknown(
+          data['permanently_failed']!,
+          _permanentlyFailedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -621,6 +701,22 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
         DriftSqlType.string,
         data['${effectivePrefix}last_error'],
       ),
+      opId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}op_id'],
+      )!,
+      entityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_type'],
+      )!,
+      dependsOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}depends_on'],
+      ),
+      permanentlyFailed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}permanently_failed'],
+      )!,
     );
   }
 
@@ -651,6 +747,30 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
 
   /// Last error message if sync failed
   final String? lastError;
+
+  /// The operation's idempotency key. "Varje köpost bär `opId`. Servern
+  /// förkastar dubbletter" (produktregler.md:185). Created on the device
+  /// when the entry is queued and never reused, so a retry after a crash
+  /// mid-send is safe. Rows queued before schema 3 get a random 128-bit id
+  /// in the migration (app_database.dart).
+  final String opId;
+
+  /// What kind of entity the operation writes to ("recipe" for every row
+  /// queued before schema 3, since the queue then only carried recipes).
+  /// Ordering is FIFO per entity (produktregler.md:186), so the pair
+  /// ([entityType], [recipeId]) is the entity.
+  final String entityType;
+
+  /// JSON array of the opIds this entry waits for, or null. "En post kan
+  /// deklarera `dependsOn: [opId]`" (produktregler.md:187).
+  final String? dependsOn;
+
+  /// Set when the entry will never be retried: a 4xx other than 408/429, 24 h
+  /// of retries, or a dependency that failed permanently
+  /// (produktregler.md:187-189). Such an entry is kept for the user to decide
+  /// on ("Väntar på dig") and is never deleted without her
+  /// (produktregler.md:192).
+  final bool permanentlyFailed;
   const SyncQueueEntry({
     required this.id,
     required this.userId,
@@ -659,6 +779,10 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     required this.queuedAt,
     required this.retryCount,
     this.lastError,
+    required this.opId,
+    required this.entityType,
+    this.dependsOn,
+    required this.permanentlyFailed,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -672,6 +796,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     if (!nullToAbsent || lastError != null) {
       map['last_error'] = Variable<String>(lastError);
     }
+    map['op_id'] = Variable<String>(opId);
+    map['entity_type'] = Variable<String>(entityType);
+    if (!nullToAbsent || dependsOn != null) {
+      map['depends_on'] = Variable<String>(dependsOn);
+    }
+    map['permanently_failed'] = Variable<bool>(permanentlyFailed);
     return map;
   }
 
@@ -686,6 +816,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       lastError: lastError == null && nullToAbsent
           ? const Value.absent()
           : Value(lastError),
+      opId: Value(opId),
+      entityType: Value(entityType),
+      dependsOn: dependsOn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dependsOn),
+      permanentlyFailed: Value(permanentlyFailed),
     );
   }
 
@@ -702,6 +838,10 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       queuedAt: serializer.fromJson<DateTime>(json['queuedAt']),
       retryCount: serializer.fromJson<int>(json['retryCount']),
       lastError: serializer.fromJson<String?>(json['lastError']),
+      opId: serializer.fromJson<String>(json['opId']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      dependsOn: serializer.fromJson<String?>(json['dependsOn']),
+      permanentlyFailed: serializer.fromJson<bool>(json['permanentlyFailed']),
     );
   }
   @override
@@ -715,6 +855,10 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       'queuedAt': serializer.toJson<DateTime>(queuedAt),
       'retryCount': serializer.toJson<int>(retryCount),
       'lastError': serializer.toJson<String?>(lastError),
+      'opId': serializer.toJson<String>(opId),
+      'entityType': serializer.toJson<String>(entityType),
+      'dependsOn': serializer.toJson<String?>(dependsOn),
+      'permanentlyFailed': serializer.toJson<bool>(permanentlyFailed),
     };
   }
 
@@ -726,6 +870,10 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     DateTime? queuedAt,
     int? retryCount,
     Value<String?> lastError = const Value.absent(),
+    String? opId,
+    String? entityType,
+    Value<String?> dependsOn = const Value.absent(),
+    bool? permanentlyFailed,
   }) => SyncQueueEntry(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -734,6 +882,10 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     queuedAt: queuedAt ?? this.queuedAt,
     retryCount: retryCount ?? this.retryCount,
     lastError: lastError.present ? lastError.value : this.lastError,
+    opId: opId ?? this.opId,
+    entityType: entityType ?? this.entityType,
+    dependsOn: dependsOn.present ? dependsOn.value : this.dependsOn,
+    permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
   );
   SyncQueueEntry copyWithCompanion(SyncQueueEntriesCompanion data) {
     return SyncQueueEntry(
@@ -746,6 +898,14 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
           ? data.retryCount.value
           : this.retryCount,
       lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      opId: data.opId.present ? data.opId.value : this.opId,
+      entityType: data.entityType.present
+          ? data.entityType.value
+          : this.entityType,
+      dependsOn: data.dependsOn.present ? data.dependsOn.value : this.dependsOn,
+      permanentlyFailed: data.permanentlyFailed.present
+          ? data.permanentlyFailed.value
+          : this.permanentlyFailed,
     );
   }
 
@@ -758,7 +918,11 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
           ..write('operation: $operation, ')
           ..write('queuedAt: $queuedAt, ')
           ..write('retryCount: $retryCount, ')
-          ..write('lastError: $lastError')
+          ..write('lastError: $lastError, ')
+          ..write('opId: $opId, ')
+          ..write('entityType: $entityType, ')
+          ..write('dependsOn: $dependsOn, ')
+          ..write('permanentlyFailed: $permanentlyFailed')
           ..write(')'))
         .toString();
   }
@@ -772,6 +936,10 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     queuedAt,
     retryCount,
     lastError,
+    opId,
+    entityType,
+    dependsOn,
+    permanentlyFailed,
   );
   @override
   bool operator ==(Object other) =>
@@ -783,7 +951,11 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
           other.operation == this.operation &&
           other.queuedAt == this.queuedAt &&
           other.retryCount == this.retryCount &&
-          other.lastError == this.lastError);
+          other.lastError == this.lastError &&
+          other.opId == this.opId &&
+          other.entityType == this.entityType &&
+          other.dependsOn == this.dependsOn &&
+          other.permanentlyFailed == this.permanentlyFailed);
 }
 
 class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
@@ -794,6 +966,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
   final Value<DateTime> queuedAt;
   final Value<int> retryCount;
   final Value<String?> lastError;
+  final Value<String> opId;
+  final Value<String> entityType;
+  final Value<String?> dependsOn;
+  final Value<bool> permanentlyFailed;
   const SyncQueueEntriesCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
@@ -802,6 +978,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     this.queuedAt = const Value.absent(),
     this.retryCount = const Value.absent(),
     this.lastError = const Value.absent(),
+    this.opId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.dependsOn = const Value.absent(),
+    this.permanentlyFailed = const Value.absent(),
   });
   SyncQueueEntriesCompanion.insert({
     this.id = const Value.absent(),
@@ -811,6 +991,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     required DateTime queuedAt,
     this.retryCount = const Value.absent(),
     this.lastError = const Value.absent(),
+    this.opId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.dependsOn = const Value.absent(),
+    this.permanentlyFailed = const Value.absent(),
   }) : userId = Value(userId),
        recipeId = Value(recipeId),
        operation = Value(operation),
@@ -823,6 +1007,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     Expression<DateTime>? queuedAt,
     Expression<int>? retryCount,
     Expression<String>? lastError,
+    Expression<String>? opId,
+    Expression<String>? entityType,
+    Expression<String>? dependsOn,
+    Expression<bool>? permanentlyFailed,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -832,6 +1020,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
       if (queuedAt != null) 'queued_at': queuedAt,
       if (retryCount != null) 'retry_count': retryCount,
       if (lastError != null) 'last_error': lastError,
+      if (opId != null) 'op_id': opId,
+      if (entityType != null) 'entity_type': entityType,
+      if (dependsOn != null) 'depends_on': dependsOn,
+      if (permanentlyFailed != null) 'permanently_failed': permanentlyFailed,
     });
   }
 
@@ -843,6 +1035,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     Value<DateTime>? queuedAt,
     Value<int>? retryCount,
     Value<String?>? lastError,
+    Value<String>? opId,
+    Value<String>? entityType,
+    Value<String?>? dependsOn,
+    Value<bool>? permanentlyFailed,
   }) {
     return SyncQueueEntriesCompanion(
       id: id ?? this.id,
@@ -852,6 +1048,10 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
       queuedAt: queuedAt ?? this.queuedAt,
       retryCount: retryCount ?? this.retryCount,
       lastError: lastError ?? this.lastError,
+      opId: opId ?? this.opId,
+      entityType: entityType ?? this.entityType,
+      dependsOn: dependsOn ?? this.dependsOn,
+      permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
     );
   }
 
@@ -879,6 +1079,18 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     if (lastError.present) {
       map['last_error'] = Variable<String>(lastError.value);
     }
+    if (opId.present) {
+      map['op_id'] = Variable<String>(opId.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (dependsOn.present) {
+      map['depends_on'] = Variable<String>(dependsOn.value);
+    }
+    if (permanentlyFailed.present) {
+      map['permanently_failed'] = Variable<bool>(permanentlyFailed.value);
+    }
     return map;
   }
 
@@ -891,7 +1103,11 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
           ..write('operation: $operation, ')
           ..write('queuedAt: $queuedAt, ')
           ..write('retryCount: $retryCount, ')
-          ..write('lastError: $lastError')
+          ..write('lastError: $lastError, ')
+          ..write('opId: $opId, ')
+          ..write('entityType: $entityType, ')
+          ..write('dependsOn: $dependsOn, ')
+          ..write('permanentlyFailed: $permanentlyFailed')
           ..write(')'))
         .toString();
   }
@@ -1854,6 +2070,32 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _dependsOnMeta = const VerificationMeta(
+    'dependsOn',
+  );
+  @override
+  late final GeneratedColumn<String> dependsOn = GeneratedColumn<String>(
+    'depends_on',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _permanentlyFailedMeta = const VerificationMeta(
+    'permanentlyFailed',
+  );
+  @override
+  late final GeneratedColumn<bool> permanentlyFailed = GeneratedColumn<bool>(
+    'permanently_failed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("permanently_failed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1870,6 +2112,8 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
     entityId,
     entityType,
     metadata,
+    dependsOn,
+    permanentlyFailed,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1985,6 +2229,21 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         metadata.isAcceptableOrUnknown(data['metadata']!, _metadataMeta),
       );
     }
+    if (data.containsKey('depends_on')) {
+      context.handle(
+        _dependsOnMeta,
+        dependsOn.isAcceptableOrUnknown(data['depends_on']!, _dependsOnMeta),
+      );
+    }
+    if (data.containsKey('permanently_failed')) {
+      context.handle(
+        _permanentlyFailedMeta,
+        permanentlyFailed.isAcceptableOrUnknown(
+          data['permanently_failed']!,
+          _permanentlyFailedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2050,6 +2309,14 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         DriftSqlType.string,
         data['${effectivePrefix}metadata'],
       ),
+      dependsOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}depends_on'],
+      ),
+      permanentlyFailed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}permanently_failed'],
+      )!,
     );
   }
 
@@ -2061,7 +2328,10 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
 
 class UploadQueueEntry extends DataClass
     implements Insertable<UploadQueueEntry> {
-  /// Unique upload ID (UUID from the upload request)
+  /// Unique upload ID (UUID from the upload request). It is also the
+  /// operation's idempotency key, its `opId` (produktregler.md:185): it is
+  /// created on the device and never reused, so this table needs no separate
+  /// column for it.
   final String id;
 
   /// User ID for data isolation
@@ -2102,6 +2372,16 @@ class UploadQueueEntry extends DataClass
 
   /// Additional metadata as JSON string
   final String? metadata;
+
+  /// JSON array of the opIds this upload waits for, or null — for example
+  /// the recipe create in the sync queue that the image belongs to
+  /// (produktregler.md:187).
+  final String? dependsOn;
+
+  /// Set when the upload will never be retried ("Bilden är för stor",
+  /// produktregler.md:189). It stays in the queue for the user to decide on
+  /// and is never deleted without her (produktregler.md:192).
+  final bool permanentlyFailed;
   const UploadQueueEntry({
     required this.id,
     required this.userId,
@@ -2117,6 +2397,8 @@ class UploadQueueEntry extends DataClass
     this.entityId,
     this.entityType,
     this.metadata,
+    this.dependsOn,
+    required this.permanentlyFailed,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2145,6 +2427,10 @@ class UploadQueueEntry extends DataClass
     if (!nullToAbsent || metadata != null) {
       map['metadata'] = Variable<String>(metadata);
     }
+    if (!nullToAbsent || dependsOn != null) {
+      map['depends_on'] = Variable<String>(dependsOn);
+    }
+    map['permanently_failed'] = Variable<bool>(permanentlyFailed);
     return map;
   }
 
@@ -2174,6 +2460,10 @@ class UploadQueueEntry extends DataClass
       metadata: metadata == null && nullToAbsent
           ? const Value.absent()
           : Value(metadata),
+      dependsOn: dependsOn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dependsOn),
+      permanentlyFailed: Value(permanentlyFailed),
     );
   }
 
@@ -2197,6 +2487,8 @@ class UploadQueueEntry extends DataClass
       entityId: serializer.fromJson<String?>(json['entityId']),
       entityType: serializer.fromJson<String?>(json['entityType']),
       metadata: serializer.fromJson<String?>(json['metadata']),
+      dependsOn: serializer.fromJson<String?>(json['dependsOn']),
+      permanentlyFailed: serializer.fromJson<bool>(json['permanentlyFailed']),
     );
   }
   @override
@@ -2217,6 +2509,8 @@ class UploadQueueEntry extends DataClass
       'entityId': serializer.toJson<String?>(entityId),
       'entityType': serializer.toJson<String?>(entityType),
       'metadata': serializer.toJson<String?>(metadata),
+      'dependsOn': serializer.toJson<String?>(dependsOn),
+      'permanentlyFailed': serializer.toJson<bool>(permanentlyFailed),
     };
   }
 
@@ -2235,6 +2529,8 @@ class UploadQueueEntry extends DataClass
     Value<String?> entityId = const Value.absent(),
     Value<String?> entityType = const Value.absent(),
     Value<String?> metadata = const Value.absent(),
+    Value<String?> dependsOn = const Value.absent(),
+    bool? permanentlyFailed,
   }) => UploadQueueEntry(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -2252,6 +2548,8 @@ class UploadQueueEntry extends DataClass
     entityId: entityId.present ? entityId.value : this.entityId,
     entityType: entityType.present ? entityType.value : this.entityType,
     metadata: metadata.present ? metadata.value : this.metadata,
+    dependsOn: dependsOn.present ? dependsOn.value : this.dependsOn,
+    permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
   );
   UploadQueueEntry copyWithCompanion(UploadQueueEntriesCompanion data) {
     return UploadQueueEntry(
@@ -2281,6 +2579,10 @@ class UploadQueueEntry extends DataClass
           ? data.entityType.value
           : this.entityType,
       metadata: data.metadata.present ? data.metadata.value : this.metadata,
+      dependsOn: data.dependsOn.present ? data.dependsOn.value : this.dependsOn,
+      permanentlyFailed: data.permanentlyFailed.present
+          ? data.permanentlyFailed.value
+          : this.permanentlyFailed,
     );
   }
 
@@ -2300,7 +2602,9 @@ class UploadQueueEntry extends DataClass
           ..write('lastAttemptAt: $lastAttemptAt, ')
           ..write('entityId: $entityId, ')
           ..write('entityType: $entityType, ')
-          ..write('metadata: $metadata')
+          ..write('metadata: $metadata, ')
+          ..write('dependsOn: $dependsOn, ')
+          ..write('permanentlyFailed: $permanentlyFailed')
           ..write(')'))
         .toString();
   }
@@ -2321,6 +2625,8 @@ class UploadQueueEntry extends DataClass
     entityId,
     entityType,
     metadata,
+    dependsOn,
+    permanentlyFailed,
   );
   @override
   bool operator ==(Object other) =>
@@ -2339,7 +2645,9 @@ class UploadQueueEntry extends DataClass
           other.lastAttemptAt == this.lastAttemptAt &&
           other.entityId == this.entityId &&
           other.entityType == this.entityType &&
-          other.metadata == this.metadata);
+          other.metadata == this.metadata &&
+          other.dependsOn == this.dependsOn &&
+          other.permanentlyFailed == this.permanentlyFailed);
 }
 
 class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
@@ -2357,6 +2665,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
   final Value<String?> entityId;
   final Value<String?> entityType;
   final Value<String?> metadata;
+  final Value<String?> dependsOn;
+  final Value<bool> permanentlyFailed;
   final Value<int> rowid;
   const UploadQueueEntriesCompanion({
     this.id = const Value.absent(),
@@ -2373,6 +2683,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     this.entityId = const Value.absent(),
     this.entityType = const Value.absent(),
     this.metadata = const Value.absent(),
+    this.dependsOn = const Value.absent(),
+    this.permanentlyFailed = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UploadQueueEntriesCompanion.insert({
@@ -2390,6 +2702,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     this.entityId = const Value.absent(),
     this.entityType = const Value.absent(),
     this.metadata = const Value.absent(),
+    this.dependsOn = const Value.absent(),
+    this.permanentlyFailed = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -2412,6 +2726,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     Expression<String>? entityId,
     Expression<String>? entityType,
     Expression<String>? metadata,
+    Expression<String>? dependsOn,
+    Expression<bool>? permanentlyFailed,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2429,6 +2745,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
       if (entityId != null) 'entity_id': entityId,
       if (entityType != null) 'entity_type': entityType,
       if (metadata != null) 'metadata': metadata,
+      if (dependsOn != null) 'depends_on': dependsOn,
+      if (permanentlyFailed != null) 'permanently_failed': permanentlyFailed,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2448,6 +2766,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     Value<String?>? entityId,
     Value<String?>? entityType,
     Value<String?>? metadata,
+    Value<String?>? dependsOn,
+    Value<bool>? permanentlyFailed,
     Value<int>? rowid,
   }) {
     return UploadQueueEntriesCompanion(
@@ -2465,6 +2785,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
       entityId: entityId ?? this.entityId,
       entityType: entityType ?? this.entityType,
       metadata: metadata ?? this.metadata,
+      dependsOn: dependsOn ?? this.dependsOn,
+      permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2514,6 +2836,12 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     if (metadata.present) {
       map['metadata'] = Variable<String>(metadata.value);
     }
+    if (dependsOn.present) {
+      map['depends_on'] = Variable<String>(dependsOn.value);
+    }
+    if (permanentlyFailed.present) {
+      map['permanently_failed'] = Variable<bool>(permanentlyFailed.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2537,6 +2865,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
           ..write('entityId: $entityId, ')
           ..write('entityType: $entityType, ')
           ..write('metadata: $metadata, ')
+          ..write('dependsOn: $dependsOn, ')
+          ..write('permanentlyFailed: $permanentlyFailed, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2810,6 +3140,10 @@ typedef $$SyncQueueEntriesTableCreateCompanionBuilder =
       required DateTime queuedAt,
       Value<int> retryCount,
       Value<String?> lastError,
+      Value<String> opId,
+      Value<String> entityType,
+      Value<String?> dependsOn,
+      Value<bool> permanentlyFailed,
     });
 typedef $$SyncQueueEntriesTableUpdateCompanionBuilder =
     SyncQueueEntriesCompanion Function({
@@ -2820,6 +3154,10 @@ typedef $$SyncQueueEntriesTableUpdateCompanionBuilder =
       Value<DateTime> queuedAt,
       Value<int> retryCount,
       Value<String?> lastError,
+      Value<String> opId,
+      Value<String> entityType,
+      Value<String?> dependsOn,
+      Value<bool> permanentlyFailed,
     });
 
 class $$SyncQueueEntriesTableFilterComposer
@@ -2863,6 +3201,26 @@ class $$SyncQueueEntriesTableFilterComposer
 
   ColumnFilters<String> get lastError => $composableBuilder(
     column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get opId => $composableBuilder(
+    column: $table.opId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dependsOn => $composableBuilder(
+    column: $table.dependsOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get permanentlyFailed => $composableBuilder(
+    column: $table.permanentlyFailed,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2910,6 +3268,26 @@ class $$SyncQueueEntriesTableOrderingComposer
     column: $table.lastError,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get opId => $composableBuilder(
+    column: $table.opId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dependsOn => $composableBuilder(
+    column: $table.dependsOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get permanentlyFailed => $composableBuilder(
+    column: $table.permanentlyFailed,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SyncQueueEntriesTableAnnotationComposer
@@ -2943,6 +3321,22 @@ class $$SyncQueueEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get lastError =>
       $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<String> get opId =>
+      $composableBuilder(column: $table.opId, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dependsOn =>
+      $composableBuilder(column: $table.dependsOn, builder: (column) => column);
+
+  GeneratedColumn<bool> get permanentlyFailed => $composableBuilder(
+    column: $table.permanentlyFailed,
+    builder: (column) => column,
+  );
 }
 
 class $$SyncQueueEntriesTableTableManager
@@ -2989,6 +3383,10 @@ class $$SyncQueueEntriesTableTableManager
                 Value<DateTime> queuedAt = const Value.absent(),
                 Value<int> retryCount = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
+                Value<String> opId = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String?> dependsOn = const Value.absent(),
+                Value<bool> permanentlyFailed = const Value.absent(),
               }) => SyncQueueEntriesCompanion(
                 id: id,
                 userId: userId,
@@ -2997,6 +3395,10 @@ class $$SyncQueueEntriesTableTableManager
                 queuedAt: queuedAt,
                 retryCount: retryCount,
                 lastError: lastError,
+                opId: opId,
+                entityType: entityType,
+                dependsOn: dependsOn,
+                permanentlyFailed: permanentlyFailed,
               ),
           createCompanionCallback:
               ({
@@ -3007,6 +3409,10 @@ class $$SyncQueueEntriesTableTableManager
                 required DateTime queuedAt,
                 Value<int> retryCount = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
+                Value<String> opId = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String?> dependsOn = const Value.absent(),
+                Value<bool> permanentlyFailed = const Value.absent(),
               }) => SyncQueueEntriesCompanion.insert(
                 id: id,
                 userId: userId,
@@ -3015,6 +3421,10 @@ class $$SyncQueueEntriesTableTableManager
                 queuedAt: queuedAt,
                 retryCount: retryCount,
                 lastError: lastError,
+                opId: opId,
+                entityType: entityType,
+                dependsOn: dependsOn,
+                permanentlyFailed: permanentlyFailed,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -3495,6 +3905,8 @@ typedef $$UploadQueueEntriesTableCreateCompanionBuilder =
       Value<String?> entityId,
       Value<String?> entityType,
       Value<String?> metadata,
+      Value<String?> dependsOn,
+      Value<bool> permanentlyFailed,
       Value<int> rowid,
     });
 typedef $$UploadQueueEntriesTableUpdateCompanionBuilder =
@@ -3513,6 +3925,8 @@ typedef $$UploadQueueEntriesTableUpdateCompanionBuilder =
       Value<String?> entityId,
       Value<String?> entityType,
       Value<String?> metadata,
+      Value<String?> dependsOn,
+      Value<bool> permanentlyFailed,
       Value<int> rowid,
     });
 
@@ -3592,6 +4006,16 @@ class $$UploadQueueEntriesTableFilterComposer
 
   ColumnFilters<String> get metadata => $composableBuilder(
     column: $table.metadata,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dependsOn => $composableBuilder(
+    column: $table.dependsOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get permanentlyFailed => $composableBuilder(
+    column: $table.permanentlyFailed,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3674,6 +4098,16 @@ class $$UploadQueueEntriesTableOrderingComposer
     column: $table.metadata,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get dependsOn => $composableBuilder(
+    column: $table.dependsOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get permanentlyFailed => $composableBuilder(
+    column: $table.permanentlyFailed,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UploadQueueEntriesTableAnnotationComposer
@@ -3738,6 +4172,14 @@ class $$UploadQueueEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get metadata =>
       $composableBuilder(column: $table.metadata, builder: (column) => column);
+
+  GeneratedColumn<String> get dependsOn =>
+      $composableBuilder(column: $table.dependsOn, builder: (column) => column);
+
+  GeneratedColumn<bool> get permanentlyFailed => $composableBuilder(
+    column: $table.permanentlyFailed,
+    builder: (column) => column,
+  );
 }
 
 class $$UploadQueueEntriesTableTableManager
@@ -3794,6 +4236,8 @@ class $$UploadQueueEntriesTableTableManager
                 Value<String?> entityId = const Value.absent(),
                 Value<String?> entityType = const Value.absent(),
                 Value<String?> metadata = const Value.absent(),
+                Value<String?> dependsOn = const Value.absent(),
+                Value<bool> permanentlyFailed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UploadQueueEntriesCompanion(
                 id: id,
@@ -3810,6 +4254,8 @@ class $$UploadQueueEntriesTableTableManager
                 entityId: entityId,
                 entityType: entityType,
                 metadata: metadata,
+                dependsOn: dependsOn,
+                permanentlyFailed: permanentlyFailed,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3828,6 +4274,8 @@ class $$UploadQueueEntriesTableTableManager
                 Value<String?> entityId = const Value.absent(),
                 Value<String?> entityType = const Value.absent(),
                 Value<String?> metadata = const Value.absent(),
+                Value<String?> dependsOn = const Value.absent(),
+                Value<bool> permanentlyFailed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UploadQueueEntriesCompanion.insert(
                 id: id,
@@ -3844,6 +4292,8 @@ class $$UploadQueueEntriesTableTableManager
                 entityId: entityId,
                 entityType: entityType,
                 metadata: metadata,
+                dependsOn: dependsOn,
+                permanentlyFailed: permanentlyFailed,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

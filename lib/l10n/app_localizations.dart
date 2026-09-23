@@ -23675,6 +23675,54 @@ abstract class AppLocalizations {
   /// **'Lösenord, e-post och tvåfaktorsautentisering'**
   String get profileAccountSecuritySubtitle;
 
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj'**
+  String get selectionEnter;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj recept'**
+  String get selectionEnterRecipes;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj varor'**
+  String get selectionEnterShoppingItems;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj varor i skafferiet'**
+  String get selectionEnterPantryItems;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj taggar'**
+  String get selectionEnterTags;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj medlemmar'**
+  String get selectionEnterMembers;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj blockerade personer'**
+  String get selectionEnterBlockedUsers;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as "Markera alla 24" (Skarmar v12 etapp 9 #flerbar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla {count}'**
+  String selectionSelectAllCount(int count);
+
   /// No description provided for @bulkSelectedCount.
   ///
   /// In sv, this message translates to:
@@ -25456,6 +25504,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Plats'**
   String get pantryLocationLabel;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad nu'**
+  String get pantryItemChangedNow;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad {count} min sedan'**
+  String pantryItemChangedMinutesAgo(int count);
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad i dag {time}'**
+  String pantryItemChangedToday(String time);
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad i går'**
+  String get pantryItemChangedYesterday;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad {date}'**
+  String pantryItemChangedOn(String date);
 
   /// No description provided for @pantryExpiryExpired.
   ///

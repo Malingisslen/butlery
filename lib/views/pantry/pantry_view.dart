@@ -13,6 +13,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
@@ -24,7 +25,15 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 
 class PantryView extends StatefulWidget {
-  const PantryView({super.key});
+  /// [viewModel] and [selection] come from the view that hosts the pantry
+  /// tab, which then owns and disposes them. "Välj" and the selection
+  /// counter sit in that view's own top bar, so it needs the row count and
+  /// the selection (produktregler.md:871-873). Without them the pantry makes
+  /// and owns its own.
+  const PantryView({super.key, this.viewModel, this.selection});
+
+  final PantryViewModel? viewModel;
+  final PantrySelectionManager? selection;
 
   @override
   State<PantryView> createState() => _PantryViewState();
@@ -33,12 +42,17 @@ class PantryView extends StatefulWidget {
 class _PantryViewState extends State<PantryView> {
   late final PantryViewModel _vm;
   // BUT-948: view-local selection state (mirrors the personal-tags pattern).
-  final PantrySelectionManager _selection = PantrySelectionManager();
+  late final PantrySelectionManager _selection;
+  late final bool _ownsViewModel;
+  late final bool _ownsSelection;
 
   @override
   void initState() {
     super.initState();
-    _vm = ServiceLocator.get<PantryViewModel>();
+    _ownsViewModel = widget.viewModel == null;
+    _ownsSelection = widget.selection == null;
+    _vm = widget.viewModel ?? ServiceLocator.get<PantryViewModel>();
+    _selection = widget.selection ?? PantrySelectionManager();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _vm.loadPantry();
     });
@@ -46,8 +60,8 @@ class _PantryViewState extends State<PantryView> {
 
   @override
   void dispose() {
-    _selection.dispose();
-    _vm.dispose();
+    if (_ownsSelection) _selection.dispose();
+    if (_ownsViewModel) _vm.dispose();
     super.dispose();
   }
 
@@ -312,6 +326,9 @@ class _PantryFab extends StatelessWidget {
 /// BUT-948: contextual bulk-action bar shown at the bottom while items are
 /// selected. Pantry has no app-bar of its own (it's a sub-tab), so the bulk
 /// actions live here instead of in a selection app-bar.
+///
+/// P5-U31: the counter is "{n} valda" (produktregler.md:876). The delete
+/// action is off at zero with its name readable (P5-U32).
 class _PantryBulkBar extends StatelessWidget {
   const _PantryBulkBar({
     required this.count,
@@ -346,7 +363,7 @@ class _PantryBulkBar extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  context.l10n.pantrySelectedCount(count),
+                  context.l10n.bulkSelectedCount(count),
                   style: AppTextStyles.titleSmall.copyWith(
                     color: cs.onPrimaryContainer,
                   ),
@@ -356,6 +373,12 @@ class _PantryBulkBar extends StatelessWidget {
                 onPressed: count == 0 ? null : onDelete,
                 style: TextButton.styleFrom(
                   foregroundColor: cs.onPrimaryContainer,
+                  // The disabled role on surface.raised, never the 38 % fade
+                  // styleFrom would give (tokens.json:71-74, :198):
+                  // text.disabled.onRaised, #788477 light, #93A48D dark.
+                  disabledForegroundColor: AppModeColors.textDisabled(
+                    cs.brightness,
+                  ),
                 ),
                 icon: const Icon(Icons.delete_outline),
                 label: Text(context.l10n.commonDelete),
