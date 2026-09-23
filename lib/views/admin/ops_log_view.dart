@@ -8,7 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
 import 'package:butlery/views/admin/widgets/admin_help_text.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only ops-log tab: recent scheduled-job runs from `system_events`.
@@ -52,7 +52,7 @@ class _OpsLogContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<OpsLogViewModel>();
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.adminOpsTitle,
         actions: [
           IconButton(
@@ -69,7 +69,7 @@ class _OpsLogContent extends StatelessWidget {
   Widget _body(BuildContext context, OpsLogViewModel vm) {
     final l10n = context.l10n;
     if (vm.isLoading && vm.events.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingOpsLog);
     }
     if (vm.error != null && vm.events.isEmpty) {
       return StateWidget.error(message: vm.error!, onAction: vm.refresh);

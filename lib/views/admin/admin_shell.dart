@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
@@ -70,7 +71,6 @@ class _AdminShellState extends State<AdminShell> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return Scaffold(
       body: Column(
         children: [
@@ -78,48 +78,84 @@ class _AdminShellState extends State<AdminShell> {
           Expanded(
             child: Row(
               children: [
-                NavigationRail(
-                  selectedIndex: _index,
-                  onDestinationSelected: _selectTab,
-                  labelType: NavigationRailLabelType.all,
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.feedback_outlined),
-                      selectedIcon: const Icon(Icons.feedback),
-                      label: Text(l10n.adminNavFeedback),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.cloud_download_outlined),
-                      selectedIcon: const Icon(Icons.cloud_download),
-                      label: Text(l10n.adminNavImport),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.people_outline),
-                      selectedIcon: const Icon(Icons.people),
-                      label: Text(l10n.adminNavEngagement),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.rule_outlined),
-                      selectedIcon: const Icon(Icons.rule),
-                      label: Text(l10n.adminNavParsing),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.restaurant_menu_outlined),
-                      selectedIcon: const Icon(Icons.restaurant_menu),
-                      label: Text(l10n.adminNavRecipes),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.dns_outlined),
-                      selectedIcon: const Icon(Icons.dns),
-                      label: Text(l10n.adminNavOps),
-                    ),
-                  ],
-                ),
+                AdminRail(selectedIndex: _index, onSelected: _selectTab),
                 const VerticalDivider(width: 1),
                 Expanded(child: _pages[_index]),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The admin shell's six tabs (produktregler.md:626): feedback, import,
+/// engagement, parsing, recipes and ops.
+///
+/// Each tab carries the canonical focus ring around a 48 dp box and no focus
+/// tint (Grafisk manual v6:209, :381; fas2/block288-uxfrysning.json
+/// CSR::ROLE::tab::FOCUSED). The rail builds its own InkResponse around the
+/// icon, so the ring follows that ancestor's focus node
+/// (ButleryAncestorFocusRing), as a TabBar tab does.
+class AdminRail extends StatelessWidget {
+  const AdminRail({
+    required this.selectedIndex,
+    required this.onSelected,
+    super.key,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  static NavigationRailDestination _destination(
+    IconData icon,
+    IconData selectedIcon,
+    String label,
+  ) {
+    return NavigationRailDestination(
+      icon: ButleryAncestorFocusRing(
+        child: ButleryControlFocus.box(child: Icon(icon)),
+      ),
+      selectedIcon: ButleryAncestorFocusRing(
+        child: ButleryControlFocus.box(child: Icon(selectedIcon)),
+      ),
+      label: Text(label),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Theme(
+      data: ButleryControlFocus.themeWithoutFocusTint(Theme.of(context)),
+      child: NavigationRail(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onSelected,
+        labelType: NavigationRailLabelType.all,
+        destinations: [
+          _destination(
+            Icons.feedback_outlined,
+            Icons.feedback,
+            l10n.adminNavFeedback,
+          ),
+          _destination(
+            Icons.cloud_download_outlined,
+            Icons.cloud_download,
+            l10n.adminNavImport,
+          ),
+          _destination(
+            Icons.people_outline,
+            Icons.people,
+            l10n.adminNavEngagement,
+          ),
+          _destination(Icons.rule_outlined, Icons.rule, l10n.adminNavParsing),
+          _destination(
+            Icons.restaurant_menu_outlined,
+            Icons.restaurant_menu,
+            l10n.adminNavRecipes,
+          ),
+          _destination(Icons.dns_outlined, Icons.dns, l10n.adminNavOps),
         ],
       ),
     );

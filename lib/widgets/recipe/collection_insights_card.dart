@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/base/base_service.dart' show StringExtensions;
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -188,13 +189,10 @@ class _DietaryBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          LinearProgressIndicator(
-            value: fraction,
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            color: colorScheme.primary,
-            minHeight: 6,
-            borderRadius: BorderRadius.zero,
-          ),
+          // A measured share is the determinate plate line: progressIndicator
+          // on progressTrack, per mode (Komponentark v1:305; B-18). The text
+          // above carries the number, so the line is not read twice.
+          ExcludeSemantics(child: PlateLine(value: fraction)),
         ],
       ),
     );

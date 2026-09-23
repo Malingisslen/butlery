@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_target_selection_enhanced.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -223,9 +224,9 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        // border.subtle, not border.control at half opacity
+        // (tokens.json:40-53).
+        color: Theme.of(context).colorScheme.outlineVariant,
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -234,65 +235,63 @@ class ShareTargetSelectionEnhanced {
         final isExistingCollaborator =
             existingCollaborators?.contains(friend.uid) ?? false;
 
-        return Opacity(
-          opacity: isExistingCollaborator
-              ? 0.5
-              : 1.0, // PHASE 2: Gray out existing collaborators
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            enabled:
-                !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
-            leading: UserDisplayWidgets.avatar(
-              imageUrl: friend.avatarUrl,
-              displayName: friend.displayName,
-              size: ImageSize.small,
+        // An existing collaborator is disabled: text.disabled.onRaised on the
+        // name and a disabled checkbox, never the row at half opacity
+        // (tokens.json:40-53; Grafisk manual v6:423).
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          enabled:
+              !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
+          leading: UserDisplayWidgets.avatar(
+            imageUrl: friend.avatarUrl,
+            displayName: friend.displayName,
+            size: ImageSize.small,
+          ),
+          title: Text(
+            friend.displayName,
+            style: AppTextStyles.contentTitle.copyWith(
+              color: isExistingCollaborator
+                  ? AppModeColors.textDisabled(
+                      Theme.of(context).colorScheme.brightness,
+                    )
+                  : null,
             ),
-            title: Text(
-              friend.displayName,
-              style: AppTextStyles.contentTitle.copyWith(
-                color: isExistingCollaborator
-                    ? Theme.of(context).colorScheme.onSurface.withValues(
-                        alpha: AppDimensions.opacityMediumDark,
-                      )
-                    : null,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                friend.email,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              if (isExistingCollaborator) ...[
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
-                  friend.email,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  context
+                      .l10n
+                      .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
+                  style: AppTextStyles.metadataEmphasized.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                if (isExistingCollaborator) ...[
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    context
-                        .l10n
-                        .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
               ],
-            ),
-            trailing: Checkbox(
-              value: isSelected,
-              onChanged: isExistingCollaborator
-                  ? null
-                  : (_) => onFriendToggled(
-                      friend.uid,
-                    ), // PHASE 2: Disable checkbox for existing collaborators
-            ),
-            onTap: isExistingCollaborator
-                ? null
-                : () => onFriendToggled(
-                    friend.uid,
-                  ), // PHASE 2: Disable tap for existing collaborators
+            ],
           ),
+          trailing: Checkbox(
+            value: isSelected,
+            onChanged: isExistingCollaborator
+                ? null
+                : (_) => onFriendToggled(
+                    friend.uid,
+                  ), // PHASE 2: Disable checkbox for existing collaborators
+          ),
+          onTap: isExistingCollaborator
+              ? null
+              : () => onFriendToggled(
+                  friend.uid,
+                ), // PHASE 2: Disable tap for existing collaborators
         );
       },
     );
@@ -327,9 +326,9 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        // border.subtle, not border.control at half opacity
+        // (tokens.json:40-53).
+        color: Theme.of(context).colorScheme.outlineVariant,
         height: 1,
       ),
       itemBuilder: (context, index) {

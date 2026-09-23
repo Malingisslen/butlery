@@ -39,7 +39,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 
@@ -58,8 +58,9 @@ import 'package:butlery/views/social/group_detail_view.dart';
 
 // Swedish labels the view renders (from app_sv.arb). Captured here so a
 // behaviour regression — not a copy tweak — is what fails the assertion.
-const _appBarLoadingTitle = 'Laddar...'; // l10n.commonLoading
-const _bodyLoadingInfo = 'Laddar gruppinformation...'; // l10n.groupLoadingInfo
+const _appBarLoadingTitle =
+    'Grupper'; // l10n.socialGroups: the bar names the page
+const _bodyLoadingInfo = 'Laddar gruppinformation …'; // l10n.groupLoadingInfo
 const _notFoundDescription =
     'Den här gruppen kanske har tagits bort eller så saknar du behörighet.'; // groupNotFoundDescription
 
@@ -144,14 +145,14 @@ void main() {
         ).thenAnswer((_) => neverCompletes.future);
 
         await tester.pumpWidget(viewApp());
-        // Discrete pumps: the LoadingIndicator wraps a CircularProgressIndicator
-        // whose perpetual animation would make pumpAndSettle time out.
+        // Discrete pumps: the plate line pulses, so pumpAndSettle would time
+        // out.
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(find.text(_appBarLoadingTitle), findsOneWidget);
         expect(find.text(_bodyLoadingInfo), findsOneWidget);
-        expect(find.byType(LoadingIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
 
         // Not the not-found branch.
         expect(find.text(_notFoundDescription), findsNothing);
@@ -172,9 +173,9 @@ void main() {
         await tester.pumpWidget(viewApp());
         await tester.pump();
         expect(
-          find.byType(LoadingIndicator),
+          find.byType(PlateLine),
           findsOneWidget,
-          reason: 'spinner should be up while refresh is in flight',
+          reason: 'the plate line should be up while refresh is in flight',
         );
 
         // Complete the load (group resolves to null, the common transient
@@ -184,7 +185,7 @@ void main() {
         inFlight.complete();
         await tester.pumpAndSettle();
 
-        expect(find.byType(LoadingIndicator), findsNothing);
+        expect(find.byType(PlateLine), findsNothing);
         expect(find.text(_bodyLoadingInfo), findsNothing);
       },
     );

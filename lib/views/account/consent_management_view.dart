@@ -5,12 +5,13 @@ import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 /// GDPR Article 7 - Consent Management View for user consent preferences
 class ConsentManagementView extends StatefulWidget {
@@ -32,9 +33,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.consentManageTitle,
-        centerTitle: true,
       ),
       body: SafeArea(
         // RESPONSIVE: Center and constrain content on large screens
@@ -85,7 +85,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildLoadingState() {
-    return StateWidget.loading();
+    return StateWidget.loading(message: context.l10n.loadingConsents);
   }
 
   Widget _buildHeaderSection(ConsentViewModel viewModel) {
@@ -538,39 +538,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildActionButtons(ConsentViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-
-    return ElevatedButton(
-      onPressed: viewModel.isSaving
-          ? null
-          : () => _handleSaveConsent(viewModel),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
-        padding: AppDimensions.paddingVertical16,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
-      ),
-      child: viewModel.isSaving
-          ? LoadingIndicator(
-              size: 20,
-              strokeWidth: 2,
-              color: cs.onPrimary,
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.save_rounded, size: AppDimensions.iconSizeM),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.commonSaveChanges,
-                  style: AppTextStyles.titleBold.copyWith(
-                    color: cs.onPrimary,
-                  ),
-                ),
-              ],
-            ),
+    // The view's one saffron action, "Spara mina val" (Skarmar v12 etapp 6
+    // 'Samtycke — sju ändamål'; Grafisk manual v6:219). While saving it keeps
+    // its name and gets the plate line (Komponentark v1:372).
+    return HeroButton(
+      key: const ValueKey('consent.save'),
+      label: context.l10n.consentSaveMyChoices,
+      onPressed: () => _handleSaveConsent(viewModel),
+      busy: viewModel.isSaving,
+      busyLabel: context.l10n.statusSaving,
+      expand: true,
     );
   }
 
@@ -641,19 +618,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     final success = await viewModel.saveConsent();
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: context.butleryColors.onSuccess),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(context.l10n.consentSaved),
-            ],
-          ),
-          backgroundColor: context.butleryColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, context.l10n.consentSaved);
     }
   }
 
@@ -683,22 +648,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       final success = await viewModel.revokeAllOptional();
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(
-                  Icons.check_circle,
-                  color: context.butleryColors.onSuccess,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.consentAllRevoked),
-              ],
-            ),
-            backgroundColor: context.butleryColors.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.consentAllRevoked);
       }
     }
   }

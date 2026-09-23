@@ -15,6 +15,9 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -411,17 +414,18 @@ class _AuthViewState extends State<AuthView> {
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
 
-              // Submit button
-              ActionButtons.primaryButton(
-                context,
+              // The step's one saffron action, "Logga in" or "Skapa konto"
+              // (Skarmar v12 etapp 3 'Auth — logga in', 'Auth — skapa
+              // konto'; Grafisk manual v6:219). Working keeps the name and
+              // draws the plate line under it (Komponentark v1:372).
+              HeroButton(
+                key: const ValueKey('auth.submit'),
                 label: viewModel.isLoginMode
                     ? context.l10n.authLogin
                     : context.l10n.authCreateAccount,
-                onPressed: viewModel.isLoading
-                    ? null
-                    : () => _handleSubmit(viewModel),
-                isLoading: viewModel.isLoading,
-                isExpanded: true,
+                onPressed: () => _handleSubmit(viewModel),
+                busy: viewModel.isLoading,
+                expand: true,
               ),
 
               const SizedBox(height: AppDimensions.spacingLg),
@@ -525,9 +529,15 @@ class _AuthViewState extends State<AuthView> {
         borderRadius: BorderRadius.zero,
         borderSide: BorderSide(color: cs.outline),
       ),
+      // Focus is the canonical ring colour at the ring's width, ink on
+      // light and paper on dark, never saffron (tokens.json:155-160;
+      // Grafisk manual v6:209; enhet-4 auth_view.dart:528).
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.primary),
+        borderSide: BorderSide(
+          color: context.butleryColors.focusRing,
+          width: AppDimensions.focusRingWidth,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
@@ -691,8 +701,6 @@ class _AuthViewState extends State<AuthView> {
     String? emailError;
 
     // Capture before async gap (showDialog)
-    final messenger = ScaffoldMessenger.of(context);
-    final theme = Theme.of(context);
     final l10n = context.l10n;
 
     final email = await showDialog<String?>(
@@ -732,9 +740,18 @@ class _AuthViewState extends State<AuthView> {
               label: context.l10n.commonCancel,
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
-            ActionButtons.primaryButton(
-              context,
-              label: context.l10n.commonSend,
+            // "Skicka" is the dialog's saffron action (Skarmar v12 etapp 3
+            // 'Auth — glömt lösenordet'), sized to its label in the row.
+            FilledButton(
+              key: const ValueKey('auth.resetSend'),
+              style:
+                  ComponentThemes.heroButtonStyle(
+                    Theme.of(context).colorScheme,
+                  ).copyWith(
+                    minimumSize: const WidgetStatePropertyAll(
+                      Size(0, AppDimensions.minTouchTarget),
+                    ),
+                  ),
               onPressed: () {
                 final trimmed = emailValue.trim();
                 // Validate inline so a malformed address is caught before we
@@ -745,6 +762,7 @@ class _AuthViewState extends State<AuthView> {
                 }
                 Navigator.of(dialogContext).pop(trimmed);
               },
+              child: Text(context.l10n.commonSend),
             ),
           ],
         ),
@@ -753,11 +771,6 @@ class _AuthViewState extends State<AuthView> {
 
     if (email == null || !mounted) return;
 
-    final primaryColor = theme.colorScheme.primary.withValues(
-      alpha: AppDimensions.opacityVeryDark,
-    );
-    final errorColor = theme.colorScheme.error;
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
@@ -765,16 +778,14 @@ class _AuthViewState extends State<AuthView> {
 
       if (!mounted) return;
 
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? l10n.authResetEmailSent
-                : viewModel.errorMessage ?? l10n.authResetEmailFailed,
-          ),
-          backgroundColor: success ? primaryColor : errorColor,
-        ),
-      );
+      if (success) {
+        SnackBarUtils.showSuccess(this.context, l10n.authResetEmailSent);
+      } else {
+        SnackBarUtils.showError(
+          this.context,
+          viewModel.errorMessage ?? l10n.authResetEmailFailed,
+        );
+      }
     });
   }
 }

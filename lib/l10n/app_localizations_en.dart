@@ -2946,7 +2946,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendLoadingFriendsAndCategories =>
-      'Loading friends and categories...';
+      'Loading friends and categories …';
 
   @override
   String get friendNoFriendsOrCategories => 'No friends or categories';
@@ -3441,7 +3441,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create your first friend category to get started';
 
   @override
-  String get socialLoadingCategories => 'Loading categories...';
+  String get socialLoadingCategories => 'Loading categories …';
 
   @override
   String get socialInvertLabel => 'Invert';
@@ -3491,7 +3491,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitationInvite => 'Invite';
 
   @override
-  String get invitationLoadingTargets => 'Loading targets...';
+  String get invitationLoadingTargets => 'Loading targets …';
 
   @override
   String get invitationNetworkError => 'Network error';
@@ -3568,7 +3568,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonFailed => 'Failed';
 
   @override
-  String get commonImporting => 'Importing...';
+  String get commonImporting => 'Importing …';
 
   @override
   String get commonLater => 'Later';
@@ -3589,7 +3589,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSaving => 'Saving...';
 
   @override
-  String get commonSending => 'Sending...';
+  String get commonSending => 'Sending …';
 
   @override
   String get commonUndo => 'Undo';
@@ -3759,7 +3759,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogLoadingMenus => 'Loading menus...';
 
   @override
-  String get dialogLoadingRecipes => 'Loading recipes...';
+  String get dialogLoadingRecipes => 'Loading recipes …';
 
   @override
   String get dialogManualImport => 'Manual import';
@@ -3853,7 +3853,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get dialogSharing => 'Sharing...';
+  String get dialogSharing => 'Sharing …';
 
   @override
   String get dialogShoppingListNameHint => 'E.g. \"Pancakes - Ingredients\"';
@@ -4440,7 +4440,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Under GDPR Article 20 you have the right to obtain a copy of all your personal data stored in Butlery. Data is exported in JSON format that you can save or transfer to another service.';
 
   @override
-  String get dataExportExporting => 'Exporting your data...';
+  String get dataExportExporting => 'Exporting your data …';
 
   @override
   String get dataExportMayTakeSeconds => 'This may take a few seconds';
@@ -5045,10 +5045,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to leave this group? You will no longer be able to see messages in the group.';
 
   @override
-  String get messagingLoadingFriends => 'Loading friends...';
+  String get messagingLoadingFriends => 'Loading friends …';
 
   @override
-  String get messagingLoadingGroupInfo => 'Loading group info...';
+  String get messagingLoadingGroupInfo => 'Loading group info …';
 
   @override
   String messagingMembersAdded(int count) {
@@ -6215,7 +6215,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupInvitationsSentSuccess => 'Invitations have been sent.';
 
   @override
-  String get groupLoadingInfo => 'Loading group information...';
+  String get groupLoadingInfo => 'Loading group information …';
 
   @override
   String get groupNoFriendsAvailable => 'No friends available';
@@ -6439,7 +6439,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This privacy policy complies with GDPR requirements';
 
   @override
-  String get privacyLoading => 'Loading privacy policy...';
+  String get privacyLoading => 'Loading the privacy policy …';
 
   @override
   String get privacyNotAvailable => 'Privacy policy is not available';
@@ -6546,7 +6546,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get profileLoading => 'Loading profile...';
+  String get profileLoading => 'Loading profile …';
 
   @override
   String get profileNewUser => 'New user';
@@ -6602,7 +6602,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have unsaved changes. Would you like to save before leaving?';
 
   @override
-  String get profileUploadingAvatar => 'Uploading avatar...';
+  String get profileUploadingAvatar => 'Uploading avatar …';
 
   @override
   String get profileVisibleInSearch => 'Visible in searches';
@@ -6958,7 +6958,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedHideFromList => 'Hide from my list';
 
   @override
-  String get sharedLoadingContent => 'Loading shared content...';
+  String get sharedLoadingContent => 'Loading shared content …';
 
   @override
   String get sharedNoContentYet => 'No shared recipes yet';
@@ -7097,7 +7097,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have received invitations to join groups';
 
   @override
-  String get groupLoadingGroups => 'Loading groups...';
+  String get groupLoadingGroups => 'Loading groups …';
 
   @override
   String groupMyGroupsCount(int count) {
@@ -7229,7 +7229,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Type a name or username in the search field above to find new friends.';
 
   @override
-  String get socialSearchingUsers => 'Searching users...';
+  String get socialSearchingUsers => 'Searching users …';
 
   @override
   String get socialSearchUnavailable =>
@@ -8225,7 +8225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialIncoming => 'Incoming';
 
   @override
-  String get socialLoadingRequests => 'Loading requests...';
+  String get socialLoadingRequests => 'Loading requests …';
 
   @override
   String get socialLoadingSentRequests => 'Loading sent requests...';
@@ -14330,7 +14330,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportDialogTitle => 'Report content';
 
   @override
-  String get reportSubmit => 'Submit report';
+  String get reportSubmit => 'Send report';
 
   @override
   String get reportDialogGuidelinesNotePrefix =>
@@ -16677,4 +16677,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeEditorClose => 'Close the editor';
+
+  @override
+  String get loadingLicenses => 'Loading the licences …';
+
+  @override
+  String get consentSaveMyChoices => 'Save my choices';
+
+  @override
+  String get loadingBlockedUsers => 'Loading blocked users …';
+
+  @override
+  String get accountDeletingProgress => 'Deleting the account …';
+
+  @override
+  String get loadingParseEvents => 'Loading the parse events …';
+
+  @override
+  String get loadingMoreActivity => 'Loading more activity …';
+
+  @override
+  String get menuPreviewTitle => 'Shared menu';
 }

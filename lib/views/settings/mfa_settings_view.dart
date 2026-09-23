@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for managing Multi-Factor Authentication settings.
-/// Allows users to enroll or unenroll phone-based MFA.
+///
+/// Turning two-step verification ON is hidden (produktbeslut PQ-16 = A,
+/// 2026-09-23; Linear BUT-2142). The app has no MFA challenge at sign-in and
+/// no fallback path, so whoever turns it on can lock themselves out
+/// (produktregler.md:677). Someone who already has it on still sees the
+/// registered method and can remove it.
 class MfaSettingsView extends StatefulWidget {
-  const MfaSettingsView({super.key});
+  const MfaSettingsView({this.offersEnrollment = false, super.key});
+
+  /// Whether the view offers to turn two-step verification on (the phone
+  /// form and "Skicka kod"). False in the app until the sign-in challenge
+  /// and the fallback exist (PQ-16, BUT-2142); tests build the form with it.
+  final bool offersEnrollment;
 
   @override
   State<MfaSettingsView> createState() => _MfaSettingsViewState();
@@ -206,12 +219,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.butleryColors.success,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, message);
   }
 
   String _mapErrorMessage(String code) {
@@ -230,11 +238,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.mfaTitle,
+        backTo: context.l10n.accountSecurityTitle,
       ),
       body: _isLoading && !_isEnrolling
-          ? StateWidget.loading()
+          ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),
@@ -247,7 +256,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                       const SizedBox(height: AppDimensions.spacingLg),
                       if (_hasMfa)
                         _buildEnrolledSection()
-                      else
+                      else if (widget.offersEnrollment)
                         _buildEnrollSection(),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: AppDimensions.spacingMd),
@@ -286,12 +295,16 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                     style: AppTextStyles.titleBold,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    _hasMfa
-                        ? context.l10n.mfaAccountProtected
-                        : context.l10n.mfaEnableForSecurity,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  // Without the form, "Aktivera MFA för extra säkerhet" would
+                  // point at something the view no longer offers
+                  // (PQ-16).
+                  if (_hasMfa || widget.offersEnrollment)
+                    Text(
+                      _hasMfa
+                          ? context.l10n.mfaAccountProtected
+                          : context.l10n.mfaEnableForSecurity,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                 ],
               ),
             ),
@@ -366,12 +379,13 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            ActionButtons.primaryButton(
-              context,
+            // The step's one saffron action (Skarmar v12 etapp 6 'MFA —
+            // lägg till telefon', "Skicka kod").
+            HeroButton(
               label: context.l10n.mfaSendCode,
-              onPressed: _isLoading ? null : _startEnrollment,
-              isLoading: _isLoading,
-              isExpanded: true,
+              onPressed: _startEnrollment,
+              busy: _isLoading,
+              expand: true,
             ),
           ],
         ),
@@ -393,9 +407,15 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(context.l10n.mfaCodeSentTo(_phoneController.text)),
             const SizedBox(height: AppDimensions.spacingMd),
+            // One field for all six digits, so the whole code can be pasted
+            // or autofilled from the SMS (Skarmar v12 del 3 #mfa,
+            // "Sex siffror i ett fält").
             TextField(
+              key: const ValueKey('mfa.codeField'),
               controller: _codeController,
               keyboardType: TextInputType.number,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               maxLength: 6,
               decoration: InputDecoration(
                 labelText: context.l10n.mfaSixDigitCode,
@@ -421,13 +441,14 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
+                // "Verifiera" is the view's one saffron action (Skarmar v12
+                // del 3 #mfa; Grafisk manual v6:219).
                 Expanded(
-                  child: ActionButtons.primaryButton(
-                    context,
+                  child: HeroButton(
                     label: context.l10n.mfaVerify,
-                    onPressed: _isLoading ? null : _completeEnrollment,
-                    isLoading: _isLoading,
-                    isExpanded: true,
+                    onPressed: _completeEnrollment,
+                    busy: _isLoading,
+                    expand: true,
                   ),
                 ),
               ],

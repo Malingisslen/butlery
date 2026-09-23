@@ -1,6 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_tab_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -26,11 +27,14 @@ class SharedContentTabBar {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: TabBar(
+          // Tabs carry the canonical ring (ButleryTab), never a focus tint
+          // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+          overlayColor: ButleryControlFocus.withoutFocusTint(null),
           controller: tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           tabs: [
-            Tab(
+            ButleryTab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -51,7 +55,7 @@ class SharedContentTabBar {
                 ],
               ),
             ),
-            Tab(
+            ButleryTab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -75,7 +79,7 @@ class SharedContentTabBar {
                 ],
               ),
             ),
-            Tab(
+            ButleryTab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

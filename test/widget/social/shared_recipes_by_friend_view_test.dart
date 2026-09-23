@@ -47,7 +47,7 @@ import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/social_sharing_viewmodel.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 // ── Fake service coordinators — never invoked, only satisfy constructors. ────
@@ -247,7 +247,7 @@ void main() {
       await tester.pump(); // run the post-frame initialize()
 
       expect(
-        find.byType(LoadingIndicator),
+        find.byType(PlateLine),
         findsOneWidget,
         reason: 'isLoading must render the loading indicator',
       );

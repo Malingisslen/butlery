@@ -5,6 +5,8 @@
 // ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -43,24 +45,29 @@ class LanguageSettingsSection extends StatelessWidget {
             children: LocaleProvider.supportedLocales.map((localeCode) {
               final isSelected =
                   localeProvider.locale.languageCode == localeCode;
-              return RadioListTile<String>(
-                title: Text(LocaleProvider.getLocaleName(localeCode)),
-                value: localeCode,
-                groupValue: localeProvider.locale.languageCode,
-                onChanged: (value) {
-                  if (value != null) {
-                    localeProvider.setLocale(value);
-                    SnackBarUtils.showSuccess(
-                      context,
-                      context.l10n.profileLanguageChangedTo(
-                        LocaleProvider.getLocaleName(value),
-                      ),
-                    );
-                  }
-                },
-                secondary: Icon(
-                  isSelected ? Icons.check_circle : Icons.language,
-                  color: isSelected ? context.butleryColors.success : null,
+              // The row carries the canonical focus ring around its
+              // 48 dp box, never a saffron tint (Grafisk manual v6:209,
+              // :381; block288 CSR::ROLE::radio::FOCUSED).
+              return ButleryControlFocus(
+                child: RadioListTile<String>(
+                  title: Text(LocaleProvider.getLocaleName(localeCode)),
+                  value: localeCode,
+                  groupValue: localeProvider.locale.languageCode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      localeProvider.setLocale(value);
+                      SnackBarUtils.showSuccess(
+                        context,
+                        context.l10n.profileLanguageChangedTo(
+                          LocaleProvider.getLocaleName(value),
+                        ),
+                      );
+                    }
+                  },
+                  secondary: Icon(
+                    isSelected ? Icons.check_circle : Icons.language,
+                    color: isSelected ? context.butleryColors.success : null,
+                  ),
                 ),
               );
             }).toList(),
@@ -107,22 +114,27 @@ class ThemeSettingsSection extends StatelessWidget {
           child: Column(
             children: themeModes.map((mode) {
               final isSelected = themeService.themeMode == mode.$1;
-              return RadioListTile<ThemeMode>(
-                title: Text(mode.$2),
-                value: mode.$1,
-                groupValue: themeService.themeMode,
-                onChanged: (value) {
-                  if (value != null) {
-                    themeService.setThemeMode(value);
-                    SnackBarUtils.showSuccess(
-                      context,
-                      context.l10n.profileThemeChangedTo(mode.$2),
-                    );
-                  }
-                },
-                secondary: Icon(
-                  isSelected ? Icons.check_circle : mode.$3,
-                  color: isSelected ? context.butleryColors.success : null,
+              // The row carries the canonical focus ring around its
+              // 48 dp box, never a saffron tint (Grafisk manual v6:209,
+              // :381; block288 CSR::ROLE::radio::FOCUSED).
+              return ButleryControlFocus(
+                child: RadioListTile<ThemeMode>(
+                  title: Text(mode.$2),
+                  value: mode.$1,
+                  groupValue: themeService.themeMode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      themeService.setThemeMode(value);
+                      SnackBarUtils.showSuccess(
+                        context,
+                        context.l10n.profileThemeChangedTo(mode.$2),
+                      );
+                    }
+                  },
+                  secondary: Icon(
+                    isSelected ? Icons.check_circle : mode.$3,
+                    color: isSelected ? context.butleryColors.success : null,
+                  ),
                 ),
               );
             }).toList(),
@@ -150,16 +162,17 @@ class ProfileActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ActionButtons.primaryButton(
-          context,
+        // The view's one saffron action (Skarmar v12 del 3 'Redigera
+        // profil'; Grafisk manual v6:219). Saving says so and draws the
+        // plate line (Komponentark v1:372; content-style-guide.md:63).
+        HeroButton(
+          key: const ValueKey('profileEdit.save'),
           label: context.l10n.profileSaveProfile,
           icon: Icons.save,
-          onPressed: viewModel.isLoading || !viewModel.isFormValid
-              ? null
-              : onSave,
-          isLoading: viewModel.isLoading,
-          loadingText: context.l10n.commonSaving,
-          isExpanded: true,
+          onPressed: viewModel.isFormValid ? onSave : null,
+          busy: viewModel.isLoading,
+          busyLabel: context.l10n.statusSaving,
+          expand: true,
         ),
 
         const SizedBox(height: AppDimensions.spacingL),

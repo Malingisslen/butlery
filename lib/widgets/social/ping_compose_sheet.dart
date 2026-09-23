@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
@@ -109,12 +110,14 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       // can't walk the now-detached element tree.
       final messenger = ScaffoldMessenger.of(context);
       final sentLabel = context.l10n.pingComposeSent;
-      final successColor = context.butleryColors.success;
       Navigator.of(context).pop();
+      // The ink snackbar (Komponentark v1:745-750; PQ-09 = A), shown on the
+      // messenger captured above: the theme gives the surface, InkSnackBar
+      // the message. No status fill (Komponentark v1:300).
       messenger.showSnackBar(
         SnackBar(
-          content: Text(sentLabel),
-          backgroundColor: successColor,
+          content: InkSnackBar(message: sentLabel),
+          padding: InkSnackBar.padding,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -129,13 +132,7 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       setState(() {
         _isSending = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.errorGeneric),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SnackBarUtils.showError(context, context.l10n.errorGeneric);
     }
   }
 
@@ -413,25 +410,34 @@ class _SendButton extends StatelessWidget {
       child: InkWell(
         key: const Key('ping-send-button'),
         onTap: enabled ? onPressed : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingMd,
-          ),
-          decoration: BoxDecoration(color: bg),
-          alignment: Alignment.center,
-          child: isLoading
-              ? LoadingIndicator(
-                  size: 20,
-                  strokeWidth: 2,
+        // Sending keeps the name; the plate line runs along the button's
+        // bottom edge in its own text colour, never a spinner in its place
+        // (Komponentark v1:365, :372). The line is laid over the edge, so the
+        // button keeps its height.
+        child: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingMd,
+              ),
+              decoration: BoxDecoration(color: bg),
+              alignment: Alignment.center,
+              child: Text(
+                context.l10n.pingComposeSend,
+                style: AppTextStyles.bodyLarge.copyWith(
                   color: cs.surface,
-                )
-              : Text(
-                  context.l10n.pingComposeSend,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.surface,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+            if (isLoading)
+              PositionedDirectional(
+                start: 0,
+                end: 0,
+                bottom: 0,
+                child: ButtonPlateLine(color: cs.surface),
+              ),
+          ],
         ),
       ),
     );

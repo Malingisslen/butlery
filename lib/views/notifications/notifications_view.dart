@@ -11,7 +11,9 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// In-app notification inbox showing notification history.
 class NotificationsView extends StatelessWidget {
@@ -109,8 +111,10 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     NotificationsViewModel vm,
   ) {
     final hasUnread = vm.entries.any((e) => !e.opened);
-    return AppBar(
-      title: Text(context.l10n.notificationsTitle),
+    // A subpage (Komponentark v1 §01 pattern 2; Skarmar v12 etapp 6
+    // 'Notiscentral — inkorgen' draws the back arrow).
+    return ButleryTopBar.undersida(
+      title: context.l10n.notificationsTitle,
       actions: [
         // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
         // the action would be a no-op and shouldn't suggest otherwise.
@@ -122,7 +126,7 @@ class _NotificationsContentState extends State<_NotificationsContent> {
             }
           },
           itemBuilder: (context) => [
-            PopupMenuItem<String>(
+            ButleryMenuItem<String>(
               value: 'mark_all_read',
               child: Text(context.l10n.notificationsMarkAllRead),
             ),
@@ -137,13 +141,16 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     NotificationsViewModel vm,
   ) {
     final count = _selectedIds.length;
-    return AppBar(
+    // Same bar, other content: the count replaces the title and the close
+    // action replaces the back arrow, so the bar keeps its height
+    // (produktregler.md:873). Whether it says Avbryt is P5-U31's.
+    return ButleryTopBar.undersida(
       leading: IconButton(
         icon: const Icon(Icons.close),
         tooltip: context.l10n.commonClose,
         onPressed: _cancelSelection,
       ),
-      title: Text(context.l10n.notificationsSelectedCount(count)),
+      title: context.l10n.notificationsSelectedCount(count),
       actions: [
         IconButton(
           icon: const Icon(Icons.delete_outline),
@@ -156,7 +163,7 @@ class _NotificationsContentState extends State<_NotificationsContent> {
 
   Widget _buildBody(BuildContext context, NotificationsViewModel vm) {
     if (vm.isLoading && vm.entries.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingNotifications);
     }
 
     if (vm.hasError && vm.entries.isEmpty) {
@@ -188,9 +195,14 @@ class _NotificationsContentState extends State<_NotificationsContent> {
           itemCount: vm.entries.length + (vm.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == vm.entries.length) {
-              return const Padding(
-                padding: EdgeInsets.all(AppDimensions.paddingL),
-                child: Center(child: LoadingIndicator()),
+              // Loading the next page: the plate line with what is fetched.
+              return Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                child: Center(
+                  child: PlateLineMessage(
+                    message: context.l10n.loadingNotifications,
+                  ),
+                ),
               );
             }
             final entry = vm.entries[index];
@@ -233,9 +245,16 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
+    final chosen = isSelectionMode && isSelected;
     return ListTile(
-      selected: isSelectionMode && isSelected,
-      selectedTileColor: cs.primary.withValues(alpha: 0.08),
+      selected: chosen,
+      // Chosen is surface.selected with a real border, never a tint
+      // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+      // :108-119). surfaceContainerHighest is surface.raised, which
+      // carries surface.selected's values in both modes; the border is
+      // text.primary (onSurface): ink on light, paper on dark.
+      selectedTileColor: cs.surfaceContainerHighest,
+      shape: chosen ? Border.all(color: cs.onSurface, width: 1.5) : null,
       leading: isSelectionMode
           ? Icon(
               isSelected ? Icons.check_circle : Icons.circle_outlined,

@@ -5,7 +5,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -45,16 +45,17 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.moderatorReviewTitle,
-        centerTitle: true,
       ),
       body: StreamBuilder<bool>(
         stream: _reportService.watchIsAdmin(),
         builder: (context, snapshot) {
           final isAdmin = snapshot.data ?? false;
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return StateWidget.loading();
+            return StateWidget.loading(
+              message: context.l10n.loadingAdminAccess,
+            );
           }
           if (!isAdmin) {
             return _NotAuthorized();
@@ -100,7 +101,7 @@ class _ReportsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ModeratorReviewViewModel>();
     if (vm.isLoading && vm.reports.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingReports);
     }
     if (vm.error != null) {
       return Center(

@@ -4,7 +4,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
 /// Reusable report dialog for any content type.
 ///
@@ -38,27 +41,15 @@ class ReportContentDialog {
       );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? context.l10n.reportSubmitted
-                  : context.l10n.reportSubmitFailed,
-            ),
-            backgroundColor: success
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
+        if (success) {
+          SnackBarUtils.showSuccess(context, context.l10n.reportSubmitted);
+        } else {
+          SnackBarUtils.showError(context, context.l10n.reportSubmitFailed);
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.reportSubmitFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        SnackBarUtils.showError(context, context.l10n.reportSubmitFailed);
       }
     }
   }
@@ -94,6 +85,10 @@ class ReportContentDialog {
 
           return AlertDialog(
             title: Text(l10n.reportDialogTitle),
+            // Five 48 dp reasons, the free-text field and the note do not fit
+            // a short screen or large text, so the content scrolls rather
+            // than clipping (tillganglighetshandoff:85, 200 % text).
+            scrollable: true,
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -104,9 +99,15 @@ class ReportContentDialog {
                     mainAxisSize: MainAxisSize.min,
                     children: reasons
                         .map(
-                          (reason) => RadioListTile<String>(
-                            title: Text(reason),
-                            value: reason,
+                          // Each reason is a 48 dp row with the canonical focus
+                          // ring around it, never a saffron focus tint
+                          // (Skarmar v12 etapp 9 #fbanmal, "48 px radhöjd";
+                          // Grafisk manual v6:209, :381).
+                          (reason) => ButleryControlFocus(
+                            child: RadioListTile<String>(
+                              title: Text(reason),
+                              value: reason,
+                            ),
                           ),
                         )
                         .toList(),
@@ -138,7 +139,19 @@ class ReportContentDialog {
                 onPressed: () => Navigator.pop(context),
                 child: Text(l10n.commonCancel),
               ),
-              ElevatedButton(
+              // The dialog's one saffron action, "Skicka anmälan" (Skarmar
+              // v12 etapp 9 #fbanmal; Komponentark v1:843-844). Sized to its
+              // label: the hero's full width does not fit an action row.
+              FilledButton(
+                key: const ValueKey('reportContent.submit'),
+                style:
+                    ComponentThemes.heroButtonStyle(
+                      Theme.of(context).colorScheme,
+                    ).copyWith(
+                      minimumSize: const WidgetStatePropertyAll(
+                        Size(0, AppDimensions.minTouchTarget),
+                      ),
+                    ),
                 onPressed: canSubmit
                     ? () => Navigator.pop(
                         context,
@@ -185,7 +198,9 @@ class _GuidelinesNote extends StatelessWidget {
     final base = theme.textTheme.bodySmall ?? const TextStyle(fontSize: 12);
     return Text.rich(
       TextSpan(
-        style: base.copyWith(color: base.color?.withValues(alpha: 0.75)),
+        // text.secondary, not the body colour at 75 %: opacity is never a
+        // colour (tokens.json:40-53).
+        style: base.copyWith(color: theme.colorScheme.onSurfaceVariant),
         children: [
           TextSpan(text: '$prefix '),
           // BUT-1446: WidgetSpan + Semantics(link:) so the guidelines link is

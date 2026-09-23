@@ -3,7 +3,10 @@
 // lib/views/social/friend_profile_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -23,7 +26,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
@@ -75,10 +77,10 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage (Skarmar v12 del 3 #vanprofil; Komponentark v1 §01
+      // pattern 2). The name is shown as written.
+      appBar: ButleryTopBar.undersida(
         title: friend.displayName,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -98,7 +100,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
               // answers `friends` before `blocked`, which would offer
               // "Blockera" for someone already blocked.
               if (!_friendsViewModel.isBlocked(friend.uid))
-                PopupMenuItem(
+                ButleryMenuItem(
                   value: 'block',
                   child: Row(
                     children: [
@@ -111,7 +113,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                     ],
                   ),
                 ),
-              PopupMenuItem(
+              ButleryMenuItem(
                 value: 'report',
                 child: Row(
                   children: [
@@ -264,31 +266,34 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                             children: [
                               Row(
                                 children: [
-                                  Flexible(
-                                    child: OutlinedButton.icon(
-                                      onPressed: _isStartingConversation
-                                          ? null
-                                          : () => _startConversation(context),
-                                      icon: _isStartingConversation
-                                          ? const LoadingIndicator(
-                                              size: 16,
-                                              strokeWidth: 2,
-                                            )
-                                          : const Icon(Icons.message),
-                                      label: Text(
-                                        context.l10n.socialSendMessage,
-                                      ),
+                                  // Opening the chat keeps the name and draws
+                                  // the plate line (Komponentark v1:365).
+                                  Expanded(
+                                    child: ActionButtons.outlinedButton(
+                                      context,
+                                      label: context.l10n.socialSendMessage,
+                                      icon: Icons.message,
+                                      onPressed: () =>
+                                          _startConversation(context),
+                                      isLoading: _isStartingConversation,
+                                      isExpanded: true,
                                     ),
                                   ),
                                   const SizedBox(width: AppDimensions.spacingL),
-                                  Flexible(
-                                    child: ElevatedButton.icon(
+                                  // PQ-19 = A (produktbeslut 2026-09-23): the
+                                  // profile's one saffron action is "Dela
+                                  // recept" (Skarmar v12 etapp 5-7 'Vänprofil
+                                  // — delningslagret'; Grafisk manual v6:219).
+                                  Expanded(
+                                    child: HeroButton(
+                                      key: const ValueKey(
+                                        'friendProfile.shareRecipe',
+                                      ),
+                                      label: context.l10n.socialShareRecipe,
+                                      icon: Icons.share,
                                       onPressed: () =>
                                           _showRecipeSelection(context),
-                                      icon: const Icon(Icons.share),
-                                      label: Text(
-                                        context.l10n.socialShareRecipe,
-                                      ),
+                                      expand: true,
                                     ),
                                   ),
                                 ],

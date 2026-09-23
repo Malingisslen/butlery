@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -310,9 +309,13 @@ class MessageContentBuilder {
           ? cs.onPrimary.withValues(alpha: AppDimensions.opacityLight)
           : cs.inversePrimary.withValues(alpha: AppDimensions.opacityLight),
       child: Center(
+        // An image that loads is a still plate, never a spinner
+        // (produktregler.md:163, B-18; same as the recipe images in P4-U05).
+        // The plate carries what is loading for the screen reader.
         child: isLoading
-            ? LoadingIndicator(
-                color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+            ? Semantics(
+                label: context.l10n.loadingImage,
+                child: const SizedBox.expand(),
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -5,7 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
@@ -67,10 +67,14 @@ class FeedTab {
                         if (context.mounted) viewModel.loadMore();
                       });
                     }
-                    return const Padding(
-                      padding: EdgeInsets.all(AppDimensions.spacingMd),
+                    // The next page: the plate line with what is fetched
+                    // (produktregler.md:163, B-18).
+                    return Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       child: Center(
-                        child: LoadingIndicator(size: 24, strokeWidth: 2),
+                        child: PlateLineMessage(
+                          message: context.l10n.loadingMoreActivity,
+                        ),
                       ),
                     );
                   }

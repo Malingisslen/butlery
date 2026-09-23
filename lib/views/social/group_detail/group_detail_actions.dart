@@ -1,6 +1,7 @@
 // lib/views/social/group_detail/group_detail_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -9,7 +10,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -103,25 +103,15 @@ class GroupDetailActions {
     }
 
     if (context.mounted) {
-      final messenger = ScaffoldMessenger.of(context);
       if (failed.isEmpty) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupMembersRemoved(removed)),
-            backgroundColor: context.butleryColors.success,
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.groupMembersRemoved(removed),
         );
       } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.groupMembersPartiallyRemoved(
-                removed,
-                failed.join(', '),
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.groupMembersPartiallyRemoved(removed, failed.join(', ')),
         );
       }
     }
@@ -158,24 +148,18 @@ class GroupDetailActions {
             );
 
         if (success && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.groupMemberRemoved(member.displayName),
-              ),
-              backgroundColor: context.butleryColors.success,
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.groupMemberRemoved(member.displayName),
           );
           GroupEventBus.memberRemoved();
           return true;
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.groupCouldNotRemoveMember('$e')),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            context.l10n.groupCouldNotRemoveMember('$e'),
           );
         }
       }
@@ -246,22 +230,15 @@ class GroupDetailActions {
         );
 
         if (success && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.groupUpdated),
-              backgroundColor: context.butleryColors.success,
-            ),
-          );
+          SnackBarUtils.showSuccess(context, context.l10n.groupUpdated);
           GroupEventBus.groupUpdated();
           return true;
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.groupCouldNotUpdate('$e')),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            context.l10n.groupCouldNotUpdate('$e'),
           );
         }
       }
@@ -291,11 +268,9 @@ class GroupDetailActions {
         );
 
         if (success && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.groupDeleted(group.name)),
-              backgroundColor: context.butleryColors.success,
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.groupDeleted(group.name),
           );
           GroupEventBus.groupDeleted();
           // Pop back to groups tab (tabIndex: 1)
@@ -304,11 +279,9 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.groupCouldNotDelete('$e')),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            context.l10n.groupCouldNotDelete('$e'),
           );
         }
       }
@@ -345,12 +318,7 @@ class GroupDetailActions {
               );
 
           if (success && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.groupLeftGroup),
-                backgroundColor: context.butleryColors.success,
-              ),
-            );
+            SnackBarUtils.showSuccess(context, context.l10n.groupLeftGroup);
             GroupEventBus.memberRemoved();
             // Pop back to groups tab (tabIndex: 1)
             Navigator.pop(context, {'navigateToGroups': true});
@@ -359,11 +327,9 @@ class GroupDetailActions {
         } else {}
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.groupCouldNotLeave('$e')),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            context.l10n.groupCouldNotLeave('$e'),
           );
         }
       }

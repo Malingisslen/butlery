@@ -1,6 +1,7 @@
 // lib/views/social/group_detail/group_member_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -48,7 +49,15 @@ class GroupMemberCard {
       ),
       child: ListTile(
         selected: isSelectionMode && isSelected,
-        selectedTileColor: cs.primary.withValues(alpha: 0.08),
+        // Chosen is surface.selected with a real border, never a tint
+        // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+        // :108-119). surfaceContainerHighest is surface.raised, which
+        // carries surface.selected's values in both modes; the border is
+        // text.primary (onSurface): ink on light, paper on dark.
+        selectedTileColor: cs.surfaceContainerHighest,
+        shape: isSelectionMode && isSelected
+            ? Border.all(color: cs.onSurface, width: 1.5)
+            : null,
         onTap: isSelectionMode && selectable ? onSelectionToggle : null,
         // BUT-948: long-press = multi-select (convention).
         onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
@@ -139,7 +148,7 @@ class GroupMemberCard {
                 },
                 itemBuilder: (context) => [
                   if (canRemoveMember)
-                    PopupMenuItem(
+                    ButleryMenuItem(
                       value: 'remove',
                       child: Row(
                         children: [
@@ -160,7 +169,7 @@ class GroupMemberCard {
                       ),
                     ),
                   if (canReportMember)
-                    PopupMenuItem(
+                    ButleryMenuItem(
                       value: 'report',
                       child: Row(
                         children: [
