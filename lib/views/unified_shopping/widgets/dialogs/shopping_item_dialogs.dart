@@ -1,5 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -28,7 +30,7 @@ class ShoppingItemDialogs {
 
     if (result != null && context.mounted) {
       try {
-        final success = await viewModel.addItemToActiveList(
+        final id = await viewModel.addItemWithId(
           name: result.name,
           amount: result.amount,
           unit: result.unit,
@@ -39,8 +41,17 @@ class ShoppingItemDialogs {
         );
 
         if (context.mounted) {
-          if (success) {
-            onSuccess(context.l10n.shoppingItemAdded(result.name));
+          if (id != null) {
+            // Add is class 1: 'La till "mjölk"' with Ångra for 7 s
+            // (produktregler.md:131; content-style-guide.md:96). Ångra
+            // removes the row by the id the service returned, so it takes
+            // away exactly this row, on a personal list and a shared one.
+            // [onSuccess] is not used for an add any more.
+            SnackBarUtils.showUndo(
+              context,
+              context.l10n.shoppingItemAdded(result.name),
+              onUndo: () => unawaited(viewModel.removeItem(id)),
+            );
           } else {
             onError(context.l10n.shoppingCouldNotAddItem(result.name));
           }

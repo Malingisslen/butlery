@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_member_form_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -52,9 +52,11 @@ class _MinFamiljContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AdaptiveAppBar(title: l10n.familyTitle),
+      // A subpage (Komponentark v1:71-78; B-45): the canonical top bar.
+      appBar: ButleryTopBar.undersida(title: l10n.familyTitle),
       body: vm.isLoading
-          ? StateWidget.loading()
+          // The plate line says what it fetches (produktregler.md:163).
+          ? StateWidget.loading(message: l10n.loadingFamily)
           : (vm.hasError && vm.householdId == null)
           ? StateWidget.error(
               message: vm.error!,

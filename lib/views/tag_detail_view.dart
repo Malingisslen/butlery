@@ -20,7 +20,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -124,27 +124,19 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         final tag = viewModel.getTagById(widget.tagId);
 
         if (viewModel.isLoading && tag == null) {
+          // A subpage (Komponentark v1:71-78); the plate line says what it
+          // fetches (produktregler.md:163).
           return Scaffold(
-            appBar: AdaptiveAppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).maybePop(),
-                tooltip: context.l10n.commonBack,
-              ),
-              title: context.l10n.commonLoading,
+            appBar: ButleryTopBar.undersida(
+              title: context.l10n.tagDetailDefaultTitle,
             ),
-            body: StateWidget.loading(),
+            body: StateWidget.loading(message: context.l10n.loadingTag),
           );
         }
 
         if (tag == null) {
           return Scaffold(
-            appBar: AdaptiveAppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).maybePop(),
-                tooltip: context.l10n.commonBack,
-              ),
+            appBar: ButleryTopBar.undersida(
               title: context.l10n.tagDetailDefaultTitle,
             ),
             body: StateWidget.error(
@@ -169,7 +161,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context, PersonalTag tag) {
     if (_isEditMode) {
-      return AdaptiveAppBar(
+      // Editing: the X replaces the back arrow, never both (Komponentark
+      // v1:57).
+      return ButleryTopBar.undersida(
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: _cancelEditMode,
@@ -177,7 +171,11 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         ),
         title: context.l10n.tagDetailEditTitle,
         actions: [
+          // The bar's paper foreground on its ink (Komponentark v1:73).
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () => _saveChanges(context, tag),
             child: Text(context.l10n.commonSave),
           ),
@@ -185,12 +183,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
     }
 
-    return AdaptiveAppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.of(context).maybePop(),
-        tooltip: context.l10n.commonBack,
-      ),
+    return ButleryTopBar.undersida(
       title: tag.name,
       // BUT-964/BUT-1357 exception: this is a detail view, not a list surface,
       // so its primary actions (edit/share/add-rule) intentionally stay in the
@@ -510,17 +503,15 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       if (context.mounted) {
         Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result.hasChanges
-                  ? context.l10n.tagDetailRulesAppliedSuccess(
-                      result.tagsApplied,
-                      result.recipesModified,
-                    )
-                  : context.l10n.tagDetailNoRecipesMatched,
-            ),
-          ),
+        // The ink snackbar (PQ-09 = A).
+        SnackBarUtils.showSuccess(
+          context,
+          result.hasChanges
+              ? context.l10n.tagDetailRulesAppliedSuccess(
+                  result.tagsApplied,
+                  result.recipesModified,
+                )
+              : context.l10n.tagDetailNoRecipesMatched,
         );
       }
     } catch (e, stackTrace) {

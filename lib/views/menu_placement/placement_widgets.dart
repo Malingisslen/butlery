@@ -176,9 +176,12 @@ class _EligibleCell extends StatelessWidget {
             minHeight: _kCellMinHeight - 8,
           ),
           alignment: Alignment.center,
+          // A target cell while a dish is chosen: surface.raised with a
+          // 1.5 px text.primary border, never a tint (tokens.json:40-53,
+          // surface.raised; primaryContainer / onSurface in both schemes).
           decoration: BoxDecoration(
-            color: cs.primaryContainer.withValues(alpha: 0.5),
-            border: Border.all(color: cs.primary, width: 2),
+            color: cs.primaryContainer,
+            border: Border.all(color: cs.onSurface, width: 1.5),
           ),
           child: Text(
             context.l10n.menuPlacementPlaceHere,
@@ -215,10 +218,14 @@ class _OccupiedCell extends StatelessWidget {
     final cell = Container(
       constraints: const BoxConstraints(minHeight: _kCellMinHeight),
       padding: const EdgeInsets.all(4),
+      // #placera draws a placed dish on surface.raised with a 1 px
+      // border.control (Skarmar v12 del 2); this session's dish gets the
+      // 1.5 px text.primary border. primaryContainer, outline and onSurface
+      // carry those tokens in both schemes.
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: 0.08),
+        color: cs.primaryContainer,
         border: Border.all(
-          color: isSession ? cs.primary : cs.outlineVariant,
+          color: isSession ? cs.onSurface : cs.outline,
           width: isSession ? 1.5 : 1,
         ),
       ),
@@ -350,49 +357,50 @@ class PlacementTrayCard extends StatelessWidget {
       selected: isSelected,
       child: InkWell(
         onTap: () => vm.tapItem(index),
-        child: Opacity(
-          opacity: item.isPlaced ? 0.45 : 1,
-          child: Container(
-            width: 132,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? cs.primaryContainer.withValues(alpha: 0.6)
-                  : cs.surface,
-              border: Border.all(
-                color: isSelected ? cs.primary : cs.outlineVariant,
-                width: isSelected ? 2 : 1,
+        // #placera draws the chosen dish in the tray as ink with paper text,
+        // and the others on surface.raised with a 1 px border.control
+        // (Skarmar v12 del 2). A placed dish is struck through in
+        // text.secondary, never faded (tokens.json:40-53).
+        child: Container(
+          width: 132,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? cs.primary : cs.primaryContainer,
+            border: isSelected ? null : Border.all(color: cs.outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.slot.displayLabel.toUpperCase(),
+                style: AppTextStyles.labelSmall.copyWith(
+                  fontSize: 8,
+                  letterSpacing: 1,
+                  fontWeight: FontWeight.w700,
+                  color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.slot.displayLabel.toUpperCase(),
+              const SizedBox(height: 2),
+              Expanded(
+                child: Text(
+                  item.recipe.title,
                   style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    letterSpacing: 1,
-                    fontWeight: FontWeight.w700,
-                    color: cs.secondary,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected
+                        ? cs.onPrimary
+                        : (item.isPlaced
+                              ? cs.onSurfaceVariant
+                              : cs.onPrimaryContainer),
+                    decoration: item.isPlaced
+                        ? TextDecoration.lineThrough
+                        : null,
+                    height: 1.2,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Expanded(
-                  child: Text(
-                    item.recipe.title,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      decoration: item.isPlaced
-                          ? TextDecoration.lineThrough
-                          : null,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

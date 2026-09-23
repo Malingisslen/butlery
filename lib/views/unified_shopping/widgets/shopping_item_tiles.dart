@@ -206,14 +206,18 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     return RepaintBoundary(
       child: Container(
         margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+        // A chosen row is surface.selected with a 1.5 px text.primary
+        // border, never a 12 % ink tint (enhet-3 valda tonplattor
+        // shopping_item_tiles.dart:211; tokens.json:40-53, surface.selected;
+        // Skarmar v12 etapp 9 #flerbar). primaryContainer is surface.selected
+        // and onSurface text.primary in both schemes; cs.primary is ink in
+        // both modes and would vanish on dark.
         decoration: BoxDecoration(
-          color: selected
-              ? cs.primary.withValues(alpha: 0.12)
-              : cs.surfaceContainerHighest,
+          color: selected ? cs.primaryContainer : cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           border: Border.all(
-            color: selected ? cs.primary : cs.outlineVariant,
-            width: AppDimensions.borderWidthStandard,
+            color: selected ? cs.onSurface : cs.outlineVariant,
+            width: selected ? 1.5 : AppDimensions.borderWidthStandard,
           ),
         ),
         child: Semantics(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
@@ -311,16 +312,12 @@ class TagResultDisplay extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
-                ),
-                child: LinearProgressIndicator(
-                  value: tagResult.coverage,
-                  backgroundColor: cs.outlineVariant,
-                  color: _getCoverageColor(context),
-                  minHeight: 8,
-                ),
+              // Coverage as the determinate plate line (Komponentark v1:305;
+              // B-18). The percentage beside it keeps its status colour, so
+              // colour is never the only signal; the line is not read out
+              // on its own.
+              child: ExcludeSemantics(
+                child: PlateLine(value: tagResult.coverage),
               ),
             ),
             const SizedBox(width: AppDimensions.spacingM),

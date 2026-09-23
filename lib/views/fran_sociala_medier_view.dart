@@ -9,7 +9,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
@@ -232,7 +232,10 @@ class _FranSocialaMedierViewContentState
     final selected = await Navigator.push<List<Recipe>>(
       context,
       MaterialPageRoute(
-        builder: (_) => BatchImportPreview(recipes: viewModel.parsedRecipes),
+        builder: (_) => BatchImportPreview(
+          recipes: viewModel.parsedRecipes,
+          backTo: context.l10n.importFromSocialMedia,
+        ),
       ),
     );
     if (!context.mounted || selected == null || selected.isEmpty) return;
@@ -294,7 +297,11 @@ class _FranSocialaMedierViewContentState
     final viewModel = context.watch<TextImportViewModel>();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(title: context.l10n.importFromSocialMedia),
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.importFromSocialMedia,
+      ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(

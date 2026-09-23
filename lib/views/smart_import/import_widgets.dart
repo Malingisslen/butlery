@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -86,24 +86,12 @@ class ImportInputSection extends StatelessWidget {
       minLines: 3,
       decoration: InputDecoration(
         hintText: context.l10n.importPasteLinkOrText,
+        // The hint is text.secondary itself, never faded, and the field's
+        // borders come from the input theme: focus is never a thicker ink
+        // border, which vanished on dark (enhet-4 import_widgets.dart:101;
+        // tokens.json:40-53, :155-160).
         hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant.withValues(
-            alpha: AppDimensions.opacityMediumDark,
-          ),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          borderSide: BorderSide(color: theme.colorScheme.outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          borderSide: BorderSide(
-            color: theme.colorScheme.primary,
-            width: 2,
-          ),
+          color: theme.colorScheme.onSurfaceVariant,
         ),
         filled: true,
         fillColor: theme.colorScheme.surfaceContainerLowest,
@@ -244,25 +232,36 @@ class ImportActionSection extends StatelessWidget {
           button: true,
           enabled: viewModel.canImport && !viewModel.isImporting,
           label: context.l10n.importImport,
-          child: FilledButton.icon(
-            key: const ValueKey('test-smart-import-url'),
-            onPressed: viewModel.canImport && !viewModel.isImporting
-                ? onImport
-                : null,
-            icon: viewModel.isImporting
-                ? LoadingIndicator(
-                    size: 18,
-                    strokeWidth: 2,
-                    color: theme.colorScheme.onPrimary,
-                  )
-                : const Icon(Icons.download),
-            label: Text(
-              viewModel.isImporting
-                  ? context.l10n.importImporting
-                  : context.l10n.importImport,
-            ),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+          // Busy keeps the button's shape and name, with the plate line
+          // along its bottom edge and "Hämtar receptet …" (Komponentark
+          // v1:365, :372; content-style-guide.md:63). Never a spinner.
+          child: BusyButtonSemantics(
+            busy: viewModel.isImporting,
+            name: context.l10n.importImport,
+            busyLabel: context.l10n.importFetchingRecipe,
+            child: FilledButton.icon(
+              key: const ValueKey('test-smart-import-url'),
+              onPressed: viewModel.isImporting
+                  ? PlateLineButton.ignore
+                  : (viewModel.canImport ? onImport : null),
+              icon: viewModel.isImporting
+                  ? const SizedBox.shrink()
+                  : const Icon(Icons.download),
+              label: Text(
+                viewModel.isImporting
+                    ? context.l10n.importFetchingRecipe
+                    : context.l10n.importImport,
+              ),
+              style: viewModel.isImporting
+                  ? PlateLineButton.busyStyle(
+                      FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      theme.filledButtonTheme.style,
+                    )
+                  : FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
             ),
           ),
         ),

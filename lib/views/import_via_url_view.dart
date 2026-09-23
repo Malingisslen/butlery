@@ -6,10 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -414,7 +413,12 @@ class _UrlResultRow extends StatelessWidget {
   Widget _statusIcon(BuildContext context) {
     switch (result.status) {
       case UrlFetchStatus.loading:
-        return const LoadingIndicator(size: 18, strokeWidth: 2);
+        // The plate line, never a spinner (B-18). The address beside it
+        // says what is fetched, and the label says it to a screen reader.
+        return SizedBox(
+          width: AppDimensions.iconSizeL,
+          child: PlateLine(semanticLabel: context.l10n.importFetchingRecipe),
+        );
       case UrlFetchStatus.success:
         return Icon(
           Icons.check_circle,
@@ -428,9 +432,10 @@ class _UrlResultRow extends StatelessWidget {
           size: 20,
         );
       case UrlFetchStatus.pending:
-        return const Icon(
+        // text.secondary (onSurfaceVariant): #627061 light, #93A48D dark.
+        return Icon(
           Icons.schedule,
-          color: AppColors.greenMuted,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: 20,
         );
     }

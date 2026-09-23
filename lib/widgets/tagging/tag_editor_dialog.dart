@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
@@ -91,9 +92,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
     // Don't add duplicates
     if (_effectiveTags.contains(newTag)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.tagAlreadyExists)),
-      );
+      // The ink snackbar (PQ-09 = A).
+      SnackBarUtils.showInfo(context, context.l10n.tagAlreadyExists);
       return;
     }
 
@@ -146,7 +146,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                 children: [
                   Icon(
                     Icons.local_offer_outlined,
-                    color: cs.primary,
+                    color: cs.onPrimaryContainer,
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
@@ -308,22 +308,22 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     return InputChip(
       label: Text(displayName),
       labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isUserAdded ? cs.primary : cs.onSurface,
+        color: isUserAdded ? cs.onPrimaryContainer : cs.onSurface,
         fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
       ),
-      backgroundColor: isUserAdded
-          ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-          : cs.surface,
+      backgroundColor: isUserAdded ? cs.primaryContainer : cs.surface,
       side: BorderSide(
-        color: isUserAdded
-            ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
-            : cs.outlineVariant,
+        color: isUserAdded ? cs.outline : cs.outlineVariant,
       ),
       deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
       deleteIconColor: cs.onSurfaceVariant,
       onDeleted: () => _removeTag(tag),
       avatar: isUserAdded
-          ? Icon(Icons.person, size: AppDimensions.iconSizeS, color: cs.primary)
+          ? Icon(
+              Icons.person,
+              size: AppDimensions.iconSizeS,
+              color: cs.onPrimaryContainer,
+            )
           : null,
       tooltip: isUserAdded
           ? context.l10n.tagManuallyAdded
@@ -341,10 +341,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         color: cs.onSurfaceVariant,
         decoration: TextDecoration.lineThrough,
       ),
-      backgroundColor: cs.surface.withValues(alpha: AppDimensions.opacityHalf),
-      side: BorderSide(
-        color: cs.outlineVariant.withValues(alpha: AppDimensions.opacityHalf),
-      ),
+      // A removed tag: struck through in text.secondary on the base
+      // surface with border.subtle, never faded (tokens.json:40-53).
+      backgroundColor: cs.surface,
+      side: BorderSide(color: cs.outlineVariant),
       avatar: Icon(
         Icons.undo,
         size: AppDimensions.iconSizeS,

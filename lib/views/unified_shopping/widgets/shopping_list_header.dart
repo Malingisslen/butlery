@@ -117,7 +117,8 @@ class ShoppingListHeader {
               icon: Icons.edit,
               onPressed: onRenameList,
               semanticLabel: context.l10n.shoppingRenameList,
-              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              // text.primary itself, never faded (tokens.json:40-53).
+              color: cs.onSurface,
               iconSize: AppDimensions.iconSizeAction,
             ),
           ),
@@ -160,7 +161,8 @@ class ShoppingListHeader {
               icon: Icons.delete,
               onPressed: onDeleteList,
               semanticLabel: context.l10n.shoppingDeleteList,
-              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              // text.primary itself, never faded (tokens.json:40-53).
+              color: cs.onSurface,
               iconSize: AppDimensions.iconSizeAction,
             ),
           ),

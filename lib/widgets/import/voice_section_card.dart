@@ -4,13 +4,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// One checklist card of the "Tala in recept" wizard (direction B with A's
 /// big microphone in the active card — Malin's pick 2026-07-13).
 ///
 /// States: waiting (quiet mic), recording (large central stop, error color),
-/// preparing/transcribing (LoadingIndicator), done (checkmark). The text
+/// preparing/transcribing (the plate line with text), done (checkmark). The text
 /// field is ALWAYS typable — typing is the permission-denial and
 /// transcription-failure fallback, so the card never dead-ends.
 class VoiceSectionCard extends StatelessWidget {
@@ -144,13 +144,12 @@ class VoiceSectionCard extends StatelessWidget {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingS),
-                child: Tooltip(
+                // The plate line with its text, never a spinner
+                // (produktregler.md:163; B-18).
+                child: PlateLineMessage(
                   message: state == VoiceSectionState.preparing
                       ? context.l10n.voicePromptPreparing
                       : context.l10n.voicePromptTranscribing,
-                  child: const LoadingIndicator(
-                    size: AppDimensions.iconSizeAction,
-                  ),
                 ),
               ),
             )

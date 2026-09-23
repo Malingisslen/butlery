@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/views/menu_placement/placement_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -105,17 +106,27 @@ class _MenuPlacementViewContent extends StatelessWidget {
           Navigator.of(context).pop();
         }
       },
+      // A subpage of the week menu (Komponentark v1:71-78; Skarmar v12 del 2
+      // #placera draws the back arrow, the title and the "2 av 5 rätter
+      // placerade" pill).
       child: BaseScaffold(
         title: context.l10n.menuPlacementTitle,
+        backTo: context.l10n.menuWeek,
         actions: [
           Center(
             child: Container(
-              margin: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingMd,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingSm,
+                vertical: AppDimensions.spacingS,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              // The pill on the ink bar: the bar's own paper foreground for
+              // both the border and the text, never a faded copy
+              // (tokens.json:40-53). #placera draws it on paper with
+              // border.subtle; on the subpage's ink that would not read.
+              // Interpretation.
               decoration: BoxDecoration(
-                border: Border.all(color: cs.onPrimary.withValues(alpha: 0.4)),
+                border: Border.all(color: cs.onPrimary),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               ),
               child: Text(
                 context.l10n.menuPlacementProgress(
@@ -124,7 +135,7 @@ class _MenuPlacementViewContent extends StatelessWidget {
                 ),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: cs.onPrimary,
-                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             ),
@@ -293,13 +304,17 @@ class _HintBanner extends StatelessWidget {
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
+      // #placera draws the hint between two border.subtle hairlines in
+      // text.body, with no fill (Skarmar v12 del 2). outlineVariant is
+      // border.subtle and onSurface text.primary in both schemes.
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: 0.08),
-        border: Border(left: BorderSide(color: cs.primary, width: 3)),
+        border: Border.symmetric(
+          horizontal: BorderSide(color: cs.outlineVariant),
+        ),
       ),
       child: Text(
         text,
-        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
       ),
     );
   }
@@ -328,7 +343,9 @@ class PlacementTray extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: cs.surfaceContainerHighest,
-          border: Border(top: BorderSide(color: cs.primary, width: 2)),
+          // text.primary (onSurface): ink on light, paper on dark. cs.primary
+          // is ink in both modes and would vanish on the dark surface.
+          border: Border(top: BorderSide(color: cs.onSurface, width: 2)),
         ),
         padding: const EdgeInsets.fromLTRB(
           AppDimensions.spacingMd,
@@ -375,13 +392,14 @@ class PlacementTray extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   flex: 2,
-                  child: ActionButtons.primaryButton(
-                    context,
+                  // "Klar" is the placement's one saffron action (Skarmar
+                  // v12 del 2 #placera; Komponentark v1:843-844).
+                  child: HeroButton(
+                    key: const ValueKey('menu-placement-done'),
                     label: context.l10n.commonDone,
-                    onPressed: !vm.hasPlacements || vm.isLoading
-                        ? null
-                        : onConfirm,
-                    isLoading: vm.isLoading,
+                    expand: true,
+                    busy: vm.isLoading,
+                    onPressed: vm.hasPlacements ? onConfirm : null,
                   ),
                 ),
               ],

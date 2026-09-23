@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -273,9 +274,12 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       if (!mounted) return;
       setState(() => _isSaving = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dialogCouldNotSave(e.toString())),
+        // The ink snackbar (PQ-09 = A), with the cause in words, never the
+        // raw exception (content-style-guide.md:96).
+        SnackBarUtils.showError(
+          context,
+          context.l10n.dialogCouldNotSave(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

@@ -119,9 +119,9 @@ class _IngredientChip extends StatelessWidget {
     return Container(
       padding: AppDimensions.paddingSymmetric6x2,
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primaryContainer,
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outline,
         ),
       ),
       child: Row(
@@ -129,7 +129,9 @@ class _IngredientChip extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppTextStyles.labelMedium.copyWith(color: cs.primary),
+            style: AppTextStyles.labelMedium.copyWith(
+              color: cs.onPrimaryContainer,
+            ),
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Semantics(
@@ -143,7 +145,7 @@ class _IngredientChip extends StatelessWidget {
                 child: Icon(
                   Icons.close,
                   size: AppDimensions.iconSizeS,
-                  color: cs.primary,
+                  color: cs.onPrimaryContainer,
                 ),
               ),
             ),

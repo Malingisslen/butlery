@@ -122,8 +122,9 @@ class ShoppingAppBar {
     ];
   }
 
-  /// Build header actions for MainViewHeader (UI Redesign)
-  /// Uses headerForeground color for icons
+  /// The actions on the shopping list's root bar. The bar gives every icon
+  /// its foreground, text.primary on the light root bar in both modes
+  /// (ButleryTopBar; Komponentark v1:62), so no icon sets its own colour.
   static List<Widget> buildHeaderActions(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
@@ -133,16 +134,12 @@ class ShoppingAppBar {
     VoidCallback onShowSyncStatus, {
     VoidCallback? onBrowseTemplates,
   }) {
-    final cs = Theme.of(context).colorScheme;
     final canShare = viewModel.hasItems;
 
     return [
       // Ny lista-knapp
       IconButton(
-        icon: Icon(
-          AdaptiveIcons.add,
-          color: cs.onPrimary,
-        ),
+        icon: Icon(AdaptiveIcons.add),
         onPressed: onCreateList,
         tooltip: context.l10n.shoppingNewList,
       ),
@@ -150,10 +147,7 @@ class ShoppingAppBar {
       // Browse templates
       if (onBrowseTemplates != null)
         IconButton(
-          icon: Icon(
-            Icons.list_alt_outlined,
-            color: cs.onPrimary,
-          ),
+          icon: const Icon(Icons.list_alt_outlined),
           onPressed: onBrowseTemplates,
           tooltip: context.l10n.shoppingTemplateBrowse,
         ),
@@ -161,10 +155,7 @@ class ShoppingAppBar {
       // Share with friends button (social)
       if (canShare)
         IconButton(
-          icon: Icon(
-            AdaptiveIcons.peopleOutlined,
-            color: cs.onPrimary,
-          ),
+          icon: Icon(AdaptiveIcons.peopleOutlined),
           onPressed: onShowShareDialog,
           tooltip: context.l10n.shoppingShareWithFriends,
         ),
@@ -172,20 +163,14 @@ class ShoppingAppBar {
       // Dela externt-knapp
       if (canShare)
         IconButton(
-          icon: Icon(
-            AdaptiveIcons.share,
-            color: cs.onPrimary,
-          ),
+          icon: Icon(AdaptiveIcons.share),
           onPressed: onShareExternally,
           tooltip: context.l10n.shoppingShareExternally,
         ),
 
       // Sharing status indicator
       IconButton(
-        icon: Icon(
-          _getSharingStatusIcon(viewModel),
-          color: cs.onPrimary.withValues(alpha: 0.8),
-        ),
+        icon: Icon(_getSharingStatusIcon(viewModel)),
         onPressed: onShowSyncStatus,
         tooltip: _getSharingStatusTooltip(context, viewModel),
       ),
@@ -204,14 +189,18 @@ class ShoppingAppBar {
       label: context.l10n.a11yAddItem,
       button: true,
       enabled: true,
+      // The list's one saffron action (Skarmar v12 del 2 #inkop draws the
+      // add button in saffron; Komponentark v1:843-844). The hero's colours
+      // (action.primary / text.onActionPrimary, pressed action.primaryPressed
+      // / text.onActionPrimaryPressed) over the extended button's shape; the
+      // icon takes the button's foreground.
       child: ElevatedButton.icon(
         key: const ValueKey('test-shopping-list-add'),
         onPressed: onAddItem,
-        style: ComponentThemes.extendedFabStyle(cs),
-        icon: Icon(
-          AdaptiveIcons.add,
-          color: cs.surfaceContainerHighest,
-        ),
+        style: ComponentThemes.heroButtonStyle(
+          cs,
+        ).merge(ComponentThemes.extendedFabStyle(cs)),
+        icon: Icon(AdaptiveIcons.add),
         label: Text(context.l10n.shoppingAddItem),
       ),
     );

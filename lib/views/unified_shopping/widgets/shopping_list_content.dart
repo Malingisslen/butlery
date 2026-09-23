@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/theme/app_text_styles.dart';
@@ -222,7 +225,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final viewModel = widget.viewModel;
 
     if (viewModel.isLoading) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingShoppingList);
     }
 
     if (viewModel.hasError) {
@@ -242,11 +245,31 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (!viewModel.hasItems) {
       // A list exists but is empty — distinct from "no list at all" above, so
       // the copy must say "list is empty", not "no list to derive from".
-      return StateWidget.empty(
-        title: context.l10n.shoppingListEmpty,
-        subtitle: context.l10n.shoppingListEmptyHint,
-        actionLabel: context.l10n.shoppingAddItem,
-        onAction: widget.onAddItem,
+      //
+      // Skarmar v12 del 2 #tominkop: "Inget att handla", a line on sending
+      // the week's dishes here, "Från veckomenyn" as the one saffron action
+      // and an outlined "Lägg till vara" beside it (Komponentark v1:843-844).
+      return StateWidget(
+        type: StateType.empty,
+        title: context.l10n.shoppingEmptyTitle,
+        subtitle: context.l10n.shoppingEmptyBody,
+        customAction: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppDimensions.spacingSm,
+          runSpacing: AppDimensions.spacingSm,
+          children: [
+            HeroButton(
+              key: const ValueKey('shopping-empty-from-week-menu'),
+              label: context.l10n.shoppingFromWeekMenu,
+              onPressed: () => Navigator.pushNamed(context, Routes.weeklyMenu),
+            ),
+            OutlinedButton(
+              key: const ValueKey('shopping-empty-add-item'),
+              onPressed: widget.onAddItem,
+              child: Text(context.l10n.shoppingAddItem),
+            ),
+          ],
+        ),
       );
     }
 
@@ -442,8 +465,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                               horizontal: AppDimensions.spacingSm,
                               vertical: AppDimensions.spacingXxs,
                             ),
+                            // A real border in the header's own foreground,
+                            // never a faded fill (tokens.json:40-53).
                             decoration: BoxDecoration(
-                              color: cs.onPrimary.withValues(alpha: 0.2),
+                              border: Border.all(color: cs.onPrimary),
                               borderRadius: BorderRadius.circular(
                                 AppDimensions.borderRadiusS,
                               ),
@@ -463,19 +488,17 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                       // Progress indicator
                       if (progress != null && progress.total > 0) ...[
                         const SizedBox(height: AppDimensions.spacingXs),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusS,
-                          ),
-                          child: LinearProgressIndicator(
+                        // The category's progress is the determinate plate
+                        // line (Komponentark v1:305; B-18: no bar of its
+                        // own; "Tallrikslinje — vald flik och progress",
+                        // v1:844). The badge beside it already says the
+                        // count, so the line is not read out on its own.
+                        ExcludeSemantics(
+                          child: PlateLine(
+                            key: const ValueKey(
+                              'shopping-category-progress',
+                            ),
                             value: progress.completed / progress.total,
-                            minHeight: 3,
-                            backgroundColor: cs.onPrimary.withValues(
-                              alpha: 0.2,
-                            ),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              cs.onPrimary.withValues(alpha: 0.7),
-                            ),
                           ),
                         ),
                       ],

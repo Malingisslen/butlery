@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -154,8 +154,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       listenable: _vm,
       builder: (context, _) {
         return Scaffold(
-          appBar: AdaptiveAppBar(
+          // A subpage of Min familj (Komponentark v1:71-78).
+          appBar: ButleryTopBar.undersida(
             title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
+            backTo: l10n.familyTitle,
           ),
           body: Center(
             child: ConstrainedBox(

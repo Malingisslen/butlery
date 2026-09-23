@@ -3,6 +3,7 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
@@ -73,9 +74,9 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     if (!mounted) return;
     final info = _viewModel.consumeInfoMessage();
     if (info != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(info)));
+      // The ink snackbar (PQ-09 = A); a note without a follow-up gets
+      // "Stäng" (content-style-guide.md:96-98).
+      SnackBarUtils.showInfo(context, info);
     }
   }
 
@@ -91,9 +92,11 @@ class _PhotoImportViewState extends State<PhotoImportView> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        // text.primary: cs.primary is ink in both modes and would vanish
+        // on the dark dialog.
         icon: Icon(
           Icons.restore,
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
           size: AppDimensions.iconSizeL,
         ),
         title: Text(context.l10n.draftRecovery),
@@ -249,7 +252,10 @@ class _PhotoImportViewContent extends StatelessWidget {
     final selected = await Navigator.push<List<Recipe>>(
       context,
       MaterialPageRoute(
-        builder: (_) => BatchImportPreview(recipes: viewModel.parsedRecipes),
+        builder: (_) => BatchImportPreview(
+          recipes: viewModel.parsedRecipes,
+          backTo: context.l10n.importFromPhoto,
+        ),
       ),
     );
     if (!context.mounted || selected == null || selected.isEmpty) return;
@@ -258,15 +264,15 @@ class _PhotoImportViewContent extends StatelessWidget {
     if (!context.mounted) return;
     final failed = viewModel.lastSaveFailureCount;
     final saved = selected.length - failed;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          ok
-              ? context.l10n.importComplete(saved, failed)
-              : context.l10n.errorGeneric,
-        ),
-      ),
-    );
+    // The ink snackbar (PQ-09 = A).
+    if (ok) {
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.importComplete(saved, failed),
+      );
+    } else {
+      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+    }
     if (ok) {
       // BUT-1200: non-blocking allergen-setup prompt when any saved recipe
       // CONTAINS an allergen the user hasn't configured. Reuses the

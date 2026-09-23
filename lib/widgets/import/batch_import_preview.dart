@@ -3,14 +3,18 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// Preview screen for batch file import.
 /// Shows parsed recipes as a selectable checklist before saving.
 class BatchImportPreview extends StatefulWidget {
   final List<Recipe> recipes;
 
-  const BatchImportPreview({super.key, required this.recipes});
+  const BatchImportPreview({super.key, required this.recipes, this.backTo});
+
+  /// The name of the import view that opened the preview, for the back
+  /// arrow's name "Tillbaka till …" (tillganglighetshandoff:132).
+  final String? backTo;
 
   @override
   State<BatchImportPreview> createState() => _BatchImportPreviewState();
@@ -58,9 +62,11 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.importPreviewTitle,
-        centerTitle: true,
+        backTo: widget.backTo,
         actions: [
           TextButton.icon(
             onPressed: _toggleAll,

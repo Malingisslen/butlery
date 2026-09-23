@@ -17,7 +17,6 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart'
     show MenuShoppingGenerationResult;
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
     show PlacementSaveResult;
@@ -25,7 +24,8 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/group_menu_entry_button.dart';
@@ -311,14 +311,20 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final weekNumber = IsoWeekUtils.isoWeekNumber(clock.now());
     final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
+    // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
+    // #tomvecka): "Veckomeny" with the week and the number of dishes on the
+    // line under it, and the Lista/Kalender tabs under the bar.
     return Scaffold(
-      appBar: MainViewHeader(
-        title: context.l10n.veckomenyHeaderTitle,
-        ghostIllustration: VegetableType.peaPod,
-        countBadge: viewModel.hasMenu
+      appBar: ButleryTopBar.rot(
+        title: context.l10n.menuWeek,
+        secondaryLine: viewModel.hasMenu
             ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
             : context.l10n.menuWeekBadge(weekNumber),
         actions: _buildHeaderActions(context, viewModel),
+        bottom: VeckomenyViewModeToggle(
+          mode: _viewMode,
+          onSelect: (mode) => unawaited(_setViewMode(mode)),
+        ),
       ),
       body: _buildBody(context, viewModel),
       floatingActionButton: _buildShoppingFab(context, viewModel),
@@ -405,18 +411,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     BuildContext context,
     MenuViewModel viewModel,
   ) {
+    // The bar gives the icons its own foreground: text.primary on the light
+    // root bar in both modes (ButleryTopBar).
     return [
-      VeckomenyViewModeToggle(
-        mode: _viewMode,
-        onSelect: (mode) => unawaited(_setViewMode(mode)),
-      ),
       const GroupMenuEntryButton(),
       // Load menu / template button
       IconButton(
-        icon: Icon(
-          Icons.folder_open,
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
+        icon: const Icon(Icons.folder_open),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
@@ -430,10 +431,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Save menu button (only when menu exists)
       if (viewModel.hasMenu)
         IconButton(
-          icon: Icon(
-            Icons.save,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
+          icon: const Icon(Icons.save),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
@@ -444,141 +442,157 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Clear menu button
       if (viewModel.hasMenu)
         IconButton(
-          icon: Icon(
-            Icons.clear,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
+          icon: const Icon(Icons.clear),
           onPressed: _clearMenu,
           tooltip: context.l10n.menuClear,
         ),
     ];
   }
 
+  /// The view's one saffron action (Komponentark v1:843-844; Skarmar v12
+  /// del 1 #veckomeny draws "Generera" as the only saffron button). While
+  /// the week is planned it keeps its shape and gets the plate line along
+  /// its bottom edge (Komponentark v1:372).
+  Widget _buildGenerateButton(BuildContext context, MenuViewModel viewModel) {
+    final hasPrompt = _promptController.text.isNotEmpty;
+    return Center(
+      key: const ValueKey('test-veckomeny-generate'),
+      child: Semantics(
+        identifier: 'btn-generate-menu',
+        child: HeroButton(
+          label: viewModel.hasMenu
+              ? context.l10n.menuGenerateNew
+              : context.l10n.menuGenerate,
+          busy: viewModel.isGenerating,
+          busyLabel: context.l10n.weekMenuPlanningTitle,
+          onPressed: hasPrompt ? () => unawaited(_generateMenu()) : null,
+        ),
+      ),
+    );
+  }
+
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
-    return Stack(
-      children: [
-        Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 900,
-                desktop: 1200,
-              ),
-            ),
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                // BUT-407: online-members presence bar (union across groups).
-                const FamilyPresenceBar(),
-                // BUT-408: live cooking session card for the user's groups.
-                const VeckomenyCookingSessionCard(),
-                Padding(
-                  padding: AppDimensions.responsiveContentPadding(context),
-                  child: Column(
-                    children: [
-                      MenuContentWidgets.buildPromptInput(
-                        context,
-                        controller: _promptController,
-                        focusNode: _promptFocusNode,
-                        isGenerating: viewModel.isGenerating,
-                        onClear: () {
-                          _promptController.clear();
-                          setState(() {});
-                        },
-                        onChanged: () => setState(() {}),
-                        // Voice prompt (kb-whisper plan): transcript lands
-                        // EDITABLE here — the user reviews before generating.
-                        voiceButton: VoicePromptButton(
-                          enabled: !viewModel.isGenerating,
-                          onTranscript: (text) {
-                            _promptController.text = text;
-                            _promptController.selection =
-                                TextSelection.collapsed(
-                                  offset: text.length,
-                                );
-                            _promptFocusNode.requestFocus();
-                            setState(() {});
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        height: LayoutComponents.valueFor(
-                          context: context,
-                          mobile: AppDimensions.spacingL,
-                          tablet: AppDimensions.spacingXl,
-                          desktop: AppDimensions.spacingXl,
-                        ),
-                      ),
-                      MenuContentWidgets.buildGenerateButton(
-                        context,
-                        viewModel: viewModel,
-                        hasPrompt: _promptController.text.isNotEmpty,
-                        onGenerate: () => unawaited(_generateMenu()),
-                      ),
-                      SizedBox(
-                        height: LayoutComponents.valueFor(
-                          context: context,
-                          mobile: AppDimensions.spacingXl,
-                          tablet: AppDimensions.spacingXl * 1.5,
-                          desktop: AppDimensions.spacingXxl,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: AppDimensions.responsiveHorizontalPadding(context),
-                    child: _viewMode == VeckomenyViewMode.kalender
-                        ? SingleChildScrollView(
-                            // BUT-1611: per-meal "who's home" lives inside the
-                            // calendar (faces on each slot + a collapsible
-                            // week overview), not a separate strip.
-                            child: CalendarWeeklyMenuWidget(
-                              onRefinePrompt: _promptFocusNode.requestFocus,
-                            ),
-                          )
-                        : Column(
-                            children: [
-                              Expanded(
-                                child: MenuContentWidgets.buildMenuContent(
-                                  context,
-                                  viewModel: viewModel,
-                                  onRetry: _promptController.text.isNotEmpty
-                                      ? () => unawaited(_generateMenu())
-                                      : null,
-                                ),
-                              ),
-                              // BUT-1241: explicit placement choice for the
-                              // generated result.
-                              if (viewModel.hasMenu &&
-                                  !viewModel.isGenerating &&
-                                  !viewModel.hasError)
-                                MenuPlacementChoiceFooter(
-                                  // BUT-1987: the placement state lives on the
-                                  // CALENDAR viewmodel, which owns the write.
-                                  isPlacing: context
-                                      .watch<WeeklyMenuPlanViewModel>()
-                                      .isPlacingGeneratedMenu,
-                                  onPlaceAuto: () =>
-                                      unawaited(_onPlaceAutomatically()),
-                                  onPlaceManual: () => unawaited(
-                                    _openPlacement(redoAuto: false),
-                                  ),
-                                ),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,
+            tablet: 900,
+            desktop: 1200,
           ),
         ),
-        // Loading overlay
-        if (viewModel.isGenerating) const VeckomenyGeneratingOverlay(),
-      ],
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            // BUT-407: online-members presence bar (union across groups).
+            const FamilyPresenceBar(),
+            // BUT-408: live cooking session card for the user's groups.
+            const VeckomenyCookingSessionCard(),
+            Padding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                children: [
+                  MenuContentWidgets.buildPromptInput(
+                    context,
+                    controller: _promptController,
+                    focusNode: _promptFocusNode,
+                    isGenerating: viewModel.isGenerating,
+                    onClear: () {
+                      _promptController.clear();
+                      setState(() {});
+                    },
+                    onChanged: () => setState(() {}),
+                    // Voice prompt (kb-whisper plan): transcript lands
+                    // EDITABLE here — the user reviews before generating.
+                    voiceButton: VoicePromptButton(
+                      enabled: !viewModel.isGenerating,
+                      onTranscript: (text) {
+                        _promptController.text = text;
+                        _promptController.selection = TextSelection.collapsed(
+                          offset: text.length,
+                        );
+                        _promptFocusNode.requestFocus();
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    height: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: AppDimensions.spacingL,
+                      tablet: AppDimensions.spacingXl,
+                      desktop: AppDimensions.spacingXl,
+                    ),
+                  ),
+                  _buildGenerateButton(context, viewModel),
+                  SizedBox(
+                    height: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: AppDimensions.spacingXl,
+                      tablet: AppDimensions.spacingXl * 1.5,
+                      desktop: AppDimensions.spacingXxl,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: AppDimensions.responsiveHorizontalPadding(context),
+                child: viewModel.isGenerating
+                    // The week while it is planned: the plate line with
+                    // text in the content area, never an overlay over the
+                    // view (Skarmar v12 del 1 #veckogenererarpanel;
+                    // ux-beslut.json D-03).
+                    ? const Align(
+                        alignment: Alignment.topCenter,
+                        child: VeckomenyGeneratingOverlay(),
+                      )
+                    : _viewMode == VeckomenyViewMode.kalender
+                    ? SingleChildScrollView(
+                        // BUT-1611: per-meal "who's home" lives inside the
+                        // calendar (faces on each slot + a collapsible
+                        // week overview), not a separate strip.
+                        child: CalendarWeeklyMenuWidget(
+                          onRefinePrompt: _promptFocusNode.requestFocus,
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: MenuContentWidgets.buildMenuContent(
+                              context,
+                              viewModel: viewModel,
+                              onRetry: _promptController.text.isNotEmpty
+                                  ? () => unawaited(_generateMenu())
+                                  : null,
+                            ),
+                          ),
+                          // BUT-1241: explicit placement choice for the
+                          // generated result.
+                          if (viewModel.hasMenu &&
+                              !viewModel.isGenerating &&
+                              !viewModel.hasError)
+                            MenuPlacementChoiceFooter(
+                              // BUT-1987: the placement state lives on the
+                              // CALENDAR viewmodel, which owns the write.
+                              isPlacing: context
+                                  .watch<WeeklyMenuPlanViewModel>()
+                                  .isPlacingGeneratedMenu,
+                              onPlaceAuto: () =>
+                                  unawaited(_onPlaceAutomatically()),
+                              onPlaceManual: () => unawaited(
+                                _openPlacement(redoAuto: false),
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

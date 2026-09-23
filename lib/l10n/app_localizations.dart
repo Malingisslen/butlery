@@ -27820,6 +27820,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Stäng editorn'**
   String get recipeEditorClose;
+
+  /// What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Planerar veckan …'**
+  String get weekMenuPlanningTitle;
+
+  /// What the plate line says while saved menus load (P4-U09).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar sparade menyer …'**
+  String get menuLoadingSaved;
+
+  /// The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköp'**
+  String get shoppingRootTitle;
+
+  /// The line under the shopping root bar's title (P4-U10; Komponentark v1:64).
+  ///
+  /// In sv, this message translates to:
+  /// **'{listName} · {done} av {total} klara'**
+  String shoppingRootLine(String listName, int done, int total);
+
+  /// The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'{listName} · inga varor'**
+  String shoppingRootLineEmpty(String listName);
+
+  /// An empty shopping list's title (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att handla'**
+  String get shoppingEmptyTitle;
+
+  /// An empty shopping list's body (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka veckans rätter hit så samlas ingredienserna per kategori. Det du redan har i skafferiet dras bort.'**
+  String get shoppingEmptyBody;
+
+  /// The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Från veckomenyn'**
+  String get shoppingFromWeekMenu;
+
+  /// What the plate line says while shopping templates load (P4-U10).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar mallarna …'**
+  String get shoppingLoadingTemplates;
+
+  /// What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar receptet …'**
+  String get importFetchingRecipe;
+
+  /// What the file import says while it reads the file (P4-U08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Läser filen …'**
+  String get importReadingFile;
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -79,7 +80,9 @@ class _ShoppingListSelectionDialogState
     if (_isLoading) {
       return Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingL),
-        child: StateWidget.loading(),
+        child: StateWidget.loading(
+          message: context.l10n.loadingShoppingLists,
+        ),
       );
     }
 
@@ -93,22 +96,33 @@ class _ShoppingListSelectionDialogState
       );
     }
 
-    return RadioGroup<UnifiedShoppingList>(
-      groupValue: _selected,
-      onChanged: (value) {
-        if (value != null && mounted) {
-          setState(() => _selected = value);
+    // A list is chosen by its id, never by its row or its name (identity
+    // rule). Each row carries the focus ring and at least 48 dp
+    // (ButleryControlFocus; tokens.json:155-160, :485-492; Grafisk manual
+    // v6:381).
+    return RadioGroup<String>(
+      groupValue: _selected?.id,
+      onChanged: (id) {
+        if (id == null || !mounted) return;
+        for (final list in _lists) {
+          if (list.id == id) {
+            setState(() => _selected = list);
+            return;
+          }
         }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: _lists
             .map(
-              (list) => RadioListTile<UnifiedShoppingList>(
-                value: list,
-                title: Text(list.name),
-                subtitle: Text(
-                  context.l10n.shoppingItemCount(list.itemCount),
+              (list) => ButleryControlFocus(
+                child: RadioListTile<String>(
+                  key: ValueKey('share-shopping-list-${list.id}'),
+                  value: list.id,
+                  title: Text(list.name),
+                  subtitle: Text(
+                    context.l10n.shoppingItemCount(list.itemCount),
+                  ),
                 ),
               ),
             )

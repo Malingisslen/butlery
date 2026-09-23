@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
@@ -528,13 +529,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     } catch (e) {
       AppLogger.error('Error loading friends for member management: $e');
       if (context.mounted) {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.shoppingCouldNotLoadFriends(e.toString()),
-            ),
-            backgroundColor: cs.error,
+        // The ink snackbar (PQ-09 = A), and the cause in words, never the
+        // raw exception (content-style-guide.md:96).
+        SnackBarUtils.showError(
+          context,
+          context.l10n.shoppingCouldNotLoadFriends(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

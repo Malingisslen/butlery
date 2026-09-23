@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -202,7 +203,11 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.voiceImportTitle)),
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.voiceImportTitle,
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
