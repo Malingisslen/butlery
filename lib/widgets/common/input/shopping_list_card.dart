@@ -43,10 +43,18 @@ class ShoppingListCard extends StatelessWidget {
       ),
       child: Material(
         elevation: AppDimensions.elevationMedium,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         // A chosen list is surface.selected, never an ink tint (tokens.json:40-53,
         // :116-119); surfaceContainerHighest carries its values in both modes.
+        // "Vald = riktig border (ingen box-shadow)", drawn 1.5 px in
+        // text.primary (Grafisk manual v6:207-209); onSurface is text.primary
+        // in both modes.
         color: isSelected ? cs.surfaceContainerHighest : null,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          side: isSelected
+              ? BorderSide(color: cs.onSurface, width: 1.5)
+              : BorderSide.none,
+        ),
         child: Semantics(
           label: context.l10n.a11yShoppingList(list.name),
           button: true,

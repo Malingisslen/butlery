@@ -345,11 +345,25 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                           vertical: AppDimensions.spacingXs,
                         ),
                         // A chosen friend is surface.selected, never an ink tint
-                        // (tokens.json:40-53, :116-119).
+                        // (tokens.json:40-53, :116-119), with a real 1.5 px
+                        // text.primary border (Grafisk manual v6:207-209).
                         color: isSelected
                             ? Theme.of(
                                 context,
                               ).colorScheme.surfaceContainerHighest
+                            : null,
+                        shape: isSelected
+                            ? RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusCard,
+                                ),
+                                side: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                  width: 1.5,
+                                ),
+                              )
                             : null,
                         child: CheckboxListTile(
                           value: isSelected,

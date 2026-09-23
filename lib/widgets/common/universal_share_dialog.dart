@@ -438,18 +438,25 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
         SnackBarUtils.showSuccess(context, successMessage);
       } else if (widget.viewModel.hasError && mounted) {
-        // PHASE 2: Show specific validation error from ViewModel
+        // PHASE 2: Show specific validation error from ViewModel.
+        // The dialog stays open, so the snackbar sits under its barrier and
+        // a "Stäng" there could not be tapped: no action, and it closes by
+        // itself after 4 s as it did before.
         SnackBarUtils.showError(
           context,
           widget.viewModel.errorMessage!,
           duration: const Duration(seconds: 4),
+          showCloseButton: false,
         );
       }
     } catch (e) {
       if (mounted) {
+        // Same as above: the dialog is still open.
         SnackBarUtils.showError(
           context,
           context.l10n.shareFailed(e.toString()),
+          duration: const Duration(seconds: 4),
+          showCloseButton: false,
         );
       }
     }
