@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -86,6 +86,9 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   DateTime? _expiryDate;
   IngredientData? _selectedIngredient;
   bool _showSuggestions = false;
+
+  /// The last save failed; the sheet shows the error line (P5-U14).
+  bool _saveFailed = false;
 
   bool get _isEditing => widget.existingItem != null;
 
@@ -170,6 +173,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   Future<void> _submit() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+    if (_saveFailed) setState(() => _saveFailed = false);
 
     // BUT-1910: the field had a hand-rolled `replaceAll(',', '.')` and no input
     // formatter, so "1,5,5" was typeable and parsed to nothing — falling back
@@ -229,8 +233,15 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     // The VM swallows save failures into `hasError` (offline / Firestore
     // write error). Don't dismiss on failure — that silently loses the item;
     // keep the sheet open with feedback so the user can retry.
+    //
+    // P5-U14: the three-part failure (content-style-guide.md:87-97): the
+    // item was not saved, what was typed is still in the sheet, and Försök
+    // igen saves again. Interpretation: it is a line in the sheet, not a
+    // snackbar. A snackbar belongs to the view under this modal sheet, so it
+    // would sit behind the sheet and its scrim, and Försök igen could not be
+    // pressed.
     if (viewModel.hasError) {
-      SnackBarUtils.showError(context, context.l10n.pantryCouldNotSaveItem);
+      setState(() => _saveFailed = true);
       return;
     }
     navigator.pop();
@@ -400,6 +411,15 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
               ),
             ),
+            if (_saveFailed) ...[
+              const SizedBox(height: AppDimensions.spacingLg),
+              InlineError(
+                what: l10n.pantryCouldNotSaveItem,
+                preserved: l10n.errorPreservedForm,
+                actionLabel: l10n.commonRetry,
+                onAction: _submit,
+              ),
+            ],
             const SizedBox(height: AppDimensions.spacingXl),
             ActionButtons.primaryButton(
               context,

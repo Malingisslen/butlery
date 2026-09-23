@@ -433,7 +433,14 @@ void main() {
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       // PQ-09 = A: no red fill; the message names the failure.
       expect(snackBar.backgroundColor, isNull);
-      expect(snackBar.content, isA<InkSnackBar>());
+      // P5-U00: an error wraps the ink content in the alert role.
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.byType(InkSnackBar),
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

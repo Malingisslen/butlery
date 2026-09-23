@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
@@ -161,7 +162,10 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
               _MessageField(controller: _messageController),
               if (_inlineError != null) ...[
                 const SizedBox(height: AppDimensions.spacingSm),
-                _InlineError(message: _inlineError!),
+                InlineError(
+                  key: const Key('ping-inline-error'),
+                  what: _inlineError!,
+                ),
               ],
               const SizedBox(height: AppDimensions.spacingLg),
               _SendButton(
@@ -347,43 +351,6 @@ class _MessageField extends StatelessWidget {
             vertical: AppDimensions.spacingSm,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _InlineError extends StatelessWidget {
-  const _InlineError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      key: const Key('ping-inline-error'),
-      padding: const EdgeInsets.all(AppDimensions.spacingSm),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        border: Border.all(color: cs.error.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: cs.error,
-            size: AppDimensions.iconSizeS,
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onErrorContainer,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

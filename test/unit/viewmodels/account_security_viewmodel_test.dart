@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../test_support/base_unit_test.dart';
@@ -458,6 +459,111 @@ void main() {
           isFalse,
           reason: 'Loading should be false after completion',
         );
+      });
+    });
+
+    // P5-U10 (profil-inställningar ERROR): a failed change says what did not
+    // happen and why, never a bare "Ett oväntat fel uppstod"
+    // (content-style-guide.md:90, :95), and only a server failure can be
+    // retried.
+    group('failure text (P5-U10)', () {
+      Future<void> failPassword(String? serviceError) async {
+        mockAuthService.setAuthState(
+          isAuthenticated: true,
+          currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
+          error: serviceError,
+        );
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changePassword(any()),
+        ).thenAnswer((_) async => false);
+        await viewModel.changePassword(
+          currentPassword: 'current123',
+          newPassword: 'newPassword123',
+          confirmPassword: 'newPassword123',
+        );
+      }
+
+      test('a mapped cause is named after what did not happen', () async {
+        await failPassword(AppLocale.current.errorTooManyAttempts);
+
+        expect(
+          viewModel.error,
+          AppLocale.current.accountSecurityPasswordChangeFailedBecause(
+            AppLocale.current.errorTooManyAttempts,
+          ),
+        );
+        // Trying again at once cannot help (content-style-guide.md:93).
+        expect(viewModel.canRetry, isFalse);
+      });
+
+      test('a wrong current password cannot be retried as it is', () async {
+        mockAuthService.setAuthState(
+          isAuthenticated: true,
+          currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
+          error: AppLocale.current.errorInvalidCredentials,
+        );
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => false);
+
+        await viewModel.changePassword(
+          currentPassword: 'wrong-current',
+          newPassword: 'newPassword123',
+          confirmPassword: 'newPassword123',
+        );
+
+        expect(
+          viewModel.error,
+          AppLocale.current.accountSecurityPasswordChangeFailedBecause(
+            AppLocale.current.errorInvalidCredentials,
+          ),
+        );
+        expect(viewModel.canRetry, isFalse);
+      });
+
+      test('the causeless fallback is not passed through', () async {
+        await failPassword(AppLocale.current.errorUnexpected);
+
+        expect(
+          viewModel.error,
+          AppLocale.current.accountSecurityPasswordChangeFailed,
+        );
+        expect(viewModel.canRetry, isTrue);
+      });
+
+      test('no service text at all still says what did not happen', () async {
+        mockAuthService.setAuthState(
+          isAuthenticated: true,
+          currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
+        );
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => false);
+
+        await viewModel.changeEmail(
+          currentPassword: 'current123',
+          newEmail: 'new@example.com',
+        );
+
+        expect(
+          viewModel.error,
+          AppLocale.current.accountSecurityEmailChangeFailed,
+        );
+        expect(viewModel.canRetry, isTrue);
+      });
+
+      test('a form error cannot be retried', () async {
+        await failPassword(AppLocale.current.errorTooManyAttempts);
+        await viewModel.changePassword(
+          currentPassword: '',
+          newPassword: 'x',
+          confirmPassword: 'x',
+        );
+
+        expect(viewModel.canRetry, isFalse);
       });
     });
   });

@@ -35,6 +35,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -659,13 +660,34 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
         Navigator.pop(context, true);
       } else {
-        UtilityComponents.showErrorSnackbar(
+        // A failure stays until tapped; a second one replaces it.
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // P5-U12: the view stays open with the edits, and says so
+        // (content-style-guide.md:90-93). A cause that trying again cannot
+        // fix is named and gets Stäng; otherwise Försök igen saves again.
+        // The kind comes from the view model, never from the error text.
+        final l10n = context.l10n;
+        final failure = viewModel.lastSaveFailure;
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.recipeCouldNotSaveChanges,
+          what: switch (failure) {
+            RecipeSaveFailure.incomplete => l10n.recipeSaveIncomplete,
+            RecipeSaveFailure.noPermission => l10n.recipeSaveNoPermission,
+            _ => l10n.recipeSaveFailed,
+          },
+          preserved: l10n.errorPreservedRecipeEdits,
+          action: _canRetry(failure)
+              ? FailureAction.retry(() => _saveRecipe(context))
+              : null,
         );
       }
     }
   }
+
+  /// Försök igen only where trying again can help: not for an incomplete
+  /// recipe, a missing permission or nothing to copy.
+  static bool _canRetry(RecipeSaveFailure? failure) =>
+      failure == null || failure == RecipeSaveFailure.failed;
 
   /// Fork recipe functionality for collaborative editing (inlined from edit_recipe_actions.dart)
   Future<void> _forkRecipe(BuildContext context) async {
@@ -677,7 +699,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     AppLogger.info('Form validation passed, proceeding with recipe fork');
     final viewModel = context.read<RecipeFormViewModel>();
-    final forkedRecipe = await viewModel.saveFork();
+    final forkedRecipe = await viewModel.forkRecipe();
 
     if (context.mounted) {
       if (forkedRecipe != null) {
@@ -687,9 +709,16 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
         Navigator.pop(context, true);
       } else {
-        UtilityComponents.showErrorSnackbar(
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // P5-U12: as for a save; Försök igen saves the copy again.
+        final failure = viewModel.lastSaveFailure;
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.recipeCouldNotSaveCopy,
+          what: context.l10n.recipeCopySaveFailed,
+          preserved: context.l10n.errorPreservedRecipeEdits,
+          action: _canRetry(failure)
+              ? FailureAction.retry(() => _forkRecipe(context))
+              : null,
         );
       }
     }

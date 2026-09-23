@@ -126,7 +126,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         '❌ Fel vid initialisering av AddMembersToGroupViewModel',
         e,
       );
-      setError(AppLocale.current.errorGeneric);
+      // P5-U17: the cause, not "Ett fel uppstod" (content-style-guide.md:95).
+      // A missing group is its own cause; anything else is the list of
+      // friends that could not be loaded.
+      setError(
+        _group == null
+            ? AppLocale.current.errorGroupNotFound
+            : AppLocale.current.groupAddMembersLoadFailed,
+      );
     }
   }
 

@@ -212,12 +212,16 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       // The strings carry no "försök igen" of their own any more — the action
       // label is `commonRetry`, and saying it twice read as an instruction to
       // do by hand what the button now does.
-      SnackBarUtils.showErrorWithRetry(
+      //
+      // P5-U03: the typed text is at stake, so the snackbar also says it is
+      // still in the field (content-style-guide.md:92).
+      SnackBarUtils.showFailure(
         context,
-        failure == MessageSendFailure.clockAhead
+        what: failure == MessageSendFailure.clockAhead
             ? context.l10n.chatSendFailedDeviceClockAhead
             : context.l10n.chatCouldNotSendMessage,
-        onRetry: _handleSendMessage,
+        preserved: context.l10n.errorPreservedText,
+        action: FailureAction.retry(_handleSendMessage),
       );
     }
   }

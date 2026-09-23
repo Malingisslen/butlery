@@ -11,6 +11,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/feedback_themes.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -18,6 +19,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -70,8 +72,71 @@ class SnackBarUtils {
     );
   }
 
+  /// A failure, in the three parts of content-style-guide.md:87-97.
+  ///
+  /// [what] says what happened ("Omröstningen kunde inte skapas."),
+  /// [preserved] what was kept when something was at stake ("Din text ligger
+  /// kvar.", content-style-guide.md:92), and [action] what you can do. The
+  /// action is never "OK" (content-style-guide.md:96; Komponentark v1:750):
+  /// without one, or with one named OK, it is "Stäng".
+  ///
+  /// The snackbar has the alert role, so a screen reader reads it without
+  /// moving focus (Butlery tillganglighetshandoff.dc.html:172). It stays
+  /// until the user acts, as every snackbar with an action does.
+  ///
+  /// Interpretation: the ink snackbar is drawn with one line of text
+  /// (Komponentark v1:746-748), so [what] and [preserved] are one paragraph,
+  /// in that order.
+  static void showFailure(
+    BuildContext context, {
+    required String what,
+    String? preserved,
+    FailureAction? action,
+    Duration? duration,
+  }) {
+    try {
+      final l10n = context.l10n;
+      final message = failureMessage(what, preserved);
+      final resolved = action?._resolve(l10n);
+      _showSnackBar(
+        context,
+        message: message,
+        duration: duration ?? const Duration(seconds: 5),
+        actionLabel: resolved?.$1 ?? l10n.commonClose,
+        // "Stäng" only closes: the action itself hides the snackbar.
+        onAction: resolved?.$2 ?? () {},
+        alert: true,
+      );
+
+      AppLogger.debug('Failure snackbar shown: $message');
+    } catch (e) {
+      AppLogger.error('Failed to show failure snackbar: $e');
+    }
+  }
+
+  /// [what] and [preserved] as the one paragraph a failure snackbar shows.
+  ///
+  /// The parts are separate sentences (content-style-guide.md:87-97), so a
+  /// [what] without terminal punctuation gets a full stop before [preserved]
+  /// follows. Many older cause strings ("Kunde inte lämna listan") have none.
+  static String failureMessage(String what, String? preserved) {
+    final kept = preserved?.trim();
+    if (kept == null || kept.isEmpty) return what;
+    return '${_asSentence(what.trim())} $kept';
+  }
+
+  static String _asSentence(String text) {
+    if (text.isEmpty) return text;
+    const terminal = {'.', '?', '!', '…'};
+    return terminal.contains(text[text.length - 1]) ? text : '$text.';
+  }
+
   /// An error. With [showCloseButton] the action is "Stäng", never "OK"
   /// (Komponentark v1:750).
+  ///
+  /// The legacy error channel: new code calls [showFailure], and
+  /// test/architecture/error_contract_test.dart freezes the calls that are
+  /// left until package 7 moves them.
   static void showError(
     BuildContext context,
     String message, {
@@ -87,7 +152,8 @@ class SnackBarUtils {
         duration: duration ?? const Duration(seconds: 5),
         actionLabel:
             actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
-        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
+        onAction: onAction ?? (showCloseButton ? () {} : null),
+        alert: true,
       );
 
       AppLogger.debug('Error snackbar shown: $message');
@@ -96,17 +162,19 @@ class SnackBarUtils {
     }
   }
 
+  /// [showFailure] with "Försök igen", which runs [onRetry].
   static void showErrorWithRetry(
     BuildContext context,
     String message, {
     required VoidCallback onRetry,
+    String? preserved,
     Duration? duration,
   }) {
-    showError(
+    showFailure(
       context,
-      message,
-      actionLabel: context.l10n.commonRetry,
-      onAction: onRetry,
+      what: message,
+      preserved: preserved,
+      action: FailureAction.retry(onRetry),
       duration: duration,
     );
   }
@@ -118,13 +186,10 @@ class SnackBarUtils {
     VoidCallback? onRetry,
     Duration? duration,
   }) {
-    showError(
+    showFailure(
       context,
-      context.l10n.snackbarNoInternet,
-      actionLabel: onRetry != null
-          ? context.l10n.commonRetry
-          : context.l10n.commonClose,
-      onAction: onRetry ?? (() => hide(context)),
+      what: context.l10n.snackbarNoInternet,
+      action: onRetry == null ? null : FailureAction.retry(onRetry),
       duration: duration,
     );
   }
@@ -325,6 +390,7 @@ class SnackBarUtils {
     Duration? duration,
     String? actionLabel,
     VoidCallback? onAction,
+    bool alert = false,
   }) {
     final messenger = ScaffoldMessenger.of(context);
     var acted = false;
@@ -341,9 +407,20 @@ class SnackBarUtils {
             },
           )
         : null;
+    final Widget content = InkSnackBar(message: message, action: action);
     messenger.showSnackBar(
       SnackBar(
-        content: InkSnackBar(message: message, action: action),
+        // An error is an alert, everything else a status (Butlery
+        // tillganglighetshandoff.dc.html:172, "status (fel: alert)"). The
+        // SnackBar's own node is the live region; Flutter forbids a role and
+        // a live region on one node, so the role is a node of its own.
+        content: alert
+            ? Semantics(
+                container: true,
+                role: SemanticsRole.alert,
+                child: content,
+              )
+            : content,
         padding: InkSnackBar.padding,
         duration: duration ?? const Duration(seconds: 3),
         // The action sits in the content, so Flutter's default
@@ -394,6 +471,38 @@ class SnackBarUtils {
       look: look,
     );
   }
+}
+
+/// What a failure offers: part three of the error (content-style-guide.md:93).
+///
+/// The label names what the action does. "OK" is never one
+/// (content-style-guide.md:96; Komponentark v1:750): a [FailureAction.named]
+/// called OK is shown as "Stäng" and still runs its callback.
+class FailureAction {
+  /// "Försök igen", which runs [onPressed].
+  const FailureAction.retry(this.onPressed) : _label = null;
+
+  /// An action named for what it does, for example "Öppna inställningar".
+  const FailureAction.named(String label, this.onPressed) : _label = label;
+
+  final String? _label;
+
+  /// What the action does. The snackbar is already closed when it runs.
+  final VoidCallback onPressed;
+
+  /// The label as shown in [l10n]'s language.
+  String label(AppLocalizations l10n) {
+    final named = _label?.trim();
+    if (named == null) return l10n.commonRetry;
+    // "OK" is the same word in Swedish and English.
+    if (named.isEmpty || named.toLowerCase() == 'ok') {
+      return l10n.commonClose;
+    }
+    return named;
+  }
+
+  (String, VoidCallback) _resolve(AppLocalizations l10n) =>
+      (label(l10n), onPressed);
 }
 
 /// The content of the ink snackbar (Komponentark v1:745-750): the message,

@@ -4,6 +4,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
@@ -156,7 +159,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     } catch (e, stackTrace) {
       AppLogger.error('Dialog action failed: $e', stackTrace);
       if (mounted) {
-        setState(() => _error = e.toString());
+        setState(() => _error = _failureText(e));
       }
     } finally {
       if (mounted) {
@@ -165,29 +168,30 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     }
   }
 
+  /// Part one of the error (content-style-guide.md:90, :95): the cause when
+  /// one is known (network, permission, not found), else what did not
+  /// happen. Never the exception's own text; that goes to the log.
+  String _failureText(Object error) {
+    // The sanitizer speaks AppLocale.current, so its generic text is
+    // compared in the same language.
+    final cause = sanitizeErrorForUser(error);
+    return cause == AppLocale.current.errorGeneric
+        ? context.l10n.dialogActionFailed
+        : cause;
+  }
+
+  /// P5-U04: the failed action as the three-part inline error, with
+  /// Försök igen, and the dialog stays open (content-style-guide.md:87-97).
+  /// A form dialog keeps what was filled in, so it says so (:92).
   Widget _buildErrorDisplay() {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: cs.error),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Text(
-              _error!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final l = context.l10n;
+    return InlineError(
+      what: _error!,
+      preserved: widget is BaseFormDialog ? l.errorPreservedForm : null,
+      actionLabel: l.commonRetry,
+      // The error is cleared when the action starts, so this never runs
+      // twice at once.
+      onAction: _onPrimaryAction,
     );
   }
 }

@@ -15260,8 +15260,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryEditSheetTitle => 'Redigera ingrediens';
 
   @override
-  String get pantryCouldNotSaveItem =>
-      'Kunde inte spara i skafferiet. Försök igen.';
+  String get pantryCouldNotSaveItem => 'Varan kunde inte sparas i skafferiet.';
 
   @override
   String get pantryIngredientLabel => 'Ingrediens';
@@ -15988,8 +15987,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookingModeSubstitutionApplied => 'Ingrediens utbytt';
 
   @override
-  String get cookingModeSubstitutionFailed =>
-      'Kunde inte byta ingrediens. Försök igen.';
+  String get cookingModeSubstitutionFailed => 'Ingrediensen kunde inte bytas.';
 
   @override
   String get cookingModeOpenEditToSwap => 'Öppna redigering för att byta';
@@ -16800,4 +16798,89 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Delad meny';
+
+  @override
+  String get emailVerificationResendFailed =>
+      'Verifieringsmailet kunde inte skickas.';
+
+  @override
+  String emailVerificationResendFailedBecause(String cause) {
+    return 'Verifieringsmailet kunde inte skickas. $cause';
+  }
+
+  @override
+  String get emailVerificationAddressUnchanged =>
+      'Din e-postadress är oförändrad.';
+
+  @override
+  String get chatPollCouldNotBeCreated => 'Omröstningen kunde inte skapas.';
+
+  @override
+  String get chatEditCouldNotBeSaved => 'Ändringen kunde inte sparas.';
+
+  @override
+  String get chatEditOriginalKept => 'Meddelandet är oförändrat.';
+
+  @override
+  String get chatCouldNotSendReply => 'Svaret kunde inte skickas.';
+
+  @override
+  String get errorPreservedText => 'Texten ligger kvar i fältet.';
+
+  @override
+  String get errorPreservedForm => 'Det du fyllt i ligger kvar.';
+
+  @override
+  String get dialogActionFailed => 'Åtgärden kunde inte slutföras.';
+
+  @override
+  String get minaReceptRefreshFailed => 'Recepten kunde inte uppdateras.';
+
+  @override
+  String get minaReceptRefreshPreserved => 'Dina sparade recept visas nedan.';
+
+  @override
+  String get shoppingLeaveListStillMember => 'Du är fortfarande med i listan.';
+
+  @override
+  String get cookingModeRecipeUnchanged => 'Receptet är oförändrat.';
+
+  @override
+  String get accountSecurityPasswordChangeFailed =>
+      'Lösenordet kunde inte ändras.';
+
+  @override
+  String accountSecurityPasswordChangeFailedBecause(String cause) {
+    return 'Lösenordet kunde inte ändras. $cause';
+  }
+
+  @override
+  String get accountSecurityEmailChangeFailed =>
+      'E-postadressen kunde inte ändras.';
+
+  @override
+  String accountSecurityEmailChangeFailedBecause(String cause) {
+    return 'E-postadressen kunde inte ändras. $cause';
+  }
+
+  @override
+  String get recipeSaveFailed => 'Receptet kunde inte sparas.';
+
+  @override
+  String get recipeCopySaveFailed => 'Kopian kunde inte sparas.';
+
+  @override
+  String get recipeSaveIncomplete =>
+      'Receptet kunde inte sparas. Det behöver en titel, minst en ingrediens och minst ett steg.';
+
+  @override
+  String get recipeSaveNoPermission =>
+      'Receptet kunde inte sparas. Du har inte behörighet att ändra det.';
+
+  @override
+  String get errorPreservedRecipeEdits =>
+      'Dina ändringar ligger kvar i formuläret.';
+
+  @override
+  String get groupAddMembersLoadFailed => 'Dina vänner kunde inte hämtas.';
 }

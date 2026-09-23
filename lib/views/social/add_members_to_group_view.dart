@@ -411,7 +411,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildErrorState(AddMembersToGroupViewModel viewModel) {
     return StateWidget.error(
-      message: viewModel.error ?? context.l10n.errorUnknown,
+      message: viewModel.error ?? context.l10n.groupAddMembersLoadFailed,
       onAction: () {
         viewModel.clearError();
         viewModel.refresh();

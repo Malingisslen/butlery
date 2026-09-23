@@ -212,7 +212,11 @@ class ChatActionHandler {
     } catch (e) {
       AppLogger.error('Failed to create poll', e);
       if (!context.mounted) return;
-      _showErrorSnackBar(context.l10n.chatErrorOccurred);
+      // P5-U03: names what failed; Försök igen sends the same poll again.
+      _showErrorSnackBar(
+        context.l10n.chatPollCouldNotBeCreated,
+        onRetry: () => handlePollCreate(pollData),
+      );
     }
   }
 
@@ -458,49 +462,40 @@ class ChatActionHandler {
   Future<void> _editMessage(Message message) async {
     AppLogger.info('Editing message: ${message.id}');
 
-    // Show edit dialog
-    final l10n = context.l10n;
-    final controller = TextEditingController(text: message.content);
+    // The dialog owns its controller: disposing it here, right after the
+    // pop, broke the dialog's own exit animation, which still builds the
+    // field.
     final edited = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.chatEditMessage),
-        content: TextField(
-          controller: controller,
-          maxLines: null,
-          maxLength: 5000,
-          decoration: InputDecoration(
-            hintText: l10n.chatWriteYourMessage,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
+      builder: (_) => _EditMessageDialog(initial: message.content),
     );
 
     if (edited != null &&
         edited.trim().isNotEmpty &&
         edited != message.content) {
-      try {
-        await _messagingService.editMessage(
-          messageId: message.id,
-          newContent: edited,
-        );
-        AppLogger.success('Message edited');
-      } catch (e) {
-        AppLogger.error('Failed to edit message', e);
-        _showErrorSnackBar(l10n.chatCouldNotEditMessage);
-      }
+      await _saveEdit(message, edited);
     }
-    controller.dispose();
+  }
+
+  /// Saves [edited] as [message]'s new text. On failure the snackbar says
+  /// the message is unchanged, and Försök igen saves the same edit again, so
+  /// the typed text is never lost (content-style-guide.md:90-93).
+  Future<void> _saveEdit(Message message, String edited) async {
+    try {
+      await _messagingService.editMessage(
+        messageId: message.id,
+        newContent: edited,
+      );
+      AppLogger.success('Message edited');
+    } catch (e) {
+      AppLogger.error('Failed to edit message', e);
+      if (!context.mounted) return;
+      _showErrorSnackBar(
+        context.l10n.chatEditCouldNotBeSaved,
+        preserved: context.l10n.chatEditOriginalKept,
+        onRetry: () => _saveEdit(message, edited),
+      );
+    }
   }
 
   Future<void> _deleteMessage(Message message) async {
@@ -695,8 +690,22 @@ class ChatActionHandler {
   // reachable from here AND from `block_user_action.dart`, which already used
   // the shared helper — arrived in two different colours inside one blocking
   // flow.
-  void _showErrorSnackBar(String message) {
-    SnackBarUtils.showError(context, message);
+  //
+  // P5-U03: every chat failure is the three-part failure snackbar
+  // (content-style-guide.md:87-97): what happened, what was kept when typed
+  // content is at stake, and Försök igen when there is something to retry,
+  // else Stäng. Never OK.
+  void _showErrorSnackBar(
+    String message, {
+    String? preserved,
+    VoidCallback? onRetry,
+  }) {
+    SnackBarUtils.showFailure(
+      context,
+      what: message,
+      preserved: preserved,
+      action: onRetry == null ? null : FailureAction.retry(onRetry),
+    );
   }
 
   void _showSuccessSnackBar(String message) {
@@ -713,5 +722,52 @@ class ChatActionHandler {
 
   void dispose() {
     // Clean up any resources
+  }
+}
+
+/// The edit dialog for one message. It owns its text controller, so the
+/// controller lives exactly as long as the dialog, exit animation included.
+class _EditMessageDialog extends StatefulWidget {
+  const _EditMessageDialog({required this.initial});
+
+  final String initial;
+
+  @override
+  State<_EditMessageDialog> createState() => _EditMessageDialogState();
+}
+
+class _EditMessageDialogState extends State<_EditMessageDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initial,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.chatEditMessage),
+      content: TextField(
+        controller: _controller,
+        maxLines: null,
+        maxLength: 5000,
+        decoration: InputDecoration(hintText: l10n.chatWriteYourMessage),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.commonCancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: Text(l10n.commonSave),
+        ),
+      ],
+    );
   }
 }
