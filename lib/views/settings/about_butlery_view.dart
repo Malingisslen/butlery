@@ -4,7 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/version_info.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 class AboutButleryView extends StatelessWidget {
@@ -16,9 +16,9 @@ class AboutButleryView extends StatelessWidget {
     final version = VersionInfo.appVersion;
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.settingsAboutTitle,
-        centerTitle: true,
+        backTo: context.l10n.commonSettings,
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
@@ -56,7 +56,7 @@ class AboutButleryView extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.article_outlined, color: cs.primary),
+                  leading: Icon(Icons.article_outlined, color: cs.onSurface),
                   title: Text(
                     context.l10n.settingsLicensesTitle,
                     style: AppTextStyles.titleMedium,

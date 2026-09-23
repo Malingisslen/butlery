@@ -18,6 +18,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
@@ -48,7 +49,9 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     _surfaceEditNotice(vm);
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.groupName)),
+      // A subpage (Komponentark v1:71-78): the group's week is opened from
+      // the group chat, so the back arrow returns there.
+      appBar: ButleryTopBar.undersida(title: widget.groupName),
       body: SafeArea(child: _body(context, vm)),
     );
   }
@@ -116,7 +119,8 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     }
 
     if (vm.isLoading) {
-      return StateWidget.loading(message: context.l10n.loadingGeneric);
+      // The plate line says what it fetches (produktregler.md:163, :304).
+      return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
 
     return Column(
@@ -323,7 +327,9 @@ class _DayRow extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+          // border.subtle (outlineVariant), never a faded divider
+          // (tokens.json:40-53 opacityLadder).
+          top: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
       ),
       padding: const EdgeInsets.symmetric(

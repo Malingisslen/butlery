@@ -642,6 +642,33 @@ class UnifiedShoppingService
     );
   }
 
+  /// [addItemToActiveList] that returns the new row's id, or null when
+  /// nothing was added. The id is what an undo after the add removes
+  /// (produktregler.md:131).
+  Future<String?> addItemToActiveListWithId({
+    required String name,
+    double? amount,
+    String? unit,
+    String? category,
+    String? note,
+    double? estimatedPrice,
+    int? priority,
+    String? recipeId,
+    String? recipeName,
+  }) async {
+    return await _itemManagement.addItemToActiveListWithId(
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      recipeId: recipeId,
+      recipeName: recipeName,
+    );
+  }
+
   Future<bool> toggleItemBought(String itemId) async {
     _beginMutation();
     return await _itemManagement.toggleItemBought(itemId);

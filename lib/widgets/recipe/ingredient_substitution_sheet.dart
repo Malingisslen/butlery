@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -51,7 +51,7 @@ class _IngredientSubstitutionSheetState
               children: [
                 Icon(
                   Icons.swap_horiz,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeL,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -77,12 +77,8 @@ class _IngredientSubstitutionSheetState
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Padding(
                   padding: const EdgeInsets.all(AppDimensions.spacingXl),
-                  child: Center(
-                    child: LoadingIndicator(
-                      size: AppDimensions.spinnerSizeSmall,
-                      strokeWidth: 2,
-                      color: cs.primary,
-                    ),
+                  child: PlateLine(
+                    semanticLabel: context.l10n.loadingSubstitutions,
                   ),
                 );
               }
@@ -167,11 +163,11 @@ class _IngredientSubstitutionSheetState
               Container(
                 padding: AppDimensions.paddingSymmetric4x2,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   border: Border.all(
-                    color: cs.primary.withValues(
+                    color: cs.onSurface.withValues(
                       alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
@@ -179,7 +175,7 @@ class _IngredientSubstitutionSheetState
                 child: Text(
                   _formatRatio(option.ratio),
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ),

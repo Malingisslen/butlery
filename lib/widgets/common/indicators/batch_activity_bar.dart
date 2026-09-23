@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Screen-level "something is running" bar, for work that outlives the control
 /// that started it.
@@ -31,14 +32,9 @@ class BatchActivityBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!active) return const SizedBox.shrink();
 
-    // The label rides the indicator's own `semanticsLabel`. `liveRegion` is
-    // what makes a screen reader speak the change instead of waiting to be
-    // asked.
-    return Semantics(
-      liveRegion: true,
-      child: LinearProgressIndicator(
-        semanticsLabel: semanticLabel ?? context.l10n.a11yLoading,
-      ),
-    );
+    // The plate line, never a sliding bar (B-18): an indeterminate segment
+    // that pulses in place (Komponentark v1:306). It owns the live region
+    // and the label.
+    return PlateLine(semanticLabel: semanticLabel ?? context.l10n.a11yLoading);
   }
 }

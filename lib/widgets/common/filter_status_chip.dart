@@ -53,7 +53,7 @@ class FilterStatusChip extends StatelessWidget {
           Text(
             '$selectedCount valda',
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

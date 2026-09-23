@@ -16,7 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
@@ -112,9 +112,10 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         }
       },
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+        // on the canonical top bar, left-aligned as drawn (v1:73).
+        appBar: ButleryTopBar.undersida(
           title: context.l10n.importRecipeTitle,
-          centerTitle: true,
         ),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -365,7 +366,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         icon: Icon(
           Icons.videocam_off,
           size: 48,
-          color: theme.colorScheme.primary,
+          color: theme.colorScheme.onSurface,
         ),
         title: Text(context.l10n.importVideoNoText),
         content: Text(

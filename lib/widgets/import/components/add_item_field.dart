@@ -60,7 +60,7 @@ class _AddItemFieldState extends State<AddItemField> {
         suffixIcon: IconButton(
           icon: Icon(
             Icons.add_circle,
-            color: theme.colorScheme.primary,
+            color: theme.colorScheme.onSurface,
           ),
           onPressed: _add,
           tooltip: context.l10n.commonAdd,

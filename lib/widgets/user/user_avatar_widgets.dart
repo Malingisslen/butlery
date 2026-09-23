@@ -165,7 +165,7 @@ class UserAvatarWidgets {
               imageUrl: imageUrl,
               displayName: displayName,
               size: size,
-              borderColor: borderColor ?? cs.primary,
+              borderColor: borderColor ?? cs.onSurface,
               borderWidth: borderWidth ?? AppDimensions.spacingXs,
             ),
             Positioned(
@@ -189,14 +189,14 @@ class UserAvatarWidgets {
                         shape: BoxShape.circle,
                         color: cs.primary,
                         border: Border.all(
-                          color: cs.surfaceContainerHighest,
+                          color: cs.onPrimary,
                           width: AppDimensions.borderWidthThick,
                         ),
                       ),
                       child: Icon(
                         Icons.edit,
                         size: AppDimensions.iconSizeM,
-                        color: cs.surfaceContainerHighest,
+                        color: cs.onPrimary,
                       ),
                     ),
                   ),

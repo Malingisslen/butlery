@@ -1,6 +1,7 @@
 // lib/views/social/friend_requests/friend_request_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 // Models
 import 'package:butlery/models/friend_request.dart';
@@ -35,10 +36,22 @@ class FriendRequestCard {
     final avatarUrl = userProfile?.avatarUrl;
     final isOnline = userProfile?.isOnline ?? false;
 
+    // Chosen is surface.selected with a real border, never a tint
+    // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+    // :108-119). surfaceContainerHighest is surface.raised, which
+    // carries surface.selected's values in both modes; the border is
+    // text.primary (onSurface): ink on light, paper on dark.
     return Card(
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(
-              alpha: AppDimensions.opacityMediumLight,
+          ? Theme.of(context).colorScheme.surfaceContainerHighest
+          : null,
+      shape: isSelected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 1.5,
+              ),
             )
           : null,
       child: Semantics(
@@ -153,8 +166,32 @@ class FriendRequestCard {
                 // Actions (not shown during bulk selection)
                 if (!isSelected) ...[
                   const SizedBox(height: AppDimensions.spacingL),
+                  // Acceptera first, then the decline action, in the order
+                  // drawn in Skarmar v12 del 3 #forfragningar. The drawing
+                  // says "Avböj" and names the person in each button's
+                  // accessible name; the app still says "Avvisa"
+                  // (socialDecline), an open copy question.
                   Row(
                     children: [
+                      // PQ-18 = A (produktbeslut 2026-09-23, revised after
+                      // the prototype): every incoming row keeps a saffron
+                      // "Acceptera", as drawn. This is a deliberate exception
+                      // to one saffron action per view (Komponentark
+                      // v1:843-844; Grafisk manual v6:219), for friend
+                      // requests only.
+                      Expanded(
+                        child: HeroButton(
+                          key: ValueKey('friendRequest.accept.${request.id}'),
+                          label: context.l10n.commonAccept,
+                          icon: Icons.check,
+                          onPressed: viewModel.isLoading
+                              ? null
+                              : () =>
+                                    _acceptRequest(context, request, viewModel),
+                          expand: true,
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingL),
                       Expanded(
                         child: ActionButtons.outlinedButton(
                           context,
@@ -164,19 +201,6 @@ class FriendRequestCard {
                               ? null
                               : () =>
                                     _rejectRequest(context, request, viewModel),
-                        ),
-                      ),
-                      const SizedBox(width: AppDimensions.spacingL),
-                      Expanded(
-                        child: ActionButtons.primaryButton(
-                          context,
-                          label: context.l10n.commonAccept,
-                          icon: Icons.check,
-                          onPressed: viewModel.isLoading
-                              ? null
-                              : () =>
-                                    _acceptRequest(context, request, viewModel),
-                          isExpanded: true,
                         ),
                       ),
                     ],
@@ -236,10 +260,22 @@ class FriendRequestCard {
         statusText = context.l10n.socialUnknownStatus;
     }
 
+    // Chosen is surface.selected with a real border, never a tint
+    // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+    // :108-119). surfaceContainerHighest is surface.raised, which
+    // carries surface.selected's values in both modes; the border is
+    // text.primary (onSurface): ink on light, paper on dark.
     return Card(
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(
-              alpha: AppDimensions.opacityMediumLight,
+          ? Theme.of(context).colorScheme.surfaceContainerHighest
+          : null,
+      shape: isSelected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 1.5,
+              ),
             )
           : null,
       child: Semantics(

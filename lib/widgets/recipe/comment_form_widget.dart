@@ -13,7 +13,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -242,14 +242,14 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 Icon(
                   Icons.reply,
                   size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
                     context.l10n.commentReplyingTo,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -312,10 +312,14 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               ),
             IconButton(
               onPressed: _canSend ? _onSendPressed : null,
+              // Busy: the plate line in the button's place, never a
+              // spinner (Grafisk manual v6:209).
               icon: _isBusy
-                  ? const LoadingIndicator(
-                      size: AppDimensions.iconSizeS,
-                      strokeWidth: 2,
+                  ? SizedBox(
+                      width: AppDimensions.iconSizeM,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.sendingComment,
+                      ),
                     )
                   : const Icon(Icons.send),
               style: IconButton.styleFrom(

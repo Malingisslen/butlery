@@ -337,7 +337,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         IconButton(
           onPressed: () => _handleAttachmentTap(type),
           icon: Icon(icon),
-          color: cs.primary,
+          color: cs.onSurface,
           tooltip: label,
         ),
         Text(
@@ -414,7 +414,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                             ? Icons.close
                             : Icons.attach_file,
                         color: _state.showAttachments
-                            ? cs.primary
+                            ? cs.onSurface
                             : cs.onSurfaceVariant,
                       ),
                       tooltip: _state.showAttachments
@@ -445,7 +445,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         icon: Icon(
                           Icons.send,
                           color: _state.isComposing
-                              ? cs.primary
+                              ? cs.onSurface
                               : cs.onSurfaceVariant,
                         ),
                         tooltip: context.l10n.tooltipSendMessage,

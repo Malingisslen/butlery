@@ -27,7 +27,7 @@ class CategoryDisplayWidgets {
         return ListTile(
           leading: Icon(
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           title: Text(category.name),
           subtitle: showMemberCount
@@ -80,7 +80,7 @@ class CategoryDisplayWidgets {
                           ? Icons.emoji_emotions
                           : Icons.group,
                       size: AppDimensions.iconSizeXl,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     const SizedBox(height: AppDimensions.spacingS),
                     Text(
@@ -144,7 +144,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.category,
                     label: context.l10n.friendCategories,
                     value: categories.length.toString(),
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     iconSize: AppDimensions.iconSizeL,
                     valueStyle: AppTextStyles.titleBold,
                     labelStyle: AppTextStyles.bodySmall,
@@ -226,7 +226,7 @@ class CategoryDisplayWidgets {
                         category.emoji != null
                             ? Icons.emoji_emotions
                             : Icons.group,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
@@ -336,7 +336,7 @@ class CategoryDisplayWidgets {
         children: [
           Icon(
             Icons.category,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingMd),

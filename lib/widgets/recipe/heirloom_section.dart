@@ -11,7 +11,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -56,9 +55,8 @@ class HeirloomSection extends StatelessWidget {
                 imageUrl: imageUrl,
                 cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
                 fit: BoxFit.contain,
-                placeholder: (_, __) => const Center(
-                  child: LoadingIndicator(strokeWidth: 2),
-                ),
+                // A still plate while the image loads, never a spinner (P4-U05).
+                placeholder: (_, __) => const SizedBox.shrink(),
                 errorWidget: (_, __, ___) => Center(
                   child: Icon(Icons.broken_image_outlined, color: cs.onSurface),
                 ),

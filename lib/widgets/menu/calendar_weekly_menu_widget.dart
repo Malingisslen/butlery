@@ -96,7 +96,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       isLoading: vm.isLoading,
       error: vm.error,
       data: vm.plan,
-      loadingMessage: context.l10n.loadingGeneric,
+      loadingMessage: context.l10n.loadingWeeklyMenu,
       // The error state replaces the whole calendar, week navigation included,
       // so without this the message's "försök igen" names a control that is not
       // on screen (BUT-1939).
@@ -117,7 +117,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           child: Icon(
             Icons.arrow_upward,
             size: 32,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         StateWidget.empty(

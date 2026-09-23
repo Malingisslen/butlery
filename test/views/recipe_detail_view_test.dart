@@ -246,8 +246,8 @@ void main() {
         await pumpDetailView(tester);
 
         expect(tester.takeException(), isNull);
-        // Title section renders the title lowercased (design rule).
-        expect(find.text('köttbullar med gräddsås'), findsOneWidget);
+        // P4-U05: the title under the hero is shown as written.
+        expect(find.text('Köttbullar med Gräddsås'), findsOneWidget);
         expect(favoriteButton(), findsOneWidget);
       },
     );
@@ -885,9 +885,9 @@ Gör så här:
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 300));
 
-          // Title is rendered lowercased by the detail view (design rule).
+          // P4-U05: the title is shown as written.
           expect(
-            find.text('stale title'),
+            find.text('Stale Title'),
             findsOneWidget,
             reason: 'a failed write must leave the original title visible',
           );

@@ -91,7 +91,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
       });
 
       testWidgets('should show custom loading text when provided', (
@@ -132,24 +132,33 @@ void main() {
         expect(find.text('Save'), findsOneWidget);
       });
 
-      testWidgets('should be disabled when loading', (tester) async {
+      testWidgets('ignores presses while busy but keeps its enabled look', (
+        tester,
+      ) async {
+        var pressed = 0;
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
               builder: (context) => ActionButtons.actionButton(
                 context,
                 label: 'Button',
-                onPressed: () {},
+                onPressed: () => pressed++,
                 isLoading: true,
               ),
             ),
           ),
         );
 
+        // Busy is not disabled: the button keeps its surface (Komponentark
+        // v1:365, loading and disabled are two states), so it is enabled
+        // for Flutter, and the press does nothing.
         final button = tester.widget<ElevatedButton>(
           find.byType(ElevatedButton),
         );
-        expect(button.onPressed, isNull);
+        expect(button.enabled, isTrue);
+        await tester.tap(find.byType(ElevatedButton), warnIfMissed: false);
+        await tester.pump();
+        expect(pressed, 0);
       });
 
       testWidgets('should expand to full width when isExpanded is true', (
@@ -305,7 +314,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
         expect(find.text('Laddar upp...'), findsOneWidget);
         expect(
           find.byIcon(Icons.upload),
@@ -402,12 +411,13 @@ void main() {
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
-        // FAB uses cs.primary / cs.surfaceContainerHighest from the Butlery theme
+        // FAB is an ink fill with onPrimary (paper) on it: surfaceContainerHighest
+        // turned #2F4437 in dark mode and vanished on the ink fill (P4-T7).
         // Paket 1: FAB:en tar sina färger ur det kanoniska schemat.
         expect(fab.backgroundColor, equals(AppColors.lightColorScheme.primary));
         expect(
           fab.foregroundColor,
-          equals(AppColors.lightColorScheme.surfaceContainerHighest),
+          equals(AppColors.lightColorScheme.onPrimary),
         );
       });
 
@@ -447,8 +457,10 @@ void main() {
           ),
         );
 
-        // The exact loading text comes from l10n
-        expect(find.byType(PlateLine), findsOneWidget);
+        // No busy label: the button keeps its own name, never "Laddar …".
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
+        expect(find.text('Spara'), findsOneWidget);
+        expect(find.text('Laddar …'), findsNothing);
       });
 
       testWidgets('should handle Swedish labels correctly', (tester) async {
@@ -532,7 +544,7 @@ void main() {
         );
 
         expect(find.byIcon(Icons.save), findsNothing);
-        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
       });
     });
   });

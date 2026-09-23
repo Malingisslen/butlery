@@ -117,7 +117,8 @@ class ShoppingListHeader {
               icon: Icons.edit,
               onPressed: onRenameList,
               semanticLabel: context.l10n.shoppingRenameList,
-              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              // text.primary itself, never faded (tokens.json:40-53).
+              color: cs.onSurface,
               iconSize: AppDimensions.iconSizeAction,
             ),
           ),
@@ -160,7 +161,8 @@ class ShoppingListHeader {
               icon: Icons.delete,
               onPressed: onDeleteList,
               semanticLabel: context.l10n.shoppingDeleteList,
-              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              // text.primary itself, never faded (tokens.json:40-53).
+              color: cs.onSurface,
               iconSize: AppDimensions.iconSizeAction,
             ),
           ),
@@ -248,7 +250,7 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityHalf,
                   ),
                 ),
@@ -256,12 +258,12 @@ class ShoppingListHeader {
               icon: Icon(
                 Icons.check_box_outline_blank,
                 size: AppDimensions.iconSizeS,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               label: Text(
                 context.l10n.shoppingUncheckAll,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
             ),
@@ -287,7 +289,7 @@ class ShoppingListHeader {
     switch (list.type) {
       case ListType.personal:
         sharingIcon = Icons.person;
-        sharingColor = cs.primary;
+        sharingColor = cs.onSurface;
         break;
       case ListType.collaborative:
         if (currentUserId != null) {
@@ -296,7 +298,7 @@ class ShoppingListHeader {
 
           if (isOwner) {
             sharingIcon = Icons.admin_panel_settings;
-            sharingColor = cs.primary;
+            sharingColor = cs.onSurface;
             permissionText = context.l10n.shoppingPermissionOwner;
           } else {
             switch (userPermission) {
@@ -312,12 +314,12 @@ class ShoppingListHeader {
                 break;
               case SharedListPermission.admin:
                 sharingIcon = Icons.admin_panel_settings;
-                sharingColor = cs.primary;
+                sharingColor = cs.onSurface;
                 permissionText = context.l10n.shoppingPermissionAdmin;
                 break;
               default:
                 sharingIcon = Icons.people;
-                sharingColor = cs.primary;
+                sharingColor = cs.onSurface;
                 permissionText = context.l10n.shoppingPermissionShared;
             }
           }

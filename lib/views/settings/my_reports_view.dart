@@ -62,13 +62,15 @@ class _MyReportsContent extends StatelessWidget {
     final vm = context.watch<MyReportsViewModel>();
     return BaseScaffold(
       title: l10n.myReportsTitle,
+      // Reached from Kontosäkerhet only (account_security_view).
+      backTo: l10n.accountSecurityTitle,
       body: _body(context, vm),
     );
   }
 
   Widget _body(BuildContext context, MyReportsViewModel vm) {
     if (vm.isLoading && !vm.hasReports) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingMyReports);
     }
     if (vm.hasError) {
       return StateWidget.error(

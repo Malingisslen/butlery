@@ -1040,7 +1040,7 @@ void main() {
         final displayName = viewModel.getDisplayNameForUser('unknown_user');
 
         // Assert
-        expect(displayName, equals('Laddar...'));
+        expect(displayName, equals('Laddar …'));
       });
 
       test('should clear user profiles cache', () {

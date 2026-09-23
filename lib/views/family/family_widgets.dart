@@ -5,7 +5,6 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -68,7 +67,7 @@ class FamilySectionHeader extends StatelessWidget {
           children: [
             Text(
               title,
-              style: AppTextStyles.titleSmall.copyWith(color: cs.primary),
+              style: AppTextStyles.titleSmall.copyWith(color: cs.onSurface),
             ),
             if (trailing != null)
               Text(
@@ -128,13 +127,13 @@ class _TagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: emphasized ? context.butleryColors.heroPaleGreen : cs.surface,
         border: Border.all(
-          color: emphasized ? cs.primary : cs.outlineVariant,
+          color: emphasized ? cs.onSurface : cs.outlineVariant,
         ),
       ),
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: emphasized ? cs.primary : cs.outline,
+          color: emphasized ? cs.onSurface : cs.outline,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -184,8 +183,11 @@ class FamilyAccountRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 4),
+          bottom: BorderSide(
+            color: context.butleryColors.recipeCardBottomBorder,
+            width: 3,
+          ),
         ),
       ),
       child: Row(
@@ -249,7 +251,10 @@ class FamilyMemberRow extends StatelessWidget {
             color: cs.surface,
             border: Border(
               left: BorderSide(color: cs.secondary, width: 4),
-              bottom: const BorderSide(color: AppColors.rustLight, width: 3),
+              bottom: BorderSide(
+                color: context.butleryColors.recipeCardBottomBorder,
+                width: 3,
+              ),
             ),
           ),
           child: Row(

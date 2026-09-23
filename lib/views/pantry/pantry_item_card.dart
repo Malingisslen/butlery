@@ -97,13 +97,15 @@ class PantryItemCard extends StatelessWidget {
         horizontal: AppDimensions.spacingLg,
         vertical: AppDimensions.spacingMd,
       ),
+      // A chosen row is surface.selected, never a 12 % ink tint, and the
+      // hairline is border.subtle itself, never faded (enhet-3 valda
+      // tonplattor pantry_item_card.dart:102; tokens.json:40-53). The
+      // primaryContainer / outlineVariant slots carry those tokens in both
+      // schemes.
       decoration: BoxDecoration(
-        color: selected ? cs.primary.withValues(alpha: 0.12) : null,
+        color: selected ? cs.primaryContainer : null,
         border: Border(
-          top: BorderSide(
-            color: cs.outlineVariant.withValues(alpha: 0.4),
-            width: 1,
-          ),
+          top: BorderSide(color: cs.outlineVariant, width: 1),
         ),
       ),
       child: Row(
@@ -111,7 +113,7 @@ class PantryItemCard extends StatelessWidget {
           if (selectionMode) ...[
             Icon(
               selected ? Icons.check_circle : Icons.circle_outlined,
-              color: selected ? cs.primary : cs.onSurfaceVariant,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingMd),

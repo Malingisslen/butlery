@@ -434,7 +434,9 @@ void main() {
         );
 
         final nameText = tester.widget<Text>(find.text('Butlery'));
-        expect(nameText.style?.color, equals(AppColors.forestGreen));
+        // The name is text.primary (onSurface), not ink: primary is ink in
+        // both schemes and vanished on the dark page (P4-T7).
+        expect(nameText.style?.color, equals(Colors.black));
 
         final taglineText = tester.widget<Text>(find.text('Test'));
         expect(taglineText.style?.color?.a, lessThan(1.0)); // Has transparency

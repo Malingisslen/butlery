@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
@@ -177,7 +177,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
             ),
             Text(
               config.title,
-              style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
+              style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             ),
             const SizedBox(height: 6),
             Row(
@@ -228,7 +228,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: cs.primary,
-                  foregroundColor: cs.surface,
+                  foregroundColor: cs.onPrimary,
                 ),
               ),
             ),
@@ -248,8 +248,8 @@ class _WhoIsEatingSheet extends StatelessWidget {
                       : null,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(44),
-                    foregroundColor: cs.primary,
-                    side: BorderSide(color: cs.primary),
+                    foregroundColor: cs.onSurface,
+                    side: BorderSide(color: cs.onSurface),
                   ),
                   child: Text(config.wholeDayLabel!),
                 ),
@@ -316,11 +316,13 @@ class _DinerToggleRow extends StatelessWidget {
               color: cs.surface,
               border: Border(
                 left: BorderSide(
-                  color: selected ? cs.primary : cs.outlineVariant,
+                  color: selected ? cs.onSurface : cs.outlineVariant,
                   width: 4,
                 ),
                 bottom: BorderSide(
-                  color: selected ? AppColors.rustLight : cs.outlineVariant,
+                  color: selected
+                      ? context.butleryColors.recipeCardBottomBorder
+                      : cs.outlineVariant,
                   width: 3,
                 ),
               ),
@@ -379,9 +381,7 @@ class _CheckBox extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: selected
-          ? const Icon(Icons.check, size: 18, color: Colors.white)
-          : null,
+      child: selected ? Icon(Icons.check, size: 18, color: cs.onPrimary) : null,
     );
   }
 }

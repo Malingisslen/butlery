@@ -5,7 +5,7 @@ import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -53,9 +53,8 @@ class _CollectionStatsContent extends StatelessWidget {
     final insights = vm.recipeInsights;
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.statsMyStatistics,
-        centerTitle: true,
       ),
       backgroundColor: cs.surface,
       body: SafeArea(
@@ -132,16 +131,16 @@ class _HeroBanner extends StatelessWidget {
     Widget card(IconData icon, int value, String label) => Expanded(
       child: Column(
         children: [
-          Icon(icon, color: cs.surface, size: AppDimensions.iconSizeM),
+          Icon(icon, color: cs.onPrimary, size: AppDimensions.iconSizeM),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '$value',
-            style: AppTextStyles.headlineBold.copyWith(color: cs.surface),
+            style: AppTextStyles.headlineBold.copyWith(color: cs.onPrimary),
           ),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: cs.surface.withValues(alpha: 0.8),
+              color: cs.onPrimary.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -284,7 +283,7 @@ class _MealTypeChart extends StatelessWidget {
                     Container(
                       width: barWidth,
                       height: AppDimensions.spacingMd + AppDimensions.spacingXs,
-                      color: cs.primary.withValues(alpha: 0.8),
+                      color: cs.onSurface.withValues(alpha: 0.8),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -103,7 +103,7 @@ class EmojiSelector extends StatelessWidget {
                         ),
                         border: isSelected
                             ? Border.all(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 width: 2,
                               )
                             : null,
@@ -239,13 +239,13 @@ class DialogHeader extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
             title,
             style: AppTextStyles.headlineSmall.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const Spacer(),
@@ -302,26 +302,36 @@ class DialogFooter extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingM),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 200),
-            child: FilledButton.icon(
-              onPressed: onPrimaryAction,
-              style: primaryActionColor != null
-                  ? FilledButton.styleFrom(
-                      backgroundColor: primaryActionColor,
-                      foregroundColor:
-                          primaryActionForegroundColor ??
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                    )
-                  : null,
-              icon: isLoading
-                  ? LoadingIndicator(
-                      size: 16,
-                      strokeWidth: 2,
-                      color:
-                          primaryActionForegroundColor ??
-                          Theme.of(context).colorScheme.onPrimary,
-                    )
-                  : Icon(primaryActionIcon),
-              label: Text(primaryActionText),
+            // Working keeps the name and draws the plate line along the
+            // bottom edge, never a spinner (Komponentark v1:365, :372).
+            child: BusyButtonSemantics(
+              busy: isLoading,
+              name: primaryActionText,
+              child: Builder(
+                builder: (context) {
+                  final ButtonStyle? own = primaryActionColor != null
+                      ? FilledButton.styleFrom(
+                          backgroundColor: primaryActionColor,
+                          foregroundColor:
+                              primaryActionForegroundColor ??
+                              Theme.of(context).colorScheme.onPrimary,
+                        )
+                      : null;
+                  return FilledButton.icon(
+                    onPressed: isLoading
+                        ? PlateLineButton.ignore
+                        : onPrimaryAction,
+                    style: isLoading
+                        ? PlateLineButton.busyStyle(
+                            own,
+                            Theme.of(context).filledButtonTheme.style,
+                          )
+                        : own,
+                    icon: Icon(primaryActionIcon),
+                    label: Text(primaryActionText),
+                  );
+                },
+              ),
             ),
           ),
         ],

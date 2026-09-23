@@ -3,7 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Invitation target state widgets.
 class InvitationStates {
@@ -17,11 +17,7 @@ class InvitationStates {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LoadingIndicator(),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Text(displayText),
-            ],
+            children: [PlateLineMessage(message: displayText)],
           ),
         );
       },
@@ -38,8 +34,13 @@ class InvitationStates {
           count,
           (index) => Card(
             child: ListTile(
-              leading: const LoadingIndicator(),
-              title: Text(context.l10n.commonLoading),
+              leading: SizedBox(
+                width: AppDimensions.iconSizeXl,
+                child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
+              ),
+              title: ExcludeSemantics(
+                child: Text(context.l10n.loadingGeneric),
+              ),
             ),
           ),
         ),
@@ -54,13 +55,16 @@ class InvitationStates {
   }) {
     return Builder(
       builder: (context) {
-        final displayText = text ?? context.l10n.commonLoading;
+        final displayText = text ?? context.l10n.loadingGeneric;
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            LoadingIndicator(size: size, strokeWidth: 2),
+            SizedBox(
+              width: size * 2,
+              child: PlateLine(semanticLabel: displayText),
+            ),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(displayText),
+            ExcludeSemantics(child: Text(displayText)),
           ],
         );
       },
@@ -381,10 +385,14 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LoadingIndicator(
-            size: 100,
-            value: progress,
-            strokeWidth: 8,
+          // The real progress on the plate line, never a ring
+          // (Komponentark v1:305; B-18).
+          SizedBox(
+            width: PlateLineMessage.maxWidth,
+            child: PlateLine(
+              value: progress,
+              semanticLabel: title ?? context.l10n.invitationSendingInvitations,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -412,9 +420,12 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
+          SizedBox(
+            width: PlateLineMessage.maxWidth,
+            child: PlateLine(
+              value: progress,
+              semanticLabel: operationName ?? context.l10n.invitationProcessing,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(

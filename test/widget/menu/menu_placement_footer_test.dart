@@ -10,11 +10,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 void main() {
   setUp(() async {
@@ -52,15 +52,11 @@ void main() {
       reason: 'the second tap is what the viewmodel refuses silently',
     );
     // Stated as the contract rather than inferred from a tap that fired
-    // nothing: a missed tap counts zero too.
-    expect(
-      tester
-          .widget<ElevatedButton>(find.byType(ElevatedButton).first)
-          .onPressed,
-      isNull,
-    );
-    // The same flag draws the spinner. `LoadingIndicator` is the footer's own
-    // contract; what it renders inside is platform-branched.
-    expect(find.byType(LoadingIndicator), findsOneWidget);
+    // nothing: a busy button is not activatable (P4-U01), although it keeps
+    // its enabled look (Komponentark v1:365, busy is not disabled).
+    expect(find.byType(BusyButtonSemantics), findsOneWidget);
+    // The same flag draws the plate line along the button's bottom edge,
+    // never a spinner (Komponentark v1:372, B-18).
+    expect(find.byType(ButtonPlateLine), findsOneWidget);
   });
 }

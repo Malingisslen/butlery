@@ -10,6 +10,7 @@ import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -532,7 +533,7 @@ class _BottomNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final color = isSelected
-        ? (selectedColor ?? cs.primary)
+        ? (selectedColor ?? cs.onSurface)
         : (unselectedColor ?? cs.onSurfaceVariant);
 
     // BUT-403: identifier `nav-{route}` (e.g. `nav-/`, `nav-/veckomeny`) for
@@ -543,47 +544,53 @@ class _BottomNavItem extends StatelessWidget {
       label: item.accessibleLabel,
       button: true,
       selected: isSelected,
-      child: InkWell(
-        key: ValueKey('test-nav-${item.route}'),
-        onTap: onTap,
-        splashColor: cs.surfaceContainerHighest.withValues(alpha: 0.1),
-        highlightColor: cs.surfaceContainerHighest.withValues(alpha: 0.05),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: AppDimensions.spacingXs),
-            // Icon with optional badge
-            _buildIcon(context, color),
-            const SizedBox(height: AppDimensions.spacingXxs),
-            // Label in Josefin Sans lowercase with underline indicator
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  item.label.toLowerCase(),
-                  style: AppTextStyles.navLabel.copyWith(
-                    color: color,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    letterSpacing: 1,
+      // Komponentark v1:667: "Fokus: papperring runt hela tabben, inte runt
+      // ikonen". The ring goes around the whole tab, and no focus tint.
+      child: ButleryControlFocus(
+        child: InkWell(
+          key: ValueKey('test-nav-${item.route}'),
+          onTap: onTap,
+          splashColor: cs.surfaceContainerHighest.withValues(alpha: 0.1),
+          highlightColor: cs.surfaceContainerHighest.withValues(alpha: 0.05),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: AppDimensions.spacingXs),
+              // Icon with optional badge
+              _buildIcon(context, color),
+              const SizedBox(height: AppDimensions.spacingXxs),
+              // Label in Josefin Sans lowercase with underline indicator
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.label.toLowerCase(),
+                    style: AppTextStyles.navLabel.copyWith(
+                      color: color,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      letterSpacing: 1,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppDimensions.spacingXxs),
-                // Rust indicator bar below text when selected (text width)
-                AnimatedContainer(
-                  duration: AnimationUtils.getDuration(
-                    context,
-                    AppDimensions.animationDurationFast,
+                  const SizedBox(height: AppDimensions.spacingXxs),
+                  // Rust indicator bar below text when selected (text width)
+                  AnimatedContainer(
+                    duration: AnimationUtils.getDuration(
+                      context,
+                      AppDimensions.animationDurationFast,
+                    ),
+                    height: AppDimensions.spacingXxs,
+                    width: isSelected ? _getTextWidth(context) : 0,
+                    color: isSelected ? cs.secondary : Colors.transparent,
                   ),
-                  height: AppDimensions.spacingXxs,
-                  width: isSelected ? _getTextWidth(context) : 0,
-                  color: isSelected ? cs.secondary : Colors.transparent,
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

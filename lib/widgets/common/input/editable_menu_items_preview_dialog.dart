@@ -84,7 +84,7 @@ class _EditableMenuItemsPreviewDialogState
                       leading: Icon(
                         Icons.shopping_cart,
                         size: AppDimensions.iconSizeM,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       title: Text(
                         item.name,

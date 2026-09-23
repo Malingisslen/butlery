@@ -6,7 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -226,14 +225,8 @@ class ImageComponents {
       backgroundColor: backgroundColor,
       child: Builder(
         builder: (context) {
-          final cs = Theme.of(context).colorScheme;
-          return Center(
-            child: LoadingIndicator(
-              size: AppDimensions.iconSizeM,
-              strokeWidth: AppDimensions.strokeWidth2,
-              color: cs.primary,
-            ),
-          );
+          // A still plate while the image loads, never a spinner (P4-U07).
+          return const SizedBox.shrink();
         },
       ),
     );
@@ -383,7 +376,7 @@ class ImageComponents {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: index == currentIndex
-                          ? cs.primary
+                          ? cs.onSurface
                           : cs.surfaceContainerHighest.withValues(
                               alpha: AppDimensions.opacityMediumDark,
                             ),

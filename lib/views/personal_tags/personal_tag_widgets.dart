@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -54,13 +55,15 @@ class PersonalTagTile extends StatelessWidget {
         opacity: isUnused ? 0.6 : 1.0,
         child: ListTile(
           selected: isSelected,
-          selectedTileColor: Theme.of(context).colorScheme.primaryContainer
-              .withValues(alpha: AppDimensions.opacityLight),
+          // surface.selected itself, never a faded copy (enhet-3 valda
+          // tonplattor; tokens.json:40-53, surface.selected =
+          // primaryContainer in both schemes).
+          selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
           leading: inSelectionMode
               ? Icon(
                   isSelected ? Icons.check_box : Icons.check_box_outline_blank,
                   color: isSelected
-                      ? colorScheme.primary
+                      ? colorScheme.onSurface
                       : colorScheme.onSurfaceVariant,
                   size: AppDimensions.iconSizeL,
                 )
@@ -71,14 +74,14 @@ class PersonalTagTile extends StatelessWidget {
                           ? context.butleryColors.success.withValues(
                               alpha: AppDimensions.opacityLight,
                             )
-                          : colorScheme.primary.withValues(
+                          : colorScheme.onSurface.withValues(
                               alpha: AppDimensions.opacityLight,
                             ),
                       child: Icon(
                         Icons.label,
                         color: hasActiveRules
                             ? context.butleryColors.success
-                            : colorScheme.primary,
+                            : colorScheme.onSurface,
                         size: AppDimensions.iconSizeM,
                       ),
                     ),
@@ -276,14 +279,11 @@ class TagUsageBar extends StatelessWidget {
 
     return Row(
       children: [
+        // Usage as the determinate plate line (Komponentark v1:305, :844;
+        // B-18). The count beside it says the number, so the line is not
+        // read out on its own.
         Expanded(
-          child: LinearProgressIndicator(
-            value: fraction,
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            color: colorScheme.primary,
-            minHeight: 6,
-            borderRadius: BorderRadius.zero,
-          ),
+          child: ExcludeSemantics(child: PlateLine(value: fraction)),
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Text(

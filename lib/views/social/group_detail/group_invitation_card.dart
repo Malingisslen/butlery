@@ -1,6 +1,8 @@
 // lib/views/social/group_detail/group_invitation_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -29,7 +31,7 @@ class GroupInvitationCard {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   shape: BoxShape.circle,
@@ -40,7 +42,7 @@ class GroupInvitationCard {
                         ? invitation.fromUserName[0].toUpperCase()
                         : '?',
                     style: AppTextStyles.bodyBold.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -93,7 +95,7 @@ class GroupInvitationCard {
               onCancelled,
             ),
             itemBuilder: (context) => [
-              PopupMenuItem(
+              ButleryMenuItem(
                 value: 'cancel_invitation',
                 child: Row(
                   children: [
@@ -167,23 +169,14 @@ class GroupInvitationCard {
       );
 
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupInvitationCancelled),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-        );
+        SnackBarUtils.showInfo(context, context.l10n.groupInvitationCancelled);
         onCancelled();
       } else if (context.mounted &&
           groupInvitationService.invitations.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.errorOccurredWithDetails(
-                '${groupInvitationService.invitations.error}',
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
+        SnackBarUtils.showError(
+          context,
+          context.l10n.errorOccurredWithDetails(
+            '${groupInvitationService.invitations.error}',
           ),
         );
       }

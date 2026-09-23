@@ -179,13 +179,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  // The create action is ActionButtons.primaryButton → an ElevatedButton
-  // carrying the localized label. We read its onPressed to assert the
-  // canCreate gate as the user experiences it (tappable vs greyed out).
-  ElevatedButton createButton(WidgetTester tester) =>
-      tester.widget<ElevatedButton>(
-        find.widgetWithText(ElevatedButton, _createButtonLabel),
-      );
+  // The create action is the view's saffron HeroButton (P4-U13) → a
+  // FilledButton carrying the localized label. We read its onPressed to
+  // assert the canCreate gate as the user experiences it (tappable vs the
+  // disabled surface).
+  FilledButton createButton(WidgetTester tester) => tester.widget<FilledButton>(
+    find.widgetWithText(FilledButton, _createButtonLabel),
+  );
 
   // Select a friend by name in the FriendCategoryManager's checkbox list.
   // The list sits inside the view's fixed-height BorderedContainer (which
@@ -229,7 +229,7 @@ void main() {
         expect(find.text(_appBarTitle), findsOneWidget);
         expect(find.text(_friendSectionHeader), findsOneWidget);
         expect(
-          find.widgetWithText(ElevatedButton, _createButtonLabel),
+          find.widgetWithText(FilledButton, _createButtonLabel),
           findsOneWidget,
         );
 

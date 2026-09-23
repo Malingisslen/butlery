@@ -34,7 +34,7 @@ class MenuItemBuilders {
               Icon(
                 icon,
                 size: AppDimensions.iconSizeAction,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingL),
               Expanded(
@@ -96,7 +96,7 @@ class MenuItemBuilders {
                   Icon(
                     icon,
                     size: AppDimensions.iconSizeAction,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   if (count > 0)
                     Positioned(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -73,9 +73,8 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.legalCommunityGuidelines,
-        centerTitle: true,
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
@@ -98,7 +97,9 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return StateWidget.loading();
+      return StateWidget.loading(
+        message: context.l10n.loadingCommunityGuidelines,
+      );
     }
 
     if (_errorMessage != null) {

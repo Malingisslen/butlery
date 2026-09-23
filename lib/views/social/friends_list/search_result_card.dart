@@ -1,10 +1,10 @@
 // lib/views/social/friends_list/search_result_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/content_card.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -137,7 +137,7 @@ class SearchResultCard {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
             child: Text(context.l10n.blockedUsersUnblock),
           ),
@@ -148,18 +148,17 @@ class SearchResultCard {
     if (confirmed == true) {
       final success = await viewModel.unblockUser(user.uid);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? context.l10n.socialUserUnblocked(user.displayName)
-                  : context.l10n.socialCouldNotUnblockUser,
-            ),
-            backgroundColor: success
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
+        if (success) {
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.socialUserUnblocked(user.displayName),
+          );
+        } else {
+          SnackBarUtils.showError(
+            context,
+            context.l10n.socialCouldNotUnblockUser,
+          );
+        }
       }
     }
   }
@@ -178,32 +177,22 @@ class SearchResultCard {
 
       if (context.mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.socialFriendRequestSent(user.displayName),
-              ),
-              backgroundColor: context.butleryColors.success,
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.socialFriendRequestSent(user.displayName),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                viewModel.error ?? context.l10n.socialCouldNotSendFriendRequest,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            viewModel.error ?? context.l10n.socialCouldNotSendFriendRequest,
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorOccurredWithDetails('$e')),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.errorOccurredWithDetails('$e'),
         );
       }
     }
@@ -223,11 +212,9 @@ class SearchResultCard {
 
     if (request == null) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.socialCouldNotFindFriendRequest),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.socialCouldNotFindFriendRequest,
         );
       }
       return;
@@ -238,33 +225,22 @@ class SearchResultCard {
 
       if (context.mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.socialFriendRequestAcceptedFrom(user.displayName),
-              ),
-              backgroundColor: context.butleryColors.success,
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.socialFriendRequestAcceptedFrom(user.displayName),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                viewModel.error ??
-                    context.l10n.socialCouldNotAcceptFriendRequest,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            viewModel.error ?? context.l10n.socialCouldNotAcceptFriendRequest,
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorOccurredWithDetails('$e')),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.errorOccurredWithDetails('$e'),
         );
       }
     }

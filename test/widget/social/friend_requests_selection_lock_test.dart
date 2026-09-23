@@ -12,6 +12,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
@@ -25,12 +26,15 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 void main() {
   late MockUnifiedFriendsService mockFriendsService;
@@ -43,7 +47,7 @@ void main() {
   /// bar in either state, since it renders an empty box when idle.
   Finder activeBar() => find.descendant(
     of: find.byType(BatchActivityBar),
-    matching: find.byType(LinearProgressIndicator),
+    matching: find.byType(PlateLine),
   );
 
   /// The RegExp form is the portable one: a host that merges its descendants'
@@ -191,7 +195,7 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: find.byType(AppBar),
+        of: find.byType(ButleryTopBar),
         matching: find.byIcon(Icons.checklist),
       ),
     );
@@ -211,11 +215,37 @@ void main() {
   bool menuEnabled(WidgetTester tester) => tester
       .widget<PopupMenuButton<String>>(
         find.descendant(
-          of: find.byType(AppBar),
+          of: find.byType(ButleryTopBar),
           matching: find.byType(PopupMenuButton<String>),
         ),
       )
       .enabled;
+
+  // PQ-18 = A (produktbeslut 2026-09-23, after the prototype): every
+  // incoming row keeps a saffron "Acceptera", as drawn in Skarmar v12 del 3
+  // #forfragningar. A deliberate exception to one saffron action per view.
+  testWidgets('every incoming row offers the saffron Acceptera', (
+    tester,
+  ) async {
+    await pumpView(tester);
+
+    final heroes = find.byType(HeroButton);
+    expect(heroes, findsNWidgets(requestIds.length));
+    for (final id in requestIds) {
+      final accept = find.byKey(ValueKey('friendRequest.accept.$id'));
+      expect(accept, findsOneWidget);
+      final button = tester.widget<FilledButton>(
+        find.descendant(
+          of: accept,
+          matching: find.byWidgetPredicate((w) => w is FilledButton),
+        ),
+      );
+      expect(
+        button.style!.backgroundColor!.resolve({}),
+        AppModeColors.actionPrimary(Brightness.light),
+      );
+    }
+  });
 
   testWidgets('a partial batch leaves the ids that failed selected', (
     tester,
@@ -245,7 +275,7 @@ void main() {
     expect(find.byType(FloatingActionButton), findsNothing);
     expect(
       find.descendant(
-        of: find.byType(AppBar),
+        of: find.byType(ButleryTopBar),
         matching: find.byIcon(Icons.checklist),
       ),
       findsNothing,
@@ -321,7 +351,7 @@ void main() {
     );
     await tester.tap(
       find.descendant(
-        of: find.byType(AppBar),
+        of: find.byType(ButleryTopBar),
         matching: find.byIcon(Icons.checklist),
       ),
     );
@@ -493,7 +523,7 @@ void main() {
     );
 
     Finder cancelTooltip(AppLocalizations l10n, int count) => find.descendant(
-      of: find.byType(AppBar),
+      of: find.byType(ButleryTopBar),
       matching: find.byTooltip(l10n.socialCancelCount(count)),
     );
 

@@ -45,7 +45,7 @@ void main() {
     errors = [];
 
     when(
-      () => viewModel.addItemToActiveList(
+      () => viewModel.addItemWithId(
         name: any(named: 'name'),
         amount: any(named: 'amount'),
         unit: any(named: 'unit'),
@@ -56,8 +56,9 @@ void main() {
       ),
     ).thenAnswer((invocation) async {
       saves.add(invocation);
-      return true;
+      return 'new-row-1';
     });
+    when(() => viewModel.removeItem(any())).thenAnswer((_) async => true);
 
     when(
       () => viewModel.updateItem(
@@ -151,8 +152,50 @@ void main() {
             'The note is layered on after basic(), which drops it — the copyWith '
             'that carries it is easy to lose in a refactor.',
       );
-      expect(successes, hasLength(1));
+      // P4-U11: add is class 1, so the receipt is the undo snackbar, not a
+      // plain confirmation (produktregler.md:131).
+      expect(successes, isEmpty);
+      expect(find.text('La till "Mjölk"'), findsOneWidget);
+      expect(find.text('Ångra'), findsOneWidget);
       expect(errors, isEmpty);
+    });
+
+    // P4-U11: "Ångra" after an add removes exactly the row that was added,
+    // by the id the service returned (produktregler.md:131).
+    testWidgets('Ångra removes the added row by its id', (tester) async {
+      await openAddDialog(tester);
+
+      await tester.enterText(fieldLabelled('Varunamn'), 'Mjölk');
+      await tester.tap(find.text('Lägg till'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ångra'));
+      await tester.pump();
+
+      verify(() => viewModel.removeItem('new-row-1')).called(1);
+    });
+
+    testWidgets('a failed add offers no undo', (tester) async {
+      when(
+        () => viewModel.addItemWithId(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+          note: any(named: 'note'),
+          estimatedPrice: any(named: 'estimatedPrice'),
+          priority: any(named: 'priority'),
+        ),
+      ).thenAnswer((_) async => null);
+      await openAddDialog(tester);
+
+      await tester.enterText(fieldLabelled('Varunamn'), 'Mjölk');
+      await tester.tap(find.text('Lägg till'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ångra'), findsNothing);
+      expect(errors, hasLength(1));
+      verifyNever(() => viewModel.removeItem(any()));
     });
 
     testWidgets('an untouched note saves as no note', (tester) async {

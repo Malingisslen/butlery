@@ -127,7 +127,11 @@ class _AdminRootState extends State<_AdminRoot> {
           stream: _reportService.watchIsAdmin(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Scaffold(body: StateWidget.loading());
+              return Scaffold(
+                body: StateWidget.loading(
+                  message: context.l10n.loadingAdminAccess,
+                ),
+              );
             }
             if (snapshot.data ?? false) {
               return const AdminShell();

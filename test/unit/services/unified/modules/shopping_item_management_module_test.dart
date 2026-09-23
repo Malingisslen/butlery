@@ -357,6 +357,36 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('addItemToActiveList', () {
+    /// P4-U11: the add returns the new row's id, and that id is the row the
+    /// repository wrote and the one in local state. "Ångra" after the add
+    /// removes the row by this id (produktregler.md:131).
+    test('WithId returns the id of the row it wrote', () async {
+      lists.add(_seedList(id: 'L'));
+      activeListId = 'L';
+      when(() => mockLookup.lookupFromRaw(any())).thenAnswer(
+        (_) async => IngredientLookupResult.fromLists(
+          matched: const [],
+          unmatched: const [],
+        ),
+      );
+
+      final id = await buildModule().addItemToActiveListWithId(name: 'Mjölk');
+
+      expect(id, isNotNull);
+      expect(fakeRepo.addedItems.single.id, id);
+      expect(lists.single.items.map((i) => i.id), contains(id));
+    });
+
+    test('WithId returns null when no active list is set', () async {
+      lists.add(_seedList(id: 'L'));
+      activeListId = null;
+
+      final id = await buildModule().addItemToActiveListWithId(name: 'Mjölk');
+
+      expect(id, isNull);
+      expect(fakeRepo.addedItems, isEmpty);
+    });
+
     /// Proves: no active list → false, no repo call. A regression that
     /// fell back to `lists.first` would corrupt data for users who haven't
     /// selected a list yet.

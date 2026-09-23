@@ -132,7 +132,7 @@ class CommentItemWidget extends StatelessWidget {
           child: Text(
             context.l10n.commentReply,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

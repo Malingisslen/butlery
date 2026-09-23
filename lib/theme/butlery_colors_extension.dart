@@ -207,7 +207,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     onWarning: AppColorsDark.onWarning,
     warningContainer: AppColorsDark.warningContainer,
     onWarningContainer: AppColorsDark.onWarningContainer,
-    info: AppColors.info,
+    info: AppColorsDark.info,
     onInfo: AppColorsDark.onInfo,
     infoContainer: AppColorsDark.infoContainer,
     onInfoContainer: AppColorsDark.onInfoContainer,

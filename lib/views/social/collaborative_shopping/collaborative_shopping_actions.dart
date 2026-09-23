@@ -1,6 +1,8 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,7 +11,7 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -38,8 +40,10 @@ class CollaborativeShoppingActions extends BaseActionHandler
   });
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(viewModel.listTitle),
+    // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
+    // inköpslista'; Komponentark v1 §01 pattern 2).
+    return ButleryTopBar.undersida(
+      title: viewModel.listTitle,
       actions: [
         _buildShareAction(context),
         _buildMenuActions(context),
@@ -76,7 +80,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     required IconData icon,
     required String label,
   }) {
-    return PopupMenuItem(
+    return ButleryMenuItem(
       value: value,
       child: Row(
         children: [
@@ -161,12 +165,14 @@ class CollaborativeShoppingActions extends BaseActionHandler
       controller: newItemController,
       decoration: InputDecoration(
         hintText: context.l10n.collaborativeAddItemHint,
+        // Adding: the plate line in the field's end, named for the screen
+        // reader (produktregler.md:163, B-18).
         suffixIcon: viewModel.isAddingItem
-            ? const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingS),
-                child: LoadingIndicator(
-                  size: AppDimensions.iconSizeS,
-                  strokeWidth: 2,
+            ? Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                child: SizedBox(
+                  width: AppDimensions.iconSizeL,
+                  child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
                 ),
               )
             : null,

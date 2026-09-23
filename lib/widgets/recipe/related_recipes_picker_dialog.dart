@@ -111,7 +111,7 @@ class _RelatedRecipesPickerDialogState
 
   Widget _buildContent(BuildContext context, RecipeListViewModel vm) {
     if (vm.isLoading) {
-      return StateWidget.loading(message: context.l10n.commonLoading);
+      return StateWidget.loading(message: context.l10n.loadingRecipes);
     }
     if (vm.hasError) {
       return StateWidget.error(
@@ -214,7 +214,7 @@ class _RecipePickerItem extends StatelessWidget {
       ),
       subtitle: Text(
         recipe.mealType,
-        style: AppTextStyles.metadataEmphasized.copyWith(color: cs.primary),
+        style: AppTextStyles.metadataEmphasized.copyWith(color: cs.onSurface),
       ),
       trailing: Checkbox(
         value: isSelected,
@@ -249,10 +249,10 @@ class _RecipePickerItem extends StatelessWidget {
     return Container(
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
-      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Icon(
         Icons.restaurant_menu,
-        color: cs.primary,
+        color: cs.onSurface,
         size: AppDimensions.iconSizeAction,
       ),
     );

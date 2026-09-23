@@ -22,13 +22,15 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -196,10 +198,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ),
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
+              // An opaque surface, never a veil (tokens.json:40-53).
               ColoredBox(
-                color: Theme.of(context).colorScheme.surface.withValues(
-                  alpha: AppDimensions.opacityVeryDark,
-                ),
+                color: Theme.of(context).colorScheme.surface,
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -222,71 +223,51 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
+  /// Mönster 4 · Modal (Komponentark v1:57, :91-97; Skarmar v12 etapp 4
+  /// #editorutkast): the editor is a modal with X, never a back arrow. The
+  /// bar is light, with the title in 14/700 and the draft state to the
+  /// right. Closing goes through the same unsaved-changes guard as the
+  /// system back gesture (PopScope above).
   PreferredSizeWidget _buildAppBar(BuildContext context, Recipe recipe) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: Selector<CollaborativeStatusViewModel, bool>(
-        selector: (_, vm) =>
-            vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
-        builder: (context, isCollaborative, child) {
-          return AppBar(
-            title: Text(context.l10n.recipeEdit),
-            backgroundColor: isCollaborative
-                ? Theme.of(context).colorScheme.primary.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  )
-                : null,
-            actions: [
-              Selector<RecipeFormViewModel, (bool, bool)>(
-                selector: (_, vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
-                builder: (context, state, _) {
-                  final (isAutoSaving, hasRecentAutoSave) = state;
-                  if (isAutoSaving) {
-                    return const Padding(
-                      padding: EdgeInsetsDirectional.only(
-                        end: AppDimensions.spacingL,
-                      ),
-                      child: Center(
-                        child: LoadingIndicator(
-                          size: AppDimensions.iconSizeS,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    );
-                  } else if (hasRecentAutoSave) {
-                    return Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        end: AppDimensions.spacingL,
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.cloud_done_outlined,
-                          size: AppDimensions.iconSizeM,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              if (isCollaborative)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingL,
-                  ),
-                  child: Center(
-                    child:
-                        SocialCollaborativeComponents.collaborativeStatusBadge(
-                          text: context.l10n.socialShared,
-                          icon: Icons.people,
-                        ),
-                  ),
-                ),
-            ],
-          );
-        },
+    final cs = Theme.of(context).colorScheme;
+    final isCollaborative = context.select<CollaborativeStatusViewModel, bool>(
+      (vm) =>
+          vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
+    );
+    final (isAutoSaving, hasRecentAutoSave) = context
+        .select<RecipeFormViewModel, (bool, bool)>(
+          (vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
+        );
+    return ButleryTopBar.undersida(
+      title: context.l10n.recipeEdit,
+      backgroundColor: cs.surface,
+      foregroundColor: cs.onSurface,
+      leading: IconButton(
+        key: const ValueKey('edit-recipe-close'),
+        icon: const Icon(Icons.close),
+        tooltip: context.l10n.recipeEditorClose,
+        onPressed: () => Navigator.of(context).maybePop(),
       ),
+      actions: [
+        if (isAutoSaving)
+          SizedBox(
+            width: AppDimensions.iconSizeL,
+            child: PlateLine(semanticLabel: context.l10n.statusSaving),
+          )
+        else if (hasRecentAutoSave)
+          Icon(
+            Icons.cloud_done_outlined,
+            size: AppDimensions.iconSizeM,
+            color: cs.onSurface,
+          ),
+        // Shared editing is carried by the badge and the banner below, not
+        // by a tinted bar (tokens.json:40-53).
+        if (isCollaborative)
+          SocialCollaborativeComponents.collaborativeStatusBadge(
+            text: context.l10n.socialShared,
+            icon: Icons.people,
+          ),
+      ],
     );
   }
 
@@ -327,18 +308,32 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   }
 
   Widget _buildBottomBar(BuildContext context, RecipeFormViewModel viewModel) {
-    if (viewModel.editMode == null) {
+    // Your own recipe (no edit mode, owner or plain edit) saves with the one
+    // saffron button. Shared modes keep the permission row, which pairs
+    // save with fork.
+    final mode = viewModel.editModeEnum;
+    if (viewModel.editMode == null ||
+        mode == EditMode.owner ||
+        mode == EditMode.edit) {
+      // The view's one saffron action (Grafisk manual v6:219; Skarmar v12
+      // etapp 4 #editorutkast). Busy shows the plate line in its place.
+      final cs = Theme.of(context).colorScheme;
       return BottomActionContainer(
-        child: UtilityComponents.primaryButton(
-          context,
-          label: context.l10n.commonSaveChanges,
-          icon: Icons.save,
-          onPressed: viewModel.isSaving || !viewModel.isValid
-              ? null
-              : () => _saveRecipe(context),
-          isLoading: viewModel.isSaving,
-          loadingText: context.l10n.statusSaving,
-          isExpanded: true,
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            key: const ValueKey('edit-recipe-save'),
+            style: ComponentThemes.heroButtonStyle(cs),
+            onPressed: viewModel.isSaving || !viewModel.isValid
+                ? null
+                : () => _saveRecipe(context),
+            child: viewModel.isSaving
+                ? SizedBox(
+                    width: AppDimensions.iconSizeXl * 2,
+                    child: PlateLine(semanticLabel: context.l10n.statusSaving),
+                  )
+                : Text(context.l10n.commonSaveChanges),
+          ),
         ),
       );
     }
@@ -616,8 +611,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           horizontal: AppDimensions.paddingL,
           vertical: AppDimensions.paddingM,
         ),
-        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-        foregroundColor: Theme.of(context).colorScheme.primary,
+        side: BorderSide(color: Theme.of(context).colorScheme.onSurface),
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }

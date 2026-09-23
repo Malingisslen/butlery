@@ -278,7 +278,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (!_initialized) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingPersonalTags);
     }
 
     if (!_viewModel.hasTags) {
@@ -436,23 +436,23 @@ class _QuickTagChip extends StatelessWidget {
             ? null
             : CircleAvatar(
                 radius: 6,
-                backgroundColor: cs.primary,
+                backgroundColor: cs.onSurface,
               ),
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: cs.surface,
-        selectedColor: cs.primary.withValues(
+        selectedColor: cs.onSurface.withValues(
           alpha: AppDimensions.opacityLightMedium,
         ),
-        checkmarkColor: cs.primary,
+        checkmarkColor: cs.onSurface,
         side: BorderSide(
-          color: isSelected ? cs.primary : cs.outlineVariant,
+          color: isSelected ? cs.onSurface : cs.outlineVariant,
           width: isSelected ? 2 : 1,
         ),
         labelStyle:
             (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
                 .copyWith(
-                  color: isSelected ? cs.primary : cs.onSurface,
+                  color: isSelected ? cs.onSurface : cs.onSurface,
                 ),
         showCheckmark: isSelected,
         padding: const EdgeInsets.symmetric(

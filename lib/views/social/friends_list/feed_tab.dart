@@ -5,11 +5,11 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -39,7 +39,7 @@ class FeedTab {
       data: viewModel.filteredEvents.isEmpty && viewModel.events.isEmpty
           ? null
           : viewModel.filteredEvents,
-      loadingMessage: context.l10n.socialFeed,
+      loadingMessage: context.l10n.loadingFeed,
       emptyTitle: hasFriends
           ? context.l10n.feedEmpty
           : context.l10n.feedEmptyNoFriendsTitle,
@@ -67,10 +67,14 @@ class FeedTab {
                         if (context.mounted) viewModel.loadMore();
                       });
                     }
-                    return const Padding(
-                      padding: EdgeInsets.all(AppDimensions.spacingMd),
+                    // The next page: the plate line with what is fetched
+                    // (produktregler.md:163, B-18).
+                    return Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       child: Center(
-                        child: LoadingIndicator(size: 24, strokeWidth: 2),
+                        child: PlateLineMessage(
+                          message: context.l10n.loadingMoreActivity,
+                        ),
                       ),
                     );
                   }
@@ -209,7 +213,7 @@ class FeedTab {
   static Widget _buildActivityCard(BuildContext context, ActivityEvent event) {
     final cs = Theme.of(context).colorScheme;
     final borderColor = event.type == ActivityEventType.cooked
-        ? cs.primary
+        ? cs.onSurface
         : cs.secondary;
 
     final actionText = event.type == ActivityEventType.cooked
@@ -224,9 +228,12 @@ class FeedTab {
         border: Border(
           left: BorderSide(color: borderColor, width: 4),
           bottom: BorderSide(
-            // Decorative thin rust accent — kept on rustLight per BUT-572
-            // legitimate-keep set (no clean theme-token equivalent).
-            color: AppColors.rustLight.withValues(alpha: 0.5),
+            // Decorative card accent: the mode-aware card-bottom member
+            // (rustLight, #D8B784 light, #DCA968 dark), as on the family
+            // cards. AppColors.rustLight was light only.
+            color: context.butleryColors.recipeCardBottomBorder.withValues(
+              alpha: 0.5,
+            ),
             width: 3,
           ),
         ),
@@ -320,11 +327,11 @@ class FeedTab {
                 height: 48,
                 color: Theme.of(context).dividerColor,
                 alignment: Alignment.center,
-                // greenMuted retained per BUT-572 legitimate-keep set —
-                // muted icon tone with no clean theme-token equivalent.
-                child: const Icon(
+                // text.secondary (onSurfaceVariant), #627061 light, #93A48D
+                // dark (tokens.json:61-64): greenMuted's values, mode-aware.
+                child: Icon(
                   Icons.restaurant_outlined,
-                  color: AppColors.greenMuted,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
               ),

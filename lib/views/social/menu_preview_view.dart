@@ -2,6 +2,8 @@
 // Preview of shared menus with all recipes
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -11,7 +13,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
@@ -42,6 +44,19 @@ class MenuPreviewView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      // The subpage bar as drawn (Skarmar v12 del 3 #menyforhands: back
+      // arrow and "Delad meny" on ink; Komponentark v1 §01 pattern 2). The
+      // menu's own name stands in the header below.
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.menuPreviewTitle,
+        actions: [
+          IconButton(
+            onPressed: () => _shareMenu(context),
+            icon: const Icon(Icons.share),
+            tooltip: context.l10n.menuShareMenu,
+          ),
+        ],
+      ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
@@ -56,7 +71,6 @@ class MenuPreviewView extends StatelessWidget {
             ),
             child: CustomScrollView(
               slivers: [
-                _buildAppBar(context),
                 // BUT-1162: surface silent collaborative-edit conflict
                 // resolutions on this shared menu (drop-in; idle-collapses).
                 SliverToBoxAdapter(
@@ -70,29 +84,6 @@ class MenuPreviewView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    // BUT-706: stays a Material SliverAppBar for now. A CupertinoSliverNavigationBar
-    // (iOS large-title) is possible here but is a visual/UX decision, not a
-    // mechanical swap — deferred (see BUT-1362).
-    return SliverAppBar(
-      title: Text(sharedMenu.menuTitle),
-      floating: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      elevation: 0,
-      leading: IconButton(
-        onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () => _shareMenu(context),
-          icon: const Icon(Icons.share),
-          tooltip: context.l10n.menuShareMenu,
-        ),
-      ],
     );
   }
 
@@ -316,18 +307,22 @@ class MenuPreviewView extends StatelessWidget {
             return Column(
               children: [
                 // Import knapp
-                ActionButtons.primaryButton(
-                  context,
+                // The view's one saffron action (Skarmar v12 del 3
+                // #menyforhands, drawn as "Spara till mina menyer"; Grafisk
+                // manual v6:219). Imported, it takes the hero's disabled
+                // surface; importing keeps the name and draws the plate line.
+                HeroButton(
+                  key: const ValueKey('menuPreview.import'),
                   label: isImported
                       ? context.l10n.menuImported
                       : context.l10n.menuImportAll,
                   icon: isImported ? Icons.check : Icons.download,
-                  onPressed: isImported || isThisMenuOperating
+                  onPressed: isImported
                       ? null
                       : () => _importMenu(context, viewModel),
-                  isLoading: isThisMenuOperating,
-                  loadingText: context.l10n.commonImporting,
-                  isExpanded: true,
+                  busy: isThisMenuOperating,
+                  busyLabel: context.l10n.commonImporting,
+                  expand: true,
                 ),
 
                 const SizedBox(height: AppDimensions.spacingS),
@@ -404,14 +399,10 @@ class MenuPreviewView extends StatelessWidget {
     if (result != null && context.mounted) {
       if (result.isCollaborative) {
         // Navigate to collaborative menu view
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.menuConnectingCollaborative(sharedMenu.menuTitle),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            duration: const Duration(seconds: 2),
-          ),
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.menuConnectingCollaborative(sharedMenu.menuTitle),
+          duration: const Duration(seconds: 2),
         );
         // Pop current view and navigate to realtime menu
         Navigator.pop(context);
@@ -421,26 +412,18 @@ class MenuPreviewView extends StatelessWidget {
           arguments: {'menuId': result.menuId},
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.menuImportedSuccess(sharedMenu.menuTitle),
-            ),
-            backgroundColor: context.butleryColors.success,
-            duration: const Duration(seconds: 3),
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.menuImportedSuccess(sharedMenu.menuTitle),
+          duration: const Duration(seconds: 3),
         );
         // Navigera tillbaka efter lyckad import
         Navigator.pop(context);
       }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      SnackBarUtils.showError(
+        context,
+        viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
       );
     }
   }
@@ -481,30 +464,25 @@ class MenuPreviewView extends StatelessWidget {
       );
 
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.menuHiddenFromList(sharedMenu.menuTitle),
-            ),
-            backgroundColor: context.butleryColors.success,
-            action: SnackBarAction(
-              label: context.l10n.commonUndo,
-              onPressed: () =>
-                  viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
-            ),
-          ),
-        );
+        // PQ-07 = A (produktbeslut 2026-09-23): the confirmation question
+        // stays, and Ångra goes through the undo primitive with its 7 s
+        // window like every other undo (produktregler.md:131-132). The view
+        // pops right after, and SnackbarRouteObserver clears snackbars on
+        // every pop, so the messenger is captured here and the snackbar is
+        // shown once the route is gone.
+        final undo = UndoSnackBar.capture(context);
+        final message = context.l10n.menuHiddenFromList(sharedMenu.menuTitle);
 
         // Navigera tillbaka efter dismiss
         Navigator.pop(context);
+        undo.show(
+          message,
+          onUndo: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
+        );
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
         );
       }
     }

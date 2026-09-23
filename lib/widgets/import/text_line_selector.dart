@@ -206,7 +206,7 @@ class TextLineSelector extends StatelessWidget {
   Color _getModeColor(BuildContext context, ColorScheme colorScheme) {
     return mode == SelectionMode.ingredients
         ? context.butleryColors.success
-        : colorScheme.primary;
+        : colorScheme.onSurface;
   }
 }
 
@@ -240,7 +240,7 @@ class _LineItem extends StatelessWidget {
     // Determine colors based on state
     final modeColor = mode == SelectionMode.ingredients
         ? context.butleryColors.success
-        : colorScheme.primary;
+        : colorScheme.onSurface;
 
     Color backgroundColor;
     Color borderColor;

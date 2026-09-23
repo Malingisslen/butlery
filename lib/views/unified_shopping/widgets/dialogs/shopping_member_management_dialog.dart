@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -125,17 +126,12 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.shoppingPermissionUpdated(
-                  widget.userDisplayNames[userId] ??
-                      context.l10n.shoppingUnknownUser,
-                ),
-              ),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
+          // The ink snackbar (PQ-09 = A).
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingPermissionUpdated(
+              widget.userDisplayNames[userId] ??
+                  context.l10n.shoppingUnknownUser,
             ),
           );
         }
@@ -216,13 +212,9 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.shoppingMemberRemoved(userName)),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingMemberRemoved(userName),
           );
         }
       } else {
@@ -321,15 +313,9 @@ class _ShoppingMemberManagementDialogState
           firstFailureReason ?? shoppingService.consumeMutationError();
       if (mounted) {
         if (addedMembers.isNotEmpty) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.shoppingMembersAdded(addedMembers.length),
-              ),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingMembersAdded(addedMembers.length),
           );
           // Some selected friends were NOT added. Reporting only the
           // successes reads as "all done" while _selectedFriends.clear()
@@ -525,13 +511,13 @@ class _ShoppingMemberManagementDialogState
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor: cs.primary.withValues(
+        backgroundColor: cs.onSurface.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),
@@ -589,7 +575,7 @@ class _ShoppingMemberManagementDialogState
                       Icon(
                         Icons.admin_panel_settings,
                         size: AppDimensions.iconSizeS,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionAdmin),
@@ -617,7 +603,7 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: cs.primary.withValues(
+        backgroundColor: cs.onSurface.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         child: Text(
@@ -625,7 +611,7 @@ class _ShoppingMemberManagementDialogState
               ? friend.displayName[0].toUpperCase()
               : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),

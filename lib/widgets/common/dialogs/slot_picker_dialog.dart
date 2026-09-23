@@ -260,7 +260,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       children: [
         Text(
           slot.displayLabel,
-          style: AppTextStyles.titleMedium.copyWith(color: cs.primary),
+          style: AppTextStyles.titleMedium.copyWith(color: cs.onSurface),
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Row(
@@ -297,20 +297,21 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           decoration: BoxDecoration(
             // Square per design language.
             borderRadius: BorderRadius.zero,
+            // A chosen slot is surface.selected with a 1.5 px text.primary
+            // border; an occupied one surface.raised with border.control.
+            // Never a tint (tokens.json:40-53; enhet-3 valda tonplattor).
+            // primaryContainer / onSurface / outline carry the tokens in
+            // both schemes.
             border: Border.all(
-              color: (isSelected || isOccupied)
-                  ? cs.primary
-                  : cs.outlineVariant,
-              width: isSelected
-                  ? 2
+              color: isSelected
+                  ? cs.onSurface
                   : isOccupied
-                  ? 1.5
-                  : 1,
+                  ? cs.outline
+                  : cs.outlineVariant,
+              width: isSelected ? 1.5 : 1,
             ),
-            color: isSelected
-                ? cs.primaryContainer.withValues(alpha: 0.6)
-                : isOccupied
-                ? cs.primaryContainer.withValues(alpha: 0.3)
+            color: (isSelected || isOccupied)
+                ? cs.primaryContainer
                 : cs.surface,
           ),
           child: Column(
@@ -334,7 +335,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
                       size: AppDimensions.iconSize18,
-                      color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                      color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
                     ),
                 ],
               ),
@@ -379,12 +380,6 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           height: 48,
           child: FilledButton(
             onPressed: _selected.isEmpty ? null : _confirmMultiSelection,
-            style: FilledButton.styleFrom(
-              // Square per design language.
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-            ),
             child: Text(
               context.l10n.slotPickerConfirmCount(_selected.length),
             ),

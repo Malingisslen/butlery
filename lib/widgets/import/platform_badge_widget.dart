@@ -116,7 +116,7 @@ class PlatformBadgeWidget extends StatelessWidget {
           alpha: AppDimensions.opacityMediumLight,
         );
       case Platform.website:
-        return colorScheme.primary.withValues(
+        return colorScheme.onSurface.withValues(
           alpha: AppDimensions.opacityMediumLight,
         );
       case Platform.unknown:
@@ -133,7 +133,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.instagram:
         return BrandColors.instagram;
       case Platform.website:
-        return colorScheme.primary;
+        return colorScheme.onSurface;
       case Platform.unknown:
         return colorScheme.onSurfaceVariant;
     }
@@ -202,7 +202,7 @@ class PlatformIconWidget extends StatelessWidget {
       case Platform.instagram:
         return BrandColors.instagram;
       case Platform.website:
-        return colorScheme.primary;
+        return colorScheme.onSurface;
       case Platform.unknown:
         return colorScheme.onSurfaceVariant;
     }

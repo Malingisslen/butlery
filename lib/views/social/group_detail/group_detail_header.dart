@@ -77,13 +77,13 @@ class GroupDetailHeader {
                     Icon(
                       Icons.info_outline,
                       size: AppDimensions.iconSizeM,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       context.l10n.groupInformation,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -130,7 +130,7 @@ class GroupDetailHeader {
               secondary: Icon(
                 Icons.home,
                 color: isHousehold
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.onSurfaceVariant,
                 size: AppDimensions.iconSizeL,
               ),

@@ -5,69 +5,61 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// SharedContentAppBar - App bar for shared content view
 /// Handles the app bar with notification badges and refresh functionality.
 class SharedContentAppBar {
-  static Widget build(
+  /// The subpage bar (Komponentark v1 §01 pattern 2; Skarmar v12 del 2
+  /// 'Delat med mig' draws the back arrow; B-45). It is the scaffold's own
+  /// bar, pinned, instead of a floating Material SliverAppBar.
+  static PreferredSizeWidget build(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
   ) {
-    // BUT-706: stays a Material SliverAppBar for now. A CupertinoSliverNavigationBar
-    // (iOS large-title) is possible here but is a visual/UX decision, not a
-    // mechanical swap — deferred (see BUT-1362).
-    return SliverAppBar(
-      title: Text(context.l10n.sharedContent),
-      floating: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      elevation: 0,
-      leading: IconButton(
-        onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back),
-      ),
+    final cs = Theme.of(context).colorScheme;
+    final refresh = IconButton(
+      onPressed: () => viewModel.refreshAllContent(),
+      icon: const Icon(Icons.refresh),
+      tooltip: context.l10n.commonRefresh,
+    );
+    return ButleryTopBar.undersida(
+      title: context.l10n.sharedContent,
       actions: [
-        // Notification badge med unread count
+        // The unread count on the refresh action. On the ink bar it is a
+        // paper plate with ink figures (onPrimary / primary, the same in
+        // both schemes): a count, not an alarm, so never error red.
         if (viewModel.totalUnreadCount > 0)
-          Container(
-            margin: const EdgeInsetsDirectional.only(
-              end: AppDimensions.spacingS,
-            ),
-            child: Stack(
-              children: [
-                IconButton(
-                  onPressed: () => viewModel.refreshAllContent(),
-                  icon: const Icon(Icons.refresh),
-                ),
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
-                      shape: BoxShape.circle,
+          Stack(
+            children: [
+              refresh,
+              PositionedDirectional(
+                end: AppDimensions.spacingXs,
+                top: AppDimensions.spacingXs,
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.spacingXxs),
+                  decoration: BoxDecoration(
+                    color: cs.onPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: AppDimensions.iconSizeS,
+                    minHeight: AppDimensions.iconSizeS,
+                  ),
+                  child: Text(
+                    '${viewModel.totalUnreadCount}',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: cs.primary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 20,
-                      minHeight: 20,
-                    ),
-                    child: Text(
-                      '${viewModel.totalUnreadCount}',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: Theme.of(context).colorScheme.onError,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           )
         else
-          IconButton(
-            onPressed: () => viewModel.refreshAllContent(),
-            icon: const Icon(Icons.refresh),
-          ),
+          refresh,
       ],
     );
   }

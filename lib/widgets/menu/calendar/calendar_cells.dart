@@ -24,10 +24,11 @@ import 'package:butlery/widgets/menu/menu_new_badge.dart';
 
 const double _kSlotMinHeight = 80;
 
-/// Brand-specific muted decorative icon color for assigned-slot icons.
-/// Mapping to `onSurfaceVariant` would shift hue from green to neutral
-/// grey. BUT-572 follow-up: candidate for `ButleryColors.iconMuted`.
-const Color _kSlotIconColor = AppColors.greenMuted;
+/// The assigned-slot icons: text.secondary, #627061 light and #93A48D dark
+/// (tokens.json semantic text.secondary; onSurfaceVariant in both schemes).
+/// The old constant was the same #627061 but did not follow dark mode.
+Color _slotIconColor(BuildContext context) =>
+    Theme.of(context).colorScheme.onSurfaceVariant;
 
 /// Shared border pattern for assigned lunch/middag/övrigt cells.
 Border _accentedBorder(BuildContext context, Color left) {
@@ -167,7 +168,7 @@ class _DayHeader extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: isToday ? cs.primary : cs.secondary,
+            color: isToday ? cs.onSurface : cs.secondary,
             width: 3,
           ),
         ),
@@ -189,7 +190,8 @@ class _DayHeader extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingSm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              color: cs.primary.withValues(alpha: 0.12),
+              // surface.raised, never a tint (tokens.json:40-53).
+              color: cs.primaryContainer,
               child: Text(
                 context.l10n.weeklyMenuTodayBadge,
                 style: AppTextStyles.labelSmall.copyWith(
@@ -434,12 +436,14 @@ class _EmptySlot extends StatelessWidget {
                   Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const Center(
+              // border.subtle (outlineVariant): #CCD1C2 light, the token's
+              // dark value in dark mode.
+              Center(
                 child: Text(
                   '+',
                   style: TextStyle(
                     fontSize: 24,
-                    color: AppColors.creamDarker,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                     fontWeight: FontWeight.w300,
                   ),
                 ),
@@ -481,7 +485,7 @@ class _AssignedSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final accent = isSelected ? cs.secondary : cs.primary;
+    final accent = isSelected ? cs.secondary : cs.onSurface;
     final cell = Semantics(
       label: selectionMode
           ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
@@ -497,7 +501,7 @@ class _AssignedSlot extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             color: isSelected
-                ? cs.secondaryContainer.withValues(alpha: 0.4)
+                ? cs.primaryContainer
                 : Theme.of(context).cardColor,
             border: _accentedBorder(context, accent),
           ),
@@ -528,10 +532,10 @@ class _AssignedSlot extends StatelessWidget {
                 height: 28,
                 color: cs.surface,
                 alignment: Alignment.center,
-                child: const Icon(
+                child: Icon(
                   Icons.restaurant_outlined,
                   size: 18,
-                  color: _kSlotIconColor,
+                  color: _slotIconColor(context),
                 ),
               ),
               const SizedBox(height: 4),
@@ -684,9 +688,7 @@ class _OvrigtEntry extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
           decoration: BoxDecoration(
-            color: isSelected
-                ? cs.secondaryContainer.withValues(alpha: 0.4)
-                : cs.surface,
+            color: isSelected ? cs.primaryContainer : cs.surface,
             border: Border(
               left: BorderSide(color: cs.secondary, width: 2),
             ),
@@ -710,10 +712,10 @@ class _OvrigtEntry extends StatelessWidget {
                   height: 16,
                   color: cs.surfaceContainerHighest,
                   alignment: Alignment.center,
-                  child: const Icon(
+                  child: Icon(
                     Icons.cake_outlined,
                     size: 11,
-                    color: _kSlotIconColor,
+                    color: _slotIconColor(context),
                   ),
                 ),
                 const SizedBox(width: 3),

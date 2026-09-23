@@ -101,7 +101,7 @@ class PhotoPageStrip extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   Icons.camera_alt,
-                  color: Theme.of(sheetContext).colorScheme.primary,
+                  color: Theme.of(sheetContext).colorScheme.onSurface,
                 ),
                 title: Text(sheetContext.l10n.importTakePhoto),
                 onTap: () {
@@ -112,7 +112,7 @@ class PhotoPageStrip extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   Icons.photo_library,
-                  color: Theme.of(sheetContext).colorScheme.primary,
+                  color: Theme.of(sheetContext).colorScheme.onSurface,
                 ),
                 title: Text(sheetContext.l10n.importChooseFromGallery),
                 onTap: () {
@@ -203,7 +203,7 @@ class _AddPageTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: onPressed == null ? cs.outlineVariant : cs.primary,
+              color: onPressed == null ? cs.outlineVariant : cs.onSurface,
               width: AppDimensions.borderWidthStandard,
             ),
           ),
@@ -212,7 +212,7 @@ class _AddPageTile extends StatelessWidget {
             children: [
               Icon(
                 Icons.add_a_photo,
-                color: onPressed == null ? cs.outlineVariant : cs.primary,
+                color: onPressed == null ? cs.outlineVariant : cs.onSurface,
                 size: AppDimensions.iconSizeM,
               ),
               const SizedBox(height: AppDimensions.spacingXxs),
@@ -220,7 +220,7 @@ class _AddPageTile extends StatelessWidget {
                 context.l10n.importPhotoAddPage,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.badgeLarge.copyWith(
-                  color: onPressed == null ? cs.outlineVariant : cs.primary,
+                  color: onPressed == null ? cs.outlineVariant : cs.onSurface,
                 ),
               ),
             ],

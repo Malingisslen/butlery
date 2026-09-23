@@ -3,14 +3,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// A button wrapper that prevents rapid successive taps through debouncing.
 /// Useful for preventing double-submits on forms and duplicate API calls.
 ///
 /// Features:
 /// - Configurable debounce duration
-/// - Optional loading indicator during debounce
+/// - Optional plate line along the button's bottom edge while it works
 /// - Supports any child widget (use with ElevatedButton, TextButton, etc.)
 /// - Can disable button during async operations
 ///
@@ -31,17 +31,27 @@ class DebouncedButton extends StatefulWidget {
   /// If this returns a Future, the button stays disabled until it completes.
   final FutureOr<void> Function()? onPressed;
 
-  /// The child widget (typically a button).
+  /// The child widget (typically a button). It draws its own disabled look
+  /// (for a Material button: onPressed null); the wrapper never dims it.
   final Widget child;
 
   /// Duration to wait before allowing another press.
   final Duration debounceDuration;
 
-  /// Whether to show a loading indicator during async operations.
+  /// Whether the button shows that it works during async operations: it
+  /// keeps its look and its name and gets the plate line along its bottom
+  /// edge (Komponentark v1:365, :372), never a spinner (B-18).
   final bool showLoadingIndicator;
 
-  /// Custom loading indicator widget.
+  /// A widget shown in place of the button while it works. Null keeps the
+  /// button and draws the plate line on it, which is the drawn busy state.
   final Widget? loadingIndicator;
+
+  /// The plate line's colour: the child button's own text colour. Null
+  /// takes `colorScheme.onPrimary`, the foreground of the filled ink button
+  /// this wrapper usually holds (button_themes.dart). Pass the foreground
+  /// when the child is an outlined or text button.
+  final Color? busyLineColor;
 
   /// Whether the button is currently disabled (external control).
   final bool disabled;
@@ -59,6 +69,7 @@ class DebouncedButton extends StatefulWidget {
     this.debounceDuration = AppDimensions.animationDurationLong,
     this.showLoadingIndicator = false,
     this.loadingIndicator,
+    this.busyLineColor,
     this.disabled = false,
     this.semanticLabel,
   });
@@ -123,8 +134,31 @@ class _DebouncedButtonState extends State<DebouncedButton> {
   @override
   Widget build(BuildContext context) {
     if (widget.showLoadingIndicator && _isProcessing) {
-      return widget.loadingIndicator ??
-          const LoadingIndicator(size: 24, strokeWidth: 2);
+      final custom = widget.loadingIndicator;
+      if (custom != null) return custom;
+      final busy = Stack(
+        children: [
+          IgnorePointer(child: widget.child),
+          PositionedDirectional(
+            start: 0,
+            end: 0,
+            bottom: 0,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(AppDimensions.radiusControl),
+              ),
+              child: ButtonPlateLine(
+                color:
+                    widget.busyLineColor ??
+                    Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
+          ),
+        ],
+      );
+      final name = widget.semanticLabel;
+      if (name == null) return busy;
+      return BusyButtonSemantics(busy: true, name: name, child: busy);
     }
 
     final detector = GestureDetector(
@@ -132,10 +166,11 @@ class _DebouncedButtonState extends State<DebouncedButton> {
       behavior: HitTestBehavior.opaque,
       child: IgnorePointer(
         ignoring: !_canPress,
-        child: Opacity(
-          opacity: _canPress ? 1.0 : 0.6,
-          child: widget.child,
-        ),
+        // No opacity dimming: a state is never opacity (Komponentark v1:30,
+        // tokens.json:40-53). The child draws its own disabled look, as a
+        // Material button with onPressed null does (surface.disabled,
+        // button_themes.dart); the wrapper only stops the press.
+        child: widget.child,
       ),
     );
     if (widget.semanticLabel == null) return detector;

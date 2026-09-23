@@ -22,8 +22,8 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Renders a field-level local-vs-remote diff for a single [ConflictEvent].
 class ConflictDiffView extends StatefulWidget {
@@ -92,9 +92,9 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AdaptiveAppBar(
-        title: context.l10n.conflictDiffTitle,
-      ),
+      // The subpage bar (Komponentark v1 §01 pattern 2; Skarmar v12 del 3
+      // 'Redigeringskonflikt' draws the back arrow; B-45).
+      appBar: ButleryTopBar.undersida(title: context.l10n.conflictDiffTitle),
       body: SafeArea(
         child: _diff.isEmpty ? _buildNoChanges(context) : _buildDiffList(),
       ),
@@ -139,14 +139,24 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: SizedBox(
             width: double.infinity,
-            child: FilledButton(
-              onPressed: _saving ? null : _keepMyVersion,
-              child: _saving
-                  ? const LoadingIndicator(
-                      size: AppDimensions.iconSizeS,
-                      strokeWidth: 2,
-                    )
-                  : Text(context.l10n.conflictDiffKeepMine),
+            // Saving keeps the button's name and draws the plate line along
+            // its bottom edge, never a spinner in its place (Komponentark
+            // v1:365, :372; produktregler.md:902). What the button does is
+            // unchanged (P4-U19 owns the recovery path and its look).
+            child: BusyButtonSemantics(
+              busy: _saving,
+              name: context.l10n.conflictDiffKeepMine,
+              child: FilledButton(
+                key: const ValueKey('conflictDiff.keepMine'),
+                onPressed: _saving ? PlateLineButton.ignore : _keepMyVersion,
+                style: _saving
+                    ? PlateLineButton.busyStyle(
+                        null,
+                        Theme.of(context).filledButtonTheme.style,
+                      )
+                    : null,
+                child: Text(context.l10n.conflictDiffKeepMine),
+              ),
             ),
           ),
         ),

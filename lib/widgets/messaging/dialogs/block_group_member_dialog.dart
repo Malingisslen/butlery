@@ -122,7 +122,9 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
     }
 
     final members = _members;
-    if (members == null) return StateWidget.loading();
+    if (members == null) {
+      return StateWidget.loading(message: context.l10n.loadingGroupMembers);
+    }
 
     if (members.isEmpty) {
       return StateWidget.empty(

@@ -170,28 +170,75 @@ class _EligibleCell extends StatelessWidget {
       ),
       button: true,
       child: InkWell(
+        borderRadius: BorderRadius.circular(8),
         onTap: () => vm.placeSelectedAt(day),
         child: Container(
           constraints: const BoxConstraints(
             minHeight: _kCellMinHeight - 8,
           ),
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: cs.primaryContainer.withValues(alpha: 0.5),
-            border: Border.all(color: cs.primary, width: 2),
-          ),
+          // Skarmar v12 del 2 #placera draws a free cell, also while a dish
+          // is chosen ("Kikärtscurry vald"), as a 1.5 px dashed border.subtle
+          // outline with an 8 px radius, no fill and text.secondary text.
+          // outlineVariant and onSurfaceVariant carry border.subtle and
+          // text.secondary in both schemes (tokens.json semantic).
+          foregroundDecoration: _DashedOutline(color: cs.outlineVariant),
           child: Text(
             context.l10n.menuPlacementPlaceHere,
             textAlign: TextAlign.center,
             style: AppTextStyles.labelSmall.copyWith(
               fontSize: 9,
               fontWeight: FontWeight.w600,
-              color: cs.onPrimaryContainer,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// The free cell's dashed 1.5 px outline with an 8 px radius (#placera).
+class _DashedOutline extends Decoration {
+  const _DashedOutline({required this.color});
+
+  final Color color;
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) =>
+      _DashedOutlinePainter(color);
+}
+
+class _DashedOutlinePainter extends BoxPainter {
+  _DashedOutlinePainter(this.color);
+
+  final Color color;
+
+  static const double _width = 1.5;
+  static const double _dash = 4;
+  static const double _gap = 3;
+  static const Radius _radius = Radius.circular(8);
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final size = configuration.size;
+    if (size == null) return;
+    final rect = (offset & size).deflate(_width / 2);
+    final path = Path()..addRRect(RRect.fromRectAndRadius(rect, _radius));
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _width;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        canvas.drawPath(
+          metric.extractPath(distance, distance + _dash),
+          paint,
+        );
+        distance += _dash + _gap;
+      }
+    }
   }
 }
 
@@ -215,10 +262,14 @@ class _OccupiedCell extends StatelessWidget {
     final cell = Container(
       constraints: const BoxConstraints(minHeight: _kCellMinHeight),
       padding: const EdgeInsets.all(4),
+      // #placera draws a placed dish on surface.raised with a 1 px
+      // border.control (Skarmar v12 del 2); this session's dish gets the
+      // 1.5 px text.primary border. primaryContainer, outline and onSurface
+      // carry those tokens in both schemes.
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: 0.08),
+        color: cs.primaryContainer,
         border: Border.all(
-          color: isSession ? cs.primary : cs.outlineVariant,
+          color: isSession ? cs.onSurface : cs.outline,
           width: isSession ? 1.5 : 1,
         ),
       ),
@@ -276,7 +327,7 @@ class _OvrigtEntryChip extends StatelessWidget {
         color: cs.surface,
         border: Border(
           left: BorderSide(
-            color: isSession ? cs.primary : cs.secondary,
+            color: isSession ? cs.onSurface : cs.secondary,
             width: 2,
           ),
         ),
@@ -350,49 +401,53 @@ class PlacementTrayCard extends StatelessWidget {
       selected: isSelected,
       child: InkWell(
         onTap: () => vm.tapItem(index),
-        child: Opacity(
-          opacity: item.isPlaced ? 0.45 : 1,
-          child: Container(
-            width: 132,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? cs.primaryContainer.withValues(alpha: 0.6)
-                  : cs.surface,
-              border: Border.all(
-                color: isSelected ? cs.primary : cs.outlineVariant,
-                width: isSelected ? 2 : 1,
+        // #placera draws the chosen dish in the tray as ink with paper text,
+        // and the others on surface.raised with a 1 px border.control
+        // (Skarmar v12 del 2). A placed dish is struck through, never
+        // faded. tokens.json gives the struck text text.completed (#37453A
+        // light, #93A48D dark); no scheme slot carries it, so onSurfaceVariant
+        // stands in: exact in dark, text.secondary #627061 in light until
+        // text.completed is delivered as a member (open, D1).
+        child: Container(
+          width: 132,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? cs.primary : cs.primaryContainer,
+            border: isSelected ? null : Border.all(color: cs.outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.slot.displayLabel.toUpperCase(),
+                style: AppTextStyles.labelSmall.copyWith(
+                  fontSize: 8,
+                  letterSpacing: 1,
+                  fontWeight: FontWeight.w700,
+                  color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.slot.displayLabel.toUpperCase(),
+              const SizedBox(height: 2),
+              Expanded(
+                child: Text(
+                  item.recipe.title,
                   style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    letterSpacing: 1,
-                    fontWeight: FontWeight.w700,
-                    color: cs.secondary,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected
+                        ? cs.onPrimary
+                        : (item.isPlaced
+                              ? cs.onSurfaceVariant
+                              : cs.onPrimaryContainer),
+                    decoration: item.isPlaced
+                        ? TextDecoration.lineThrough
+                        : null,
+                    height: 1.2,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Expanded(
-                  child: Text(
-                    item.recipe.title,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      decoration: item.isPlaced
-                          ? TextDecoration.lineThrough
-                          : null,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

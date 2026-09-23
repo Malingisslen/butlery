@@ -1,8 +1,9 @@
 // lib/widgets/shopping/shopping_template_browser.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -72,18 +73,11 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
     try {
       await _shoppingService.deleteTemplate(templateId);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.shoppingTemplateDeleted)),
-      );
+      SnackBarUtils.showSuccess(context, context.l10n.shoppingTemplateDeleted);
       _loadTemplates();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.commonUnknownError),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
     }
   }
 
@@ -92,10 +86,13 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
     final cs = Theme.of(context).colorScheme;
 
     if (_isLoading) {
-      return const Center(
+      // The plate line says what it fetches (produktregler.md:163).
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.paddingXl),
-          child: LoadingIndicator(),
+          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          child: PlateLineMessage(
+            message: context.l10n.shoppingLoadingTemplates,
+          ),
         ),
       );
     }
@@ -145,7 +142,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
             ),
             leading: Icon(
               Icons.list_alt,
-              color: cs.primary,
+              color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),
             title: Text(name, style: AppTextStyles.titleMedium),
@@ -191,7 +188,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                       Icon(
                         Icons.check,
                         size: AppDimensions.iconSizeM,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
                       Text(context.l10n.shoppingTemplateUse),

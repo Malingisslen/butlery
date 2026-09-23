@@ -1,17 +1,18 @@
 // lib/views/messaging/create_group_conversation_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -121,22 +122,19 @@ class _CreateGroupConversationViewState
     BuildContext context,
     CreateGroupConversationViewModel viewModel,
   ) {
-    return AppBar(
-      title: Text(
-        context.l10n.messagingCreateGroup,
-        style: AppTextStyles.headlineSmall,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      elevation: AppDimensions.elevationLow,
+    // A subpage (Skarmar v12 del 3 'Ny gruppchatt'). The bar is
+    // surface.ink in both modes, so its text action is paper (onPrimary,
+    // #F5F4ED in both schemes; butlery_top_bar.dart).
+    return ButleryTopBar.undersida(
+      title: context.l10n.messagingCreateGroup,
       actions: [
         if (viewModel.hasSelectedMembers)
-          ActionButtons.textButton(
-            context,
-            label: context.l10n.commonClear,
-            onPressed: () {
-              viewModel.clearSelection();
-            },
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            onPressed: viewModel.clearSelection,
+            child: Text(context.l10n.commonClear),
           ),
       ],
     );
@@ -231,7 +229,7 @@ class _CreateGroupConversationViewState
             Icon(
               Icons.people,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -239,7 +237,7 @@ class _CreateGroupConversationViewState
                 viewModel.selectedMemberCount,
               ),
               style: AppTextStyles.titleMedium.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -342,7 +340,7 @@ class _CreateGroupConversationViewState
           if (isSelected)
             Icon(
               Icons.check_circle,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
         ],
       ),
@@ -368,14 +366,16 @@ class _CreateGroupConversationViewState
                 textAlign: TextAlign.center,
               ),
             ),
-          ActionButtons.primaryButton(
-            context,
+          // The view's one saffron action (Skarmar v12 del 3 'Ny
+          // gruppchatt'; Grafisk manual v6:219).
+          HeroButton(
+            key: const ValueKey('createGroupConversation.create'),
             label: context.l10n.messagingCreateGroup,
             onPressed: viewModel.canCreateGroup
                 ? () => _handleCreateGroup(context, viewModel)
                 : null,
-            isExpanded: true,
-            isLoading: viewModel.isCreatingGroup,
+            busy: viewModel.isCreatingGroup,
+            expand: true,
           ),
         ],
       ),
@@ -387,11 +387,8 @@ class _CreateGroupConversationViewState
     CreateGroupConversationViewModel viewModel,
   ) async {
     // Capture context dependencies before async gap
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final successMsg = context.l10n.messagingGroupCreated;
-    final successColor = context.butleryColors.success;
-    final errorColor = Theme.of(context).colorScheme.error;
 
     final conversationId = await viewModel.createGroupConversation();
 
@@ -399,12 +396,7 @@ class _CreateGroupConversationViewState
     if (!mounted) return;
 
     if (conversationId != null) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(successMsg),
-          backgroundColor: successColor,
-        ),
-      );
+      SnackBarUtils.showSuccess(this.context, successMsg);
 
       // Navigate to chat view
       navigator.pushReplacement(
@@ -415,12 +407,7 @@ class _CreateGroupConversationViewState
         ),
       );
     } else if (viewModel.error != null) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(viewModel.error!),
-          backgroundColor: errorColor,
-        ),
-      );
+      SnackBarUtils.showError(this.context, viewModel.error!);
     }
   }
 }

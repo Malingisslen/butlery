@@ -122,14 +122,20 @@ abstract final class RecipeDetailSharedWidgets {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // The recipe's title under the media hero, as the view's heading,
+          // written as the user wrote it (Komponentark v1:81-89 "Titeln står
+          // under heron"; Skarmar v12 del 1 'Receptdetalj'). text.primary so
+          // it reads on surface.raised in dark mode too; primary is ink in
+          // both modes.
           Semantics(
             header: true,
+            headingLevel: 1,
             child: Text(
-              recipe.title.toLowerCase(),
+              recipe.title,
               style: AppTextStyles.titleLarge.copyWith(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: cs.primary,
+                color: cs.onSurface,
                 letterSpacing: 1,
               ),
             ),
@@ -202,7 +208,7 @@ abstract final class RecipeDetailSharedWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,7 +218,7 @@ abstract final class RecipeDetailSharedWidgets {
               Icon(
                 Icons.tips_and_updates_outlined,
                 size: 18,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               // Flexible: the title must wrap at narrow widths (BUT-1230 —

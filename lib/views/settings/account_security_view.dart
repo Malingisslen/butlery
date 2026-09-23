@@ -6,8 +6,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class AccountSecurityView extends StatefulWidget {
   const AccountSecurityView({super.key});
@@ -97,7 +97,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(title: context.l10n.accountSecurityTitle),
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.accountSecurityTitle,
+      ),
       body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
@@ -146,7 +148,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.lock_outline, color: cs.primary),
+            Icon(Icons.lock_outline, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityChangePassword,
@@ -227,14 +229,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingMd),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _viewModel.isLoading ? null : _handleChangePassword,
-            child: _viewModel.isLoading
-                ? const LoadingIndicator(size: 20, strokeWidth: 2)
-                : Text(context.l10n.accountSecurityChangePassword),
-          ),
+        _busyAwareButton(
+          label: context.l10n.accountSecurityChangePassword,
+          onPressed: _handleChangePassword,
         ),
       ],
     );
@@ -248,7 +245,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.email_outlined, color: cs.primary),
+            Icon(Icons.email_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityChangeEmail,
@@ -302,16 +299,39 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingMd),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _viewModel.isLoading ? null : _handleChangeEmail,
-            child: _viewModel.isLoading
-                ? const LoadingIndicator(size: 20, strokeWidth: 2)
-                : Text(context.l10n.accountSecurityChangeEmail),
-          ),
+        _busyAwareButton(
+          label: context.l10n.accountSecurityChangeEmail,
+          onPressed: _handleChangeEmail,
         ),
       ],
+    );
+  }
+
+  /// An ink primary that keeps its name while the view model works and gets
+  /// the plate line along its bottom edge, never a spinner (Komponentark
+  /// v1:365, :372; produktregler.md:902). Busy is not disabled: it ignores
+  /// presses instead (PlateLineButton.ignore).
+  Widget _busyAwareButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    final busy = _viewModel.isLoading;
+    return BusyButtonSemantics(
+      busy: busy,
+      name: label,
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          onPressed: busy ? PlateLineButton.ignore : onPressed,
+          style: busy
+              ? PlateLineButton.busyStyle(
+                  null,
+                  Theme.of(context).filledButtonTheme.style,
+                )
+              : null,
+          child: Text(label),
+        ),
+      ),
     );
   }
 
@@ -323,7 +343,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.security, color: cs.primary),
+            Icon(Icons.security, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityMfaSettings,
@@ -333,7 +353,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
-          leading: Icon(Icons.phone_android, color: cs.primary),
+          leading: Icon(Icons.phone_android, color: cs.onSurface),
           title: Text(
             context.l10n.accountSecurityMfaSettings,
             style: AppTextStyles.titleMedium,
@@ -360,7 +380,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.gavel_outlined, color: cs.primary),
+            Icon(Icons.gavel_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.legalTermsOfService,

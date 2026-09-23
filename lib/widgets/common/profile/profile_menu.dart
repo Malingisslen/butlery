@@ -232,7 +232,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               Text(
                 widget.displayName,
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: cs.surface,
+                  color: cs.onPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -242,7 +242,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 Text(
                   widget.email!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.surface.withValues(alpha: 0.8),
+                    color: cs.onPrimary.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -263,7 +263,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               onPressed: () => Navigator.pop(context),
               icon: Icon(
                 Icons.close,
-                color: cs.surface.withValues(alpha: 0.8),
+                color: cs.onPrimary.withValues(alpha: 0.8),
                 size: AppDimensions.iconSizeAction,
               ),
             ),
@@ -294,14 +294,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
         Text(
           value,
           style: AppTextStyles.headlineBold.copyWith(
-            color: cs.surface,
+            color: cs.onPrimary,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingXxs),
         Text(
           label.toUpperCase(),
           style: AppTextStyles.labelSmall.copyWith(
-            color: cs.surface.withValues(alpha: 0.7),
+            color: cs.onPrimary.withValues(alpha: 0.7),
             letterSpacing: 1,
           ),
         ),
@@ -354,7 +354,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
         child: UserAvatarWidgets.initialsOrFallback(
           initials: initials,
           fontSize: size * 0.36,
-          color: cs.primary,
+          color: cs.onSurface,
           baseStyle: AppTextStyles.headerTitle.copyWith(
             fontWeight: FontWeight.w600,
           ),

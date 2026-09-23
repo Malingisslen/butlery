@@ -96,7 +96,7 @@ class SortMenuBuilder {
         children: [
           Icon(
             icon,
-            color: isSelected ? Theme.of(context).colorScheme.primary : null,
+            color: isSelected ? Theme.of(context).colorScheme.onSurface : null,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Flexible(child: Text(label)),
@@ -105,7 +105,7 @@ class SortMenuBuilder {
             Icon(
               sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
         ],
       ),

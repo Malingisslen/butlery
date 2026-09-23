@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Widget that loads a deferred module and displays the route once loaded
 class DeferredRouteLoader extends StatefulWidget {
@@ -105,23 +105,15 @@ class ModuleLoadingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: cs.surface,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            LoadingIndicator(
-              color: cs.primary,
-              strokeWidth: 3,
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Builder(
-              builder: (context) => Text(
-                context.l10n.loadingGeneric,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
+        // Plate line plus text, never a spinner (produktregler.md:163).
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMargin,
+          ),
+          child: Builder(
+            builder: (context) =>
+                PlateLineMessage(message: context.l10n.loadingOpeningPage),
+          ),
         ),
       ),
     );

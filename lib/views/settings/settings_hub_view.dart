@@ -11,11 +11,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class SettingsHubView extends StatelessWidget {
   const SettingsHubView({super.key});
@@ -26,9 +27,8 @@ class SettingsHubView extends StatelessWidget {
     final reportService = ServiceLocator.get<ReportService>();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.commonSettings,
-        centerTitle: true,
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
@@ -201,16 +201,12 @@ class SettingsHubView extends StatelessWidget {
     try {
       final launched = await launchUrl(uri);
       if (!launched && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.appealEmailLaunchFailed)),
-        );
+        SnackBarUtils.showError(context, context.l10n.appealEmailLaunchFailed);
       }
     } catch (e) {
       AppLogger.error('[SettingsHub] Failed to launch appeal mailto', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.appealEmailLaunchFailed)),
-        );
+        SnackBarUtils.showError(context, context.l10n.appealEmailLaunchFailed);
       }
     }
   }
@@ -233,7 +229,7 @@ class _SectionHeader extends StatelessWidget {
         child: Text(
           title,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),

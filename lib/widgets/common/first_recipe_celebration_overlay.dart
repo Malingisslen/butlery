@@ -91,7 +91,7 @@ class _FirstRecipeCelebrationOverlayState
                 Text(
                   l10n.celebrationFirstRecipeTitle,
                   style: AppTextStyles.headlineBold.copyWith(
-                    color: cs.surface,
+                    color: cs.onPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -99,7 +99,7 @@ class _FirstRecipeCelebrationOverlayState
                 Text(
                   l10n.celebrationFirstRecipeMessage(widget.recipeTitle),
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.surface,
+                    color: cs.onPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),

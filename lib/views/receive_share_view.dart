@@ -319,7 +319,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.ContentType.socialMediaUrl:
         icon = Icons.link;
         title = context.l10n.importUrlFromPlatform(_getPlatformName());
-        color = Theme.of(context).colorScheme.primary;
+        color = Theme.of(context).colorScheme.onSurface;
         break;
       case content_detector.ContentType.recipeText:
         icon = Icons.restaurant_menu;
@@ -329,7 +329,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.ContentType.recipeUrl:
         icon = Icons.public;
         title = context.l10n.importRecipeLinkDetected;
-        color = Theme.of(context).colorScheme.primary;
+        color = Theme.of(context).colorScheme.onSurface;
         break;
       default:
         icon = Icons.text_fields;
@@ -350,8 +350,11 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   _detectionResult.extractedUrl!,
+                  // text.link: #8A5212 light, #DCA968 dark, never the ink
+                  // primary, which vanishes on dark (tokens.json
+                  // semantic.text.link; onSecondaryContainer carries it).
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

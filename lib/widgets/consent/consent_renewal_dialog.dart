@@ -27,7 +27,7 @@ class ConsentRenewalDialog extends StatelessWidget {
     return AlertDialog(
       icon: Icon(
         Icons.privacy_tip_rounded,
-        color: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
       title: Text(l10n.consentRenewalTitle),
       content: Text(l10n.consentRenewalDescription),

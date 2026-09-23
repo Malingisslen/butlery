@@ -31,7 +31,7 @@ class ProfileSectionBuilders {
             context.l10n.profileDataBackup,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.displaySmall.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -42,7 +42,7 @@ class ProfileSectionBuilders {
             subtitle: context.l10n.profileDownloadBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleBackup(rootContext ?? context),
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
@@ -52,7 +52,7 @@ class ProfileSectionBuilders {
             subtitle: context.l10n.profileRestoreFromBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleRestore(rootContext ?? context),
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ],
       ),
@@ -121,7 +121,7 @@ class ProfileSectionBuilders {
             context.l10n.profileAccountManagement,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.displaySmall.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -133,7 +133,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profilePrivacyPolicy,
             subtitle: context.l10n.profilePrivacyPolicySubtitle,
             onTap: () => GdprConsentHandler.handlePrivacyPolicy(context),
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -144,7 +144,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileManageConsent,
             subtitle: context.l10n.profileManageConsentSubtitle,
             onTap: () => GdprConsentHandler.handleManageConsent(context),
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 

@@ -14,7 +14,7 @@ import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   const OnboardingImportPage({super.key});
@@ -77,7 +77,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           Text(
             context.l10n.onboardingImportTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -111,24 +111,32 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           const SizedBox(height: AppDimensions.spacingMd),
 
           // Import button
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: viewModel.canImport && !viewModel.isImporting
-                  ? () => _handleImport(viewModel)
-                  : null,
-              icon: viewModel.isImporting
-                  ? LoadingIndicator(
-                      size: AppDimensions.iconSizeS,
-                      strokeWidth: 2,
-                      color: cs.onPrimary,
+          // Importing says what it does and draws the plate line along the
+          // button's bottom edge, never a spinner (Komponentark v1:365,
+          // :372). The page's saffron action is "Klar" in the guide's own
+          // row (Skarmar v12 del 3 'Onboarding — import'), so this stays ink.
+          BusyButtonSemantics(
+            busy: viewModel.isImporting,
+            name: context.l10n.importRecipeTitle,
+            busyLabel: viewModel.progressMessage,
+            child: SizedBox(
+              width: double.infinity,
+              child: viewModel.isImporting
+                  ? FilledButton(
+                      onPressed: PlateLineButton.ignore,
+                      style: PlateLineButton.busyStyle(
+                        null,
+                        Theme.of(context).filledButtonTheme.style,
+                      ),
+                      child: Text(viewModel.progressMessage),
                     )
-                  : const Icon(Icons.download),
-              label: Text(
-                viewModel.isImporting
-                    ? viewModel.progressMessage
-                    : context.l10n.importRecipeTitle,
-              ),
+                  : FilledButton.icon(
+                      onPressed: viewModel.canImport
+                          ? () => _handleImport(viewModel)
+                          : null,
+                      icon: const Icon(Icons.download),
+                      label: Text(context.l10n.importRecipeTitle),
+                    ),
             ),
           ),
 
@@ -286,14 +294,14 @@ class _ImportOptionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityLight,
                   ),
                 ),
                 child: Icon(
                   icon,
                   size: AppDimensions.iconSizeL,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),

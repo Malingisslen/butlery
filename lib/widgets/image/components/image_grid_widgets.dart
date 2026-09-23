@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -261,12 +261,12 @@ class ImageGridWidgets {
               decoration: BoxDecoration(
                 borderRadius: config.effectiveBorderRadius,
                 border: Border.all(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityMediumLight,
                   ),
                   width: AppDimensions.borderWidthThin,
                 ),
-                color: cs.primary.withValues(
+                color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityExtraVeryLight,
                 ),
               ),
@@ -274,17 +274,18 @@ class ImageGridWidgets {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (isLoading) ...[
-                    LoadingIndicator(
-                      size: AppDimensions.iconSizeM,
-                      strokeWidth: AppDimensions.borderWidthThin,
-                      color: cs.primary,
+                    SizedBox(
+                      width: AppDimensions.iconSizeL,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.imageAdding,
+                      ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Flexible(
                       child: Text(
                         context.l10n.imageAdding,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -292,7 +293,7 @@ class ImageGridWidgets {
                   ] else ...[
                     Icon(
                       Icons.add_photo_alternate_outlined,
-                      color: cs.primary,
+                      color: cs.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -300,7 +301,7 @@ class ImageGridWidgets {
                       child: Text(
                         context.l10n.imageAddCount(remainingSlots),
                         style: AppTextStyles.contentLabel.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),

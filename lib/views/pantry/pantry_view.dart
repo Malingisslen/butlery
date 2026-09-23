@@ -75,6 +75,7 @@ class _PantryViewContent extends StatelessWidget {
       children: [
         LoadingStateBuilder<List<PantryItem>>(
           isLoading: viewModel.isLoading,
+          loadingMessage: context.l10n.loadingPantry,
           error: viewModel.error,
           data: viewModel.items,
           onErrorRetry: () {
@@ -227,7 +228,7 @@ class _PantrySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
+          left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
             color: context.butleryColors.recipeCardBottomBorder,
             width: 3,
@@ -243,7 +244,11 @@ class _PantrySection extends StatelessWidget {
             vertical: AppDimensions.spacingXs,
           ),
           childrenPadding: EdgeInsets.zero,
-          leading: Icon(icon, color: cs.primary, size: AppDimensions.iconSizeM),
+          leading: Icon(
+            icon,
+            color: cs.onSurface,
+            size: AppDimensions.iconSizeM,
+          ),
           title: Row(
             children: [
               Text(
@@ -385,7 +390,7 @@ class _PantryEmptyState extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingLg),
             Text(
               l10n.pantryEmptyTitle,
-              style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
+              style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingSm),

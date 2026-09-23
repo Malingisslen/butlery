@@ -31,7 +31,7 @@ class StatItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final effectiveColor = color ?? cs.primary;
+    final effectiveColor = color ?? cs.onSurface;
     final effectiveLabelColor = labelColor ?? cs.onSurfaceVariant;
 
     return Column(

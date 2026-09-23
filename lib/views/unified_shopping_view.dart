@@ -15,7 +15,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 // Theme and utility components
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -31,8 +30,8 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dar
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart';
 
-// UI Redesign header component
-import 'package:butlery/widgets/common/main_view_header.dart';
+// The canonical top bar (Komponentark v1 §01)
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Pantry sub-tab
@@ -95,14 +94,25 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           final inSelection = isShoppingTab && selection.isSelectionMode;
           final cs = Theme.of(context).colorScheme;
 
+          // The root bar (Komponentark v1:60-68): "Inköp" with the list and
+          // how many of its items are done on the line under it, in tabular
+          // figures (Skarmar v12 del 2 #inkop: "Veckans inköp · 4 av 16
+          // klara"; #tominkop: "Veckans inköp · inga varor").
+          final activeList = viewModel.activeList;
+          final String? countLine = !isShoppingTab || activeList == null
+              ? null
+              : itemCount == 0
+              ? context.l10n.shoppingRootLineEmpty(activeList.name)
+              : context.l10n.shoppingRootLine(
+                  activeList.name,
+                  boughtCount,
+                  itemCount,
+                );
+
           return Scaffold(
-            appBar: MainViewHeader(
-              title: context.l10n.shoppingListTitle,
-              ghostIllustration: VegetableType.carrot,
-              countBadge: context.l10n.shoppingCountBadge(
-                itemCount,
-                boughtCount,
-              ),
+            appBar: ButleryTopBar.rot(
+              title: context.l10n.shoppingRootTitle,
+              secondaryLine: countLine,
               actions: isShoppingTab
                   ? ShoppingAppBar.buildHeaderActions(
                       context,
@@ -117,7 +127,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             ),
             // BUT-948: the add FAB gives way to the bulk-action bar while
             // selecting.
-            floatingActionButton: isShoppingTab && !inSelection
+            // "Lägg till vara" is the list's one saffron action. An empty
+            // list carries its own actions in the body, with "Från
+            // veckomenyn" as the hero, so the button steps aside there
+            // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
+            floatingActionButton:
+                isShoppingTab && !inSelection && viewModel.hasItems
                 ? ShoppingAppBar.buildFloatingActionButton(
                     context,
                     _showAddItemDialog,

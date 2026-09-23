@@ -16,7 +16,7 @@ import 'package:butlery/views/onboarding/onboarding_welcome_page.dart';
 import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
 import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 import 'package:butlery/views/onboarding/onboarding_import_page.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 class OnboardingView extends StatelessWidget {
   /// When non-null, the wizard jumps to this page index on first frame
@@ -176,8 +176,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: isActive
-                        ? cs.primary
-                        : cs.primary.withValues(
+                        ? cs.onSurface
+                        : cs.onSurface.withValues(
                             alpha: AppDimensions.opacityLight,
                           ),
                   ),
@@ -206,13 +206,13 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: cs.primary),
+                        side: BorderSide(color: cs.onSurface),
                         shape: const RoundedRectangleBorder(),
                       ),
                       child: Text(
                         context.l10n.onboardingBack,
                         style: AppTextStyles.labelLarge.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                       ),
                     ),
@@ -220,40 +220,26 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                 ),
               if (!viewModel.isFirstPage)
                 const SizedBox(width: AppDimensions.spacingSm),
-              // Next / Complete button
+              // Next / Complete: the step's one saffron action ("Nästa",
+              // "Klar"; Skarmar v12 etapp 3 'Onboarding — allergenerna,
+              // mörkt läge', del 3 'Onboarding — import'; Grafisk manual
+              // v6:219). Before a birth year is chosen on the age gate it
+              // takes the hero's own disabled surface, never ink at 50 %
+              // (enhet-3 onboarding_view.dart:238-240; Komponentark v1:373).
+              // Completing keeps the name and draws the plate line.
               Expanded(
-                child: SizedBox(
-                  height: AppDimensions.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed:
-                        viewModel.isCompleting ||
-                            (viewModel.isAgeGatePage &&
-                                viewModel.selectedBirthYear == null)
-                        ? null
-                        : () => _handleNext(context, viewModel),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cs.primary,
-                      foregroundColor: cs.surfaceContainerHighest,
-                      shape: const RoundedRectangleBorder(),
-                      disabledBackgroundColor: cs.primary.withValues(
-                        alpha: AppDimensions.opacityHalf,
-                      ),
-                    ),
-                    child: viewModel.isCompleting
-                        ? LoadingIndicator(
-                            size: AppDimensions.iconSizeM,
-                            strokeWidth: 2,
-                            color: cs.surfaceContainerHighest,
-                          )
-                        : Text(
-                            viewModel.isLastPage
-                                ? context.l10n.onboardingComplete
-                                : context.l10n.onboardingNext,
-                            style: AppTextStyles.labelLarge.copyWith(
-                              color: cs.surfaceContainerHighest,
-                            ),
-                          ),
-                  ),
+                child: HeroButton(
+                  key: const ValueKey('onboarding.next'),
+                  label: viewModel.isLastPage
+                      ? context.l10n.onboardingComplete
+                      : context.l10n.onboardingNext,
+                  onPressed:
+                      viewModel.isAgeGatePage &&
+                          viewModel.selectedBirthYear == null
+                      ? null
+                      : () => _handleNext(context, viewModel),
+                  busy: viewModel.isCompleting,
+                  expand: true,
                 ),
               ),
             ],

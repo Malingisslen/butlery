@@ -115,9 +115,41 @@ class ShoppingItemManagementModule {
     String? recipeId,
     String? recipeName,
   }) async {
+    final id = await addItemToActiveListWithId(
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      recipeId: recipeId,
+      recipeName: recipeName,
+    );
+    return id != null;
+  }
+
+  /// Adds an item to the active list and returns the new row's id, or null
+  /// when nothing was added.
+  ///
+  /// The id is what makes "Ångra" after an add possible: add is class 1 with
+  /// a 7 s undo (produktregler.md:131), and the undo removes exactly this
+  /// row, on a personal list and a shared one alike. Identity is the id,
+  /// never the name or the position (a list can hold two "mjölk").
+  Future<String?> addItemToActiveListWithId({
+    required String name,
+    double? amount,
+    String? unit,
+    String? category,
+    String? note,
+    double? estimatedPrice,
+    int? priority,
+    String? recipeId,
+    String? recipeName,
+  }) async {
     final activeListId = getActiveListId();
     if (activeListId == null) {
-      return false;
+      return null;
     }
 
     try {
@@ -155,10 +187,10 @@ class ShoppingItemManagementModule {
         notifyListeners();
       }
 
-      return true;
+      return item.id;
     } catch (e) {
       AppLogger.error('Failed to add item to active list: $e');
-      return false;
+      return null;
     }
   }
 

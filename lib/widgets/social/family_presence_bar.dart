@@ -300,7 +300,7 @@ class _OverflowChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainer,
         border: Border.all(
-          color: cs.primary.withValues(alpha: 0.4),
+          color: cs.onSurface.withValues(alpha: 0.4),
           width: 1,
         ),
       ),

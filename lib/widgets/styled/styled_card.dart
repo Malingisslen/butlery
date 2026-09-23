@@ -191,7 +191,7 @@ class StyledCard extends StatelessWidget {
         ),
         side: showBorder
             ? BorderSide(
-                color: borderColor ?? Theme.of(context).colorScheme.primary,
+                color: borderColor ?? Theme.of(context).colorScheme.onSurface,
                 width: AppDimensions.borderWidthStandard,
               )
             : BorderSide.none,

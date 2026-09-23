@@ -13,14 +13,6 @@ import 'package:flutter_test/flutter_test.dart';
 /// The one file allowed to read `commonUndo` for a snackbar.
 const _primitive = 'lib/core/utils/snackbar_utils.dart';
 
-/// "Dölj delat innehåll" undo: the `dismiss` operation is not in the
-/// produktregler.md:129-136 table and is classed nowhere, so these keep their
-/// current snackbar until that is decided. Not to be grown.
-const _unclassifiedDismiss = {
-  'lib/views/social/menu_preview_view.dart',
-  'lib/views/social/shared_with_me/shared_content_actions.dart',
-};
-
 /// The week menu's 30 s conflict snackbar (produktregler.md:104, column
 /// "Ångra" at :99). ux-beslut.json D-04 keeps its 30 s window apart from the
 /// 7 s undo window, so it cannot go through the primitive. The only other
@@ -34,9 +26,9 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
       final path = entity.path.replaceAll(r'\', '/');
       if (path.startsWith('lib/l10n/')) continue;
-      if (path == _primitive ||
-          path == _conflictNotice ||
-          _unclassifiedDismiss.contains(path)) {
+      // "Dölj delat innehåll" is no longer an exception: PQ-07 = A
+      // (produktbeslut 2026-09-23) puts its Ångra on the primitive too.
+      if (path == _primitive || path == _conflictNotice) {
         continue;
       }
       final lines = entity.readAsLinesSync();
@@ -89,5 +81,22 @@ void main() {
         reason: '$path commits through UndoSnackBar.showDeferred',
       );
     }
+  });
+
+  test('an add to the shopping list is undone by its row id', () {
+    // P4-U11: add is class 1 with a 7 s "Ångra" (produktregler.md:131). The
+    // add dialog asks for the new row's id and hands Ångra a removal of
+    // exactly that row, through the primitive, never by name or position.
+    final source = File(
+      'lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart',
+    ).readAsStringSync();
+    expect(source, contains('addItemWithId('));
+    expect(source, contains('SnackBarUtils.showUndo('));
+    expect(
+      RegExp(
+        r'onUndo:\s*\(\)\s*=>\s*unawaited\(viewModel\.removeItem\(id\)\)',
+      ).hasMatch(source),
+      isTrue,
+    );
   });
 }

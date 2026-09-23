@@ -1,6 +1,7 @@
 // lib/widgets/image/image_picker_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,7 +13,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
 // Re-export removed - image_source_picker.dart was dead code
@@ -139,10 +140,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_isLoading) ...[
-                    LoadingIndicator(
-                      size: 32,
-                      strokeWidth: 2,
-                      color: cs.primary,
+                    SizedBox(
+                      width: AppDimensions.iconSizeXl * 2,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.imageSelectingImages,
+                      ),
                     ),
                     const SizedBox(
                       height:
@@ -161,14 +163,14 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: cs.primary.withValues(
+                        color: cs.onSurface.withValues(
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                       ),
                       child: Icon(
                         Icons.add_photo_alternate_outlined,
                         size: AppDimensions.iconSizeXl,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(
@@ -260,10 +262,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    placeholder: (context, url) => ColoredBox(
-                      color: cs.surfaceContainerHighest,
-                      child: const Center(child: LoadingIndicator()),
-                    ),
+                    // A still plate while the image loads, never a spinner (P4-U07).
+                    placeholder: (context, url) =>
+                        ColoredBox(color: cs.surfaceContainerHighest),
                     errorWidget: (context, url, error) => ColoredBox(
                       color: cs.surfaceContainerHighest,
                       child: Icon(
@@ -386,11 +387,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       AppLogger.error('Failed to pick images: $e');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.imageFailedToSelect(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.imageFailedToSelect(e.toString()),
         );
       }
     } finally {

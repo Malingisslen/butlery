@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
 
 // Theme
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 // ViewModels
@@ -43,7 +42,8 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         icon: const Icon(Icons.check_circle),
         // The label stays put so the button does not resize mid-batch.
         label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
-        backgroundColor: context.butleryColors.success,
+        // The FAB theme's own surface, never a fill in a status colour
+        // (Komponentark v1:300).
       );
     }
     return null;

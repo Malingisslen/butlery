@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/recipe_detail_metadata.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -130,13 +131,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             Icon(
               Icons.access_time,
               size: AppDimensions.iconSizeS,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
               style: AppTextStyles.bodySmall.copyWith(
-                color: widget.isScaled ? cs.primary : cs.onSurface,
+                color: widget.isScaled ? cs.onSurface : cs.onSurface,
                 fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
@@ -154,13 +155,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             Icon(
               Icons.person_outline,
               size: AppDimensions.iconSizeS,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
               style: AppTextStyles.bodySmall.copyWith(
-                color: widget.isScaled ? cs.primary : cs.onSurface,
+                color: widget.isScaled ? cs.onSurface : cs.onSurface,
                 fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
@@ -232,12 +233,15 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           ),
           style: OutlinedButton.styleFrom(
             foregroundColor: context.butleryColors.success,
-            disabledForegroundColor: context.butleryColors.success.withValues(
-              alpha: 0.5,
+            // Disabled is text.disabled on a surface.disabled edge, never a
+            // faded green (tokens.json:40-53, :120-123, :198; enhet-3
+            // recipe_detail_metadata.dart:235-241).
+            disabledForegroundColor: AppModeColors.textDisabled(
+              Theme.of(context).brightness,
             ),
             side: BorderSide(
               color: cookedToday
-                  ? context.butleryColors.success.withValues(alpha: 0.3)
+                  ? AppModeColors.surfaceDisabled(Theme.of(context).brightness)
                   : context.butleryColors.success,
               width: 0.5,
             ),

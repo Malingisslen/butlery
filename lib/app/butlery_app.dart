@@ -56,6 +56,7 @@ import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.da
 import 'package:butlery/widgets/common/feedback_fab.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Fallback shown when bootstrap throws before [ButleryApp] can start. The
 /// "Restart App" button calls [onRestart] (wired to `main` in `main.dart`) so
@@ -814,15 +815,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                     ),
                   ),
                   const SizedBox(height: AppDimensions.spacingXxxl),
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  Text(
-                    message,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: cs.outline,
-                    ),
-                  ),
+                  // Plate line plus text, never a spinner
+                  // (produktregler.md:163, B-18).
+                  PlateLineMessage(message: message),
                 ],
               ),
             ),

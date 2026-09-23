@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
@@ -270,10 +269,10 @@ void main() {
       final border = selected.border as Border;
       expect(
         border.top.color,
-        cs.primary,
+        cs.onSurface,
         reason:
-            'Selected outline must use the primary token so the user can '
-            'see which cards are selected.',
+            'Selected outline is text.primary (ink on light, paper on dark) '
+            'so the user can see which cards are selected (#flerbar).',
       );
       expect(
         selected.borderRadius,
@@ -282,10 +281,12 @@ void main() {
             'Selected state uses a rounded outline (distinct from the '
             'square unselected card).',
       );
+      // P4-U04: surface.selected, never a tint (tokens.json:116-119,
+      // opacityLadder :40-53).
       expect(
         selected.color,
-        cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        reason: 'Selected fill is a light primary tint.',
+        cs.surfaceContainerHighest,
+        reason: 'Selected fill is surface.selected, fully opaque.',
       );
     });
 

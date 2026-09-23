@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar...'**
+  /// **'Laddar …'**
   String get commonLoading;
 
   /// No description provided for @commonWorking.
@@ -1295,7 +1295,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleting.
   ///
   /// In sv, this message translates to:
-  /// **'Tar bort recept...'**
+  /// **'Raderar receptet …'**
   String get recipeDeleting;
 
   /// No description provided for @recipeFormatPortions.
@@ -1385,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingLoadingConversations.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar konversationer...'**
+  /// **'Laddar konversationer …'**
   String get messagingLoadingConversations;
 
   /// No description provided for @messagingNoConversationsFound.
@@ -1877,7 +1877,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar bild...'**
+  /// **'Laddar bild …'**
   String get chatLoadingImage;
 
   /// No description provided for @chatImageSent.
@@ -1925,7 +1925,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Sparar...'**
+  /// **'Sparar …'**
   String get statusSaving;
 
   /// No description provided for @statusCreating.
@@ -1967,7 +1967,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar...'**
+  /// **'Laddar …'**
   String get dialogLoading;
 
   /// No description provided for @dialogConfirmDeleteTitle.
@@ -2651,7 +2651,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuGeneratingOverlay.
   ///
   /// In sv, this message translates to:
-  /// **'Genererar din veckomeny...'**
+  /// **'Genererar din veckomeny …'**
   String get menuGeneratingOverlay;
 
   /// No description provided for @menuGeneratingSubtitle.
@@ -4846,7 +4846,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendLoadingFriendsAndCategories.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar vänner och kategorier...'**
+  /// **'Laddar vänner och kategorier …'**
   String get friendLoadingFriendsAndCategories;
 
   /// No description provided for @friendNoFriendsOrCategories.
@@ -5722,7 +5722,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingCategories.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar kategorier...'**
+  /// **'Laddar kategorier …'**
   String get socialLoadingCategories;
 
   /// No description provided for @socialInvertLabel.
@@ -5818,7 +5818,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationLoadingTargets.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar målgrupper...'**
+  /// **'Laddar målgrupper …'**
   String get invitationLoadingTargets;
 
   /// No description provided for @invitationNetworkError.
@@ -5962,7 +5962,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonImporting.
   ///
   /// In sv, this message translates to:
-  /// **'Importerar...'**
+  /// **'Importerar …'**
   String get commonImporting;
 
   /// No description provided for @commonLater.
@@ -6004,7 +6004,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonSending.
   ///
   /// In sv, this message translates to:
-  /// **'Skickar...'**
+  /// **'Skickar …'**
   String get commonSending;
 
   /// No description provided for @commonUndo.
@@ -6040,7 +6040,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeLoadingSharedList.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar gemensam lista...'**
+  /// **'Laddar gemensam lista …'**
   String get collaborativeLoadingSharedList;
 
   /// No description provided for @allergenCrustacean.
@@ -6286,7 +6286,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogLoadingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar recept...'**
+  /// **'Laddar recept …'**
   String get dialogLoadingRecipes;
 
   /// No description provided for @dialogManualImport.
@@ -6304,7 +6304,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogMayTakeAWhile.
   ///
   /// In sv, this message translates to:
-  /// **'Detta kan ta en stund...'**
+  /// **'Detta kan ta en stund …'**
   String get dialogMayTakeAWhile;
 
   /// No description provided for @dialogNameMinTwoChars.
@@ -6442,7 +6442,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogSharing.
   ///
   /// In sv, this message translates to:
-  /// **'Delar...'**
+  /// **'Delar …'**
   String get dialogSharing;
 
   /// No description provided for @dialogShoppingListNameHint.
@@ -7420,7 +7420,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportExporting.
   ///
   /// In sv, this message translates to:
-  /// **'Exporterar dina data...'**
+  /// **'Exporterar dina data …'**
   String get dataExportExporting;
 
   /// No description provided for @dataExportMayTakeSeconds.
@@ -8452,13 +8452,13 @@ abstract class AppLocalizations {
   /// No description provided for @messagingLoadingFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar vänner...'**
+  /// **'Laddar vänner …'**
   String get messagingLoadingFriends;
 
   /// No description provided for @messagingLoadingGroupInfo.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar gruppinformation...'**
+  /// **'Laddar gruppinformation …'**
   String get messagingLoadingGroupInfo;
 
   /// No description provided for @messagingMembersAdded.
@@ -8734,7 +8734,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeUpdating.
   ///
   /// In sv, this message translates to:
-  /// **'Uppdaterar recept...'**
+  /// **'Uppdaterar recept …'**
   String get recipeUpdating;
 
   /// No description provided for @chatAddCount.
@@ -9064,7 +9064,7 @@ abstract class AppLocalizations {
   /// No description provided for @importImportingRecipesProgress.
   ///
   /// In sv, this message translates to:
-  /// **'Importerar recept...'**
+  /// **'Importerar recept …'**
   String get importImportingRecipesProgress;
 
   /// No description provided for @importWaitForCompletion.
@@ -9358,7 +9358,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationSendingInvitations.
   ///
   /// In sv, this message translates to:
-  /// **'Skickar inbjudningar...'**
+  /// **'Skickar inbjudningar …'**
   String get invitationSendingInvitations;
 
   /// No description provided for @invitationsSentMessage.
@@ -9922,7 +9922,7 @@ abstract class AppLocalizations {
   /// No description provided for @importAnalyzingContent.
   ///
   /// In sv, this message translates to:
-  /// **'Analyserar innehåll...'**
+  /// **'Analyserar innehåll …'**
   String get importAnalyzingContent;
 
   /// No description provided for @importChooseFromGallery.
@@ -10006,7 +10006,7 @@ abstract class AppLocalizations {
   /// No description provided for @importFetchingFromPlatform.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar recept från {platform}...'**
+  /// **'Hämtar recept från {platform} …'**
   String importFetchingFromPlatform(String platform);
 
   /// No description provided for @importFromPhoto.
@@ -10216,7 +10216,7 @@ abstract class AppLocalizations {
   /// No description provided for @importProcessingImage.
   ///
   /// In sv, this message translates to:
-  /// **'Bearbetar bild...'**
+  /// **'Bearbetar bild …'**
   String get importProcessingImage;
 
   /// No description provided for @importRecipeLinkDetected.
@@ -10450,7 +10450,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupLoadingInfo.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar gruppinformation...'**
+  /// **'Laddar gruppinformation …'**
   String get groupLoadingInfo;
 
   /// No description provided for @groupNoFriendsAvailable.
@@ -10516,13 +10516,13 @@ abstract class AppLocalizations {
   /// No description provided for @loadingGeneric.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar...'**
+  /// **'Laddar …'**
   String get loadingGeneric;
 
   /// No description provided for @loadingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar recept...'**
+  /// **'Laddar recept …'**
   String get loadingRecipes;
 
   /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
@@ -10669,6 +10669,24 @@ abstract class AppLocalizations {
   /// **'Hämtar profilen …'**
   String get loadingProfile;
 
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar skafferiet …'**
+  String get loadingPantry;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar delade inköpslistor …'**
+  String get loadingSharedShoppingLists;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar flödet …'**
+  String get loadingFeed;
+
   /// No description provided for @menuCategoryCount.
   ///
   /// In sv, this message translates to:
@@ -10678,7 +10696,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuConnectingCollaborative.
   ///
   /// In sv, this message translates to:
-  /// **'Ansluter till \"{title}\" för samarbetsredigering...'**
+  /// **'Ansluter till \"{title}\" för samarbetsredigering …'**
   String menuConnectingCollaborative(String title);
 
   /// No description provided for @menuCouldNotHide.
@@ -10846,7 +10864,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar integritetspolicy...'**
+  /// **'Hämtar integritetspolicyn …'**
   String get privacyLoading;
 
   /// No description provided for @privacyNotAvailable.
@@ -11050,7 +11068,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar profil...'**
+  /// **'Laddar profil …'**
   String get profileLoading;
 
   /// No description provided for @profileNewUser.
@@ -11152,7 +11170,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileUploadingAvatar.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar upp avatar...'**
+  /// **'Laddar upp avatar …'**
   String get profileUploadingAvatar;
 
   /// No description provided for @profileVisibleInSearch.
@@ -11302,7 +11320,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Sparar recept...'**
+  /// **'Sparar recept …'**
   String get recipeSaving;
 
   /// No description provided for @recipeTag.
@@ -11548,7 +11566,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingComments.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar kommentarer...'**
+  /// **'Laddar kommentarer …'**
   String get socialLoadingComments;
 
   /// No description provided for @socialMustBeLoggedInToComment.
@@ -11710,7 +11728,7 @@ abstract class AppLocalizations {
   /// No description provided for @sharedLoadingContent.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar delat innehåll...'**
+  /// **'Laddar delat innehåll …'**
   String get sharedLoadingContent;
 
   /// No description provided for @sharedNoContentYet.
@@ -11950,7 +11968,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupLoadingGroups.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar grupper...'**
+  /// **'Laddar grupper …'**
   String get groupLoadingGroups;
 
   /// No description provided for @groupMyGroupsCount.
@@ -12148,7 +12166,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar vänner...'**
+  /// **'Laddar vänner …'**
   String get socialLoadingFriends;
 
   /// No description provided for @socialNoFriendsYet.
@@ -12172,7 +12190,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialSearchingUsers.
   ///
   /// In sv, this message translates to:
-  /// **'Söker användare...'**
+  /// **'Söker användare …'**
   String get socialSearchingUsers;
 
   /// No description provided for @socialSearchUnavailable.
@@ -12346,7 +12364,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get collaborativeAdding;
 
   /// No description provided for @collaborativeAddItemHint.
@@ -13822,13 +13840,13 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar förfrågningar...'**
+  /// **'Laddar förfrågningar …'**
   String get socialLoadingRequests;
 
   /// No description provided for @socialLoadingSentRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar skickade förfrågningar...'**
+  /// **'Laddar skickade förfrågningar …'**
   String get socialLoadingSentRequests;
 
   /// No description provided for @socialNoRequestsSelected.
@@ -14386,7 +14404,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get commonAdding;
 
   /// No description provided for @a11yHidePassword.
@@ -16012,7 +16030,7 @@ abstract class AppLocalizations {
   /// No description provided for @retagFetchingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar recept...'**
+  /// **'Hämtar recept …'**
   String get retagFetchingRecipes;
 
   /// No description provided for @retagRetaggingRecipes.
@@ -23663,6 +23681,12 @@ abstract class AppLocalizations {
   /// **'{count} valda'**
   String bulkSelectedCount(int count);
 
+  /// Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler åtgärder'**
+  String get bulkMoreActions;
+
   /// No description provided for @bulkSelectAll.
   ///
   /// In sv, this message translates to:
@@ -23990,7 +24014,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportSubmit.
   ///
   /// In sv, this message translates to:
-  /// **'Skicka rapport'**
+  /// **'Skicka anmälan'**
   String get reportSubmit;
 
   /// No description provided for @reportDialogGuidelinesNotePrefix.
@@ -27730,6 +27754,222 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Licenstexterna kunde inte läsas in.'**
   String get licensesCouldNotLoad;
+
+  /// No description provided for @buttonBusySaving.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparar …'**
+  String get buttonBusySaving;
+
+  /// No description provided for @loadingProfileBusy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar din profil …'**
+  String get loadingProfileBusy;
+
+  /// No description provided for @loadingOnboardingResume.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar var du slutade …'**
+  String get loadingOnboardingResume;
+
+  /// No description provided for @loadingOpeningPage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppnar sidan …'**
+  String get loadingOpeningPage;
+
+  /// No description provided for @loadingStartingApp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Startar Butlery …'**
+  String get loadingStartingApp;
+
+  /// Empty recipe library title (Skarmar v12 del 1 #tomtrecept).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade recept än'**
+  String get minaReceptEmptyTitle;
+
+  /// Empty recipe library body (Skarmar v12 del 1 #tomtrecept).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.'**
+  String get minaReceptEmptyBody;
+
+  /// Recipe detail sticky action bar (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara till mitt kök'**
+  String get recipeSaveToMyKitchen;
+
+  /// Recipe detail sticky action bar (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i inköpslistan'**
+  String get recipeAddToShoppingList;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar fotona …'**
+  String get loadingCookSnaps;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar ersättningar …'**
+  String get loadingSubstitutions;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar upp fotot …'**
+  String get uploadingCookSnap;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar kommentaren …'**
+  String get sendingComment;
+
+  /// The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast).
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng editorn'**
+  String get recipeEditorClose;
+
+  /// The empty week's line under "Veckomeny" on the root bar (Skarmar v12 del 1 #tomvecka).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} · inget planerat'**
+  String menuWeekBadgeEmpty(int week);
+
+  /// Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler åtgärder'**
+  String get rootBarMoreActions;
+
+  /// The planning panel's status after 6 s (flows-roles-budget.md:33; TR::FLOW::01::genererar::6-10-s; ux-beslut D-03).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det tar längre tid än vanligt'**
+  String get weekMenuPlanningSlow;
+
+  /// Snackbar when none of the chosen recipes in a photo batch could be saved (content-style-guide.md:91-94).
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten kunde inte sparas. Försök igen.'**
+  String get importBatchSaveFailed;
+
+  /// What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Planerar veckan …'**
+  String get weekMenuPlanningTitle;
+
+  /// What the plate line says while saved menus load (P4-U09).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar sparade menyer …'**
+  String get menuLoadingSaved;
+
+  /// The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköp'**
+  String get shoppingRootTitle;
+
+  /// The line under the shopping root bar's title (P4-U10; Komponentark v1:64).
+  ///
+  /// In sv, this message translates to:
+  /// **'{listName} · {done} av {total} klara'**
+  String shoppingRootLine(String listName, int done, int total);
+
+  /// The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'{listName} · inga varor'**
+  String shoppingRootLineEmpty(String listName);
+
+  /// An empty shopping list's title (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att handla'**
+  String get shoppingEmptyTitle;
+
+  /// An empty shopping list's body (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka veckans rätter hit så samlas ingredienserna per kategori. Det du redan har i skafferiet dras bort.'**
+  String get shoppingEmptyBody;
+
+  /// The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Från veckomenyn'**
+  String get shoppingFromWeekMenu;
+
+  /// What the plate line says while shopping templates load (P4-U10).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar mallarna …'**
+  String get shoppingLoadingTemplates;
+
+  /// What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar receptet …'**
+  String get importFetchingRecipe;
+
+  /// What the file import says while it reads the file (P4-U08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Läser filen …'**
+  String get importReadingFile;
+
+  /// What is loading, for the plate line (P4-U15).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar licenserna …'**
+  String get loadingLicenses;
+
+  /// The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål').
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara mina val'**
+  String get consentSaveMyChoices;
+
+  /// What is loading, for the plate line (P4-U15).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar blockerade användare …'**
+  String get loadingBlockedUsers;
+
+  /// Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår').
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderar kontot …'**
+  String get accountDeletingProgress;
+
+  /// What is loading, for the plate line (P4-U17).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar tolkningshändelserna …'**
+  String get loadingParseEvents;
+
+  /// The next page of the friends feed, under the plate line (P4-U12).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar fler händelser …'**
+  String get loadingMoreActivity;
+
+  /// Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands).
+  ///
+  /// In sv, this message translates to:
+  /// **'Delad meny'**
+  String get menuPreviewTitle;
 }
 
 class _AppLocalizationsDelegate

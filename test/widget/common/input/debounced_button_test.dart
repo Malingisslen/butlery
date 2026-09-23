@@ -35,7 +35,7 @@ void main() {
       expect(find.byType(GestureDetector), findsOneWidget);
     });
 
-    testWidgets('child is at full opacity when enabled', (tester) async {
+    testWidgets('child is never dimmed when enabled', (tester) async {
       await tester.pumpWidget(
         _wrap(
           DebouncedButton(
@@ -44,16 +44,18 @@ void main() {
           ),
         ),
       );
-      final opacity = tester.widget<Opacity>(
+      // A state is never opacity (Komponentark v1:30, tokens.json:40-53):
+      // the wrapper does not dim its child.
+      expect(
         find.descendant(
           of: find.byType(DebouncedButton),
           matching: find.byType(Opacity),
         ),
+        findsNothing,
       );
-      expect(opacity.opacity, 1.0);
     });
 
-    testWidgets('disabled=true → child opacity 0.6 + IgnorePointer ignoring', (
+    testWidgets('disabled=true → no dimming + IgnorePointer ignoring', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -65,13 +67,15 @@ void main() {
           ),
         ),
       );
-      final opacity = tester.widget<Opacity>(
+      // A state is never opacity (Komponentark v1:30, tokens.json:40-53):
+      // the wrapper does not dim its child.
+      expect(
         find.descendant(
           of: find.byType(DebouncedButton),
           matching: find.byType(Opacity),
         ),
+        findsNothing,
       );
-      expect(opacity.opacity, 0.6);
       final ignore = tester.widget<IgnorePointer>(
         find.descendant(
           of: find.byType(DebouncedButton),
@@ -81,7 +85,7 @@ void main() {
       expect(ignore.ignoring, isTrue);
     });
 
-    testWidgets('onPressed=null → child opacity 0.6', (tester) async {
+    testWidgets('onPressed=null → child is not dimmed', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const DebouncedButton(
@@ -90,13 +94,15 @@ void main() {
           ),
         ),
       );
-      final opacity = tester.widget<Opacity>(
+      // A state is never opacity (Komponentark v1:30, tokens.json:40-53):
+      // the wrapper does not dim its child.
+      expect(
         find.descendant(
           of: find.byType(DebouncedButton),
           matching: find.byType(Opacity),
         ),
+        findsNothing,
       );
-      expect(opacity.opacity, 0.6);
     });
 
     testWidgets(
@@ -257,7 +263,7 @@ void main() {
     );
 
     testWidgets(
-      'showLoadingIndicator renders the default plate line during processing',
+      'showLoadingIndicator keeps the button and draws the plate line on it',
       (tester) async {
         final completer = Completer<void>();
         await tester.pumpWidget(
@@ -269,12 +275,13 @@ void main() {
             ),
           ),
         );
-        expect(find.byType(PlateLine), findsNothing);
+        expect(find.byType(ButtonPlateLine), findsNothing);
         await tester.tap(find.text('Spara'));
         await tester.pump();
-        expect(find.byType(PlateLine), findsOneWidget);
-        // Child text is no longer shown during loading.
-        expect(find.text('Spara'), findsNothing);
+        // The button keeps its name and gets the line along its bottom
+        // edge (Komponentark v1:365, :372), never a spinner in its place.
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
+        expect(find.text('Spara'), findsOneWidget);
         completer.complete();
         await tester.pump();
         await tester.pump(AppDimensions.animationDurationLong);
@@ -298,7 +305,7 @@ void main() {
       await tester.tap(find.text('Spara'));
       await tester.pump();
       expect(find.text('Laddar...'), findsOneWidget);
-      expect(find.byType(PlateLine), findsNothing);
+      expect(find.byType(ButtonPlateLine), findsNothing);
       completer.complete();
       await tester.pump();
       await tester.pump(AppDimensions.animationDurationLong);

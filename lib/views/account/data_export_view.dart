@@ -9,11 +9,11 @@ import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -32,9 +32,8 @@ class DataExportView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => context.read<DataExportViewModel>(),
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        appBar: ButleryTopBar.undersida(
           title: context.l10n.dataExportTitle,
-          centerTitle: true,
         ),
         body: SafeArea(
           // RESPONSIVE: Center and constrain content on large screens
@@ -92,7 +91,7 @@ class DataExportView extends StatelessWidget {
                 Icon(
                   Icons.download_rounded,
                   size: 32,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
@@ -125,16 +124,20 @@ class DataExportView extends StatelessWidget {
       return const SizedBox.shrink(); // Hide button when data is exported
     }
 
-    return ElevatedButton.icon(
-      onPressed: viewModel.isExporting
-          ? null
-          : () => _handleExport(context, viewModel),
-      icon: const Icon(Icons.cloud_download_rounded),
-      label: Text(context.l10n.dataExportTitle),
-      style: ElevatedButton.styleFrom(
-        padding: AppDimensions.paddingVertical16,
-        textStyle: AppTextStyles.titleMedium,
-      ),
+    // After the export the view's one saffron action is "Spara filen", as
+    // drawn (Skarmar v12 etapp 6 'Dataexport — allt du lagt in', :130-156;
+    // Grafisk manual v6:219). The drawing shows only the finished state, so
+    // making the export itself the saffron action before it is an
+    // interpretation, not drawn. While exporting the button keeps its
+    // shape and says what it does, with the plate line (Komponentark v1:372).
+    return HeroButton(
+      key: const ValueKey('dataExport.export'),
+      label: context.l10n.dataExportTitle,
+      icon: Icons.cloud_download_rounded,
+      onPressed: () => _handleExport(context, viewModel),
+      busy: viewModel.isExporting,
+      busyLabel: context.l10n.dataExportExporting,
+      expand: true,
     );
   }
 
@@ -144,15 +147,10 @@ class DataExportView extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        // The export button above carries the plate line and the busy
+        // label; this card only says how long it may take.
         child: Column(
           children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              context.l10n.dataExportExporting,
-              style: AppTextStyles.contentTitle,
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               context.l10n.dataExportMayTakeSeconds,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -245,10 +243,12 @@ class DataExportView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: HeroButton(
+                    key: const ValueKey('dataExport.saveFile'),
+                    label: context.l10n.dataExportSaveFile,
+                    icon: Icons.save_alt,
                     onPressed: () => _handleDownload(context, viewModel),
-                    icon: const Icon(Icons.save_alt),
-                    label: Text(context.l10n.dataExportSaveFile),
+                    expand: true,
                   ),
                 ),
                 if (export_helper.canShareFiles) ...[
@@ -351,11 +351,9 @@ class DataExportView extends StatelessWidget {
     final success = await viewModel.exportData();
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.dataExportExportedSuccessfully),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.dataExportExportedSuccessfully,
       );
     }
   }
@@ -378,30 +376,20 @@ class DataExportView extends StatelessWidget {
       await export_helper.downloadJsonFile(viewModel.exportedData!, fileName);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dataExportFileSaved(fileName)),
-            backgroundColor: context.butleryColors.success,
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: context.l10n.commonOk,
-              textColor: context.butleryColors.onSuccess,
-              onPressed: () {},
-            ),
-          ),
+        // No "OK" action: a snackbar action is never OK (Komponentark
+        // v1:750), and this one did nothing.
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.dataExportFileSaved(fileName),
+          duration: const Duration(seconds: 4),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.dataExportCouldNotSaveFile(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ),
-            ),
-            backgroundColor: cs.error,
+        SnackBarUtils.showError(
+          context,
+          context.l10n.dataExportCouldNotSaveFile(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }
@@ -434,15 +422,10 @@ class DataExportView extends StatelessWidget {
       );
     } catch (e) {
       if (context.mounted) {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.dataExportCouldNotShare(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ),
-            ),
-            backgroundColor: cs.error,
+        SnackBarUtils.showError(
+          context,
+          context.l10n.dataExportCouldNotShare(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }
@@ -479,11 +462,7 @@ class DataExportView extends StatelessWidget {
     if (confirmed == true) {
       viewModel.clearExportedData();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dataExportCleared),
-          ),
-        );
+        SnackBarUtils.showInfo(context, context.l10n.dataExportCleared);
       }
     }
   }

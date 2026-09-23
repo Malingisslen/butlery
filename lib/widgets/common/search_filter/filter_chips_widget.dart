@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
 /// Filter chips component for displaying filterable options
 class FilterChipsWidget extends StatelessWidget {
@@ -32,7 +33,7 @@ class FilterChipsWidget extends StatelessWidget {
             title,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.bodyLarge.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
@@ -46,19 +47,26 @@ class FilterChipsWidget extends StatelessWidget {
                 label: '${option.label} filter',
                 selected: isSelected,
                 button: true,
-                child: FilterChip(
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (option.icon != null) ...[
-                        Icon(option.icon),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                      ],
-                      Text(option.label),
-                    ],
+                // The shared grip: ring around the chip's 48 dp target and
+                // no saffron focus tint (Grafisk manual v6:209, :381).
+                child: ButleryControlFocus(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.chipRadius,
                   ),
-                  selected: isSelected,
-                  onSelected: (_) => onToggle(option.id),
+                  child: FilterChip(
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (option.icon != null) ...[
+                          Icon(option.icon),
+                          const SizedBox(height: AppDimensions.spacingXs),
+                        ],
+                        Text(option.label),
+                      ],
+                    ),
+                    selected: isSelected,
+                    onSelected: (_) => onToggle(option.id),
+                  ),
                 ),
               );
             }).toList(),

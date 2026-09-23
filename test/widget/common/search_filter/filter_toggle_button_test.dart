@@ -415,13 +415,14 @@ void main() {
       });
 
       testWidgets(
-        'should use theme primary color when shown with custom theme',
+        'should use theme onSurface color when shown with custom theme',
         (WidgetTester tester) async {
           await tester.pumpWidget(
             _buildApp(
               theme: ThemeData(
                 colorScheme: const ColorScheme.light().copyWith(
                   primary: Colors.purple,
+                  onSurface: Colors.teal,
                 ),
               ),
               home: Scaffold(
@@ -435,9 +436,9 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Widget uses cs.primary from the theme
+          // text.primary (onSurface) from the theme, not ink (P4-T7).
           final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
-          expect(icon.color, Colors.purple);
+          expect(icon.color, Colors.teal);
         },
       );
 

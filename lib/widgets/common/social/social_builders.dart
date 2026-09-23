@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Builder functions for social components
 class SocialBuilders {
@@ -20,23 +20,23 @@ class SocialBuilders {
     EdgeInsets? padding,
     double? iconSize,
   }) {
-    return ElevatedButton.icon(
-      onPressed: enabled && !isLoading ? onPressed : null,
-      icon: isLoading
-          ? const SizedBox(
-              width: AppDimensions.iconSizeS,
-              height: AppDimensions.iconSizeS,
-              child: LoadingIndicator(
-                size: AppDimensions.iconSizeS,
-                strokeWidth: 2,
-              ),
-            )
-          : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        padding: padding ?? AppDimensions.paddingSymmetric16x8,
+    // Busy keeps the name and draws the plate line along the bottom edge
+    // (Komponentark v1:365, :372); it ignores presses rather than disabling.
+    final style = ElevatedButton.styleFrom(
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      padding: padding ?? AppDimensions.paddingSymmetric16x8,
+    );
+    return BusyButtonSemantics(
+      busy: isLoading,
+      name: label,
+      child: ElevatedButton.icon(
+        onPressed: isLoading
+            ? PlateLineButton.ignore
+            : (enabled ? onPressed : null),
+        icon: Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
+        label: Text(label),
+        style: isLoading ? PlateLineButton.busyStyle(style, null) : style,
       ),
     );
   }
@@ -61,7 +61,7 @@ class SocialBuilders {
             style:
                 valueStyle ??
                 AppTextStyles.bodyLargeBold.copyWith(
-                  color: textColor ?? Theme.of(context).colorScheme.primary,
+                  color: textColor ?? Theme.of(context).colorScheme.onSurface,
                 ),
           ),
           if (showLabels) ...[

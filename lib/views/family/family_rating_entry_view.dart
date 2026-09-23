@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/family/family_rating_entry_viewmodel.dart';
@@ -98,32 +98,18 @@ class _FamilyRatingEntryContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        title: Text(l10n.familyRatingTitle),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: 16,
-              bottom: 8,
-              end: 16,
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                recipeTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall.copyWith(color: cs.secondary),
-              ),
-            ),
-          ),
-        ),
+      // A subpage (Komponentark v1:71-78). The recipe is the line under the
+      // title, in the bar's own foreground: the old saffron text on ink was
+      // not readable (tokens.json text roles; saffron is never text on ink).
+      appBar: ButleryTopBar.undersida(
+        title: l10n.familyRatingTitle,
+        secondaryLine: recipeTitle,
+        secondaryLineIsLive: false,
       ),
       // Only the INITIAL load replaces the form with a spinner; during save()
       // the form + (disabled) actions stay put so the screen doesn't flicker.
       body: (vm.isLoading && vm.present.isEmpty)
-          ? StateWidget.loading()
+          ? StateWidget.loading(message: l10n.loadingFamily)
           : _body(context, vm, l10n),
       bottomNavigationBar: (vm.isLoading && vm.present.isEmpty)
           ? null
@@ -179,7 +165,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
           Icon(
             Icons.lock_outline,
             size: 15,
-            color: cs.primary,
+            color: cs.onSurface,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -218,7 +204,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: cs.primary,
-                  foregroundColor: cs.surface,
+                  foregroundColor: cs.onPrimary,
                 ),
               ),
             ),
@@ -278,10 +264,15 @@ class _DinerRatingRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // surface.base, never white: white stayed white on the dark page
+        // under paper text.
+        color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 4),
+          bottom: BorderSide(
+            color: context.butleryColors.recipeCardBottomBorder,
+            width: 3,
+          ),
         ),
       ),
       child: Row(
@@ -356,12 +347,12 @@ class _YouBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       decoration: BoxDecoration(
         color: context.butleryColors.heroPaleGreen,
-        border: Border.all(color: cs.primary),
+        border: Border.all(color: cs.onSurface),
       ),
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: cs.primary,
+          color: cs.onSurface,
           fontWeight: FontWeight.w600,
         ),
       ),

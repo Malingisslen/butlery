@@ -40,7 +40,9 @@ class VoiceHeardChip extends StatelessWidget {
               horizontal: AppDimensions.spacingSm,
               vertical: AppDimensions.spacingXs,
             ),
-            decoration: BoxDecoration(color: cs.surface),
+            // A paper chip on ink: onPrimary is paper in both schemes,
+            // where surface turns dark in dark mode under the ink text.
+            decoration: BoxDecoration(color: cs.onPrimary),
             child: Text(
               label,
               maxLines: 1,

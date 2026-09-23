@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_status_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -20,7 +21,7 @@ class CollaborativeStatusWidgets {
   }) {
     return Builder(
       builder: (context) {
-        final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
+        final effectiveColor = color ?? Theme.of(context).colorScheme.onSurface;
 
         return Container(
           padding:
@@ -78,7 +79,7 @@ class CollaborativeStatusWidgets {
         final cs = Theme.of(builderContext).colorScheme;
         final bgColor =
             backgroundColor ??
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight);
+            cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight);
 
         return Container(
           width: double.infinity,
@@ -87,7 +88,7 @@ class CollaborativeStatusWidgets {
             color: bgColor,
             border: Border(
               bottom: BorderSide(
-                color: cs.primary.withValues(
+                color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityMediumLight,
                 ),
               ),
@@ -103,7 +104,7 @@ class CollaborativeStatusWidgets {
                 children: [
                   Icon(
                     Icons.people,
-                    color: cs.primary,
+                    color: cs.onSurface,
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -114,13 +115,13 @@ class CollaborativeStatusWidgets {
                         Text(
                           title,
                           style: AppTextStyles.bodyLargeBold.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                         Text(
                           subtitle,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                       ],
@@ -143,7 +144,7 @@ class CollaborativeStatusWidgets {
                     Icon(
                       Icons.people_outline,
                       size: AppDimensions.iconSizeL,
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                 ],
               ),
@@ -268,12 +269,11 @@ class _CollaborativeAppBar extends StatelessWidget
         final participants = status.participants;
 
         final cs = Theme.of(context).colorScheme;
-        return AppBar(
-          title: Text(title ?? context.l10n.collaborativeContent),
-          backgroundColor: isCollaborative
-              ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-              : null,
-          elevation: isCollaborative ? 2 : null,
+        // The subpage bar (Komponentark v1 §01 pattern 2; B-45). Shared
+        // content no longer tints the bar: the badge carries it, as in the
+        // recipe editor (P4-U07; tokens.json:40-53).
+        return ButleryTopBar.undersida(
+          title: title ?? context.l10n.collaborativeContent,
           actions: [
             // Show collaborative badge if content is collaborative
             if (isCollaborative) ...[
@@ -293,7 +293,8 @@ class _CollaborativeAppBar extends StatelessWidget
                           ? '${participants.length}'
                           : context.l10n.collaborativeShared,
                       icon: Icons.people,
-                      color: cs.primary,
+                      // Paper on the ink bar (onPrimary, both schemes).
+                      color: cs.onPrimary,
                     ),
                   ),
                 ),
@@ -309,5 +310,6 @@ class _CollaborativeAppBar extends StatelessWidget
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize =>
+      const ButleryTopBar.undersida(title: '').preferredSize;
 }

@@ -30,12 +30,12 @@ class TagDetailHeader extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: colorScheme.primary.withValues(
+              backgroundColor: colorScheme.onSurface.withValues(
                 alpha: AppDimensions.opacityLight,
               ),
               child: Icon(
                 Icons.label,
-                color: colorScheme.primary,
+                color: colorScheme.onSurface,
                 size: 32,
               ),
             ),

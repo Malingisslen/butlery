@@ -73,7 +73,8 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
   }) : pattern = ButleryTopBarPattern.rot,
        backTo = null,
-       onBack = null;
+       onBack = null,
+       implyBack = false;
 
   /// Mönster 2 · Undersida (Komponentark v1 rad 71–78).
   ///
@@ -91,6 +92,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.backTo,
     this.onBack,
+    this.implyBack = true,
     this.secondaryLine,
     this.secondaryLineIsLive = true,
     this.actions = const [],
@@ -125,6 +127,11 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Vad bakåtpilen gör. Null ger [Navigator.maybePop].
   final VoidCallback? onBack;
+
+  /// Om undersidan ritar bakåtpilen när rutten går att poppa. Falskt ger en
+  /// undersida utan pil, för en vy som själv säger att den inte har någon
+  /// väg tillbaka (BaseScaffold.showBackButton). [onBack] ger alltid en pil.
+  final bool implyBack;
 
   /// Åtgärder till höger. Var och en får minst 48 × 48 dp träffyta och 8 dp
   /// till grannen (tokens.json touchTarget, rad 485–492).
@@ -186,17 +193,25 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const int _secondaryMaxLines = 2;
 
   // Komponentark rad 62 ritar rotnivån med 16 px ovan, 18 px i sidled och
-  // 14 px under innehållet. Värdena läggs på skalan i tokens.json
-  // space.scale (rad 468–475): 16 ovan, 16 i sidled, 12 under.
+  // 14 px under innehållet. Ovan och under läggs på skalan i tokens.json
+  // space.scale (rad 468–475): 16 ovan, 12 under.
   //
-  // Tolkning: sidmarginalen är 16 och inte tokens.json space.layoutMargin
-  // (rad 464–467: 20 vid 320 dp, 24 vid 360–430 dp). Ritningen ger fältet
-  // 18 px, vilket inte är något av layoutMargins värden, så fältets egen
-  // ritade kant går före sidmarginalen. Titeln och innehållet under delar
-  // därför inte vänsterkant förrän vyerna i paket 4 bestämmer det.
+  // Sidmarginalen följer tokens.json space.layoutMargin (rad 464–467: 20 vid
+  // 320 dp, 24 vid 360–430 dp), så att titeln och innehållet under delar
+  // vänsterkant (paket 4, Q-P4-14). Ritningens 18 px är varken 16 eller
+  // layoutMargin, och tokenet är innehållets kanoniska rytm. Tolkning.
   static const double _padTop = AppDimensions.spacingMd;
   static const double _padBottom = AppDimensions.spacingL;
-  static const double _padSide = AppDimensions.spacingMd;
+
+  /// Bredden där sidmarginalen går från 20 till 24 (tokens.json
+  /// space.layoutMargin: "320" och "360-430").
+  static const double _wideFrom = 360;
+
+  /// Sidmarginalen för [context]: tokens.json space.layoutMargin.
+  static double sideMargin(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < _wideFrom
+      ? AppDimensions.layoutMarginNarrow
+      : AppDimensions.layoutMargin;
 
   /// Undersidans luft ovan och under bakåtpilens hitbox. Se
   /// [subpageMinHeight] för hur 6/4 px ur ritningen blir 4/4.
@@ -350,11 +365,12 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
       ],
     );
 
+    final padSide = sideMargin(context);
     final toolbar = Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
-        leadingWidget != null ? _subpageLeadingInset : _padSide,
+        leadingWidget != null ? _subpageLeadingInset : padSide,
         _isRoot ? _padTop : _subpagePadVertical,
-        _padSide,
+        padSide,
         _isRoot ? _padBottom : _subpagePadVertical,
       ),
       child: row,
@@ -383,24 +399,29 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
                     foregroundColor: foreground,
                   ).merge(IconButtonTheme.of(context).style),
                 ),
-                child: DefaultTextStyle.merge(
-                  style: TextStyle(color: foreground),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: _isRoot ? 0 : subpageMinHeight,
+                child: TextButtonTheme(
+                  data: TextButtonThemeData(
+                    style: _onBarTextButtonStyle(context, foreground),
+                  ),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(color: foreground),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: _isRoot ? 0 : subpageMinHeight,
+                          ),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            heightFactor: 1,
+                            child: toolbar,
+                          ),
                         ),
-                        child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          heightFactor: 1,
-                          child: toolbar,
-                        ),
-                      ),
-                      ?bottom,
-                    ],
+                        ?bottom,
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -411,13 +432,40 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  /// Appens textknappsstil med fältets förgrund som textfärg.
+  ///
+  /// Appens textknapp är ink (cs.primary, button_themes.dart). På
+  /// undersidans ink-yta (Komponentark v1 rad 73) blev en textknapp bland
+  /// åtgärderna ink på ink. Här tar den fältets förgrund, papper på
+  /// undersidan och text.primary på rotnivån, precis som ikonknapparna.
+  ///
+  /// Bara det aktiva läget byts. Det inaktiva behåller appens färg
+  /// (text.disabled), eftersom inaktivt på surface.ink inte är ritat (öppen
+  /// fråga i beslut-paket2.md, "disabled on surface.ink"). Fokusringen,
+  /// 48 dp minsta höjd och resten av stilen ärvs.
+  static ButtonStyle _onBarTextButtonStyle(
+    BuildContext context,
+    Color foreground,
+  ) {
+    final base = TextButtonTheme.of(context).style;
+    return ButtonStyle(
+      foregroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return base?.foregroundColor?.resolve(states);
+        }
+        return foreground;
+      }),
+    ).merge(base);
+  }
+
   /// Bakåtpilen, eller null när fältet inte ska ha någon.
   ///
   /// Rotnivån har aldrig en (Komponentark rad 68). Undersidan har en när
   /// [onBack] är satt eller rutten går att poppa.
   Widget? _backButton(BuildContext context) {
     if (_isRoot) return null;
-    final canPop = ModalRoute.of(context)?.impliesAppBarDismissal ?? false;
+    final canPop =
+        implyBack && (ModalRoute.of(context)?.impliesAppBarDismissal ?? false);
     if (onBack == null && !canPop) return null;
     final name = backTo == null
         ? context.l10n.commonBack

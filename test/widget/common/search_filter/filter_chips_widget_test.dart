@@ -67,6 +67,7 @@ void main() {
             theme: ThemeData(
               colorScheme: const ColorScheme.light(
                 primary: Colors.blue,
+                onSurface: Colors.teal,
               ),
             ),
             home: Scaffold(
@@ -81,7 +82,9 @@ void main() {
         );
 
         final titleText = tester.widget<Text>(find.text('Filters'));
-        expect(titleText.style?.color, equals(Colors.blue));
+        // text.primary (onSurface), not primary: primary is ink in both
+        // modes and vanished on the dark page (P4-T7).
+        expect(titleText.style?.color, equals(Colors.teal));
       });
 
       testWidgets('should render filter chips', (WidgetTester tester) async {

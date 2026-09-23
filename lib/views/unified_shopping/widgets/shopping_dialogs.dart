@@ -194,15 +194,11 @@ class ShoppingDialogs {
     } catch (e) {
       AppLogger.error('Error showing share dialog: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.shoppingCouldNotShowShareDialog(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(seconds: 4),
+        // The ink snackbar (PQ-09 = A).
+        SnackBarUtils.showError(
+          context,
+          context.l10n.shoppingCouldNotShowShareDialog(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

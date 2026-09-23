@@ -4,12 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// ActionButtons - Utility action buttons with loading support
-/// Provides consistent button styling and loading states for the app.
+/// ActionButtons - Utility action buttons with a busy state.
+///
+/// A busy button (`isLoading`) keeps its shape, its colours and its name, or
+/// says what it is doing (`loadingText`, the busy label, e.g. "Sparar …"),
+/// and gets the plate line along its bottom edge in its own text colour
+/// (Komponentark v1:307, :365, :372; Grafisk manual v6:423; B-18). It never
+/// shows a spinner and never falls back to "Laddar...".
 class ActionButtons {
+  /// The visible label: the busy label while busy, else the button's name.
+  static String _visibleLabel(bool busy, String name, String? busyLabel) =>
+      busy ? (busyLabel ?? name) : name;
+
   static Widget actionButton(
     BuildContext context, {
     required String label,
@@ -21,10 +30,8 @@ class ActionButtons {
     bool isExpanded = false,
     bool enablePressAnimation = true,
   }) {
-    final effectiveOnPressed = isLoading ? null : onPressed;
-    final effectiveLabel = isLoading
-        ? (loadingText ?? context.l10n.commonLoading)
-        : label;
+    final effectiveOnPressed = isLoading ? PlateLineButton.ignore : onPressed;
+    final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
 
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
@@ -32,15 +39,9 @@ class ActionButtons {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (isLoading)
-            const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
-              child: LoadingIndicator(
-                size: AppDimensions.iconSizeS,
-                strokeWidth: 2,
-              ),
-            )
-          else if (icon != null)
+          // A busy button shows its words only, as drawn (Komponentark
+          // v1:372).
+          if (icon != null && !isLoading)
             Padding(
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.spacingS,
@@ -59,45 +60,61 @@ class ActionButtons {
       ),
     );
 
+    final theme = Theme.of(context);
     Widget button;
     switch (style) {
       case ActionButtonStyle.primary:
-        button = ElevatedButton(
-          onPressed: effectiveOnPressed,
-          child: buttonChild,
-        );
-        break;
       case ActionButtonStyle.secondary:
         button = ElevatedButton(
           onPressed: effectiveOnPressed,
+          style: isLoading
+              ? PlateLineButton.busyStyle(
+                  null,
+                  theme.elevatedButtonTheme.style,
+                )
+              : null,
           child: buttonChild,
         );
         break;
       case ActionButtonStyle.outlined:
         button = OutlinedButton(
           onPressed: effectiveOnPressed,
+          style: isLoading
+              ? PlateLineButton.busyStyle(
+                  null,
+                  theme.outlinedButtonTheme.style,
+                  onFill: false,
+                )
+              : null,
           child: buttonChild,
         );
         break;
     }
 
-    final semanticLabel = isLoading
-        ? '$label, ${context.l10n.commonLoading}'
-        : label;
+    final sized = isExpanded
+        ? SizedBox(width: double.infinity, child: button)
+        : ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 200),
+            child: button,
+          );
+
+    if (isLoading) {
+      return BusyButtonSemantics(
+        busy: true,
+        name: label,
+        busyLabel: loadingText,
+        child: sized,
+      );
+    }
 
     final result = Semantics(
-      label: semanticLabel,
+      label: label,
       button: true,
       enabled: effectiveOnPressed != null,
-      child: isExpanded
-          ? SizedBox(width: double.infinity, child: button)
-          : ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 200),
-              child: button,
-            ),
+      child: sized,
     );
 
-    if (!enablePressAnimation || isLoading) return result;
+    if (!enablePressAnimation) return result;
     return AnimatedPressable(
       enabled: effectiveOnPressed != null,
       child: result,
@@ -138,52 +155,58 @@ class ActionButtons {
     String? loadingText,
     bool enablePressAnimation = true,
   }) {
-    final semanticLabel = isLoading
-        ? '$label, ${context.l10n.commonLoading}'
-        : label;
-
-    final result = Semantics(
-      label: semanticLabel,
-      button: true,
-      enabled: !isLoading,
-      child: AspectRatio(
-        aspectRatio: 1.0, // Perfect square
-        child: ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isLoading)
-                LoadingIndicator(
-                  size: AppDimensions.iconSizeM,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                )
-              else
-                Icon(icon, size: AppDimensions.iconSizeXl),
+    final square = AspectRatio(
+      aspectRatio: 1.0, // Perfect square
+      child: ElevatedButton(
+        onPressed: isLoading ? PlateLineButton.ignore : onPressed,
+        style: isLoading
+            ? PlateLineButton.busyStyle(
+                null,
+                Theme.of(context).elevatedButtonTheme.style,
+              )
+            : null,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (!isLoading) ...[
+              Icon(icon, size: AppDimensions.iconSizeXl),
               const SizedBox(height: AppDimensions.spacingSm),
-              // Flexible, not a bare Text: the canonical type scale carries an
-              // explicit line height, so two lines are taller than they were
-              // under the old metrics and a fixed 1:1 square overflowed by 4px.
-              // The label still ellipsises at two lines; only the free growth
-              // is capped.
-              Flexible(
-                child: Text(
-                  isLoading
-                      ? (loadingText ?? context.l10n.commonLoading)
-                      : label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
             ],
-          ),
+            // Flexible, not a bare Text: the canonical type scale carries an
+            // explicit line height, so two lines are taller than they were
+            // under the old metrics and a fixed 1:1 square overflowed by 4px.
+            // The label still ellipsises at two lines; only the free growth
+            // is capped.
+            Flexible(
+              child: Text(
+                _visibleLabel(isLoading, label, loadingText),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
 
-    if (!enablePressAnimation || isLoading) return result;
+    if (isLoading) {
+      return BusyButtonSemantics(
+        busy: true,
+        name: label,
+        busyLabel: loadingText,
+        child: square,
+      );
+    }
+
+    final result = Semantics(
+      label: label,
+      button: true,
+      enabled: true,
+      child: square,
+    );
+
+    if (!enablePressAnimation) return result;
     return AnimatedPressable(
       enabled: true,
       child: result,
@@ -202,38 +225,40 @@ class ActionButtons {
     EdgeInsets? margin,
     bool enablePressAnimation = true,
   }) {
-    final semanticLabel = isLoading
-        ? '$label, ${context.l10n.commonLoading}'
-        : label;
-
-    final Widget button = Semantics(
-      label: semanticLabel,
-      button: true,
-      enabled: !isLoading,
-      child: SizedBox(
-        height: height,
-        child: ElevatedButton.icon(
-          onPressed: isLoading ? null : onPressed,
-          icon: isLoading
-              ? LoadingIndicator(
-                  size: AppDimensions.iconSizeAction,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                )
-              : Icon(
-                  icon,
-                  size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-          label: Text(
-            isLoading ? (loadingText ?? context.l10n.commonLoading) : label,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-          ),
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final sized = SizedBox(
+      height: height,
+      child: ElevatedButton.icon(
+        onPressed: isLoading ? PlateLineButton.ignore : onPressed,
+        style: isLoading
+            ? PlateLineButton.busyStyle(
+                null,
+                Theme.of(context).elevatedButtonTheme.style,
+              )
+            : null,
+        icon: isLoading
+            ? null
+            : Icon(icon, size: AppDimensions.iconSizeXl, color: onPrimary),
+        label: Text(
+          _visibleLabel(isLoading, label, loadingText),
+          style: AppTextStyles.labelLarge.copyWith(color: onPrimary),
         ),
       ),
     );
+
+    final Widget button = isLoading
+        ? BusyButtonSemantics(
+            busy: true,
+            name: label,
+            busyLabel: loadingText,
+            child: sized,
+          )
+        : Semantics(
+            label: label,
+            button: true,
+            enabled: true,
+            child: sized,
+          );
 
     final Widget result = margin != null
         ? Padding(padding: margin, child: button)
@@ -306,10 +331,8 @@ class ActionButtons {
     ButtonStyle? style,
     bool enablePressAnimation = true,
   }) {
-    final effectiveOnPressed = isLoading ? null : onPressed;
-    final effectiveLabel = isLoading
-        ? (loadingText ?? context.l10n.commonLoading)
-        : label;
+    final effectiveOnPressed = isLoading ? PlateLineButton.ignore : onPressed;
+    final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
 
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
@@ -317,15 +340,9 @@ class ActionButtons {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (isLoading)
-            const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
-              child: LoadingIndicator(
-                size: AppDimensions.iconSizeS,
-                strokeWidth: 2,
-              ),
-            )
-          else if (icon != null)
+          // A busy button shows its words only, as drawn (Komponentark
+          // v1:372).
+          if (icon != null && !isLoading)
             Padding(
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.spacingS,
@@ -346,24 +363,37 @@ class ActionButtons {
 
     final button = TextButton(
       onPressed: effectiveOnPressed,
-      style: style,
+      style: isLoading
+          ? PlateLineButton.busyStyle(
+              style,
+              Theme.of(context).textButtonTheme.style,
+              onFill: false,
+            )
+          : style,
       child: buttonChild,
     );
 
-    final semanticLabel = isLoading
-        ? '$label, ${context.l10n.commonLoading}'
-        : label;
+    final sized = isExpanded
+        ? SizedBox(width: double.infinity, child: button)
+        : button;
+
+    if (isLoading) {
+      return BusyButtonSemantics(
+        busy: true,
+        name: label,
+        busyLabel: loadingText,
+        child: sized,
+      );
+    }
 
     final result = Semantics(
-      label: semanticLabel,
+      label: label,
       button: true,
       enabled: effectiveOnPressed != null,
-      child: isExpanded
-          ? SizedBox(width: double.infinity, child: button)
-          : button,
+      child: sized,
     );
 
-    if (!enablePressAnimation || isLoading) return result;
+    if (!enablePressAnimation) return result;
     return AnimatedPressable(
       enabled: effectiveOnPressed != null,
       child: result,
@@ -431,7 +461,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
         onPressed: onPressed,
         tooltip: semanticLabel,
         backgroundColor: backgroundColor ?? cs.primary,
-        foregroundColor: foregroundColor ?? cs.surfaceContainerHighest,
+        foregroundColor: foregroundColor ?? cs.onPrimary,
         child: child,
       ),
     );

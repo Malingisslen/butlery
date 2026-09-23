@@ -4,7 +4,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
@@ -452,9 +452,9 @@ class SocialGroupComponents {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(text ?? context.l10n.socialLoadingCategories),
+            PlateLineMessage(
+              message: text ?? context.l10n.socialLoadingCategories,
+            ),
           ],
         ),
       ),

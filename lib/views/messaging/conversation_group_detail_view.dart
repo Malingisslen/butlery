@@ -1,6 +1,7 @@
 // lib/views/messaging/conversation_group_detail_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
@@ -64,14 +65,10 @@ class ConversationGroupDetailView extends StatelessWidget {
     BuildContext context,
     GroupDetailViewModel viewModel,
   ) {
-    return AppBar(
-      title: Text(
-        context.l10n.messagingGroupInfo,
-        style: AppTextStyles.headlineSmall,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      elevation: AppDimensions.elevationLow,
+    // A subpage of the chat (Komponentark v1 §01 pattern 2; Skarmar v12
+    // etapp 9 'Chattens gruppinfo' draws the back arrow).
+    return ButleryTopBar.undersida(
+      title: context.l10n.messagingGroupInfo,
       actions: [
         if (viewModel.isAdmin)
           IconButton(

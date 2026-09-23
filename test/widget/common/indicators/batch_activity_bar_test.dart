@@ -8,11 +8,11 @@
 
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -34,7 +34,7 @@ void main() {
     );
 
     final l10n = l10nOf(tester);
-    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.byType(PlateLine), findsNothing);
     expect(labelled(l10n.a11yLoading), findsNothing);
     handle.dispose();
   });
@@ -50,7 +50,7 @@ void main() {
     await tester.pump();
 
     final l10n = l10nOf(tester);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(PlateLine), findsOneWidget);
     expect(labelled(l10n.a11yLoading), findsOneWidget);
     handle.dispose();
   });

@@ -90,7 +90,7 @@ class _FeedbackFABState extends State<FeedbackFAB> {
                   child: Text(
                     '!',
                     style: AppTextStyles.headlineBold.copyWith(
-                      color: cs.primary,
+                      color: cs.onSurface,
                       fontSize: 24,
                     ),
                   ),

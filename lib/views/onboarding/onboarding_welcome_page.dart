@@ -35,7 +35,7 @@ class OnboardingWelcomePage extends StatelessWidget {
                 Text(
                   context.l10n.onboardingWelcomeTitle,
                   style: AppTextStyles.headlineMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),

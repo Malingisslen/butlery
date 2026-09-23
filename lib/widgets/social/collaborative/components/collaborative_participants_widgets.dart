@@ -34,7 +34,7 @@ class CollaborativeParticipantsWidgets {
                 height: avatarSize,
                 margin: EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   shape: BoxShape.circle,
@@ -110,12 +110,12 @@ class CollaborativeParticipantsWidgets {
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityLight,
                   ),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: cs.primary,
+                    color: cs.onSurface,
                     width: 1,
                   ),
                 ),
@@ -124,7 +124,7 @@ class CollaborativeParticipantsWidgets {
                     '+$remaining',
                     style: AppTextStyles.bodyLargeBold.copyWith(
                       fontSize: size * 0.35,
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                   ),
                 ),

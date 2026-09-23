@@ -26,11 +26,10 @@ class GroupMenuEntryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The icon takes the bar's foreground: it sits on the week menu's light
+    // root bar (Komponentark v1:62), where paper would not show.
     return IconButton(
-      icon: Icon(
-        Icons.groups_outlined,
-        color: Theme.of(context).colorScheme.onPrimary,
-      ),
+      icon: const Icon(Icons.groups_outlined),
       tooltip: context.l10n.groupMenuChatAction,
       onPressed: () => unawaited(_open(context)),
     );

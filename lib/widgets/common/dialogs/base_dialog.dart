@@ -4,7 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
 abstract class BaseDialog<T> extends StatefulWidget {
@@ -53,7 +53,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
               widget.titleIcon!,
               color: widget.isDangerous
                   ? cs.error
-                  : widget.primaryActionColor ?? cs.primary,
+                  : widget.primaryActionColor ?? cs.onSurface,
               size: AppDimensions.iconSizeXxl,
             )
           : null,
@@ -104,42 +104,40 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     return 'OK';
   }
 
+  /// The primary action. While it works it keeps its colours and its name
+  /// and gets the plate line along its bottom edge (Komponentark v1:365,
+  /// :372; produktregler.md:902, "Låsningen behåller knappens namn").
   Widget _buildPrimaryButton() {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final buttonColor = widget.isDangerous
         ? cs.error
         : (widget.primaryActionColor ?? cs.primary);
     final resolvedText = _resolvedPrimaryActionText();
-    if (widget.isDangerous) {
-      return FilledButton.icon(
-        onPressed: _isLoading ? null : _onPrimaryAction,
-        style: FilledButton.styleFrom(
-          backgroundColor: buttonColor,
-          foregroundColor: cs.surfaceContainerHighest,
-        ),
+    final ownStyle = widget.isDangerous
+        ? FilledButton.styleFrom(
+            backgroundColor: buttonColor,
+            foregroundColor: cs.surfaceContainerHighest,
+          )
+        : FilledButton.styleFrom(backgroundColor: buttonColor);
+    return BusyButtonSemantics(
+      busy: _isLoading,
+      name: resolvedText,
+      child: FilledButton.icon(
+        onPressed: _isLoading ? PlateLineButton.ignore : _onPrimaryAction,
+        style: _isLoading
+            ? PlateLineButton.busyStyle(ownStyle, theme.filledButtonTheme.style)
+            : ownStyle,
+        // Busy: the words only, as drawn (Komponentark v1:372).
         icon: _isLoading
-            ? LoadingIndicator(
-                size: 16,
-                strokeWidth: 2,
-                color: cs.surfaceContainerHighest,
-              )
-            : Icon(widget.primaryActionIcon ?? Icons.delete),
-        label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
-      );
-    } else {
-      return FilledButton.icon(
-        onPressed: _isLoading ? null : _onPrimaryAction,
-        style: FilledButton.styleFrom(backgroundColor: buttonColor),
-        icon: _isLoading
-            ? LoadingIndicator(
-                size: 16,
-                strokeWidth: 2,
-                color: cs.surfaceContainerHighest,
-              )
-            : Icon(widget.primaryActionIcon ?? Icons.check),
-        label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
-      );
-    }
+            ? null
+            : Icon(
+                widget.primaryActionIcon ??
+                    (widget.isDangerous ? Icons.delete : Icons.check),
+              ),
+        label: Text(resolvedText),
+      ),
+    );
   }
 
   Future<void> _onPrimaryAction() async {
@@ -408,37 +406,31 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     );
   }
 
+  /// The action. While it works it says what it does
+  /// ([BaseActionDialog.loadingButtonLabel], e.g. "Skickar …") or keeps its
+  /// own name, and gets the plate line along its bottom edge (Komponentark
+  /// v1:365, :372; content-style-guide.md:63).
   Widget _buildActionButton() {
-    final cs = Theme.of(context).colorScheme;
-    final loadingText =
-        widget.loadingButtonLabel(context) ?? context.l10n.commonWorking;
+    final theme = Theme.of(context);
+    final name = widget.actionButtonLabel(context);
+    final busyLabel = widget.loadingButtonLabel(context);
     final actionStyle = widget.actionButtonStyleFor(context);
-    if (actionStyle != null) {
-      return FilledButton.icon(
-        onPressed: isLoading ? null : _performAction,
-        style: actionStyle,
-        icon: isLoading
-            ? LoadingIndicator(
-                size: 16,
-                strokeWidth: 2,
-                color: cs.surfaceContainerHighest,
+    return BusyButtonSemantics(
+      busy: isLoading,
+      name: name,
+      busyLabel: busyLabel,
+      child: FilledButton.icon(
+        onPressed: isLoading ? PlateLineButton.ignore : _performAction,
+        style: isLoading
+            ? PlateLineButton.busyStyle(
+                actionStyle,
+                theme.filledButtonTheme.style,
               )
-            : widget.actionButtonIcon,
-        label: Text(
-          isLoading ? loadingText : widget.actionButtonLabel(context),
-        ),
-      );
-    } else {
-      return FilledButton.icon(
-        onPressed: isLoading ? null : _performAction,
-        icon: isLoading
-            ? const LoadingIndicator(size: 16, strokeWidth: 2)
-            : widget.actionButtonIcon,
-        label: Text(
-          isLoading ? loadingText : widget.actionButtonLabel(context),
-        ),
-      );
-    }
+            : actionStyle,
+        icon: isLoading ? null : widget.actionButtonIcon,
+        label: Text(isLoading ? (busyLabel ?? name) : name),
+      ),
+    );
   }
 
   Future<void> _performAction() async {
@@ -509,11 +501,17 @@ class LoadingDialog extends StatelessWidget {
     return PopScope(
       canPop: canCancel,
       child: AlertDialog(
-        content: Row(
+        // Plate line plus text (produktregler.md:163, B-18): the text says
+        // what is being done, the line only that something is going on. The
+        // line carries the message as its semantic label, so the text is
+        // not read a second time.
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const LoadingIndicator(),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(child: Text(message)),
+            ExcludeSemantics(child: Text(message)),
+            const SizedBox(height: AppDimensions.spacingM),
+            PlateLine(semanticLabel: message),
           ],
         ),
       ),

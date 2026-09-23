@@ -29,7 +29,7 @@ class StepProgressIndicator extends StatelessWidget {
                 child: Container(
                   height: 2,
                   color: i <= currentStep
-                      ? theme.colorScheme.primary
+                      ? theme.colorScheme.onSurface
                       : theme.colorScheme.outlineVariant,
                 ),
               ),
