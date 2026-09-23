@@ -82,8 +82,9 @@ List<String> _snackBarBackgrounds(String dir) {
 }
 
 /// lib/widgets files that still paint their own snackbar colour. They belong
-/// to track T7 (lib/widgets), which moves them to SnackBarUtils; the list
-/// only shrinks. A file not on it fails.
+/// to track T7 (lib/widgets), which moves them to SnackBarUtils. A file not
+/// on it fails, and so does an entry that no longer paints one: the list is
+/// a ratchet and a stale entry has to be removed.
 const _widgetSnackBarsOwnedByT7 = {
   'lib/widgets/common/dialogs/retag_progress_dialog.dart',
   'lib/widgets/common/feedback/snackbar_widgets.dart',
@@ -168,7 +169,8 @@ const _foregroundCalls = {
 }
 
 /// Ink as a foreground that the drawing keeps: ink on a plate that is paper
-/// in both modes. One entry per site, by file; the count only shrinks.
+/// in both modes. One entry per site, by file. The count must equal what is
+/// found: a site that goes away fails until its count is lowered.
 const _inkOnPaperSites = <String, int>{
   // The font-size plate and the X on paper plates on the cooking base
   // (cs.onPrimary behind them, paper in both modes).
@@ -192,8 +194,15 @@ void main() {
     expect(offenders, isEmpty);
   });
 
+  test('every T7 snackbar entry still paints its own colour (ratchet)', () {
+    final found = _snackBarBackgrounds('lib/widgets').toSet();
+    final stale = _widgetSnackBarsOwnedByT7.difference(found).toList();
+    expect(stale, isEmpty, reason: 'remove these entries from the list');
+  });
+
   test('cs.primary is never a foreground in lib/views (dark mode)', () {
     final offenders = <String>[];
+    final counts = <String, int>{};
     for (final path in _dartFiles('lib/views')) {
       final code = _code(path);
       final foreground = <String>[];
@@ -223,8 +232,16 @@ void main() {
         foreground.add('$path: ${line.trim()} [$call/$arg]');
       }
       final allowed = _inkOnPaperSites[path] ?? 0;
+      counts[path] = foreground.length;
       if (foreground.length > allowed) offenders.addAll(foreground);
     }
     expect(offenders, isEmpty);
+    // Ratchet: each ink-on-paper allowance is exactly what is found.
+    final stale = <String>[
+      for (final e in _inkOnPaperSites.entries)
+        if ((counts[e.key] ?? 0) != e.value)
+          '${e.key}: allowed ${e.value}, found ${counts[e.key] ?? 0}',
+    ];
+    expect(stale, isEmpty, reason: 'lower these allowances');
   });
 }

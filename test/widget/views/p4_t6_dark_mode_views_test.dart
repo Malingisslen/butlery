@@ -26,7 +26,6 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
@@ -122,7 +121,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         final link = tester.widget<Text>(find.text('villkoren'));
-        final linkColour = theme.extension<ButleryColors>()!.info;
+        // The literal text.link values (tokens.json:228-232), not a theme
+        // member: a member comparison would pass with a wrong dark value.
+        final linkColour = mode == 'light'
+            ? const Color(0xFF8A5212)
+            : const Color(0xFFDCA968);
         expect(link.style?.color, linkColour);
         expect(link.style?.color, isNot(theme.colorScheme.primary));
       });

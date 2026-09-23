@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
@@ -141,10 +140,14 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tt = theme.textTheme;
-    // text.link: #8A5212 light, #DCA968 dark (tokens.json:228-232), the
-    // generated info member. Ink was the link colour on light and vanished
-    // on the dark page.
-    final linkColor = context.butleryColors.info;
+    // text.link is #8A5212 light, #DCA968 dark (tokens.json:228-232). Ink
+    // was the link colour on light and vanished on the dark page. The link
+    // reads colorScheme.onSecondaryContainer (text.accent.onRaised,
+    // tokens.json:179-183; tools/app-theme-map.json), which carries the same
+    // two values and knows the mode. ButleryColors.info is not used: its
+    // dark entry points at the light member, so it would render #8A5212 on
+    // the dark page (about 2.5:1).
+    final linkColor = theme.colorScheme.onSecondaryContainer;
     final bodyStyle = tt.bodyMedium?.copyWith(height: 1.6) ?? const TextStyle();
 
     final children = <Widget>[];

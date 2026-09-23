@@ -638,11 +638,19 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
     // The ink snackbar for both outcomes (PQ-09 = A; Komponentark
-    // v1:745-750): the message says what happened, not a status fill.
+    // v1:745-750): the message says what happened, not a status fill. Only
+    // the colour changes: no action, so it still closes by itself after
+    // Flutter's former default of 4 s, as before.
+    const duration = Duration(seconds: 4);
     if (isError) {
-      SnackBarUtils.showError(context, message);
+      SnackBarUtils.showError(
+        context,
+        message,
+        duration: duration,
+        showCloseButton: false,
+      );
     } else {
-      SnackBarUtils.showSuccess(context, message);
+      SnackBarUtils.showSuccess(context, message, duration: duration);
     }
   }
 }

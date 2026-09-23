@@ -228,10 +228,12 @@ class FeedTab {
         border: Border(
           left: BorderSide(color: borderColor, width: 4),
           bottom: BorderSide(
-            // Decorative rust accent: border.statusWarning, #D8B784 light,
-            // #DCA968 dark (tokens.json:128-132), the generated warning
-            // member, mode-aware where AppColors.rustLight was light only.
-            color: context.butleryColors.warning.withValues(alpha: 0.5),
+            // Decorative card accent: the mode-aware card-bottom member
+            // (rustLight, #D8B784 light, #DCA968 dark), as on the family
+            // cards. AppColors.rustLight was light only.
+            color: context.butleryColors.recipeCardBottomBorder.withValues(
+              alpha: 0.5,
+            ),
             width: 3,
           ),
         ),
