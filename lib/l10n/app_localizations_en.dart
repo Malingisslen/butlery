@@ -14379,11 +14379,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportSubmit => 'Send report';
 
   @override
-  String get reportDialogGuidelinesNotePrefix =>
-      'By reporting, you confirm the content violates';
+  String get reportDialogGuidelinesNotePrefix => 'We judge against';
 
   @override
-  String get reportDialogGuidelinesLink => 'our community guidelines';
+  String get reportDialogGuidelinesLink => 'our guidelines';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— the version you see now is the one we judge by.';
+
+  @override
+  String get reportDialogIntro =>
+      'Tell us what is wrong. A person on the team reads your report.';
+
+  @override
+  String get reportDescriptionRequiredHelper =>
+      'Required when you choose Other.';
 
   @override
   String get settingsMyReports => 'My reports';

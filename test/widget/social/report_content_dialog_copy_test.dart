@@ -103,6 +103,45 @@ void main() {
     expect(find.textContaining('Rapport'), findsNothing);
   });
 
+  testWidgets('the intro and the guidelines note read as drawn', (
+    tester,
+  ) async {
+    await open(tester, ContentType.recipe);
+
+    // #fbanmal:508 and :518.
+    expect(
+      find.text(
+        'Berätta vad som är fel. En människa i teamet läser din anmälan.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Vi bedömer mot', findRichText: true),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(
+        '— den version du ser nu är den vi dömer efter.',
+        findRichText: true,
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('våra riktlinjer'), findsOneWidget);
+    expect(find.textContaining('bekräftar', findRichText: true), findsNothing);
+  });
+
+  testWidgets('Annat says the description is required', (tester) async {
+    await open(tester, ContentType.recipe);
+    expect(find.text('Krävs när du väljer Annat.'), findsNothing);
+
+    await tester.tap(find.text(l10n.reportReasonOther));
+    await tester.pumpAndSettle();
+
+    // #fbanmal:516, produktregler.md:938.
+    expect(find.text('Krävs när du väljer Annat.'), findsOneWidget);
+    expect(find.text('0/500'), findsOneWidget);
+  });
+
   testWidgets('other content says Anmäl innehåll', (tester) async {
     await open(tester, ContentType.comment);
 

@@ -110,7 +110,6 @@ const _legacyErrorCalls = <String, int>{
   'lib/widgets/social/block_user_action.dart': 1,
   'lib/widgets/social/groups/group_shared_content_section.dart': 6,
   'lib/widgets/social/ping_compose_sheet.dart': 1,
-  'lib/widgets/social/report_content_dialog.dart': 2,
   'lib/widgets/tagging/rule_builder_sheet.dart': 3,
 };
 

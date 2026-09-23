@@ -131,7 +131,18 @@ class ReportContentDialog {
             scrollable: true,
             content: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // The drawn intro under the title (Skarmar v12 etapp 9
+                // #fbanmal:508): who reads the report, a person
+                // (produktregler.md:940).
+                Text(
+                  l10n.reportDialogIntro,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 RadioGroup<String>(
                   groupValue: selectedReason,
                   onChanged: (value) => setState(() => selectedReason = value),
@@ -163,14 +174,22 @@ class ReportContentDialog {
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       hintText: l10n.reportDescriptionHint,
+                      // "Krävs när du väljer Annat." with the 0 / 500 counter
+                      // beside it, as drawn (#fbanmal:516;
+                      // produktregler.md:938). Interpretation: the drawn bold
+                      // on "Krävs" is left out; the helper is plain text.
+                      helperText: l10n.reportDescriptionRequiredHelper,
                       border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
                 const SizedBox(height: 12),
+                // "Vi bedömer mot våra riktlinjer — den version du ser nu är
+                // den vi dömer efter." (#fbanmal:518; produktregler.md:939).
                 _GuidelinesNote(
                   prefix: l10n.reportDialogGuidelinesNotePrefix,
                   linkText: l10n.reportDialogGuidelinesLink,
+                  suffix: l10n.reportDialogGuidelinesNoteSuffix,
                 ),
               ],
             ),
@@ -230,10 +249,15 @@ class _ReportOutcome {
 /// Tap on the linked phrase opens the guidelines view; the visible
 /// version is implicitly the version stamped on the resulting report record.
 class _GuidelinesNote extends StatelessWidget {
-  const _GuidelinesNote({required this.prefix, required this.linkText});
+  const _GuidelinesNote({
+    required this.prefix,
+    required this.linkText,
+    required this.suffix,
+  });
 
   final String prefix;
   final String linkText;
+  final String suffix;
 
   @override
   Widget build(BuildContext context) {
@@ -269,6 +293,7 @@ class _GuidelinesNote extends StatelessWidget {
               ),
             ),
           ),
+          TextSpan(text: ' $suffix'),
         ],
       ),
     );

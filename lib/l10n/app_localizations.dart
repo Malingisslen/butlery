@@ -24080,14 +24080,32 @@ abstract class AppLocalizations {
   /// No description provided for @reportDialogGuidelinesNotePrefix.
   ///
   /// In sv, this message translates to:
-  /// **'Genom att anmäla bekräftar du att innehållet bryter mot'**
+  /// **'Vi bedömer mot'**
   String get reportDialogGuidelinesNotePrefix;
 
   /// No description provided for @reportDialogGuidelinesLink.
   ///
   /// In sv, this message translates to:
-  /// **'våra riktlinjer för communityn'**
+  /// **'våra riktlinjer'**
   String get reportDialogGuidelinesLink;
+
+  /// No description provided for @reportDialogGuidelinesNoteSuffix.
+  ///
+  /// In sv, this message translates to:
+  /// **'— den version du ser nu är den vi dömer efter.'**
+  String get reportDialogGuidelinesNoteSuffix;
+
+  /// No description provided for @reportDialogIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta vad som är fel. En människa i teamet läser din anmälan.'**
+  String get reportDialogIntro;
+
+  /// No description provided for @reportDescriptionRequiredHelper.
+  ///
+  /// In sv, this message translates to:
+  /// **'Krävs när du väljer Annat.'**
+  String get reportDescriptionRequiredHelper;
 
   /// No description provided for @settingsMyReports.
   ///

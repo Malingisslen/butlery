@@ -14411,11 +14411,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get reportSubmit => 'Skicka anmälan';
 
   @override
-  String get reportDialogGuidelinesNotePrefix =>
-      'Genom att anmäla bekräftar du att innehållet bryter mot';
+  String get reportDialogGuidelinesNotePrefix => 'Vi bedömer mot';
 
   @override
-  String get reportDialogGuidelinesLink => 'våra riktlinjer för communityn';
+  String get reportDialogGuidelinesLink => 'våra riktlinjer';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— den version du ser nu är den vi dömer efter.';
+
+  @override
+  String get reportDialogIntro =>
+      'Berätta vad som är fel. En människa i teamet läser din anmälan.';
+
+  @override
+  String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
 
   @override
   String get settingsMyReports => 'Mina rapporter';
