@@ -2,10 +2,12 @@
 ///
 /// **UI Redesign:**
 /// - All interactive elements use primary color
-/// - Snackbar: inverseSurface background
+/// - Snackbar: the ink snackbar (Komponentark v1:745-750)
 /// - Progress indicators: Primary color
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -15,17 +17,49 @@ import 'package:butlery/theme/app_mode_colors.dart';
 class FeedbackThemes {
   FeedbackThemes._();
 
-  /// Snackbar theme
+  /// The ink snackbar's message: 13 px regular (Komponentark v1:747,
+  /// `font-size:13px`). Interpretation: the type scale has no 13/400 role,
+  /// so it is listItem (13, tokens.json typography.roles) at the drawn
+  /// weight.
+  static TextStyle get inkSnackBarMessageStyle =>
+      AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w400);
+
+  /// The ink snackbar's action: 13/700 (Komponentark v1:747). Same
+  /// interpretation as the message.
+  static TextStyle get inkSnackBarActionStyle =>
+      AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700);
+
+  /// Snackbar theme: the ink snackbar, the only snackbar look (Komponentark
+  /// v1:745-750; produktbeslut PQ-09 = A, 2026-09-23).
+  ///
+  /// * Surface: surface.ink #24382C in both modes (tokens.json semantic
+  ///   surface.ink; generated member forestGreen in AppColors and
+  ///   AppColorsDark).
+  /// * Message: paper #F5F4ED in both modes (control.checked.foreground,
+  ///   member textOnPrimary; 11.36:1 on ink).
+  /// * Action: light saffron #E09D50 in both modes (palette.saffronLight,
+  ///   member textAccentOnInk; 5.43:1 on ink, Block 289 contrast contract).
+  /// * Radius 8 (radius.control; Komponentark v1:746 `border-radius:8px`).
+  /// * Dark mode: a 1 px border.subtle edge (rgba(245,244,237,0.18)), since
+  ///   ink on the dark page (#17251D) is only a small step. Interpretation;
+  ///   the drawing is light mode only.
+  /// * No shadow: the drawing has none.
   static SnackBarThemeData snackBarTheme(ColorScheme cs) {
+    final dark = cs.brightness == Brightness.dark;
+    final ink = dark ? AppColorsDark.forestGreen : AppColors.forestGreen;
+    final paper = dark ? AppColorsDark.textOnPrimary : AppColors.textOnPrimary;
     return SnackBarThemeData(
-      backgroundColor: cs.inverseSurface,
-      contentTextStyle: AppTextStyles.snackbarText.copyWith(
-        color: cs.onInverseSurface,
+      backgroundColor: ink,
+      contentTextStyle: inkSnackBarMessageStyle.copyWith(color: paper),
+      actionTextColor: AppColors.textAccentOnInk,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        side: dark
+            ? const BorderSide(color: AppColorsDark.creamDarker)
+            : BorderSide.none,
       ),
-      // SQUARE-everywhere design rule (BUT-1243): zero radius = no rounded corners.
-      shape: const RoundedRectangleBorder(),
       behavior: SnackBarBehavior.floating,
-      elevation: AppDimensions.elevationMedium,
+      elevation: 0,
     );
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
@@ -65,12 +65,24 @@ class FormScaffold extends StatelessWidget {
     }
     if (showSaveButton && onSave != null) {
       actions.add(
-        IconButton(
-          onPressed: isLoading ? null : onSave,
-          icon: isLoading
-              ? const LoadingIndicator(size: 16, strokeWidth: 2)
-              : const Icon(Icons.save),
-          tooltip: context.l10n.commonSave,
+        // Busy: the icon button keeps its glyph and its name and gets the
+        // plate line along its bottom edge (Komponentark v1:365), never a
+        // spinner (B-18).
+        BusyButtonSemantics(
+          busy: isLoading,
+          name: context.l10n.commonSave,
+          child: IconButton(
+            onPressed: isLoading ? PlateLineButton.ignore : onSave,
+            style: isLoading
+                ? PlateLineButton.busyStyle(
+                    null,
+                    Theme.of(context).iconButtonTheme.style,
+                    onFill: false,
+                  )
+                : null,
+            icon: const Icon(Icons.save),
+            tooltip: context.l10n.commonSave,
+          ),
         ),
       );
     }
@@ -116,17 +128,24 @@ class FormScaffold extends StatelessWidget {
               ],
               if (showSaveButton) ...[
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : onSave,
-                    child: isLoading
-                        ? LoadingIndicator(
-                            size: 16,
-                            strokeWidth: 2,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                          )
-                        : Text(context.l10n.commonSave),
+                  child: BusyButtonSemantics(
+                    busy: isLoading,
+                    name: context.l10n.commonSave,
+                    busyLabel: context.l10n.buttonBusySaving,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? PlateLineButton.ignore : onSave,
+                      style: isLoading
+                          ? PlateLineButton.busyStyle(
+                              null,
+                              Theme.of(context).elevatedButtonTheme.style,
+                            )
+                          : null,
+                      child: Text(
+                        isLoading
+                            ? context.l10n.buttonBusySaving
+                            : context.l10n.commonSave,
+                      ),
+                    ),
                   ),
                 ),
               ],

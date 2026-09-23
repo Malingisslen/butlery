@@ -3768,7 +3768,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogMarkIngredientsYourself => 'Mark ingredients yourself';
 
   @override
-  String get dialogMayTakeAWhile => 'This may take a while...';
+  String get dialogMayTakeAWhile => 'This may take a while …';
 
   @override
   String get dialogNameMinTwoChars => 'Name must be at least 2 characters';
@@ -6256,10 +6256,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupYouLeftGroup => 'You have left the group';
 
   @override
-  String get loadingGeneric => 'Loading...';
+  String get loadingGeneric => 'Loading …';
 
   @override
-  String get loadingRecipes => 'Loading recipes...';
+  String get loadingRecipes => 'Loading recipes …';
 
   @override
   String get loadingAdminAccess => 'Checking your access …';
@@ -9517,7 +9517,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get retagFetchingRecipes => 'Fetching recipes...';
+  String get retagFetchingRecipes => 'Fetching recipes …';
 
   @override
   String get retagRetaggingRecipes => 'Retagging recipes';
@@ -16631,4 +16631,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licensesCouldNotLoad => 'The licence texts could not be loaded.';
+
+  @override
+  String get buttonBusySaving => 'Saving …';
+
+  @override
+  String get loadingProfileBusy => 'Loading your profile …';
+
+  @override
+  String get loadingOnboardingResume => 'Finding where you left off …';
+
+  @override
+  String get loadingOpeningPage => 'Opening the page …';
+
+  @override
+  String get loadingStartingApp => 'Starting Butlery …';
 }

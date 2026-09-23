@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -26,6 +28,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               child: testChild,
               isLoading: false,
@@ -35,7 +40,7 @@ void main() {
 
         // Assert
         expect(find.text('Test Content'), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.byType(PlateLine), findsNothing);
       });
 
       testWidgets('should show overlay when isLoading is true', (tester) async {
@@ -45,6 +50,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               child: testChild,
               isLoading: true,
@@ -53,7 +61,7 @@ void main() {
         );
 
         // Assert
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
         expect(find.byType(Stack), findsOneWidget);
         // Child should still be in the widget tree, just covered by overlay
         expect(find.text('Test Content'), findsOneWidget);
@@ -63,6 +71,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               isLoading: true,
               loadingMessage: 'Laddar recept...',
@@ -72,7 +83,7 @@ void main() {
 
         // Assert
         expect(find.text('Laddar recept...'), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('should use custom overlay color when provided', (
@@ -84,6 +95,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               isLoading: true,
               overlayColor: customColor,
@@ -95,7 +109,7 @@ void main() {
         final coloredBox = tester.widget<ColoredBox>(
           find
               .ancestor(
-                of: find.byType(CircularProgressIndicator),
+                of: find.byType(PlateLine),
                 matching: find.byType(ColoredBox),
               )
               .first,
@@ -109,6 +123,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               isLoading: true,
             ),
@@ -116,7 +133,7 @@ void main() {
         );
 
         // Assert
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
         expect(
           find.byType(Stack),
           findsNothing,
@@ -129,6 +146,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               isLoading: false,
             ),
@@ -137,7 +157,7 @@ void main() {
 
         // Assert
         expect(find.byType(SizedBox), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.byType(PlateLine), findsNothing);
       });
 
       testWidgets('should have correct styling for loading container', (
@@ -148,6 +168,9 @@ void main() {
         late ColorScheme capturedColorScheme;
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Builder(
               builder: (context) {
                 capturedColorScheme = Theme.of(context).colorScheme;
@@ -192,6 +215,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: LoadingWidgets.loadingOverlay(
               child: testChild,
               isLoading: true,
@@ -207,7 +233,7 @@ void main() {
         expect(find.text('Background Content'), findsOneWidget);
 
         // Second child should be the overlay with loading indicator
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
     });
 
@@ -219,6 +245,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: LoadingWidgets.errorBoundary(
                 child: testChild,
@@ -242,6 +271,9 @@ void main() {
         // Act - Use ErrorWidget to properly test error handling in Flutter
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: LoadingWidgets.errorBoundary(
                 child: const Text('Normal Widget'),
@@ -282,6 +314,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: LoadingWidgets.errorBoundary(
                 child: errorWidget,
@@ -309,6 +344,9 @@ void main() {
         // Act - Create the error widget directly
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Center(
                 child: Padding(
@@ -364,6 +402,9 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: LoadingWidgets.errorBoundary(
                 child: const Column(

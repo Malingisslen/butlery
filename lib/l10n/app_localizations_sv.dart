@@ -3772,7 +3772,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogMarkIngredientsYourself => 'Markera ingredienser själv';
 
   @override
-  String get dialogMayTakeAWhile => 'Detta kan ta en stund...';
+  String get dialogMayTakeAWhile => 'Detta kan ta en stund …';
 
   @override
   String get dialogNameMinTwoChars => 'Namnet måste vara minst 2 tecken';
@@ -6263,10 +6263,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupYouLeftGroup => 'Du har lämnat gruppen';
 
   @override
-  String get loadingGeneric => 'Laddar...';
+  String get loadingGeneric => 'Laddar …';
 
   @override
-  String get loadingRecipes => 'Laddar recept...';
+  String get loadingRecipes => 'Laddar recept …';
 
   @override
   String get loadingAdminAccess => 'Hämtar din behörighet …';
@@ -9534,7 +9534,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get retagFetchingRecipes => 'Hämtar recept...';
+  String get retagFetchingRecipes => 'Hämtar recept …';
 
   @override
   String get retagRetaggingRecipes => 'Omtaggar recept';
@@ -16671,4 +16671,19 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get licensesCouldNotLoad => 'Licenstexterna kunde inte läsas in.';
+
+  @override
+  String get buttonBusySaving => 'Sparar …';
+
+  @override
+  String get loadingProfileBusy => 'Hämtar din profil …';
+
+  @override
+  String get loadingOnboardingResume => 'Hämtar var du slutade …';
+
+  @override
+  String get loadingOpeningPage => 'Öppnar sidan …';
+
+  @override
+  String get loadingStartingApp => 'Startar Butlery …';
 }

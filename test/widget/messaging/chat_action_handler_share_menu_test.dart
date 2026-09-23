@@ -21,6 +21,7 @@ import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
 
@@ -108,18 +109,13 @@ void main() {
     expect(find.text(weeklyPlanReadFailedMessage), findsOneWidget);
     expect(find.text('Ingen meny för den veckan'), findsNothing);
     // BUT-2025: pins that this handler's error bar goes through
-    // `SnackBarUtils.showError` (which paints `colorScheme.secondary`) rather
-    // than the raw `ScaffoldMessenger` it used to build itself, which painted
-    // `colorScheme.error`. Without this, reverting the reroute leaves this
-    // suite green while the same sentence arrives in two different colours
-    // depending on where in a flow it was raised.
+    // `SnackBarUtils.showError` rather than a raw `ScaffoldMessenger` call
+    // with its own colour. The shared helper leaves the colour to the one
+    // ink snackbar theme (Komponentark v1:745-750, PQ-09 = A), so the same
+    // sentence never arrives in two different colours.
     final errorBar = tester.widget<SnackBar>(find.byType(SnackBar));
-    expect(
-      errorBar.backgroundColor,
-      equals(
-        Theme.of(tester.element(find.byType(SnackBar))).colorScheme.secondary,
-      ),
-    );
+    expect(errorBar.backgroundColor, isNull);
+    expect(find.byType(InkSnackBar), findsOneWidget);
     verifyNever(
       () => messagingService.sendMenuShare(
         conversationId: any(named: 'conversationId'),

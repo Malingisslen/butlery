@@ -20,6 +20,7 @@ import 'package:butlery/widgets/recipe/recipe_card.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 void main() {
   setUpAll(() async {
@@ -119,35 +120,39 @@ void main() {
       },
     );
 
-    testWidgets('BaseScaffold AppBar uses MediaQuery.withClampedTextScaling', (
-      tester,
-    ) async {
-      // Structural assertion: the wrap helper produces a PreferredSize ↦
-      // _MediaQueryFromView/MediaQuery → AppBar chain. We don't pin the
-      // private chain; instead assert the BaseScaffold tree contains
-      // AppBar nested inside a MediaQuery (which is what
-      // withClampedTextScaling produces).
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScaffold: false,
-          child: const BaseScaffold(
-            title: 'Receptbok',
-            body: SizedBox.shrink(),
+    testWidgets('BaseScaffold top bar grows with the text instead of '
+        'clamping it', (tester) async {
+      // Package 4: BaseScaffold draws ButleryTopBar.undersida, whose height
+      // follows its content up to 200 % text (tillganglighetshandoff:85),
+      // so the BUT-763 clamp is no longer needed and the title keeps the
+      // user's text size.
+      Future<double> barHeight(double scale) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: MediaQuery(
+              data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+              child: const BaseScaffold(
+                title: 'Receptbok',
+                body: SizedBox.shrink(),
+              ),
+            ),
           ),
-        ),
-      );
+        );
+        expect(tester.takeException(), isNull);
+        expect(find.byType(AppBar), findsNothing);
+        return tester.getSize(find.byType(ButleryTopBar)).height;
+      }
 
-      // AppBar is present and nested under at least one MediaQuery in
-      // the BaseScaffold subtree (sanity check for the clamp wrap).
-      final appBarFinder = find.byType(AppBar);
-      expect(appBarFinder, findsOneWidget);
-      final mediaQueryAncestors = find
-          .ancestor(of: appBarFinder, matching: find.byType(MediaQuery))
-          .evaluate();
+      final normal = await barHeight(1);
+      final large = await barHeight(2);
+      expect(large, greaterThanOrEqualTo(normal));
       expect(
-        mediaQueryAncestors,
-        isNotEmpty,
-        reason: 'AppBar should be wrapped in a MediaQuery (clamp wrap).',
+        MediaQuery.textScalerOf(
+          tester.element(find.byKey(const ValueKey('butleryTopBar.title'))),
+        ).scale(14),
+        28,
+        reason: 'the title is not clamped',
       );
     });
   });
