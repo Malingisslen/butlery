@@ -37,7 +37,26 @@ class ComponentThemes {
   static CardThemeData cardTheme(ColorScheme cs) => InputThemes.cardTheme(cs);
   static ListTileThemeData listTileTheme(ColorScheme cs) =>
       InputThemes.listTileTheme(cs);
-  static ChipThemeData chipTheme(ColorScheme cs) => InputThemes.chipTheme(cs);
+
+  /// The chip with its locked geometry (P5-U34): 13 px across and 7 px
+  /// down inside a 1 px edge, a pill, and the label straight after the
+  /// padding (tokens.json controls.chip, :824-832; Komponentark v1:33 "Låst
+  /// geometri" and §03 :134-140, `padding:7px 13px`). That makes the visible
+  /// chip 34 px high, as drawn ("Synlig 80 × 34"), inside the 48 dp hit
+  /// area. A selected chip's check is followed by the label with no extra
+  /// padding: the 18 dp check box then puts the label where the drawing's
+  /// 12 px check and 6 px gap do.
+  static ChipThemeData chipTheme(ColorScheme cs) =>
+      InputThemes.chipTheme(cs).copyWith(
+        padding: chipPadding,
+        labelPadding: EdgeInsetsDirectional.zero,
+      );
+
+  /// tokens.json controls.chip paddingX 13, paddingY 7.
+  static const EdgeInsets chipPadding = EdgeInsets.symmetric(
+    horizontal: 13,
+    vertical: 7,
+  );
 
   // Navigation
   static AppBarTheme appBarTheme(ColorScheme cs) =>
