@@ -3462,6 +3462,7 @@
   "messagingCouldNotRemoveMember": "Could not remove member",
   "messagingCouldNotUpdateGroupName": "Could not update group name",
   "messagingCreateGroup": "Create group conversation",
+  "messagingCreateConversation": "Create conversation",
   "messagingEditGroupName": "Edit group name",
   "messagingEnterNewGroupName": "Enter new group name",
   "messagingFriendsCount": "Friends ({count})",
@@ -4264,7 +4265,7 @@
       }
     }
   },
-  "groupSendInvitations": "Send {count} invitations",
+  "groupSendInvitations": "{count, plural, =1{Invite 1 selected} other{Invite {count} selected}}",
   "@groupSendInvitations": {
     "placeholders": {
       "count": {
@@ -4429,7 +4430,7 @@
     }
   },
   "menuHideMenu": "Hide menu",
-  "menuImportAll": "Import entire menu",
+  "menuImportAll": "Save to my menus",
   "menuImportDescription": "When you import the menu, all {count} recipes will be added to your collection.",
   "@menuImportDescription": {
     "placeholders": {
@@ -10081,10 +10082,11 @@
   "reportReasonHarassment": "Harassment",
   "reportReasonCopyright": "Copyright infringement",
   "reportReasonOther": "Other",
-  "reportDescriptionHint": "Describe the issue (optional)",
-  "reportSubmitted": "Report submitted",
-  "reportSubmitFailed": "Could not submit report",
+  "reportDescriptionHint": "Tell us what is wrong …",
+  "reportSubmitted": "Report sent",
+  "reportSubmitFailed": "The report could not be sent",
   "reportDialogTitle": "Report content",
+  "reportDialogTitleRecipe": "Report this recipe",
   "reportSubmit": "Send report",
   "reportDialogGuidelinesNotePrefix": "By reporting, you confirm the content violates",
   "reportDialogGuidelinesLink": "our community guidelines",

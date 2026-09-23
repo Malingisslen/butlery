@@ -140,8 +140,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Reason dialog title proves the dialog opened.
-        // (Swedish 'reportDialogTitle' = 'Rapportera innehåll')
-        expect(find.text('Rapportera innehåll'), findsOneWidget);
+        // (Swedish 'reportDialogTitle' = 'Anmäl innehåll')
+        expect(find.text('Anmäl innehåll'), findsOneWidget);
       },
     );
 
@@ -204,7 +204,7 @@ void main() {
         await tester.tap(find.text('Rapportera'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Rapportera innehåll'), findsOneWidget);
+        expect(find.text('Anmäl innehåll'), findsOneWidget);
       },
     );
 

@@ -672,7 +672,7 @@ void main() {
       );
       await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
       await tester.pump();
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Avvisa'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Avböj'));
       await tester.pump();
       expect(accepts, 1);
       expect(declines, 1);
@@ -753,7 +753,7 @@ void main() {
       expect(find.byType(FriendRequestCard), findsOneWidget);
       await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
       await tester.pump();
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Avvisa'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Avböj'));
       await tester.pump();
       expect(a, 1);
       expect(d, 1);

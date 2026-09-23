@@ -272,7 +272,7 @@ void main() {
           ),
         ),
       );
-      expect(find.widgetWithText(OutlinedButton, 'Avvisa'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Avböj'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Acceptera'), findsOneWidget);
     });
 
@@ -285,7 +285,7 @@ void main() {
           ),
         ),
       );
-      expect(find.widgetWithText(OutlinedButton, 'Avvisa'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Avböj'), findsOneWidget);
       expect(find.byType(ElevatedButton), findsNothing);
     });
 
@@ -333,7 +333,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Avvisa'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Avböj'));
       await tester.pump();
       expect(declines, 1);
     });

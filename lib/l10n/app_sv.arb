@@ -3136,7 +3136,7 @@
     }
   },
   "friendAccept": "Acceptera",
-  "friendDecline": "Avvisa",
+  "friendDecline": "Avböj",
   "friendRequestTitle": "Vänförfrågan",
   "friendWantsToBeFriend": "Vill bli din vän",
   "imageAddCount": "Lägg till ({count})",
@@ -3468,6 +3468,7 @@
   "messagingCouldNotRemoveMember": "Kunde inte ta bort medlem",
   "messagingCouldNotUpdateGroupName": "Kunde inte uppdatera gruppnamn",
   "messagingCreateGroup": "Skapa gruppkonversation",
+  "messagingCreateConversation": "Skapa konversation",
   "messagingEditGroupName": "Redigera gruppnamn",
   "messagingEnterNewGroupName": "Ange nytt gruppnamn",
   "messagingFriendsCount": "Vänner ({count})",
@@ -4270,7 +4271,7 @@
       }
     }
   },
-  "groupSendInvitations": "Skicka {count} inbjudningar",
+  "groupSendInvitations": "{count, plural, =1{Bjud in 1 vald} other{Bjud in {count} valda}}",
   "@groupSendInvitations": {
     "placeholders": {
       "count": {
@@ -4435,7 +4436,7 @@
     }
   },
   "menuHideMenu": "Dölj meny",
-  "menuImportAll": "Importera hela menyn",
+  "menuImportAll": "Spara till mina menyer",
   "menuImportDescription": "När du importerar menyn läggs alla {count} recept till i din samling.",
   "@menuImportDescription": {
     "placeholders": {
@@ -5757,7 +5758,7 @@
   "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",
   "socialCouldNotUnblockUser": "Kunde inte avblockera användare",
-  "socialDecline": "Avvisa",
+  "socialDecline": "Avböj",
   "socialDeclined": "Avvisad",
   "socialExpired": "Utgången",
   "socialFindFriends": "Hitta vänner",
@@ -10155,12 +10156,13 @@
   "reportReasonHarassment": "Trakasseri",
   "reportReasonCopyright": "Upphovsrättsintrång",
   "reportReasonOther": "Annat",
-  "reportDescriptionHint": "Beskriv vad som är fel (valfritt)",
-  "reportSubmitted": "Rapporten har skickats",
-  "reportSubmitFailed": "Kunde inte skicka rapporten",
-  "reportDialogTitle": "Rapportera innehåll",
+  "reportDescriptionHint": "Berätta vad som är fel …",
+  "reportSubmitted": "Anmälan har skickats",
+  "reportSubmitFailed": "Anmälan kunde inte skickas",
+  "reportDialogTitle": "Anmäl innehåll",
+  "reportDialogTitleRecipe": "Anmäl det här receptet",
   "reportSubmit": "Skicka anmälan",
-  "reportDialogGuidelinesNotePrefix": "Genom att rapportera bekräftar du att innehållet bryter mot",
+  "reportDialogGuidelinesNotePrefix": "Genom att anmäla bekräftar du att innehållet bryter mot",
   "reportDialogGuidelinesLink": "våra riktlinjer för communityn",
   "settingsMyReports": "Mina rapporter",
   "myReportsTitle": "Mina rapporter",

@@ -366,11 +366,11 @@ class _CreateGroupConversationViewState
                 textAlign: TextAlign.center,
               ),
             ),
-          // The view's one saffron action (Skarmar v12 del 3 'Ny
-          // gruppchatt'; Grafisk manual v6:219).
+          // The view's one saffron action, "Skapa konversation" as drawn
+          // (Skarmar v12 del 3 #nygruppchatt:602; Grafisk manual v6:219).
           HeroButton(
             key: const ValueKey('createGroupConversation.create'),
-            label: context.l10n.messagingCreateGroup,
+            label: context.l10n.messagingCreateConversation,
             onPressed: viewModel.canCreateGroup
                 ? () => _handleCreateGroup(context, viewModel)
                 : null,

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -10,6 +11,8 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+
+class _MockAuthMfaService extends Mock implements AuthMfaService {}
 
 void main() {
   group('AccountSecurityViewModel', () {
@@ -564,6 +567,64 @@ void main() {
         );
 
         expect(viewModel.canRetry, isFalse);
+      });
+    });
+
+    // PQ-16 follow-up: Kontosäkerhet shows the two-step verification row
+    // only to a user who has it on (turning it on is hidden, BUT-2142).
+    group('loadMfaStatus', () {
+      late _MockAuthMfaService mfa;
+      late AccountSecurityViewModel withMfa;
+
+      setUp(() {
+        mfa = _MockAuthMfaService();
+        withMfa = AccountSecurityViewModel(mfaService: mfa);
+      });
+
+      tearDown(() => withMfa.dispose());
+
+      test('hasMfa is false before the check has answered', () {
+        expect(withMfa.hasMfa, isFalse);
+      });
+
+      test(
+        'a user without two-step verification: hasMfa stays false',
+        () async {
+          when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
+          await withMfa.loadMfaStatus();
+          expect(withMfa.hasMfa, isFalse);
+        },
+      );
+
+      test(
+        'a user with two-step verification: hasMfa is true and notifies',
+        () async {
+          when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+          var notified = 0;
+          withMfa.addListener(() => notified++);
+          await withMfa.loadMfaStatus();
+          expect(withMfa.hasMfa, isTrue);
+          expect(notified, 1);
+        },
+      );
+
+      test('turned off since: a new check makes hasMfa false again', () async {
+        when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+        await withMfa.loadMfaStatus();
+        when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
+        await withMfa.loadMfaStatus();
+        expect(withMfa.hasMfa, isFalse);
+      });
+
+      test('a failed check leaves hasMfa false', () async {
+        when(() => mfa.hasMfaEnabled()).thenThrow(Exception('offline'));
+        await withMfa.loadMfaStatus();
+        expect(withMfa.hasMfa, isFalse);
+      });
+
+      test('without a registered MFA service the row is not shown', () async {
+        await viewModel.loadMfaStatus();
+        expect(viewModel.hasMfa, isFalse);
       });
     });
   });

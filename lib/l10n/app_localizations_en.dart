@@ -5009,6 +5009,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingCreateGroup => 'Create group conversation';
 
   @override
+  String get messagingCreateConversation => 'Create conversation';
+
+  @override
   String get messagingEditGroupName => 'Edit group name';
 
   @override
@@ -6240,7 +6243,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupSendInvitations(int count) {
-    return 'Send $count invitations';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Invite $count selected',
+      one: 'Invite 1 selected',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6369,7 +6378,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuHideMenu => 'Hide menu';
 
   @override
-  String get menuImportAll => 'Import entire menu';
+  String get menuImportAll => 'Save to my menus';
 
   @override
   String menuImportDescription(int count) {
@@ -14352,16 +14361,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportReasonOther => 'Other';
 
   @override
-  String get reportDescriptionHint => 'Describe the issue (optional)';
+  String get reportDescriptionHint => 'Tell us what is wrong …';
 
   @override
-  String get reportSubmitted => 'Report submitted';
+  String get reportSubmitted => 'Report sent';
 
   @override
-  String get reportSubmitFailed => 'Could not submit report';
+  String get reportSubmitFailed => 'The report could not be sent';
 
   @override
   String get reportDialogTitle => 'Report content';
+
+  @override
+  String get reportDialogTitleRecipe => 'Report this recipe';
 
   @override
   String get reportSubmit => 'Send report';
