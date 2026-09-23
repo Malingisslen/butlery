@@ -131,7 +131,7 @@ class ImportInputSection extends StatelessWidget {
 /// it clears 4.5:1 on the dark surface. The first route takes the app's
 /// filled button theme. The outlined routes are drawn with --text-kontroll-a
 /// and a 1.5 px --ram-kontroll-a outline (Skarmar v12 etapp 4 import:27-28):
-/// #24382C text and outline in light (colorScheme.primary); in dark a paper
+/// #24382C text and outline in light (colorScheme.onSurface, equal to ink there); in dark a paper
 /// outline at 40 % (overlay.paperWash, tokens.json:263) and text in
 /// colorScheme.onSurface (#F5F4ED, text.primary). The drawn dark text is
 /// #C9D3C4 (text.bodyMuted, tokens.json:174-177), which no generated member
@@ -232,12 +232,12 @@ class _RouteButton extends StatelessWidget {
     final dark = cs.brightness == Brightness.dark;
     final outlinedStyle = style.copyWith(
       foregroundColor: WidgetStatePropertyAll(
-        dark ? cs.onSurface : cs.primary,
+        cs.onSurface,
       ),
-      iconColor: WidgetStatePropertyAll(dark ? cs.onSurface : cs.primary),
+      iconColor: WidgetStatePropertyAll(cs.onSurface),
       side: WidgetStatePropertyAll(
         BorderSide(
-          color: dark ? AppModeColors.paperWash(cs.brightness) : cs.primary,
+          color: dark ? AppModeColors.paperWash(cs.brightness) : cs.onSurface,
           width: 1.5,
         ),
       ),
