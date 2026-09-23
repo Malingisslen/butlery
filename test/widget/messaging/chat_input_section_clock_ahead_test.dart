@@ -48,10 +48,14 @@ class _MockIdTokenResult extends Mock implements IdTokenResult {}
 /// constant being retyped to another funnel's value, which the analytics registry
 /// lint cannot see either. If a copy edit reddens these tests, THAT IS THE POINT —
 /// update the literal here, do not reach for the getter.
+// P5-U03: a failed send says the typed text is still in the field
+// (content-style-guide.md:92), after what happened.
 const _clockAheadMessage =
     'Kunde inte skicka. Telefonens klocka ligger för långt fram — '
-    'kontrollera datum och tid i inställningarna.';
-const _genericMessage = 'Kunde inte skicka meddelandet.';
+    'kontrollera datum och tid i inställningarna. '
+    'Texten ligger kvar i fältet.';
+const _genericMessage =
+    'Kunde inte skicka meddelandet. Texten ligger kvar i fältet.';
 const _deniedEventName = 'message_send_denied_clock_ahead';
 
 /// BUT-1831: the snackbar's ACTION label, not part of either sentence.

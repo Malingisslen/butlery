@@ -27,6 +27,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -171,5 +172,54 @@ void main() {
     );
     expect(glyph.color, AppTheme.darkTheme.colorScheme.onSurface);
     expect(glyph.color, isNot(AppTheme.darkTheme.colorScheme.primary));
+  });
+
+  // P5-U02 (auth-otp ERROR): a failed resend is the three-part inline error
+  // (content-style-guide.md:87-97) in a live region with the alert role
+  // (Butlery tillganglighetshandoff.dc.html:156, :172). The service's own
+  // text is never shown on its own.
+  group('a failed resend', () {
+    Future<void> failResend(WidgetTester tester, {String? serviceError}) async {
+      authService.setAuthState(isAuthenticated: true, error: serviceError);
+      when(
+        () => authService.sendEmailVerification(),
+      ).thenThrow(Exception('firebase: internal-error'));
+      await tester.pumpWidget(buildView());
+      await tester.pump();
+      await tester.tap(find.text(AppLocalizationsSv().emailVerificationResend));
+      await tester.pump();
+      await tester.pump();
+    }
+
+    testWidgets('says what happened and that the address is unchanged', (
+      tester,
+    ) async {
+      await failResend(tester, serviceError: 'Ett oväntat fel uppstod');
+      final l10n = AppLocalizationsSv();
+
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.text(l10n.emailVerificationResendFailed), findsOneWidget);
+      expect(find.text(l10n.emailVerificationAddressUnchanged), findsOneWidget);
+      expect(find.text('Ett oväntat fel uppstod'), findsNothing);
+      expect(find.textContaining('firebase'), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Semantics && w.properties.liveRegion == true,
+        ),
+        findsWidgets,
+      );
+    });
+
+    testWidgets('names a cause the user can act on', (tester) async {
+      final l10n = AppLocalizationsSv();
+      await failResend(tester, serviceError: l10n.errorTooManyAttempts);
+
+      expect(
+        find.text(
+          l10n.emailVerificationResendFailedBecause(l10n.errorTooManyAttempts),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 }

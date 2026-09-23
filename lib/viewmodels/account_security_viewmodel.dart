@@ -13,11 +13,51 @@ class AccountSecurityViewModel extends ChangeNotifier
 
   String? get currentEmail => _authService.currentUser?.email;
 
+  /// Whether the last error came from the server, so trying again can help.
+  /// A form error (an empty field, a short password) is fixed in the form,
+  /// not by trying again.
+  bool get canRetry => _canRetry;
+  bool _canRetry = false;
+
+  void _setServerFailure(String message) {
+    _canRetry = true;
+    setError(message);
+  }
+
+  /// The cause, when there is one. AuthService maps Firebase's codes to
+  /// user text (auth_error_mapper.dart); the causeless fallback
+  /// ("Ett oväntat fel uppstod") is not a cause (content-style-guide.md:95),
+  /// so it is left out and the sentence says what did not happen.
+  String? get _cause {
+    final message = _authService.errorMessage?.trim();
+    if (message == null ||
+        message.isEmpty ||
+        message == AppLocale.current.errorUnexpected) {
+      return null;
+    }
+    return message;
+  }
+
+  String _passwordFailure() {
+    final cause = _cause;
+    return cause == null
+        ? AppLocale.current.accountSecurityPasswordChangeFailed
+        : AppLocale.current.accountSecurityPasswordChangeFailedBecause(cause);
+  }
+
+  String _emailFailure() {
+    final cause = _cause;
+    return cause == null
+        ? AppLocale.current.accountSecurityEmailChangeFailed
+        : AppLocale.current.accountSecurityEmailChangeFailedBecause(cause);
+  }
+
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,
     required String confirmPassword,
   }) async {
+    _canRetry = false;
     if (currentPassword.isEmpty) {
       setError(AppLocale.current.validationPasswordRequired);
       return false;
@@ -48,7 +88,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     );
     if (!reauthed) {
       setLoading(false);
-      setError(_authService.errorMessage ?? AppLocale.current.errorUnexpected);
+      _setServerFailure(_passwordFailure());
       return false;
     }
 
@@ -56,7 +96,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     setLoading(false);
 
     if (!success) {
-      setError(_authService.errorMessage ?? AppLocale.current.errorUnexpected);
+      _setServerFailure(_passwordFailure());
     }
     return success;
   }
@@ -65,6 +105,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     required String currentPassword,
     required String newEmail,
   }) async {
+    _canRetry = false;
     if (currentPassword.isEmpty) {
       setError(AppLocale.current.validationPasswordRequired);
       return false;
@@ -84,7 +125,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     );
     if (!reauthed) {
       setLoading(false);
-      setError(_authService.errorMessage ?? AppLocale.current.errorUnexpected);
+      _setServerFailure(_emailFailure());
       return false;
     }
 
@@ -92,7 +133,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     setLoading(false);
 
     if (!success) {
-      setError(_authService.errorMessage ?? AppLocale.current.errorUnexpected);
+      _setServerFailure(_emailFailure());
     }
     return success;
   }

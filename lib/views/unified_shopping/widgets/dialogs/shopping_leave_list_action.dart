@@ -6,7 +6,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
@@ -51,40 +50,55 @@ class ShoppingLeaveListAction {
 
     if (context.mounted) onConfirmed?.call();
 
+    return _leave(
+      () => context.mounted ? context : appNavigatorKey.currentContext,
+      list,
+    );
+  }
+
+  /// The write and its outcome. A refusal is the failure snackbar
+  /// (content-style-guide.md:87-97): the reason, that you are still in the
+  /// list, and Försök igen, which runs the write again without asking a
+  /// second time: the question was already answered.
+  ///
+  /// [target] finds the live context when the outcome is ready: the caller
+  /// pops its own dialog above, so its context is usually gone by then and
+  /// the app navigator is the live one.
+  static Future<bool> _leave(
+    BuildContext? Function() target,
+    UnifiedShoppingList list,
+  ) async {
     final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
     final left = await shoppingService.collaborative.leaveList(list.id);
     // Consume BEFORE any mounted check: the READ is what clears the parked
     // reason, so an early return would leave it to surface as the cause of
     // some later, unrelated failure.
     final reason = left ? null : shoppingService.consumeMutationError();
-
-    // The mounted check is HERE rather than inside the reporter so the
-    // async-gap lint can see it: the caller pops its own dialog above, so this
-    // context is usually gone by now and the app navigator is the live one.
-    _report(
-      context.mounted ? context : appNavigatorKey.currentContext,
-      left
-          ? (l10n) => l10n.shoppingLeftList(list.name)
-          : (l10n) => reason ?? l10n.shoppingCouldNotLeaveList,
-      isError: !left,
-    );
+    _report(target(), list, left: left, reason: reason, retry: target);
     return left;
   }
 
   static void _report(
     BuildContext? target,
-    String Function(AppLocalizations l10n) buildMessage, {
-    required bool isError,
+    UnifiedShoppingList list, {
+    required bool left,
+    required String? reason,
+    required BuildContext? Function() retry,
   }) {
     if (target == null) return;
 
     // The ink snackbar (Komponentark v1:745-750; PQ-09 = A): views never
     // build their own SnackBar or colour it by status.
-    final message = buildMessage(target.l10n);
-    if (isError) {
-      SnackBarUtils.showError(target, message);
+    final l10n = target.l10n;
+    if (left) {
+      SnackBarUtils.showSuccess(target, l10n.shoppingLeftList(list.name));
     } else {
-      SnackBarUtils.showSuccess(target, message);
+      SnackBarUtils.showFailure(
+        target,
+        what: reason ?? l10n.shoppingCouldNotLeaveList,
+        preserved: l10n.shoppingLeaveListStillMember,
+        action: FailureAction.retry(() => _leave(retry, list)),
+      );
     }
   }
 }

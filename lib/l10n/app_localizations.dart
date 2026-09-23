@@ -25526,7 +25526,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryCouldNotSaveItem.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte spara i skafferiet. Försök igen.'**
+  /// **'Varan kunde inte sparas i skafferiet.'**
   String get pantryCouldNotSaveItem;
 
   /// No description provided for @pantryIngredientLabel.
@@ -26648,7 +26648,7 @@ abstract class AppLocalizations {
   /// Snackbar shown when saving an ingredient substitution failed (e.g. offline); prompts the user to retry.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte byta ingrediens. Försök igen.'**
+  /// **'Ingrediensen kunde inte bytas.'**
   String get cookingModeSubstitutionFailed;
 
   /// Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead.
@@ -27970,6 +27970,138 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delad meny'**
   String get menuPreviewTitle;
+
+  /// P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR).
+  ///
+  /// In sv, this message translates to:
+  /// **'Verifieringsmailet kunde inte skickas.'**
+  String get emailVerificationResendFailed;
+
+  /// P5-T1: Part 1 with the cause, a mapped auth message such as the network or too-many-attempts text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Verifieringsmailet kunde inte skickas. {cause}'**
+  String emailVerificationResendFailedBecause(String cause);
+
+  /// P5-T1: Part 2 (content-style-guide.md:92): what was kept when a resend failed. Part 3 is the Skicka igen button under it.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din e-postadress är oförändrad.'**
+  String get emailVerificationAddressUnchanged;
+
+  /// P5-T1: Failure snackbar after creating a poll in a chat failed; the action is Försök igen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen kunde inte skapas.'**
+  String get chatPollCouldNotBeCreated;
+
+  /// P5-T1: Failure snackbar when editing a chat message failed; the action Försök igen saves the same edit again.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte sparas.'**
+  String get chatEditCouldNotBeSaved;
+
+  /// P5-T1: Part 2: what was kept when a chat message edit failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelandet är oförändrat.'**
+  String get chatEditOriginalKept;
+
+  /// P5-T1: A reply in a chat could not be sent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret kunde inte skickas.'**
+  String get chatCouldNotSendReply;
+
+  /// P5-T1: Part 2 of the error structure: typed text is still in the field (a failed chat send).
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten ligger kvar i fältet.'**
+  String get errorPreservedText;
+
+  /// P5-T1: Part 2 of the error structure: a form or sheet that stays open with its fields intact.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du fyllt i ligger kvar.'**
+  String get errorPreservedForm;
+
+  /// P5-T1: Part 1 in a dialog when the failure has no known cause; a known cause (network, permission) is shown instead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärden kunde inte slutföras.'**
+  String get dialogActionFailed;
+
+  /// P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten kunde inte uppdateras.'**
+  String get minaReceptRefreshFailed;
+
+  /// P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina sparade recept visas nedan.'**
+  String get minaReceptRefreshPreserved;
+
+  /// P5-T1: Part 2: what was kept when leaving a shared list failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är fortfarande med i listan.'**
+  String get shoppingLeaveListStillMember;
+
+  /// P5-T1: Part 2: what was kept when an ingredient swap in cooking mode could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är oförändrat.'**
+  String get cookingModeRecipeUnchanged;
+
+  /// P5-T1: Password change failed without a known cause.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte ändras.'**
+  String get accountSecurityPasswordChangeFailed;
+
+  /// P5-T1: Password change failed; cause is a mapped auth message.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte ändras. {cause}'**
+  String accountSecurityPasswordChangeFailedBecause(String cause);
+
+  /// P5-T1: Email change failed without a known cause.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postadressen kunde inte ändras.'**
+  String get accountSecurityEmailChangeFailed;
+
+  /// P5-T1: Email change failed; cause is a mapped auth message.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postadressen kunde inte ändras. {cause}'**
+  String accountSecurityEmailChangeFailedBecause(String cause);
+
+  /// P5-T1: Failure snackbar in the recipe editor; the action Försök igen saves again.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte sparas.'**
+  String get recipeSaveFailed;
+
+  /// P5-T1: Failure snackbar when saving a copy of a recipe failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian kunde inte sparas.'**
+  String get recipeCopySaveFailed;
+
+  /// P5-T1: Part 2: the recipe editor stays open with the edits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina ändringar ligger kvar i formuläret.'**
+  String get errorPreservedRecipeEdits;
+
+  /// P5-T1: Loading the friends that can be added to a group failed; the action is Försök igen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina vänner kunde inte hämtas.'**
+  String get groupAddMembersLoadFailed;
 }
 
 class _AppLocalizationsDelegate

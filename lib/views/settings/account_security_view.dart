@@ -70,8 +70,20 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         context.l10n.accountSecurityPasswordChanged,
       );
     } else if (_viewModel.error != null) {
-      SnackBarUtils.showError(context, _viewModel.error!);
+      _showFailure(onRetry: _handleChangePassword);
     }
+  }
+
+  /// P5-U10: a failed change is the failure snackbar
+  /// (content-style-guide.md:87-97), never OK. A server failure offers
+  /// Försök igen, which runs the change again with the fields as they are;
+  /// a form error only needs Stäng.
+  void _showFailure({required Future<void> Function() onRetry}) {
+    SnackBarUtils.showFailure(
+      context,
+      what: _viewModel.error!,
+      action: _viewModel.canRetry ? FailureAction.retry(onRetry) : null,
+    );
   }
 
   Future<void> _handleChangeEmail() async {
@@ -90,7 +102,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         context.l10n.accountSecurityEmailVerificationSent,
       );
     } else if (_viewModel.error != null) {
-      SnackBarUtils.showError(context, _viewModel.error!);
+      _showFailure(onRetry: _handleChangeEmail);
     }
   }
 

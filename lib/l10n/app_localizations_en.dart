@@ -15226,7 +15226,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryCouldNotSaveItem =>
-      'Couldn\'t save to pantry. Please try again.';
+      'The item could not be saved to the pantry.';
 
   @override
   String get pantryIngredientLabel => 'Ingredient';
@@ -15951,7 +15951,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookingModeSubstitutionFailed =>
-      'Couldn\'t swap ingredient. Please try again.';
+      'The ingredient could not be swapped.';
 
   @override
   String get cookingModeOpenEditToSwap => 'Open edit mode to swap';
@@ -16760,4 +16760,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Shared menu';
+
+  @override
+  String get emailVerificationResendFailed =>
+      'The verification email could not be sent.';
+
+  @override
+  String emailVerificationResendFailedBecause(String cause) {
+    return 'The verification email could not be sent. $cause';
+  }
+
+  @override
+  String get emailVerificationAddressUnchanged =>
+      'Your email address is unchanged.';
+
+  @override
+  String get chatPollCouldNotBeCreated => 'The poll could not be created.';
+
+  @override
+  String get chatEditCouldNotBeSaved => 'Your edit could not be saved.';
+
+  @override
+  String get chatEditOriginalKept => 'The message is unchanged.';
+
+  @override
+  String get chatCouldNotSendReply => 'The reply could not be sent.';
+
+  @override
+  String get errorPreservedText => 'Your text is still in the field.';
+
+  @override
+  String get errorPreservedForm => 'What you filled in is still here.';
+
+  @override
+  String get dialogActionFailed => 'The action could not be completed.';
+
+  @override
+  String get minaReceptRefreshFailed => 'Your recipes could not be refreshed.';
+
+  @override
+  String get minaReceptRefreshPreserved =>
+      'Your saved recipes are shown below.';
+
+  @override
+  String get shoppingLeaveListStillMember =>
+      'You are still a member of the list.';
+
+  @override
+  String get cookingModeRecipeUnchanged => 'The recipe is unchanged.';
+
+  @override
+  String get accountSecurityPasswordChangeFailed =>
+      'The password could not be changed.';
+
+  @override
+  String accountSecurityPasswordChangeFailedBecause(String cause) {
+    return 'The password could not be changed. $cause';
+  }
+
+  @override
+  String get accountSecurityEmailChangeFailed =>
+      'The email address could not be changed.';
+
+  @override
+  String accountSecurityEmailChangeFailedBecause(String cause) {
+    return 'The email address could not be changed. $cause';
+  }
+
+  @override
+  String get recipeSaveFailed => 'The recipe could not be saved.';
+
+  @override
+  String get recipeCopySaveFailed => 'The copy could not be saved.';
+
+  @override
+  String get errorPreservedRecipeEdits => 'Your changes are still in the form.';
+
+  @override
+  String get groupAddMembersLoadFailed => 'Your friends could not be loaded.';
 }

@@ -593,30 +593,13 @@ class _IngredientsPanel extends StatelessWidget {
       return;
     }
 
-    // Persisting the swap can fail (offline / Firestore error). Without
-    // feedback the user believes the substitution was applied mid-cook when it
-    // wasn't, so confirm success and surface failure for a retry.
-    try {
-      await recipeService.updateIngredient(
-        vm.recipe.id,
-        index,
-        chosen.name,
-      );
-      if (!context.mounted) return;
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.cookingModeSubstitutionApplied),
-        ),
-      );
-    } catch (e) {
-      AppLogger.error('Cooking-mode ingredient substitution failed', e);
-      if (!context.mounted) return;
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.cookingModeSubstitutionFailed),
-        ),
-      );
-    }
+    await persistCookingSubstitution(
+      context,
+      recipeService,
+      recipeId: vm.recipe.id,
+      index: index,
+      name: chosen.name,
+    );
   }
 
   Widget _buildPortionButton(
@@ -1049,3 +1032,52 @@ const double _onInkStepPlate = 0.6;
 /// #17251D (dark base), above the 4.5:1 the P4-U06 test plan asks for and the
 /// 3:1 disabled floor (tokens.json contrastPolicy).
 final Color _disabledOnInk = AppModeColors.textDisabled(Brightness.dark);
+
+/// Persisting the swap can fail (offline / Firestore error). Without
+/// feedback the user believes the substitution was applied mid-cook when it
+/// wasn't, so confirm success and surface failure for a retry.
+///
+/// P5-U09: the failure is the three-part failure snackbar
+/// (content-style-guide.md:87-97): the swap was not saved, the recipe is
+/// unchanged, and Försök igen saves the same swap again. The service reports
+/// most failures by returning false rather than throwing
+/// (personal_recipe_module.dart, realtime_ingredient_operations.dart), so
+/// false is a failure too.
+@visibleForTesting
+Future<void> persistCookingSubstitution(
+  BuildContext context,
+  UnifiedRecipeService recipeService, {
+  required String recipeId,
+  required int index,
+  required String name,
+}) async {
+  var saved = false;
+  try {
+    saved = await recipeService.updateIngredient(recipeId, index, name);
+  } catch (e) {
+    AppLogger.error('Cooking-mode ingredient substitution failed', e);
+  }
+  if (!context.mounted) return;
+  if (saved) {
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.cookingModeSubstitutionApplied),
+      ),
+    );
+    return;
+  }
+  SnackBarUtils.showFailure(
+    context,
+    what: context.l10n.cookingModeSubstitutionFailed,
+    preserved: context.l10n.cookingModeRecipeUnchanged,
+    action: FailureAction.retry(
+      () => persistCookingSubstitution(
+        context,
+        recipeService,
+        recipeId: recipeId,
+        index: index,
+        name: name,
+      ),
+    ),
+  );
+}

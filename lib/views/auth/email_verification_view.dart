@@ -5,6 +5,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 
 /// Soft-gate verification screen shown to new users after registration.
@@ -102,19 +103,27 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
       _lastResendTime = clock.now();
     } catch (_) {
       if (mounted) {
-        // Use service error message if available, fall back to generic
-        final serviceError = _authService.errorMessage;
-        setState(() {
-          _errorMessage = (serviceError != null && serviceError.isNotEmpty)
-              ? serviceError
-              : AppLocalizations.of(context).errorNetwork;
-        });
+        setState(
+          () => _errorMessage = _resendFailure(AppLocalizations.of(context)),
+        );
       }
     } finally {
       if (mounted) {
         setState(() => _isSending = false);
       }
     }
+  }
+
+  /// Part one of the error (content-style-guide.md:90): what happened, with
+  /// the cause when it is one the user can act on. The service's text is
+  /// never shown on its own: only the mapped network and too-many-attempts
+  /// messages (auth_error_mapper.dart) count as a cause.
+  String _resendFailure(AppLocalizations l) {
+    final cause = _authService.errorMessage;
+    final known = cause == l.errorNetwork || cause == l.errorTooManyAttempts;
+    return known
+        ? l.emailVerificationResendFailedBecause(cause!)
+        : l.emailVerificationResendFailed;
   }
 
   @override
@@ -183,12 +192,15 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                       style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
                       textAlign: TextAlign.center,
                     ),
+                    // P5-U02: the three-part error (content-style-guide.md:
+                    // 87-97) as an alert live region. Part three is the
+                    // "Skicka igen" button right under it, so the box carries
+                    // no second button of its own (interpretation).
                     if (_errorMessage != null) ...[
                       const SizedBox(height: AppDimensions.spacingM),
-                      Text(
-                        _errorMessage!,
-                        style: tt.bodyMedium?.copyWith(color: cs.error),
-                        textAlign: TextAlign.center,
+                      InlineError(
+                        what: _errorMessage!,
+                        preserved: l.emailVerificationAddressUnchanged,
                       ),
                     ],
                     const SizedBox(height: AppDimensions.spacingXxl),

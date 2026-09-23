@@ -35,6 +35,8 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -659,9 +661,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
         Navigator.pop(context, true);
       } else {
-        UtilityComponents.showErrorSnackbar(
+        // P5-U12: the view stays open with the edits, and says so
+        // (content-style-guide.md:90-93); Försök igen saves again. A
+        // missing permission is the cause itself, and trying again cannot
+        // help, so it gets Stäng.
+        final noPermission =
+            viewModel.error == AppLocale.current.errorNoPermissionToSave;
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.recipeCouldNotSaveChanges,
+          what: noPermission ? viewModel.error! : context.l10n.recipeSaveFailed,
+          preserved: context.l10n.errorPreservedRecipeEdits,
+          action: noPermission
+              ? null
+              : FailureAction.retry(() => _saveRecipe(context)),
         );
       }
     }
@@ -687,9 +699,12 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
         Navigator.pop(context, true);
       } else {
-        UtilityComponents.showErrorSnackbar(
+        // P5-U12: as for a save; Försök igen saves the copy again.
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.recipeCouldNotSaveCopy,
+          what: context.l10n.recipeCopySaveFailed,
+          preserved: context.l10n.errorPreservedRecipeEdits,
+          action: FailureAction.retry(() => _forkRecipe(context)),
         );
       }
     }

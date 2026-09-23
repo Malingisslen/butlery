@@ -39,6 +39,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 // Widget components for modern UI architecture
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_sized_grid.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
@@ -598,7 +599,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       );
     }
 
-    if (viewModel.hasError) {
+    final recipes = viewModel.recipes;
+
+    // P5-U05: an error in one section never empties the whole view
+    // (produktregler.md:297). With recipes already fetched, the library stays
+    // and the error is a box above it; only a view with nothing to show gets
+    // the full-view error.
+    if (MinaReceptSectionError.emptiesView(
+      hasError: viewModel.hasError,
+      hasRecipes: recipes.isNotEmpty,
+    )) {
       return StateWidget.error(
         message: viewModel.error!,
         onAction: () {
@@ -608,8 +618,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         actionLabel: context.l10n.commonRetry,
       );
     }
-
-    final recipes = viewModel.recipes;
 
     if (recipes.isEmpty) {
       return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
@@ -640,6 +648,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       },
       child: Column(
         children: [
+          if (viewModel.hasError)
+            Padding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: MinaReceptSectionError(
+                onRetry: () {
+                  viewModel.clearError();
+                  viewModel.refresh();
+                },
+              ),
+            ),
           if (viewModel.showOnboardingBanner)
             MinaReceptOnboardingBanner(viewModel: viewModel),
           if (viewModel.showWelcomeBanner)
@@ -699,6 +717,34 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// P5-U05 (hem ERROR): the error box of the recipe section on the start
+/// view. The three parts of produktregler.md:298 (content-style-guide.md:
+/// 87-97): what happened, what was kept, and Försök igen.
+class MinaReceptSectionError extends StatelessWidget {
+  const MinaReceptSectionError({required this.onRetry, super.key});
+
+  /// Clears the error and fetches again.
+  final VoidCallback onRetry;
+
+  /// Whether an error takes the whole view. "Fel i en sektion tömmer aldrig
+  /// hela vyn" (produktregler.md:297): only a view with nothing fetched to
+  /// show gets the full-view error; with recipes the library stays and this
+  /// box sits above it.
+  static bool emptiesView({required bool hasError, required bool hasRecipes}) =>
+      hasError && !hasRecipes;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return InlineError(
+      what: l10n.minaReceptRefreshFailed,
+      preserved: l10n.minaReceptRefreshPreserved,
+      actionLabel: l10n.commonRetry,
+      onAction: onRetry,
     );
   }
 }
