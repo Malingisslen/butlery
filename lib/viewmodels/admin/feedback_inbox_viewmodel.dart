@@ -53,11 +53,18 @@ class FeedbackInboxViewModel extends BaseViewModel {
     _subscribe();
   }
 
-  Future<void> updateStatus(String id, FeedbackStatus status) async {
-    await executeAsyncVoid(
-      () => _repository.updateStatus(id, status),
-      errorPrefix: 'updateFeedbackStatus',
-    );
+  /// Returns false when the write was refused. The view shows that as a
+  /// failure snackbar (content-style-guide.md:87-97); the inbox and its
+  /// load-error state are left alone.
+  Future<bool> updateStatus(String id, FeedbackStatus status) async {
+    if (isDisposed) return false;
+    try {
+      await _repository.updateStatus(id, status);
+      return true;
+    } catch (e) {
+      AppLogger.error('Feedback status update failed', e);
+      return false;
+    }
   }
 
   void _subscribe() {

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -420,9 +421,22 @@ class _StatusControl extends StatelessWidget {
             shape: const RoundedRectangleBorder(),
             onSelected: entry.status == status
                 ? null
-                : (_) => vm.updateStatus(entry.id, status),
+                : (_) => _setStatus(context, status),
           ),
       ],
+    );
+  }
+
+  // A refused change is a failure snackbar with Försök igen, never the
+  // inbox's load-error state and never the method name
+  // (content-style-guide.md:87-97).
+  Future<void> _setStatus(BuildContext context, FeedbackStatus status) async {
+    if (await vm.updateStatus(entry.id, status) || !context.mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.adminFeedbackStatusFailed,
+      preserved: context.l10n.adminFeedbackStatusPreserved,
+      action: FailureAction.retry(() => _setStatus(context, status)),
     );
   }
 }

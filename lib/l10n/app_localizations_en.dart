@@ -1568,7 +1568,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuShoppingListGenerationFailed =>
-      'Could not create the shopping list – try again';
+      'The shopping list could not be created.';
 
   @override
   String get menuShoppingScaledToPresence => 'Amounts follow who\'s home';
@@ -17017,4 +17017,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String menuPartialMissing(int found, int requested, int missing) {
     return '$found of $requested, $missing missing';
   }
+
+  @override
+  String get weeklyMenuSaveFailed => 'The week could not be saved';
+
+  @override
+  String get pantryItemUpdateFailed => 'Could not update the item';
+
+  @override
+  String get moderatorAdvanceFailed =>
+      'The report could not be moved to the next step.';
+
+  @override
+  String get moderatorCloseFailed => 'The report could not be closed.';
+
+  @override
+  String get moderatorReportUnchanged => 'The report is unchanged.';
+
+  @override
+  String get moderatorHideFailed => 'The profile could not be hidden.';
+
+  @override
+  String get moderatorHidePreserved => 'The profile is still visible.';
+
+  @override
+  String get moderatorDeleteFailed => 'The content could not be removed.';
+
+  @override
+  String get moderatorDeletePreserved => 'The content is still there.';
+
+  @override
+  String get adminFeedbackStatusFailed => 'The status could not be changed.';
+
+  @override
+  String get adminFeedbackStatusPreserved =>
+      'The feedback keeps its earlier status.';
+
+  @override
+  String get weekPlacementFailedWeekUnchanged =>
+      'The week is unchanged and the menu you made is still here.';
+
+  @override
+  String get weekPlacementFailedMenuKept => 'The menu you made is still here.';
+
+  @override
+  String get menuShoppingListGenerationPreserved => 'The week is unchanged.';
+
+  @override
+  String get importErrorNotImported => 'The recipe could not be imported.';
+
+  @override
+  String get importFailurePreservedLink => 'The link is still in the field.';
+
+  @override
+  String get importFailurePreservedText => 'The text is still in the field.';
+
+  @override
+  String get importFailureOtherRoutes => 'Other ways to the same recipe';
+
+  @override
+  String get importRoutePhoto => 'Photograph the screen';
+
+  @override
+  String get importRoutePasteText => 'Paste the text';
+
+  @override
+  String get duplicateMergeFailedPreserved =>
+      'The existing recipe is unchanged.';
 }

@@ -83,7 +83,26 @@ class ImportRateLimited extends SmartImportResult {
 /// Import failed with error.
 class ImportFailed extends SmartImportResult {
   final String message;
-  const ImportFailed(this.message);
+
+  /// The other ways to the same recipe the error draws
+  /// (produktregler.md:557, 9.2 Fel: "listan ritas").
+  final List<ImportRoute> routes;
+
+  const ImportFailed(this.message, {this.routes = const []});
+}
+
+/// P5-U06: another way to the same recipe after a failed import
+/// (produktregler.md:557; Skarmar v12 etapp 4 import #impinget, "Andra vägar
+/// till samma recept").
+enum ImportRoute {
+  /// Photograph the screen: the photo import.
+  photo,
+
+  /// Paste the recipe's text in place of the link.
+  pasteText,
+
+  /// Write the recipe in by hand.
+  manual,
 }
 
 /// ViewModel for SmartImportView.
@@ -138,6 +157,27 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   SmartImportResult? get lastResult => _lastResult;
   Recipe? get importedRecipe => _importedRecipe;
   String? get clipboardUrl => _clipboardUrl;
+
+  /// P5-U06: the routes the current import error draws, empty when there is
+  /// no error.
+  List<ImportRoute> get failureRoutes => _phase == ImportPhase.error
+      ? switch (_lastResult) {
+          ImportFailed(:final routes) => routes,
+          _ => const [],
+        }
+      : const [];
+
+  /// P5-U06: what the failed import kept, or null (content-style-guide.md:92).
+  /// The input stays in the field after a failure, so that is what is said.
+  /// Offline the error line itself says the link was saved for later.
+  String? get failurePreserved {
+    if (_phase != ImportPhase.error || _savedForLater) return null;
+    return _detection?.isUrl == true
+        ? AppLocale.current.importFailurePreservedLink
+        : AppLocale.current.importFailurePreservedText;
+  }
+
+  bool _savedForLater = false;
   bool get hasPendingImport => _hasPendingImport;
 
   bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
@@ -242,6 +282,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     if (_phase != ImportPhase.idle) {
       _phase = ImportPhase.idle;
       _lastResult = null;
+      _savedForLater = false;
       clearError();
     }
 
@@ -272,13 +313,18 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     clearError();
     _lastResult = null;
     _importedRecipe = null;
+    _savedForLater = false;
 
     // Pre-check connectivity before starting network-dependent import
     if (!isOnline && _detection?.isUrl == true) {
       await _savePendingImportUrl(_input.trim());
+      _savedForLater = true;
       _setPhase(ImportPhase.error);
       setError(AppLocale.current.importSavedForLater);
-      final failResult = ImportFailed(AppLocale.current.importErrorNoInternet);
+      final failResult = ImportFailed(
+        AppLocale.current.importErrorNoInternet,
+        routes: const [ImportRoute.manual],
+      );
       _lastResult = failResult;
       return failResult;
     }
@@ -301,11 +347,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       if (_isNetworkError('$e')) {
         await _savePendingImportUrl(_input.trim());
       }
-      _setPhase(ImportPhase.error);
-      setError(AppLocale.current.errorImportFailed);
-      final failResult = ImportFailed('$e');
-      _lastResult = failResult;
-      return failResult;
+      // The exception goes to the log; the user reads what happened
+      // (content-style-guide.md:94).
+      AppLogger.error('Smart import failed', e);
+      return _fail(AppLocale.current.importErrorNotImported);
     } finally {
       _progressTracker.stop();
     }
@@ -343,12 +388,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
     // Check for other errors
     if (!result.isSuccess) {
-      _setPhase(ImportPhase.error);
-      final localizedError = _localizeImportError(result.errorMessage);
-      setError(localizedError);
-      final failResult = ImportFailed(localizedError);
-      _lastResult = failResult;
-      return failResult;
+      return _fail(
+        _localizeImportError(result.errorMessage),
+        strategies: result.availableStrategies,
+      );
     }
 
     // Success!
@@ -373,15 +416,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       final saveResult = await _importManager.saveImportedRecipe(recipe);
 
       if (!saveResult.isSuccess) {
-        _setPhase(ImportPhase.error);
-        setError(
-          saveResult.errorMessage ?? AppLocale.current.errorCouldNotSaveRecipe,
+        AppLogger.error(
+          'Assisted import save failed: ${saveResult.errorMessage.orEmpty()}',
         );
-        final failResult = ImportFailed(
-          saveResult.errorMessage ?? AppLocale.current.errorCouldNotSaveRecipe,
-        );
-        _lastResult = failResult;
-        return failResult;
+        return _saveFailed();
       }
 
       _importedRecipe = saveResult.recipe ?? recipe;
@@ -390,12 +428,46 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       _lastResult = successResult;
       return successResult;
     } catch (e) {
-      _setPhase(ImportPhase.error);
-      setError(AppLocale.current.errorCouldNotSaveRecipe);
-      final failResult = ImportFailed('$e');
-      _lastResult = failResult;
-      return failResult;
+      AppLogger.error('Assisted import save failed', e);
+      return _saveFailed();
     }
+  }
+
+  /// P5-U06: a refused save of an assisted import. The view shows it as a
+  /// failure snackbar with Försök igen, which saves the same recipe again, so
+  /// no error line is set here: one failure, one message.
+  SmartImportResult _saveFailed() {
+    _setPhase(ImportPhase.error);
+    final failResult = ImportFailed(AppLocale.current.recipeSaveFailed);
+    _lastResult = failResult;
+    return failResult;
+  }
+
+  /// P5-U06: a failed import, three-part (content-style-guide.md:87-97):
+  /// [message] says what happened, [failurePreserved] what was kept, and the
+  /// routes are what you can do instead (produktregler.md:557).
+  ImportFailed _fail(String message, {List<String>? strategies}) {
+    _setPhase(ImportPhase.error);
+    setError(message);
+    final failResult = ImportFailed(message, routes: _routesFor(strategies));
+    _lastResult = failResult;
+    return failResult;
+  }
+
+  /// The other ways to the same content. [strategies] is the manager's
+  /// `availableStrategies`; when it was not reported (a thrown import), the
+  /// default manager's photo and text strategies are assumed. Pasting text
+  /// is offered only in place of a link, and writing the recipe in by hand
+  /// needs no strategy.
+  List<ImportRoute> _routesFor(List<String>? strategies) {
+    bool has(String kind) =>
+        strategies == null ||
+        strategies.any((name) => name.toLowerCase().contains(kind));
+    return [
+      if (has('photo')) ImportRoute.photo,
+      if (_detection?.isUrl == true && has('text')) ImportRoute.pasteText,
+      ImportRoute.manual,
+    ];
   }
 
   /// Retry import without LLM (for rate limit fallback).
@@ -421,11 +493,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
       return await _handleImportResult(result);
     } catch (e) {
-      _setPhase(ImportPhase.error);
-      setError(AppLocale.current.errorImportFailed);
-      final failResult = ImportFailed('$e');
-      _lastResult = failResult;
-      return failResult;
+      AppLogger.error('Import without AI failed', e);
+      return _fail(AppLocale.current.importErrorNotImported);
     } finally {
       _progressTracker.stop();
     }
@@ -452,7 +521,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   /// Maps English error messages from ImportManager to localized strings.
   String _localizeImportError(String? errorMessage) {
-    if (errorMessage == null) return AppLocale.current.errorUnknown;
+    // P5-U06: never a bare "Okänt fel"; the line says what did not happen.
+    if (errorMessage == null) return AppLocale.current.importErrorNotImported;
 
     final lower = errorMessage.toLowerCase();
     final l10n = AppLocale.current;
@@ -490,7 +560,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return l10n.importErrorNoInternet;
     }
 
-    return l10n.importErrorUnexpected;
+    return l10n.importErrorNotImported;
   }
 
   void _setPhase(ImportPhase phase) {

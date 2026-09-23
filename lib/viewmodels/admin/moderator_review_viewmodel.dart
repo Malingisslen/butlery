@@ -113,23 +113,19 @@ class ModeratorReviewViewModel extends BaseViewModel {
     if (anyMinor) notifyListeners();
   }
 
-  Future<void> advance(ContentReport report) async {
-    await executeAsyncVoid(
-      () async {
-        await _reportService.advanceReportStatus(report);
-      },
-      errorPrefix: 'advanceReportStatus',
-    );
-  }
+  /// Moves [report] one step on. Returns false when the write was refused;
+  /// the view then shows the failure as a snackbar (content-style-guide.md
+  /// :87-97), and the list and its load-error state are left alone, so a
+  /// refused action never replaces the queue.
+  Future<bool> advance(ContentReport report) => _act(
+    'Moderator advance failed',
+    () => _reportService.advanceReportStatus(report),
+  );
 
-  Future<void> close(ContentReport report) async {
-    await executeAsyncVoid(
-      () async {
-        await _reportService.closeReport(report);
-      },
-      errorPrefix: 'closeReport',
-    );
-  }
+  Future<bool> close(ContentReport report) => _act(
+    'Moderator close failed',
+    () => _reportService.closeReport(report),
+  );
 
   /// Dispatches the moderator's takedown action for [report]:
   /// - profile → suspend (hide flag, reversible)
@@ -137,17 +133,28 @@ class ModeratorReviewViewModel extends BaseViewModel {
   ///
   /// The dashboard binds a single button to this method; the verb in the
   /// confirmation dialog should reflect [isReversibleAction].
-  Future<void> takeDown(ContentReport report) async {
-    await executeAsyncVoid(
-      () async {
-        if (report.contentType == ContentType.profile) {
-          await _reportService.suspendReportedProfile(report);
-        } else {
-          await _reportService.deleteReportedContent(report);
-        }
-      },
-      errorPrefix: 'takeDown',
-    );
+  Future<bool> takeDown(ContentReport report) => _act(
+    'Moderator takedown failed',
+    () async {
+      if (report.contentType == ContentType.profile) {
+        await _reportService.suspendReportedProfile(report);
+      } else {
+        await _reportService.deleteReportedContent(report);
+      }
+    },
+  );
+
+  /// Runs one moderator action. The exception goes to the log only; what the
+  /// user reads is the view's failure snackbar.
+  Future<bool> _act(String logLabel, Future<void> Function() action) async {
+    if (isDisposed) return false;
+    try {
+      await action();
+      return true;
+    } catch (e) {
+      AppLogger.error(logLabel, e);
+      return false;
+    }
   }
 
   /// Whether the takedown action for [report] is reversible (true for

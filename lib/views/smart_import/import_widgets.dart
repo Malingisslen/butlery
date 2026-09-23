@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -113,78 +114,125 @@ class ImportInputSection extends StatelessWidget {
   }
 }
 
-/// Error container with optional fallback action buttons.
+/// P5-U06: a failed import, in three parts (content-style-guide.md:87-97).
+///
+/// The error line says what happened and what was kept ([InlineError], the
+/// drawn error boundary, Komponentark v1:755-758). Under it, "Andra vägar
+/// till samma recept" draws the [routes] the failure carries: a failure is a
+/// fork, not a dead end (produktregler.md:557; Skarmar v12 etapp 4 import
+/// #impinget). The first route is the filled button and the rest are
+/// outlined, full width and 48 dp high, as drawn.
+///
+/// Colours, both modes, from the theme: the heading is
+/// colorScheme.onSurfaceVariant = text.secondary, #627061 light and #93A48D
+/// dark (tokens.json:62-65). The drawing's dark heading is #C9D3C4
+/// (text.bodyMuted); text.secondary is the role the light value names, and
+/// it clears 4.5:1 on the dark surface. The buttons take the app's filled
+/// and outlined button themes.
 class ImportErrorMessage extends StatelessWidget {
   final String message;
-  final ColorScheme colorScheme;
-  final VoidCallback? onPasteText;
-  final VoidCallback? onManualAdd;
+  final String? preserved;
+  final List<ImportRoute> routes;
+  final void Function(ImportRoute route) onRoute;
 
   const ImportErrorMessage({
     super.key,
     required this.message,
-    required this.colorScheme,
-    this.onPasteText,
-    this.onManualAdd,
+    required this.routes,
+    required this.onRoute,
+    this.preserved,
   });
+
+  /// A route's button. The key is for tests, not identity.
+  static Key routeKey(ImportRoute route) =>
+      ValueKey<String>('importError.route.${route.name}');
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: colorScheme.onErrorContainer,
-                size: AppDimensions.iconSizeM,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InlineError(what: message, preserved: preserved),
+        if (routes.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingMd),
+          Semantics(
+            header: true,
+            child: Text(
+              l10n.importFailureOtherRoutes.toUpperCase(),
+              style: AppTextStyles.overline.copyWith(
+                color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Expanded(
-                child: Text(
-                  message,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onErrorContainer,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          if (onPasteText != null || onManualAdd != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
-            Wrap(
-              spacing: AppDimensions.spacingSm,
-              children: [
-                if (onPasteText != null)
-                  TextButton.icon(
-                    onPressed: onPasteText,
-                    icon: const Icon(
-                      Icons.content_paste,
-                      size: AppDimensions.iconSizeS,
-                    ),
-                    label: Text(context.l10n.importPasteText),
-                  ),
-                if (onManualAdd != null)
-                  TextButton.icon(
-                    onPressed: onManualAdd,
-                    icon: const Icon(Icons.edit, size: AppDimensions.iconSizeS),
-                    label: Text(context.l10n.importAddManually),
-                  ),
-              ],
+          const SizedBox(height: AppDimensions.spacingSm),
+          for (final (i, route) in routes.indexed) ...[
+            if (i > 0) const SizedBox(height: AppDimensions.spacingSm),
+            _RouteButton(
+              key: routeKey(route),
+              filled: i == 0,
+              icon: switch (route) {
+                ImportRoute.photo => Icons.photo_camera_outlined,
+                ImportRoute.pasteText => Icons.content_paste,
+                ImportRoute.manual => Icons.edit_outlined,
+              },
+              label: switch (route) {
+                ImportRoute.photo => l10n.importRoutePhoto,
+                ImportRoute.pasteText => l10n.importRoutePasteText,
+                ImportRoute.manual => l10n.importAddManually,
+              },
+              onPressed: () => onRoute(route),
             ),
           ],
         ],
+      ],
+    );
+  }
+}
+
+class _RouteButton extends StatelessWidget {
+  const _RouteButton({
+    required this.filled,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    super.key,
+  });
+
+  final bool filled;
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    // Skarmar v12 etapp 4 #impinget: min-height 48, radius 8 (radius.control).
+    final style = ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(
+        Size.fromHeight(AppDimensions.minTouchTarget),
+      ),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        ),
       ),
     );
+    final iconWidget = Icon(icon, size: AppDimensions.iconSize18);
+    return filled
+        ? FilledButton.icon(
+            onPressed: onPressed,
+            style: style,
+            icon: iconWidget,
+            label: Text(label),
+          )
+        : OutlinedButton.icon(
+            onPressed: onPressed,
+            style: style,
+            icon: iconWidget,
+            label: Text(label),
+          );
   }
 }
 

@@ -1136,7 +1136,7 @@
     }
   },
   "menuShoppingListGenerationEmpty": "This week's plan has no recipes with ingredients yet",
-  "menuShoppingListGenerationFailed": "Could not create the shopping list – try again",
+  "menuShoppingListGenerationFailed": "The shopping list could not be created.",
   "@menuShoppingListGenerationFailed": {
     "description": "BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning."
   },
@@ -12606,5 +12606,26 @@
         "type": "int"
       }
     }
-  }
+  },
+  "weeklyMenuSaveFailed": "The week could not be saved",
+  "pantryItemUpdateFailed": "Could not update the item",
+  "moderatorAdvanceFailed": "The report could not be moved to the next step.",
+  "moderatorCloseFailed": "The report could not be closed.",
+  "moderatorReportUnchanged": "The report is unchanged.",
+  "moderatorHideFailed": "The profile could not be hidden.",
+  "moderatorHidePreserved": "The profile is still visible.",
+  "moderatorDeleteFailed": "The content could not be removed.",
+  "moderatorDeletePreserved": "The content is still there.",
+  "adminFeedbackStatusFailed": "The status could not be changed.",
+  "adminFeedbackStatusPreserved": "The feedback keeps its earlier status.",
+  "weekPlacementFailedWeekUnchanged": "The week is unchanged and the menu you made is still here.",
+  "weekPlacementFailedMenuKept": "The menu you made is still here.",
+  "menuShoppingListGenerationPreserved": "The week is unchanged.",
+  "importErrorNotImported": "The recipe could not be imported.",
+  "importFailurePreservedLink": "The link is still in the field.",
+  "importFailurePreservedText": "The text is still in the field.",
+  "importFailureOtherRoutes": "Other ways to the same recipe",
+  "importRoutePhoto": "Photograph the screen",
+  "importRoutePasteText": "Paste the text",
+  "duplicateMergeFailedPreserved": "The existing recipe is unchanged."
 }

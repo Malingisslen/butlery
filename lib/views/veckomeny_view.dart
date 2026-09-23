@@ -213,13 +213,17 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     if (placed == null && mounted) {
       final error = calendarVm.error;
       if (error != null) {
-        // The publish-first path may already have put the success toast on
-        // screen, and it carries an ÄNDRA action that opens placement. A
-        // queued error would sit behind
-        // it for its full duration; hiding it first is what stops the last
-        // thing the user reads from being the one that is no longer true.
-        SnackBarUtils.hide(context);
-        SnackBarUtils.showError(context, error);
+        showWeekPlacementFailure(
+          context,
+          what: error,
+          weekUnchanged: calendarVm.lastApplyLeftWeekUnchanged,
+          onRetry: () => unawaited(
+            _applyGeneratedToCalendar(
+              skipConfirm: true,
+              onPublished: onPublished,
+            ),
+          ),
+        );
       }
     }
     return placed;
@@ -395,9 +399,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         .generateShoppingList();
     if (!mounted) return;
     if (result == null) {
-      SnackBarUtils.showError(
+      showWeekShoppingListFailure(
         context,
-        context.l10n.menuShoppingListGenerationFailed,
+        onRetry: () => unawaited(_generateWeekShoppingList()),
       );
       return;
     }
@@ -748,4 +752,54 @@ class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
 
   @override
   Widget build(BuildContext context) => widget.child;
+}
+
+/// P5-U15 (veckogenerering ERROR): placing a generated menu failed.
+///
+/// Three parts (content-style-guide.md:87-97): what happened ([what], the
+/// one message of BUT-2132), what was kept, and Försök igen, which places the
+/// same menu again. The week is said to be unchanged only when
+/// [weekUnchanged] is true: the rollback may have been skipped, and a message
+/// claims only an undo that happened. The generated menu is always kept
+/// (produktregler.md:201: a generated result is not in the week until it is
+/// placed).
+///
+/// The publish-first path may already have put the success toast on screen,
+/// with an ÄNDRA that opens placement. A queued error would sit behind it for
+/// its full duration, so it is hidden first: the last thing the user reads
+/// must not be the one that is no longer true.
+void showWeekPlacementFailure(
+  BuildContext context, {
+  required String what,
+  required bool weekUnchanged,
+  required VoidCallback onRetry,
+}) {
+  final l10n = context.l10n;
+  SnackBarUtils.hide(context);
+  SnackBarUtils.showFailure(
+    context,
+    what: what,
+    preserved: weekUnchanged
+        ? l10n.weekPlacementFailedWeekUnchanged
+        : l10n.weekPlacementFailedMenuKept,
+    action: FailureAction.retry(onRetry),
+  );
+}
+
+/// P5-U16 (veckomeny ERROR): the week's shopping list could not be made.
+///
+/// Says the week is unchanged (making a list never writes the week) and
+/// offers Försök igen, which runs the generation again
+/// (content-style-guide.md:87-97).
+void showWeekShoppingListFailure(
+  BuildContext context, {
+  required VoidCallback onRetry,
+}) {
+  final l10n = context.l10n;
+  SnackBarUtils.showFailure(
+    context,
+    what: l10n.menuShoppingListGenerationFailed,
+    preserved: l10n.menuShoppingListGenerationPreserved,
+    action: FailureAction.retry(onRetry),
+  );
 }

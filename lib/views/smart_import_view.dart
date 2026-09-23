@@ -8,12 +8,15 @@
 /// - User-assisted fallback for difficult imports
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -99,7 +102,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SmartImportViewModel>();
-    final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
       canPop: !viewModel.isImporting,
@@ -190,12 +192,10 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                   ),
                                   ImportErrorMessage(
                                     message: viewModel.error!,
-                                    colorScheme: colorScheme,
-                                    onPasteText: () => _handlePaste(viewModel),
-                                    onManualAdd: () => Navigator.pushNamed(
-                                      context,
-                                      Routes.manualEntry,
-                                    ),
+                                    preserved: viewModel.failurePreserved,
+                                    routes: viewModel.failureRoutes,
+                                    onRoute: (route) =>
+                                        _openRoute(context, viewModel, route),
                                   ),
                                 ],
 
@@ -239,6 +239,23 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       },
       duration: SnackBarConfig.normalDuration,
     );
+  }
+
+  /// P5-U06: the error's other ways to the same recipe
+  /// (produktregler.md:557).
+  void _openRoute(
+    BuildContext context,
+    SmartImportViewModel viewModel,
+    ImportRoute route,
+  ) {
+    switch (route) {
+      case ImportRoute.photo:
+        unawaited(Navigator.pushNamed(context, Routes.photoImport));
+      case ImportRoute.pasteText:
+        unawaited(_handlePaste(viewModel));
+      case ImportRoute.manual:
+        unawaited(Navigator.pushNamed(context, Routes.manualEntry));
+    }
   }
 
   Future<void> _handlePaste(SmartImportViewModel viewModel) async {
@@ -296,14 +313,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     );
 
     if (!context.mounted || recipe == null) return;
-
-    final result = await viewModel.handleAssistedRecipe(recipe);
-
-    if (!context.mounted) return;
-
-    if (result is ImportSucceeded) {
-      ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
-    }
+    await _saveAssisted(context, viewModel, recipe);
   }
 
   Future<void> _showAssistedImportDialog(
@@ -344,13 +354,32 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     );
 
     if (!context.mounted || recipe == null) return;
+    await _saveAssisted(context, viewModel, recipe);
+  }
 
+  /// Saves an assisted import. A refused save is a failure snackbar whose
+  /// Försök igen saves the same recipe again (P5-U06;
+  /// content-style-guide.md:87-97).
+  Future<void> _saveAssisted(
+    BuildContext context,
+    SmartImportViewModel viewModel,
+    Recipe recipe,
+  ) async {
     final result = await viewModel.handleAssistedRecipe(recipe);
-
     if (!context.mounted) return;
-
-    if (result is ImportSucceeded) {
-      ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
+    switch (result) {
+      case ImportSucceeded(:final recipe):
+        ImportResultHandler.navigateToRecipeEditor(context, recipe);
+      case ImportFailed(:final message):
+        SnackBarUtils.showFailure(
+          context,
+          what: message,
+          action: FailureAction.retry(
+            () => unawaited(_saveAssisted(context, viewModel, recipe)),
+          ),
+        );
+      case ImportNeedsUserHelp() || ImportRateLimited():
+        break;
     }
   }
 
