@@ -15,6 +15,7 @@ import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -69,6 +70,10 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   bool _selectionMode = false;
   final Set<String> _selectedIds = {};
 
+  /// The last bulk removal when only some went (P5-U33). Cleared by "Klart",
+  /// by Avbryt and by the next removal.
+  MemberRemovalOutcome? _partial;
+
   bool get _canAddMembers =>
       ServiceLocator.get<PermissionService>().canInviteToGroup(widget.group.id);
 
@@ -114,6 +119,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     setState(() {
       _selectionMode = false;
       _selectedIds.clear();
+      _partial = null;
     });
   }
 
@@ -122,20 +128,40 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         .where((m) => _selectedIds.contains(m.uid))
         .toList(growable: false);
     if (selected.isEmpty) return;
+    setState(() => _partial = null);
 
-    // removeMultipleMembers shows its own bulk-confirm dialog + partial-fail
-    // reporting and returns the number actually removed.
-    final removed = await GroupDetailActions.removeMultipleMembers(
+    // removeMultipleMembers shows its own bulk-confirm dialog and reports the
+    // two whole outcomes; a partial one is shown here, by the rows.
+    final outcome = await GroupDetailActions.removeMultipleMembers(
       context,
       selected,
       widget.group,
     );
-    if (!mounted) return;
-    if (removed > 0) {
+    if (!mounted || outcome == null) return;
+    if (outcome.isComplete) {
       _cancelSelection();
       widget.onMemberRemoved();
+      return;
     }
+    if (outcome.isPartial) {
+      // The ones that did not go stay selected and the mode stays open, so
+      // the attempt can be made again (produktregler.md:908, :878; Skarmar
+      // v12 etapp 9 #flergrupp). Identity is the uid.
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(outcome.failed.map((m) => m.uid));
+        _partial = outcome;
+      });
+      widget.onMemberRemoved();
+    }
+    // None went: the selection is left as it was, and the failure snackbar
+    // says so.
   }
+
+  /// "Klart" closes the outcome and leaves selection mode: the user's own
+  /// act (produktregler.md:878; Skarmar v12 etapp 9:392).
+  void _closePartial() => _cancelSelection();
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +242,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           ),
         ],
 
+        if (_partial != null) ...[
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildPartialOutcome(context, _partial!),
+        ],
+
         // Pending invitations section
         if (pendingInvitations.isNotEmpty) ...[
           if (members.isNotEmpty)
@@ -256,6 +287,39 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             subtitle: context.l10n.groupNoMembersDescription,
             icon: Icons.people_outline,
           ),
+      ],
+    );
+  }
+
+  /// P5-U33: "En av två togs bort" below the rows (Skarmar v12 etapp 9
+  /// :390-393, #flergrupp): what went, who did not and why, and the way on.
+  /// Those who did not go are still selected above.
+  Widget _buildPartialOutcome(
+    BuildContext context,
+    MemberRemovalOutcome outcome,
+  ) {
+    final l = context.l10n;
+    return PartialOutcome(
+      key: const ValueKey('group-members-partial-outcome'),
+      title: l.groupMembersPartialTitle(
+        outcome.removedIds.length,
+        outcome.removedIds.length + outcome.failed.length,
+      ),
+      message: l.groupMembersPartialMessage,
+      items: [
+        for (final member in outcome.failed)
+          PartialOutcomeItem(
+            id: member.uid,
+            label: member.displayName,
+            reason: l.groupMemberRemoveNotSaved,
+          ),
+      ],
+      actions: [
+        TextButton(
+          key: const ValueKey('group-members-partial-done'),
+          onPressed: _closePartial,
+          child: Text(l.partialOutcomeDone),
+        ),
       ],
     );
   }

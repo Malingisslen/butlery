@@ -2,12 +2,18 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
+
 /// BUT-1185: multi-select state for personal-tag bulk operations
 /// (merge / bulk-delete). Pure UI state — no Firestore. Mirrors
 /// `recipe_selection_manager.dart`.
 class PersonalTagSelectionManager extends ChangeNotifier {
   bool _isSelectionMode = false;
   final Set<String> _selectedTagIds = {};
+  PersonalTagBulkDeleteResult? _partialDelete;
+
+  /// The last bulk delete when only some tags went (P5-U33), or null.
+  PersonalTagBulkDeleteResult? get partialDelete => _partialDelete;
 
   bool get isSelectionMode => _isSelectionMode;
   Set<String> get selectedTagIds => Set.unmodifiable(_selectedTagIds);
@@ -38,6 +44,26 @@ class PersonalTagSelectionManager extends ChangeNotifier {
   void exitSelection() {
     _selectedTagIds.clear();
     _isSelectionMode = false;
+    _partialDelete = null;
+    notifyListeners();
+  }
+
+  /// P5-U33: only some of the selected tags went. The ones that did not stay
+  /// selected and the mode stays open, so the delete can be tried again
+  /// (produktregler.md:908, :878). Identity is the tag id.
+  void showPartialDelete(PersonalTagBulkDeleteResult result) {
+    _isSelectionMode = true;
+    _selectedTagIds
+      ..clear()
+      ..addAll(result.failedIds);
+    _partialDelete = result;
+    notifyListeners();
+  }
+
+  /// Drops the partial outcome before a new attempt; the selection stays.
+  void clearPartialDelete() {
+    if (_partialDelete == null) return;
+    _partialDelete = null;
     notifyListeners();
   }
 

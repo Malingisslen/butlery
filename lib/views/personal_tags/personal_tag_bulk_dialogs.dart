@@ -152,6 +152,8 @@ abstract final class PersonalTagBulkDialogs {
     final viewModel = context.read<PersonalTagViewModel>();
     final selection = context.read<PersonalTagSelectionManager>();
     final ids = selectedTags.map((t) => t.id).toList();
+    // The view's context: the outcome is reported after the dialog is gone.
+    final hostContext = context;
 
     await showDialog<void>(
       context: context,
@@ -178,19 +180,37 @@ abstract final class PersonalTagBulkDialogs {
                     ? null
                     : () async {
                         setState(() => isLoading = true);
+                        selection.clearPartialDelete();
                         try {
-                          final deleted = await viewModel.bulkDeleteTags(ids);
+                          final result = await viewModel.bulkDeleteTags(ids);
                           await viewModel.loadTagStatistics();
 
                           if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);
-                          selection.exitSelection();
 
-                          if (!context.mounted) return;
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagBulkDeleted(deleted),
-                          );
+                          // P5-U33 (produktregler.md:905-909): all went is a
+                          // success; some went is the third outcome, shown
+                          // by the list with the rest still selected; none
+                          // went is a failure that keeps the selection.
+                          if (result.isComplete) {
+                            selection.exitSelection();
+                            if (!context.mounted) return;
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context.l10n.personalTagBulkDeleted(
+                                result.deletedIds.length,
+                              ),
+                            );
+                          } else if (result.isPartial) {
+                            selection.showPartialDelete(result);
+                          } else {
+                            if (!hostContext.mounted) return;
+                            SnackBarUtils.showFailure(
+                              hostContext,
+                              what: hostContext.l10n.personalTagBulkDeleteNone,
+                              preserved: hostContext.l10n.selectionFailedKept,
+                            );
+                          }
                         } catch (e) {
                           if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);

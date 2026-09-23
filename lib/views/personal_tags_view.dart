@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
@@ -361,7 +362,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             },
             child: Builder(
               builder: (context) {
+                final partial = _buildPartialDelete(context, viewModel);
                 final items = <Widget>[
+                  ?partial,
                   if (ungroupedTags.isNotEmpty)
                     PersonalTagSection(
                       title: context.l10n.personalTagSectionTags,
@@ -399,6 +402,63 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// P5-U33: a bulk delete where only some tags went (produktregler.md:
+  /// 905-909; the shared surface of Skarmar v12 etapp 9 :390-393). It sits
+  /// above the tags, says how many of how many went, names each tag that is
+  /// still there with its reason, and those stay selected. "Försök igen"
+  /// asks again for the ones left; "Klart" leaves selection mode.
+  Widget? _buildPartialDelete(
+    BuildContext context,
+    PersonalTagViewModel viewModel,
+  ) {
+    final selection = context.watch<PersonalTagSelectionManager>();
+    final result = selection.partialDelete;
+    if (result == null) return null;
+    final l = context.l10n;
+    final remaining = result.failedIds
+        .map(viewModel.getTagById)
+        .whereType<PersonalTag>()
+        .toList(growable: false);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.spacingL,
+        0,
+        AppDimensions.spacingL,
+        AppDimensions.spacingL,
+      ),
+      child: PartialOutcome(
+        key: const ValueKey('personal-tags-partial-outcome'),
+        title: l.personalTagBulkDeletePartialTitle(
+          result.deletedIds.length,
+          result.deletedIds.length + result.failedIds.length,
+        ),
+        message: l.personalTagBulkDeletePartialMessage,
+        items: [
+          for (final tag in remaining)
+            PartialOutcomeItem(
+              id: tag.id,
+              label: tag.name,
+              reason: l.personalTagBulkDeleteNotSaved,
+            ),
+        ],
+        actions: [
+          if (remaining.isNotEmpty)
+            TextButton(
+              key: const ValueKey('personal-tags-partial-retry'),
+              onPressed: () =>
+                  PersonalTagDialogs.showBulkDeleteDialog(context, remaining),
+              child: Text(l.commonRetry),
+            ),
+          TextButton(
+            key: const ValueKey('personal-tags-partial-done'),
+            onPressed: selection.exitSelection,
+            child: Text(l.partialOutcomeDone),
+          ),
+        ],
       ),
     );
   }
