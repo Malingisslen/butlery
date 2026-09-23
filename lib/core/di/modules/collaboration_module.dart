@@ -20,6 +20,9 @@ import 'package:butlery/repositories/firebase/firebase_cooking_session_repositor
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_overwritten_version_repository.dart';
+import 'package:butlery/services/realtime/overwritten_version_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -42,6 +45,9 @@ class CollaborationModule implements DIModule {
   @override
   List<Type> get provides => [
     RealtimeSyncService,
+    // P5-U26b: overwritten versions kept 30 days behind "Återställ".
+    OverwrittenVersionRepository,
+    OverwrittenVersionService,
     RealtimeRecipeService,
     RealtimeMenuService,
     UnifiedShoppingService,
@@ -65,10 +71,26 @@ class CollaborationModule implements DIModule {
   Future<void> configureUserScope(GetIt container) async {
     final app = GetIt.instance;
 
+    // P5-U26b: the user's own overwritten versions (users/{uid}/
+    // overwritten_versions), kept by RealtimeSyncService when a save loses.
+    container.registerLazySingleton<OverwrittenVersionRepository>(
+      () => FirebaseOverwrittenVersionRepository(
+        authRepository: app<AuthRepository>(),
+      ),
+    );
+
     container.registerLazySingleton<RealtimeSyncService>(
       () => RealtimeSyncService(
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
+        overwrittenVersions: container<OverwrittenVersionRepository>(),
+      ),
+    );
+
+    container.registerLazySingleton<OverwrittenVersionService>(
+      () => OverwrittenVersionService(
+        repository: container<OverwrittenVersionRepository>(),
+        syncService: container<RealtimeSyncService>(),
       ),
     );
 

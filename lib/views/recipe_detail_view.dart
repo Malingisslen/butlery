@@ -58,6 +58,8 @@ import 'package:butlery/services/recipe_print_service.dart' as print_service;
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/external_link.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -81,6 +83,7 @@ enum _MenuAction {
   source,
   viewSourceArtefact,
   printRecipe,
+  restoreVersion,
   report,
 }
 
@@ -199,10 +202,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   late RecipeDetailActions _actions;
   UserService? _userService;
 
+  // P5-U26b: this recipe's versions of the owner's that another person's save
+  // overwrote, kept 30 days behind "Återställ" (produktregler.md:109). Keyed
+  // by the recipe's id, as the ConflictBanner below is.
+  late final RestorableVersionsWatcher _restorable;
+
   @override
   void initState() {
     super.initState();
     _actions = RecipeDetailActions();
+    _restorable = RestorableVersionsWatcher(
+      entity: ConflictEntity.recipeOwn,
+      resourceId: widget.recipe.id,
+      onChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
 
     // BUT-1322: portion state initialized synchronously (household-size
     // default, recipe portions as scaling base) so the first frame already
@@ -228,6 +243,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
   @override
   void dispose() {
+    _restorable.dispose();
     _userService?.removeListener(_onUserServiceChanged);
     super.dispose();
   }
@@ -728,6 +744,34 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
+                            // P5-U26b: only the owner's own recipe keeps
+                            // overwritten versions, and the row shows only
+                            // while one is kept.
+                            if (!widget.readOnly &&
+                                _restorable.versions.isNotEmpty)
+                              ButleryMenuItem(
+                                key: const ValueKey(
+                                  'test-recipe-detail-restore-version',
+                                ),
+                                value: _MenuAction.restoreVersion,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.history,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        context.l10n.overwrittenRestoreAction,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ButleryMenuItem(
                               value: _MenuAction.report,
                               child: Row(
@@ -1084,6 +1128,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         }
       case _MenuAction.printRecipe:
         _printRecipe(recipe);
+      case _MenuAction.restoreVersion:
+        assert(
+          !widget.readOnly,
+          'restoreVersion must be unreachable in readOnly mode',
+        );
+        await RestoreOverwrittenVersion.start(context, _restorable.versions);
       case _MenuAction.report:
         ReportContentDialog.show(
           context: context,

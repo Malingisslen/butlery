@@ -9092,6 +9092,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get conflictDiffEmptyValue => '(tomt)';
 
   @override
+<<<<<<< HEAD
   String get conflictDiffUseTheirs => 'Använd deras version';
 
   @override
@@ -9156,6 +9157,77 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get personalTagBulkDeleteNone => 'Taggarna kunde inte tas bort.';
+=======
+  String get overwrittenRestoreAction => 'Återställ min version';
+
+  @override
+  String get overwrittenPickTitle => 'Vilken version vill du återställa?';
+
+  @override
+  String overwrittenVersionFrom(String when) {
+    return 'Din version från $when';
+  }
+
+  @override
+  String overwrittenVersionBy(String name, String until) {
+    return '$name sparade över den · kvar till $until';
+  }
+
+  @override
+  String overwrittenVersionByUnnamed(String until) {
+    return 'Någon annan sparade över den · kvar till $until';
+  }
+
+  @override
+  String overwrittenWhenToday(String time) {
+    return 'i dag $time';
+  }
+
+  @override
+  String get overwrittenWhenYesterday => 'i går';
+
+  @override
+  String get overwrittenConfirmTitleWeek => 'Återställa din vecka?';
+
+  @override
+  String get overwrittenConfirmTitleRecipe => 'Återställa ditt recept?';
+
+  @override
+  String overwrittenConfirmBodyWeek(String when) {
+    return 'Din version från $when ersätter veckan som gäller nu. Du kan ångra direkt efteråt.';
+  }
+
+  @override
+  String overwrittenConfirmBodyRecipe(String when) {
+    return 'Din version från $when ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.';
+  }
+
+  @override
+  String get overwrittenRestored => 'Din version är återställd';
+
+  @override
+  String get overwrittenRestoreFailed => 'Din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneWeek =>
+      'Veckan finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'Receptet finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String overwrittenKeptUntil(String until) {
+    return 'Den finns kvar till $until.';
+  }
+
+  @override
+  String get overwrittenUndoFailed => 'Ångra kunde inte slutföras';
+
+  @override
+  String get overwrittenUndoFailedKept =>
+      'Din återställda version gäller fortfarande.';
+>>>>>>> p5-b3
 
   @override
   String get privacyEmailSubject => 'Integritetsfråga';

@@ -12,6 +12,8 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/realtime/overwritten_version.dart';
+import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
 
 // Realtime modules
 import 'package:butlery/services/realtime/realtime_types.dart';
@@ -26,6 +28,11 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   final FirestoreRepository _firestoreRepository;
   final auth.AuthRepository _authRepository;
 
+  /// P5-U26b: where a version the user loses to another person's save is kept
+  /// for 30 days (produktregler.md:109). Null keeps nothing (tests that do not
+  /// exercise it, and any build without the repository registered).
+  final OverwrittenVersionRepository? _overwrittenVersions;
+
   // Modules
   late final ConnectionStateModule _connectionModule;
   late final ResourceParserModule _parserModule;
@@ -34,8 +41,10 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   RealtimeSyncService({
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
+    OverwrittenVersionRepository? overwrittenVersions,
   }) : _firestoreRepository = firestoreRepository,
-       _authRepository = authRepository {
+       _authRepository = authRepository,
+       _overwrittenVersions = overwrittenVersions {
     // Initialize StreamControllers using StreamManagementMixin
     _connectionController = createBroadcastController<bool>(
       name: 'connection_state',
@@ -272,13 +281,20 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       final T persisted;
       if (shouldResolveConflict) {
         final remote = await _parserModule.getLatestResource<T>(resource.id);
+        // The model declares which conflict rule applies to this user's
+        // edit (produktregler.md:97-107), for the user who started it.
+        final entity = resource.conflictEntityFor(userId);
         persisted = await _conflictModule.resolveConflict<T>(
           resource,
           remote,
-          // The model declares which conflict rule applies to this user's
-          // edit (produktregler.md:97-107), for the user who started it.
-          entity: resource.conflictEntityFor(userId),
+          entity: entity,
         );
+        // P5-U26b: the user's version lost, so keep it before the winner is
+        // written (produktregler.md:109). The resolver hands back the remote
+        // instance itself when the remote wins, including on its error path.
+        if (identical(persisted, remote)) {
+          await _keepOverwritten(userId, entity, resource, remote);
+        }
         await _conflictModule.performUpdate(docRef, persisted);
       } else {
         persisted = resource;
@@ -311,6 +327,41 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         );
       }
       rethrow;
+    }
+  }
+
+  /// P5-U26b: keeps [lost] for [userId] for 30 days when [entity] is one whose
+  /// overwritten versions are kept (the week menu and the user's own recipe,
+  /// PQ-01 = A). A failure is logged and does not stop the sync: the 30 s
+  /// conflict notice still carries the version and can re-apply it
+  /// (ConflictSnackBar, ConflictBanner), so nothing is dropped unannounced.
+  Future<void> _keepOverwritten(
+    String userId,
+    ConflictEntity entity,
+    RealtimeResource lost,
+    RealtimeResource winner,
+  ) async {
+    final store = _overwrittenVersions;
+    if (store == null) return;
+    if (!OverwrittenVersion.keptEntities.contains(entity)) return;
+    // The user's own save from another device is not another person's save
+    // overwriting theirs (produktregler.md:109), so there is nothing to keep.
+    if (winner.lastEditedBy == userId) return;
+    try {
+      await store.keep(
+        OverwrittenVersion.capture(
+          ownerId: userId,
+          entity: entity,
+          lost: lost,
+          winner: winner,
+          at: clock.now(),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error(
+        '❌ Den överskrivna versionen kunde inte sparas för ${lost.id}',
+        e,
+      );
     }
   }
 

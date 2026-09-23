@@ -222,6 +222,11 @@ class PreferencesExportManager {
       'user_acquisition',
       (max) => _exports.exportAcquisition(userId, maxDocuments: max),
     );
+    await readLeg(
+      'overwritten_versions',
+      'user_overwritten_versions',
+      (max) => _exports.exportOverwrittenVersions(userId, maxDocuments: max),
+    );
 
     return {
       ...section,

@@ -9076,6 +9076,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conflictDiffEmptyValue => '(empty)';
 
   @override
+<<<<<<< HEAD
   String get conflictDiffUseTheirs => 'Use their version';
 
   @override
@@ -9141,6 +9142,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalTagBulkDeleteNone => 'The tags could not be deleted.';
+=======
+  String get overwrittenRestoreAction => 'Restore my version';
+
+  @override
+  String get overwrittenPickTitle => 'Which version do you want to restore?';
+
+  @override
+  String overwrittenVersionFrom(String when) {
+    return 'Your version from $when';
+  }
+
+  @override
+  String overwrittenVersionBy(String name, String until) {
+    return '$name saved over it · kept until $until';
+  }
+
+  @override
+  String overwrittenVersionByUnnamed(String until) {
+    return 'Someone else saved over it · kept until $until';
+  }
+
+  @override
+  String overwrittenWhenToday(String time) {
+    return 'today $time';
+  }
+
+  @override
+  String get overwrittenWhenYesterday => 'yesterday';
+
+  @override
+  String get overwrittenConfirmTitleWeek => 'Restore your week?';
+
+  @override
+  String get overwrittenConfirmTitleRecipe => 'Restore your recipe?';
+
+  @override
+  String overwrittenConfirmBodyWeek(String when) {
+    return 'Your version from $when replaces the week as it is now. You can undo right after.';
+  }
+
+  @override
+  String overwrittenConfirmBodyRecipe(String when) {
+    return 'Your version from $when replaces the recipe as it is now. You can undo right after.';
+  }
+
+  @override
+  String get overwrittenRestored => 'Your version is restored';
+
+  @override
+  String get overwrittenRestoreFailed => 'Your version couldn\'t be restored';
+
+  @override
+  String get overwrittenRestoreGoneWeek =>
+      'The week no longer exists, so your version could not be restored';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'The recipe no longer exists, so your version could not be restored';
+
+  @override
+  String overwrittenKeptUntil(String until) {
+    return 'It\'s kept until $until.';
+  }
+
+  @override
+  String get overwrittenUndoFailed => 'Undo couldn\'t finish';
+
+  @override
+  String get overwrittenUndoFailedKept =>
+      'Your restored version still applies.';
+>>>>>>> p5-b3
 
   @override
   String get privacyEmailSubject => 'Privacy inquiry';

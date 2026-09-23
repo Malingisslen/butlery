@@ -363,6 +363,9 @@ class ExportPaginationHelper {
     'user_ingredients': 500,
     'user_onboarding': 50,
     'user_acquisition': 50,
+    // P5-U26b: overwritten versions live 30 days, so the cap is generous
+    // for a month of conflicts on the week and the user's own recipes.
+    'user_overwritten_versions': 200,
     // The `settings` collection, `preferences` INCLUDED — the query is not
     // filtered, so the section additionally reads that one document by id
     // (`exportUserPreferencesDocument`) and drops it from the page afterwards
