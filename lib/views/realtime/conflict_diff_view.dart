@@ -4,8 +4,20 @@
 /// silent — one user's edit can vanish. The [ConflictBanner] surfaces that a
 /// conflict happened; this view lets the user see exactly *which fields* the
 /// two snapshots disagreed on (their local version vs the collaborator's remote
-/// version) and, if their version lost, re-apply it with one tap ("Behåll min
-/// version").
+/// version) and choose which one applies:
+/// - if their version lost, re-apply it with one tap ("Behåll min version");
+/// - if their version won, put the other person's version back with one tap
+///   ("Använd deras version").
+///
+/// The choice is the decision (produktregler.md:102, "Recept (eget)": both
+/// versions are shown and the user chooses). PQ-02 = A (2026-09-23): someone
+/// else's shared recipe gets the same choice as the owner's until the
+/// suggestion store exists (package 6), so this view does not branch on
+/// [ConflictEvent.entity]. Skarmar v12 del 3 #konflikt (:1163-1199) draws
+/// both exits: "Behåll min version" filled, "Använd Eriks version" as an
+/// outlined button. The label is name-free ("Använd deras version"), matching
+/// the column label "Deras version", because a {name}s genitive breaks on
+/// names ending in s, x or z (app_localizations.dart, BUT-1797 note).
 ///
 /// It operates directly on the [ConflictEvent] payload — no ViewModel — because
 /// it's a leaf detail screen with no persistent state of its own beyond an
@@ -54,6 +66,11 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
   bool get _localLost =>
       widget.event.chosenStrategy == ConflictResolutionStrategy.remoteWon;
 
+  /// Their version lost and differs from mine: offer to put it back.
+  bool get _canUseTheirs =>
+      widget.event.chosenStrategy == ConflictResolutionStrategy.localWon &&
+      _diff.isNotEmpty;
+
   Future<void> _keepMyVersion() async {
     if (_saving) return;
     setState(() => _saving = true);
@@ -86,6 +103,38 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
     }
   }
 
+  /// Puts the other person's version back. It goes through the same
+  /// permission-checked recovery path as "Behåll min version": the snapshot
+  /// is rebuilt on top of the latest editCount + 1, so it wins the next
+  /// comparison and nothing is overwritten silently. The user's own version
+  /// is only replaced because she chose it here; on failure hers still
+  /// applies and she is told so.
+  Future<void> _useTheirVersion() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+
+    try {
+      final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+      if (svc == null) {
+        throw StateError('RealtimeSyncService is not registered');
+      }
+      await svc.recoverLocalVersion(widget.event.remoteValue);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      SnackBarUtils.showSuccess(context, context.l10n.conflictDiffUsedTheirs);
+    } catch (e) {
+      AppLogger.error('Failed to apply remote version after conflict', e);
+      if (!mounted) return;
+      setState(() => _saving = false);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.conflictDiffUseTheirsFailed,
+        preserved: context.l10n.conflictDiffUseTheirsKept,
+        action: FailureAction.retry(_useTheirVersion),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -98,7 +147,11 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       body: SafeArea(
         child: _diff.isEmpty ? _buildNoChanges(context) : _buildDiffList(),
       ),
-      bottomNavigationBar: _localLost ? _buildKeepBar(context) : null,
+      bottomNavigationBar: _localLost
+          ? _buildKeepBar(context)
+          : _canUseTheirs
+          ? _buildUseTheirsBar(context)
+          : null,
     );
   }
 
@@ -156,6 +209,42 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
                       )
                     : null,
                 child: Text(context.l10n.conflictDiffKeepMine),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "Använd deras version" as the drawing's outlined button (Skarmar v12
+  /// del 3:1199, 1.5 px ink outline). Saving keeps the name and draws the
+  /// plate line, as the keep bar does (Komponentark v1:365, :372).
+  Widget _buildUseTheirsBar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.surface,
+      elevation: AppDimensions.elevationMedium,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: SizedBox(
+            width: double.infinity,
+            child: BusyButtonSemantics(
+              busy: _saving,
+              name: context.l10n.conflictDiffUseTheirs,
+              child: OutlinedButton(
+                key: const ValueKey('conflictDiff.useTheirs'),
+                onPressed: _saving ? PlateLineButton.ignore : _useTheirVersion,
+                style: _saving
+                    ? PlateLineButton.busyStyle(
+                        null,
+                        Theme.of(context).outlinedButtonTheme.style,
+                        onFill: false,
+                      )
+                    : null,
+                child: Text(context.l10n.conflictDiffUseTheirs),
               ),
             ),
           ),

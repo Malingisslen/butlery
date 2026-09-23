@@ -52,6 +52,7 @@ ConflictEvent _event({
   required ConflictResolutionStrategy strategy,
   Map<String, dynamic>? local,
   Map<String, dynamic>? remote,
+  ConflictEntity entity = ConflictEntity.recipeOwn,
 }) {
   final localRes = _FakeResource(local ?? {'title': 'Min soppa'});
   final remoteRes = _FakeResource(remote ?? {'title': 'Deras gryta'});
@@ -61,7 +62,7 @@ ConflictEvent _event({
     localValue: localRes,
     remoteValue: remoteRes,
     chosenStrategy: strategy,
-    entity: ConflictEntity.recipeOwn,
+    entity: entity,
     occurredAt: DateTime(2026, 6, 13),
   );
 }
@@ -312,4 +313,149 @@ void main() {
       expect(find.text('Vegetarisk'), findsOneWidget);
     },
   );
+
+  // PQ-02 = A (2026-09-23): the choice goes both ways, for the owner's recipe
+  // and for someone else's shared recipe alike (produktregler.md:102;
+  // Skarmar v12 del 3 #konflikt :1199 draws "Behåll min version" and
+  // "Använd Eriks version").
+  group('the choice goes both ways (PQ-02 = A)', () {
+    late String useTheirs;
+    late String usedTheirs;
+    late String useTheirsFailed;
+    late String useTheirsKept;
+
+    Future<void> openView(WidgetTester tester, ConflictEvent event) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              keepMine = context.l10n.conflictDiffKeepMine;
+              useTheirs = context.l10n.conflictDiffUseTheirs;
+              usedTheirs = context.l10n.conflictDiffUsedTheirs;
+              useTheirsFailed = context.l10n.conflictDiffUseTheirsFailed;
+              useTheirsKept = context.l10n.conflictDiffUseTheirsKept;
+              return ElevatedButton(
+                onPressed: () => ConflictDiffView.show(context, event),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    final useTheirsKey = find.byKey(const ValueKey('conflictDiff.useTheirs'));
+    final keepMineKey = find.byKey(const ValueKey('conflictDiff.keepMine'));
+
+    for (final entity in [
+      ConflictEntity.recipeOwn,
+      ConflictEntity.recipeShared,
+    ]) {
+      testWidgets('${entity.name}: my version won -> "Använd deras version" '
+          'writes THEIR snapshot back and closes', (tester) async {
+        when(
+          () => service.recoverLocalVersion<RealtimeResource>(any()),
+        ).thenAnswer((_) async {});
+        await openView(
+          tester,
+          _event(
+            strategy: ConflictResolutionStrategy.localWon,
+            local: {'title': 'Min version'},
+            remote: {'title': 'Deras version'},
+            entity: entity,
+          ),
+        );
+
+        expect(useTheirs, 'Använd deras version');
+        expect(find.widgetWithText(OutlinedButton, useTheirs), findsOneWidget);
+        expect(keepMineKey, findsNothing);
+
+        await tester.tap(useTheirsKey);
+        await tester.pumpAndSettle();
+
+        final captured =
+            verify(
+                  () => service.recoverLocalVersion<RealtimeResource>(
+                    captureAny(),
+                  ),
+                ).captured.single
+                as RealtimeResource;
+        expect(
+          captured.toFirestore()['title'],
+          'Deras version',
+          reason: 'using theirs must write the remote snapshot, not mine',
+        );
+        expect(useTheirsKey, findsNothing);
+        expect(find.text('open'), findsOneWidget);
+        expect(find.text(usedTheirs), findsOneWidget);
+      });
+
+      testWidgets('${entity.name}: my version lost -> "Behåll min version" '
+          'writes MY snapshot back; no "Använd deras"', (tester) async {
+        when(
+          () => service.recoverLocalVersion<RealtimeResource>(any()),
+        ).thenAnswer((_) async {});
+        await openView(
+          tester,
+          _event(
+            strategy: ConflictResolutionStrategy.remoteWon,
+            local: {'title': 'Min version'},
+            remote: {'title': 'Deras version'},
+            entity: entity,
+          ),
+        );
+
+        expect(useTheirsKey, findsNothing);
+        await tester.tap(keepMineKey);
+        await tester.pumpAndSettle();
+
+        final captured =
+            verify(
+                  () => service.recoverLocalVersion<RealtimeResource>(
+                    captureAny(),
+                  ),
+                ).captured.single
+                as RealtimeResource;
+        expect(captured.toFirestore()['title'], 'Min version');
+        expect(find.text('open'), findsOneWidget);
+      });
+    }
+
+    testWidgets('a failed "Använd deras" stays open and says mine still '
+        'applies, with a retry', (tester) async {
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenThrow(SyncError(type: SyncErrorType.firestoreError, message: 'x'));
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.localWon),
+      );
+
+      await tester.tap(useTheirsKey);
+      await tester.pumpAndSettle();
+
+      expect(find.text('$useTheirsFailed $useTheirsKept'), findsOneWidget);
+      expect(find.text('Försök igen'), findsOneWidget);
+      // Still open and usable again: nothing was lost and nothing claimed.
+      expect(
+        tester.widget<OutlinedButton>(useTheirsKey).onPressed,
+        isNotNull,
+      );
+    });
+
+    testWidgets('identical snapshots offer no "Använd deras"', (tester) async {
+      await openView(
+        tester,
+        _event(
+          strategy: ConflictResolutionStrategy.localWon,
+          local: {'title': 'Soppa'},
+          remote: {'title': 'Soppa'},
+        ),
+      );
+
+      expect(useTheirsKey, findsNothing);
+    });
+  });
 }

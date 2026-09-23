@@ -9076,6 +9076,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conflictDiffEmptyValue => '(empty)';
 
   @override
+  String get conflictDiffUseTheirs => 'Use their version';
+
+  @override
+  String get conflictDiffUsedTheirs => 'Their version applies now';
+
+  @override
+  String get conflictDiffUseTheirsFailed => 'Their version could not be saved.';
+
+  @override
+  String get conflictDiffUseTheirsKept => 'Your version still applies.';
+
+  @override
+  String get conflictWeekKeepMine => 'Keep mine';
+
+  @override
+  String get partialOutcomeDone => 'Done';
+
+  @override
+  String groupMembersPartialTitle(int removed, int total) {
+    return '$removed of $total were removed';
+  }
+
+  @override
+  String get groupMembersPartialMessage =>
+      'The ones that could not be removed stay selected above.';
+
+  @override
+  String get groupMemberRemoveNotSaved =>
+      'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMembersRemoveNone =>
+      'None of the selected members could be removed.';
+
+  @override
+  String get selectionFailedKept => 'They stay selected.';
+
+  @override
+  String personalTagBulkDeletePartialTitle(int deleted, int total) {
+    return '$deleted of $total tags were deleted';
+  }
+
+  @override
+  String get personalTagBulkDeletePartialMessage =>
+      'The ones that could not be deleted stay selected.';
+
+  @override
+  String get personalTagBulkDeleteNotSaved =>
+      'Could not be deleted — the deletion was not saved';
+
+  @override
+  String get personalTagBulkDeleteNone => 'The tags could not be deleted.';
+
+  @override
   String get privacyEmailSubject => 'Privacy inquiry';
 
   @override
