@@ -51,7 +51,7 @@ class _IngredientSubstitutionSheetState
               children: [
                 Icon(
                   Icons.swap_horiz,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeL,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -163,11 +163,11 @@ class _IngredientSubstitutionSheetState
               Container(
                 padding: AppDimensions.paddingSymmetric4x2,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   border: Border.all(
-                    color: cs.primary.withValues(
+                    color: cs.onSurface.withValues(
                       alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
@@ -175,7 +175,7 @@ class _IngredientSubstitutionSheetState
                 child: Text(
                   _formatRatio(option.ratio),
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ),

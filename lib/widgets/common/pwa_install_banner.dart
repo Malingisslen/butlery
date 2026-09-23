@@ -42,11 +42,11 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border(top: BorderSide(color: cs.primary, width: 2)),
+        border: Border(top: BorderSide(color: cs.onSurface, width: 2)),
       ),
       child: Row(
         children: [
-          Icon(Icons.install_mobile, color: cs.primary),
+          Icon(Icons.install_mobile, color: cs.onSurface),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(

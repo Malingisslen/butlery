@@ -533,7 +533,7 @@ class _BottomNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final color = isSelected
-        ? (selectedColor ?? cs.primary)
+        ? (selectedColor ?? cs.onSurface)
         : (unselectedColor ?? cs.onSurfaceVariant);
 
     // BUT-403: identifier `nav-{route}` (e.g. `nav-/`, `nav-/veckomeny`) for

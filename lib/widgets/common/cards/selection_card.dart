@@ -37,7 +37,7 @@ class SelectionCard extends StatelessWidget {
         borderRadius: effectiveBorderRadius,
         side: isSelected
             ? BorderSide(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
                 width: 2,
               )
             : BorderSide.none,

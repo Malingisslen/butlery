@@ -543,7 +543,7 @@ class RecipeCard extends StatelessWidget {
             size: 20,
             // Colour convention (BUT-1213): green = personal favourite,
             // red stays reserved for social likes.
-            color: isFav ? cs.primary : cs.onSurfaceVariant,
+            color: isFav ? cs.onSurface : cs.onSurfaceVariant,
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -708,9 +708,9 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
           border: Border.all(
-            color: cs.primary.withValues(
+            color: cs.onSurface.withValues(
               alpha: AppDimensions.opacityMediumLight,
             ),
           ),
@@ -718,7 +718,7 @@ class RecipeCard extends StatelessWidget {
         child: Text(
           '$pct%',
           style: AppTextStyles.badge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -946,16 +946,18 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: cs.onSurface.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.onSurface.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ),
       child: Text(
         name,
         style: AppTextStyles.labelSmall.copyWith(
-          color: cs.primary,
+          color: cs.onSurface,
         ),
       ),
     );
@@ -967,16 +969,16 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityLight),
+          color: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Text(
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityDark),
+          color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
         ),
       ),
     );

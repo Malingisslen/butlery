@@ -58,7 +58,7 @@ class DraftRecoveryDialog extends StatelessWidget {
         children: [
           Icon(
             Icons.restore,
-            color: theme.colorScheme.primary,
+            color: theme.colorScheme.onSurface,
           ),
           const SizedBox(width: AppDimensions.width12),
           Expanded(

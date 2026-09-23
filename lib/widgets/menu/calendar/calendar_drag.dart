@@ -54,7 +54,7 @@ Widget wrapAsDraggable({
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(color: cs.primary),
+        border: Border.all(color: cs.onSurface),
       ),
       child: Text(
         label.toLowerCase(),

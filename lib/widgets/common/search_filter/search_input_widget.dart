@@ -127,7 +127,7 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
         prefixIcon: Icon(
           Icons.search,
           size: AppDimensions.iconSizeAction,
-          color: cs.primary,
+          color: cs.onSurface,
         ),
         suffixIcon: _buildSuffixIcon(),
         border: InputBorder.none,
@@ -147,7 +147,7 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
         decoration: BoxDecoration(
           color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          border: Border.all(color: cs.primary, width: 2),
+          border: Border.all(color: cs.onSurface, width: 2),
         ),
         child: searchField,
       );
@@ -162,9 +162,9 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         border: Border(
-          top: BorderSide(color: cs.primary, width: 2),
-          left: BorderSide(color: cs.primary, width: 2),
-          right: BorderSide(color: cs.primary, width: 2),
+          top: BorderSide(color: cs.onSurface, width: 2),
+          left: BorderSide(color: cs.onSurface, width: 2),
+          right: BorderSide(color: cs.onSurface, width: 2),
           bottom: BorderSide(color: cs.secondary, width: 4),
         ),
       ),

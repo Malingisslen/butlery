@@ -159,10 +159,10 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? cs.surfaceContainerHighest.withValues(
+                  ? cs.onPrimary.withValues(
                       alpha: AppDimensions.opacityVeryDark,
                     )
-                  : cs.primary,
+                  : cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXxs),
@@ -170,7 +170,7 @@ class ReplyPreviewWidget extends StatelessWidget {
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? cs.surfaceContainerHighest.withValues(
+                  ? cs.onPrimary.withValues(
                       alpha: AppDimensions.opacityDark,
                     )
                   : cs.onSurfaceVariant,
@@ -215,7 +215,7 @@ class MessageAvatarWidget extends StatelessWidget {
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-        style: AppTextStyles.labelMedium.copyWith(color: cs.primary),
+        style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
       ),
     );
   }

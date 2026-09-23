@@ -178,7 +178,7 @@ class MessageContentBuilder {
             ),
             child: Icon(
               icon,
-              color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+              color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
               size: AppDimensions.iconSizeM,
             ),
           ),
@@ -190,7 +190,7 @@ class MessageContentBuilder {
                 Text(
                   label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+                    color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                   ),
                 ),
                 Text(
@@ -360,7 +360,7 @@ class MessageContentBuilder {
         children: [
           Icon(
             Icons.play_arrow,
-            color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+            color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           ),
           const SizedBox(width: AppDimensions.paddingS),
           Text(

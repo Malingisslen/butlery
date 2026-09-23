@@ -45,7 +45,7 @@ class ShareModeSelection {
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: selectedMode == ShareMode.staticCopy
-                            ? Theme.of(context).colorScheme.primary
+                            ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(context).colorScheme.outline,
                       ),
                       borderRadius: BorderRadius.circular(
@@ -66,7 +66,7 @@ class ShareModeSelection {
                               ? Icons.radio_button_checked
                               : Icons.radio_button_unchecked,
                           color: selectedMode == ShareMode.staticCopy
-                              ? Theme.of(context).colorScheme.primary
+                              ? Theme.of(context).colorScheme.onSurface
                               : null,
                         ),
                         const SizedBox(width: AppDimensions.spacingM),
@@ -112,7 +112,7 @@ class ShareModeSelection {
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: selectedMode == ShareMode.realtime
-                          ? Theme.of(context).colorScheme.primary
+                          ? Theme.of(context).colorScheme.onSurface
                           : Theme.of(context).colorScheme.outline,
                     ),
                     borderRadius: BorderRadius.circular(
@@ -133,7 +133,7 @@ class ShareModeSelection {
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
                         color: selectedMode == ShareMode.realtime
-                            ? Theme.of(context).colorScheme.primary
+                            ? Theme.of(context).colorScheme.onSurface
                             : null,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),

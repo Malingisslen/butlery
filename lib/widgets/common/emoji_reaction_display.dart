@@ -48,20 +48,17 @@ class EmojiReactionDisplay extends StatelessWidget {
             child: Container(
               padding: AppDimensions.paddingSymmetric6x2,
               decoration: BoxDecoration(
+                // Your reaction is surface.selected (surfaceContainerHighest carries its
+                // values in both modes) with a real text.primary border, never an ink
+                // tint (tokens.json:40-53, :116-119; Grafisk manual v6:209).
                 color: hasReacted
-                    ? cs.primary.withValues(
-                        alpha: AppDimensions.opacityVeryLight,
-                      )
+                    ? cs.surfaceContainerHighest
                     : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
                 borderRadius: BorderRadius.circular(
                   AppDimensions.borderRadiusM,
                 ),
                 border: Border.all(
-                  color: hasReacted
-                      ? cs.primary.withValues(
-                          alpha: AppDimensions.opacityMediumLight,
-                        )
-                      : cs.outlineVariant,
+                  color: hasReacted ? cs.onSurface : cs.outlineVariant,
                 ),
               ),
               child: Row(
@@ -72,7 +69,7 @@ class EmojiReactionDisplay extends StatelessWidget {
                   Text(
                     '${userIds.length}',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: hasReacted ? cs.primary : cs.onSurfaceVariant,
+                      color: hasReacted ? cs.onSurface : cs.onSurfaceVariant,
                       fontWeight: hasReacted
                           ? FontWeight.w600
                           : FontWeight.normal,

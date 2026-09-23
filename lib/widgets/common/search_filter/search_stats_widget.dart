@@ -41,7 +41,7 @@ class SearchStatsWidget extends StatelessWidget {
         border: Border.all(
           color: Theme.of(
             context,
-          ).colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
+          ).colorScheme.onSurface.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(
@@ -49,7 +49,7 @@ class SearchStatsWidget extends StatelessWidget {
           Icon(
             Icons.info_outline,
             size: AppDimensions.iconSizeM,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Expanded(

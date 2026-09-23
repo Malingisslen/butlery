@@ -69,7 +69,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
                   title ?? context.l10n.filterPersonalTags,
                   style: AppTextStyles.headlineSmall.copyWith(
                     fontSize: AppTextStyles.bodyLarge.fontSize,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -142,7 +142,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
             title ?? context.l10n.filterPersonalTags,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.bodyLarge.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
@@ -194,21 +194,23 @@ class _PersonalTagFilterChip extends StatelessWidget {
               ? null
               : CircleAvatar(
                   radius: 6,
-                  backgroundColor: colorScheme.primary,
+                  backgroundColor: colorScheme.onSurface,
                 ),
           selected: isSelected,
           onSelected: (_) => onSelected(),
           backgroundColor: colorScheme.surface,
-          selectedColor: colorScheme.primary.withValues(
-            alpha: AppDimensions.opacityLightMedium,
-          ),
-          checkmarkColor: colorScheme.primary,
+          // Chosen is the drawn chip: an ink fill with paper text and check,
+          // never an ink tint (Komponentark v1:142; opacity is never a
+          // state, tokens.json:40-53). The text.primary edge is the paper
+          // edge of the dark drawing (Komponentark v1:523).
+          selectedColor: colorScheme.primary,
+          checkmarkColor: colorScheme.onPrimary,
           side: BorderSide(
-            color: isSelected ? colorScheme.primary : colorScheme.outline,
+            color: isSelected ? colorScheme.onSurface : colorScheme.outline,
             width: isSelected ? 2 : 1,
           ),
           labelStyle: isSelected
-              ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
+              ? AppTextStyles.bodyBold.copyWith(color: colorScheme.onPrimary)
               : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
           showCheckmark: isSelected,
         ),

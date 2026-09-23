@@ -152,7 +152,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
                 widget.prefixIcon ??
                 Icon(
                   Icons.search,
-                  color: _isFocused ? cs.primary : cs.outline,
+                  color: _isFocused ? cs.onSurface : cs.outline,
                   size: AppDimensions.iconSizeM,
                 ),
             suffixIcon:

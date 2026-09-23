@@ -222,7 +222,7 @@ class _GuidelinesNote extends StatelessWidget {
                 child: Text(
                   linkText,
                   style: base.copyWith(
-                    color: theme.colorScheme.primary,
+                    color: theme.colorScheme.onSurface,
                     decoration: TextDecoration.underline,
                   ),
                 ),

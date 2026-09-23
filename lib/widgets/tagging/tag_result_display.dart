@@ -256,7 +256,7 @@ class TagResultDisplay extends StatelessWidget {
               child: Text(
                 context.l10n.commonUpdate,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -294,7 +294,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Icon(
               Icons.analytics_outlined,
-              color: cs.primary,
+              color: cs.onSurface,
               size: compact
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,

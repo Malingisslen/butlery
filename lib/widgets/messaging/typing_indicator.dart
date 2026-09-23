@@ -111,7 +111,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               child: Center(
                 child: Icon(
                   Icons.more_horiz,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeS,
                 ),
               ),

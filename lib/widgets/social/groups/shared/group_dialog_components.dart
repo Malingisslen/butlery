@@ -103,7 +103,7 @@ class EmojiSelector extends StatelessWidget {
                         ),
                         border: isSelected
                             ? Border.all(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 width: 2,
                               )
                             : null,
@@ -239,13 +239,13 @@ class DialogHeader extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
             title,
             style: AppTextStyles.headlineSmall.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const Spacer(),

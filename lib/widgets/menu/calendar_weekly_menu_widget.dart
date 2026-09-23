@@ -117,7 +117,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           child: Icon(
             Icons.arrow_upward,
             size: 32,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         StateWidget.empty(

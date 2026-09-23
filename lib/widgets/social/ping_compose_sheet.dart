@@ -260,9 +260,13 @@ class _TypeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final fg = selected ? cs.surface : cs.onPrimaryContainer;
+    final fg = selected ? cs.onPrimary : cs.onPrimaryContainer;
     final bg = selected ? cs.primary : cs.surfaceContainer;
-    final border = selected ? cs.primary : cs.primary.withValues(alpha: 0.3);
+    // Komponentark v1:141-142 and the dark matrix v1:523: a chip at rest
+    // has a border.control edge (outline); a chosen chip is an ink fill
+    // with paper text, edged in text.primary (onSurface), which is the
+    // paper edge the dark drawing gives it and invisible ink-on-ink in light.
+    final border = selected ? cs.onSurface : cs.outline;
 
     return Semantics(
       selected: selected,
@@ -311,7 +315,7 @@ class _MessageField extends StatelessWidget {
     final restingBorder = OutlineInputBorder(
       borderRadius: BorderRadius.zero,
       borderSide: BorderSide(
-        color: cs.primary.withValues(alpha: 0.3),
+        color: cs.onSurface.withValues(alpha: 0.3),
       ),
     );
     // Focus is the ring outside the input box, shown for keyboard focus

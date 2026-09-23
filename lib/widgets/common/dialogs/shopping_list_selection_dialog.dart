@@ -149,7 +149,7 @@ class _ShoppingListSelectionDialogState
                         ? Icons.radio_button_checked
                         : Icons.radio_button_unchecked,
                     color: _isCreatingNew
-                        ? Theme.of(context).colorScheme.primary
+                        ? Theme.of(context).colorScheme.onSurface
                         : null,
                   ),
                   title: Text(context.l10n.shoppingCreateList),
@@ -207,7 +207,7 @@ class _ShoppingListSelectionDialogState
                                 ? Icons.radio_button_checked
                                 : Icons.radio_button_unchecked,
                             color: _selectedListId == list.id
-                                ? Theme.of(context).colorScheme.primary
+                                ? Theme.of(context).colorScheme.onSurface
                                 : null,
                           ),
                           title: Text(list.name),

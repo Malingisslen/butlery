@@ -168,7 +168,7 @@ class _DayHeader extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: isToday ? cs.primary : cs.secondary,
+            color: isToday ? cs.onSurface : cs.secondary,
             width: 3,
           ),
         ),
@@ -485,7 +485,7 @@ class _AssignedSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final accent = isSelected ? cs.secondary : cs.primary;
+    final accent = isSelected ? cs.secondary : cs.onSurface;
     final cell = Semantics(
       label: selectionMode
           ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)

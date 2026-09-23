@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -363,7 +364,9 @@ void main() {
   // ───── SnackBar Styling ─────
 
   group('snackbar styling', () {
-    testWidgets('success snackbar uses success color', (tester) async {
+    testWidgets('success snackbar is the ink snackbar, no status fill', (
+      tester,
+    ) async {
       when(
         () => mockViewModel.renameList(any(), any()),
       ).thenAnswer((_) async => true);
@@ -391,11 +394,15 @@ void main() {
       await tester.pumpAndSettle();
 
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-      // Success color comes from context.butleryColors.success (theme extension)
-      expect(snackBar.backgroundColor, isNotNull);
+      // PQ-09 = A: the theme gives the ink surface; no green fill
+      // (Komponentark v1:300, :745-750).
+      expect(snackBar.backgroundColor, isNull);
+      expect(snackBar.content, isA<InkSnackBar>());
     });
 
-    testWidgets('error snackbar uses error color', (tester) async {
+    testWidgets('error snackbar is the ink snackbar, no status fill', (
+      tester,
+    ) async {
       when(
         () => mockViewModel.renameList(any(), any()),
       ).thenAnswer((_) async => false);
@@ -424,7 +431,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-      expect(snackBar.backgroundColor, isNotNull);
+      // PQ-09 = A: no red fill; the message names the failure.
+      expect(snackBar.backgroundColor, isNull);
+      expect(snackBar.content, isA<InkSnackBar>());
     });
   });
 }

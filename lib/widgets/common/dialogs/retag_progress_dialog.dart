@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Progress dialog for batch retagging all user recipes.
@@ -50,11 +50,9 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
 
       // Auto-close and show result
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.retagRecipesRetagged(count)),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.retagRecipesRetagged(count),
       );
     } catch (e) {
       if (!mounted) return;
@@ -72,7 +70,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
         children: [
           Icon(
             Icons.sync,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeL,
           ),
           const SizedBox(width: AppDimensions.spacingSm),

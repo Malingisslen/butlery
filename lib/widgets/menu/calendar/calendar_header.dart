@@ -133,7 +133,7 @@ class SelectionActionBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.primaryContainer,
         border: Border(
-          bottom: BorderSide(color: cs.primary, width: 2),
+          bottom: BorderSide(color: cs.onSurface, width: 2),
         ),
       ),
       child: Row(

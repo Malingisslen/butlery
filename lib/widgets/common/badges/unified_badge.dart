@@ -98,7 +98,7 @@ class UnifiedBadge extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     switch (type) {
       case BadgeType.tag:
-        return cs.primary;
+        return cs.onSurface;
       case BadgeType.allergen:
         return context.butleryColors.warning;
       case BadgeType.category:
@@ -421,7 +421,7 @@ class CategoryBadge extends StatelessWidget {
     // Algorithm for custom categories: hash-based color from palette
     final hash = category.hashCode.abs();
     final colors = [
-      cs.primary,
+      cs.onSurface,
       cs.secondary,
       bc.warning,
       bc.categoryDairy,

@@ -41,8 +41,8 @@ class SharedCardHeader extends StatelessWidget {
               Text(
                 context.l10n.sharedByName(displayName),
                 style: isRead
-                    ? AppTextStyles.bodySmall.copyWith(color: cs.primary)
-                    : AppTextStyles.bodyBold.copyWith(color: cs.primary),
+                    ? AppTextStyles.bodySmall.copyWith(color: cs.onSurface)
+                    : AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -112,7 +112,7 @@ class SharedCardHeader extends StatelessWidget {
               start: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: cs.primary,
+              color: cs.onSurface,
               shape: BoxShape.circle,
             ),
           ),

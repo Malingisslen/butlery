@@ -1,6 +1,7 @@
 // lib/widgets/common/input/shopping_list_selector.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -109,7 +110,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         Icon(
           Icons.shopping_cart,
           size: AppDimensions.iconSizeAction,
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
@@ -280,20 +281,16 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       final success = await _viewModel.createList(name);
 
       if (mounted && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? context.l10n.shoppingListCreated(name)
-                  : context.l10n.shoppingListCreateFailed(
-                      _viewModel.error ?? context.l10n.errorUnknown,
-                    ),
-            ),
-            backgroundColor: success
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
+        final message = success
+            ? context.l10n.shoppingListCreated(name)
+            : context.l10n.shoppingListCreateFailed(
+                _viewModel.error ?? context.l10n.errorUnknown,
+              );
+        if (success) {
+          SnackBarUtils.showSuccess(context, message);
+        } else {
+          SnackBarUtils.showError(context, message);
+        }
 
         if (success) {
           // Auto-select the newly created list
@@ -343,23 +340,19 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         );
 
         if (mounted && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                success
-                    ? context.l10n.shoppingItemsAdded(
-                        menuItems.length,
-                        selectedList.name,
-                      )
-                    : context.l10n.shoppingItemsAddFailed(
-                        viewModel.error ?? context.l10n.errorUnknown,
-                      ),
-              ),
-              backgroundColor: success
-                  ? context.butleryColors.success
-                  : Theme.of(context).colorScheme.error,
-            ),
-          );
+          final message = success
+              ? context.l10n.shoppingItemsAdded(
+                  menuItems.length,
+                  selectedList.name,
+                )
+              : context.l10n.shoppingItemsAddFailed(
+                  viewModel.error ?? context.l10n.errorUnknown,
+                );
+          if (success) {
+            SnackBarUtils.showSuccess(context, message);
+          } else {
+            SnackBarUtils.showError(context, message);
+          }
 
           // Call onListSelected callback on success to let parent handle navigation
           if (success) {

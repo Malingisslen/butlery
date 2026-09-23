@@ -1,6 +1,7 @@
 // lib/widgets/common/profile/handlers/gdpr_consent_handler.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -27,11 +28,9 @@ class GdprConsentHandler {
     } catch (e) {
       AppLogger.error('Failed to open privacy policy', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.profileCouldNotOpenPrivacyPolicy('$e')),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.profileCouldNotOpenPrivacyPolicy('$e'),
         );
       }
     }
@@ -62,13 +61,9 @@ class GdprConsentHandler {
     } catch (e) {
       AppLogger.error('Failed to open consent management', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.profileCouldNotOpenConsentManagement('$e'),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.profileCouldNotOpenConsentManagement('$e'),
         );
       }
     }
@@ -99,11 +94,9 @@ class GdprConsentHandler {
     } catch (e) {
       AppLogger.error('Failed to open data export', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.profileCouldNotOpenDataExport('$e')),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.profileCouldNotOpenDataExport('$e'),
         );
       }
     }

@@ -1,6 +1,7 @@
 // lib/widgets/image/image_picker_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -133,13 +134,7 @@ class ImagePickerDialogs {
   /// Show error message for image operations
   static void showImageError(BuildContext context, String message) {
     AppLogger.error('🚨 Visar fel till användare: $message');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackBarUtils.showError(context, message);
   }
 
   /// Show detailed upload dialog with progress

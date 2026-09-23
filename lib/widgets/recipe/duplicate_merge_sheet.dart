@@ -165,7 +165,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
                   existing: Text(
                     l10n.duplicateMergeExisting,
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),

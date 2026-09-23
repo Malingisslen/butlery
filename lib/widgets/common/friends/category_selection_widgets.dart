@@ -112,7 +112,7 @@ class CategorySelectionWidgets {
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
             size: AppDimensions.iconSizeS,
             color: isSelected
-                ? Theme.of(context).colorScheme.onSurface
+                ? Theme.of(context).colorScheme.onPrimary
                 : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
@@ -123,7 +123,7 @@ class CategorySelectionWidgets {
               '(${category.friendUserIds.length})',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: isSelected
-                    ? Theme.of(context).colorScheme.onSurface
+                    ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -133,11 +133,20 @@ class CategorySelectionWidgets {
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
       backgroundColor: Theme.of(context).colorScheme.surface,
+      // Chosen is the drawn chip: an ink fill with paper text and check
+      // (Komponentark v1:142); ink text and check on it vanished in both
+      // modes. The text.primary edge is the dark drawing's paper edge
+      // (Komponentark v1:523) and ink-on-ink in light.
       selectedColor: Theme.of(context).colorScheme.primary,
-      checkmarkColor: Theme.of(context).colorScheme.onSurface,
-      labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+      checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+      side: BorderSide(
         color: isSelected
             ? Theme.of(context).colorScheme.onSurface
+            : Theme.of(context).colorScheme.outline,
+      ),
+      labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        color: isSelected
+            ? Theme.of(context).colorScheme.onPrimary
             : Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
@@ -177,7 +186,7 @@ class CategorySelectionWidgets {
             child: Text(
               '${category.friendCount}',
               style: AppTextStyles.badge.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -259,12 +268,12 @@ class CategorySelectionWidgets {
       builder: (context) => Container(
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withValues(
+          color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: AppDimensions.opacityVeryLight,
           ),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withValues(
+            color: Theme.of(context).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityMediumLight,
             ),
           ),
@@ -281,7 +290,7 @@ class CategorySelectionWidgets {
               ),
               child: Icon(
                 Icons.category,
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: Theme.of(context).colorScheme.onPrimary,
                 size: AppDimensions.iconSizeS,
               ),
             ),
@@ -293,7 +302,7 @@ class CategorySelectionWidgets {
                   Text(
                     context.l10n.friendSelectedCategories,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
@@ -302,7 +311,7 @@ class CategorySelectionWidgets {
                       totalFriends,
                     ),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -313,7 +322,7 @@ class CategorySelectionWidgets {
               icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
               label: Text(context.l10n.commonClear),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingS,
                   vertical: AppDimensions.spacingXs,

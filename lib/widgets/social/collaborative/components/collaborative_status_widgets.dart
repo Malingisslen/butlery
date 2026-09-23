@@ -21,7 +21,7 @@ class CollaborativeStatusWidgets {
   }) {
     return Builder(
       builder: (context) {
-        final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
+        final effectiveColor = color ?? Theme.of(context).colorScheme.onSurface;
 
         return Container(
           padding:
@@ -79,7 +79,7 @@ class CollaborativeStatusWidgets {
         final cs = Theme.of(builderContext).colorScheme;
         final bgColor =
             backgroundColor ??
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight);
+            cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight);
 
         return Container(
           width: double.infinity,
@@ -88,7 +88,7 @@ class CollaborativeStatusWidgets {
             color: bgColor,
             border: Border(
               bottom: BorderSide(
-                color: cs.primary.withValues(
+                color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityMediumLight,
                 ),
               ),
@@ -104,7 +104,7 @@ class CollaborativeStatusWidgets {
                 children: [
                   Icon(
                     Icons.people,
-                    color: cs.primary,
+                    color: cs.onSurface,
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -115,13 +115,13 @@ class CollaborativeStatusWidgets {
                         Text(
                           title,
                           style: AppTextStyles.bodyLargeBold.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                         Text(
                           subtitle,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                       ],
@@ -144,7 +144,7 @@ class CollaborativeStatusWidgets {
                     Icon(
                       Icons.people_outline,
                       size: AppDimensions.iconSizeL,
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                 ],
               ),

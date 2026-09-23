@@ -296,7 +296,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                                   vertical: AppDimensions.spacingXs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: cs.primary.withValues(
+                                  color: cs.onSurface.withValues(
                                     alpha: AppDimensions.opacityVeryLight,
                                   ),
                                   borderRadius: BorderRadius.circular(
@@ -306,7 +306,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                                 child: Text(
                                   totalItems.toString(),
                                   style: AppTextStyles.labelLarge.copyWith(
-                                    color: cs.primary,
+                                    color: cs.onSurface,
                                   ),
                                 ),
                               );
@@ -335,8 +335,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                               null,
                             ),
                             controller: _tabController,
-                            indicatorColor: cs.primary,
-                            labelColor: cs.primary,
+                            indicatorColor: cs.onSurface,
+                            labelColor: cs.onSurface,
                             unselectedLabelColor: cs.onSurfaceVariant,
                             tabs: [
                               ButleryTab(

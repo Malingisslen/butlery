@@ -274,15 +274,17 @@ class _FilterChip extends StatelessWidget {
                 horizontal: AppDimensions.spacingMd,
                 vertical: AppDimensions.spacingSm,
               ),
+              // A chosen chip is an ink fill with paper text; its
+              // text.primary (onSurface) edge is the paper edge the dark
+              // drawing gives it (Komponentark v1:142, dark matrix v1:523).
+              // Unchosen text is text.primary on the page in both modes.
               decoration: BoxDecoration(
-                border: isSelected
-                    ? null
-                    : Border.all(color: cs.primary, width: 2),
+                border: Border.all(color: cs.onSurface, width: 2),
               ),
               child: Text(
                 label,
                 style: AppTextStyles.filterChip.copyWith(
-                  color: isSelected ? cs.surface : cs.primaryContainer,
+                  color: isSelected ? cs.onPrimary : cs.onSurface,
                 ),
               ),
             ),
@@ -314,7 +316,7 @@ class ButlerySectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final effectiveAccentColor = accentColor ?? cs.primary;
+    final effectiveAccentColor = accentColor ?? cs.onSurface;
     return Container(
       margin: const EdgeInsets.symmetric(
         vertical: AppDimensions.spacingSm,
@@ -324,7 +326,7 @@ class ButlerySectionHeader extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: 0.06),
+        color: cs.onSurface.withValues(alpha: 0.06),
         border: Border(
           left: BorderSide(
             color: effectiveAccentColor,

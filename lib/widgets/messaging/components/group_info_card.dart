@@ -39,7 +39,7 @@ class GroupInfoCard extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: cs.primary.withValues(
+              color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
               shape: BoxShape.circle,
@@ -47,7 +47,7 @@ class GroupInfoCard extends StatelessWidget {
             child: Icon(
               Icons.group,
               size: 40,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
 

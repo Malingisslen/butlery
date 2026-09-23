@@ -328,7 +328,7 @@ class _MessageBubbleState extends State<MessageBubble>
             ? widget.message.senderDisplayName[0].toUpperCase()
             : '?',
         style: AppTextStyles.labelMedium.copyWith(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

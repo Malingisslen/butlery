@@ -150,7 +150,7 @@ class PollMessageWidget extends StatelessWidget {
                 child: Text(
                   context.l10n.pollCloseAction,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+                    color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -195,7 +195,7 @@ class PollMessageWidget extends StatelessWidget {
                         ? cs.onPrimary.withValues(
                             alpha: AppDimensions.opacityLight,
                           )
-                        : cs.primary.withValues(
+                        : cs.onSurface.withValues(
                             alpha: AppDimensions.opacityVeryLight,
                           ))
                   : (isFromCurrentUser
@@ -212,7 +212,7 @@ class PollMessageWidget extends StatelessWidget {
                           ? cs.onPrimary.withValues(
                               alpha: AppDimensions.opacityMediumLight,
                             )
-                          : cs.primary.withValues(
+                          : cs.onSurface.withValues(
                               alpha: AppDimensions.opacityMediumLight,
                             ))
                     : Colors.transparent,
@@ -268,7 +268,7 @@ class PollMessageWidget extends StatelessWidget {
                             ? cs.onPrimary.withValues(
                                 alpha: AppDimensions.opacityVeryLight,
                               )
-                            : cs.primary.withValues(
+                            : cs.onSurface.withValues(
                                 alpha: AppDimensions.opacityExtraVeryLight,
                               ))
                       : Colors.transparent,
@@ -290,7 +290,7 @@ class PollMessageWidget extends StatelessWidget {
                 child: Icon(
                   Icons.check_circle,
                   size: 16,
-                  color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+                  color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                 ),
               ),
             Expanded(
@@ -375,7 +375,7 @@ class PollMessageWidget extends StatelessWidget {
                             size: 16,
                             color: isFromCurrentUser
                                 ? cs.onPrimary
-                                : cs.primary,
+                                : cs.onSurface,
                           ),
                         ),
                       Expanded(
@@ -440,10 +440,10 @@ class PollMessageWidget extends StatelessWidget {
                                   ? cs.onPrimary.withValues(
                                       alpha: AppDimensions.opacityMediumLight,
                                     )
-                                  : cs.primary.withValues(
+                                  : cs.onSurface.withValues(
                                       alpha: AppDimensions.opacityVeryLight,
                                     ))
-                            : cs.primary.withValues(
+                            : cs.onSurface.withValues(
                                 alpha: AppDimensions.opacityExtraVeryLight,
                               ),
                         borderRadius: BorderRadius.circular(

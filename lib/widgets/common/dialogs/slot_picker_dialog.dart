@@ -260,7 +260,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       children: [
         Text(
           slot.displayLabel,
-          style: AppTextStyles.titleMedium.copyWith(color: cs.primary),
+          style: AppTextStyles.titleMedium.copyWith(color: cs.onSurface),
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Row(
@@ -335,7 +335,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
                       size: AppDimensions.iconSize18,
-                      color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                      color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
                     ),
                 ],
               ),
