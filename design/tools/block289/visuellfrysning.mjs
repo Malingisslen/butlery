@@ -130,6 +130,36 @@ export function bygg(rot) {
     };
   });
 
+  /* ---- Ytbundna Flutter-konstanter ----
+   * En konstant som bara far sta pa EN yta provas mot just den ytan, i bada
+   * lagena. Paket 4: textAccentOnInk ar snackbarens atgard (#E09D50,
+   * Komponentark v1:747, produktbeslut PQ-09 = A). Den ar en palettfarg utan
+   * morkt varde och star pa surface.ink, som ar #24382C i bada lagena. Den
+   * ar inte ytblind: pa papper vore den 2,1:1, och den far darfor aldrig sta
+   * dar. */
+  const YTBUNDNA = [
+    { NAMN: 'textAccentOnInk', YTA: 'surface.ink', KRAV: 4.5, SLAG: 'READABLE' }
+  ];
+  const ytbunden = YTBUNDNA.map(({ NAMN: namn, YTA: yta, KRAV: krav, SLAG: slag }) => {
+    const ljus = flutterFarg[namn];
+    if (!ljus) throw new Error('okand Flutter-konstant: ' + namn);
+    const mork = morkFarg[namn] || ljus;
+    const ytaLjus = s[yta] && s[yta].light;
+    const ytaMork = s[yta] && s[yta].dark;
+    if (!ytaLjus || !ytaMork) throw new Error('saknad yta: ' + yta);
+    const kvotLjus = kvot(ljus, ytaLjus);
+    const kvotMork = kvot(mork, ytaMork);
+    const min = Math.min(kvotLjus, kvotMork);
+    return {
+      NAMN: namn, VARDE: ljus, VARDE_MORKT: mork,
+      HAR_EGET_MORKT: Boolean(morkFarg[namn]),
+      KALLA: (map.colors[namn] || [])[1] || null,
+      YTA: yta, YTVARDE: ytaLjus, YTVARDE_MORKT: ytaMork,
+      KVOT_LJUST: kvotLjus, KVOT_MORKT: kvotMork,
+      MIN_KVOT: min, KRAV: krav, SLAG: slag, PASS: min >= krav
+    };
+  });
+
   /* ---- legacyalias som ska pensioneras ---- */
   const legacy = Object.entries(map.colors)
     .filter(([, v]) => /LEGACY_ALIAS/.test(String(v[2] || '')))
@@ -138,6 +168,7 @@ export function bygg(rot) {
   const fel = [];
   for (const r of kontrast) if (!r.PASS) fel.push('TOKEN_KONTRAST:' + r.TOKEN + '/' + r.LAGE);
   for (const r of ytblind) if (!r.PASS) fel.push('YTBLIND_KONTRAST:' + r.NAMN);
+  for (const r of ytbunden) if (!r.PASS) fel.push('YTBUNDEN_KONTRAST:' + r.NAMN);
   const typ = las('lib/theme/app_text_styles.dart');
   const utanConst = (typ.match(/=> TextStyle\(/g) || []).length;
   if (utanConst) fel.push('GENERATOR_CONST_DEFEKT:' + utanConst);
@@ -175,9 +206,11 @@ export function bygg(rot) {
     SURFACE_BLIND_CONSTANTS: ytblind.length,
     SURFACE_BLIND_MIN_RATIO: Math.min(...ytblind.filter(r => r.SLAG === 'READABLE').map(r => r.MIN_KVOT)),
     SURFACE_BLIND_DISABLED_MIN_RATIO: Math.min(...ytblind.filter(r => r.SLAG === 'DISABLED').map(r => r.MIN_KVOT)),
+    SURFACE_BOUND_CONSTANTS: ytbunden.length,
+    SURFACE_BOUND_MIN_RATIO: Math.min(...ytbunden.map(r => r.MIN_KVOT)),
     LEGACY_ALIASES: legacy.length,
     DARK_DELIVERY_MEMBERS_EMITTED: morkPopulation.length,
-    DELIVERY_FINGERPRINT: kort([kontrast, ytblind, legacy, morkPopulation, t.version])
+    DELIVERY_FINGERPRINT: kort([kontrast, ytblind, legacy, morkPopulation, t.version, ytbunden])
   };
 
   return {
@@ -193,6 +226,7 @@ export function bygg(rot) {
     BINDNING: bindning,
     KONTRASTKONTRAKT: kontrast,
     YTBLINDA_KONSTANTER: ytblind,
+    YTBUNDNA_KONSTANTER: ytbunden,
     LEGACYALIAS: legacy,
     BLOCKERANDE: fel
   };

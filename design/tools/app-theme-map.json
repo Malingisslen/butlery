@@ -358,6 +358,11 @@
    "semantic",
    "text.warning",
    "Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token)."
+  ],
+  "textAccentOnInk": [
+   "palette",
+   "saffronLight",
+   "Snackbarens atgard pa surface.ink (Komponentark v1:747, #E09D50; produktbeslut PQ-09 = A). Palettfarg utan lagesberoende, eftersom ytan ar surface.ink i bada lagena. Star bara pa surface.ink: 5,43:1 dar."
   ]
  },
  "aliases": {
