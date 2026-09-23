@@ -6503,6 +6503,107 @@
   "@conflictDiffEmptyValue": {
     "description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."
   },
+  "conflictDiffUseTheirs": "Använd deras version",
+  "@conflictDiffUseTheirs": {
+    "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws \"Använd Eriks version\"; name-free to avoid the {name}s genitive."
+  },
+  "conflictDiffUsedTheirs": "Deras version gäller nu",
+  "@conflictDiffUsedTheirs": {
+    "description": "Success snackbar after \"Använd deras version\"."
+  },
+  "conflictDiffUseTheirsFailed": "Deras version kunde inte sparas.",
+  "@conflictDiffUseTheirsFailed": {
+    "description": "Failure (what happened) when \"Använd deras version\" could not be saved."
+  },
+  "conflictDiffUseTheirsKept": "Din version gäller fortfarande.",
+  "@conflictDiffUseTheirsKept": {
+    "description": "Failure (what was kept) when \"Använd deras version\" could not be saved."
+  },
+  "conflictWeekKeepMine": "Behåll min",
+  "@conflictWeekKeepMine": {
+    "description": "Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119."
+  },
+  "partialOutcomeDone": "Klart",
+  "@partialOutcomeDone": {
+    "description": "P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392)."
+  },
+  "groupMembersPartialTitle": "{removed} av {total} togs bort",
+  "@groupMembersPartialTitle": {
+    "description": "P5-U33: partial outcome title after bulk member removal (produktregler.md:907).",
+    "placeholders": {
+      "removed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersPartialMessage": "De som inte kunde tas bort ligger kvar valda ovan.",
+  "@groupMembersPartialMessage": {
+    "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
+  },
+  "groupMembersPartialRemoved": "{names} är inte längre med i {group}.",
+  "@groupMembersPartialRemoved": {
+    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "partialOutcomeListAnd": " och ",
+  "@partialOutcomeListAnd": {
+    "description": "P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces."
+  },
+  "groupMemberRemoveNotSaved": "Kunde inte tas bort – ändringen sparades inte",
+  "@groupMemberRemoveNotSaved": {
+    "description": "P5-U33: reason on a member row in the partial outcome."
+  },
+  "groupMembersRemoveNone": "Ingen av de valda kunde tas bort.",
+  "@groupMembersRemoveNone": {
+    "description": "P5-U33: failure when no selected member could be removed."
+  },
+  "selectionFailedKept": "De ligger kvar valda.",
+  "@selectionFailedKept": {
+    "description": "P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialTitle": "{deleted} av {total} taggar togs bort",
+  "@personalTagBulkDeletePartialTitle": {
+    "description": "P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).",
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagBulkDeletePartialMessage": "De som inte kunde tas bort ligger kvar valda.",
+  "@personalTagBulkDeletePartialMessage": {
+    "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialDeleted": "{names} togs bort.",
+  "@personalTagBulkDeletePartialDeleted": {
+    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "personalTagBulkDeleteNotSaved": "Kunde inte tas bort – borttagningen sparades inte",
+  "@personalTagBulkDeleteNotSaved": {
+    "description": "P5-U33: reason on a tag row in the partial outcome."
+  },
+  "personalTagBulkDeleteNone": "Taggarna kunde inte tas bort.",
+  "@personalTagBulkDeleteNone": {
+    "description": "P5-U33: failure when no selected tag could be deleted."
+  },
   "privacyEmailSubject": "Integritetsfråga",
   "unshareRecipeTitle": "Sluta dela recept?",
   "unshareRecipeConfirm": "Receptet \"{title}\" tas bort från alla grupper det delats med.",

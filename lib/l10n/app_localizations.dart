@@ -15265,6 +15265,114 @@ abstract class AppLocalizations {
   /// **'(tomt)'**
   String get conflictDiffEmptyValue;
 
+  /// PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws "Använd Eriks version"; name-free to avoid the {name}s genitive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd deras version'**
+  String get conflictDiffUseTheirs;
+
+  /// Success snackbar after "Använd deras version".
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version gäller nu'**
+  String get conflictDiffUsedTheirs;
+
+  /// Failure (what happened) when "Använd deras version" could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version kunde inte sparas.'**
+  String get conflictDiffUseTheirsFailed;
+
+  /// Failure (what was kept) when "Använd deras version" could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version gäller fortfarande.'**
+  String get conflictDiffUseTheirsKept;
+
+  /// Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll min'**
+  String get conflictWeekKeepMine;
+
+  /// P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392).
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart'**
+  String get partialOutcomeDone;
+
+  /// P5-U33: partial outcome title after bulk member removal (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'{removed} av {total} togs bort'**
+  String groupMembersPartialTitle(int removed, int total);
+
+  /// P5-U33: partial outcome body after bulk member removal (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De som inte kunde tas bort ligger kvar valda ovan.'**
+  String get groupMembersPartialMessage;
+
+  /// P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} är inte längre med i {group}.'**
+  String groupMembersPartialRemoved(String names, String group);
+
+  /// P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces.
+  ///
+  /// In sv, this message translates to:
+  /// **' och '**
+  String get partialOutcomeListAnd;
+
+  /// P5-U33: reason on a member row in the partial outcome.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tas bort – ändringen sparades inte'**
+  String get groupMemberRemoveNotSaved;
+
+  /// P5-U33: failure when no selected member could be removed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen av de valda kunde tas bort.'**
+  String get groupMembersRemoveNone;
+
+  /// P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar valda.'**
+  String get selectionFailedKept;
+
+  /// P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'{deleted} av {total} taggar togs bort'**
+  String personalTagBulkDeletePartialTitle(int deleted, int total);
+
+  /// P5-U33: partial outcome body after bulk tag delete (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De som inte kunde tas bort ligger kvar valda.'**
+  String get personalTagBulkDeletePartialMessage;
+
+  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} togs bort.'**
+  String personalTagBulkDeletePartialDeleted(String names);
+
+  /// P5-U33: reason on a tag row in the partial outcome.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tas bort – borttagningen sparades inte'**
+  String get personalTagBulkDeleteNotSaved;
+
+  /// P5-U33: failure when no selected tag could be deleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggarna kunde inte tas bort.'**
+  String get personalTagBulkDeleteNone;
+
   /// No description provided for @privacyEmailSubject.
   ///
   /// In sv, this message translates to:

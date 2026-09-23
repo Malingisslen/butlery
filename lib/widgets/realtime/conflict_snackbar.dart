@@ -7,13 +7,15 @@
 /// is not read from `undo_window.dart`.
 ///
 /// The action rescues the overwritten version (produktregler.md:109, :1121:
-/// the other version can be rescued with one tap). Its label is "Ångra":
-/// produktregler.md:99 heads the column the 30 s snackbar sits in "Ångra"
-/// (:104). ux-beslut.json D-04 makes this the one other `commonUndo` reader
-/// besides the undo primitive; the window stays its own, never the 7 s one.
+/// the other version can be rescued with one tap). Its label is "Behåll min",
+/// the words drawn for this rescue on the week menu: Skarmar v12 etapp 11
+/// breda vyer.dc.html:221 (#vmbkonflikt, the button in the conflicted cell,
+/// accessible name "Behåll min version, …") and produktregler.md:1119
+/// ("*Behåll min* i rutan"). produktregler.md:99 is the table's column
+/// header "Ångra", a category, not a label, so `commonUndo` is not used here.
+/// The window stays its own 30 s, never the 7 s undo one (D-04).
 ///
-/// Built, not mounted: no view shows it until package 4 decides the channel
-/// per surface.
+/// Mounted by the week menu (veckomeny_view.dart, package 5 phase A, P5-U26a).
 library;
 
 import 'package:flutter/material.dart';
@@ -32,7 +34,7 @@ const Duration kConflictNoticeWindow = Duration(seconds: 30);
 
 /// The week-menu conflict snackbar.
 abstract final class ConflictSnackBar {
-  /// Shows "{name} sparade veckan" with "Ångra" for
+  /// Shows "{name} sparade veckan" with "Behåll min" for
   /// [kConflictNoticeWindow] when [event] is a week-menu conflict the user's
   /// edit lost. Returns null, and shows nothing, for any other event: a
   /// localWon changed nothing the user has to rescue, and other entities have
@@ -67,7 +69,7 @@ abstract final class ConflictSnackBar {
       SnackBar(
         content: Text(message),
         action: SnackBarAction(
-          label: l.commonUndo,
+          label: l.conflictWeekKeepMine,
           onPressed: () => _keepMine(context, event),
         ),
         duration: kConflictNoticeWindow,

@@ -15,6 +15,7 @@ import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -69,6 +70,14 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   bool _selectionMode = false;
   final Set<String> _selectedIds = {};
 
+  /// The last bulk removal when only some went (P5-U33). Cleared by "Klart",
+  /// by Avbryt and by the next removal.
+  MemberRemovalOutcome? _partial;
+
+  /// The display names of the members [_partial] removed, captured by uid
+  /// when the removal returned.
+  List<String> _partialRemovedNames = const [];
+
   bool get _canAddMembers =>
       ServiceLocator.get<PermissionService>().canInviteToGroup(widget.group.id);
 
@@ -106,7 +115,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   void _toggle(String uid) {
     setState(() {
       if (!_selectedIds.remove(uid)) _selectedIds.add(uid);
-      if (_selectedIds.isEmpty) _selectionMode = false;
+      if (_selectedIds.isEmpty) {
+        _selectionMode = false;
+        // The outcome describes a selection that is gone now.
+        _partial = null;
+      }
     });
   }
 
@@ -114,6 +127,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     setState(() {
       _selectionMode = false;
       _selectedIds.clear();
+      _partial = null;
     });
   }
 
@@ -122,20 +136,47 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         .where((m) => _selectedIds.contains(m.uid))
         .toList(growable: false);
     if (selected.isEmpty) return;
+    setState(() => _partial = null);
 
-    // removeMultipleMembers shows its own bulk-confirm dialog + partial-fail
-    // reporting and returns the number actually removed.
-    final removed = await GroupDetailActions.removeMultipleMembers(
+    // removeMultipleMembers shows its own bulk-confirm dialog and reports the
+    // two whole outcomes; a partial one is shown here, by the rows.
+    final outcome = await GroupDetailActions.removeMultipleMembers(
       context,
       selected,
       widget.group,
     );
-    if (!mounted) return;
-    if (removed > 0) {
+    if (!mounted || outcome == null) return;
+    if (outcome.isComplete) {
       _cancelSelection();
       widget.onMemberRemoved();
+      return;
     }
+    if (outcome.isPartial) {
+      // The ones that did not go stay selected and the mode stays open, so
+      // the attempt can be made again (produktregler.md:908, :878; Skarmar
+      // v12 etapp 9 #flergrupp). Identity is the uid. The names of those who
+      // went are looked up by uid now, from the members as they were before
+      // the removal: the refreshed list no longer has them.
+      final removed = outcome.removedIds.toSet();
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(outcome.failed.map((m) => m.uid));
+        _partial = outcome;
+        _partialRemovedNames = [
+          for (final m in selected)
+            if (removed.contains(m.uid)) m.displayName,
+        ];
+      });
+      widget.onMemberRemoved();
+    }
+    // None went: the selection is left as it was, and the failure snackbar
+    // says so.
   }
+
+  /// "Klart" closes the outcome and leaves selection mode: the user's own
+  /// act (produktregler.md:878; Skarmar v12 etapp 9:392).
+  void _closePartial() => _cancelSelection();
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +257,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           ),
         ],
 
+        if (_partial != null) ...[
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildPartialOutcome(context, _partial!),
+        ],
+
         // Pending invitations section
         if (pendingInvitations.isNotEmpty) ...[
           if (members.isNotEmpty)
@@ -256,6 +302,53 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             subtitle: context.l10n.groupNoMembersDescription,
             icon: Icons.people_outline,
           ),
+      ],
+    );
+  }
+
+  /// P5-U33: "En av två togs bort" below the rows (Skarmar v12 etapp 9
+  /// :390-393, #flergrupp): what went, who did not and why, and the way on.
+  /// Those who did not go are still selected above.
+  ///
+  /// The body names who went, as drawn at :391 ("Johan Lind är inte längre
+  /// med i Matlaget."), then says the rest stay selected.
+  ///
+  /// Interpretation (recorded): the drawing marks the member who did not go
+  /// in her own row (1.5 px danger edge, the reason under the name, and the
+  /// name "Sara, vald, kunde inte tas bort", :381-383). That row state lives
+  /// in GroupMemberCard, which is outside this unit, so the reason is shown
+  /// per member in this box instead, keyed by uid. The row state is an open
+  /// item for the owner of the member card.
+  Widget _buildPartialOutcome(
+    BuildContext context,
+    MemberRemovalOutcome outcome,
+  ) {
+    final l = context.l10n;
+    final went = l.groupMembersPartialRemoved(
+      PartialOutcome.joinNames(_partialRemovedNames, l.partialOutcomeListAnd),
+      widget.group.name,
+    );
+    return PartialOutcome(
+      key: const ValueKey('group-members-partial-outcome'),
+      title: l.groupMembersPartialTitle(
+        outcome.removedIds.length,
+        outcome.removedIds.length + outcome.failed.length,
+      ),
+      message: '$went ${l.groupMembersPartialMessage}',
+      items: [
+        for (final member in outcome.failed)
+          PartialOutcomeItem(
+            id: member.uid,
+            label: member.displayName,
+            reason: l.groupMemberRemoveNotSaved,
+          ),
+      ],
+      actions: [
+        TextButton(
+          key: const ValueKey('group-members-partial-done'),
+          onPressed: _closePartial,
+          child: Text(l.partialOutcomeDone),
+        ),
       ],
     );
   }

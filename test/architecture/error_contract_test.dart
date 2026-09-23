@@ -67,7 +67,7 @@ const _legacyErrorCalls = <String, int>{
   'lib/views/social/friends_list/requests_tab.dart': 2,
   'lib/views/social/friends_list/search_result_card.dart': 6,
   'lib/views/social/friends_list_view.dart': 1,
-  'lib/views/social/group_detail/group_detail_actions.dart': 5,
+  'lib/views/social/group_detail/group_detail_actions.dart': 4,
   'lib/views/social/group_detail/group_invitation_card.dart': 1,
   'lib/views/social/group_detail_view.dart': 3,
   'lib/views/social/menu_preview_view.dart': 2,

@@ -8,6 +8,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -303,8 +304,8 @@ class PersonalTagViewModel extends ChangeNotifier
     return merged;
   }
 
-  /// BUT-1185: bulk-deletes [tagIds]. Returns tags deleted.
-  Future<int> bulkDeleteTags(List<String> tagIds) =>
+  /// BUT-1185: bulk-deletes [tagIds]. Returns what went per tag id (P5-U33).
+  Future<PersonalTagBulkDeleteResult> bulkDeleteTags(List<String> tagIds) =>
       _service.bulkDeleteTags(tagIds);
 
   /// Reorders tags.

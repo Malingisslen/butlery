@@ -121,6 +121,15 @@ class PartialOutcome extends StatelessWidget {
   /// Key of the row for the item with [id].
   static Key itemKey(String id) => ValueKey('partial-outcome-item-$id');
 
+  /// Names what went as one phrase: "A", "A och B", "A, B och C"
+  /// (produktregler.md:906, "namnger vad som gick"). [and] is the localized
+  /// word before the last name, spaces included. Names are shown as written.
+  static String joinNames(List<String> names, String and) {
+    if (names.length <= 1) return names.join();
+    return '${names.sublist(0, names.length - 1).join(', ')}'
+        '$and${names.last}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
