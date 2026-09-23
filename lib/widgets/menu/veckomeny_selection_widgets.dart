@@ -3,6 +3,8 @@
 /// generating panel.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -220,8 +222,44 @@ class _VeckomenyCookingSessionCardState
 /// D-03 removes the long-wait state, so generation stays here until it is
 /// done. The line is a live region, so the status is read without moving
 /// focus (#veckogenererarpanel: "Statusen annonseras utan fokusbyte").
-class VeckomenyGeneratingOverlay extends StatelessWidget {
-  const VeckomenyGeneratingOverlay({super.key});
+///
+/// After [slowAfter] (6 s) the status line changes to "Det tar längre tid än
+/// vanligt" in the same view (flows-roles-budget.md:33;
+/// fas2/block288-uxfrysning.json TR::FLOW::01::genererar::6-10-s REQUIRED;
+/// ux-beslut.json D-03, "$bevarat"). The drawn "Avbryt planeringen" is not
+/// here yet: MenuViewModel has no way to stop a generation.
+class VeckomenyGeneratingOverlay extends StatefulWidget {
+  const VeckomenyGeneratingOverlay({
+    super.key,
+    this.slowAfter = const Duration(seconds: 6),
+  });
+
+  /// When the status line says the planning takes longer than usual.
+  final Duration slowAfter;
+
+  @override
+  State<VeckomenyGeneratingOverlay> createState() =>
+      _VeckomenyGeneratingOverlayState();
+}
+
+class _VeckomenyGeneratingOverlayState
+    extends State<VeckomenyGeneratingOverlay> {
+  Timer? _slowTimer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _slowTimer = Timer(widget.slowAfter, () {
+      if (mounted) setState(() => _slow = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _slowTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -251,10 +289,17 @@ class VeckomenyGeneratingOverlay extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingL),
           PlateLine(semanticLabel: title),
           const SizedBox(height: AppDimensions.spacingL),
-          Text(
-            context.l10n.menuGeneratingSubtitle,
-            style: AppTextStyles.captionBase.copyWith(
-              color: cs.onSurfaceVariant,
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              _slow
+                  ? context.l10n.weekMenuPlanningSlow
+                  : context.l10n.menuGeneratingSubtitle,
+              key: const ValueKey('veckomeny-generating-status'),
+              // #veckogenererarpanel draws the status in text.body (#37453A
+              // light, #F5F4ED dark). No scheme slot carries text.body; the
+              // dark value is onSurface exactly and light is the nearer ink.
+              style: AppTextStyles.captionBase.copyWith(color: cs.onSurface),
             ),
           ),
         ],

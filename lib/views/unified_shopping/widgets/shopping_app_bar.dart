@@ -9,6 +9,15 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+
+enum _ShoppingRootAction {
+  newList,
+  templates,
+  shareWithFriends,
+  shareExternally,
+  sharingStatus,
+}
 
 /// App bar actions for shopping view
 class ShoppingAppBar {
@@ -136,45 +145,82 @@ class ShoppingAppBar {
   }) {
     final canShare = viewModel.hasItems;
 
+    // Skarmar v12 del 2 #inkop draws one outlined "more" button on the root
+    // bar and nothing else, so the list's secondary actions live in one
+    // overflow menu. Five 48 dp icons would leave the title "Inköp" and its
+    // count line almost no width on a 320-360 dp phone. Each item keeps the
+    // name it had as an icon; the sharing status says what the list is.
     return [
-      // Ny lista-knapp
-      IconButton(
-        icon: Icon(AdaptiveIcons.add),
-        onPressed: onCreateList,
-        tooltip: context.l10n.shoppingNewList,
-      ),
-
-      // Browse templates
-      if (onBrowseTemplates != null)
-        IconButton(
-          icon: const Icon(Icons.list_alt_outlined),
-          onPressed: onBrowseTemplates,
-          tooltip: context.l10n.shoppingTemplateBrowse,
-        ),
-
-      // Share with friends button (social)
-      if (canShare)
-        IconButton(
-          icon: Icon(AdaptiveIcons.peopleOutlined),
-          onPressed: onShowShareDialog,
-          tooltip: context.l10n.shoppingShareWithFriends,
-        ),
-
-      // Dela externt-knapp
-      if (canShare)
-        IconButton(
-          icon: Icon(AdaptiveIcons.share),
-          onPressed: onShareExternally,
-          tooltip: context.l10n.shoppingShareExternally,
-        ),
-
-      // Sharing status indicator
-      IconButton(
-        icon: Icon(_getSharingStatusIcon(viewModel)),
-        onPressed: onShowSyncStatus,
-        tooltip: _getSharingStatusTooltip(context, viewModel),
+      PopupMenuButton<_ShoppingRootAction>(
+        key: const ValueKey('shopping-root-more'),
+        icon: const Icon(Icons.more_vert),
+        tooltip: context.l10n.rootBarMoreActions,
+        onSelected: (action) {
+          switch (action) {
+            case _ShoppingRootAction.newList:
+              onCreateList();
+            case _ShoppingRootAction.templates:
+              onBrowseTemplates?.call();
+            case _ShoppingRootAction.shareWithFriends:
+              onShowShareDialog();
+            case _ShoppingRootAction.shareExternally:
+              onShareExternally();
+            case _ShoppingRootAction.sharingStatus:
+              onShowSyncStatus();
+          }
+        },
+        itemBuilder: (menuContext) => [
+          _item(
+            _ShoppingRootAction.newList,
+            AdaptiveIcons.add,
+            context.l10n.shoppingNewList,
+          ),
+          if (onBrowseTemplates != null)
+            _item(
+              _ShoppingRootAction.templates,
+              Icons.list_alt_outlined,
+              context.l10n.shoppingTemplateBrowse,
+            ),
+          if (canShare)
+            _item(
+              _ShoppingRootAction.shareWithFriends,
+              AdaptiveIcons.peopleOutlined,
+              context.l10n.shoppingShareWithFriends,
+            ),
+          if (canShare)
+            _item(
+              _ShoppingRootAction.shareExternally,
+              AdaptiveIcons.share,
+              context.l10n.shoppingShareExternally,
+            ),
+          _item(
+            _ShoppingRootAction.sharingStatus,
+            _getSharingStatusIcon(viewModel),
+            _getSharingStatusTooltip(context, viewModel),
+          ),
+        ],
       ),
     ];
+  }
+
+  /// One overflow row: the icon and text take the menu's own foreground,
+  /// text.primary in both modes (onSurface), never cs.primary.
+  static ButleryMenuItem<_ShoppingRootAction> _item(
+    _ShoppingRootAction value,
+    IconData icon,
+    String label,
+  ) {
+    return ButleryMenuItem<_ShoppingRootAction>(
+      key: ValueKey('shopping-root-${value.name}'),
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: AppDimensions.iconSizeM),
+          const SizedBox(width: AppDimensions.spacingM),
+          Flexible(child: Text(label)),
+        ],
+      ),
+    );
   }
 
   static Widget buildFloatingActionButton(

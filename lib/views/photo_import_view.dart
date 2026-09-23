@@ -188,7 +188,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                 ListTile(
                   leading: Icon(
                     Icons.camera_alt,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: AppDimensions.iconSizeL,
                   ),
                   title: Text(context.l10n.importTakePhoto),
@@ -203,7 +203,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                 ListTile(
                   leading: Icon(
                     Icons.photo_library,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: AppDimensions.iconSizeL,
                   ),
                   title: Text(context.l10n.importChooseFromGallery),
@@ -271,7 +271,7 @@ class _PhotoImportViewContent extends StatelessWidget {
         context.l10n.importComplete(saved, failed),
       );
     } else {
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showError(context, context.l10n.importBatchSaveFailed);
     }
     if (ok) {
       // BUT-1200: non-blocking allergen-setup prompt when any saved recipe
@@ -375,7 +375,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                         Icon(
                           Icons.info_outline,
                           size: AppDimensions.iconSizeM,
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         const SizedBox(width: AppDimensions.spacingS),
                         Expanded(
@@ -432,7 +432,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                         context.l10n.importHandwrittenToggleSubtitle,
                         style: AppTextStyles.bodySmall,
                       ),
-                      secondary: Icon(Icons.draw_outlined, color: cs.primary),
+                      secondary: Icon(Icons.draw_outlined, color: cs.onSurface),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
                       ),

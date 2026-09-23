@@ -27821,6 +27821,30 @@ abstract class AppLocalizations {
   /// **'Stäng editorn'**
   String get recipeEditorClose;
 
+  /// The empty week's line under "Veckomeny" on the root bar (Skarmar v12 del 1 #tomvecka).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} · inget planerat'**
+  String menuWeekBadgeEmpty(int week);
+
+  /// Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler åtgärder'**
+  String get rootBarMoreActions;
+
+  /// The planning panel's status after 6 s (flows-roles-budget.md:33; TR::FLOW::01::genererar::6-10-s; ux-beslut D-03).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det tar längre tid än vanligt'**
+  String get weekMenuPlanningSlow;
+
+  /// Snackbar when none of the chosen recipes in a photo batch could be saved (content-style-guide.md:91-94).
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten kunde inte sparas. Försök igen.'**
+  String get importBatchSaveFailed;
+
   /// What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel).
   ///
   /// In sv, this message translates to:

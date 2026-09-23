@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart'
+    show mainTabSwitchRequest;
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
@@ -261,7 +262,15 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             HeroButton(
               key: const ValueKey('shopping-empty-from-week-menu'),
               label: context.l10n.shoppingFromWeekMenu,
-              onPressed: () => Navigator.pushNamed(context, Routes.weeklyMenu),
+              // Opens the Meny tab in the shell the user is already in (the
+              // same bridge as Ctrl/Cmd+2, app_actions.dart), never a second
+              // shell on top. #tominkop draws only the label; sending the
+              // week's dishes to the list is done from Veckomeny's own
+              // "Till inköpslista".
+              onPressed: () {
+                mainTabSwitchRequest.value = 1;
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
             ),
             OutlinedButton(
               key: const ValueKey('shopping-empty-add-item'),

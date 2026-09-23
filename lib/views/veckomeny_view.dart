@@ -24,6 +24,7 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/views/menu_placement_view.dart';
@@ -37,6 +38,9 @@ import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
+/// The week menu's root-bar overflow actions.
+enum _VeckomenyRootAction { load, save, clear }
+
 class VeckomenyView extends StatelessWidget {
   final SharedMenu? sharedMenu;
 
@@ -319,7 +323,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         title: context.l10n.menuWeek,
         secondaryLine: viewModel.hasMenu
             ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
-            : context.l10n.menuWeekBadge(weekNumber),
+            : context.l10n.menuWeekBadgeEmpty(weekNumber),
         actions: _buildHeaderActions(context, viewModel),
         bottom: VeckomenyViewModeToggle(
           mode: _viewMode,
@@ -413,40 +417,84 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   ) {
     // The bar gives the icons its own foreground: text.primary on the light
     // root bar in both modes (ButleryTopBar).
+    //
+    // Skarmar v12 del 1 #veckomeny draws no icons on the root bar, and four
+    // 48 dp icons would leave "Veckomeny" too little width on a 320 dp
+    // phone. The group week keeps its icon (it is reached from here and from
+    // the group chat, BUT-1971); load, save and clear share one overflow
+    // menu, so the title always has room.
     return [
       const GroupMenuEntryButton(),
-      // Load menu / template button
-      IconButton(
-        icon: const Icon(Icons.folder_open),
-        onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
-          context,
-          viewModel: viewModel,
-          onTemplateSelected: (prompt) {
-            _promptController.text = prompt;
-            setState(() {});
-          },
-        ),
-        tooltip: context.l10n.menuLoadSaved,
-      ),
-      // Save menu button (only when menu exists)
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: const Icon(Icons.save),
-          onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
-            context,
-            viewModel: viewModel,
-            availableFriends: _friendsService.friends,
+      PopupMenuButton<_VeckomenyRootAction>(
+        key: const ValueKey('veckomeny-root-more'),
+        icon: const Icon(Icons.more_vert),
+        tooltip: context.l10n.rootBarMoreActions,
+        onSelected: (action) {
+          switch (action) {
+            case _VeckomenyRootAction.load:
+              unawaited(
+                VeckomenyDialogs.showLoadMenuBottomSheet(
+                  context,
+                  viewModel: viewModel,
+                  onTemplateSelected: (prompt) {
+                    _promptController.text = prompt;
+                    setState(() {});
+                  },
+                ),
+              );
+            case _VeckomenyRootAction.save:
+              unawaited(
+                VeckomenyDialogs.showSaveMenuDialog(
+                  context,
+                  viewModel: viewModel,
+                  availableFriends: _friendsService.friends,
+                ),
+              );
+            case _VeckomenyRootAction.clear:
+              _clearMenu();
+          }
+        },
+        itemBuilder: (menuContext) => [
+          _rootItem(
+            _VeckomenyRootAction.load,
+            Icons.folder_open,
+            context.l10n.menuLoadSaved,
           ),
-          tooltip: context.l10n.menuSave,
-        ),
-      // Clear menu button
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: _clearMenu,
-          tooltip: context.l10n.menuClear,
-        ),
+          if (viewModel.hasMenu)
+            _rootItem(
+              _VeckomenyRootAction.save,
+              Icons.save,
+              context.l10n.menuSave,
+            ),
+          if (viewModel.hasMenu)
+            _rootItem(
+              _VeckomenyRootAction.clear,
+              Icons.clear,
+              context.l10n.menuClear,
+            ),
+        ],
+      ),
     ];
+  }
+
+  /// One overflow row; icon and text take the menu's foreground (onSurface,
+  /// text.primary in both modes).
+  ButleryMenuItem<_VeckomenyRootAction> _rootItem(
+    _VeckomenyRootAction value,
+    IconData icon,
+    String label,
+  ) {
+    return ButleryMenuItem<_VeckomenyRootAction>(
+      key: ValueKey('veckomeny-root-${value.name}'),
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: AppDimensions.iconSizeM),
+          const SizedBox(width: AppDimensions.spacingM),
+          Flexible(child: Text(label)),
+        ],
+      ),
+    );
   }
 
   /// The view's one saffron action (Komponentark v1:843-844; Skarmar v12

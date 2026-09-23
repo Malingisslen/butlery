@@ -16679,6 +16679,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeEditorClose => 'Close the editor';
 
   @override
+  String menuWeekBadgeEmpty(int week) {
+    return 'Week $week · nothing planned';
+  }
+
+  @override
+  String get rootBarMoreActions => 'More actions';
+
+  @override
+  String get weekMenuPlanningSlow => 'This is taking longer than usual';
+
+  @override
+  String get importBatchSaveFailed =>
+      'The recipes could not be saved. Try again.';
+
+  @override
   String get weekMenuPlanningTitle => 'Planning the week …';
 
   @override

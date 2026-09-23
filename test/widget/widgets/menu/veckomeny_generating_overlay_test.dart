@@ -68,6 +68,39 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets(
+    'after 6 s the status says it takes longer, in the same panel '
+    '(TR::FLOW::01::genererar::6-10-s)',
+    (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(child: const VeckomenyGeneratingOverlay()),
+      );
+      await tester.pump();
+      const slow = 'Det tar längre tid än vanligt';
+      expect(find.text(slow), findsNothing);
+
+      await tester.pump(const Duration(milliseconds: 5900));
+      expect(find.text(slow), findsNothing);
+
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.text(slow), findsOneWidget);
+      expect(find.byType(PlateLine), findsOneWidget);
+      expect(find.text('Planerar veckan …'), findsOneWidget);
+      // Still no background choice (D-03).
+      expect(find.textContaining('bakgrund'), findsNothing);
+
+      final live = tester.widget<Semantics>(
+        find
+            .ancestor(
+              of: find.text(slow),
+              matching: find.byType(Semantics),
+            )
+            .first,
+      );
+      expect(live.properties.liveRegion, isTrue);
+    },
+  );
+
   for (final dark in [false, true]) {
     testWidgets('the border is text.primary (${dark ? 'dark' : 'light'})', (
       tester,

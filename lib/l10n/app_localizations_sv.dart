@@ -16719,6 +16719,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeEditorClose => 'Stäng editorn';
 
   @override
+  String menuWeekBadgeEmpty(int week) {
+    return 'Vecka $week · inget planerat';
+  }
+
+  @override
+  String get rootBarMoreActions => 'Fler åtgärder';
+
+  @override
+  String get weekMenuPlanningSlow => 'Det tar längre tid än vanligt';
+
+  @override
+  String get importBatchSaveFailed =>
+      'Recepten kunde inte sparas. Försök igen.';
+
+  @override
   String get weekMenuPlanningTitle => 'Planerar veckan …';
 
   @override
