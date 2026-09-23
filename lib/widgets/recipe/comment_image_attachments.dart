@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// BUT-1049: renders a comment's image attachments as a horizontal row of
 /// square 80x80 cropped thumbnails. Tapping a thumbnail opens a full-screen,
@@ -103,9 +102,8 @@ class _CommentImageViewer extends StatelessWidget {
                     imageUrl: url,
                     cacheKey: FirebaseUrlUtils.stableCacheKey(url),
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => const Center(
-                      child: LoadingIndicator(size: 24, strokeWidth: 2),
-                    ),
+                    // A still plate while the image loads, never a spinner (P4-U05).
+                    placeholder: (_, __) => const SizedBox.shrink(),
                     errorWidget: (_, __, ___) => const Center(
                       child: Icon(
                         Icons.broken_image,

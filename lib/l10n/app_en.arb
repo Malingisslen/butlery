@@ -645,7 +645,7 @@
   "recipeAdd": "Add recipe",
   "recipeEdit": "Edit recipe",
   "recipeDelete": "Delete recipe",
-  "recipeDeleting": "Deleting recipe...",
+  "recipeDeleting": "Deleting the recipe …",
   "recipeFormatPortions": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@recipeFormatPortions": {
     "placeholders": {
@@ -12299,5 +12299,17 @@
   "minaReceptEmptyTitle": "No saved recipes yet",
   "@minaReceptEmptyTitle": {"description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."},
   "minaReceptEmptyBody": "Your cookbook is set but empty. Save your first recipe: import a link, photograph a card or write it yourself.",
-  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."}
+  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."},
+  "recipeSaveToMyKitchen": "Save to my kitchen",
+  "@recipeSaveToMyKitchen": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "recipeAddToShoppingList": "Add to shopping list",
+  "@recipeAddToShoppingList": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "loadingCookSnaps": "Loading the photos …",
+  "@loadingCookSnaps": {"description": "What is loading, for the plate line (P4-U05)."},
+  "loadingSubstitutions": "Loading substitutes …",
+  "@loadingSubstitutions": {"description": "What is loading, for the plate line (P4-U05)."},
+  "uploadingCookSnap": "Uploading the photo …",
+  "@uploadingCookSnap": {"description": "What is loading, for the plate line (P4-U05)."},
+  "sendingComment": "Sending the comment …",
+  "@sendingComment": {"description": "What is loading, for the plate line (P4-U05)."}
 }

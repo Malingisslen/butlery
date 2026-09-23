@@ -8,7 +8,7 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -50,7 +50,13 @@ class RecipeTaggingHandler {
         child: AlertDialog(
           content: Row(
             children: [
-              const LoadingIndicator.small(),
+              // The plate line, not a spinner (Grafisk manual v6:209).
+              SizedBox(
+                width: AppDimensions.iconSizeL,
+                child: PlateLine(
+                  semanticLabel: context.l10n.taggingAnalyzingIngredients,
+                ),
+              ),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(

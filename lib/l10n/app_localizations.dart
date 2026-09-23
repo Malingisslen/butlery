@@ -1295,7 +1295,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleting.
   ///
   /// In sv, this message translates to:
-  /// **'Tar bort recept...'**
+  /// **'Raderar receptet …'**
   String get recipeDeleting;
 
   /// No description provided for @recipeFormatPortions.
@@ -27742,6 +27742,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.'**
   String get minaReceptEmptyBody;
+
+  /// Recipe detail sticky action bar (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara till mitt kök'**
+  String get recipeSaveToMyKitchen;
+
+  /// Recipe detail sticky action bar (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i inköpslistan'**
+  String get recipeAddToShoppingList;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar fotona …'**
+  String get loadingCookSnaps;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar ersättningar …'**
+  String get loadingSubstitutions;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar upp fotot …'**
+  String get uploadingCookSnap;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar kommentaren …'**
+  String get sendingComment;
 }
 
 class _AppLocalizationsDelegate

@@ -122,12 +122,16 @@ class _VisibilityOptionTile extends StatelessWidget {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(_gap),
+          // Chosen is surface.selected with a real text.primary border;
+          // the others stand on the base surface with border.subtle
+          // (tokens.json:104-107, :116-119, :124-127; Grafisk manual v6:209
+          // "Vald = riktig border"; enhet-3 cook_snap_visibility_dialog
+          // .dart:127).
           decoration: BoxDecoration(
-            color: selected
-                ? cs.primaryContainer.withValues(alpha: 0.6)
-                : cs.surfaceContainerHighest,
+            color: selected ? cs.surfaceContainerHighest : cs.surface,
             border: Border.all(
-              color: selected ? cs.primary : AppColors.creamDarker,
+              color: selected ? cs.onSurface : cs.outlineVariant,
+              width: selected ? 1.5 : 1,
             ),
           ),
           child: Row(

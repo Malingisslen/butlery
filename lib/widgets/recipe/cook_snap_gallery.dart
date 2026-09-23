@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/cook_snap.dart';
@@ -66,7 +66,12 @@ class CookSnapGallery extends StatelessWidget {
                 ),
               ),
               if (isUploading)
-                const LoadingIndicator(size: 20, strokeWidth: 2)
+                SizedBox(
+                  width: AppDimensions.minTouchTarget,
+                  child: PlateLine(
+                    semanticLabel: context.l10n.uploadingCookSnap,
+                  ),
+                )
               else
                 IconButton(
                   icon: const Icon(Icons.add_a_photo),
@@ -80,11 +85,12 @@ class CookSnapGallery extends StatelessWidget {
 
         // Content
         if (isLoading && snaps.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
-            child: Center(
-              child: LoadingIndicator(size: 24, strokeWidth: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingMd,
+              horizontal: AppDimensions.spacingLg,
             ),
+            child: PlateLine(semanticLabel: context.l10n.loadingCookSnaps),
           )
         else if (error != null)
           Padding(

@@ -753,7 +753,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeDelete => 'Delete recipe';
 
   @override
-  String get recipeDeleting => 'Deleting recipe...';
+  String get recipeDeleting => 'Deleting the recipe …';
 
   @override
   String recipeFormatPortions(int count) {
@@ -16638,4 +16638,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get minaReceptEmptyBody =>
       'Your cookbook is set but empty. Save your first recipe: import a link, photograph a card or write it yourself.';
+
+  @override
+  String get recipeSaveToMyKitchen => 'Save to my kitchen';
+
+  @override
+  String get recipeAddToShoppingList => 'Add to shopping list';
+
+  @override
+  String get loadingCookSnaps => 'Loading the photos …';
+
+  @override
+  String get loadingSubstitutions => 'Loading substitutes …';
+
+  @override
+  String get uploadingCookSnap => 'Uploading the photo …';
+
+  @override
+  String get sendingComment => 'Sending the comment …';
 }

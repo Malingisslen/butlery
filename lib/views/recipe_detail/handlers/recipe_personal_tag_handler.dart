@@ -278,7 +278,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (!_initialized) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingPersonalTags);
     }
 
     if (!_viewModel.hasTags) {

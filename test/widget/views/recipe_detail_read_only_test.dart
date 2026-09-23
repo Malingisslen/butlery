@@ -35,6 +35,7 @@ import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
@@ -148,7 +149,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget localize(Widget home) {
+  Widget localize(Widget home, {ThemeData? theme}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -158,19 +159,23 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.lightTheme,
+      theme: theme ?? AppTheme.lightTheme,
       home: home,
     );
   }
 
-  Future<void> pumpView(WidgetTester tester, Widget view) async {
+  Future<void> pumpView(
+    WidgetTester tester,
+    Widget view, {
+    ThemeData? theme,
+  }) async {
     tester.view.physicalSize = const Size(420, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
     });
-    await tester.pumpWidget(localize(view));
+    await tester.pumpWidget(localize(view, theme: theme));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
   }
@@ -316,6 +321,100 @@ void main() {
         findsOneWidget,
         reason: 'Favorite toggle must be visible when readOnly:false',
       );
+    });
+  });
+
+  // P4-U05: the media hero (Komponentark v1:81-89) and the view's one
+  // saffron action (Grafisk manual v6:219; Skarmar v12 del 1 'Receptdetalj',
+  // etapp 11 'Receptet brett — någon annans').
+  group('RecipeDetailView — media hero and action bar (P4-U05)', () {
+    List<String> heroLabels(WidgetTester tester, Brightness b) => tester
+        .widgetList<FilledButton>(find.byType(FilledButton))
+        .where(
+          (button) =>
+              button.style?.backgroundColor?.resolve(const {}) ==
+              AppModeColors.actionPrimary(b),
+        )
+        .map((button) => (button.child! as Text).data!)
+        .toList();
+
+    for (final (mode, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('own recipe: Börja laga is the one saffron action ($mode)', (
+        tester,
+      ) async {
+        await pumpView(
+          tester,
+          RecipeDetailView(recipe: ownedRecipe),
+          theme: theme,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(heroLabels(tester, theme.brightness), ['Börja laga']);
+        expect(
+          find.widgetWithText(FilledButton, 'Lägg i inköpslistan'),
+          findsOneWidget,
+        );
+        expect(find.byType(FloatingActionButton), findsNothing);
+        // Icon buttons stand in paper rings on the photo.
+        expect(
+          find.byKey(const ValueKey('recipe-detail-paper-ring')),
+          findsWidgets,
+        );
+        // No spinner anywhere on the page.
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      });
+
+      testWidgets("a friend's recipe: Spara till mitt kök is the one "
+          'saffron action ($mode)', (tester) async {
+        await pumpView(
+          tester,
+          RecipeDetailView(recipe: friendRecipe, readOnly: true),
+          theme: theme,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(heroLabels(tester, theme.brightness), ['Spara till mitt kök']);
+        expect(
+          find.widgetWithText(FilledButton, 'Börja laga'),
+          findsOneWidget,
+        );
+      });
+    }
+
+    testWidgets('the title stands under the hero, never on the image', (
+      tester,
+    ) async {
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+
+      final bar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+      expect(bar.title, isA<SizedBox>());
+      expect(
+        find.descendant(
+          of: find.byType(SliverAppBar),
+          matching: find.text('Ägda Pannkakor'),
+        ),
+        findsNothing,
+      );
+      expect(find.text('Ägda Pannkakor'), findsWidgets);
+    });
+
+    testWidgets('the back button is named after where it goes', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe, backTo: 'Mina recept'),
+      );
+
+      expect(
+        find.bySemanticsLabel(RegExp('Tillbaka till Mina recept')),
+        findsWidgets,
+      );
+      handle.dispose();
     });
   });
 }
