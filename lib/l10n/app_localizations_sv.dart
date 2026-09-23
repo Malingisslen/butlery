@@ -1571,7 +1571,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuShoppingListGenerationFailed =>
-      'Kunde inte skapa inköpslistan – försök igen';
+      'Inköpslistan kunde inte skapas.';
 
   @override
   String get menuShoppingScaledToPresence =>
@@ -17051,4 +17051,71 @@ class AppLocalizationsSv extends AppLocalizations {
   String menuPartialMissing(int found, int requested, int missing) {
     return '$found av $requested, $missing saknas';
   }
+
+  @override
+  String get weeklyMenuSaveFailed => 'Veckan kunde inte sparas.';
+
+  @override
+  String get pantryItemUpdateFailed => 'Varan kunde inte uppdateras.';
+
+  @override
+  String get moderatorAdvanceFailed =>
+      'Anmälan kunde inte flyttas till nästa steg.';
+
+  @override
+  String get moderatorCloseFailed => 'Anmälan kunde inte stängas.';
+
+  @override
+  String get moderatorReportUnchanged => 'Anmälan är oförändrad.';
+
+  @override
+  String get moderatorHideFailed => 'Profilen kunde inte döljas.';
+
+  @override
+  String get moderatorHidePreserved => 'Profilen syns som förut.';
+
+  @override
+  String get moderatorDeleteFailed => 'Innehållet kunde inte tas bort.';
+
+  @override
+  String get moderatorDeletePreserved => 'Innehållet ligger kvar.';
+
+  @override
+  String get adminFeedbackStatusFailed => 'Statusen kunde inte ändras.';
+
+  @override
+  String get adminFeedbackStatusPreserved =>
+      'Återkopplingen har kvar sin tidigare status.';
+
+  @override
+  String get weekPlacementFailedWeekUnchanged =>
+      'Veckan är oförändrad och den skapade menyn ligger kvar.';
+
+  @override
+  String get weekPlacementFailedMenuKept => 'Den skapade menyn ligger kvar.';
+
+  @override
+  String get menuShoppingListGenerationPreserved => 'Veckan är oförändrad.';
+
+  @override
+  String get importErrorNotImported => 'Receptet kunde inte importeras.';
+
+  @override
+  String get importFailurePreservedLink => 'Länken står kvar i fältet.';
+
+  @override
+  String get importFailurePreservedText => 'Texten står kvar i fältet.';
+
+  @override
+  String get importFailureOtherRoutes => 'Andra vägar till samma recept';
+
+  @override
+  String get importRoutePhoto => 'Fotografera skärmen';
+
+  @override
+  String get importRoutePasteText => 'Klistra in texten';
+
+  @override
+  String get duplicateMergeFailedPreserved =>
+      'Det befintliga receptet är oförändrat.';
 }

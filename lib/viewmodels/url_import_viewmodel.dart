@@ -14,6 +14,7 @@ import 'package:butlery/services/import/index_page_expander.dart';
 import 'package:butlery/services/import/extracted_content_analyzer.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// P5-U22: why one link in a batch could not be fetched, in the words a
@@ -43,7 +44,7 @@ class UrlFetchFailure implements Exception {
   }
 
   @override
-  String toString() => 'UrlFetchFailure($reason): ${technical ?? ''}';
+  String toString() => 'UrlFetchFailure($reason): ${technical.orEmpty()}';
 }
 
 /// Per-URL lifecycle state for batch ("multiple URLs") imports.

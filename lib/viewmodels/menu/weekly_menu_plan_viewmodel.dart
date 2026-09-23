@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
 
@@ -406,6 +407,15 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     await loadWeek(currentWeekStart.subtract(const Duration(days: 7)));
   }
 
+  bool _lastApplyLeftWeekUnchanged = true;
+
+  /// P5-U15: whether the last [applyGeneratedMenu] that did not go through
+  /// left the week as it was: it failed before the week was published, or
+  /// the refused save was rolled back. False when the rollback was skipped
+  /// because the user had moved on, so a failure message claims the week is
+  /// unchanged only when it is (BUT-2132: claim only an undo that happened).
+  bool get lastApplyLeftWeekUnchanged => _lastApplyLeftWeekUnchanged;
+
   /// Apply a generated menu (from `MenuGenerator.generateMenuFromPrompt`)
   /// to the currently visible week. Guarded against concurrent runs so
   /// two rapid taps don't race each other on the same plan.
@@ -436,7 +446,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // Silence is the lesser fault; making the refusal visible needs a channel
     // the view can tell apart from failure, the way `generateShoppingList`
     // uses its `alreadyRunning` sentinel. BUT-1987.
-    if (_readFailed || _applyInFlight) return null;
+    if (_readFailed) {
+      _lastApplyLeftWeekUnchanged = true;
+      return null;
+    }
+    if (_applyInFlight) return null;
+    _lastApplyLeftWeekUnchanged = true;
     final previousPlan = _plan;
     final previousTray = _tray;
     final previousPlacedIds = _recentlyPlacedEntryIds;
@@ -470,6 +485,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         // before assigning `_plan`, so offline the generated week was never
         // rendered at all.
         _plan = result.plan;
+        _lastApplyLeftWeekUnchanged = false;
         _setTray(
           _OverflowTray(
             recipes: List.unmodifiable(result.overflow),
@@ -504,16 +520,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             _recentlyPlacedEntryIds = previousPlacedIds;
             _placementOrder = previousOrder;
             _lastParsedRequest = previousParsedRequest;
+            _lastApplyLeftWeekUnchanged = true;
             notifyListeners();
           }
           rethrow;
         }
       },
       // BUT-2132, Malin's call 2026-09-20: ONE message on every path. The
-      // rollback this method may or may not have performed is deliberately not
-      // described, because a message that names it is false wherever the undo
-      // was skipped — and that branch is reachable.
-      errorPrefix: 'Veckan kunde inte sparas',
+      // rollback this method may or may not have performed is not in this
+      // line, because a message that names it is false wherever the undo was
+      // skipped — and that branch is reachable. P5-U15: the view adds "the
+      // week is unchanged" only when [lastApplyLeftWeekUnchanged] says so.
+      errorPrefix: AppLocale.current.weeklyMenuSaveFailed,
     );
     _applyInFlight = false;
     // BUT-1987: the footer reads this through `context.watch`, so the release
@@ -818,7 +836,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           rethrow;
         }
       },
-      errorPrefix: 'Veckan kunde inte sparas',
+      errorPrefix: AppLocale.current.weeklyMenuSaveFailed,
       guarded: false,
     );
     _applyInFlight = false;

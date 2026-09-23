@@ -385,27 +385,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             title: context.l10n.minaReceptHeaderTitle,
             secondaryLine: countLine,
             trailing: const RecipeListAvatarBadge(),
-            actions: [
-              // BUT-977: surface the pantry-match IngredientSearchView power
-              // feature (previously only reachable via Cmd+K). Distinct
-              // kitchen icon so it doesn't read as the in-list text filter.
-              IconButton(
-                icon: const Icon(Icons.kitchen_outlined),
-                tooltip: context.l10n.ingredientSearchTitle,
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(Routes.ingredientSearch),
-              ),
-              IconButton(
-                icon: Icon(
-                  viewModel.isGridView ? Icons.view_list : Icons.grid_view,
-                ),
-                tooltip: viewModel.isGridView
-                    ? context.l10n.viewModeList
-                    : context.l10n.viewModeGrid,
-                onPressed: viewModel.toggleViewMode,
-              ),
-              LayoutComponents.offlineStatusIcon(),
-            ],
+            actions: minaReceptRootActions(context, viewModel),
           );
 
     return Scaffold(
@@ -747,4 +727,38 @@ class MinaReceptSectionError extends StatelessWidget {
       onAction: onRetry,
     );
   }
+}
+
+/// The recipe list's top-bar actions outside selection mode.
+///
+/// "Välj" comes first, as on the other five surfaces (B-46;
+/// produktregler.md:870-874; Skarmar v12 etapp 9 #flervalingang), and is
+/// left out under two recipes.
+@visibleForTesting
+List<Widget> minaReceptRootActions(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) {
+  return [
+    // Long-press stays as a shortcut, never the only way in.
+    ...buildMinaReceptSelectEntry(context, viewModel),
+    // BUT-977: surface the pantry-match IngredientSearchView power
+    // feature (previously only reachable via Cmd+K). Distinct
+    // kitchen icon so it doesn't read as the in-list text filter.
+    IconButton(
+      icon: const Icon(Icons.kitchen_outlined),
+      tooltip: context.l10n.ingredientSearchTitle,
+      onPressed: () => Navigator.of(context).pushNamed(Routes.ingredientSearch),
+    ),
+    IconButton(
+      icon: Icon(
+        viewModel.isGridView ? Icons.view_list : Icons.grid_view,
+      ),
+      tooltip: viewModel.isGridView
+          ? context.l10n.viewModeList
+          : context.l10n.viewModeGrid,
+      onPressed: viewModel.toggleViewMode,
+    ),
+    LayoutComponents.offlineStatusIcon(),
+  ];
 }

@@ -22,6 +22,7 @@ import 'package:butlery/viewmodels/recipe_list/recipe_selection_manager.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
+import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 
@@ -256,6 +257,45 @@ void main() {
 
       await tester.tap(find.text('Välj'));
       verify(() => viewModel.startSelection()).called(1);
+    });
+
+    // B-46: the entry sits in Mina recept's own bar, first among its
+    // actions like on the other surfaces (Skarmar v12 etapp 9
+    // #flervalingang; produktregler.md:870-874).
+    Future<List<Widget>> rootActions(WidgetTester tester) async {
+      late List<Widget> result;
+      when(() => viewModel.isGridView).thenReturn(false);
+      await tester.pumpWidget(
+        _app(
+          Builder(
+            builder: (context) {
+              result = minaReceptRootActions(context, viewModel);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+      return result;
+    }
+
+    testWidgets('the Mina recept bar carries "Välj" first from two recipes', (
+      tester,
+    ) async {
+      when(() => viewModel.recipes).thenReturn([_recipe('r1'), _recipe('r2')]);
+
+      final actions = await rootActions(tester);
+      expect(actions.first, isA<ButlerySelectButton>());
+      expect(actions.first.key, const ValueKey('mina-recept-select-enter'));
+    });
+
+    testWidgets('the Mina recept bar has no "Välj" with one recipe', (
+      tester,
+    ) async {
+      when(() => viewModel.recipes).thenReturn([_recipe('r1')]);
+
+      final actions = await rootActions(tester);
+      expect(actions.whereType<ButlerySelectButton>(), isEmpty);
+      expect(actions, hasLength(3));
     });
 
     Future<void> openKebab(WidgetTester tester) async {

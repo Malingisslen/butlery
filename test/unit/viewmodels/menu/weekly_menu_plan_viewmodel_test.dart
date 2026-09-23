@@ -602,7 +602,7 @@ void main() {
         expect(placed, isNull);
         expect(
           viewModel.error,
-          'Veckan kunde inte sparas',
+          'Veckan kunde inte sparas.',
         );
         expect(viewModel.plan, same(week));
       });
@@ -2375,8 +2375,10 @@ void main() {
           );
 
           expect(placed, isNull);
-          expect(viewModel.error, 'Veckan kunde inte sparas');
+          expect(viewModel.error, 'Veckan kunde inte sparas.');
           verifyNever(() => mockService.save(any()));
+          // P5-U15: nothing reached the week, so it may be called unchanged.
+          expect(viewModel.lastApplyLeftWeekUnchanged, isTrue);
         },
       );
 
@@ -2409,9 +2411,11 @@ void main() {
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas',
+            'Veckan kunde inte sparas.',
           );
           expect(viewModel.plan, same(initial));
+          // P5-U15: the undo happened, so the week may be called unchanged.
+          expect(viewModel.lastApplyLeftWeekUnchanged, isTrue);
         },
       );
 
@@ -2482,10 +2486,13 @@ void main() {
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas',
+            'Veckan kunde inte sparas.',
             reason: 'the same string as every other path',
           );
           expect(viewModel.plan, same(laterPlan));
+          // P5-U15: the rollback was skipped, so the view must not say the
+          // week is unchanged (BUT-2132: claim only an undo that happened).
+          expect(viewModel.lastApplyLeftWeekUnchanged, isFalse);
         },
       );
 

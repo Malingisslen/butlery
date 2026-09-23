@@ -60,7 +60,6 @@ const _legacyErrorCalls = <String, int>{
   'lib/views/settings/widgets/household_allergen_filter_tile.dart': 1,
   'lib/views/settings/widgets/household_allergen_sharing_tile.dart': 3,
   'lib/views/skriv_sjalv_recept_view.dart': 2,
-  'lib/views/smart_import/import_result_handler.dart': 2,
   'lib/views/social/collaborative_shopping_view.dart': 1,
   'lib/views/social/friend_profile_view.dart': 2,
   'lib/views/social/friends_list/feed_tab.dart': 1,
@@ -81,7 +80,6 @@ const _legacyErrorCalls = <String, int>{
       1,
   'lib/views/unified_shopping/widgets/shopping_dialogs.dart': 1,
   'lib/views/unified_shopping_view.dart': 1,
-  'lib/views/veckomeny_view.dart': 2,
   'lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart':
       1,
   'lib/widgets/common/dialogs/recipe_selection/group_recipe_sharing_dialog.dart':
@@ -116,26 +114,23 @@ const _legacyErrorCalls = <String, int>{
 
 /// Hard-coded errorPrefix strings per file (Q-E7). Only shrinks.
 ///
-/// The counts are pinned to 60b68d37b. Merging the other package-5
-/// phase-A tracks needs one step here: T2 moves
-/// ingredient_search_viewmodel.dart to l10n, so its entry goes; new
-/// literals in weekly_menu_plan_viewmodel.dart (T3) and
-/// pantry_viewmodel.dart (T4) go through AppLocale.current instead of
-/// raising a count.
+/// Pinned after the package-5 phase-A merge: ingredient_search moved to
+/// l10n, and the week menu's and the pantry's save messages
+/// ("Veckan kunde inte sparas.", "Varan kunde inte uppdateras.") now come
+/// from AppLocale.current, which lowered both counts by two. The moderator
+/// queue's and the feedback inbox's actions no longer set an errorPrefix:
+/// their views show the refusal with showFailure.
 const _errorPrefixLiterals = <String, int>{
-  'lib/viewmodels/admin/feedback_inbox_viewmodel.dart': 1,
   'lib/viewmodels/admin/metrics_tab_viewmodel.dart': 1,
-  'lib/viewmodels/admin/moderator_review_viewmodel.dart': 3,
   'lib/viewmodels/admin/ops_log_viewmodel.dart': 1,
   'lib/viewmodels/admin/parsing_details_viewmodel.dart': 1,
   'lib/viewmodels/family/family_rating_breakdown_viewmodel.dart': 1,
   'lib/viewmodels/family/family_rating_entry_viewmodel.dart': 2,
   'lib/viewmodels/family/min_familj_viewmodel.dart': 4,
   'lib/viewmodels/family/who_is_eating_viewmodel.dart': 1,
-  'lib/viewmodels/ingredient_search_viewmodel.dart': 1,
   'lib/viewmodels/menu/menu_placement_viewmodel.dart': 2,
-  'lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart': 12,
-  'lib/viewmodels/pantry/pantry_viewmodel.dart': 8,
+  'lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart': 11,
+  'lib/viewmodels/pantry/pantry_viewmodel.dart': 7,
   'lib/viewmodels/settings/my_reports_viewmodel.dart': 1,
   'lib/viewmodels/shared_shopping_lists_viewmodel.dart': 1,
   'lib/viewmodels/social/activity_feed_viewmodel.dart': 2,

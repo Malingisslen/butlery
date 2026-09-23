@@ -2621,7 +2621,7 @@ abstract class AppLocalizations {
   /// BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte skapa inköpslistan – försök igen'**
+  /// **'Inköpslistan kunde inte skapas.'**
   String get menuShoppingListGenerationFailed;
 
   /// BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation.
@@ -28360,6 +28360,132 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{found} av {requested}, {missing} saknas'**
   String menuPartialMissing(int found, int requested, int missing);
+
+  /// No description provided for @weeklyMenuSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan kunde inte sparas.'**
+  String get weeklyMenuSaveFailed;
+
+  /// No description provided for @pantryItemUpdateFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varan kunde inte uppdateras.'**
+  String get pantryItemUpdateFailed;
+
+  /// No description provided for @moderatorAdvanceFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan kunde inte flyttas till nästa steg.'**
+  String get moderatorAdvanceFailed;
+
+  /// No description provided for @moderatorCloseFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan kunde inte stängas.'**
+  String get moderatorCloseFailed;
+
+  /// No description provided for @moderatorReportUnchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan är oförändrad.'**
+  String get moderatorReportUnchanged;
+
+  /// No description provided for @moderatorHideFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen kunde inte döljas.'**
+  String get moderatorHideFailed;
+
+  /// No description provided for @moderatorHidePreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen syns som förut.'**
+  String get moderatorHidePreserved;
+
+  /// No description provided for @moderatorDeleteFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet kunde inte tas bort.'**
+  String get moderatorDeleteFailed;
+
+  /// No description provided for @moderatorDeletePreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet ligger kvar.'**
+  String get moderatorDeletePreserved;
+
+  /// No description provided for @adminFeedbackStatusFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Statusen kunde inte ändras.'**
+  String get adminFeedbackStatusFailed;
+
+  /// No description provided for @adminFeedbackStatusPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkopplingen har kvar sin tidigare status.'**
+  String get adminFeedbackStatusPreserved;
+
+  /// No description provided for @weekPlacementFailedWeekUnchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan är oförändrad och den skapade menyn ligger kvar.'**
+  String get weekPlacementFailedWeekUnchanged;
+
+  /// No description provided for @weekPlacementFailedMenuKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den skapade menyn ligger kvar.'**
+  String get weekPlacementFailedMenuKept;
+
+  /// No description provided for @menuShoppingListGenerationPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan är oförändrad.'**
+  String get menuShoppingListGenerationPreserved;
+
+  /// No description provided for @importErrorNotImported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte importeras.'**
+  String get importErrorNotImported;
+
+  /// No description provided for @importFailurePreservedLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länken står kvar i fältet.'**
+  String get importFailurePreservedLink;
+
+  /// No description provided for @importFailurePreservedText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten står kvar i fältet.'**
+  String get importFailurePreservedText;
+
+  /// No description provided for @importFailureOtherRoutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra vägar till samma recept'**
+  String get importFailureOtherRoutes;
+
+  /// No description provided for @importRoutePhoto.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotografera skärmen'**
+  String get importRoutePhoto;
+
+  /// No description provided for @importRoutePasteText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in texten'**
+  String get importRoutePasteText;
+
+  /// No description provided for @duplicateMergeFailedPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det befintliga receptet är oförändrat.'**
+  String get duplicateMergeFailedPreserved;
 }
 
 class _AppLocalizationsDelegate

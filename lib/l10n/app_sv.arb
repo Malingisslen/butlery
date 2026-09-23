@@ -1142,7 +1142,7 @@
     }
   },
   "menuShoppingListGenerationEmpty": "Veckans plan har inga recept med ingredienser ännu",
-  "menuShoppingListGenerationFailed": "Kunde inte skapa inköpslistan – försök igen",
+  "menuShoppingListGenerationFailed": "Inköpslistan kunde inte skapas.",
   "@menuShoppingListGenerationFailed": {
     "description": "BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning."
   },
@@ -12740,5 +12740,26 @@
         "type": "int"
       }
     }
-  }
+  },
+  "weeklyMenuSaveFailed": "Veckan kunde inte sparas.",
+  "pantryItemUpdateFailed": "Varan kunde inte uppdateras.",
+  "moderatorAdvanceFailed": "Anmälan kunde inte flyttas till nästa steg.",
+  "moderatorCloseFailed": "Anmälan kunde inte stängas.",
+  "moderatorReportUnchanged": "Anmälan är oförändrad.",
+  "moderatorHideFailed": "Profilen kunde inte döljas.",
+  "moderatorHidePreserved": "Profilen syns som förut.",
+  "moderatorDeleteFailed": "Innehållet kunde inte tas bort.",
+  "moderatorDeletePreserved": "Innehållet ligger kvar.",
+  "adminFeedbackStatusFailed": "Statusen kunde inte ändras.",
+  "adminFeedbackStatusPreserved": "Återkopplingen har kvar sin tidigare status.",
+  "weekPlacementFailedWeekUnchanged": "Veckan är oförändrad och den skapade menyn ligger kvar.",
+  "weekPlacementFailedMenuKept": "Den skapade menyn ligger kvar.",
+  "menuShoppingListGenerationPreserved": "Veckan är oförändrad.",
+  "importErrorNotImported": "Receptet kunde inte importeras.",
+  "importFailurePreservedLink": "Länken står kvar i fältet.",
+  "importFailurePreservedText": "Texten står kvar i fältet.",
+  "importFailureOtherRoutes": "Andra vägar till samma recept",
+  "importRoutePhoto": "Fotografera skärmen",
+  "importRoutePasteText": "Klistra in texten",
+  "duplicateMergeFailedPreserved": "Det befintliga receptet är oförändrat."
 }

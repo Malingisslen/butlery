@@ -16,6 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
@@ -78,6 +79,114 @@ void main() {
       verify(() => reports.watchOpenReports()).called(2);
       expect(find.text(sv.moderatorReportsLoadFailed), findsNothing);
     });
+
+    // Integration of P5-U00: a refused action is a failure snackbar with
+    // Försök igen (content-style-guide.md:87-97), never the method name and
+    // never the queue's load-error state.
+    testWidgets('a refused "Nästa steg" says what failed and what is kept, '
+        'keeps the queue, and retries', (tester) async {
+      final report = ContentReport(
+        id: 'r1',
+        reporterId: 'reporter',
+        contentType: ContentType.comment,
+        contentId: 'c1',
+        contentOwnerId: 'owner',
+        reason: 'spam',
+        createdAt: DateTime(2026, 4, 26),
+      );
+      when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
+      var calls = 0;
+      when(() => reports.advanceReportStatus(report)).thenAnswer((_) async {
+        calls++;
+        throw StateError('permission-denied: boom');
+      });
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const ModeratorReviewView(),
+        ),
+      );
+      await tester.pump();
+      stream.add([report]);
+      await tester.pump();
+
+      await tester.tap(find.text(sv.moderatorActionAdvance));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.textContaining(sv.moderatorAdvanceFailed),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(sv.moderatorReportUnchanged),
+        findsOneWidget,
+      );
+      expect(find.textContaining('advanceReportStatus'), findsNothing);
+      expect(find.textContaining('boom'), findsNothing);
+      expect(find.byType(StateWidget), findsNothing);
+      expect(find.text(sv.moderatorActionAdvance), findsOneWidget);
+
+      await tester.tap(find.text(sv.commonRetry));
+      await tester.pump();
+      expect(calls, 2);
+    });
+
+    // The real ReportService never throws: its safeExecute swallows the
+    // refusal and returns false. That false is the failure the moderator
+    // must see.
+    for (final action in ['advance', 'close']) {
+      testWidgets('a "$action" the service refuses with false (no throw) '
+          'still shows the failure snackbar', (tester) async {
+        final report = ContentReport(
+          id: 'r1',
+          reporterId: 'reporter',
+          contentType: ContentType.comment,
+          contentId: 'c1',
+          contentOwnerId: 'owner',
+          reason: 'spam',
+          createdAt: DateTime(2026, 4, 26),
+        );
+        when(
+          () => reports.isMinorAccount(any()),
+        ).thenAnswer((_) async => false);
+        when(
+          () => reports.advanceReportStatus(report),
+        ).thenAnswer((_) async => false);
+        when(() => reports.closeReport(report)).thenAnswer((_) async => false);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: const ModeratorReviewView(),
+          ),
+        );
+        await tester.pump();
+        stream.add([report]);
+        await tester.pump();
+
+        await tester.tap(
+          find.text(
+            action == 'advance'
+                ? sv.moderatorActionAdvance
+                : sv.moderatorActionClose,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(
+          find.textContaining(
+            action == 'advance'
+                ? sv.moderatorAdvanceFailed
+                : sv.moderatorCloseFailed,
+          ),
+          findsOneWidget,
+        );
+        expect(find.text(sv.commonRetry), findsOneWidget);
+      });
+    }
   });
 
   group('FeedbackInboxView', () {
@@ -130,6 +239,72 @@ void main() {
       expect(find.text(sv.adminFeedbackLoadFailed), findsOneWidget);
       expect(find.textContaining('boom'), findsNothing);
       expect(find.text(sv.commonRetry), findsOneWidget);
+    });
+
+    testWidgets('a refused status change is a failure snackbar with Försök '
+        'igen, and the inbox stays', (tester) async {
+      final original = FlutterError.onError;
+      FlutterError.onError = (details) {
+        final text = details.exceptionAsString();
+        if (text.contains('RenderFlex overflowed')) return;
+        original?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = original);
+      var calls = 0;
+      when(() => repo.updateStatus('f1', FeedbackStatus.triaged)).thenAnswer((
+        _,
+      ) async {
+        calls++;
+        throw StateError('permission-denied: boom');
+      });
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const FeedbackInboxView(),
+        ),
+      );
+      await tester.pump();
+      stream.add([
+        FeedbackEntry(
+          id: 'f1',
+          userId: 'u',
+          category: FeedbackCategory.bug,
+          description: 'Knappen svarar inte',
+          recentInteractions: const [],
+          createdAt: DateTime.utc(2026, 1, 1),
+        ),
+      ]);
+      await tester.pump();
+
+      // The filter row has the same label in a Row; the entry's control
+      // is the Wrap.
+      final chip = find.descendant(
+        of: find.byType(Wrap),
+        matching: find.widgetWithText(
+          ChoiceChip,
+          sv.adminFeedbackStatusTriaged,
+        ),
+      );
+      await tester.ensureVisible(chip);
+      await tester.tap(chip);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.textContaining(sv.adminFeedbackStatusFailed),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(sv.adminFeedbackStatusPreserved),
+        findsOneWidget,
+      );
+      expect(find.textContaining('updateFeedbackStatus'), findsNothing);
+      expect(find.text('Knappen svarar inte'), findsOneWidget);
+
+      await tester.tap(find.text(sv.commonRetry));
+      await tester.pump();
+      expect(calls, 2);
     });
   });
 }

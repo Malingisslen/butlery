@@ -194,6 +194,27 @@ void main() {
       },
     );
 
+    test(
+      "clearAll for the person logging out keeps another account's tray",
+      () async {
+        await store.save('malin', _snapshot());
+        await store.save('johan', _snapshot());
+
+        await WeeklyMenuOverflowTrayStore.clearAll(userId: 'malin');
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString(WeeklyMenuOverflowTrayStore.keyFor('malin')),
+          isNull,
+        );
+        expect(
+          prefs.getString(WeeklyMenuOverflowTrayStore.keyFor('johan')),
+          isNotNull,
+        );
+        expect(prefs.getString('unrelated'), 'kept');
+      },
+    );
+
     test('unreadable data is dropped instead of breaking the tray', () async {
       SharedPreferences.setMockInitialValues({
         WeeklyMenuOverflowTrayStore.keyFor('malin'): '{not json',

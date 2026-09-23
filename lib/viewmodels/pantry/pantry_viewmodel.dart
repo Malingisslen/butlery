@@ -3,6 +3,7 @@ library;
 
 import 'package:clock/clock.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -216,7 +217,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
             );
         }
       },
-      errorPrefix: 'Kunde inte uppdatera objektet',
+      errorPrefix: AppLocale.current.pantryItemUpdateFailed,
     );
   }
 
@@ -245,7 +246,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
             );
         }
       },
-      errorPrefix: 'Kunde inte uppdatera objektet',
+      errorPrefix: AppLocale.current.pantryItemUpdateFailed,
     );
   }
 

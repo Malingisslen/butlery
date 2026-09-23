@@ -236,12 +236,20 @@ class WeeklyMenuOverflowTrayStore {
     }
   }
 
-  /// Deletes every kept tray on this device: the manual-logout hook.
+  /// The manual-logout hook: deletes the kept tray of [userId], the person
+  /// logging out. Another account's tray on the same device stays, since an
+  /// automatic logout is meant to keep it (PQ-12 = A). Without a [userId]
+  /// every kept tray on the device goes.
   static Future<void> clearAll({
+    String? userId,
     Future<SharedPreferences> Function()? prefsProvider,
   }) async {
     try {
       final prefs = await (prefsProvider ?? SharedPreferences.getInstance)();
+      if (userId != null) {
+        await prefs.remove(keyFor(userId));
+        return;
+      }
       for (final key in prefs.getKeys().toList()) {
         if (key.startsWith(keyPrefix)) await prefs.remove(key);
       }

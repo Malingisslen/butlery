@@ -15,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -272,6 +274,47 @@ void main() {
 
         // Assert
         verify(() => mockAuthRepository.signOut()).called(1);
+      });
+    });
+
+    // PQ-12 = A (fas2/produktbeslut-2026-09-23.json): the week tray is a
+    // device draft (produktregler.md:164-172). It goes when the user logs
+    // out herself, and survives an automatic logout.
+    group('week tray at logout', () {
+      final trayKey = WeeklyMenuOverflowTrayStore.keyFor('u1');
+
+      setUp(() {
+        SharedPreferences.setMockInitialValues({
+          trayKey: '{"kept":true}',
+          'unrelated_key': 'stays',
+        });
+        when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
+      });
+
+      test('rensas vid manuell utloggning, inte vid automatisk', () async {
+        await authService.logoutDueToInactivity();
+        var prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNotNull);
+
+        await authService.forceSignOut();
+        prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNotNull);
+
+        await authService.signOut();
+        prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNull);
+        expect(prefs.getString('unrelated_key'), 'stays');
+      });
+
+      test('a refused sign-out keeps the tray', () async {
+        when(
+          () => mockAuthRepository.signOut(),
+        ).thenThrow(Exception('offline'));
+
+        await authService.signOut();
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNotNull);
       });
     });
 
