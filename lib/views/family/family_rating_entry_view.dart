@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -98,32 +99,18 @@ class _FamilyRatingEntryContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        title: Text(l10n.familyRatingTitle),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: 16,
-              bottom: 8,
-              end: 16,
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                recipeTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall.copyWith(color: cs.secondary),
-              ),
-            ),
-          ),
-        ),
+      // A subpage (Komponentark v1:71-78). The recipe is the line under the
+      // title, in the bar's own foreground: the old saffron text on ink was
+      // not readable (tokens.json text roles; saffron is never text on ink).
+      appBar: ButleryTopBar.undersida(
+        title: l10n.familyRatingTitle,
+        secondaryLine: recipeTitle,
+        secondaryLineIsLive: false,
       ),
       // Only the INITIAL load replaces the form with a spinner; during save()
       // the form + (disabled) actions stay put so the screen doesn't flicker.
       body: (vm.isLoading && vm.present.isEmpty)
-          ? StateWidget.loading()
+          ? StateWidget.loading(message: l10n.loadingFamily)
           : _body(context, vm, l10n),
       bottomNavigationBar: (vm.isLoading && vm.present.isEmpty)
           ? null

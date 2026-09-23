@@ -16717,4 +16717,57 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeEditorClose => 'Stäng editorn';
+
+  @override
+  String menuWeekBadgeEmpty(int week) {
+    return 'Vecka $week · inget planerat';
+  }
+
+  @override
+  String get rootBarMoreActions => 'Fler åtgärder';
+
+  @override
+  String get weekMenuPlanningSlow => 'Det tar längre tid än vanligt';
+
+  @override
+  String get importBatchSaveFailed =>
+      'Recepten kunde inte sparas. Försök igen.';
+
+  @override
+  String get weekMenuPlanningTitle => 'Planerar veckan …';
+
+  @override
+  String get menuLoadingSaved => 'Hämtar sparade menyer …';
+
+  @override
+  String get shoppingRootTitle => 'Inköp';
+
+  @override
+  String shoppingRootLine(String listName, int done, int total) {
+    return '$listName · $done av $total klara';
+  }
+
+  @override
+  String shoppingRootLineEmpty(String listName) {
+    return '$listName · inga varor';
+  }
+
+  @override
+  String get shoppingEmptyTitle => 'Inget att handla';
+
+  @override
+  String get shoppingEmptyBody =>
+      'Skicka veckans rätter hit så samlas ingredienserna per kategori. Det du redan har i skafferiet dras bort.';
+
+  @override
+  String get shoppingFromWeekMenu => 'Från veckomenyn';
+
+  @override
+  String get shoppingLoadingTemplates => 'Hämtar mallarna …';
+
+  @override
+  String get importFetchingRecipe => 'Hämtar receptet …';
+
+  @override
+  String get importReadingFile => 'Läser filen …';
 }

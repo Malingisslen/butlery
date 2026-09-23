@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -133,8 +133,11 @@ class _ShoppingListSelectionDialogState
             ),
             const SizedBox(height: AppDimensions.spacingL),
             if (_isLoading)
-              const Center(
-                child: LoadingIndicator(),
+              // The plate line says what it fetches (produktregler.md:163).
+              Center(
+                child: PlateLineMessage(
+                  message: context.l10n.loadingShoppingLists,
+                ),
               )
             else ...[
               // Create new list option

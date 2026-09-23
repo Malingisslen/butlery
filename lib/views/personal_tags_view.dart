@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -151,7 +152,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               child: Consumer<PersonalTagViewModel>(
                 builder: (context, viewModel, _) {
                   if (viewModel.isLoading && !viewModel.hasTags) {
-                    return StateWidget.loading();
+                    return StateWidget.loading(
+                      message: context.l10n.loadingPersonalTags,
+                    );
                   }
 
                   if (viewModel.hasError) {
@@ -177,13 +180,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.of(context).maybePop(),
-        tooltip: context.l10n.commonBack,
-      ),
-      title: Text(context.l10n.personalTagsViewTitle),
+    // A subpage (Komponentark v1:71-78; B-45).
+    return ButleryTopBar.undersida(
+      title: context.l10n.personalTagsViewTitle,
       actions: [
         IconButton(
           icon: const Icon(Icons.sync),
@@ -207,13 +206,23 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         .whereType<PersonalTag>()
         .toList();
 
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.close),
+    // Multi-select keeps the bar and changes its content: "Avbryt" on the
+    // left instead of an X, the count in tabular figures (produktregler.md
+    // 17.1 :870, :873; Skarmar v12 etapp 9 #flervalingang, "Flerval — slå
+    // samman taggar"). The text is the bar's paper foreground on ink.
+    return ButleryTopBar.undersida(
+      leading: TextButton(
+        key: const ValueKey('personal-tags-selection-cancel'),
+        style: TextButton.styleFrom(
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        ),
         onPressed: selection.exitSelection,
-        tooltip: context.l10n.commonCancel,
+        child: Text(context.l10n.commonCancel),
       ),
-      title: Text(context.l10n.personalTagSelectedCount(count)),
+      title: context.l10n.personalTagSelectedCount(count),
+      titleStyle: const TextStyle(
+        fontFeatures: [FontFeature.tabularFigures()],
+      ),
       actions: [
         IconButton(
           icon: const Icon(Icons.merge),

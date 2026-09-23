@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_leave_list_action.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -77,13 +78,13 @@ class ShoppingLeaveListAction {
   }) {
     if (target == null) return;
 
-    final cs = Theme.of(target).colorScheme;
-    ScaffoldMessenger.of(target).showSnackBar(
-      SnackBar(
-        content: Text(buildMessage(target.l10n)),
-        backgroundColor: isError ? cs.error : cs.primary,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    // The ink snackbar (Komponentark v1:745-750; PQ-09 = A): views never
+    // build their own SnackBar or colour it by status.
+    final message = buildMessage(target.l10n);
+    if (isError) {
+      SnackBarUtils.showError(target, message);
+    } else {
+      SnackBarUtils.showSuccess(target, message);
+    }
   }
 }

@@ -136,7 +136,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                   ),
                   label: Text(context.l10n.personalTagManage),
                   style: TextButton.styleFrom(
-                    foregroundColor: cs.primary,
+                    foregroundColor: cs.onPrimaryContainer,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingS,
                     ),
@@ -289,13 +289,18 @@ class _PersonalTagChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: cs.surface,
-        selectedColor: cs.primary.withValues(alpha: AppDimensions.opacityLight),
-        checkmarkColor: cs.primary,
+        // Chosen tags and choices sit on the raised surface with a real border,
+        // never an ink tint (enhet-3 valda tonplattor; tokens.json:40-53).
+        // primaryContainer = surface.raised/selected, onPrimaryContainer and
+        // onSurface = text.primary, outline = border.control, in both schemes.
+        // cs.primary is ink in both modes and vanished on dark.
+        selectedColor: cs.primaryContainer,
+        checkmarkColor: cs.onPrimaryContainer,
         side: BorderSide(
-          color: isSelected ? cs.primary : cs.outlineVariant,
+          color: isSelected ? cs.onPrimaryContainer : cs.outlineVariant,
         ),
         labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: isSelected ? cs.primary : cs.onSurface,
+          color: isSelected ? cs.onPrimaryContainer : cs.onSurface,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
         avatar: isSelected
@@ -303,7 +308,7 @@ class _PersonalTagChip extends StatelessWidget {
             : Icon(
                 Icons.label_outline,
                 size: AppDimensions.iconSize14,
-                color: cs.primary,
+                color: cs.onPrimaryContainer,
               ),
         showCheckmark: isSelected,
       ),
@@ -390,13 +395,10 @@ class _MiniTagChip extends StatelessWidget {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: cs.primaryContainer,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          border: Border.all(
-            color: cs.primary.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          // border.control (outline), never a faded ink (tokens.json:40-53).
+          border: Border.all(color: cs.outline),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -404,13 +406,13 @@ class _MiniTagChip extends StatelessWidget {
             Icon(
               Icons.label,
               size: AppDimensions.iconSizeXs,
-              color: cs.primary,
+              color: cs.onPrimaryContainer,
             ),
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.primary,
+                color: cs.onPrimaryContainer,
               ),
             ),
           ],
@@ -432,10 +434,10 @@ class _PlaceholderTagChip extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primaryContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outline,
         ),
       ),
       child: Row(
@@ -444,7 +446,7 @@ class _PlaceholderTagChip extends StatelessWidget {
           Icon(
             Icons.label_outline,
             size: AppDimensions.iconSizeXs,
-            color: cs.primary,
+            color: cs.onPrimaryContainer,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           SkeletonComponents.skeletonBox(

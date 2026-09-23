@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -127,18 +127,9 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
   Widget _buildContent() {
     // Loading state
     if (_isLoading) {
+      // The plate line with its text (produktregler.md:163).
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingM),
-            Text(
-              context.l10n.dialogLoadingMenus,
-              style: AppTextStyles.bodyMedium,
-            ),
-          ],
-        ),
+        child: PlateLineMessage(message: context.l10n.menuLoadingSaved),
       );
     }
 
@@ -207,14 +198,13 @@ class _MenuListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color: cs.primary.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              // surface.raised, never a tint (tokens.json:40-53).
+              color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
             child: Icon(
               Icons.calendar_today,
-              color: cs.primary,
+              color: cs.onPrimaryContainer,
               size: AppDimensions.iconSizeAction,
             ),
           );

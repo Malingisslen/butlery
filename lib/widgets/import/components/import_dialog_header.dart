@@ -34,9 +34,12 @@ class ImportDialogHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Pattern 4, a dialog: title, and the X at the top right
+          // (Komponentark v1:79-99). text.primary (onSurface) in both modes;
+          // cs.primary is ink in both and would vanish on the dark dialog.
           Icon(
             Icons.edit_note,
-            color: theme.colorScheme.primary,
+            color: theme.colorScheme.onSurface,
           ),
           const SizedBox(width: AppDimensions.width12),
           Expanded(

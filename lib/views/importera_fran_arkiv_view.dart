@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -82,7 +82,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final allTags = viewModel.availableTags.toList()..sort();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.importFromArchive,
         actions: [
           if (viewModel.hasError)

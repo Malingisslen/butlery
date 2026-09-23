@@ -1,8 +1,8 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -88,15 +88,25 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: Text(context.l10n.commonCancel),
         ),
-        FilledButton(
-          onPressed: _isLoading ? null : _saveMenu,
-          child: _isLoading
-              ? LoadingIndicator(
-                  size: 20,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                )
-              : Text(context.l10n.commonSave),
+        // Busy keeps the button's shape and name, with the plate line along
+        // its bottom edge and "Sparar …" (Komponentark v1:365, :372;
+        // content-style-guide.md:63).
+        BusyButtonSemantics(
+          busy: _isLoading,
+          name: context.l10n.commonSave,
+          busyLabel: context.l10n.statusSaving,
+          child: FilledButton(
+            onPressed: _isLoading ? PlateLineButton.ignore : _saveMenu,
+            style: _isLoading
+                ? PlateLineButton.busyStyle(
+                    null,
+                    Theme.of(context).filledButtonTheme.style,
+                  )
+                : null,
+            child: Text(
+              _isLoading ? context.l10n.statusSaving : context.l10n.commonSave,
+            ),
+          ),
         ),
       ],
     );
@@ -280,20 +290,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         Navigator.pop(context);
         if (success) {
           final message = context.l10n.menuSavedSuccess(_nameController.text);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: context.butleryColors.success,
-            ),
-          );
+          SnackBarUtils.showSuccess(context, message);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                widget.viewModel.error ?? context.l10n.menuSaveFailed,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            widget.viewModel.error ?? context.l10n.menuSaveFailed,
           );
         }
       }
@@ -304,10 +305,10 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             _isLoading = false;
           });
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorSavingWithDetails(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
+        SnackBarUtils.showError(
+          context,
+          context.l10n.errorSavingWithDetails(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

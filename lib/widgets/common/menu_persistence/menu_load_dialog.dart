@@ -1,8 +1,10 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -120,7 +122,12 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           // Saved menus content
           Flexible(
             child: _isLoading
-                ? const Center(child: LoadingIndicator())
+                // The plate line says what it fetches (produktregler.md:163).
+                ? Center(
+                    child: PlateLineMessage(
+                      message: context.l10n.menuLoadingSaved,
+                    ),
+                  )
                 : _savedMenus.isEmpty
                 ? _buildEmptyState()
                 : _buildMenuList(),
@@ -241,29 +248,23 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       if (mounted) {
         Navigator.pop(context);
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.menuLoadedSuccess(menu.name ?? '')),
-              backgroundColor: context.butleryColors.success,
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.menuLoadedSuccess((menu.name as String?).orEmpty()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                widget.viewModel.error ?? context.l10n.menuLoadFailed,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showError(
+            context,
+            widget.viewModel.error ?? context.l10n.menuLoadFailed,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorLoadingWithDetails(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
+        SnackBarUtils.showError(
+          context,
+          context.l10n.errorLoadingWithDetails(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }
@@ -283,8 +284,10 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+            // The shared danger style: error with onError, and the
+            // disabled surface instead of opacity.
+            style: ComponentThemes.dangerButtonStyle(
+              Theme.of(context).colorScheme,
             ),
             child: Text(context.l10n.commonDelete),
           ),
@@ -301,31 +304,23 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             setState(() {
               _savedMenus.remove(menu);
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.menuDeletedSuccess(menu.name ?? '')),
-                backgroundColor: context.butleryColors.success,
-              ),
+            SnackBarUtils.showSuccess(
+              context,
+              context.l10n.menuDeletedSuccess((menu.name as String?).orEmpty()),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  widget.viewModel.error ?? context.l10n.menuDeleteFailed,
-                ),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
+            SnackBarUtils.showError(
+              context,
+              widget.viewModel.error ?? context.l10n.menuDeleteFailed,
             );
           }
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.errorDeletingWithDetails(e.toString()),
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
+          SnackBarUtils.showError(
+            context,
+            context.l10n.errorDeletingWithDetails(
+              SnackBarUtils.userFriendlyMessage(context, e),
             ),
           );
         }

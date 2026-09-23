@@ -9,7 +9,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// A simple 3-step progress indicator for import operations.
 class ImportProgressWidget extends StatelessWidget {
@@ -103,6 +103,24 @@ class ImportProgressWidget extends StatelessWidget {
               ],
             ),
 
+            // Fetching and parsing: the plate line with text, never a
+            // spinner (produktregler.md:163, :304; Skarmar v12 etapp 4
+            // #imp2hamtar draws the line under "Hämtar recept").
+            if (isLoading) ...[
+              const SizedBox(height: AppDimensions.paddingM),
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: PlateLineMessage.maxWidth,
+                ),
+                child: PlateLine(
+                  key: const ValueKey('import-progress-plate-line'),
+                  semanticLabel: message.isNotEmpty
+                      ? message
+                      : context.l10n.importFetchingRecipe,
+                ),
+              ),
+            ],
+
             // Progress message with optional elapsed time
             if (message.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.paddingM),
@@ -169,13 +187,9 @@ class _StepIndicator extends StatelessWidget {
             ),
           ),
           child: Center(
-            child: isLoading
-                ? LoadingIndicator(
-                    size: 18,
-                    strokeWidth: 2,
-                    color: colorScheme.onPrimary,
-                  )
-                : isComplete
+            // The running step shows its number; the plate line under the
+            // steps says that it runs (B-18: no spinner, beslutslogg.md:25).
+            child: isComplete
                 ? Icon(
                     Icons.check,
                     size: AppDimensions.iconSizeM,

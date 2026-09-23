@@ -16677,4 +16677,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeEditorClose => 'Close the editor';
+
+  @override
+  String menuWeekBadgeEmpty(int week) {
+    return 'Week $week · nothing planned';
+  }
+
+  @override
+  String get rootBarMoreActions => 'More actions';
+
+  @override
+  String get weekMenuPlanningSlow => 'This is taking longer than usual';
+
+  @override
+  String get importBatchSaveFailed =>
+      'The recipes could not be saved. Try again.';
+
+  @override
+  String get weekMenuPlanningTitle => 'Planning the week …';
+
+  @override
+  String get menuLoadingSaved => 'Fetching saved menus …';
+
+  @override
+  String get shoppingRootTitle => 'Shopping';
+
+  @override
+  String shoppingRootLine(String listName, int done, int total) {
+    return '$listName · $done of $total done';
+  }
+
+  @override
+  String shoppingRootLineEmpty(String listName) {
+    return '$listName · no items';
+  }
+
+  @override
+  String get shoppingEmptyTitle => 'Nothing to buy';
+
+  @override
+  String get shoppingEmptyBody =>
+      'Send the week\'s dishes here and the ingredients are gathered by category. What you already have in the pantry is left out.';
+
+  @override
+  String get shoppingFromWeekMenu => 'From the week menu';
+
+  @override
+  String get shoppingLoadingTemplates => 'Fetching the templates …';
+
+  @override
+  String get importFetchingRecipe => 'Fetching the recipe …';
+
+  @override
+  String get importReadingFile => 'Reading the file …';
 }

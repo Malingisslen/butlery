@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Displays a menu slot vote with alternatives, progress bars, and actions.
 class MenuVoteCard extends StatelessWidget {
@@ -52,17 +53,19 @@ class MenuVoteCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                // text.primary, not cs.primary: primary is ink in both
+                // modes and would vanish on the dark card.
                 Icon(
                   Icons.how_to_vote,
                   size: AppDimensions.iconSizeM,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
                     context.l10n.menuVoteTitle,
                     style: AppTextStyles.titleMedium.copyWith(
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                   ),
                 ),
@@ -99,15 +102,18 @@ class MenuVoteCard extends StatelessWidget {
                         : () => onVote!(option.id),
                     child: Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
+                      // The chosen option is surface.selected with a real
+                      // 1.5 px text.primary border, never a tint (enhet-3
+                      // valda tonplattor; tokens.json surface.selected,
+                      // opacityLadder). primaryContainer is surface.selected
+                      // (#E6EAD9 / #2F4437) and onSurface text.primary (ink /
+                      // paper) in both schemes.
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? cs.primary.withValues(
-                                alpha: AppDimensions.opacityLight,
-                              )
-                            : cs.surfaceContainer,
-                        border: isSelected
-                            ? Border.all(color: cs.primary)
-                            : null,
+                        color: isSelected ? cs.primaryContainer : cs.surface,
+                        border: Border.all(
+                          color: isSelected ? cs.onSurface : cs.outlineVariant,
+                          width: isSelected ? 1.5 : 1,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,20 +121,17 @@ class MenuVoteCard extends StatelessWidget {
                           Text(
                             option.recipeName,
                             style: AppTextStyles.titleSmall.copyWith(
-                              color: isSelected ? cs.primary : cs.onSurface,
+                              color: isSelected
+                                  ? cs.onPrimaryContainer
+                                  : cs.onSurface,
                             ),
                           ),
                           const SizedBox(height: AppDimensions.spacingXs),
-                          ClipRRect(
-                            child: LinearProgressIndicator(
-                              value: fraction,
-                              backgroundColor: cs.surfaceContainerHighest,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                cs.primary,
-                              ),
-                              minHeight: AppDimensions.spacingXs,
-                            ),
-                          ),
+                          // The share of the votes as the determinate plate
+                          // line (Komponentark v1:305; B-18, no bar of its
+                          // own). The count below says the number, so the
+                          // line is not read out on its own.
+                          ExcludeSemantics(child: PlateLine(value: fraction)),
                           const SizedBox(height: AppDimensions.spacingXxs),
                           Text(
                             context.l10n.menuVoteCount(count),

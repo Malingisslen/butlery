@@ -305,8 +305,37 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     int priority = 3,
     String source = 'manual',
   }) async {
+    final id = await addItemWithId(
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      source: source,
+    );
+    return id != null;
+  }
+
+  /// [addItem] that returns the new row's id, or null when nothing was
+  /// added.
+  ///
+  /// Add is class 1 with a 7 s "Ångra" (produktregler.md:131). The undo
+  /// removes the row by this id, never by its name or position, so it takes
+  /// away exactly what was added, on a personal list and a shared one.
+  Future<String?> addItemWithId({
+    required String name,
+    required double amount,
+    String unit = '',
+    String category = ShoppingCategory.other,
+    String? note,
+    double? estimatedPrice,
+    int priority = 3,
+    String source = 'manual',
+  }) async {
     if (ValidationUtils.isNullOrWhitespace(name)) {
-      return false;
+      return null;
     }
 
     // Permission check before modifying list
@@ -316,11 +345,11 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
     if (!canEditActiveList) {
       AppLogger.error('PERMISSION DENIED - User cannot edit active list');
-      return false;
+      return null;
     }
 
     try {
-      final result = await _shoppingService.addItemToActiveList(
+      final id = await _shoppingService.addItemToActiveListWithId(
         name: name.trim(),
         amount: amount,
         unit: unit,
@@ -330,7 +359,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         priority: priority,
       );
 
-      if (result) {
+      if (id != null) {
         AppLogger.success('Successfully added item "${name.trim()}" to list');
         if (activeList != null) {
           _analytics?.shopping.logShoppingListItemAdded(
@@ -342,10 +371,10 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         AppLogger.error('Failed to add item "${name.trim()}" to list');
       }
 
-      return result;
+      return id;
     } catch (e) {
       AppLogger.error('Exception while adding item: $e');
-      return false;
+      return null;
     }
   }
 

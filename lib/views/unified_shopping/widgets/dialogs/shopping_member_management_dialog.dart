@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -125,17 +126,12 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.shoppingPermissionUpdated(
-                  widget.userDisplayNames[userId] ??
-                      context.l10n.shoppingUnknownUser,
-                ),
-              ),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
+          // The ink snackbar (PQ-09 = A).
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingPermissionUpdated(
+              widget.userDisplayNames[userId] ??
+                  context.l10n.shoppingUnknownUser,
             ),
           );
         }
@@ -216,13 +212,9 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.shoppingMemberRemoved(userName)),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingMemberRemoved(userName),
           );
         }
       } else {
@@ -321,15 +313,9 @@ class _ShoppingMemberManagementDialogState
           firstFailureReason ?? shoppingService.consumeMutationError();
       if (mounted) {
         if (addedMembers.isNotEmpty) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.shoppingMembersAdded(addedMembers.length),
-              ),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingMembersAdded(addedMembers.length),
           );
           // Some selected friends were NOT added. Reporting only the
           // successes reads as "all done" while _selectedFriends.clear()

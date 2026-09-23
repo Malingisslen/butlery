@@ -122,12 +122,13 @@ void main() {
   testWidgets('loading while tag not yet present shows the loading title', (
     tester,
   ) async {
-    // Proves: the isLoading && tag==null branch shows the "Laddar..." app bar
-    // rather than prematurely flashing the not-found error.
+    // Proves: the isLoading && tag==null branch shows the plate line with
+    // "Hämtar taggen …" (produktregler.md:163, P4-U16) rather than
+    // prematurely flashing the not-found error.
     fakeVm.setState(tags: const [], isLoading: true);
     await pumpView(tester, 'pending-id');
 
-    expect(find.text('Laddar...'), findsOneWidget); // commonLoading
+    expect(find.text('Hämtar taggen …'), findsOneWidget); // loadingTag
     expect(find.text('Taggen kunde inte hittas'), findsNothing);
   });
 

@@ -35,7 +35,9 @@ class MenuPlacementChoiceFooter extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        border: Border(top: BorderSide(color: cs.primary, width: 2)),
+        // text.primary (onSurface): ink on light, paper on dark. cs.primary
+        // is ink in both modes and would vanish on the dark surface.
+        border: Border(top: BorderSide(color: cs.onSurface, width: 2)),
       ),
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingMd,

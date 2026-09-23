@@ -90,4 +90,21 @@ void main() {
       );
     }
   });
+
+  test('an add to the shopping list is undone by its row id', () {
+    // P4-U11: add is class 1 with a 7 s "Ångra" (produktregler.md:131). The
+    // add dialog asks for the new row's id and hands Ångra a removal of
+    // exactly that row, through the primitive, never by name or position.
+    final source = File(
+      'lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart',
+    ).readAsStringSync();
+    expect(source, contains('addItemWithId('));
+    expect(source, contains('SnackBarUtils.showUndo('));
+    expect(
+      RegExp(
+        r'onUndo:\s*\(\)\s*=>\s*unawaited\(viewModel\.removeItem\(id\)\)',
+      ).hasMatch(source),
+      isTrue,
+    );
+  });
 }
