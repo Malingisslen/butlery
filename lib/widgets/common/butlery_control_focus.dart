@@ -161,7 +161,9 @@ class _ButleryAncestorFocusRingState extends State<ButleryAncestorFocusRing> {
   @override
   Widget build(BuildContext context) {
     return ButleryFocusRing(
-      focused: _node?.hasFocus ?? false,
+      // The ancestor's own focus only. hasFocus is also true while a control
+      // inside it (a card's heart or menu) has focus, which would ring both.
+      focused: _node?.hasPrimaryFocus ?? false,
       borderRadius: widget.borderRadius,
       child: widget.child,
     );

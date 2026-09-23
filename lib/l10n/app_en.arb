@@ -834,7 +834,7 @@
   "chatDeleteMessageConfirm": "Are you sure you want to delete the message?",
   "statusConnecting": "Connecting...",
   "statusSyncing": "Syncing...",
-  "statusSaving": "Saving...",
+  "statusSaving": "Saving…",
   "statusCreating": "Creating...",
   "statusUpdating": "Updating...",
   "accessibilityBackButton": "Back",
@@ -9927,6 +9927,10 @@
         "type": "int"
       }
     }
+  },
+  "bulkMoreActions": "More actions",
+  "@bulkMoreActions": {
+    "description": "Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)"
   },
   "bulkSelectAll": "Select All",
   "bulkCancelSelection": "Cancel selection",

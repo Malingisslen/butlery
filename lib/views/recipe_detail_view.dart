@@ -1276,8 +1276,22 @@ class _RecipeActionBar extends StatelessWidget {
       second = startCooking;
     } else {
       first = startCooking;
+      // Light: the theme's ink fill (Skarmar v12 del 1 'Receptdetalj',
+      // background:#24382c). Dark: no fill, a 1.5 px paper outline and
+      // paper text (Skarmar v12 del 1 'Receptdetalj — mörkt läge',
+      // border:1.5px solid #f5f4ed), since ink on #17251D does not read as
+      // a button. cs.onSurface is paper #F5F4ED in the dark scheme
+      // (app_colors.dart:331).
+      final isDark = cs.brightness == Brightness.dark;
       second = FilledButton(
         key: const ValueKey('test-recipe-detail-add-to-list'),
+        style: isDark
+            ? FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: cs.onSurface,
+                side: BorderSide(color: cs.onSurface, width: 1.5),
+              )
+            : null,
         onPressed: onAddToShoppingList,
         child: Text(l10n.recipeAddToShoppingList),
       );

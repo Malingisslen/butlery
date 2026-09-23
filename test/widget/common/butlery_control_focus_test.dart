@@ -235,6 +235,61 @@ void main() {
     });
   }
 
+  // A card rings only for its own focus: a heart or menu inside it rings
+  // just that button (lib/widgets/recipe/recipe_card.dart).
+  testWidgets('ancestor ring: focus on a control inside draws no ring '
+      'around the whole', (tester) async {
+    final cardNode = FocusNode(debugLabel: 'card');
+    final heartNode = FocusNode(debugLabel: 'heart');
+    addTearDown(cardNode.dispose);
+    addTearDown(heartNode.dispose);
+    await _pump(
+      tester,
+      InkWell(
+        focusNode: cardNode,
+        onTap: () {},
+        child: ButleryAncestorFocusRing(
+          child: SizedBox(
+            width: 200,
+            height: 100,
+            child: Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                focusNode: heartNode,
+                onPressed: () {},
+                icon: const Icon(Icons.favorite_border),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    bool? cardRing() => tester
+        .widget<ButleryFocusRing>(
+          find
+              .descendant(
+                of: find.byType(ButleryAncestorFocusRing),
+                matching: find.byType(ButleryFocusRing),
+              )
+              .first,
+        )
+        .focused;
+
+    heartNode.requestFocus();
+    await tester.pumpAndSettle();
+    expect(heartNode.hasPrimaryFocus, isTrue);
+    expect(cardRing(), isFalse, reason: 'the heart has focus, not the card');
+
+    cardNode.requestFocus();
+    await tester.pumpAndSettle();
+    expect(cardRing(), isTrue, reason: 'the card itself has focus');
+
+    heartNode.requestFocus();
+    await tester.pumpAndSettle();
+    expect(cardRing(), isFalse, reason: 'focus moved back into the card');
+  });
+
   testWidgets('menu item: keyboard focus draws the ring around the row', (
     tester,
   ) async {

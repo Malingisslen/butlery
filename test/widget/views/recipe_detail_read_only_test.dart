@@ -384,6 +384,57 @@ void main() {
       });
     }
 
+    // Skarmar v12 del 1 'Receptdetalj' draws the shopping-list action with
+    // an ink fill; 'Receptdetalj — mörkt läge' draws it with no fill, a
+    // 1.5 px paper outline and paper text.
+    testWidgets('the shopping-list action is ink in light mode', (
+      tester,
+    ) async {
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      final button = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+      );
+      expect(button.style, isNull, reason: 'the theme ink fill');
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, AppTheme.lightTheme.colorScheme.primary);
+    });
+
+    testWidgets('the shopping-list action is a paper outline in dark mode', (
+      tester,
+    ) async {
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe),
+        theme: AppTheme.darkTheme,
+      );
+      final paper = AppTheme.darkTheme.colorScheme.onSurface;
+      expect(paper, const Color(0xFFF5F4ED));
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, Colors.transparent);
+      final shape = material.shape! as OutlinedBorder;
+      expect(shape.side.color, paper);
+      expect(shape.side.width, 1.5);
+      final label = tester.widget<DefaultTextStyle>(
+        find
+            .ancestor(
+              of: find.text('Lägg i inköpslistan'),
+              matching: find.byType(DefaultTextStyle),
+            )
+            .first,
+      );
+      expect(label.style.color, paper);
+    });
+
     testWidgets('the title stands under the hero, never on the image', (
       tester,
     ) async {

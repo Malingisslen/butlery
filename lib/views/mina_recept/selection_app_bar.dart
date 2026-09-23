@@ -45,6 +45,11 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
   RecipeListViewModel viewModel, {
   String? secondaryLine,
 }) {
+  final cs = Theme.of(context).colorScheme;
+  // Interpretation: #flerbar is drawn at 412 dp. Below 360 dp the counter,
+  // Avbryt and three actions plus the kebab do not fit one row, so share
+  // moves to the top of the kebab ("högst tre", produktregler.md:886).
+  final narrow = MediaQuery.sizeOf(context).width < _narrowBar;
   return ButleryTopBar.rot(
     title: context.l10n.bulkSelectedCount(viewModel.selectedCount),
     titleStyle: const TextStyle(
@@ -52,78 +57,154 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
     ),
     secondaryLine: secondaryLine,
     secondaryLineIsLive: false,
+    // text.primary on surface.base in both modes (ink #24382C light, paper
+    // #F5F4ED dark; app_colors.dart:295, :331). The theme's text-button
+    // colour is cs.primary, which is ink in the dark scheme too.
     leading: TextButton(
       key: const ValueKey('mina-recept-selection-cancel'),
+      style: TextButton.styleFrom(
+        foregroundColor: cs.onSurface,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingSm,
+        ),
+      ),
       onPressed: viewModel.clearSelection,
       child: Text(context.l10n.commonCancel),
     ),
+    // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: at most
+    // three actions in the bar, ordered by how often they are used and how
+    // hard they are to undo (add to menu, tag, share), the rest in a kebab
+    // (select all, export, delete). Six 48 dp actions do not fit a phone.
     actions: [
-      IconButton(
-        icon: const Icon(Icons.select_all),
-        tooltip: context.l10n.bulkSelectAll,
-        onPressed: viewModel.selectAll,
-      ),
-      // BUT-933: bulk-share. BUT-1012 added bulk-tag below.
-      IconButton(
-        icon: const Icon(Icons.share_outlined),
-        tooltip: context.l10n.bulkShare,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkShareDialog(context, viewModel),
-      ),
-      IconButton(
-        icon: const Icon(Icons.local_offer_outlined),
-        tooltip: context.l10n.bulkTag,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkTagPicker(context, viewModel),
-      ),
       // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
       // then loop selected recipes into chosen slot (single-slot
       // distributes day-by-day; multi-slot stacks).
       IconButton(
+        key: const ValueKey('mina-recept-bulk-add-to-menu'),
         icon: const Icon(Icons.calendar_month_outlined),
         tooltip: context.l10n.bulkAddToMenu,
         onPressed: viewModel.selectedCount == 0
             ? null
             : () => _openBulkAddToMenu(context, viewModel),
       ),
-      // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+      // BUT-1012: bulk-tag.
       IconButton(
-        icon: const Icon(Icons.ios_share),
-        tooltip: context.l10n.bulkExport,
+        key: const ValueKey('mina-recept-bulk-tag'),
+        icon: const Icon(Icons.local_offer_outlined),
+        tooltip: context.l10n.bulkTag,
         onPressed: viewModel.selectedCount == 0
             ? null
-            : () => _openBulkExport(context, viewModel),
+            : () => _openBulkTagPicker(context, viewModel),
       ),
-      IconButton(
-        icon: const Icon(Icons.delete_outline),
-        tooltip: context.l10n.bulkDelete,
-        onPressed: () async {
-          final count = viewModel.selectedCount;
-          final confirmed = await CommonDialogActions.showDeleteConfirmation(
-            context: context,
-            itemName: '$count recept',
-            itemType: 'recept',
-            warningMessage: context.l10n.bulkDeleteConfirmMessage,
-            icon: Icons.delete_sweep,
-          );
-          if (confirmed == true && context.mounted) {
-            final batch = viewModel.deleteSelected();
-            viewModel.clearSelection();
-            // Commits when the snackbar closes, never under a live Ångra.
-            SnackBarUtils.showUndoDeferred(
-              context,
-              context.l10n.bulkDeleteSuccess(count),
-              look: UndoSnackBarLook.confirmation,
-              onUndo: () => viewModel.undoBulkDelete(),
-              onCommit: () => viewModel.commitDeletes(batch),
-            );
-          }
-        },
-      ),
+      // BUT-933: bulk-share.
+      if (!narrow)
+        IconButton(
+          key: const ValueKey('mina-recept-bulk-share'),
+          icon: const Icon(Icons.share_outlined),
+          tooltip: context.l10n.bulkShare,
+          onPressed: viewModel.selectedCount == 0
+              ? null
+              : () => _openBulkShareDialog(context, viewModel),
+        ),
+      _BulkMoreMenu(viewModel: viewModel, withShare: narrow),
     ],
   );
+}
+
+/// Below this width share leaves the bar for the kebab.
+const double _narrowBar = 360;
+
+enum _BulkMoreAction { share, selectAll, export, delete }
+
+/// The kebab of #flerbar: select all, export, and delete last, alone,
+/// behind a line and in text.danger (produktregler.md:888; Skarmar v12
+/// etapp 9 #flerbar). Actions that need a selection are off at zero with
+/// the name still readable (produktregler.md:876).
+class _BulkMoreMenu extends StatelessWidget {
+  const _BulkMoreMenu({required this.viewModel, required this.withShare});
+
+  final RecipeListViewModel viewModel;
+  final bool withShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final hasSelection = viewModel.selectedCount > 0;
+    return PopupMenuButton<_BulkMoreAction>(
+      key: const ValueKey('mina-recept-bulk-more'),
+      icon: const Icon(Icons.more_vert),
+      tooltip: context.l10n.bulkMoreActions,
+      onSelected: (action) {
+        switch (action) {
+          case _BulkMoreAction.share:
+            _openBulkShareDialog(context, viewModel);
+          case _BulkMoreAction.selectAll:
+            viewModel.selectAll();
+          case _BulkMoreAction.export:
+            _openBulkExport(context, viewModel);
+          case _BulkMoreAction.delete:
+            _confirmBulkDelete(context, viewModel);
+        }
+      },
+      itemBuilder: (menuContext) => [
+        if (withShare)
+          PopupMenuItem(
+            value: _BulkMoreAction.share,
+            enabled: hasSelection,
+            child: Text(menuContext.l10n.bulkShare),
+          ),
+        PopupMenuItem(
+          value: _BulkMoreAction.selectAll,
+          child: Text(menuContext.l10n.bulkSelectAll),
+        ),
+        // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+        PopupMenuItem(
+          value: _BulkMoreAction.export,
+          enabled: hasSelection,
+          child: Text(menuContext.l10n.bulkExport),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          key: const ValueKey('mina-recept-bulk-delete'),
+          value: _BulkMoreAction.delete,
+          enabled: hasSelection,
+          child: Text(
+            menuContext.l10n.bulkDelete,
+            // text.danger on the menu's surface.base: cs.error is the
+            // generated semantic.text.danger, #9C3B23 light and #DE9078
+            // dark (app_colors.dart:290, :326).
+            style: hasSelection ? TextStyle(color: cs.error) : null,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Future<void> _confirmBulkDelete(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) async {
+  final count = viewModel.selectedCount;
+  final confirmed = await CommonDialogActions.showDeleteConfirmation(
+    context: context,
+    itemName: '$count recept',
+    itemType: 'recept',
+    warningMessage: context.l10n.bulkDeleteConfirmMessage,
+    icon: Icons.delete_sweep,
+  );
+  if (confirmed == true && context.mounted) {
+    final batch = viewModel.deleteSelected();
+    viewModel.clearSelection();
+    // Commits when the snackbar closes, never under a live Ångra.
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.bulkDeleteSuccess(count),
+      look: UndoSnackBarLook.confirmation,
+      onUndo: () => viewModel.undoBulkDelete(),
+      onCommit: () => viewModel.commitDeletes(batch),
+    );
+  }
 }
 
 /// BUT-933: open the bulk-share dialog with the selected recipes.

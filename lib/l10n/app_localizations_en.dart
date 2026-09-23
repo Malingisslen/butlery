@@ -1106,7 +1106,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusSyncing => 'Syncing...';
 
   @override
-  String get statusSaving => 'Saving...';
+  String get statusSaving => 'Saving…';
 
   @override
   String get statusCreating => 'Creating...';
@@ -14144,6 +14144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String bulkSelectedCount(int count) {
     return '$count selected';
   }
+
+  @override
+  String get bulkMoreActions => 'More actions';
 
   @override
   String get bulkSelectAll => 'Select All';

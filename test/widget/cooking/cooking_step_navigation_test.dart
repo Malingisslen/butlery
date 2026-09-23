@@ -5,7 +5,11 @@
 /// - A disabled control on surface.ink is its own opaque colour, never paper
 ///   at an opacity, and reads at 4.5:1 or better (tokens.json:40-53,
 ///   :198-201; beslut-paket2 "disabled on surface.ink").
-/// - Both hold in light and dark mode, since cooking mode is ink in both.
+/// - The base is surface.ink in light mode and dark-bg #17251D in dark mode,
+///   "så skärmen inte lyser i ett släckt kök" (Skarmar v12 del 1
+///   #lagamorkt); both rules above hold on each base.
+/// - "Nästa steg" fills the rest of the row (flex:1 in #lagastaende and
+///   #lagamorkt).
 library;
 
 import 'package:flutter/material.dart';
@@ -76,7 +80,7 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          backgroundColor: theme.colorScheme.primary,
+          backgroundColor: theme.colorScheme.surface,
           body: Align(
             alignment: Alignment.bottomCenter,
             child: SizedBox(width: 600, child: CookingStepNavigation(vm: vm)),
@@ -87,10 +91,40 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  for (final (mode, theme) in [
-    ('light', AppTheme.lightTheme),
-    ('dark', AppTheme.darkTheme),
+  Color baseOf(WidgetTester tester) => tester
+      .widget<Container>(
+        find
+            .descendant(
+              of: find.byType(CookingStepNavigation),
+              matching: find.byType(Container),
+            )
+            .first,
+      )
+      .color!;
+
+  for (final (mode, theme, base) in [
+    ('light', AppTheme.lightTheme, const Color(0xFF24382C)),
+    ('dark', AppTheme.darkTheme, const Color(0xFF17251D)),
   ]) {
+    testWidgets('the base is ${base.toARGB32().toRadixString(16)} ($mode)', (
+      tester,
+    ) async {
+      await pump(tester, theme);
+      expect(baseOf(tester), base);
+    });
+
+    testWidgets('Nästa steg fills the rest of the row ($mode)', (
+      tester,
+    ) async {
+      await pump(tester, theme);
+      final row = tester.getRect(find.byType(CookingStepNavigation));
+      final next = tester.getRect(
+        find.byKey(const ValueKey('cooking-mode-next-step')),
+      );
+      expect(row.right - next.right, lessThanOrEqualTo(16));
+      expect(next.width, greaterThan(row.width / 2));
+    });
+
     testWidgets('Nästa steg is the one saffron action ($mode)', (tester) async {
       await pump(tester, theme);
 
@@ -127,10 +161,10 @@ void main() {
         matching: find.byIcon(Icons.arrow_back),
       );
       final icon = tester.widget<Icon>(previous);
-      final ink = theme.colorScheme.primary;
+      final base = baseOf(tester);
       expect(icon.color!.a, 1.0, reason: 'no opacity as a state');
       expect(icon.color, isNot(theme.colorScheme.onPrimary));
-      expect(_contrast(icon.color!, ink), greaterThanOrEqualTo(4.5));
+      expect(_contrast(icon.color!, base), greaterThanOrEqualTo(4.5));
     });
 
     testWidgets('the last step disables Nästa steg ($mode)', (tester) async {

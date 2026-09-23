@@ -1925,7 +1925,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Sparar...'**
+  /// **'Sparar …'**
   String get statusSaving;
 
   /// No description provided for @statusCreating.
@@ -23662,6 +23662,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count} valda'**
   String bulkSelectedCount(int count);
+
+  /// Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler åtgärder'**
+  String get bulkMoreActions;
 
   /// No description provided for @bulkSelectAll.
   ///

@@ -120,6 +120,88 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
       verify(() => viewModel.clearSelection()).called(1);
     });
+
+    // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: three
+    // actions in the bar, the other three in a kebab with delete last.
+    for (final width in [320.0, 390.0]) {
+      testWidgets('fits a $width dp phone without overflow', (tester) async {
+        tester.view.physicalSize = Size(width, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await pumpBar(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('1 valda'), findsOneWidget);
+        // Below 360 dp share moves into the kebab ("högst tre").
+        expect(
+          find.byKey(const ValueKey('mina-recept-bulk-share')),
+          width < 360 ? findsNothing : findsOneWidget,
+        );
+        if (width < 360) {
+          await tester.tap(
+            find.byKey(const ValueKey('mina-recept-bulk-more')),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('Dela valda'), findsOneWidget);
+        }
+      });
+    }
+
+    for (final (mode, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('Avbryt is text.primary on the bar ($mode)', (tester) async {
+        await tester.pumpWidget(
+          _app(
+            Builder(
+              builder: (context) => Scaffold(
+                appBar: buildMinaReceptSelectionAppBar(context, viewModel),
+              ),
+            ),
+            theme: theme,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final text = tester.widget<DefaultTextStyle>(
+          find
+              .ancestor(
+                of: find.text('Avbryt'),
+                matching: find.byType(DefaultTextStyle),
+              )
+              .first,
+        );
+        expect(text.style.color, theme.colorScheme.onSurface);
+      });
+    }
+
+    testWidgets('three actions in the bar, the rest in the kebab', (
+      tester,
+    ) async {
+      await pumpBar(tester);
+
+      final actions = find.descendant(
+        of: find.byKey(const ValueKey('butleryTopBar.actions')),
+        matching: find.byType(IconButton),
+      );
+      expect(
+        tester.widgetList<IconButton>(actions).map((b) => b.tooltip).toList(),
+        ['Lägg till i veckomeny', 'Tagga valda', 'Dela valda', 'Fler åtgärder'],
+      );
+
+      await tester.tap(find.byKey(const ValueKey('mina-recept-bulk-more')));
+      await tester.pumpAndSettle();
+      expect(find.text('Välj alla'), findsOneWidget);
+      expect(find.text('Exportera valda'), findsOneWidget);
+      expect(find.byType(PopupMenuDivider), findsOneWidget);
+      final delete = tester.widget<Text>(find.text('Ta bort valda'));
+      expect(delete.style?.color, AppTheme.lightTheme.colorScheme.error);
+      expect(
+        tester.getTopLeft(find.text('Ta bort valda')).dy,
+        greaterThan(tester.getTopLeft(find.text('Exportera valda')).dy),
+        reason: 'delete is last',
+      );
+    });
   });
 
   group('chosen card', () {

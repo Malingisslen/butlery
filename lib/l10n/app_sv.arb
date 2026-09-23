@@ -840,7 +840,7 @@
   "chatDeleteMessageConfirm": "Är du säker på att du vill ta bort meddelandet?",
   "statusConnecting": "Ansluter...",
   "statusSyncing": "Synkroniserar...",
-  "statusSaving": "Sparar...",
+  "statusSaving": "Sparar …",
   "statusCreating": "Skapar...",
   "statusUpdating": "Uppdaterar...",
   "accessibilityBackButton": "Tillbaka",
@@ -9985,6 +9985,10 @@
         "type": "int"
       }
     }
+  },
+  "bulkMoreActions": "Fler åtgärder",
+  "@bulkMoreActions": {
+    "description": "Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)"
   },
   "bulkSelectAll": "Välj alla",
   "bulkCancelSelection": "Avbryt val",

@@ -1109,7 +1109,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statusSyncing => 'Synkroniserar...';
 
   @override
-  String get statusSaving => 'Sparar...';
+  String get statusSaving => 'Sparar …';
 
   @override
   String get statusCreating => 'Skapar...';
@@ -14176,6 +14176,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String bulkSelectedCount(int count) {
     return '$count valda';
   }
+
+  @override
+  String get bulkMoreActions => 'Fler åtgärder';
 
   @override
   String get bulkSelectAll => 'Välj alla';

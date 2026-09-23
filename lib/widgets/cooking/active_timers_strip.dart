@@ -59,9 +59,11 @@ class ActiveTimersStrip extends StatelessWidget {
             vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
-            // Ink with a decorative paper line at the ladder's on-ink step
-            // (tokens.json:40-53 opacityLadder.onInk 0.18).
-            color: cs.primary,
+            // The cooking-mode base with a decorative paper line at the
+            // ladder's on-ink step (tokens.json:40-53 opacityLadder.onInk
+            // 0.18): ink in light mode, dark-bg #17251D in dark mode
+            // (Skarmar v12 del 1 #lagamorkt).
+            color: cs.brightness == Brightness.dark ? cs.surface : cs.primary,
             border: Border(
               bottom: BorderSide(color: cs.onPrimary.withValues(alpha: 0.18)),
             ),
