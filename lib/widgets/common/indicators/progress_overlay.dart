@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Reusable progress overlay component
 /// Provides consistent styling for upload/loading overlays.
@@ -41,6 +42,10 @@ class ProgressOverlay extends StatelessWidget {
     this.textColor,
   }) : shape = BoxShape.rectangle;
 
+  /// The line's width inside the overlay. Interpretation: the avatar overlay
+  /// is small, so the line is 48 dp, one touch target, not the drawn 300.
+  static const double overlayLineWidth = AppDimensions.minTouchTarget;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -52,22 +57,34 @@ class ProgressOverlay extends StatelessWidget {
               backgroundColor ??
               cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
         ),
+        // Text plus the plate line, never a spinner (produktregler.md:163,
+        // B-18). The overlay is a dark scrim, so the line takes the in-button
+        // form in the overlay's own text colour (Komponentark v1:307).
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                strokeWidth: 2,
-                color: progressColor ?? cs.surfaceContainerHighest,
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                text,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: textColor ?? cs.surfaceContainerHighest,
+          child: Semantics(
+            liveRegion: true,
+            label: text,
+            child: ExcludeSemantics(
+              child: SizedBox(
+                width: overlayLineWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      text,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: textColor ?? cs.surfaceContainerHighest,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    ButtonPlateLine(
+                      color: progressColor ?? cs.surfaceContainerHighest,
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

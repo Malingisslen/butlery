@@ -3,6 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Progress dialog for batch retagging all user recipes.
 ///
@@ -106,14 +107,13 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
                 ),
               ),
             const SizedBox(height: AppDimensions.spacingMd),
-            LinearProgressIndicator(
+            // The plate line: determinate "10 av 16" when the total is
+            // known, else the still segment (Komponentark v1:305-306).
+            PlateLine(
               value: _total > 0 ? _current / _total : null,
-              backgroundColor: Theme.of(context).colorScheme.primary.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
-              ),
+              semanticLabel: _total > 0
+                  ? context.l10n.retagRetaggingProgress(_current, _total)
+                  : context.l10n.retagFetchingRecipes,
             ),
           ],
         ],

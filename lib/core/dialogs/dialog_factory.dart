@@ -5,9 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Consolidated dialog factory with all dialog functionality
 class DialogFactory {
@@ -189,14 +189,11 @@ class DialogFactory {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
+      // Plate line plus text, never a spinner (produktregler.md:163, B-18).
       builder: (dialogContext) => AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: AppDimensions.spacingM),
-            Text(effectiveMessage),
-          ],
+        content: PlateLineMessage(
+          message: effectiveMessage,
+          textAlign: TextAlign.start,
         ),
       ),
     );

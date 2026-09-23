@@ -16671,4 +16671,19 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get licensesCouldNotLoad => 'Licenstexterna kunde inte läsas in.';
+
+  @override
+  String get buttonBusySaving => 'Sparar …';
+
+  @override
+  String get loadingProfileBusy => 'Hämtar din profil …';
+
+  @override
+  String get loadingOnboardingResume => 'Hämtar var du slutade …';
+
+  @override
+  String get loadingOpeningPage => 'Öppnar sidan …';
+
+  @override
+  String get loadingStartingApp => 'Startar Butlery …';
 }

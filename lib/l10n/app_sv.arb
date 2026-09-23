@@ -12365,5 +12365,10 @@
   "settingsLicensesSubtitle": "Typsnitt och öppen källkod",
   "licensesNoticesHeading": "Butlery Sans – upphovsrätt och källor",
   "licensesOflHeading": "SIL Open Font License 1.1",
-  "licensesCouldNotLoad": "Licenstexterna kunde inte läsas in."
+  "licensesCouldNotLoad": "Licenstexterna kunde inte läsas in.",
+  "buttonBusySaving": "Sparar …",
+  "loadingProfileBusy": "Hämtar din profil …",
+  "loadingOnboardingResume": "Hämtar var du slutade …",
+  "loadingOpeningPage": "Öppnar sidan …",
+  "loadingStartingApp": "Startar Butlery …"
 }

@@ -1,72 +1,68 @@
-/// Platform-adaptive activity indicator widget.
-/// Uses CupertinoActivityIndicator on iOS, CircularProgressIndicator on Android.
+/// The former platform-adaptive activity indicator. It now draws the plate
+/// line on every platform (B-18, beslutslogg.md:25: no spinner; B-45,
+/// beslutslogg.md:52: no Cupertino branch).
 
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-/// A platform-adaptive activity indicator.
-/// Automatically uses CupertinoActivityIndicator on iOS and
-/// CircularProgressIndicator on Android.
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+
+/// The plate line under an old name.
+///
+/// It used to draw a CupertinoActivityIndicator on iOS and a
+/// CircularProgressIndicator elsewhere. Both are spinners, which the system
+/// forbids (produktregler.md:163), so it draws the indeterminate
+/// [PlateLine]. [radius] and [strokeWidth] no longer change anything and
+/// stay only so existing code keeps compiling; the widget is retired in
+/// package 7. [color] is ignored as well: the line takes its tokens
+/// (tokens.json progressTrack and surface.disabled).
 class AdaptiveActivityIndicator extends StatelessWidget {
-  /// Creates a platform-adaptive activity indicator.
+  /// Creates the indicator.
   const AdaptiveActivityIndicator({
     super.key,
     this.radius,
     this.strokeWidth,
     this.color,
+    this.semanticLabel,
   });
 
-  /// The radius of the spinner (iOS only).
-  /// Defaults to 10.0 on iOS.
+  /// No longer used.
   final double? radius;
 
-  /// The width of the progress indicator stroke (Android only).
-  /// Defaults to 4.0 on Android.
+  /// No longer used.
   final double? strokeWidth;
 
-  /// The color of the activity indicator.
-  /// Uses theme color if not specified.
+  /// No longer used.
   final Color? color;
 
-  /// Creates a small activity indicator suitable for buttons and compact spaces.
+  /// What is being loaded, for the screen reader. Null gives a11yLoading.
+  final String? semanticLabel;
+
+  /// The small form. Same line.
   const AdaptiveActivityIndicator.small({
     super.key,
     this.color,
+    this.semanticLabel,
   }) : radius = 8.0,
        strokeWidth = 2.0;
 
-  /// Creates a medium activity indicator for general use.
+  /// The medium form. Same line.
   const AdaptiveActivityIndicator.medium({
     super.key,
     this.color,
+    this.semanticLabel,
   }) : radius = 12.0,
        strokeWidth = 3.0;
 
-  /// Creates a large activity indicator for page-level loading states.
+  /// The large form. Same line.
   const AdaptiveActivityIndicator.large({
     super.key,
     this.color,
+    this.semanticLabel,
   }) : radius = 16.0,
        strokeWidth = 4.0;
 
   @override
   Widget build(BuildContext context) {
-    if (!kIsWeb && Platform.isIOS) {
-      return CupertinoActivityIndicator(
-        radius: radius ?? 10.0,
-        color: color,
-      );
-    }
-
-    return SizedBox(
-      width: (radius ?? 10.0) * 2,
-      height: (radius ?? 10.0) * 2,
-      child: CircularProgressIndicator(
-        strokeWidth: strokeWidth ?? 4.0,
-        color: color,
-      ),
-    );
+    return PlateLine(semanticLabel: semanticLabel);
   }
 }

@@ -12295,5 +12295,10 @@
   "settingsLicensesSubtitle": "Typefaces and open source",
   "licensesNoticesHeading": "Butlery Sans – copyright and sources",
   "licensesOflHeading": "SIL Open Font License 1.1",
-  "licensesCouldNotLoad": "The licence texts could not be loaded."
+  "licensesCouldNotLoad": "The licence texts could not be loaded.",
+  "buttonBusySaving": "Saving …",
+  "loadingProfileBusy": "Loading your profile …",
+  "loadingOnboardingResume": "Finding where you left off …",
+  "loadingOpeningPage": "Opening the page …",
+  "loadingStartingApp": "Starting Butlery …"
 }

@@ -257,7 +257,7 @@ void main() {
     );
 
     testWidgets(
-      'showLoadingIndicator renders the default plate line during processing',
+      'showLoadingIndicator keeps the button and draws the plate line on it',
       (tester) async {
         final completer = Completer<void>();
         await tester.pumpWidget(
@@ -269,12 +269,13 @@ void main() {
             ),
           ),
         );
-        expect(find.byType(PlateLine), findsNothing);
+        expect(find.byType(ButtonPlateLine), findsNothing);
         await tester.tap(find.text('Spara'));
         await tester.pump();
-        expect(find.byType(PlateLine), findsOneWidget);
-        // Child text is no longer shown during loading.
-        expect(find.text('Spara'), findsNothing);
+        // The button keeps its name and gets the line along its bottom
+        // edge (Komponentark v1:365, :372), never a spinner in its place.
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
+        expect(find.text('Spara'), findsOneWidget);
         completer.complete();
         await tester.pump();
         await tester.pump(AppDimensions.animationDurationLong);
@@ -298,7 +299,7 @@ void main() {
       await tester.tap(find.text('Spara'));
       await tester.pump();
       expect(find.text('Laddar...'), findsOneWidget);
-      expect(find.byType(PlateLine), findsNothing);
+      expect(find.byType(ButtonPlateLine), findsNothing);
       completer.complete();
       await tester.pump();
       await tester.pump(AppDimensions.animationDurationLong);

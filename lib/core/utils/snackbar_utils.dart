@@ -1,25 +1,35 @@
 /// Snackbar utilities for standardized user feedback (success, error, warning, info).
+///
+/// Every snackbar has one look: the ink snackbar of Komponentark v1:745-750
+/// (produktbeslut PQ-09 = A, 2026-09-23). The surface, text colour, radius
+/// and dark-mode edge come from the global snackBarTheme
+/// (lib/theme/components/feedback_themes.dart); this file builds the
+/// content: the message and, when there is one, the action in light saffron
+/// with its own paper focus ring. The action is never "OK" (Komponentark
+/// v1:750): Ångra, Försök igen, Öppna inställningar or Stäng.
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/components/feedback_themes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
 class SnackBarUtils {
   // Prevent instantiation
   SnackBarUtils._();
 
-  /// Show success toast with green background.
-  /// UI Redesign: 5 second duration per mockup.
+  /// A confirmation. The ink look carries no status colour (Komponentark
+  /// v1:300, "Aldrig fylld yta i statusfärg"); the message says what
+  /// happened.
   static void showSuccess(
     BuildContext context,
     String message, {
@@ -29,17 +39,13 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
-      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: cs.primary, // UI Redesign: green background
-        textColor: cs.surfaceContainerHighest,
-        icon: Icons.check,
-        duration: duration ?? const Duration(seconds: 5), // UI Redesign: 5s
-        actionLabel: actionLabel,
-        onAction: onAction,
-        showCloseButton: showCloseButton,
+        duration: duration ?? const Duration(seconds: 5),
+        actionLabel:
+            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
+        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
       );
 
       AppLogger.debug('Success snackbar shown: $message');
@@ -64,8 +70,8 @@ class SnackBarUtils {
     );
   }
 
-  /// Show error toast with rust background.
-  /// UI Redesign: rust (#8B5A3C) instead of red per interview.
+  /// An error. With [showCloseButton] the action is "Stäng", never "OK"
+  /// (Komponentark v1:750).
   static void showError(
     BuildContext context,
     String message, {
@@ -75,17 +81,13 @@ class SnackBarUtils {
     bool showCloseButton = true,
   }) {
     try {
-      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: cs.secondary, // UI Redesign: rust background
-        textColor: cs.surfaceContainerHighest,
-        icon: Icons.close,
         duration: duration ?? const Duration(seconds: 5),
-        actionLabel: actionLabel ?? (showCloseButton ? 'OK' : null),
+        actionLabel:
+            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
         onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
-        showCloseButton: false, // Handle via action
       );
 
       AppLogger.debug('Error snackbar shown: $message');
@@ -109,6 +111,8 @@ class SnackBarUtils {
     );
   }
 
+  /// No connection. The action is "Försök igen" with [onRetry], else
+  /// "Stäng" (Komponentark v1:750, never "OK").
   static void showNetworkError(
     BuildContext context, {
     VoidCallback? onRetry,
@@ -119,7 +123,7 @@ class SnackBarUtils {
       context.l10n.snackbarNoInternet,
       actionLabel: onRetry != null
           ? context.l10n.commonRetry
-          : context.l10n.commonOk,
+          : context.l10n.commonClose,
       onAction: onRetry ?? (() => hide(context)),
       duration: duration,
     );
@@ -134,18 +138,13 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
-      final butlery = context.butleryColors;
-      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: butlery.warning,
-        textColor: cs.onSurface,
-        icon: Icons.warning_outlined,
         duration: duration ?? const Duration(seconds: 4),
-        actionLabel: actionLabel,
-        onAction: onAction,
-        showCloseButton: showCloseButton,
+        actionLabel:
+            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
+        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
       );
 
       AppLogger.debug('Warning snackbar shown: $message');
@@ -163,17 +162,13 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
-      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: cs.primary,
-        textColor: cs.outlineVariant,
-        icon: Icons.info_outline,
         duration: duration ?? const Duration(seconds: 4),
-        actionLabel: actionLabel,
-        onAction: onAction,
-        showCloseButton: showCloseButton,
+        actionLabel:
+            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
+        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
       );
 
       AppLogger.debug('Info snackbar shown: $message');
@@ -182,39 +177,35 @@ class SnackBarUtils {
     }
   }
 
+  /// Work in progress: the message with the plate line under it in the
+  /// snackbar's own text colour, never a spinner (produktregler.md:163,
+  /// B-18). Interpretation: the drawing has no loading snackbar; the line
+  /// takes the in-button form, in paper on ink.
   static void showLoading(
     BuildContext context,
     String message, {
     Duration? duration,
   }) {
     try {
-      final cs = Theme.of(context).colorScheme;
+      final theme = Theme.of(context).snackBarTheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: AppDimensions.iconSizeS,
-                height: AppDimensions.iconSizeS,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    cs.onInverseSurface,
-                  ),
-                ),
+          content: Semantics(
+            liveRegion: true,
+            label: message,
+            child: ExcludeSemantics(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(message, style: theme.contentTextStyle),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  ButtonPlateLine(color: theme.contentTextStyle?.color),
+                ],
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
-              Expanded(
-                child: Text(
-                  message,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onInverseSurface,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          backgroundColor: cs.inverseSurface,
+          padding: InkSnackBar.padding,
           duration: duration ?? const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -226,6 +217,12 @@ class SnackBarUtils {
     }
   }
 
+  /// A snackbar with a caller's message and action.
+  ///
+  /// [backgroundColor], [textColor] and [icon] no longer change anything:
+  /// every snackbar is the ink snackbar (PQ-09 = A). They stay in the
+  /// signature so the existing call sites keep compiling; package 7 removes
+  /// them.
   static void showCustom(
     BuildContext context, {
     required String message,
@@ -241,13 +238,10 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: backgroundColor,
-        textColor: textColor ?? Theme.of(context).colorScheme.outlineVariant,
-        icon: icon,
         duration: duration ?? const Duration(seconds: 3),
-        actionLabel: actionLabel,
-        onAction: onAction,
-        showCloseButton: showCloseButton,
+        actionLabel:
+            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
+        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
       );
 
       AppLogger.debug('Custom snackbar shown: $message');
@@ -328,48 +322,31 @@ class SnackBarUtils {
   static void _showSnackBar(
     BuildContext context, {
     required String message,
-    required Color backgroundColor,
-    required Color textColor,
-    IconData? icon,
     Duration? duration,
     String? actionLabel,
     VoidCallback? onAction,
-    bool showCloseButton = false,
   }) {
-    Widget content = Text(
-      message,
-      style: AppTextStyles.contentLabel.copyWith(
-        color: textColor,
-      ),
-    );
-
-    if (icon != null) {
-      content = Row(
-        children: [
-          Icon(icon, color: textColor, size: AppDimensions.iconSizeM),
-          const SizedBox(
-            width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-          ),
-          Expanded(child: content),
-        ],
-      );
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    var acted = false;
+    final action = (actionLabel != null && onAction != null)
+        ? InkSnackBarAction(
+            label: actionLabel,
+            onPressed: () {
+              if (acted) return;
+              acted = true;
+              messenger.hideCurrentSnackBar(
+                reason: SnackBarClosedReason.action,
+              );
+              onAction();
+            },
+          )
+        : null;
+    messenger.showSnackBar(
       SnackBar(
-        content: content,
-        backgroundColor: backgroundColor,
+        content: InkSnackBar(message: message, action: action),
+        padding: InkSnackBar.padding,
         duration: duration ?? const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(AppDimensions.spacingXl),
-        // Shape inherits the square global snackBarTheme (BUT-1243).
-        action: (actionLabel != null && onAction != null)
-            ? SnackBarAction(
-                label: actionLabel,
-                textColor: textColor,
-                onPressed: onAction,
-              )
-            : null,
       ),
     );
   }
@@ -415,33 +392,128 @@ class SnackBarUtils {
   }
 }
 
-/// How an undo snackbar looks. Package 3 keeps each call site's current look;
-/// aligning the two with Komponentark v1:745-750 is a later package's work.
+/// The content of the ink snackbar (Komponentark v1:745-750): the message,
+/// and the action to its right.
+///
+/// The surface is the snackBarTheme's; the message takes its
+/// contentTextStyle. The action stands on ink in both modes, so its focus
+/// ring is paper in both ([FocusRingSurface] dark, tokens.json focusRing
+/// dark #F5F4ED; Komponentark v1:747, `outline:2px solid #F5F4ED;
+/// outline-offset:3px`).
+class InkSnackBar extends StatelessWidget {
+  const InkSnackBar({required this.message, this.action, super.key});
+
+  /// What happened, for example "Varan togs bort."
+  final String message;
+
+  /// The one action, or null.
+  final InkSnackBarAction? action;
+
+  /// Komponentark v1:746: `padding:12px 14px`. 14 is not on the spacing
+  /// scale (tokens.json space.scale); interpretation: 12 on the scale's 12
+  /// vertically and 16 horizontally.
+  static const EdgeInsets padding = EdgeInsets.symmetric(
+    horizontal: AppDimensions.space16,
+    vertical: AppDimensions.space12,
+  );
+
+  /// Komponentark v1:746: `gap:12px` between the message and the action.
+  static const double gap = AppDimensions.space12;
+
+  /// The message. The key is for tests, not identity.
+  static const Key messageKey = ValueKey<String>('inkSnackBar.message');
+
+  @override
+  Widget build(BuildContext context) {
+    final style =
+        Theme.of(context).snackBarTheme.contentTextStyle ??
+        FeedbackThemes.inkSnackBarMessageStyle;
+    final action = this.action;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(message, key: messageKey, style: style),
+        ),
+        if (action != null) ...[
+          const SizedBox(width: gap),
+          action,
+        ],
+      ],
+    );
+  }
+}
+
+/// The ink snackbar's action: 13/700 in light saffron (text accent on ink,
+/// #E09D50, 5.43:1 on surface.ink; Komponentark v1:747), at least 48 dp
+/// tall, with its own paper focus ring.
+class InkSnackBarAction extends StatelessWidget {
+  const InkSnackBarAction({
+    required this.label,
+    required this.onPressed,
+    super.key,
+  });
+
+  /// Ångra, Försök igen, Öppna inställningar or Stäng. Never "OK".
+  final String label;
+
+  /// What the action does. The caller closes the snackbar.
+  final VoidCallback onPressed;
+
+  /// The action. The key is for tests, not identity.
+  static const Key actionKey = ValueKey<String>('inkSnackBar.action');
+
+  /// Komponentark v1:747: `border-radius:4px`. Interpretation: 4 is the
+  /// spacing scale's smallest step; the radius scale has no 4.
+  static const double radius = AppDimensions.space4;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).snackBarTheme;
+    return FocusRingSurface(
+      brightness: Brightness.dark,
+      child: TextButton(
+        key: actionKey,
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: theme.actionTextColor,
+          textStyle: FeedbackThemes.inkSnackBarActionStyle,
+          minimumSize: const Size(
+            AppDimensions.minTouchTarget,
+            AppDimensions.minTouchTarget,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space8,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
+        ),
+        child: Text(label),
+      ),
+    );
+  }
+}
+
+/// How an undo snackbar looks. Both values give the ink snackbar
+/// (Komponentark v1:745-750, PQ-09 = A): the app never shows two snackbar
+/// looks at once. The value stays so the call sites keep compiling; it is
+/// removed in package 7.
 enum UndoSnackBarLook {
-  /// The global snackBarTheme with no overrides: the look of the reference
-  /// implementation that produktregler.md:132 points at
-  /// (`pantry_item_card.dart`).
+  /// The ink snackbar.
   plain,
 
-  /// The look [SnackBarUtils.showSuccess] gives: check icon, `cs.primary`
-  /// background, `cs.surfaceContainerHighest` text and action, wide margin.
-  /// Kept for the call sites that used `showSuccessWithAction` for their undo.
+  /// The ink snackbar. Used to be the green confirmation look.
   confirmation,
 }
 
 /// An undo snackbar whose context lookups are done up front.
 ///
 /// [capture] resolves the [ScaffoldMessengerState], the `commonUndo` label and
-/// the colour scheme while [BuildContext] is still alive. [show] then touches
-/// no context, so it is safe from `Dismissible.onDismissed` (which fires after
-/// the row's element is deactivated) or after `Navigator.pop`.
+/// the accessibility setting while [BuildContext] is still alive. [show] then
+/// touches no context, so it is safe from `Dismissible.onDismissed` (which
+/// fires after the row's element is deactivated) or after `Navigator.pop`.
 class UndoSnackBar {
-  UndoSnackBar._(
-    this._messenger,
-    this._undoLabel,
-    this._colorScheme,
-    this._persist,
-  );
+  UndoSnackBar._(this._messenger, this._undoLabel, this._persist);
 
   /// Resolves everything [show] needs from [context]. A missing
   /// ScaffoldMessenger makes [show] a no-op, as `messenger?.showSnackBar` did;
@@ -450,28 +522,31 @@ class UndoSnackBar {
     return UndoSnackBar._(
       ScaffoldMessenger.maybeOf(context),
       context.l10n.commonUndo,
-      Theme.of(context).colorScheme,
       MediaQuery.maybeAccessibleNavigationOf(context) ?? false,
     );
   }
 
   final ScaffoldMessengerState? _messenger;
   final String _undoLabel;
-  final ColorScheme _colorScheme;
 
-  /// Whether the snackbar stays until it is dismissed instead of timing out.
+  /// Whether the snackbar stays until the user acts.
   ///
-  /// Only when assistive technology drives navigation
-  /// (`MediaQuery.accessibleNavigation`). For everyone else the window ends at
-  /// [kUndoWindow] (produktregler.md:131-132). Whether a screen-reader user
-  /// should also get exactly 7 s is not settled by any source: the
-  /// accessibility handoff's Snackbar row (tillganglighetshandoff:172) says
-  /// nothing about timing. Until it is decided they keep what they had before
-  /// P3-U1, Flutter's default for a snackbar with an action: it persists.
+  /// When assistive technology drives navigation
+  /// (`MediaQuery.accessibleNavigation`), the snackbar stays until the user
+  /// presses Ångra, swipes it away or leaves the view (produktbeslut PQ-21 =
+  /// A, 2026-09-23). For everyone else the window is [kUndoWindow] and it
+  /// pauses and extends ([UndoWindowTimer]).
   final bool _persist;
 
-  /// Shows [message] with an "Ångra" action for [kUndoWindow]. Returns the
-  /// controller so a deferred-commit caller can await `closed`.
+  /// Shows [message] with an "Ångra" action. Returns the controller so a
+  /// deferred-commit caller can await `closed`.
+  ///
+  /// The window is [kUndoWindow] (7 s, produktregler.md:131-132), and it is
+  /// not hard (Grafisk manual v6:647): it pauses while the snackbar has
+  /// focus, is hovered or has the screen reader's focus, and every new
+  /// interaction with it starts the full window again. Flutter's own timer
+  /// cannot pause, so the snackbar persists and [UndoWindowTimer] closes it
+  /// with [SnackBarClosedReason.timeout].
   ///
   /// Whatever snackbar is on screen or queued is removed first, so this one
   /// is always at the head of the messenger's queue. That matters twice.
@@ -480,11 +555,6 @@ class UndoSnackBar {
   /// SnackbarRouteObserver) drops queued snackbars without ever completing
   /// their `closed`, which would strand a deferred commit. The head is always
   /// closed properly, and closing it is what commits its delete.
-  ///
-  /// The window is honest only for callers that commit on `closed`
-  /// ([showDeferred]): Flutter starts the `duration` timer after the entrance
-  /// animation, so a separate `Timer(kUndoWindow)` would land while Ångra is
-  /// still on screen.
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? show(
     String message, {
     required VoidCallback onUndo,
@@ -496,16 +566,44 @@ class UndoSnackBar {
     messenger
       ..clearSnackBars()
       ..removeCurrentSnackBar();
-    return messenger.showSnackBar(switch (look) {
-      UndoSnackBarLook.plain => SnackBar(
-        content: Text(message),
-        action: SnackBarAction(label: _undoLabel, onPressed: onUndo),
+    var acted = false;
+    final window = UndoWindowTimer(
+      window: kUndoWindow,
+      onTimeout: () {
+        if (!messenger.mounted) return;
+        messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
+      },
+    );
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        content: UndoWindowRegion(
+          window: window,
+          child: InkSnackBar(
+            message: message,
+            action: InkSnackBarAction(
+              label: _undoLabel,
+              onPressed: () {
+                if (acted) return;
+                acted = true;
+                window.close();
+                messenger.hideCurrentSnackBar(
+                  reason: SnackBarClosedReason.action,
+                );
+                onUndo();
+              },
+            ),
+          ),
+        ),
+        padding: InkSnackBar.padding,
         duration: kUndoWindow,
-        persist: _persist,
+        // Always persist: the window is UndoWindowTimer's, not Flutter's.
+        persist: true,
+        onVisible: _persist ? null : window.start,
         behavior: SnackBarBehavior.floating,
       ),
-      UndoSnackBarLook.confirmation => _confirmation(message, onUndo),
-    });
+    );
+    unawaited(controller.closed.then((_) => window.close()));
+    return controller;
   }
 
   /// Shows the undo snackbar and runs [onCommit] once it has closed, unless
@@ -547,38 +645,173 @@ class UndoSnackBar {
       }),
     );
   }
+}
 
-  /// Byte-for-byte what `SnackBarUtils.showSuccess` builds, with the undo
-  /// action. Both colours come from the ColorScheme, so light and dark follow
-  /// the theme: `AppColors.lightColorScheme` / `AppColors.darkColorScheme`
-  /// (app_theme.dart:14,17). No colour is introduced here.
-  SnackBar _confirmation(String message, VoidCallback onUndo) {
-    final textColor = _colorScheme.surfaceContainerHighest;
-    return SnackBar(
-      content: Row(
-        children: [
-          Icon(Icons.check, color: textColor, size: AppDimensions.iconSizeM),
-          const SizedBox(
-            width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+/// The undo window: [window] long, pausable and extendable (Grafisk manual
+/// v6:647).
+///
+/// It starts when the snackbar is on screen ([start]). [pause] stops it
+/// while the snackbar has focus, is hovered or has the screen reader's
+/// focus; [resume] starts the full window again, and so does [extend] on
+/// every new interaction. Interpretation: "förlängs vid varje ny
+/// interaktion" is read as "the full window starts again", not as a fixed
+/// number of seconds added. [close] ends it for good.
+///
+/// The window only runs while its content is on screen: it begins held,
+/// and [UndoWindowRegion] releases it while mounted ([attach] / [detach]),
+/// so no timer outlives the snackbar or its messenger.
+class UndoWindowTimer {
+  UndoWindowTimer({required this.window, required this.onTimeout});
+
+  /// The window: kUndoWindow.
+  final Duration window;
+
+  /// Closes the snackbar with SnackBarClosedReason.timeout.
+  final VoidCallback onTimeout;
+
+  Timer? _timer;
+  bool _started = false;
+  // Held until the content is mounted (attach).
+  int _pauses = 1;
+  bool _closed = false;
+
+  /// Whether the window is running.
+  bool get isRunning => _timer?.isActive ?? false;
+
+  /// Whether the window has ended, by timeout or otherwise.
+  bool get isClosed => _closed;
+
+  /// Starts the window once the snackbar is visible. Later calls do nothing.
+  void start() {
+    if (_started || _closed) return;
+    _started = true;
+    _restart();
+  }
+
+  /// Stops the window while something holds the snackbar. Pauses nest, so
+  /// focus and hover together need both to end.
+  void pause() {
+    if (_closed) return;
+    _pauses++;
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  /// Ends one pause. When no pause is left, the full window starts again.
+  void resume() {
+    if (_closed || _pauses == 0) return;
+    _pauses--;
+    if (_pauses == 0) _restart();
+  }
+
+  /// A new interaction: the full window starts again, unless paused.
+  void extend() {
+    if (_closed || _pauses > 0) return;
+    _restart();
+  }
+
+  /// The content is on screen: one hold fewer.
+  void attach() => resume();
+
+  /// The content left the screen: one hold more.
+  void detach() => pause();
+
+  /// Ends the window for good.
+  void close() {
+    _closed = true;
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _restart() {
+    if (!_started || _closed || _pauses > 0) return;
+    _timer?.cancel();
+    _timer = Timer(window, () {
+      if (_closed) return;
+      close();
+      onTimeout();
+    });
+  }
+}
+
+/// Feeds the undo snackbar's focus, hover, screen-reader focus and taps to
+/// its [UndoWindowTimer].
+class UndoWindowRegion extends StatefulWidget {
+  const UndoWindowRegion({
+    required this.window,
+    required this.child,
+    super.key,
+  });
+
+  /// The window this snackbar's interactions pause and extend.
+  final UndoWindowTimer window;
+
+  /// The snackbar content.
+  final Widget child;
+
+  @override
+  State<UndoWindowRegion> createState() => _UndoWindowRegionState();
+}
+
+class _UndoWindowRegionState extends State<UndoWindowRegion> {
+  bool _focused = false;
+  bool _hovered = false;
+  bool _a11yFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.window.attach();
+  }
+
+  @override
+  void dispose() {
+    // Release every hold this region took, then hold the window: nothing
+    // runs for a snackbar that is not on screen.
+    if (_focused) widget.window.resume();
+    if (_hovered) widget.window.resume();
+    if (_a11yFocused) widget.window.resume();
+    widget.window.detach();
+    super.dispose();
+  }
+
+  void _set(bool was, bool now) {
+    if (was == now) return;
+    now ? widget.window.pause() : widget.window.resume();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onFocusChange: (has) {
+        _set(_focused, has);
+        _focused = has;
+      },
+      child: MouseRegion(
+        onEnter: (_) {
+          _set(_hovered, true);
+          _hovered = true;
+        },
+        onExit: (_) {
+          _set(_hovered, false);
+          _hovered = false;
+        },
+        child: Listener(
+          onPointerDown: (_) => widget.window.extend(),
+          child: Semantics(
+            onDidGainAccessibilityFocus: () {
+              _set(_a11yFocused, true);
+              _a11yFocused = true;
+            },
+            onDidLoseAccessibilityFocus: () {
+              _set(_a11yFocused, false);
+              _a11yFocused = false;
+            },
+            child: widget.child,
           ),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.contentLabel.copyWith(color: textColor),
-            ),
-          ),
-        ],
-      ),
-      backgroundColor: _colorScheme.primary,
-      duration: kUndoWindow,
-      persist: _persist,
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.all(AppDimensions.spacingXl),
-      // Shape inherits the square global snackBarTheme (BUT-1243).
-      action: SnackBarAction(
-        label: _undoLabel,
-        textColor: textColor,
-        onPressed: onUndo,
+        ),
       ),
     );
   }

@@ -16631,4 +16631,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licensesCouldNotLoad => 'The licence texts could not be loaded.';
+
+  @override
+  String get buttonBusySaving => 'Saving …';
+
+  @override
+  String get loadingProfileBusy => 'Loading your profile …';
+
+  @override
+  String get loadingOnboardingResume => 'Finding where you left off …';
+
+  @override
+  String get loadingOpeningPage => 'Opening the page …';
+
+  @override
+  String get loadingStartingApp => 'Starting Butlery …';
 }

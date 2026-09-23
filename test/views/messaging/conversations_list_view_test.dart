@@ -54,9 +54,9 @@ const _currentUserId = 'test-user-123';
 
 // Swedish copy the view renders (from app_sv.arb). Captured as constants so a
 // behaviour regression — not a copy tweak — is what fails an assertion.
-// ButleryHeader renders the title lowercased (project convention: header
-// titles display in lowercase), so the rendered text is 'meddelanden'.
-const _appBarTitle = 'meddelanden'; // messagingTitle, lowercased by the header
+// The top bar is ButleryTopBar.undersida (package 4), which shows the title
+// as written: messagingTitle, 'Meddelanden'.
+const _appBarTitle = 'Meddelanden';
 const _loadingCopy =
     'Laddar konversationer...'; // messagingLoadingConversations
 const _emptyTitle = 'Inga konversationer än'; // messagingNoConversationsYet

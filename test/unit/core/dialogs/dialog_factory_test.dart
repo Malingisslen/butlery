@@ -63,6 +63,7 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// MaterialApp wrapper with l10n delegates so dialogs can resolve
 /// `context.l10n.commonOk` etc. Defaults to Swedish to match production.
@@ -639,7 +640,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300)); // run dialog open
 
       expect(find.text('Laddar...'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Plate line plus text, never a spinner (produktregler.md:163).
+      expect(find.byType(PlateLine), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
     /// Proves: custom message overrides the default.

@@ -163,4 +163,38 @@ void main() {
       expect(find.byKey(PlateLine.segmentKey), findsNothing);
     });
   });
+
+  group('PlateLineMessage — plate line plus text (produktregler.md:163)', () {
+    testWidgets('lays out inside an AlertDialog, which measures intrinsics', (
+      tester,
+    ) async {
+      // A dialog asks its content for its intrinsic width; the line must be
+      // able to answer (it used to throw from a LayoutBuilder).
+      await tester.pumpWidget(
+        _wrap(
+          const AlertDialog(
+            content: PlateLineMessage(message: 'Hämtar recept …'),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byType(PlateLine), findsOneWidget);
+      expect(find.text('Hämtar recept …'), findsOneWidget);
+    });
+
+    testWidgets('the text stands above the line and is read once', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(const PlateLineMessage(message: 'Hämtar recept …')),
+      );
+      expect(
+        tester.getRect(find.text('Hämtar recept …')).bottom,
+        lessThanOrEqualTo(tester.getRect(find.byType(PlateLine)).top),
+      );
+      expect(find.bySemanticsLabel('Hämtar recept …'), findsOneWidget);
+      handle.dispose();
+    });
+  });
 }

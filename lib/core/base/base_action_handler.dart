@@ -5,8 +5,8 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Base action handler with executeAction, executeWithConfirmation, executeDeleteAction, navigation helpers, feedback methods, and validation utilities.
 abstract class BaseActionHandler {
@@ -231,13 +231,11 @@ abstract class BaseActionHandler {
     showDialog(
       context: context,
       barrierDismissible: false,
+      // Plate line plus text, never a spinner (produktregler.md:163, B-18).
       builder: (context) => AlertDialog(
-        content: Row(
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: AppDimensions.spacingMd),
-            Expanded(child: Text(message)),
-          ],
+        content: PlateLineMessage(
+          message: message,
+          textAlign: TextAlign.start,
         ),
       ),
     );
@@ -271,70 +269,49 @@ abstract class BaseActionHandler {
     return true;
   }
 
+  // Every snackbar is the ink snackbar (Komponentark v1:745-750, PQ-09 =
+  // A). The status is carried by the message, never by a filled status
+  // colour (Komponentark v1:300).
   void _showSuccessSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.butleryColors.success,
-        duration: const Duration(seconds: 3),
-      ),
+    SnackBarUtils.showSuccess(
+      context,
+      message,
+      duration: const Duration(seconds: 3),
     );
   }
 
   void _showErrorSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-        duration: const Duration(seconds: 4),
-      ),
+    SnackBarUtils.showError(
+      context,
+      message,
+      duration: const Duration(seconds: 4),
+      showCloseButton: false,
     );
   }
 
   void _showInfoSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        duration: const Duration(seconds: 3),
-      ),
+    SnackBarUtils.showInfo(
+      context,
+      message,
+      duration: const Duration(seconds: 3),
     );
   }
 
   void _showWarningSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.butleryColors.warning,
-        duration: const Duration(seconds: 4),
-      ),
+    SnackBarUtils.showWarning(
+      context,
+      message,
+      duration: const Duration(seconds: 4),
     );
   }
 
   void _showLoadingSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            const SizedBox(
-              width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-            ),
-            Text(message),
-          ],
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    SnackBarUtils.showLoading(context, message);
   }
 }
 

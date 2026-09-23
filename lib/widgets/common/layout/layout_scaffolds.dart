@@ -1,6 +1,7 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
 //
-// UI Redesign: Updated to use ButleryHeader and new navigation
+// Package 4: the simple layout's top bar is the canonical
+// ButleryTopBar.undersida (Komponentark v1 §01 pattern 2; B-45).
 // BUT-188: IndexedStack for tab state preservation
 
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/butlery_header.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
@@ -333,7 +334,9 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
 }
 
 /// Simple layout for views without bottom navigation.
-/// **UI Redesign:** Uses ButleryHeader for consistent styling.
+///
+/// A detail view, so its top bar is [ButleryTopBar.undersida] (Komponentark
+/// v1:71-78): back arrow named "Tillbaka" and the title in 14/700.
 class _SimpleLayout extends StatelessWidget {
   final Widget body;
   final String? title;
@@ -359,14 +362,9 @@ class _SimpleLayout extends StatelessWidget {
       appBar:
           appBar ??
           (title != null
-              ? ButleryHeader(
+              ? ButleryTopBar.undersida(
                   title: title!,
-                  trailing: actions != null && actions!.isNotEmpty
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: actions!,
-                        )
-                      : null,
+                  actions: actions ?? const [],
                 )
               : null),
       body: body,

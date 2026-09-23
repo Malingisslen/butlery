@@ -31,6 +31,7 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 void main() {
   late MockUnifiedFriendsService mockFriendsService;
@@ -43,7 +44,7 @@ void main() {
   /// bar in either state, since it renders an empty box when idle.
   Finder activeBar() => find.descendant(
     of: find.byType(BatchActivityBar),
-    matching: find.byType(LinearProgressIndicator),
+    matching: find.byType(PlateLine),
   );
 
   /// The RegExp form is the portable one: a host that merges its descendants'

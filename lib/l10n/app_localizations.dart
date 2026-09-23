@@ -27730,6 +27730,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Licenstexterna kunde inte läsas in.'**
   String get licensesCouldNotLoad;
+
+  /// No description provided for @buttonBusySaving.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparar …'**
+  String get buttonBusySaving;
+
+  /// No description provided for @loadingProfileBusy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar din profil …'**
+  String get loadingProfileBusy;
+
+  /// No description provided for @loadingOnboardingResume.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar var du slutade …'**
+  String get loadingOnboardingResume;
+
+  /// No description provided for @loadingOpeningPage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppnar sidan …'**
+  String get loadingOpeningPage;
+
+  /// No description provided for @loadingStartingApp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Startar Butlery …'**
+  String get loadingStartingApp;
 }
 
 class _AppLocalizationsDelegate

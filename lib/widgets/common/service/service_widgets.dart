@@ -1,13 +1,13 @@
 // lib/widgets/common/service/service_widgets.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// ServiceWidgets - Service integration widgets
 /// Provides widgets that integrate with services and handle loading/error states.
@@ -57,25 +57,16 @@ class ServiceWidgets {
 
   // Private helper methods
   static Widget _buildDefaultServiceLoading() {
+    // Plate line plus text, never a spinner (produktregler.md:163, B-18).
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Builder(
-            builder: (context) => LoadingIndicator(
-              size: AppDimensions.iconSizeM,
-              strokeWidth: 2,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingXl),
-          Builder(
-            builder: (context) => Text(
-              context.l10n.loadingRecipes,
-              style: AppTextStyles.titleMedium,
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMargin,
+        ),
+        child: Builder(
+          builder: (context) =>
+              PlateLineMessage(message: context.l10n.loadingRecipes),
+        ),
       ),
     );
   }
@@ -122,11 +113,9 @@ class ServiceWidgets {
                   AppDimensions.borderRadiusL,
                 ),
               ),
-              child: LoadingIndicator(
-                size: AppDimensions.iconSizeM,
-                strokeWidth: 2,
-                color: cs.primary,
-              ),
+              // The overlay has no message of its own, so the text is the
+              // generic one; the line never stands alone (B-18).
+              child: PlateLineMessage(message: context.l10n.loadingGeneric),
             ),
           ),
         );

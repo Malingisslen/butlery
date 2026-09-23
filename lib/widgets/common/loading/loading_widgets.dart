@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// LoadingWidgets - Loading and error utility components
 /// Provides loading overlays, error boundaries, and responsive wrappers.
@@ -36,25 +37,11 @@ class LoadingWidgets {
                   AppDimensions.borderRadiusL,
                 ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: AppDimensions.iconSizeM,
-                    height: AppDimensions.iconSizeM,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-                    ),
-                  ),
-                  if (loadingMessage != null) ...[
-                    const SizedBox(height: AppDimensions.spacingM),
-                    Text(
-                      loadingMessage,
-                      style: AppTextStyles.titleMedium,
-                    ),
-                  ],
-                ],
+              // Plate line plus text, never a spinner (produktregler.md:163,
+              // B-18). Without a message the generic one stands in: the line
+              // never carries the news alone.
+              child: PlateLineMessage(
+                message: loadingMessage ?? context.l10n.loadingGeneric,
               ),
             ),
           ),

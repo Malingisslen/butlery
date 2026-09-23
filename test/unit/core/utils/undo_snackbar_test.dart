@@ -4,6 +4,8 @@
 // (produktregler.md:131-132, content-style-guide.md:77). The primitive owns
 // both numbers so no call site can drift to 4 or 5 seconds again.
 
+import 'package:fake_async/fake_async.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 void main() {
   late BuildContext ctx;
@@ -67,14 +70,17 @@ void main() {
 
     final bar = shownSnackBar(tester);
     expect(bar.duration, kUndoWindow);
+    // The window is UndoWindowTimer's, not Flutter's, so it can pause and
+    // extend (Grafisk manual v6:647). The timeout itself is proven below.
+    expect(bar.persist, isTrue);
+    // The action lives in the content, where it can carry its paper ring.
     expect(
-      bar.persist,
-      isFalse,
-      reason:
-          'A SnackBar with an action persists by default; without assistive '
-          'navigation the window must end at 7 s (produktregler.md:131-132).',
+      find.descendant(
+        of: find.byType(InkSnackBarAction),
+        matching: find.text('Ångra'),
+      ),
+      findsOneWidget,
     );
-    expect(bar.action?.label, 'Ångra');
     expect(find.text('Mjölk togs bort'), findsOneWidget);
     expect(find.text('OK'), findsNothing);
   });
@@ -86,7 +92,7 @@ void main() {
     SnackBarUtils.showUndo(ctx, 'Milk removed', onUndo: () {});
     await tester.pump();
 
-    expect(shownSnackBar(tester).action?.label, 'Undo');
+    expect(find.text('Undo'), findsOneWidget);
   });
 
   testWidgets('tapping Ångra runs onUndo once', (tester) async {
@@ -119,46 +125,185 @@ void main() {
     expect(reason, SnackBarClosedReason.timeout);
   });
 
-  group('look is preserved per call site', () {
-    testWidgets('plain carries no overrides, like pantry_item_card', (
-      tester,
-    ) async {
-      await pumpApp(tester);
-      SnackBarUtils.showUndo(ctx, 'Varan togs bort', onUndo: () {});
-      await tester.pump();
-
-      final bar = shownSnackBar(tester);
-      expect(bar.backgroundColor, isNull, reason: 'snackBarTheme decides');
-      expect(bar.margin, isNull);
-      expect(bar.behavior, SnackBarBehavior.floating);
-      expect(find.byIcon(Icons.check), findsNothing);
-    });
-
+  group('the ink snackbar (Komponentark v1:745-750, PQ-09 = A)', () {
     for (final (mode, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('confirmation keeps the showSuccess look in $mode', (
-        tester,
-      ) async {
-        await pumpApp(tester, theme: theme);
-        SnackBarUtils.showUndo(
-          ctx,
-          'Veckan tömdes',
-          look: UndoSnackBarLook.confirmation,
-          onUndo: () {},
-        );
-        await tester.pump();
+      for (final look in UndoSnackBarLook.values) {
+        testWidgets('${look.name} is the ink snackbar in $mode', (
+          tester,
+        ) async {
+          await pumpApp(tester, theme: theme);
+          SnackBarUtils.showUndo(
+            ctx,
+            'Varan togs bort.',
+            look: look,
+            onUndo: () {},
+          );
+          await tester.pumpAndSettle();
 
-        final cs = theme.colorScheme;
-        final bar = shownSnackBar(tester);
-        expect(bar.backgroundColor, cs.primary);
-        expect(bar.action?.textColor, cs.surfaceContainerHighest);
-        expect(bar.duration, kUndoWindow);
-        expect(bar.persist, isFalse);
-        expect(find.byIcon(Icons.check), findsOneWidget);
-      });
+          final bar = shownSnackBar(tester);
+          expect(bar.backgroundColor, isNull, reason: 'snackBarTheme decides');
+          expect(find.byIcon(Icons.check), findsNothing);
+          // The painted surface: surface.ink in both modes.
+          final material = tester.widget<Material>(
+            find
+                .descendant(
+                  of: find.byType(SnackBar),
+                  matching: find.byType(Material),
+                )
+                .first,
+          );
+          expect(material.color, const Color(0xFF24382C));
+          final shape = material.shape! as RoundedRectangleBorder;
+          expect(shape.borderRadius, BorderRadius.circular(8));
+          expect(
+            shape.side,
+            mode == 'dark'
+                ? const BorderSide(color: Color(0x2EF5F4ED))
+                : BorderSide.none,
+          );
+          // Message paper, action light saffron.
+          final message = tester.widget<Text>(
+            find.byKey(InkSnackBar.messageKey),
+          );
+          expect(message.style?.color, const Color(0xFFF5F4ED));
+          final action = tester.widget<TextButton>(
+            find.byKey(InkSnackBarAction.actionKey),
+          );
+          expect(
+            action.style?.foregroundColor?.resolve(<WidgetState>{}),
+            const Color(0xFFE09D50),
+          );
+          // At least a 48 dp target.
+          expect(
+            tester.getSize(find.byKey(InkSnackBarAction.actionKey)).height,
+            greaterThanOrEqualTo(48),
+          );
+        });
+      }
     }
+
+    testWidgets('the action has its own paper focus ring, also in light mode', (
+      tester,
+    ) async {
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.alwaysTraditional;
+      addTearDown(
+        () => FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.automatic,
+      );
+      await pumpApp(tester);
+      SnackBarUtils.showUndo(ctx, 'Varan togs bort.', onUndo: () {});
+      await tester.pumpAndSettle();
+
+      final actionContext = tester.element(find.text('Ångra'));
+      // The ring reads the surface it stands on: ink, so paper
+      // (tokens.json focusRing dark #F5F4ED), never the light theme's ink.
+      expect(FocusRingSurface.of(actionContext), Brightness.dark);
+      expect(find.byType(ButleryFocusRing), findsWidgets);
+    });
+  });
+
+  group('the window pauses and extends (Grafisk manual v6:647)', () {
+    Future<SnackBarClosedReason? Function()> showAndSettle(
+      WidgetTester tester,
+    ) async {
+      await pumpApp(tester);
+      final controller = SnackBarUtils.showUndo(
+        ctx,
+        'Varan togs bort.',
+        onUndo: () {},
+      );
+      SnackBarClosedReason? reason;
+      controller!.closed.then((r) => reason = r);
+      await tester.pumpAndSettle();
+      return () => reason;
+    }
+
+    testWidgets('focus holds it; leaving focus starts the full window', (
+      tester,
+    ) async {
+      final reason = await showAndSettle(tester);
+      await tester.pump(const Duration(seconds: 5));
+
+      Focus.of(tester.element(find.text('Ångra'))).requestFocus();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 30));
+      expect(find.text('Varan togs bort.'), findsOneWidget);
+
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 6));
+      expect(find.text('Varan togs bort.'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(reason(), SnackBarClosedReason.timeout);
+    });
+
+    testWidgets('each interaction starts the full window again', (
+      tester,
+    ) async {
+      final reason = await showAndSettle(tester);
+      await tester.pump(const Duration(seconds: 5));
+
+      // A touch on the message: an interaction, not the action.
+      await tester.tap(find.text('Varan togs bort.'));
+      await tester.pump(const Duration(seconds: 5));
+      expect(find.text('Varan togs bort.'), findsOneWidget);
+      expect(reason(), isNull);
+
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(reason(), SnackBarClosedReason.timeout);
+    });
+
+    testWidgets('a hovering pointer holds it', (tester) async {
+      final reason = await showAndSettle(tester);
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      addTearDown(mouse.removePointer);
+      await mouse.addPointer(location: Offset.zero);
+      await mouse.moveTo(tester.getCenter(find.text('Varan togs bort.')));
+      await tester.pump(const Duration(seconds: 30));
+      expect(reason(), isNull);
+
+      await mouse.moveTo(Offset.zero);
+      await tester.pump(const Duration(seconds: 8));
+      await tester.pumpAndSettle();
+      expect(reason(), SnackBarClosedReason.timeout);
+    });
+
+    test('the timer: pauses nest, resume and extend restart the window', () {
+      fakeAsync((async) {
+        var timedOut = 0;
+        final t = UndoWindowTimer(
+          window: kUndoWindow,
+          onTimeout: () => timedOut++,
+        )..start();
+        // Held until its content is on screen.
+        async.elapse(const Duration(seconds: 60));
+        expect(timedOut, 0);
+        t.attach();
+        async.elapse(const Duration(seconds: 6));
+        t
+          ..pause()
+          ..pause();
+        async.elapse(const Duration(seconds: 60));
+        t.resume();
+        async.elapse(const Duration(seconds: 60));
+        expect(timedOut, 0, reason: 'one pause is still held');
+        t.resume();
+        async.elapse(const Duration(seconds: 6));
+        t.extend();
+        async.elapse(const Duration(seconds: 6));
+        expect(timedOut, 0);
+        async.elapse(const Duration(seconds: 1));
+        expect(timedOut, 1);
+        expect(t.isClosed, isTrue);
+      });
+    });
   });
 
   testWidgets('a captured undo still shows after its context is gone', (
@@ -185,19 +330,24 @@ void main() {
     expect(undone, isTrue);
   });
 
-  testWidgets('assistive navigation keeps the snackbar until dismissed', (
+  testWidgets('assistive navigation keeps the snackbar until the user acts', (
     tester,
   ) async {
-    // Open question, not decided here: no source says whether a
-    // screen-reader user gets exactly 7 s (tillganglighetshandoff:172 is
-    // silent on timing). Until then they keep the pre-P3-U1 behaviour.
+    // Produktbeslut PQ-21 = A (2026-09-23): with accessibleNavigation on,
+    // the undo snackbar stays until the user acts.
     await pumpApp(tester, accessibleNavigation: true);
-    SnackBarUtils.showUndo(ctx, 'Recept borttaget', onUndo: () {});
+    var undone = 0;
+    SnackBarUtils.showUndo(ctx, 'Recept borttaget', onUndo: () => undone++);
     await tester.pump();
 
     final bar = shownSnackBar(tester);
     expect(bar.persist, isTrue);
-    expect(bar.duration, kUndoWindow);
+    await tester.pump(const Duration(minutes: 5));
+    expect(find.text('Recept borttaget'), findsOneWidget);
+
+    await tester.tap(find.text('Ångra'));
+    await tester.pump();
+    expect(undone, 1);
   });
 
   group('deferred commit follows the snackbar, not a timer', () {

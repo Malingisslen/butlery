@@ -31,6 +31,7 @@ import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class InitializationWrapper extends StatelessWidget {
   // CRITICAL: Use GlobalKey to prevent AuthWrapper recreation
@@ -174,7 +175,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
             onRetry: () => _userService.retryLoadProfile(),
           );
         }
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        // Plate line plus text, never a spinner (produktregler.md:163).
+        return Scaffold(
+          body: Center(
+            child: PlateLineMessage(message: context.l10n.loadingProfileBusy),
+          ),
+        );
       }
       if (!profile.hasCompletedOnboarding) {
         AppLogger.debug('AuthWrapper: User needs onboarding');
@@ -262,8 +268,12 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
       future: _future,
       builder: (context, snap) {
         if (!snap.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Center(
+              child: PlateLineMessage(
+                message: context.l10n.loadingOnboardingResume,
+              ),
+            ),
           );
         }
         final resolution = snap.data!;

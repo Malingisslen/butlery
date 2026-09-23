@@ -304,7 +304,8 @@ void main() {
     await pumpView(tester);
 
     // All failed ⇒ the partial-success CTA is absent (nothing to import).
-    expect(find.textContaining('Importera'), findsNothing);
+    // The batch CTA, not the top bar's title "Importera via URL".
+    expect(find.textContaining(RegExp(r'Importera \d+ recept')), findsNothing);
   });
 
   // Gap (BUT-1275 review): the original suite proved the CTA's *label* count but
@@ -413,7 +414,11 @@ void main() {
       expect(find.byIcon(Icons.check_circle), findsNothing);
       expect(find.byIcon(Icons.error), findsNothing);
       expect(find.textContaining('hämtade'), findsNothing);
-      expect(find.textContaining('Importera'), findsNothing);
+      // The batch CTA, not the top bar's title "Importera via URL".
+      expect(
+        find.textContaining(RegExp(r'Importera \d+ recept')),
+        findsNothing,
+      );
     },
   );
 
