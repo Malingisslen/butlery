@@ -86,17 +86,7 @@ List<String> _snackBarBackgrounds(String dir) {
 /// on it fails, and so does an entry that no longer paints one: the list is
 /// a ratchet and a stale entry has to be removed.
 const _widgetSnackBarsOwnedByT7 = {
-  'lib/widgets/common/dialogs/retag_progress_dialog.dart',
   'lib/widgets/common/feedback/snackbar_widgets.dart',
-  'lib/widgets/common/input/shopping_list_actions.dart',
-  'lib/widgets/common/input/shopping_list_selector.dart',
-  'lib/widgets/common/profile/handlers/gdpr_consent_handler.dart',
-  'lib/widgets/common/profile/utils/result_displayer.dart',
-  'lib/widgets/common/universal_share_dialog.dart',
-  'lib/widgets/image/image_picker_dialogs.dart',
-  'lib/widgets/image/image_picker_widget.dart',
-  'lib/widgets/legal/legal_contact_footer.dart',
-  'lib/widgets/menu/menu_content_widgets.dart',
 };
 
 final _primary = RegExp(
