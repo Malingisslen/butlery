@@ -60,7 +60,8 @@ void main() {
   group('ImageFailedPlate', () {
     for (final brightness in Brightness.values) {
       testWidgets('${brightness.name}: surface.raised, glyph and second line '
-          'text.secondary.onRaised, first line text.body, no button', (
+          'text.secondary.onRaised, first line text.body (bodyMuted not '
+          'delivered yet), caption 12/400, no button', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -92,6 +93,9 @@ void main() {
 
         final first = tester.widget<Text>(find.text(sv.imageCouldNotBeShown));
         expect(first.style?.color, AppModeColors.textBody(brightness));
+        // Drawn 12.5 px regular; caption 12/400 is the nearest role.
+        expect(first.style?.fontSize, 12);
+        expect(first.style?.fontWeight, FontWeight.w400);
         final second = tester.widget<Text>(
           find.text(sv.imageRetriesWhenOnline),
         );
@@ -102,6 +106,21 @@ void main() {
         expect(find.byIcon(Icons.error_outline), findsNothing);
       });
     }
+
+    testWidgets('without a pending retry the plate promises none', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          const Scaffold(
+            body: Center(child: ImageFailedPlate(retriesWhenOnline: false)),
+          ),
+          Brightness.light,
+        ),
+      );
+      expect(find.text(sv.imageCouldNotBeShown), findsOneWidget);
+      expect(find.text(sv.imageRetriesWhenOnline), findsNothing);
+    });
 
     testWidgets('screen readers hear one status line; the glyph is decor', (
       tester,
@@ -174,15 +193,20 @@ void main() {
 
       expect(find.byType(ImageFailedPlate), findsOneWidget);
       expect(find.text(sv.imageCouldNotBeShown), findsOneWidget);
+      // Failed while online: no retry is pending, so none is promised.
+      expect(find.text(sv.imageRetriesWhenOnline), findsNothing);
       expect(
         find.byKey(const ValueKey('fullscreenImage.0.0')),
         findsOneWidget,
       );
 
-      // Connection drops and returns: the photo is resolved anew, with no
-      // tap from the user.
+      // Connection drops: now a retry is pending and the line says so.
       offline.setOnline(false);
       await tester.pump();
+      expect(find.text(sv.imageRetriesWhenOnline), findsOneWidget);
+
+      // Connection returns: the photo is resolved anew, with no tap from
+      // the user.
       offline.setOnline(true);
       await tester.pump();
 

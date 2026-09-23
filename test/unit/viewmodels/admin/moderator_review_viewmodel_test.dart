@@ -299,6 +299,19 @@ void main() {
       },
     );
 
+    test('a rebuild after an error does not re-subscribe behind it', () async {
+      vm.startListening();
+      reports.addError(StateError('boom'));
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockService.watchOpenReports()).called(1);
+
+      // The view calls startListening on every rebuild of its builder.
+      vm.startListening();
+      vm.startListening();
+      verifyNever(() => mockService.watchOpenReports());
+      expect(vm.error, AppLocale.current.moderatorReportsLoadFailed);
+    });
+
     test('retry listens again and clears the error', () async {
       vm.startListening();
       reports.addError(StateError('boom'));

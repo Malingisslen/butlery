@@ -47,11 +47,12 @@ class ModeratorReviewViewModel extends BaseViewModel {
         if (isDisposed) return;
         // The error state names what failed; the raw exception belongs to
         // the log (content-style-guide.md:89-94, P5-U01). Release the
-        // subscription so [retry] can open a fresh one.
+        // subscription; [_hasStarted] stays set so a rebuild of the view
+        // (which calls [startListening]) does not re-subscribe behind the
+        // error. Only [retry] opens a fresh one.
         AppLogger.error('Moderator review stream failed', err);
         _reportsSub?.cancel();
         _reportsSub = null;
-        _hasStarted = false;
         setError(AppLocale.current.moderatorReportsLoadFailed);
       },
     );
