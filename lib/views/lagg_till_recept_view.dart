@@ -10,8 +10,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/main_view_header.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -37,10 +36,10 @@ class LaggTillReceptView extends StatelessWidget {
     final padding = AppDimensions.responsiveContentPadding(context);
 
     return Scaffold(
-      appBar: MainViewHeader(
-        title: context.l10n.addRecipeTitle,
-        ghostIllustration: VegetableType.redOnion,
-      ),
+      // The root bar for now (Komponentark v1:60-68). Whether "Lägg till"
+      // stays a tab or becomes an action in the shell is Q-P4-06b
+      // (produktregler.md:1056) and is not decided here.
+      appBar: ButleryTopBar.rot(title: context.l10n.addRecipeTitle),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -93,11 +92,12 @@ class LaggTillReceptView extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   context.l10n.quickCaptureSubtitle,
+                                  // Full paper on ink, never a faded
+                                  // copy (tokens.json:40-53 opacityLadder).
                                   style: AppTextStyles.labelSmall.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary
-                                        .withValues(alpha: 0.85),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
                                   ),
                                 ),
                               ],

@@ -16671,4 +16671,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get licensesCouldNotLoad => 'Licenstexterna kunde inte läsas in.';
+
+  @override
+  String get minaReceptEmptyTitle => 'Inga sparade recept än';
+
+  @override
+  String get minaReceptEmptyBody =>
+      'Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.';
 }

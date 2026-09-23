@@ -12295,5 +12295,9 @@
   "settingsLicensesSubtitle": "Typefaces and open source",
   "licensesNoticesHeading": "Butlery Sans – copyright and sources",
   "licensesOflHeading": "SIL Open Font License 1.1",
-  "licensesCouldNotLoad": "The licence texts could not be loaded."
+  "licensesCouldNotLoad": "The licence texts could not be loaded.",
+  "minaReceptEmptyTitle": "No saved recipes yet",
+  "@minaReceptEmptyTitle": {"description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."},
+  "minaReceptEmptyBody": "Your cookbook is set but empty. Save your first recipe: import a link, photograph a card or write it yourself.",
+  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."}
 }

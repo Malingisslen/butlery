@@ -27,26 +27,35 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
-/// Builds the selection-mode AppBar. Returned as a `PreferredSizeWidget`
+/// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
 /// so the parent Scaffold can drop it straight in.
+///
+/// The same root bar as the list, with other content: "Toppfältet byter
+/// innehåll, inte höjd. I flervalsläget ersätter räknaren titeln och
+/// *Avbryt* ersätter tillbakapilen" (produktregler.md:873; Skarmar v12 etapp
+/// 9 #flervalingang). [secondaryLine] is the list's own count line, kept so
+/// the bar keeps its height. The counter is `{n} valda` in tabular figures
+/// (produktregler.md:876).
 PreferredSizeWidget buildMinaReceptSelectionAppBar(
   BuildContext context,
-  RecipeListViewModel viewModel,
-) {
-  final cs = Theme.of(context).colorScheme;
-  return AppBar(
-    backgroundColor: cs.primaryContainer,
-    leading: IconButton(
-      icon: const Icon(Icons.close),
-      onPressed: viewModel.clearSelection,
-      tooltip: context.l10n.bulkCancelSelection,
+  RecipeListViewModel viewModel, {
+  String? secondaryLine,
+}) {
+  return ButleryTopBar.rot(
+    title: context.l10n.bulkSelectedCount(viewModel.selectedCount),
+    titleStyle: const TextStyle(
+      fontFeatures: [FontFeature.tabularFigures()],
     ),
-    title: Text(
-      context.l10n.bulkSelectedCount(viewModel.selectedCount),
-      style: AppTextStyles.titleMedium,
+    secondaryLine: secondaryLine,
+    secondaryLineIsLive: false,
+    leading: TextButton(
+      key: const ValueKey('mina-recept-selection-cancel'),
+      onPressed: viewModel.clearSelection,
+      child: Text(context.l10n.commonCancel),
     ),
     actions: [
       IconButton(

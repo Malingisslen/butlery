@@ -16631,4 +16631,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licensesCouldNotLoad => 'The licence texts could not be loaded.';
+
+  @override
+  String get minaReceptEmptyTitle => 'No saved recipes yet';
+
+  @override
+  String get minaReceptEmptyBody =>
+      'Your cookbook is set but empty. Save your first recipe: import a link, photograph a card or write it yourself.';
 }

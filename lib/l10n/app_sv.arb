@@ -12365,5 +12365,9 @@
   "settingsLicensesSubtitle": "Typsnitt och öppen källkod",
   "licensesNoticesHeading": "Butlery Sans – upphovsrätt och källor",
   "licensesOflHeading": "SIL Open Font License 1.1",
-  "licensesCouldNotLoad": "Licenstexterna kunde inte läsas in."
+  "licensesCouldNotLoad": "Licenstexterna kunde inte läsas in.",
+  "minaReceptEmptyTitle": "Inga sparade recept än",
+  "@minaReceptEmptyTitle": {"description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."},
+  "minaReceptEmptyBody": "Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.",
+  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."}
 }

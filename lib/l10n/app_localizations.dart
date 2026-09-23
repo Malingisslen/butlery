@@ -27730,6 +27730,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Licenstexterna kunde inte läsas in.'**
   String get licensesCouldNotLoad;
+
+  /// Empty recipe library title (Skarmar v12 del 1 #tomtrecept).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade recept än'**
+  String get minaReceptEmptyTitle;
+
+  /// Empty recipe library body (Skarmar v12 del 1 #tomtrecept).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.'**
+  String get minaReceptEmptyBody;
 }
 
 class _AppLocalizationsDelegate

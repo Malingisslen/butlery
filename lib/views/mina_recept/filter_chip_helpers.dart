@@ -15,6 +15,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
@@ -89,43 +90,50 @@ class MinaReceptSortChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return PopupMenuButton<SortCriteria>(
-      onSelected: (criteria) => _onSortChanged(context, criteria),
-      itemBuilder: (context) => SortMenuBuilder.buildItems(
-        context: context,
-        currentSort: viewModel.sortCriteria,
-        sortAscending: viewModel.sortAscending,
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
+    // The shared grip: ring around the chip's 48 dp box, no saffron focus
+    // tint (Grafisk manual v6:209, :381).
+    return ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+      child: PopupMenuButton<SortCriteria>(
+        onSelected: (criteria) => _onSortChanged(context, criteria),
+        itemBuilder: (context) => SortMenuBuilder.buildItems(
+          context: context,
+          currentSort: viewModel.sortCriteria,
+          sortAscending: viewModel.sortAscending,
         ),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-          border: Border.all(
-            color: cs.outlineVariant,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.sort,
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant,
+        child: ButleryControlFocus.box(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              context.l10n.commonSort,
-              style: AppTextStyles.labelMedium.copyWith(
-                color: cs.onSurface,
-                fontWeight: FontWeight.w500,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              border: Border.all(
+                color: cs.outlineVariant,
+                width: 1.5,
               ),
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.sort,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.onSurfaceVariant,
+                ),
+                const SizedBox(width: AppDimensions.spacingXs),
+                Text(
+                  context.l10n.commonSort,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
