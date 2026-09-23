@@ -285,8 +285,8 @@ void main() {
 
       expect(find.text('Vänta'), findsOneWidget);
       expect(find.text('Det kan dröja'), findsOneWidget);
-      // Swedish locale → dialogMayTakeAWhile = "Detta kan ta en stund..."
-      expect(find.text('Detta kan ta en stund...'), findsOneWidget);
+      // Swedish locale → dialogMayTakeAWhile = "Detta kan ta en stund …" (content-style-guide.md:63)
+      expect(find.text('Detta kan ta en stund …'), findsOneWidget);
       expect(find.byType(PlateLine), findsOneWidget);
     });
 

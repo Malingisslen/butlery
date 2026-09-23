@@ -77,6 +77,7 @@ class FormScaffold extends StatelessWidget {
                 ? PlateLineButton.busyStyle(
                     null,
                     Theme.of(context).iconButtonTheme.style,
+                    onFill: false,
                   )
                 : null,
             icon: const Icon(Icons.save),

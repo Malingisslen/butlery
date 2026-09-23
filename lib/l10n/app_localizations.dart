@@ -6304,7 +6304,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogMayTakeAWhile.
   ///
   /// In sv, this message translates to:
-  /// **'Detta kan ta en stund...'**
+  /// **'Detta kan ta en stund …'**
   String get dialogMayTakeAWhile;
 
   /// No description provided for @dialogNameMinTwoChars.
@@ -10516,13 +10516,13 @@ abstract class AppLocalizations {
   /// No description provided for @loadingGeneric.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar...'**
+  /// **'Laddar …'**
   String get loadingGeneric;
 
   /// No description provided for @loadingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar recept...'**
+  /// **'Laddar recept …'**
   String get loadingRecipes;
 
   /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
@@ -16012,7 +16012,7 @@ abstract class AppLocalizations {
   /// No description provided for @retagFetchingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar recept...'**
+  /// **'Hämtar recept …'**
   String get retagFetchingRecipes;
 
   /// No description provided for @retagRetaggingRecipes.

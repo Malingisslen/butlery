@@ -38,7 +38,7 @@ class LoadingScaffold extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: spacing),
           child: PlateLineMessage(
-            message: loadingMessage ?? context.l10n.commonLoading,
+            message: loadingMessage ?? context.l10n.loadingGeneric,
           ),
         ),
       ),

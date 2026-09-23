@@ -134,7 +134,7 @@ void main() {
         // The line never carries the news alone (produktregler.md:163):
         // the generic text stands in.
         expect(find.byType(PlateLine), findsOneWidget);
-        expect(find.text('Laddar...'), findsOneWidget);
+        expect(find.text('Laddar …'), findsOneWidget);
       });
 
       testWidgets('should use custom overlay color when provided', (
@@ -248,7 +248,7 @@ void main() {
         // message the generic one stands in.
         expect(find.byType(PlateLineMessage), findsOneWidget);
         expect(find.byType(PlateLine), findsOneWidget);
-        expect(find.text('Laddar...'), findsOneWidget);
+        expect(find.text('Laddar …'), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 

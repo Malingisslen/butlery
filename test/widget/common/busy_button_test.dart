@@ -132,9 +132,8 @@ void main() {
           );
         });
 
-        testWidgets('the line is the button text colour on 18 % of it', (
-          tester,
-        ) async {
+        testWidgets('the line is the button text colour; its track follows '
+            'the opacity ladder', (tester) async {
           await _pump(tester, v, theme: theme);
           final fg = _textColor(tester)!;
           final seg =
@@ -145,12 +144,24 @@ void main() {
                       .decoration
                   as BoxDecoration;
           expect(seg.color, fg);
-          expect(
-            tester
-                .widget<ColoredBox>(find.byKey(ButtonPlateLine.trackKey))
-                .color,
-            fg.withValues(alpha: ButtonPlateLine.trackAlpha),
-          );
+          final track = tester
+              .widget<ColoredBox>(find.byKey(ButtonPlateLine.trackKey))
+              .color;
+          if (v == _Variant.outline) {
+            // On paper the ladder allows only 0.02 and 0.04 (tokens.json
+            // opacityLadder), so an unfilled button's track is token
+            // progressTrack: #E6EAD9 light, rgba(245,244,237,0.18) dark.
+            expect(
+              track,
+              mode == 'light'
+                  ? const Color(0xFFE6EAD9)
+                  : const Color(0x2EF5F4ED),
+            );
+            expect(track, isNot(fg.withValues(alpha: 0.18)));
+          } else {
+            // A filled button: its foreground on 18 % (opacityLadder.onInk).
+            expect(track, fg.withValues(alpha: ButtonPlateLine.trackAlpha));
+          }
           if (v == _Variant.hero) {
             // Komponentark v1:372: ink #17251D on saffron #CE7C1E.
             expect(fg, const Color(0xFF17251D));

@@ -346,6 +346,10 @@ class SnackBarUtils {
         content: InkSnackBar(message: message, action: action),
         padding: InkSnackBar.padding,
         duration: duration ?? const Duration(seconds: 3),
+        // The action sits in the content, so Flutter's default
+        // (`persist ?? action != null`) no longer sees it. A snackbar with
+        // an action stays until the user acts, as it did with SnackBarAction.
+        persist: action != null,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -533,9 +537,13 @@ class UndoSnackBar {
   ///
   /// When assistive technology drives navigation
   /// (`MediaQuery.accessibleNavigation`), the snackbar stays until the user
-  /// presses Ångra, swipes it away or leaves the view (produktbeslut PQ-21 =
-  /// A, 2026-09-23). For everyone else the window is [kUndoWindow] and it
-  /// pauses and extends ([UndoWindowTimer]).
+  /// acts: presses Ångra or swipes it away (produktbeslut PQ-21 = A,
+  /// 2026-09-23; option A as decided: "Står kvar tills man agerar när
+  /// skärmläsare är på, 7 sekunder för alla andra"). Leaving the view also
+  /// closes it: SnackbarRouteObserver calls `clearSnackBars` on every push,
+  /// pop and replace, which hides the current snackbar (Grafisk manual
+  /// v6:647, "tills vyn lämnas"). For everyone else the window is
+  /// [kUndoWindow] and it pauses and extends ([UndoWindowTimer]).
   final bool _persist;
 
   /// Shows [message] with an "Ångra" action. Returns the controller so a
@@ -657,9 +665,11 @@ class UndoSnackBar {
 /// interaktion" is read as "the full window starts again", not as a fixed
 /// number of seconds added. [close] ends it for good.
 ///
-/// The window only runs while its content is on screen: it begins held,
-/// and [UndoWindowRegion] releases it while mounted ([attach] / [detach]),
-/// so no timer outlives the snackbar or its messenger.
+/// The window only runs while its content is on screen. Every mounted
+/// [UndoWindowRegion] counts once ([attach] / [detach]); Flutter shows one
+/// snackbar on every root Scaffold at once (a popping route and the view
+/// below it), so the window runs while at least one copy is mounted and
+/// nothing holds it. No timer outlives the snackbar or its messenger.
 class UndoWindowTimer {
   UndoWindowTimer({required this.window, required this.onTimeout});
 
@@ -671,9 +681,13 @@ class UndoWindowTimer {
 
   Timer? _timer;
   bool _started = false;
-  // Held until the content is mounted (attach).
-  int _pauses = 1;
+  // Interaction holds: focus, hover, screen-reader focus.
+  int _pauses = 0;
+  // Copies of the content on screen. The window waits for the first.
+  int _mounted = 0;
   bool _closed = false;
+
+  bool get _held => _pauses > 0 || _mounted == 0;
 
   /// Whether the window is running.
   bool get isRunning => _timer?.isActive ?? false;
@@ -697,24 +711,38 @@ class UndoWindowTimer {
     _timer = null;
   }
 
-  /// Ends one pause. When no pause is left, the full window starts again.
+  /// Ends one pause. When nothing holds the window any more, the full
+  /// window starts again.
   void resume() {
     if (_closed || _pauses == 0) return;
     _pauses--;
-    if (_pauses == 0) _restart();
+    if (!_held) _restart();
   }
 
-  /// A new interaction: the full window starts again, unless paused.
+  /// A new interaction: the full window starts again, unless held.
   void extend() {
-    if (_closed || _pauses > 0) return;
+    if (_closed || _held) return;
     _restart();
   }
 
-  /// The content is on screen: one hold fewer.
-  void attach() => resume();
+  /// One copy of the content is on screen. The first copy lets the window
+  /// run.
+  void attach() {
+    if (_closed) return;
+    _mounted++;
+    if (_mounted == 1 && !_held) _restart();
+  }
 
-  /// The content left the screen: one hold more.
-  void detach() => pause();
+  /// One copy of the content left the screen. When none is left, the window
+  /// stops.
+  void detach() {
+    if (_closed || _mounted == 0) return;
+    _mounted--;
+    if (_mounted == 0) {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
 
   /// Ends the window for good.
   void close() {
@@ -724,7 +752,7 @@ class UndoWindowTimer {
   }
 
   void _restart() {
-    if (!_started || _closed || _pauses > 0) return;
+    if (!_started || _closed || _held) return;
     _timer?.cancel();
     _timer = Timer(window, () {
       if (_closed) return;
@@ -766,8 +794,8 @@ class _UndoWindowRegionState extends State<UndoWindowRegion> {
 
   @override
   void dispose() {
-    // Release every hold this region took, then hold the window: nothing
-    // runs for a snackbar that is not on screen.
+    // Release every hold this region took, then take this copy off the
+    // count: nothing runs for a snackbar that is not on screen.
     if (_focused) widget.window.resume();
     if (_hovered) widget.window.resume();
     if (_a11yFocused) widget.window.resume();

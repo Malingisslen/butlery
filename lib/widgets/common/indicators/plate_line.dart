@@ -230,24 +230,38 @@ class _PlateLineState extends State<PlateLine>
 /// rörelse, som [PlateLine] (Komponentark v1:309).
 ///
 /// Färgen är knappens egen textfärg. Ritningen visar bara saffranshjälten
-/// (ink #17251D på saffran); att ink-primären och konturknappen får sin
-/// egen förgrund på samma sätt är en tolkning av regeln "i knappens egen
-/// textfärg".
+/// (ink #17251D på saffran); att ink-primären får sin egen förgrund på
+/// samma sätt är en tolkning av regeln "i knappens egen textfärg".
+///
+/// Rännan på 18 % gäller bara knappar med fylld yta (saffran eller ink):
+/// 0.18 finns bara på opacitetsskalans ink-steg, och på papper tillåter
+/// skalan bara 0.02 och 0.04 (tokens.json opacityLadder, "Endast dessa
+/// nivåer får användas"). En knapp utan fyllning (kontur-, text- och
+/// ikonknappen, [onFill] false) står på papper och får därför linjens egen
+/// ränna, token progressTrack: ljust #E6EAD9, mörkt rgba(245,244,237,0.18)
+/// (tokens.json semantic progressTrack). Segmentet är fortfarande knappens
+/// textfärg. Ritningen visar ingen upptagen kontur- eller textknapp; valet
+/// av progressTrack är en tolkning.
 ///
 /// Linjen bär ingen semantik. Knappen säger själv att den arbetar
 /// ([BusyButtonSemantics]), så att beskedet inte läses två gånger.
 class ButtonPlateLine extends StatefulWidget {
-  const ButtonPlateLine({this.color, super.key});
+  const ButtonPlateLine({this.color, this.onFill = true, super.key});
 
   /// Förgrunden. Null läser knappens textfärg ur [DefaultTextStyle], som en
   /// knapps Material sätter till knappens förgrund.
   final Color? color;
 
+  /// Om knappen har en fylld yta (saffran eller ink). Falskt för knappar som
+  /// står på papper: då är rännan token progressTrack i stället för
+  /// förgrunden på [trackAlpha].
+  final bool onFill;
+
   /// Segmentets bredd som andel av knappen (Komponentark v1:372, `width:58%`).
   static const double segmentWidth = 0.58;
 
-  /// Rännans opacitet av förgrunden (Komponentark v1:372, `.18`; tokens.json
-  /// opacityLadder.onInk).
+  /// Rännans opacitet av förgrunden på en fylld knapp (Komponentark v1:372,
+  /// `.18`; tokens.json opacityLadder.onInk).
   static const double trackAlpha = 0.18;
 
   /// Rännan. Nyckeln finns för prov.
@@ -305,7 +319,9 @@ class _ButtonPlateLineState extends State<ButtonPlateLine>
         width: double.infinity,
         child: ColoredBox(
           key: ButtonPlateLine.trackKey,
-          color: color.withValues(alpha: ButtonPlateLine.trackAlpha),
+          color: widget.onFill
+              ? color.withValues(alpha: ButtonPlateLine.trackAlpha)
+              : context.butleryColors.progressTrack,
           child: Align(
             alignment: AlignmentDirectional.centerStart,
             child: FractionallySizedBox(
@@ -339,18 +355,24 @@ class _ButtonPlateLineState extends State<ButtonPlateLine>
 /// upptagen knapp aldrig tappar sin fokusring.
 abstract final class PlateLineButton {
   /// [own] är knappens egen stil, [theme] temats stil för samma knapptyp.
-  static ButtonStyle busyStyle(ButtonStyle? own, ButtonStyle? theme) {
+  /// [onFill] är falskt för en knapp utan fylld yta (kontur, text, ikon);
+  /// se [ButtonPlateLine.onFill].
+  static ButtonStyle busyStyle(
+    ButtonStyle? own,
+    ButtonStyle? theme, {
+    bool onFill = true,
+  }) {
     final under = own?.backgroundBuilder ?? theme?.backgroundBuilder;
     return (own ?? const ButtonStyle()).copyWith(
       backgroundBuilder: (context, states, child) {
         final layered = Stack(
           children: [
             child ?? const SizedBox.shrink(),
-            const PositionedDirectional(
+            PositionedDirectional(
               start: 0,
               end: 0,
               bottom: 0,
-              child: ButtonPlateLine(),
+              child: ButtonPlateLine(onFill: onFill),
             ),
           ],
         );

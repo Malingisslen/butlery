@@ -58,8 +58,10 @@ class ProgressOverlay extends StatelessWidget {
               cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
         ),
         // Text plus the plate line, never a spinner (produktregler.md:163,
-        // B-18). The overlay is a dark scrim, so the line takes the in-button
-        // form in the overlay's own text colour (Komponentark v1:307).
+        // B-18). The line takes the in-button form in the overlay's own text
+        // colour (Komponentark v1:307), so it contrasts with the scrim
+        // exactly as the text does, in either mode. The scrim and text
+        // colours themselves predate this line and have no drawn source.
         child: Center(
           child: Semantics(
             liveRegion: true,

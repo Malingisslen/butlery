@@ -2606,7 +2606,7 @@
   "dialogLoadingRecipes": "Laddar recept...",
   "dialogManualImport": "Manuell import",
   "dialogMarkIngredientsYourself": "Markera ingredienser själv",
-  "dialogMayTakeAWhile": "Detta kan ta en stund...",
+  "dialogMayTakeAWhile": "Detta kan ta en stund …",
   "dialogNameMinTwoChars": "Namnet måste vara minst 2 tecken",
   "dialogNoEditableShoppingLists": "Du har inga redigerbara inköpslistor. Endast listor du kan redigera visas här. Skapa en ny lista ovan.",
   "dialogNoMenus": "Inga menyer",
@@ -4288,8 +4288,8 @@
   },
   "groupUpdated": "Gruppen är uppdaterad.",
   "groupYouLeftGroup": "Du har lämnat gruppen",
-  "loadingGeneric": "Laddar...",
-  "loadingRecipes": "Laddar recept...",
+  "loadingGeneric": "Laddar …",
+  "loadingRecipes": "Laddar recept …",
   "loadingAdminAccess": "Hämtar din behörighet …",
   "@loadingAdminAccess": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
@@ -6740,7 +6740,7 @@
       }
     }
   },
-  "retagFetchingRecipes": "Hämtar recept...",
+  "retagFetchingRecipes": "Hämtar recept …",
   "retagRetaggingRecipes": "Omtaggar recept",
   "retagRetaggingProgress": "Omtaggar {current} av {total} recept...",
   "@retagRetaggingProgress": {

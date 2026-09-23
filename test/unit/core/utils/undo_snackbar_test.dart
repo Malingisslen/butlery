@@ -4,6 +4,8 @@
 // (produktregler.md:131-132, content-style-guide.md:77). The primitive owns
 // both numbers so no call site can drift to 4 or 5 seconds again.
 
+import 'dart:async';
+
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -484,6 +486,120 @@ void main() {
 
       expect(undone, 1);
       expect(commits, 0);
+    });
+  });
+
+  group('one snackbar on two Scaffolds', () {
+    test('the window runs while any copy is on screen', () {
+      fakeAsync((async) {
+        var timedOut = 0;
+        final t = UndoWindowTimer(
+          window: kUndoWindow,
+          onTimeout: () => timedOut++,
+        )..start();
+        // Flutter builds the snackbar on every root Scaffold: two copies.
+        t
+          ..attach()
+          ..attach();
+        async.elapse(const Duration(seconds: 3));
+        // One copy leaves (the popped route); the other stays on screen.
+        t.detach();
+        async.elapse(const Duration(seconds: 4));
+        expect(timedOut, 1);
+      });
+    });
+
+    test('it stops when the last copy leaves', () {
+      fakeAsync((async) {
+        var timedOut = 0;
+        final t = UndoWindowTimer(
+          window: kUndoWindow,
+          onTimeout: () => timedOut++,
+        )..start();
+        t
+          ..attach()
+          ..attach()
+          ..detach()
+          ..detach();
+        async.elapse(const Duration(seconds: 60));
+        expect(timedOut, 0);
+      });
+    });
+
+    testWidgets('an undo shown after a pop still times out', (tester) async {
+      // recipe_management_handler pops the detail route and then shows the
+      // undo: for a moment the snackbar is built on both Scaffolds.
+      final nav = GlobalKey<NavigatorState>();
+      late BuildContext detail;
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: nav,
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(body: Text('Lista')),
+        ),
+      );
+      unawaited(
+        nav.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => Scaffold(
+              body: Builder(
+                builder: (c) {
+                  detail = c;
+                  return const Text('Detalj');
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final undo = UndoSnackBar.capture(detail);
+      nav.currentState!.pop();
+      SnackBarClosedReason? reason;
+      undo
+          .show('Receptet togs bort', onUndo: () {})!
+          .closed
+          .then((r) => reason = r);
+      await tester.pumpAndSettle();
+      expect(find.text('Detalj'), findsNothing);
+      expect(find.text('Receptet togs bort'), findsOneWidget);
+
+      await tester.pump(kUndoWindow + const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.text('Receptet togs bort'), findsNothing);
+      expect(reason, SnackBarClosedReason.timeout);
+    });
+  });
+
+  group('a snackbar with an action stays until the user acts', () {
+    // The action sits in InkSnackBar's content, so SnackBar.action is null
+    // and Flutter's default `persist ?? action != null` no longer applies.
+    // _showSnackBar keeps the behaviour the SnackBarAction had.
+    for (final assistive in [false, true]) {
+      testWidgets('Försök igen persists (accessibleNavigation: $assistive)', (
+        tester,
+      ) async {
+        await pumpApp(tester, accessibleNavigation: assistive);
+        SnackBarUtils.showNetworkError(ctx, onRetry: () {});
+        await tester.pump();
+        expect(find.text('Försök igen'), findsOneWidget);
+        expect(shownSnackBar(tester).persist, isTrue);
+        await tester.pump(const Duration(minutes: 1));
+        expect(find.text('Försök igen'), findsOneWidget);
+      });
+    }
+
+    testWidgets('a snackbar without an action times out', (tester) async {
+      await pumpApp(tester);
+      SnackBarUtils.showInfo(ctx, 'Sparat');
+      await tester.pumpAndSettle();
+      expect(shownSnackBar(tester).persist, isFalse);
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      expect(find.text('Sparat'), findsNothing);
     });
   });
 }

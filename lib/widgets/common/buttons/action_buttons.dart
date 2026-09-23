@@ -83,6 +83,7 @@ class ActionButtons {
               ? PlateLineButton.busyStyle(
                   null,
                   theme.outlinedButtonTheme.style,
+                  onFill: false,
                 )
               : null,
           child: buttonChild,
@@ -366,6 +367,7 @@ class ActionButtons {
           ? PlateLineButton.busyStyle(
               style,
               Theme.of(context).textButtonTheme.style,
+              onFill: false,
             )
           : style,
       child: buttonChild,
