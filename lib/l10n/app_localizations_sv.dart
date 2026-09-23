@@ -9015,6 +9015,32 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yConflictBannerDismiss => 'Stäng konfliktnotis';
 
   @override
+  String get conflictBannerTitleRecipe => 'Två versioner av receptet';
+
+  @override
+  String get conflictBannerTitleWeek => 'Två versioner av veckan';
+
+  @override
+  String conflictBannerBody(String name) {
+    return '$name ändrade samtidigt. Din version finns kvar — välj vilken som gäller.';
+  }
+
+  @override
+  String get conflictBannerBodyUnnamed =>
+      'Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.';
+
+  @override
+  String conflictWeekSaved(String name) {
+    return '$name sparade veckan';
+  }
+
+  @override
+  String get conflictWeekSavedUnnamed => 'Någon annan sparade veckan';
+
+  @override
+  String get conflictKeepMine => 'Behåll min';
+
+  @override
   String get conflictDiffTitle => 'Vad ändrades';
 
   @override

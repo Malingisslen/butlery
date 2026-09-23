@@ -269,7 +269,14 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       final T persisted;
       if (shouldResolveConflict) {
         final remote = await _parserModule.getLatestResource<T>(resource.id);
-        persisted = await _conflictModule.resolveConflict<T>(resource, remote);
+        persisted = await _conflictModule.resolveConflict<T>(
+          resource,
+          remote,
+          // The model declares which conflict rule applies to this user's
+          // edit (produktregler.md:97-107); _currentUserId is non-null here,
+          // checked at the top of this method.
+          entity: resource.conflictEntityFor(_currentUserId!),
+        );
         await _conflictModule.performUpdate(docRef, persisted);
       } else {
         persisted = resource;

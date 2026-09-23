@@ -6355,6 +6355,44 @@
   "@a11yConflictBannerDismiss": {
     "description": "BUT-1031: a11y label for the conflict banner dismiss action."
   },
+  "conflictBannerTitleRecipe": "Two versions of the recipe",
+  "@conflictBannerTitleRecipe": {
+    "description": "P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:101-102)."
+  },
+  "conflictBannerTitleWeek": "Two versions of the week",
+  "@conflictBannerTitleWeek": {
+    "description": "P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:103)."
+  },
+  "conflictBannerBody": "{name} changed it at the same time. Your version is still here — choose which one applies.",
+  "@conflictBannerBody": {
+    "description": "P3-U08: conflict banner body; name = who made the other change (Komponentark v1:755-758).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodyUnnamed": "Someone else changed it at the same time. Your version is still here — choose which one applies.",
+  "@conflictBannerBodyUnnamed": {
+    "description": "P3-U08: conflict banner body when the other editor's name is unknown (Komponentark v1:755-758)."
+  },
+  "conflictWeekSaved": "{name} saved the week",
+  "@conflictWeekSaved": {
+    "description": "P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:103, ux-beslut D-04).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictWeekSavedUnnamed": "Someone else saved the week",
+  "@conflictWeekSavedUnnamed": {
+    "description": "P3-U08: week-menu conflict snackbar when the other editor's name is unknown."
+  },
+  "conflictKeepMine": "Keep mine",
+  "@conflictKeepMine": {
+    "description": "P3-U08: action that restores the user's overwritten version (Skarmar v12 etapp 11, #vmbkonflikt)."
+  },
   "conflictDiffTitle": "What changed",
   "@conflictDiffTitle": {
     "description": "BUT-1163: title of the conflict diff view."

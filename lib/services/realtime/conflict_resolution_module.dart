@@ -58,11 +58,16 @@ class ConflictResolutionModule {
     return false;
   }
 
-  /// Resolve conflicts using edit count and timestamp strategy
+  /// Resolve conflicts using edit count and timestamp strategy.
+  ///
+  /// [entity] is the conflict rule the model declared for the editing user
+  /// ([RealtimeResource.conflictEntityFor]); it rides on the emitted
+  /// [ConflictEvent] so a surface can pick the right notice.
   Future<T> resolveConflict<T extends RealtimeResource>(
     T local,
-    T remote,
-  ) async {
+    T remote, {
+    required ConflictEntity entity,
+  }) async {
     AppLogger.info('⚠️ Löser konflikt för resurs: ${local.id}');
 
     try {
@@ -71,57 +76,98 @@ class ConflictResolutionModule {
         AppLogger.info(
           '📝 Lokal version vinner (editCount: ${local.editCount} > ${remote.editCount})',
         );
-        _emitConflict(local, remote, ConflictResolutionStrategy.localWon);
+        _emitConflict(
+          local,
+          remote,
+          ConflictResolutionStrategy.localWon,
+          entity,
+        );
         return local;
       } else if (remote.editCount > local.editCount) {
         AppLogger.info(
           '☁️ Remote version vinner (editCount: ${remote.editCount} > ${local.editCount})',
         );
-        _emitConflict(local, remote, ConflictResolutionStrategy.remoteWon);
+        _emitConflict(
+          local,
+          remote,
+          ConflictResolutionStrategy.remoteWon,
+          entity,
+        );
         return remote;
       } else {
         // Same editCount - use timestamp
         if (local.lastEditedAt.isAfter(remote.lastEditedAt)) {
           AppLogger.info('📝 Lokal version vinner (nyare timestamp)');
-          _emitConflict(local, remote, ConflictResolutionStrategy.localWon);
+          _emitConflict(
+            local,
+            remote,
+            ConflictResolutionStrategy.localWon,
+            entity,
+          );
           return local;
         } else {
           AppLogger.info('☁️ Remote version vinner (nyare timestamp)');
-          _emitConflict(local, remote, ConflictResolutionStrategy.remoteWon);
+          _emitConflict(
+            local,
+            remote,
+            ConflictResolutionStrategy.remoteWon,
+            entity,
+          );
           return remote;
         }
       }
     } catch (e) {
       AppLogger.error('❌ Fel vid conflict resolution för ${local.id}', e);
 
-      // On error, choose remote version (safer). BUT-1031: do NOT emit a
-      // ConflictEvent here — a resolver crash is "we punted, our code has a
-      // bug" rather than "your edit was overwritten," and the banner copy
-      // assumes the latter. Logged via the SyncError side-channel instead.
+      // On error, choose the remote version (safer), and say so. The local
+      // edit is overwritten exactly as in an ordinary remoteWon, so the user
+      // gets the same notice and can rescue it with "Behåll min version"
+      // (produktregler.md:109: no strategy may silently drop data that only
+      // exists locally; flows-roles-budget.md:18). A sink that throws never
+      // reaches this branch: _emitConflict contains its own failure, so this
+      // is the only emission for the call.
       AppLogger.warning(
         '🛡️ Väljer remote version vid conflict resolution-fel',
+      );
+      _emitConflict(
+        local,
+        remote,
+        ConflictResolutionStrategy.remoteWon,
+        entity,
       );
       return remote;
     }
   }
 
+  /// Hands one [ConflictEvent] to [onConflict]. A sink that throws is logged
+  /// and contained here, so a broken listener can neither flip the resolver's
+  /// choice nor cause a second emission from the error branch.
   void _emitConflict<T extends RealtimeResource>(
     T local,
     T remote,
     ConflictResolutionStrategy strategy,
+    ConflictEntity entity,
   ) {
     final sink = onConflict;
     if (sink == null) return;
-    sink(
-      ConflictEvent(
-        collectionPath: collectionPath,
-        docId: local.id,
-        localValue: local,
-        remoteValue: remote,
-        chosenStrategy: strategy,
-        occurredAt: clock.now(),
-      ),
-    );
+    try {
+      sink(
+        ConflictEvent(
+          collectionPath: collectionPath,
+          docId: local.id,
+          localValue: local,
+          remoteValue: remote,
+          chosenStrategy: strategy,
+          entity: entity,
+          occurredAt: clock.now(),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error(
+        '❌ Konfliktnotisen kunde inte skickas för ${local.id}',
+        e,
+      );
+    }
   }
 
   /// Perform the update to Firebase

@@ -8999,6 +8999,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yConflictBannerDismiss => 'Dismiss conflict notification';
 
   @override
+  String get conflictBannerTitleRecipe => 'Two versions of the recipe';
+
+  @override
+  String get conflictBannerTitleWeek => 'Two versions of the week';
+
+  @override
+  String conflictBannerBody(String name) {
+    return '$name changed it at the same time. Your version is still here — choose which one applies.';
+  }
+
+  @override
+  String get conflictBannerBodyUnnamed =>
+      'Someone else changed it at the same time. Your version is still here — choose which one applies.';
+
+  @override
+  String conflictWeekSaved(String name) {
+    return '$name saved the week';
+  }
+
+  @override
+  String get conflictWeekSavedUnnamed => 'Someone else saved the week';
+
+  @override
+  String get conflictKeepMine => 'Keep mine';
+
+  @override
   String get conflictDiffTitle => 'What changed';
 
   @override

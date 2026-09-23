@@ -816,6 +816,13 @@ void main() {
           );
           expect(events.single.docId, 'cs1');
           expect(
+            events.single.entity,
+            ConflictEntity.recipeOwn,
+            reason:
+                'the owner edited their own recipe, so the model declares '
+                'recipeOwn (produktregler.md:101)',
+          );
+          expect(
             events.single.remoteValue.editCount,
             9,
             reason:
@@ -825,6 +832,59 @@ void main() {
         });
       },
     );
+  });
+
+  group('conflictStream entity (P3-U07)', () {
+    /// The entity comes from the model for the signed-in user: a collaborator
+    /// editing someone else's recipe follows the shared-recipe row
+    /// (produktregler.md:102), not the owner's.
+    test('a collaborator losing a recipe edit gets recipeShared', () async {
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        when(() => mockAuth.currentUserId).thenReturn('editor_user');
+        const participants = {
+          'owner_user': ResourcePermission.owner,
+          'editor_user': ResourcePermission.editor,
+        };
+        final events = <ConflictEvent>[];
+        final sub = service.conflictStream.listen(events.add);
+
+        final initial = _buildResource(
+          id: 'cs2',
+          ownerId: 'owner_user',
+          participants: participants,
+          editCount: 1,
+          lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+        );
+        await _seed(fake, initial);
+        await service.updateResource(initial);
+
+        await _seed(
+          fake,
+          _buildResource(
+            id: 'cs2',
+            ownerId: 'owner_user',
+            participants: participants,
+            editCount: 9,
+            lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+          ),
+        );
+
+        await service.updateResource(
+          _buildResource(
+            id: 'cs2',
+            ownerId: 'owner_user',
+            participants: participants,
+            editCount: 2,
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        await sub.cancel();
+
+        expect(events, hasLength(1));
+        expect(events.single.entity, ConflictEntity.recipeShared);
+      });
+    });
   });
 
   group('fetchLatestResource', () {

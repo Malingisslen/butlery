@@ -1,10 +1,16 @@
 /// BUT-1031: Banner widget that surfaces silent collaborative-edit conflict
 /// resolutions to the user.
 ///
+/// P3-U08: the anatomy is the drawn conflict banner (Komponentark v1:755-758):
+/// a 1 px text.danger outline on surface.base, the triangle-alert glyph, a bold
+/// title that names what has two versions, and body text saying who changed it
+/// and that the user's version is still there. No channel is chosen here: which
+/// entity gets a banner and which a snackbar is package 4's mounting work.
+///
 /// Last-write-wins used to be invisible — `ConflictResolutionModule.resolveConflict`
 /// would pick a winner, the loser's edit would disappear, and no UI hinted at
 /// the loss. This widget subscribes to [RealtimeSyncService.conflictStream] and
-/// renders a non-blocking [MaterialBanner] when an event arrives.
+/// renders a non-blocking banner when an event arrives.
 ///
 /// The widget is opt-in. Wrap it around (or sibling to) the collaborative
 /// surface — recipe edit, menu plan, shopping list — to make conflicts visible
@@ -17,14 +23,16 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
 
-/// Listens to the realtime sync service's [conflictStream] and renders a
-/// [MaterialBanner] for the most recent event until the user dismisses it.
+/// Listens to the realtime sync service's [conflictStream] and renders the
+/// conflict banner for the most recent event until the user dismisses it.
 ///
 /// Place above the main content of a collaborative surface — the banner takes
 /// vertical space when visible and collapses to nothing otherwise.
@@ -96,64 +104,115 @@ class _ConflictBannerState extends State<ConflictBanner> {
     ConflictDiffView.show(context, event);
   }
 
+  /// The drawn title names what has two versions (Komponentark v1:756 draws
+  /// "Två versioner av listan"). A shared recipe uses the own-recipe wording
+  /// until PQ-02 decides what a non-owner's lost edit becomes.
+  String _title(BuildContext context, ConflictEntity entity) {
+    final l = context.l10n;
+    return switch (entity) {
+      ConflictEntity.recipeOwn ||
+      ConflictEntity.recipeShared => l.conflictBannerTitleRecipe,
+      ConflictEntity.weekMenu => l.conflictBannerTitleWeek,
+    };
+  }
+
+  /// Who made the other change comes from the remote snapshot's cached
+  /// display name, never from the collection or position.
+  String _body(BuildContext context, ConflictEvent event) {
+    final name = event.remoteValue.lastEditedByDisplayName.trim();
+    return name.isEmpty
+        ? context.l10n.conflictBannerBodyUnnamed
+        : context.l10n.conflictBannerBody(name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final event = _activeEvent;
     if (event == null) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    // Komponentark v1:755-757. Outline and glyph are text.danger
+    // (colorScheme.error: #9C3B23 light, #DE9078 dark, tokens.json:96-98),
+    // title text.primary (onSurface: #24382C / #F5F4ED, tokens.json:54-56),
+    // body text.body (#37453A / #F5F4ED, tokens.json:58-60), background
+    // surface.base (surface: #F5F4ED / #17251D, tokens.json:104-106).
+    final danger = cs.error;
+    final bodyColor = AppModeColors.textBody(theme.brightness);
 
-    return Material(
-      color: cs.surface,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
-        ),
-        decoration: BoxDecoration(
-          color: context.butleryColors.warning.withValues(
-            alpha: AppDimensions.opacityVeryLight,
+    // A new event is a new live region, so a screen reader hears each
+    // conflict once and a rebuild of the same event stays silent.
+    return KeyedSubtree(
+      key: ObjectKey(event),
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingS,
           ),
-          border: Border(
-            left: BorderSide(
-              color: context.butleryColors.warning,
-              width: AppDimensions.borderWidthThick,
+          child: Material(
+            color: cs.surface,
+            shape: Border.all(
+              color: danger,
+              width: AppDimensions.borderWidthStandard,
             ),
-            bottom: BorderSide(
-              color: context.butleryColors.warning.withValues(
-                alpha: AppDimensions.opacityMediumLight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.spacingModerate,
+                AppDimensions.paddingM,
+                AppDimensions.spacingXs,
+                AppDimensions.paddingM,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: AppDimensions.spacingXxs,
+                    ),
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      color: danger,
+                      size: AppDimensions.iconSize18,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.paddingMs),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _title(context, event.entity),
+                          style: AppTextStyles.labelMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXxs),
+                        Text(
+                          _body(context, event),
+                          style: AppTextStyles.captionBase.copyWith(
+                            color: bodyColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _onViewChange(event),
+                    child: Text(context.l10n.commonView),
+                  ),
+                  IconButton(
+                    tooltip: context.l10n.a11yConflictBannerDismiss,
+                    icon: const Icon(Icons.close),
+                    onPressed: _dismiss,
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.sync_problem,
-              color: context.butleryColors.warning,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Text(
-                context.l10n.conflictBannerMessage,
-                style: TextStyle(
-                  color: context.butleryColors.onWarningContainer,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => _onViewChange(event),
-              child: Text(context.l10n.commonView),
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            IconButton(
-              tooltip: context.l10n.a11yConflictBannerDismiss,
-              icon: const Icon(Icons.close),
-              onPressed: _dismiss,
-            ),
-          ],
         ),
       ),
     );

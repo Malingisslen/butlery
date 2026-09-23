@@ -58,6 +58,9 @@ class TestRealtimeResource extends RealtimeResource {
   }
 
   @override
+  ConflictEntity conflictEntityFor(String userId) => ConflictEntity.recipeOwn;
+
+  @override
   Map<String, dynamic> serializeContent() {
     return {
       'testContent': testContent,

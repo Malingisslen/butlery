@@ -10,7 +10,11 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/realtime/realtime_resource.dart';
+
 import 'package:butlery/services/realtime/realtime_types.dart';
+
+class _FakeResource extends Fake implements RealtimeResource {}
 
 void main() {
   group('ConflictDiff.fromMaps', () {
@@ -81,6 +85,31 @@ void main() {
       final f = d.changedFields.single;
       expect(f.localText, '4');
       expect(f.remoteText, '6');
+    });
+  });
+
+  group('ConflictEvent (P3-U07)', () {
+    test('carries the entity the model declared and names it', () {
+      final event = ConflictEvent(
+        collectionPath: 'realtime_resources',
+        docId: 'm1',
+        localValue: _FakeResource(),
+        remoteValue: _FakeResource(),
+        chosenStrategy: ConflictResolutionStrategy.remoteWon,
+        entity: ConflictEntity.weekMenu,
+        occurredAt: DateTime(2026, 9, 23),
+      );
+      expect(event.entity, ConflictEntity.weekMenu);
+      expect(event.toString(), contains('weekMenu'));
+    });
+
+    test('three entities, one per row the realtime sync reaches', () {
+      // produktregler.md:101-103; the other rows have their own mechanisms.
+      expect(ConflictEntity.values, [
+        ConflictEntity.recipeOwn,
+        ConflictEntity.recipeShared,
+        ConflictEntity.weekMenu,
+      ]);
     });
   });
 }
