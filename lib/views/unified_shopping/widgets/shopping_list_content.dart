@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -59,6 +60,38 @@ class ShoppingListContentWidget extends StatefulWidget {
     required this.onCreateList,
     required this.onAddItem,
   });
+
+  /// The receipt after an item moved to [category], by drag or by the picker.
+  ///
+  /// A category move is class 3 (produktregler.md:133): no Ångra. The row
+  /// leaves the user's view, into a section that may be collapsed, so the
+  /// receipt stays, and a snackbar with no possible follow-up action gets
+  /// `Stäng` (content-style-guide.md:96-97). With an action Flutter would keep
+  /// it until tapped, so for most users [SnackBar.persist] is false and it
+  /// closes on its own after the app's normal snackbar time
+  /// ([SnackBarConfig.normalDuration]). Under assistive navigation it stays
+  /// until `Stäng`: the action must be a real focusable target
+  /// (tillganglighetshandoff:172), and Flutter's timeout does not pause while
+  /// a screen reader reads it (Grafisk manual v6:647).
+  static void showCategoryMoveReceipt(BuildContext context, String category) {
+    final messenger = ScaffoldMessenger.of(context);
+    final assistive = MediaQuery.accessibleNavigationOf(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          context.l10n.shoppingItemMoved(
+            ShoppingCategory.displayName(category),
+          ),
+        ),
+        duration: SnackBarConfig.normalDuration,
+        persist: assistive,
+        action: SnackBarAction(
+          label: context.l10n.commonClose,
+          onPressed: messenger.hideCurrentSnackBar,
+        ),
+      ),
+    );
+  }
 
   /// Get category-specific color from ButleryColors (public for reuse).
   static Color getCategoryColor(BuildContext context, String category) {
@@ -482,16 +515,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   Future<void> _handleItemDrop(String itemId, String category) async {
     final moved = await widget.viewModel.moveItemToCategory(itemId, category);
     if (moved && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.shoppingItemMoved(
-              ShoppingCategory.displayName(category),
-            ),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      ShoppingListContentWidget.showCategoryMoveReceipt(context, category);
     }
   }
 
@@ -504,15 +528,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       currentCategory: item.category,
     );
     if (selected != null && context.mounted) {
-      await widget.viewModel.moveItemToCategory(item.id, selected);
-      if (context.mounted) {
-        final displayName = ShoppingCategory.displayName(selected);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.shoppingItemMoved(displayName)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      final moved = await widget.viewModel.moveItemToCategory(
+        item.id,
+        selected,
+      );
+      if (moved && context.mounted) {
+        ShoppingListContentWidget.showCategoryMoveReceipt(context, selected);
       }
     }
   }

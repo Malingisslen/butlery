@@ -5466,7 +5466,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importViaUrl => 'Import via URL';
 
   @override
-  String get indicatorOfflineMode => 'Offline mode - Changes saved locally';
+  String get indicatorOfflineMode => 'No connection';
+
+  @override
+  String offlineBannerPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes waiting',
+      one: '1 change waiting',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String offlineBannerWithPending(String title, String pending) {
+    return '$title · $pending';
+  }
+
+  @override
+  String offlineBannerWithPendingA11y(String title, String pending) {
+    return '$title, $pending';
+  }
 
   @override
   String get indicatorBackOnline => 'Back online';
@@ -8997,6 +9018,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yConflictBannerDismiss => 'Dismiss conflict notification';
+
+  @override
+  String get conflictBannerTitleRecipe => 'Two versions of the recipe';
+
+  @override
+  String get conflictBannerTitleWeek => 'Two versions of the week';
+
+  @override
+  String conflictBannerBody(String name) {
+    return '$name changed it at the same time. Your version is still here — choose which one applies.';
+  }
+
+  @override
+  String get conflictBannerBodyUnnamed =>
+      'Someone else changed it at the same time. Your version is still here — choose which one applies.';
+
+  @override
+  String conflictWeekSaved(String name) {
+    return '$name saved the week';
+  }
+
+  @override
+  String get conflictWeekSavedUnnamed => 'Someone else saved the week';
 
   @override
   String get conflictDiffTitle => 'What changed';

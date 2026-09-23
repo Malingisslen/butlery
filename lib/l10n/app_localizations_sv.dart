@@ -5472,7 +5472,28 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importViaUrl => 'Importera via URL';
 
   @override
-  String get indicatorOfflineMode => 'Offline-läge - Ändringar sparas lokalt';
+  String get indicatorOfflineMode => 'Ingen anslutning';
+
+  @override
+  String offlineBannerPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar väntar',
+      one: '1 ändring väntar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String offlineBannerWithPending(String title, String pending) {
+    return '$title · $pending';
+  }
+
+  @override
+  String offlineBannerWithPendingA11y(String title, String pending) {
+    return '$title, $pending';
+  }
 
   @override
   String get indicatorBackOnline => 'Ansluten igen';
@@ -9013,6 +9034,29 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yConflictBannerDismiss => 'Stäng konfliktnotis';
+
+  @override
+  String get conflictBannerTitleRecipe => 'Två versioner av receptet';
+
+  @override
+  String get conflictBannerTitleWeek => 'Två versioner av veckan';
+
+  @override
+  String conflictBannerBody(String name) {
+    return '$name ändrade samtidigt. Din version finns kvar — välj vilken som gäller.';
+  }
+
+  @override
+  String get conflictBannerBodyUnnamed =>
+      'Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.';
+
+  @override
+  String conflictWeekSaved(String name) {
+    return '$name sparade veckan';
+  }
+
+  @override
+  String get conflictWeekSavedUnnamed => 'Någon annan sparade veckan';
 
   @override
   String get conflictDiffTitle => 'Vad ändrades';

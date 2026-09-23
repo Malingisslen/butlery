@@ -3751,7 +3751,43 @@
   "importTipsTitle": "Tips för bästa resultat",
   "importTryAdjustFilters": "Prova att justera sökning eller filter",
   "importViaUrl": "Importera via URL",
-  "indicatorOfflineMode": "Offline-läge - Ändringar sparas lokalt",
+  "indicatorOfflineMode": "Ingen anslutning",
+  "@indicatorOfflineMode": {
+    "description": "Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value."
+  },
+  "offlineBannerPending": "{count, plural, =1{1 ändring väntar} other{{count} ändringar väntar}}",
+  "@offlineBannerPending": {
+    "description": "Offline banner queue count, shown only when count > 0 (flows-roles-budget.md:111).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "offlineBannerWithPending": "{title} · {pending}",
+  "@offlineBannerWithPending": {
+    "description": "Visible offline banner line: title, middle dot, queue count (Skarmar v12 del 4 #hemoffline).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "pending": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineBannerWithPendingA11y": "{title}, {pending}",
+  "@offlineBannerWithPendingA11y": {
+    "description": "Screen-reader label for the offline banner with a count: a comma instead of the middle dot (Skarmar v12 del 4 #hemoffline data-a11y-name).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "pending": {
+        "type": "String"
+      }
+    }
+  },
   "indicatorBackOnline": "Ansluten igen",
   "householdLabel": "Hushåll",
   "householdToggle": "Markera som hushåll",
@@ -6388,6 +6424,40 @@
   "a11yConflictBannerDismiss": "Stäng konfliktnotis",
   "@a11yConflictBannerDismiss": {
     "description": "BUT-1031: a11y label for the conflict banner dismiss action."
+  },
+  "conflictBannerTitleRecipe": "Två versioner av receptet",
+  "@conflictBannerTitleRecipe": {
+    "description": "P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103)."
+  },
+  "conflictBannerTitleWeek": "Två versioner av veckan",
+  "@conflictBannerTitleWeek": {
+    "description": "P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:104)."
+  },
+  "conflictBannerBody": "{name} ändrade samtidigt. Din version finns kvar — välj vilken som gäller.",
+  "@conflictBannerBody": {
+    "description": "P3-U08: conflict banner body; name = who made the other change (Komponentark v1:755-758).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodyUnnamed": "Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.",
+  "@conflictBannerBodyUnnamed": {
+    "description": "P3-U08: conflict banner body when the other editor's name is unknown (Komponentark v1:755-758)."
+  },
+  "conflictWeekSaved": "{name} sparade veckan",
+  "@conflictWeekSaved": {
+    "description": "P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictWeekSavedUnnamed": "Någon annan sparade veckan",
+  "@conflictWeekSavedUnnamed": {
+    "description": "P3-U08: week-menu conflict snackbar when the other editor's name is unknown."
   },
   "conflictDiffTitle": "Vad ändrades",
   "@conflictDiffTitle": {

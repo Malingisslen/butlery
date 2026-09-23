@@ -844,7 +844,9 @@ void main() {
     testWidgets('offlineIndicator — covered by status indicator tests', (
       tester,
     ) async {
-      // SKIP: needs OfflineService registered in ServiceLocator.
+      // SKIP: needs OfflineService registered in ServiceLocator. The banner
+      // (anatomy, pendingCount, onTap, announcements) is covered in
+      // test/widget/common/layout/status_indicators_simplified_test.dart.
     }, skip: true);
 
     testWidgets('offlineStatusIcon — covered by status indicator tests', (

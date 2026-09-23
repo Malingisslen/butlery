@@ -9181,11 +9181,29 @@ abstract class AppLocalizations {
   /// **'Importera via URL'**
   String get importViaUrl;
 
-  /// No description provided for @indicatorOfflineMode.
+  /// Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value.
   ///
   /// In sv, this message translates to:
-  /// **'Offline-läge - Ändringar sparas lokalt'**
+  /// **'Ingen anslutning'**
   String get indicatorOfflineMode;
+
+  /// Offline banner queue count, shown only when count > 0 (flows-roles-budget.md:111).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring väntar} other{{count} ändringar väntar}}'**
+  String offlineBannerPending(int count);
+
+  /// Visible offline banner line: title, middle dot, queue count (Skarmar v12 del 4 #hemoffline).
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · {pending}'**
+  String offlineBannerWithPending(String title, String pending);
+
+  /// Screen-reader label for the offline banner with a count: a comma instead of the middle dot (Skarmar v12 del 4 #hemoffline data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, {pending}'**
+  String offlineBannerWithPendingA11y(String title, String pending);
 
   /// No description provided for @indicatorBackOnline.
   ///
@@ -15144,6 +15162,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Stäng konfliktnotis'**
   String get a11yConflictBannerDismiss;
+
+  /// P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103).
+  ///
+  /// In sv, this message translates to:
+  /// **'Två versioner av receptet'**
+  String get conflictBannerTitleRecipe;
+
+  /// P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:104).
+  ///
+  /// In sv, this message translates to:
+  /// **'Två versioner av veckan'**
+  String get conflictBannerTitleWeek;
+
+  /// P3-U08: conflict banner body; name = who made the other change (Komponentark v1:755-758).
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din version finns kvar — välj vilken som gäller.'**
+  String conflictBannerBody(String name);
+
+  /// P3-U08: conflict banner body when the other editor's name is unknown (Komponentark v1:755-758).
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.'**
+  String get conflictBannerBodyUnnamed;
+
+  /// P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} sparade veckan'**
+  String conflictWeekSaved(String name);
+
+  /// P3-U08: week-menu conflict snackbar when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan sparade veckan'**
+  String get conflictWeekSavedUnnamed;
 
   /// BUT-1163: title of the conflict diff view.
   ///

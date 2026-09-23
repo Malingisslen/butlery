@@ -35,6 +35,13 @@ abstract final class AppModeColors {
   static Color textSecondaryOnRaised(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textMedium : AppColors.textMedium;
 
+  /// semantic text.body: #37453A light, #F5F4ED dark (tokens.json:58-60, delivered
+  /// as the generated member textOnCream per tools/app-theme-map.json:97-100).
+  /// Body text under a bold title, as in the conflict banner
+  /// (Komponentark v1:757).
+  static Color textBody(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.textOnCream : AppColors.textOnCream;
+
   /// semantic focusRing: #24382C light, #F5F4ED dark (tokens.json:155-160).
   /// Never saffron (Grafisk manual v6:209).
   static Color focusRing(Brightness brightness) =>
@@ -65,4 +72,12 @@ abstract final class AppModeColors {
       _isDark(brightness)
       ? AppColorsDark.onActionPrimaryPressed
       : AppColors.onActionPrimaryPressed;
+
+  /// semantic text.warning: #8A5212 light, #DCA968 dark (tokens.json:92-95).
+  /// Warning text and warning glyphs on paper, such as the offline banner's
+  /// outline and wifi-off glyph (Komponentark v1:753, dark :571). Not
+  /// warning (border.statusWarning, never text) and not onWarningContainer
+  /// (text.accent.onRaised, a different token).
+  static Color textWarning(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.textWarning : AppColors.textWarning;
 }
