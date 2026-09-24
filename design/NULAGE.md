@@ -26,7 +26,7 @@ node tools/block288/uxprov.mjs --root=<rot>
 node tools/block289/visuellprov.mjs --root=<rot>
 ```
 
-Malins 20 produktbeslut från 2026-09-23 ligger i `fas2/produktbeslut-2026-09-23.json` och styr paket 3–8. Det som skjuts upp ligger i Linear (BUT-2140…2150).
+Malins 20 produktbeslut från 2026-09-23 ligger i `fas2/produktbeslut-2026-09-23.json` och styr paket 3–8. Det som skjuts upp ligger i Linear (BUT-2140…2157).
 
 Noll öppna designbeslut. De fyra som fanns är avgjorda och nedtecknade i
 `fas2/ux-beslut.json` — en överstyrd rad raderas aldrig, den behåller sin
@@ -47,8 +47,8 @@ Migrationen är **82 enheter i 8 paket**, mekaniskt härledda.
 | 2 | komponenter: fel, laddning, sidhuvud, radie, fokus, avstängt, nedtryckt | **klar och på main** (PR #261) |
 | 3 | interaktionsmönster: ångra, offline, konflikt | **klar och på main** (PR #261 ångra, PR #262 offline, konflikt, kvitto) |
 | 4 | vyerna tar in det nya | **klar och på main** (PR #263) |
-| 5 | tillstånd: 22 ändrade + 7 nya | pågår |
-| 6 | flödena | ej påbörjad |
+| 5 | tillstånd: 22 ändrade + 7 nya | **klar och på main** (PR #264, rättad i #265) |
+| 6 | flödena | pågår |
 | 7 | bortstädning av gammal yta och gammal UX | ej påbörjad |
 | 8 | verifiering | ej påbörjad |
 
