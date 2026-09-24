@@ -37,6 +37,12 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   bool _obscureEmailPassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _viewModel.loadMfaStatus();
+  }
+
+  @override
   void dispose() {
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
@@ -60,6 +66,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
     );
 
     if (!mounted) return;
+    // A failure stays until tapped; the new outcome replaces it rather
+    // than queueing behind it.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (success) {
       _currentPasswordController.clear();
@@ -70,8 +79,21 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         context.l10n.accountSecurityPasswordChanged,
       );
     } else if (_viewModel.error != null) {
-      SnackBarUtils.showError(context, _viewModel.error!);
+      _showFailure(onRetry: _handleChangePassword);
     }
+  }
+
+  /// P5-U10: a failed change is the failure snackbar
+  /// (content-style-guide.md:87-97), never OK. A failure without a known
+  /// cause offers Försök igen, which runs the change again with the fields
+  /// as they are; a named cause (wrong password, no network) or a form
+  /// error gets Stäng (AccountSecurityViewModel.canRetry).
+  void _showFailure({required Future<void> Function() onRetry}) {
+    SnackBarUtils.showFailure(
+      context,
+      what: _viewModel.error!,
+      action: _viewModel.canRetry ? FailureAction.retry(onRetry) : null,
+    );
   }
 
   Future<void> _handleChangeEmail() async {
@@ -81,6 +103,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
     );
 
     if (!mounted) return;
+    // A failure stays until tapped; the new outcome replaces it rather
+    // than queueing behind it.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (success) {
       _emailPasswordController.clear();
@@ -90,7 +115,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         context.l10n.accountSecurityEmailVerificationSent,
       );
     } else if (_viewModel.error != null) {
-      SnackBarUtils.showError(context, _viewModel.error!);
+      _showFailure(onRetry: _handleChangeEmail);
     }
   }
 
@@ -124,10 +149,16 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                       const SizedBox(height: AppDimensions.spacingXl),
                       const Divider(),
                       const SizedBox(height: AppDimensions.spacingXl),
-                      _buildMfaSection(),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      const Divider(),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      // PQ-16 = A (2026-09-23, Linear BUT-2142): turning
+                      // two-step verification on is hidden, so the row is
+                      // shown only to a user who has it on and can turn it
+                      // off; for anyone else it would lead nowhere.
+                      if (_viewModel.hasMfa) ...[
+                        _buildMfaSection(),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                        const Divider(),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
                       _buildLegalSection(),
                     ],
                   ),
@@ -353,6 +384,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
+          key: const ValueKey('accountSecurity.mfa'),
           leading: Icon(Icons.phone_android, color: cs.onSurface),
           title: Text(
             context.l10n.accountSecurityMfaSettings,
@@ -360,12 +392,15 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
           trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
           contentPadding: EdgeInsets.zero,
-          onTap: () {
-            Navigator.of(context).push(
+          onTap: () async {
+            await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => const MfaSettingsView(),
               ),
             );
+            // The user may have turned it off there; then the row goes.
+            if (!mounted) return;
+            await _viewModel.loadMfaStatus();
           },
         ),
       ],

@@ -2,6 +2,8 @@
 /// Handles single-URL fetch/parse plus BUT-947 multi-URL ("batch") import;
 /// delegates the actual scraping/persistence to WebScraper and ImportManager.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
@@ -12,6 +14,38 @@ import 'package:butlery/services/import/index_page_expander.dart';
 import 'package:butlery/services/import/extracted_content_analyzer.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/logger.dart';
+
+/// P5-U22: why one link in a batch could not be fetched, in the words a
+/// user reads (I-29 names why, produktregler.md:907). Never the technical
+/// text, which stays in the log.
+enum UrlFetchFailureReason { unreachable, noContent, unreadable }
+
+/// P5-U22: a fetch failure carrying its [reason] for the user and the
+/// scraper's [technical] text for the log only.
+class UrlFetchFailure implements Exception {
+  const UrlFetchFailure(this.reason, [this.technical]);
+
+  final UrlFetchFailureReason reason;
+  final String? technical;
+
+  /// The scraper's `metadata['reason']` (network / no_content /
+  /// parse_failed) as a reason; anything unknown is unreadable.
+  static UrlFetchFailureReason reasonFromScraper(Object? scraperReason) {
+    switch (scraperReason) {
+      case 'network':
+        return UrlFetchFailureReason.unreachable;
+      case 'no_content':
+        return UrlFetchFailureReason.noContent;
+      default:
+        return UrlFetchFailureReason.unreadable;
+    }
+  }
+
+  @override
+  String toString() => 'UrlFetchFailure($reason): ${technical.orEmpty()}';
+}
 
 /// Per-URL lifecycle state for batch ("multiple URLs") imports.
 enum UrlFetchStatus { pending, loading, success, failure }
@@ -23,10 +57,15 @@ enum UrlFetchStatus { pending, loading, success, failure }
 class UrlImportResult {
   const UrlImportResult({
     required this.url,
+    this.id = '',
     this.status = UrlFetchStatus.pending,
     this.extractedText,
     this.error,
   });
+
+  /// P5-U22: the row's own identity, given once when the batch starts and
+  /// kept through retries. A row is never found by its position or its text.
+  final String id;
 
   final String url;
   final UrlFetchStatus status;
@@ -52,6 +91,10 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   // ---- BUT-947: multiple-URL ("batch") import -----------------------------
 
   List<UrlImportResult> _urlResults = const [];
+
+  /// Source of [UrlImportResult.id]. Only ever counts up, so an id is never
+  /// reused for another row, not even in a later batch.
+  int _nextResultId = 0;
 
   // ---- BUT-1273: recipe-index / listing-page expansion --------------------
 
@@ -132,6 +175,18 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   bool get allUrlsFailed =>
       _urlResults.isNotEmpty && _urlResults.every((r) => r.isFailure);
 
+  /// P5-U22 (produktregler.md:905-909, I-29): the settled batch is a third
+  /// outcome, some links fetched and some not. Neither a success nor an
+  /// error, so the view shows it as a partial outcome, never as "all done".
+  bool get isPartialBatch =>
+      !_urlResults.any((r) => r.isLoading) &&
+      _urlResults.any((r) => r.isSuccess) &&
+      _urlResults.any((r) => r.isFailure);
+
+  /// The rows that failed, in the order the user pasted them.
+  List<UrlImportResult> get failedUrlResults =>
+      List.unmodifiable(_urlResults.where((r) => r.isFailure));
+
   /// Splits a free-text input into candidate URLs. Accepts newline-, comma-,
   /// space-, semicolon- and tab-separated lists (the natural ways a user pastes
   /// several browser-tab URLs) and keeps only well-formed http(s) URLs so a
@@ -187,7 +242,11 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     clearError();
     _urlResults = [
       for (final u in urls)
-        UrlImportResult(url: u, status: UrlFetchStatus.loading),
+        UrlImportResult(
+          id: 'url-${_nextResultId++}',
+          url: u,
+          status: UrlFetchStatus.loading,
+        ),
     ];
     setLoading(true);
 
@@ -195,9 +254,9 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     // never fans out into N concurrent network/LLM calls (BUT-947 cost/
     // rate-limit safety). Each fetch updates its own row, so progress still
     // streams in per-URL.
-    for (var i = 0; i < urls.length; i++) {
+    for (final row in List<UrlImportResult>.of(_urlResults)) {
       if (isDisposed) return;
-      await _fetchOneInto(i, urls[i]);
+      await _fetchOneInto(row.id, row.url);
     }
 
     if (isDisposed) return;
@@ -212,16 +271,27 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   Future<void> retryUrl(int index) async {
     if (isDisposed) return;
     if (index < 0 || index >= _urlResults.length) return;
+    await retryUrlById(_urlResults[index].id);
+  }
 
-    final target = _urlResults[index];
+  /// P5-U22: retries the row whose [UrlImportResult.id] is [id]. The view
+  /// retries by id, so a row keeps its identity however the list is drawn.
+  Future<void> retryUrlById(String id) async {
+    if (isDisposed) return;
+    final target = _urlResults.where((r) => r.id == id).firstOrNull;
+    if (target == null) return;
     // Fresh result (not copyWith) so the prior error string is dropped while
     // the row shows the loading state.
     _updateUrlResult(
-      index,
-      UrlImportResult(url: target.url, status: UrlFetchStatus.loading),
+      id,
+      UrlImportResult(
+        id: id,
+        url: target.url,
+        status: UrlFetchStatus.loading,
+      ),
     );
 
-    await _fetchOneInto(index, target.url);
+    await _fetchOneInto(id, target.url);
 
     if (isDisposed) return;
     // A retry can clear an all-failed batch error.
@@ -233,13 +303,14 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     }
   }
 
-  Future<void> _fetchOneInto(int index, String singleUrl) async {
+  Future<void> _fetchOneInto(String id, String singleUrl) async {
     try {
       final text = await fetchContentFromUrl(singleUrl);
       if (isDisposed) return;
       _updateUrlResult(
-        index,
+        id,
         UrlImportResult(
+          id: id,
           url: singleUrl,
           status: UrlFetchStatus.success,
           extractedText: text,
@@ -248,19 +319,47 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     } catch (e) {
       if (isDisposed) return;
       _updateUrlResult(
-        index,
+        id,
         UrlImportResult(
+          id: id,
           url: singleUrl,
           status: UrlFetchStatus.failure,
-          error: e.toString(),
+          error: failureReason(e),
         ),
       );
     }
   }
 
-  void _updateUrlResult(int index, UrlImportResult result) {
+  /// P5-U22: the reason a row shows (I-29 names why, produktregler.md:907).
+  /// Always one of three Swedish reasons from l10n; the exception's own text
+  /// (English, technical) goes to the log and never to the user
+  /// (content-style-guide.md:17).
+  @visibleForTesting
+  static String failureReason(Object error) {
+    final l10n = AppLocale.current;
+    final UrlFetchFailureReason reason;
+    if (error is UrlFetchFailure) {
+      reason = error.reason;
+    } else if (error is TimeoutException) {
+      reason = UrlFetchFailureReason.unreachable;
+    } else {
+      reason = UrlFetchFailureReason.unreadable;
+    }
+    AppLogger.debug('URL batch fetch failed ($reason): $error');
+    switch (reason) {
+      case UrlFetchFailureReason.unreachable:
+        return l10n.importUrlReasonUnreachable;
+      case UrlFetchFailureReason.noContent:
+        return l10n.importUrlReasonNoContent;
+      case UrlFetchFailureReason.unreadable:
+        return l10n.importUrlReasonUnreadable;
+    }
+  }
+
+  void _updateUrlResult(String id, UrlImportResult result) {
     if (isDisposed) return;
-    if (index < 0 || index >= _urlResults.length) return;
+    final index = _urlResults.indexWhere((r) => r.id == id);
+    if (index < 0) return;
     final next = List<UrlImportResult>.from(_urlResults);
     next[index] = result;
     _urlResults = next;
@@ -332,8 +431,11 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       if (extractionResult.success && extractionResult.extractedText != null) {
         return extractionResult.extractedText!;
       } else {
-        throw Exception(
-          extractionResult.error ?? AppLocale.current.errorGeneric,
+        throw UrlFetchFailure(
+          UrlFetchFailure.reasonFromScraper(
+            extractionResult.metadata['reason'],
+          ),
+          extractionResult.error,
         );
       }
     } finally {

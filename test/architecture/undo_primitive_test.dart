@@ -13,11 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// The one file allowed to read `commonUndo` for a snackbar.
 const _primitive = 'lib/core/utils/snackbar_utils.dart';
 
-/// The week menu's 30 s conflict snackbar (produktregler.md:104, column
-/// "Ångra" at :99). ux-beslut.json D-04 keeps its 30 s window apart from the
-/// 7 s undo window, so it cannot go through the primitive. The only other
-/// reader; a third one still fails.
-const _conflictNotice = 'lib/widgets/realtime/conflict_snackbar.dart';
+// The week menu's 30 s conflict snackbar no longer reads `commonUndo`: its
+// action carries the drawn words "Behåll min" (Skarmar v12 etapp 11 breda
+// vyer.dc.html:221), so the primitive is the only reader left.
 
 void main() {
   test('every undo label is read by the primitive alone', () {
@@ -28,7 +26,7 @@ void main() {
       if (path.startsWith('lib/l10n/')) continue;
       // "Dölj delat innehåll" is no longer an exception: PQ-07 = A
       // (produktbeslut 2026-09-23) puts its Ångra on the primitive too.
-      if (path == _primitive || path == _conflictNotice) {
+      if (path == _primitive) {
         continue;
       }
       final lines = entity.readAsLinesSync();

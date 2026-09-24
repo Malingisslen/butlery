@@ -1,6 +1,9 @@
 /// ViewModel for the "Skafferiet" (pantry) feature.
 library;
 
+import 'package:clock/clock.dart';
+
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -198,13 +201,52 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
 
     await executeAsyncVoid(
       () async {
-        await _pantryService.updateItem(userId, item);
         final idx = _items.indexWhere((i) => i.id == item.id);
+        final previous = idx >= 0 ? _items[idx] : null;
+        // Only what the user changed is written (produktregler.md:105).
+        await _pantryService.updateItem(userId, item, previous: previous);
         if (idx >= 0) {
-          _items = [..._items]..[idx] = item;
+          // A missing amount never replaces a known one (produktregler.md:148),
+          // so the row keeps showing it, as the stored item does.
+          final keepsQuantity = item.quantity == null && previous != null;
+          _items = [..._items]
+            ..[idx] = item.copyWith(
+              quantity: keepsQuantity ? previous.quantity : null,
+              updatedAt: clock.now(),
+              updatedBy: userId,
+            );
         }
       },
-      errorPrefix: 'Kunde inte uppdatera objektet',
+      errorPrefix: AppLocale.current.pantryItemUpdateFailed,
+    );
+  }
+
+  /// Changes a known amount by [delta], sent as a relative change
+  /// (produktregler.md:146). An item without an amount is left as it is.
+  Future<void> adjustQuantity(PantryItem item, double delta) async {
+    final userId = _currentUserId();
+    if (userId == null) return;
+
+    await executeAsyncVoid(
+      () async {
+        final written = await _pantryService.adjustQuantity(
+          userId,
+          item,
+          delta,
+        );
+        if (!written) return;
+        final idx = _items.indexWhere((i) => i.id == item.id);
+        if (idx >= 0) {
+          final current = _items[idx];
+          _items = [..._items]
+            ..[idx] = current.copyWith(
+              quantity: (current.quantity ?? 0) + delta,
+              updatedAt: clock.now(),
+              updatedBy: userId,
+            );
+        }
+      },
+      errorPrefix: AppLocale.current.pantryItemUpdateFailed,
     );
   }
 

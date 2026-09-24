@@ -114,6 +114,29 @@ void main() {
       expect(data['campaign'], 'host-hostmat-2026');
     });
 
+    // P5-U26b: the user's overwritten versions, erased by the cascade, so
+    // obtainable first. Only the owner's rows, and another user is refused.
+    test(
+      "overwritten versions: the owner gets theirs, nobody else's",
+      () async {
+        await seed(userId, FirestoreCollections.overwrittenVersions, 'kept-a');
+        await seed(userId, FirestoreCollections.overwrittenVersions, 'kept-b');
+        await seed(other, FirestoreCollections.overwrittenVersions, 'kept-a');
+
+        final rows = await repository.exportOverwrittenVersions(userId);
+
+        expect(rows, hasLength(2));
+        expect(
+          rows.map((r) => (r['data'] as Map)['marker']),
+          everyElement(startsWith('$userId/')),
+        );
+        await expectLater(
+          () => repository.exportOverwrittenVersions(other),
+          throwsA(anything),
+        );
+      },
+    );
+
     // Without these, deleting `_guardSelfExport` from all three methods leaves
     // the suite green: every other assertion here is satisfied by the
     // uid-scoped path alone, so the path proves routing and nothing proves the

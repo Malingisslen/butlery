@@ -244,6 +244,8 @@ class _SingleSlotCell extends StatelessWidget {
             presentServings: _presentServings(),
             // BUT-1241: "NY" badge on entries from the latest generation.
             showNewBadge: vm.isRecentlyPlaced(entry.id),
+            // P5-U23: the order the automatic placement followed.
+            placementOrder: vm.placementOrderOf(entry.id),
             // BUT-1043: in multi-select mode, tap toggles selection.
             selectionMode: vm.selectionMode,
             isSelected: vm.isSelected(entry.id),
@@ -461,6 +463,9 @@ class _AssignedSlot extends StatelessWidget {
   final RecipeNavCallback onTap;
   final bool showNewBadge;
 
+  /// P5-U23: 1-based order of the automatic placement, or null.
+  final int? placementOrder;
+
   /// BUT-1613: members home for this meal, forwarded into the recipe tap so
   /// cooking mode opens pre-scaled. Null → cooking mode's household default.
   final int? presentServings;
@@ -478,6 +483,7 @@ class _AssignedSlot extends StatelessWidget {
     required this.onToggleSelection,
     this.presentServings,
     this.showNewBadge = false,
+    this.placementOrder,
     this.selectionMode = false,
     this.isSelected = false,
   });
@@ -486,10 +492,14 @@ class _AssignedSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final accent = isSelected ? cs.secondary : cs.onSurface;
+    final order = placementOrder;
     final cell = Semantics(
       label: selectionMode
           ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
           : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      value: order == null
+          ? null
+          : context.l10n.a11yWeeklyMenuPlacementOrder(order),
       button: true,
       selected: selectionMode ? isSelected : null,
       child: GestureDetector(
@@ -518,6 +528,7 @@ class _AssignedSlot extends StatelessWidget {
                       size: 14,
                       color: cs.secondary,
                     ),
+                  if (order != null) _PlacementOrderNumber(order: order),
                   Expanded(
                     child: _slotLabel(
                       entry.slot.displayLabel,
@@ -610,6 +621,7 @@ class _OvrigtCell extends StatelessWidget {
                     entry: entry,
                     onTap: onTapRecipe,
                     showNewBadge: vm.isRecentlyPlaced(entry.id),
+                    placementOrder: vm.placementOrderOf(entry.id),
                     selectionMode: vm.selectionMode,
                     isSelected: vm.isSelected(entry.id),
                     onToggleSelection: vm.toggleSelection,
@@ -658,6 +670,9 @@ class _OvrigtEntry extends StatelessWidget {
   final RecipeNavCallback onTap;
   final bool showNewBadge;
 
+  /// P5-U23: 1-based order of the automatic placement, or null.
+  final int? placementOrder;
+
   // BUT-1043: see _AssignedSlot — in selection mode tap toggles selection
   // and the chip shows a checkbox; drag is suppressed.
   final bool selectionMode;
@@ -669,6 +684,7 @@ class _OvrigtEntry extends StatelessWidget {
     required this.onTap,
     required this.onToggleSelection,
     this.showNewBadge = false,
+    this.placementOrder,
     this.selectionMode = false,
     this.isSelected = false,
   });
@@ -676,10 +692,14 @@ class _OvrigtEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final order = placementOrder;
     final chip = Semantics(
       label: selectionMode
           ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
           : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      value: order == null
+          ? null
+          : context.l10n.a11yWeeklyMenuPlacementOrder(order),
       button: true,
       selected: selectionMode ? isSelected : null,
       child: GestureDetector(
@@ -720,6 +740,7 @@ class _OvrigtEntry extends StatelessWidget {
                 ),
                 const SizedBox(width: 3),
               ],
+              if (order != null) _PlacementOrderNumber(order: order),
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
@@ -744,6 +765,37 @@ class _OvrigtEntry extends StatelessWidget {
       context: context,
       payload: MovePayload(entry),
       child: chip,
+    );
+  }
+}
+
+/// P5-U23: the placement order as a number in the cell (produktregler.md:1126
+/// "Placeringsordningen visas som siffror i rutorna"; :890 "ordningen visas i
+/// rutnätet"). Drawn in Skarmar v12 etapp 11 breda vyer:249-254 as 10.5/700
+/// with 1 px tracking in the warning text colour. Read here as the overline
+/// role (10.5/700) in text.accent.onRaised (`onSecondaryContainer`: #8A5212
+/// light, #DCA968 dark), which holds on paper and on surface.raised in both
+/// modes (tokens.json text.link note). The number is announced through the
+/// cell's semantics value, so it is excluded here.
+class _PlacementOrderNumber extends StatelessWidget {
+  const _PlacementOrderNumber({required this.order});
+
+  final int order;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(end: 3),
+        child: Text(
+          '$order',
+          key: ValueKey('placement-order-$order'),
+          style: AppTextStyles.overline.copyWith(
+            letterSpacing: 1,
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
+          ),
+        ),
+      ),
     );
   }
 }

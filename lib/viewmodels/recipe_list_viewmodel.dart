@@ -758,6 +758,18 @@ class RecipeListViewModel extends BaseViewModel {
   void selectAll() => _selectionManager.selectAll(recipes.map((r) => r.id));
   void clearSelection() => _selectionManager.clearSelection();
 
+  /// "Välj" in the top bar (B-46): selection mode with nothing selected.
+  void startSelection() => _selectionManager.startSelection();
+
+  /// "Markera alla" as a toggle (produktregler.md:877): untick everything,
+  /// stay in selection mode.
+  void deselectAll() => _selectionManager.deselectAll();
+
+  /// Whether every recipe in the list is ticked, for the toggle's label.
+  bool get allSelected =>
+      recipes.isNotEmpty &&
+      recipes.every((r) => _selectionManager.selectedIds.contains(r.id));
+
   // Delete delegation
   void deleteRecipe(String recipeId) => _deleteManager.deleteRecipe(recipeId);
   void undoDeleteById(String id) => _deleteManager.undoDeleteById(id);

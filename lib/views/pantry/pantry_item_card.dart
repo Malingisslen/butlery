@@ -2,11 +2,14 @@
 /// its expiry status badge.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -19,6 +22,54 @@ class PantryItemCard extends StatelessWidget {
   const PantryItemCard({super.key, required this.item});
 
   final PantryItem item;
+
+  /// When the row was last changed, per content-style-guide.md:34-36:
+  /// relative only for the latest days (`nu` · `5 min sedan` · `i dag 14:02`
+  /// · `i går`), then the date (`9 juli`, with the year when it is not this
+  /// year). Clock times are 24-hour with a colon (content-style-guide.md:30).
+  ///
+  /// Interpretation: produktregler.md:105 says the row's timestamp updates,
+  /// but no drawing shows the row with one, so the word "ändrad" names what
+  /// the time is.
+  static String changedLabel(
+    AppLocalizations l10n,
+    DateTime changedAt,
+    DateTime now,
+  ) {
+    final at = changedAt.toLocal();
+    final local = now.toLocal();
+    final age = local.difference(at);
+    if (age.inMinutes < 1) return l10n.pantryItemChangedNow;
+    if (age.inHours < 1) return l10n.pantryItemChangedMinutesAgo(age.inMinutes);
+    final today = DateTime(local.year, local.month, local.day);
+    final day = DateTime(at.year, at.month, at.day);
+    if (day == today) {
+      final time =
+          '${at.hour.toString().padLeft(2, '0')}:'
+          '${at.minute.toString().padLeft(2, '0')}';
+      return l10n.pantryItemChangedToday(time);
+    }
+    if (day == today.subtract(const Duration(days: 1))) {
+      return l10n.pantryItemChangedYesterday;
+    }
+    final date = at.year == local.year
+        ? DateFormat.MMMMd(l10n.localeName).format(at)
+        : DateFormat.yMMMMd(l10n.localeName).format(at);
+    return l10n.pantryItemChangedOn(date);
+  }
+
+  /// The line under the name: the amount, and when the row last changed.
+  String _metaLine(BuildContext context) {
+    // An unknown amount ("har hemma") shows no unit on its own, with or
+    // without a change time.
+    final amount = item.quantity == null
+        ? ''
+        : '${item.formattedQuantity} ${item.unit}'.trim();
+    final changedAt = item.updatedAt;
+    if (changedAt == null) return amount;
+    final changed = changedLabel(context.l10n, changedAt, clock.now());
+    return amount.isEmpty ? changed : '$amount · $changed';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +183,7 @@ class PantryItemCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${item.formattedQuantity} ${item.unit}'.trim(),
+                  _metaLine(context),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: cs.onSurfaceVariant,
                   ),

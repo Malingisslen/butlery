@@ -670,8 +670,30 @@ service cloud.firestore {
       }
 
       // User's pantry ("skafferi") — owner-only
+      //
+      // Per field, the latest change wins (produktregler.md:105, :142-148):
+      // the app writes only the changed fields, plus who changed the row
+      // (updatedBy) and when (updatedAt, the server's time). The rule checks
+      // those two stamps whenever a write sets them, and that quantity is a
+      // number or null ("har hemma" without an amount). Writes that do not
+      // touch the stamps — as from app versions before this change — are
+      // still allowed.
+      function pantryWriteValid(userId) {
+        let data = request.resource.data;
+        let changed = resource == null
+          ? data.keys()
+          : data.diff(resource.data).affectedKeys();
+        return (!('updatedBy' in changed) || data.updatedBy == userId)
+          && (!('updatedAt' in changed) || data.updatedAt == request.time)
+          && (!('quantity' in data) || data.quantity == null
+              || data.quantity is number);
+      }
+
       match /pantry/{pantryItemId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, delete: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+          && request.auth.uid == userId
+          && pantryWriteValid(userId);
       }
 
       // User's shopping category preferences (BUT-379)
@@ -3007,6 +3029,53 @@ service cloud.firestore {
       // once written. Admin/server flows handle erasure (GDPR Art. 17).
       allow update: if false;
       allow delete: if false;
+    }
+
+    // ========================================
+    // OVERWRITTEN VERSIONS (P5-U26b)
+    // A version of the user's own week menu or recipe that another person's
+    // save overwrote, kept 30 days behind "Återställ" (produktregler.md:104,
+    // :109; PQ-01 = A). It belongs to the user whose version it was: only
+    // they read, keep and forget it, nobody can change it, and it can never
+    // be kept longer than 30 days. `expiresAt` is exactly 30 days after
+    // `overwrittenAt`, is in the future, and is at most 30 days and one hour
+    // from the server's clock (the hour absorbs a device clock that runs
+    // ahead). The TTL policy in firestore.indexes.json deletes on it, and
+    // the account deletion cascade sweeps the collection (USER_SUBCOLLECTIONS).
+    // ========================================
+    match /users/{userId}/overwritten_versions/{versionId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'ownerId', 'entity', 'resourceType', 'resourceId', 'version',
+          'overwrittenBy', 'overwrittenByName', 'overwrittenAt', 'expiresAt'
+        ])
+        && hasRequiredFields([
+          'ownerId', 'entity', 'resourceType', 'resourceId', 'version',
+          'overwrittenAt', 'expiresAt'
+        ])
+        && request.resource.data.ownerId == userId
+        && request.resource.data.entity in ['weekMenu', 'recipeOwn']
+        && request.resource.data.resourceType in ['menu', 'recipe']
+        && request.resource.data.resourceId is string
+        && request.resource.data.resourceId.size() > 0
+        && request.resource.data.version is map
+        && request.resource.data.overwrittenAt is timestamp
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt
+          == request.resource.data.overwrittenAt + duration.value(30, 'd')
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt
+          <= request.time + duration.value(721, 'h');
+
+      // Immutable: a kept version is restored or forgotten, never edited.
+      allow update: if false;
+
+      allow delete: if isAuthenticated()
+        && request.auth.uid == userId;
     }
 
     // ========================================

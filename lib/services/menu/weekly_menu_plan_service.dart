@@ -4,10 +4,16 @@
 /// and stacked entries for the multi-recipe `övrigt` slot.
 library;
 
+import 'dart:convert';
+
 import 'package:clock/clock.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -21,10 +27,236 @@ class WeeklyMenuDistributionResult {
   final WeeklyMenuPlan plan;
   final List<Recipe> overflow;
 
+  /// P5-U23: the meal type each overflowed recipe was generated for, keyed by
+  /// recipe id. The tray needs it to distribute the rest into next week.
+  final Map<String, String> overflowMealTypes;
+
+  /// P5-U23 (produktregler.md:1125, § 22.6): why the rest did not fit. Null
+  /// when nothing overflowed, or when the caller built the result by hand.
+  final WeeklyMenuOverflowReason? overflowReason;
+
   const WeeklyMenuDistributionResult({
     required this.plan,
     required this.overflow,
+    this.overflowMealTypes = const {},
+    this.overflowReason,
   });
+}
+
+/// P5-U23: why recipes did not fit (produktregler.md:1125: the tray "säger
+/// *varför* resten inte fick plats"; Skarmar v12 etapp 11 breda vyer:235).
+///
+/// A recipe overflows only when its kind of place has no free place left in
+/// [weekStart] from the anchor on: lunch and middag take one each, övrigt one
+/// per day (distributeFromGeneratedMenu). When [weekStart] is the current
+/// week the anchor is today, so days that have passed were never offered;
+/// [pastDaysSkipped] says so, because that is part of the reason.
+@immutable
+class WeeklyMenuOverflowReason {
+  const WeeklyMenuOverflowReason({
+    required this.weekStart,
+    this.pastDaysSkipped = false,
+    this.nextWeekOffered = true,
+  });
+
+  /// Monday of the week that had no room.
+  final DateTime weekStart;
+
+  /// Days before today were skipped (only in the current week).
+  final bool pastDaysSkipped;
+
+  /// Whether the tray may offer the following week. False once the tray has
+  /// been moved on one week: produktregler.md:893 makes the two-week limit
+  /// something the user sees, never a silent third week.
+  final bool nextWeekOffered;
+
+  /// Monday of the week the tray offers next.
+  DateTime get nextWeekStart => weekStart.add(const Duration(days: 7));
+
+  WeeklyMenuOverflowReason copyWith({bool? nextWeekOffered}) =>
+      WeeklyMenuOverflowReason(
+        weekStart: weekStart,
+        pastDaysSkipped: pastDaysSkipped,
+        nextWeekOffered: nextWeekOffered ?? this.nextWeekOffered,
+      );
+
+  Map<String, Object?> toJson() => {
+    'weekStart': weekStart.toIso8601String(),
+    'pastDaysSkipped': pastDaysSkipped,
+    'nextWeekOffered': nextWeekOffered,
+  };
+
+  static WeeklyMenuOverflowReason? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final week = DateTime.tryParse('${json['weekStart']}');
+    if (week == null) return null;
+    return WeeklyMenuOverflowReason(
+      weekStart: IsoWeekUtils.weekStartOf(week),
+      pastDaysSkipped: json['pastDaysSkipped'] == true,
+      nextWeekOffered: json['nextWeekOffered'] != false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is WeeklyMenuOverflowReason &&
+      other.weekStart == weekStart &&
+      other.pastDaysSkipped == pastDaysSkipped &&
+      other.nextWeekOffered == nextWeekOffered;
+
+  @override
+  int get hashCode => Object.hash(weekStart, pastDaysSkipped, nextWeekOffered);
+}
+
+/// P5-U24: what the overflow tray keeps on the device between sessions.
+///
+/// Recipes are kept by id and resolved again on restore, so a recipe deleted
+/// in the meantime does not come back. Nothing here is written to the shared
+/// week: the tray is the unplaced rest of a week generation, and
+/// produktregler.md:164-172 keeps a generation's local draft on the device
+/// only (Q-A11: per person, on the device).
+@immutable
+class WeeklyMenuOverflowTraySnapshot {
+  const WeeklyMenuOverflowTraySnapshot({
+    required this.recipeIds,
+    required this.mealTypes,
+    required this.total,
+    required this.savedAt,
+    this.reason,
+  });
+
+  /// The tray's recipes, in tray order.
+  final List<String> recipeIds;
+
+  /// Meal type per recipe id (see [WeeklyMenuDistributionResult]).
+  final Map<String, String> mealTypes;
+
+  /// How many recipes the distribution was given (placed plus overflow).
+  final int total;
+
+  /// Last change. The tray lives 30 days from here (produktregler.md:169).
+  final DateTime savedAt;
+
+  final WeeklyMenuOverflowReason? reason;
+
+  Map<String, Object?> toJson() => {
+    'recipeIds': recipeIds,
+    'mealTypes': mealTypes,
+    'total': total,
+    'savedAt': savedAt.toIso8601String(),
+    'reason': reason?.toJson(),
+  };
+
+  static WeeklyMenuOverflowTraySnapshot? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final ids = json['recipeIds'];
+    final savedAt = DateTime.tryParse('${json['savedAt']}');
+    if (ids is! List || savedAt == null) return null;
+    final types = json['mealTypes'];
+    final total = json['total'];
+    return WeeklyMenuOverflowTraySnapshot(
+      recipeIds: [for (final id in ids) '$id'],
+      mealTypes: types is Map
+          ? {for (final e in types.entries) '${e.key}': '${e.value}'}
+          : const {},
+      total: total is int ? total : ids.length,
+      savedAt: savedAt,
+      reason: WeeklyMenuOverflowReason.fromJson(json['reason']),
+    );
+  }
+}
+
+/// P5-U24: keeps the overflow tray on this device, per person, 30 days.
+///
+/// produktregler.md:164-172 (the local draft of a week generation): only on
+/// the device, never in the cloud until saved; 30 days since the last change;
+/// deleted when saved (here: when the tray is emptied), when discarded, when
+/// its lifetime runs out, and at logout. The key carries the user id, so
+/// another account on the same device never sees someone else's tray.
+///
+/// Logout: [clearAll] is the hook. Decision 2026-09-23 (PQ-12 = A) keeps
+/// device drafts through an AUTOMATIC logout (inactivity) and deletes them
+/// only when the user logs out herself, so the call belongs in the manual
+/// sign-out path only (`AuthService.signOut`, not `logoutDueToInactivity`).
+///
+/// Best-effort like `AutoSaveManager`: a storage error is logged and never
+/// breaks placing a recipe.
+class WeeklyMenuOverflowTrayStore {
+  WeeklyMenuOverflowTrayStore({
+    Future<SharedPreferences> Function()? prefsProvider,
+  }) : _prefsProvider = prefsProvider ?? SharedPreferences.getInstance;
+
+  final Future<SharedPreferences> Function() _prefsProvider;
+
+  /// Every key this store writes starts with this.
+  static const String keyPrefix = 'weekly_menu_overflow_tray_v1:';
+
+  /// How long an untouched tray is kept (produktregler.md:169).
+  static const Duration lifetime = Duration(days: 30);
+
+  static String keyFor(String userId) => '$keyPrefix$userId';
+
+  /// The kept tray for [userId], or null when there is none, when it is
+  /// older than [lifetime] (it is then deleted), or when it cannot be read.
+  Future<WeeklyMenuOverflowTraySnapshot?> load(String userId) async {
+    try {
+      final prefs = await _prefsProvider();
+      final raw = prefs.getString(keyFor(userId));
+      if (raw == null || raw.isEmpty) return null;
+      final snapshot = WeeklyMenuOverflowTraySnapshot.fromJson(
+        jsonDecode(raw),
+      );
+      if (snapshot == null ||
+          snapshot.recipeIds.isEmpty ||
+          clock.now().difference(snapshot.savedAt) > lifetime) {
+        await prefs.remove(keyFor(userId));
+        return null;
+      }
+      return snapshot;
+    } catch (e) {
+      AppLogger.warning('WeeklyMenuOverflowTrayStore: load failed ($e)');
+      return null;
+    }
+  }
+
+  /// Keeps [snapshot] for [userId]; an empty or null snapshot deletes it.
+  Future<void> save(
+    String userId,
+    WeeklyMenuOverflowTraySnapshot? snapshot,
+  ) async {
+    try {
+      final prefs = await _prefsProvider();
+      if (snapshot == null || snapshot.recipeIds.isEmpty) {
+        await prefs.remove(keyFor(userId));
+        return;
+      }
+      await prefs.setString(keyFor(userId), jsonEncode(snapshot.toJson()));
+    } catch (e) {
+      AppLogger.warning('WeeklyMenuOverflowTrayStore: save failed ($e)');
+    }
+  }
+
+  /// The manual-logout hook: deletes the kept tray of [userId], the person
+  /// logging out. Another account's tray on the same device stays, since an
+  /// automatic logout is meant to keep it (PQ-12 = A). Without a [userId]
+  /// every kept tray on the device goes.
+  static Future<void> clearAll({
+    String? userId,
+    Future<SharedPreferences> Function()? prefsProvider,
+  }) async {
+    try {
+      final prefs = await (prefsProvider ?? SharedPreferences.getInstance)();
+      if (userId != null) {
+        await prefs.remove(keyFor(userId));
+        return;
+      }
+      for (final key in prefs.getKeys().toList()) {
+        if (key.startsWith(keyPrefix)) await prefs.remove(key);
+      }
+    } catch (e) {
+      AppLogger.warning('WeeklyMenuOverflowTrayStore: clearAll failed ($e)');
+    }
+  }
 }
 
 /// Outcome of a weekly-plan read (BUT-1928).
@@ -77,6 +309,9 @@ class WeeklyMenuPlanService extends BaseService {
   String get serviceName => 'WeeklyMenuPlanService';
 
   String? get _currentUserId => _userService.currentUserProfile?.uid;
+
+  /// P5-U24: whose overflow tray this device keeps (null when signed out).
+  String? get overflowTrayOwnerId => _currentUserId;
 
   /// Loads the saved plan for the ISO week containing [date], or returns
   /// an empty plan if none exists.
@@ -389,6 +624,7 @@ class WeeklyMenuPlanService extends BaseService {
         WeeklyMenuPlan.empty(userId: userId, date: normalizedWeekStart);
     final mutableEntries = List<WeeklyMenuPlanEntry>.from(base.entries);
     final overflow = <Recipe>[];
+    final overflowMealTypes = <String, String>{};
 
     // Day pins (e.g. tacofredag) land first — they claim their weekday
     // before the generic chronological fill. Pinned recipes come from the
@@ -441,6 +677,7 @@ class WeeklyMenuPlanService extends BaseService {
           if (pinnedRecipeIds.contains(recipe.id)) continue;
           if (dayCursor > DayOfWeek.sun.index) {
             overflow.add(recipe);
+            overflowMealTypes[recipe.id] = entry.key;
             continue;
           }
           mutableEntries.add(
@@ -469,6 +706,7 @@ class WeeklyMenuPlanService extends BaseService {
           }
           if (targetDay == null) {
             overflow.add(recipe);
+            overflowMealTypes[recipe.id] = entry.key;
             continue;
           }
           mutableEntries.add(
@@ -483,7 +721,17 @@ class WeeklyMenuPlanService extends BaseService {
     }
 
     final newPlan = base.copyWith(entries: mutableEntries);
-    return WeeklyMenuDistributionResult(plan: newPlan, overflow: overflow);
+    return WeeklyMenuDistributionResult(
+      plan: newPlan,
+      overflow: overflow,
+      overflowMealTypes: overflowMealTypes,
+      overflowReason: overflow.isEmpty
+          ? null
+          : WeeklyMenuOverflowReason(
+              weekStart: normalizedWeekStart,
+              pastDaysSkipped: anchorIndex > 0,
+            ),
+    );
   }
 
   /// BUT-1013: append multiple recipes to a weekly plan starting at

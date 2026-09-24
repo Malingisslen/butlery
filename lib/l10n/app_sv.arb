@@ -1142,7 +1142,7 @@
     }
   },
   "menuShoppingListGenerationEmpty": "Veckans plan har inga recept med ingredienser ännu",
-  "menuShoppingListGenerationFailed": "Kunde inte skapa inköpslistan – försök igen",
+  "menuShoppingListGenerationFailed": "Inköpslistan kunde inte skapas.",
   "@menuShoppingListGenerationFailed": {
     "description": "BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning."
   },
@@ -3136,7 +3136,7 @@
     }
   },
   "friendAccept": "Acceptera",
-  "friendDecline": "Avvisa",
+  "friendDecline": "Avböj",
   "friendRequestTitle": "Vänförfrågan",
   "friendWantsToBeFriend": "Vill bli din vän",
   "imageAddCount": "Lägg till ({count})",
@@ -3905,7 +3905,7 @@
   "menuShareWithFriendsDescription": "Dela denna meny med valda vänner",
   "menuToSave": "Meny att spara",
   "menuUnnamed": "Namnlös meny",
-  "privacyCouldNotLoad": "Kunde inte ladda integritetspolicyn. Försök igen senare.",
+  "privacyCouldNotLoad": "Integritetspolicyn kunde inte hämtas.",
   "privacyTitle": "Integritetspolicy",
   "recipeAddTags": "Lägg till taggar",
   "recipeChangesSaved": "Ändringarna är sparade.",
@@ -4270,7 +4270,7 @@
       }
     }
   },
-  "groupSendInvitations": "Skicka {count} inbjudningar",
+  "groupSendInvitations": "{count, plural, =1{Bjud in 1 vald} other{Bjud in {count} valda}}",
   "@groupSendInvitations": {
     "placeholders": {
       "count": {
@@ -4435,7 +4435,7 @@
     }
   },
   "menuHideMenu": "Dölj meny",
-  "menuImportAll": "Importera hela menyn",
+  "menuImportAll": "Spara till mina menyer",
   "menuImportDescription": "När du importerar menyn läggs alla {count} recept till i din samling.",
   "@menuImportDescription": {
     "placeholders": {
@@ -5757,7 +5757,7 @@
   "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",
   "socialCouldNotUnblockUser": "Kunde inte avblockera användare",
-  "socialDecline": "Avvisa",
+  "socialDecline": "Avböj",
   "socialDeclined": "Avvisad",
   "socialExpired": "Utgången",
   "socialFindFriends": "Hitta vänner",
@@ -9990,6 +9990,43 @@
   "accountSecurityPasswordMismatch": "Lösenorden matchar inte",
   "profileAccountSecurity": "Kontosäkerhet",
   "profileAccountSecuritySubtitle": "Lösenord, e-post och tvåfaktorsautentisering",
+  "selectionEnter": "Välj",
+  "@selectionEnter": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterRecipes": "Välj recept",
+  "@selectionEnterRecipes": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterShoppingItems": "Välj varor",
+  "@selectionEnterShoppingItems": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterPantryItems": "Välj varor i skafferiet",
+  "@selectionEnterPantryItems": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterTags": "Välj taggar",
+  "@selectionEnterTags": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterMembers": "Välj medlemmar",
+  "@selectionEnterMembers": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterBlockedUsers": "Välj blockerade personer",
+  "@selectionEnterBlockedUsers": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionSelectAllCount": "Markera alla {count}",
+  "@selectionSelectAllCount": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as \"Markera alla 24\" (Skarmar v12 etapp 9 #flerbar).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bulkSelectedCount": "{count} valda",
   "@bulkSelectedCount": {
     "placeholders": {
@@ -10118,13 +10155,13 @@
   "reportReasonHarassment": "Trakasseri",
   "reportReasonCopyright": "Upphovsrättsintrång",
   "reportReasonOther": "Annat",
-  "reportDescriptionHint": "Beskriv vad som är fel (valfritt)",
-  "reportSubmitted": "Rapporten har skickats",
-  "reportSubmitFailed": "Kunde inte skicka rapporten",
-  "reportDialogTitle": "Rapportera innehåll",
+  "reportDescriptionHint": "Berätta vad som är fel …",
+  "reportSubmitted": "Anmälan har skickats",
+  "reportSubmitFailed": "Anmälan kunde inte skickas",
+  "reportDialogTitle": "Anmäl innehåll",
   "reportSubmit": "Skicka anmälan",
-  "reportDialogGuidelinesNotePrefix": "Genom att rapportera bekräftar du att innehållet bryter mot",
-  "reportDialogGuidelinesLink": "våra riktlinjer för communityn",
+  "reportDialogGuidelinesNotePrefix": "Vi bedömer mot",
+  "reportDialogGuidelinesLink": "våra riktlinjer",
   "settingsMyReports": "Mina rapporter",
   "myReportsTitle": "Mina rapporter",
   "myReportsEmpty": "Du har inte skickat in några rapporter än.",
@@ -10637,6 +10674,43 @@
   "pantryLocationPantry": "Skafferi",
   "pantryLocationSpiceRack": "Kryddhylla",
   "pantryLocationLabel": "Plats",
+  "pantryItemChangedNow": "ändrad nu",
+  "@pantryItemChangedNow": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105)."
+  },
+  "pantryItemChangedMinutesAgo": "ändrad {count} min sedan",
+  "@pantryItemChangedMinutesAgo": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantryItemChangedToday": "ändrad i dag {time}",
+  "@pantryItemChangedToday": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:02"
+      }
+    }
+  },
+  "pantryItemChangedYesterday": "ändrad i går",
+  "@pantryItemChangedYesterday": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105)."
+  },
+  "pantryItemChangedOn": "ändrad {date}",
+  "@pantryItemChangedOn": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "9 juli"
+      }
+    }
+  },
   "pantryExpiryExpired": "Utgånget",
   "pantryExpiryToday": "Utgår idag",
   "pantryExpiryInDays": "{days, plural, =1{Utgår om 1 dag} other{Utgår om {days} dagar}}",
@@ -10655,7 +10729,7 @@
   "pantryAddIngredient": "Lägg till ingrediens",
   "pantryAddSheetTitle": "Lägg till ingrediens",
   "pantryEditSheetTitle": "Redigera ingrediens",
-  "pantryCouldNotSaveItem": "Kunde inte spara i skafferiet. Försök igen.",
+  "pantryCouldNotSaveItem": "Varan kunde inte sparas i skafferiet.",
   "pantryIngredientLabel": "Ingrediens",
   "pantryIngredientHint": "Sök ingrediens...",
   "pantryQuantityLabel": "Mängd",
@@ -11706,7 +11780,7 @@
   "@cookingModeSubstitutionApplied": {
     "description": "Snackbar confirming an ingredient substitution was saved to the recipe during cooking mode."
   },
-  "cookingModeSubstitutionFailed": "Kunde inte byta ingrediens. Försök igen.",
+  "cookingModeSubstitutionFailed": "Ingrediensen kunde inte bytas.",
   "@cookingModeSubstitutionFailed": {
     "description": "Snackbar shown when saving an ingredient substitution failed (e.g. offline); prompts the user to retry."
   },
@@ -12388,65 +12462,684 @@
   "loadingOpeningPage": "Öppnar sidan …",
   "loadingStartingApp": "Startar Butlery …",
   "minaReceptEmptyTitle": "Inga sparade recept än",
-  "@minaReceptEmptyTitle": {"description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."},
+  "@minaReceptEmptyTitle": {
+    "description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."
+  },
   "minaReceptEmptyBody": "Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.",
-  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."},
+  "@minaReceptEmptyBody": {
+    "description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."
+  },
   "recipeSaveToMyKitchen": "Spara till mitt kök",
-  "@recipeSaveToMyKitchen": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "@recipeSaveToMyKitchen": {
+    "description": "Recipe detail sticky action bar (P4-U05)."
+  },
   "recipeAddToShoppingList": "Lägg i inköpslistan",
-  "@recipeAddToShoppingList": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "@recipeAddToShoppingList": {
+    "description": "Recipe detail sticky action bar (P4-U05)."
+  },
   "loadingCookSnaps": "Hämtar fotona …",
-  "@loadingCookSnaps": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@loadingCookSnaps": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "loadingSubstitutions": "Hämtar ersättningar …",
-  "@loadingSubstitutions": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@loadingSubstitutions": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "uploadingCookSnap": "Laddar upp fotot …",
-  "@uploadingCookSnap": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@uploadingCookSnap": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "sendingComment": "Skickar kommentaren …",
-  "@sendingComment": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@sendingComment": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "recipeEditorClose": "Stäng editorn",
-  "@recipeEditorClose": {"description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."},
+  "@recipeEditorClose": {
+    "description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."
+  },
   "menuWeekBadgeEmpty": "Vecka {week} · inget planerat",
-  "@menuWeekBadgeEmpty": {"description": "The empty week's line under \"Veckomeny\" on the root bar (Skarmar v12 del 1 #tomvecka).", "placeholders": {"week": {"type": "int"}}},
+  "@menuWeekBadgeEmpty": {
+    "description": "The empty week's line under \"Veckomeny\" on the root bar (Skarmar v12 del 1 #tomvecka).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
   "rootBarMoreActions": "Fler åtgärder",
-  "@rootBarMoreActions": {"description": "Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop)."},
+  "@rootBarMoreActions": {
+    "description": "Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop)."
+  },
   "weekMenuPlanningSlow": "Det tar längre tid än vanligt",
-  "@weekMenuPlanningSlow": {"description": "The planning panel's status after 6 s (flows-roles-budget.md:33; TR::FLOW::01::genererar::6-10-s; ux-beslut D-03)."},
+  "@weekMenuPlanningSlow": {
+    "description": "The planning panel's status after 6 s (flows-roles-budget.md:33; TR::FLOW::01::genererar::6-10-s; ux-beslut D-03)."
+  },
   "importBatchSaveFailed": "Recepten kunde inte sparas. Försök igen.",
-  "@importBatchSaveFailed": {"description": "Snackbar when none of the chosen recipes in a photo batch could be saved (content-style-guide.md:91-94)."},
+  "@importBatchSaveFailed": {
+    "description": "Snackbar when none of the chosen recipes in a photo batch could be saved (content-style-guide.md:91-94)."
+  },
   "weekMenuPlanningTitle": "Planerar veckan …",
-  "@weekMenuPlanningTitle": {"description": "What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel)."},
+  "@weekMenuPlanningTitle": {
+    "description": "What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel)."
+  },
   "menuLoadingSaved": "Hämtar sparade menyer …",
-  "@menuLoadingSaved": {"description": "What the plate line says while saved menus load (P4-U09)."},
+  "@menuLoadingSaved": {
+    "description": "What the plate line says while saved menus load (P4-U09)."
+  },
   "shoppingRootTitle": "Inköp",
-  "@shoppingRootTitle": {"description": "The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62)."},
+  "@shoppingRootTitle": {
+    "description": "The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62)."
+  },
   "shoppingRootLine": "{listName} · {done} av {total} klara",
-  "@shoppingRootLine": {"description": "The line under the shopping root bar's title (P4-U10; Komponentark v1:64).", "placeholders": {"listName": {"type": "String"}, "done": {"type": "int"}, "total": {"type": "int"}}},
+  "@shoppingRootLine": {
+    "description": "The line under the shopping root bar's title (P4-U10; Komponentark v1:64).",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingRootLineEmpty": "{listName} · inga varor",
-  "@shoppingRootLineEmpty": {"description": "The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).", "placeholders": {"listName": {"type": "String"}}},
+  "@shoppingRootLineEmpty": {
+    "description": "The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingEmptyTitle": "Inget att handla",
-  "@shoppingEmptyTitle": {"description": "An empty shopping list's title (Skarmar v12 del 2 #tominkop)."},
+  "@shoppingEmptyTitle": {
+    "description": "An empty shopping list's title (Skarmar v12 del 2 #tominkop)."
+  },
   "shoppingEmptyBody": "Skicka veckans rätter hit så samlas ingredienserna per kategori. Det du redan har i skafferiet dras bort.",
-  "@shoppingEmptyBody": {"description": "An empty shopping list's body (Skarmar v12 del 2 #tominkop)."},
+  "@shoppingEmptyBody": {
+    "description": "An empty shopping list's body (Skarmar v12 del 2 #tominkop)."
+  },
   "shoppingFromWeekMenu": "Från veckomenyn",
-  "@shoppingFromWeekMenu": {"description": "The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop)."},
+  "@shoppingFromWeekMenu": {
+    "description": "The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop)."
+  },
   "shoppingLoadingTemplates": "Hämtar mallarna …",
-  "@shoppingLoadingTemplates": {"description": "What the plate line says while shopping templates load (P4-U10)."},
+  "@shoppingLoadingTemplates": {
+    "description": "What the plate line says while shopping templates load (P4-U10)."
+  },
   "importFetchingRecipe": "Hämtar receptet …",
-  "@importFetchingRecipe": {"description": "What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar)."},
+  "@importFetchingRecipe": {
+    "description": "What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar)."
+  },
   "importReadingFile": "Läser filen …",
-  "@importReadingFile": {"description": "What the file import says while it reads the file (P4-U08)."},
+  "@importReadingFile": {
+    "description": "What the file import says while it reads the file (P4-U08)."
+  },
   "loadingLicenses": "Hämtar licenserna …",
-  "@loadingLicenses": {"description": "What is loading, for the plate line (P4-U15)."},
+  "@loadingLicenses": {
+    "description": "What is loading, for the plate line (P4-U15)."
+  },
   "consentSaveMyChoices": "Spara mina val",
-  "@consentSaveMyChoices": {"description": "The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål')."},
+  "@consentSaveMyChoices": {
+    "description": "The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål')."
+  },
   "loadingBlockedUsers": "Hämtar blockerade användare …",
-  "@loadingBlockedUsers": {"description": "What is loading, for the plate line (P4-U15)."},
+  "@loadingBlockedUsers": {
+    "description": "What is loading, for the plate line (P4-U15)."
+  },
   "accountDeletingProgress": "Raderar kontot …",
-  "@accountDeletingProgress": {"description": "Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår')."},
+  "@accountDeletingProgress": {
+    "description": "Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår')."
+  },
   "loadingParseEvents": "Hämtar tolkningshändelserna …",
-  "@loadingParseEvents": {"description": "What is loading, for the plate line (P4-U17)."},
+  "@loadingParseEvents": {
+    "description": "What is loading, for the plate line (P4-U17)."
+  },
   "loadingMoreActivity": "Hämtar fler händelser …",
-  "@loadingMoreActivity": {"description": "The next page of the friends feed, under the plate line (P4-U12)."},
+  "@loadingMoreActivity": {
+    "description": "The next page of the friends feed, under the plate line (P4-U12)."
+  },
   "menuPreviewTitle": "Delad meny",
-  "@menuPreviewTitle": {"description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."}
+  "@menuPreviewTitle": {
+    "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
+  },
+  "emailVerificationResendFailed": "Verifieringsmailet kunde inte skickas.",
+  "@emailVerificationResendFailed": {
+    "description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."
+  },
+  "emailVerificationResendFailedBecause": "Verifieringsmailet kunde inte skickas. {cause}",
+  "@emailVerificationResendFailedBecause": {
+    "description": "P5-T1: Part 1 with the cause, a mapped auth message such as the network or too-many-attempts text.",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "emailVerificationAddressUnchanged": "Din e-postadress är oförändrad.",
+  "@emailVerificationAddressUnchanged": {
+    "description": "P5-T1: Part 2 (content-style-guide.md:92): what was kept when a resend failed. Part 3 is the Skicka igen button under it."
+  },
+  "chatPollCouldNotBeCreated": "Omröstningen kunde inte skapas.",
+  "@chatPollCouldNotBeCreated": {
+    "description": "P5-T1: Failure snackbar after creating a poll in a chat failed; the action is Försök igen."
+  },
+  "chatEditCouldNotBeSaved": "Ändringen kunde inte sparas.",
+  "@chatEditCouldNotBeSaved": {
+    "description": "P5-T1: Failure snackbar when editing a chat message failed; the action Försök igen saves the same edit again."
+  },
+  "chatEditOriginalKept": "Meddelandet är oförändrat.",
+  "@chatEditOriginalKept": {
+    "description": "P5-T1: Part 2: what was kept when a chat message edit failed."
+  },
+  "chatCouldNotSendReply": "Svaret kunde inte skickas.",
+  "@chatCouldNotSendReply": {
+    "description": "P5-T1: A reply in a chat could not be sent."
+  },
+  "errorPreservedText": "Texten ligger kvar i fältet.",
+  "@errorPreservedText": {
+    "description": "P5-T1: Part 2 of the error structure: typed text is still in the field (a failed chat send)."
+  },
+  "errorPreservedForm": "Det du fyllt i ligger kvar.",
+  "@errorPreservedForm": {
+    "description": "P5-T1: Part 2 of the error structure: a form or sheet that stays open with its fields intact."
+  },
+  "dialogActionFailed": "Åtgärden kunde inte slutföras.",
+  "@dialogActionFailed": {
+    "description": "P5-T1: Part 1 in a dialog when the failure has no known cause; a known cause (network, permission) is shown instead."
+  },
+  "minaReceptRefreshFailed": "Recepten kunde inte uppdateras.",
+  "@minaReceptRefreshFailed": {
+    "description": "P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown."
+  },
+  "minaReceptRefreshPreserved": "Dina sparade recept visas nedan.",
+  "@minaReceptRefreshPreserved": {
+    "description": "P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298)."
+  },
+  "shoppingLeaveListStillMember": "Du är fortfarande med i listan.",
+  "@shoppingLeaveListStillMember": {
+    "description": "P5-T1: Part 2: what was kept when leaving a shared list failed."
+  },
+  "cookingModeRecipeUnchanged": "Receptet är oförändrat.",
+  "@cookingModeRecipeUnchanged": {
+    "description": "P5-T1: Part 2: what was kept when an ingredient swap in cooking mode could not be saved."
+  },
+  "accountSecurityPasswordChangeFailed": "Lösenordet kunde inte ändras.",
+  "@accountSecurityPasswordChangeFailed": {
+    "description": "P5-T1: Password change failed without a known cause."
+  },
+  "accountSecurityPasswordChangeFailedBecause": "Lösenordet kunde inte ändras. {cause}",
+  "@accountSecurityPasswordChangeFailedBecause": {
+    "description": "P5-T1: Password change failed; cause is a mapped auth message.",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "accountSecurityEmailChangeFailed": "E-postadressen kunde inte ändras.",
+  "@accountSecurityEmailChangeFailed": {
+    "description": "P5-T1: Email change failed without a known cause."
+  },
+  "accountSecurityEmailChangeFailedBecause": "E-postadressen kunde inte ändras. {cause}",
+  "@accountSecurityEmailChangeFailedBecause": {
+    "description": "P5-T1: Email change failed; cause is a mapped auth message.",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSaveFailed": "Receptet kunde inte sparas.",
+  "@recipeSaveFailed": {
+    "description": "P5-T1: Failure snackbar in the recipe editor; the action Försök igen saves again."
+  },
+  "recipeCopySaveFailed": "Kopian kunde inte sparas.",
+  "@recipeCopySaveFailed": {
+    "description": "P5-T1: Failure snackbar when saving a copy of a recipe failed."
+  },
+  "recipeSaveIncomplete": "Receptet kunde inte sparas. Det behöver en titel, minst en ingrediens och minst ett steg.",
+  "@recipeSaveIncomplete": {
+    "description": "P5-T1: Part 1 with its cause when the recipe editor refuses to save an incomplete recipe (RecipeFormState.isValid). The action is Stäng: trying again cannot help."
+  },
+  "recipeSaveNoPermission": "Receptet kunde inte sparas. Du har inte behörighet att ändra det.",
+  "@recipeSaveNoPermission": {
+    "description": "P5-T1: Part 1 with its cause when the user may not edit the recipe. The action is Stäng."
+  },
+  "errorPreservedRecipeEdits": "Dina ändringar ligger kvar i formuläret.",
+  "@errorPreservedRecipeEdits": {
+    "description": "P5-T1: Part 2: the recipe editor stays open with the edits."
+  },
+  "groupAddMembersLoadFailed": "Dina vänner kunde inte hämtas.",
+  "@groupAddMembersLoadFailed": {
+    "description": "P5-T1: Loading the friends that can be added to a group failed; the action is Försök igen."
+  },
+  "adminFeedbackLoadFailed": "Återkopplingen kunde inte hämtas.",
+  "@adminFeedbackLoadFailed": {
+    "description": "Error state when the admin feedback inbox stream fails; names what failed, never the raw exception (P5-U01, content-style-guide.md:89-94)."
+  },
+  "moderatorReportsLoadFailed": "Anmälningarna kunde inte hämtas.",
+  "@moderatorReportsLoadFailed": {
+    "description": "Error state when the moderator review stream fails (P5-U01, content-style-guide.md:89-94)."
+  },
+  "legalGuidelinesCouldNotLoad": "Riktlinjerna kunde inte hämtas.",
+  "@legalGuidelinesCouldNotLoad": {
+    "description": "Error state of the community guidelines; each legal document names itself (P5-U08)."
+  },
+  "legalTermsCouldNotLoad": "Användarvillkoren kunde inte hämtas.",
+  "@legalTermsCouldNotLoad": {
+    "description": "Error state of the terms of service; each legal document names itself (P5-U08)."
+  },
+  "legalLinksNeedConnection": "Webblänkarna öppnas när du är ansluten igen.",
+  "@legalLinksNeedConnection": {
+    "description": "Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30)."
+  },
+  "imageCouldNotBeShown": "Bilden kunde inte visas",
+  "@imageCouldNotBeShown": {
+    "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
+  },
+  "imageRetriesWhenOnline": "Försöker igen när nätet är tillbaka",
+  "@imageRetriesWhenOnline": {
+    "description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."
+  },
+  "ingredientSearchAgain": "Sök igen",
+  "@ingredientSearchAgain": {
+    "description": "Action in the ingredient search error state (P5-U13)."
+  },
+  "ingredientSearchSelectionKept": "Dina ingredienser ligger kvar.",
+  "@ingredientSearchSelectionKept": {
+    "description": "What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13)."
+  },
+  "importUrlBatchPartialTitle": "Vi hämtade {success} av {total} länkar",
+  "@importUrlBatchPartialTitle": {
+    "description": "P5-U22: partial outcome of a pasted URL list (produktregler.md:588, :905-909). Counted, never rounded up.",
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlBatchPartialBody": "Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.",
+  "@importUrlBatchPartialBody": {
+    "description": "P5-U22: why the rest did not go and that the failed links are kept (I-29)."
+  },
+  "importUrlBatchReadyHeading": "Klara att importera",
+  "@importUrlBatchReadyHeading": {
+    "description": "P5-U22: heading over the links that were fetched in a partial batch. Interpretation: Skarmar v12 etapp 4:231 draws 'Klara att spara' for the file batch; the URL batch says 'importera' to match its 'Importera N recept' button."
+  },
+  "importUrlReasonUnreachable": "Sidan gick inte att nå",
+  "@importUrlReasonUnreachable": {
+    "description": "P5-U22: why one link in a batch failed: network error or timeout (produktregler.md:907, I-29 names why)."
+  },
+  "importUrlReasonNoContent": "Sidan hade ingen recepttext",
+  "@importUrlReasonNoContent": {
+    "description": "P5-U22: why one link in a batch failed: the page loaded but had no text to read (produktregler.md:907)."
+  },
+  "importUrlReasonUnreadable": "Sidan gick inte att läsa",
+  "@importUrlReasonUnreadable": {
+    "description": "P5-U22: why one link in a batch failed: the page could not be parsed, or another error (produktregler.md:907)."
+  },
+  "importUrlBatchRetryA11y": "Försök hämta {url} igen",
+  "@importUrlBatchRetryA11y": {
+    "description": "P5-U22: accessible name of the retry button on one failed link.",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOverflowPlacedCount": "{placed} av {total} rätter placerade",
+  "@weeklyMenuOverflowPlacedCount": {
+    "description": "P5-U23: overflow tray title, counted in dishes (produktregler.md:206).",
+    "placeholders": {
+      "placed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowReason": "Vecka {week} hade inga fler lediga platser för de här.",
+  "@weeklyMenuOverflowReason": {
+    "description": "P5-U23: why the rest did not fit (produktregler.md:1125).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowPastDays": "Dagar som redan har passerat fylls aldrig.",
+  "@weeklyMenuOverflowPastDays": {
+    "description": "P5-U23: part of the reason when the week is the current week (produktregler.md:201)."
+  },
+  "weeklyMenuOverflowKeepOrNextWeek": "De ligger kvar här tills du placerar dem eller lägger dem i vecka {week}.",
+  "@weeklyMenuOverflowKeepOrNextWeek": {
+    "description": "P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowKeep": "De ligger kvar här tills du placerar dem.",
+  "@weeklyMenuOverflowKeep": {
+    "description": "P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893)."
+  },
+  "weeklyMenuOverflowNextWeekAction": "Lägg i vecka {week}",
+  "@weeklyMenuOverflowNextWeekAction": {
+    "description": "P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowNextWeekA11y": "{count, plural, =1{Lägg den i vecka {week}} other{Lägg de {count} i vecka {week}}}",
+  "@weeklyMenuOverflowNextWeekA11y": {
+    "description": "P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowMovedToNextWeek": "{count, plural, =1{1 rätt lades i vecka {week}} other{{count} rätter lades i vecka {week}}}",
+  "@weeklyMenuOverflowMovedToNextWeek": {
+    "description": "P5-U23: receipt after the tray's next-week choice.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yWeeklyMenuPlacementOrder": "Placerad som nummer {order}",
+  "@a11yWeeklyMenuPlacementOrder": {
+    "description": "P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).",
+    "placeholders": {
+      "order": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPartialTitle": "Vi hittade {found} av {requested} rätter",
+  "@menuPartialTitle": {
+    "description": "P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).",
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPartialBody": "Det fanns inte fler recept som passar.",
+  "@menuPartialBody": {
+    "description": "P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt."
+  },
+  "menuPartialMissing": "{found} av {requested}, {missing} saknas",
+  "@menuPartialMissing": {
+    "description": "P5-U25: one short meal type (produktregler.md:893: what is missing is named).",
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuSaveFailed": "Veckan kunde inte sparas.",
+  "pantryItemUpdateFailed": "Varan kunde inte uppdateras.",
+  "moderatorAdvanceFailed": "Anmälan kunde inte flyttas till nästa steg.",
+  "moderatorCloseFailed": "Anmälan kunde inte stängas.",
+  "moderatorReportUnchanged": "Anmälan är oförändrad.",
+  "moderatorHideFailed": "Profilen kunde inte döljas.",
+  "moderatorHidePreserved": "Profilen syns som förut.",
+  "moderatorDeleteFailed": "Innehållet kunde inte tas bort.",
+  "moderatorDeletePreserved": "Innehållet ligger kvar.",
+  "adminFeedbackStatusFailed": "Statusen kunde inte ändras.",
+  "adminFeedbackStatusPreserved": "Återkopplingen har kvar sin tidigare status.",
+  "weekPlacementFailedWeekUnchanged": "Veckan är oförändrad och den skapade menyn ligger kvar.",
+  "weekPlacementFailedMenuKept": "Den skapade menyn ligger kvar.",
+  "menuShoppingListGenerationPreserved": "Veckan är oförändrad.",
+  "importErrorNotImported": "Receptet kunde inte importeras.",
+  "importFailurePreservedLink": "Länken står kvar i fältet.",
+  "importFailurePreservedText": "Texten står kvar i fältet.",
+  "importFailureOtherRoutes": "Andra vägar till samma recept",
+  "importRoutePhoto": "Fotografera skärmen",
+  "importRoutePasteText": "Klistra in texten",
+  "duplicateMergeFailedPreserved": "Det befintliga receptet är oförändrat.",
+  "conflictDiffUseTheirs": "Använd deras version",
+  "@conflictDiffUseTheirs": {
+    "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws \"Använd Eriks version\"; name-free to avoid the {name}s genitive."
+  },
+  "conflictDiffUsedTheirs": "Deras version gäller nu",
+  "@conflictDiffUsedTheirs": {
+    "description": "Success snackbar after \"Använd deras version\"."
+  },
+  "conflictDiffUseTheirsFailed": "Deras version kunde inte sparas.",
+  "@conflictDiffUseTheirsFailed": {
+    "description": "Failure (what happened) when \"Använd deras version\" could not be saved."
+  },
+  "conflictDiffUseTheirsKept": "Din version gäller fortfarande.",
+  "@conflictDiffUseTheirsKept": {
+    "description": "Failure (what was kept) when \"Använd deras version\" could not be saved."
+  },
+  "conflictWeekKeepMine": "Behåll min",
+  "@conflictWeekKeepMine": {
+    "description": "Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119."
+  },
+  "partialOutcomeDone": "Klart",
+  "@partialOutcomeDone": {
+    "description": "P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392)."
+  },
+  "groupMembersPartialTitle": "{removed} av {total} togs bort",
+  "@groupMembersPartialTitle": {
+    "description": "P5-U33: partial outcome title after bulk member removal (produktregler.md:907).",
+    "placeholders": {
+      "removed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersPartialMessage": "De som inte kunde tas bort ligger kvar valda ovan.",
+  "@groupMembersPartialMessage": {
+    "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
+  },
+  "groupMembersPartialRemoved": "{names} är inte längre med i {group}.",
+  "@groupMembersPartialRemoved": {
+    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "partialOutcomeListAnd": " och ",
+  "@partialOutcomeListAnd": {
+    "description": "P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces."
+  },
+  "groupMemberRemoveNotSaved": "Kunde inte tas bort – ändringen sparades inte",
+  "@groupMemberRemoveNotSaved": {
+    "description": "P5-U33: reason on a member row in the partial outcome."
+  },
+  "groupMembersRemoveNone": "Ingen av de valda kunde tas bort.",
+  "@groupMembersRemoveNone": {
+    "description": "P5-U33: failure when no selected member could be removed."
+  },
+  "selectionFailedKept": "De ligger kvar valda.",
+  "@selectionFailedKept": {
+    "description": "P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialTitle": "{deleted} av {total} taggar togs bort",
+  "@personalTagBulkDeletePartialTitle": {
+    "description": "P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).",
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagBulkDeletePartialMessage": "De som inte kunde tas bort ligger kvar valda.",
+  "@personalTagBulkDeletePartialMessage": {
+    "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialDeleted": "{names} togs bort.",
+  "@personalTagBulkDeletePartialDeleted": {
+    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "personalTagBulkDeleteNotSaved": "Kunde inte tas bort – borttagningen sparades inte",
+  "@personalTagBulkDeleteNotSaved": {
+    "description": "P5-U33: reason on a tag row in the partial outcome."
+  },
+  "personalTagBulkDeleteNone": "Taggarna kunde inte tas bort.",
+  "@personalTagBulkDeleteNone": {
+    "description": "P5-U33: failure when no selected tag could be deleted."
+  },
+  "overwrittenRestoreAction": "Återställ min version",
+  "@overwrittenRestoreAction": {
+    "description": "P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109)."
+  },
+  "overwrittenPickTitle": "Vilken version vill du återställa?",
+  "@overwrittenPickTitle": {
+    "description": "P5-U26b: title of the picker when more than one overwritten version is kept."
+  },
+  "overwrittenVersionFrom": "Din version från {when}",
+  "@overwrittenVersionFrom": {
+    "description": "P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenVersionBy": "{name} sparade över den · kvar till {until}",
+  "@overwrittenVersionBy": {
+    "description": "P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenVersionByUnnamed": "Någon annan sparade över den · kvar till {until}",
+  "@overwrittenVersionByUnnamed": {
+    "description": "P5-U26b: picker row subtitle when the other person's name is unknown.",
+    "placeholders": {
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenWhenToday": "i dag {time}",
+  "@overwrittenWhenToday": {
+    "description": "P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenWhenYesterday": "i går",
+  "@overwrittenWhenYesterday": {
+    "description": "P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words)."
+  },
+  "overwrittenConfirmTitleWeek": "Återställa din vecka?",
+  "@overwrittenConfirmTitleWeek": {
+    "description": "P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2)."
+  },
+  "overwrittenConfirmTitleRecipe": "Återställa ditt recept?",
+  "@overwrittenConfirmTitleRecipe": {
+    "description": "P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2)."
+  },
+  "overwrittenConfirmBodyWeek": "Din version från {when} ersätter veckan som gäller nu. Du kan ångra direkt efteråt.",
+  "@overwrittenConfirmBodyWeek": {
+    "description": "P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenConfirmBodyRecipe": "Din version från {when} ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.",
+  "@overwrittenConfirmBodyRecipe": {
+    "description": "P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenRestored": "Din version är återställd",
+  "@overwrittenRestored": {
+    "description": "P5-U26b: undo snackbar after a restore (7 s, Ångra)."
+  },
+  "overwrittenRestoreFailed": "Din version kunde inte återställas",
+  "@overwrittenRestoreFailed": {
+    "description": "P5-U26b: failure, what happened (content-style-guide.md:87-95)."
+  },
+  "overwrittenRestoreGoneWeek": "Veckan finns inte längre, så din version kunde inte återställas",
+  "@overwrittenRestoreGoneWeek": {
+    "description": "P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95)."
+  },
+  "overwrittenRestoreGoneRecipe": "Receptet finns inte längre, så din version kunde inte återställas",
+  "@overwrittenRestoreGoneRecipe": {
+    "description": "P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95)."
+  },
+  "overwrittenKeptUntil": "Den finns kvar till {until}.",
+  "@overwrittenKeptUntil": {
+    "description": "P5-U26b: failure, what was kept; until = the date the version stops being kept.",
+    "placeholders": {
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenUndoFailed": "Ångra kunde inte slutföras",
+  "@overwrittenUndoFailed": {
+    "description": "P5-U26b: failure when undoing a restore did not reach the server."
+  },
+  "overwrittenUndoFailedKept": "Din återställda version gäller fortfarande.",
+  "@overwrittenUndoFailedKept": {
+    "description": "P5-U26b: failure, what is in place after a failed undo."
+  },
+  "messagingCreateConversation": "Skapa konversation",
+  "reportDialogTitleRecipe": "Anmäl det här receptet",
+  "reportDialogGuidelinesNoteSuffix": "— den version du ser nu är den vi dömer efter.",
+  "reportDialogIntro": "Berätta vad som är fel. En människa i teamet läser din anmälan.",
+  "reportDescriptionRequiredHelper": "Krävs när du väljer Annat."
 }

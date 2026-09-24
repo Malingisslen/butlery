@@ -18,6 +18,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:get_it/get_it.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
@@ -203,11 +204,18 @@ class AuthService extends ChangeNotifier
 
   Future<void> signOut() async {
     await executeAsync(() async {
+      // Read before the sign-out clears it: only this person's tray goes.
+      final userId = (_currentUser ?? _authRepository.currentUser)?.uid;
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
+      // PQ-12 = A (produktbeslut-2026-09-23.json): device drafts go when the
+      // user logs out herself (produktregler.md:164-172), never at an
+      // automatic logout, so this is not in [logoutDueToInactivity] or
+      // [forceSignOut]. Best-effort: it logs and never throws.
+      await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
       await _analyticsService.logLogout();
     }).catchError((e) {
       setError(AppLocale.current.errorCouldNotLogOut);

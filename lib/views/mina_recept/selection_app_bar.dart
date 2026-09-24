@@ -22,6 +22,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
@@ -111,6 +112,27 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
   );
 }
 
+/// "Välj" for the recipe list's own top bar (B-46; produktregler.md:870-874;
+/// Skarmar v12 etapp 9 #flervalingang, data-a11y-name "Välj recept").
+///
+/// Returns the action to put among the bar's actions, or nothing when the
+/// list has fewer than two recipes.
+List<Widget> buildMinaReceptSelectEntry(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) {
+  if (!ButlerySelectButton.shownFor(viewModel.recipes.length)) {
+    return const [];
+  }
+  return [
+    ButlerySelectButton(
+      key: const ValueKey('mina-recept-select-enter'),
+      semanticLabel: context.l10n.selectionEnterRecipes,
+      onPressed: viewModel.startSelection,
+    ),
+  ];
+}
+
 /// Below this width share leaves the bar for the kebab.
 const double _narrowBar = 360;
 
@@ -130,6 +152,12 @@ class _BulkMoreMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final hasSelection = viewModel.selectedCount > 0;
+    // Off at zero with the name readable, in the disabled role rather than
+    // the menu's faded default (produktregler.md:876; tokens.json:71-74,
+    // :198): text.disabled.onRaised, #788477 light and #93A48D dark.
+    final disabled = TextStyle(
+      color: AppModeColors.textDisabled(cs.brightness),
+    );
     return PopupMenuButton<_BulkMoreAction>(
       key: const ValueKey('mina-recept-bulk-more'),
       icon: const Icon(Icons.more_vert),
@@ -139,44 +167,71 @@ class _BulkMoreMenu extends StatelessWidget {
           case _BulkMoreAction.share:
             _openBulkShareDialog(context, viewModel);
           case _BulkMoreAction.selectAll:
-            viewModel.selectAll();
+            // A toggle that can untick (produktregler.md:877).
+            if (viewModel.allSelected) {
+              viewModel.deselectAll();
+            } else {
+              viewModel.selectAll();
+            }
           case _BulkMoreAction.export:
             _openBulkExport(context, viewModel);
           case _BulkMoreAction.delete:
             _confirmBulkDelete(context, viewModel);
         }
       },
-      itemBuilder: (menuContext) => [
-        if (withShare)
+      itemBuilder: (menuContext) {
+        final allSelected = viewModel.allSelected;
+        return [
+          if (withShare)
+            PopupMenuItem(
+              value: _BulkMoreAction.share,
+              enabled: hasSelection,
+              child: Text(
+                menuContext.l10n.bulkShare,
+                style: hasSelection ? null : disabled,
+              ),
+            ),
+          // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
+          // every recipe is ticked it unticks them. Interpretation: the second
+          // label is not drawn, so it takes the app's "Avmarkera alla".
           PopupMenuItem(
-            value: _BulkMoreAction.share,
+            key: const ValueKey('mina-recept-bulk-select-all'),
+            value: _BulkMoreAction.selectAll,
+            child: Text(
+              allSelected
+                  ? menuContext.l10n.commonDeselectAll
+                  : menuContext.l10n.selectionSelectAllCount(
+                      viewModel.recipes.length,
+                    ),
+              style: const TextStyle(
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+          // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+          PopupMenuItem(
+            value: _BulkMoreAction.export,
             enabled: hasSelection,
-            child: Text(menuContext.l10n.bulkShare),
+            child: Text(
+              menuContext.l10n.bulkExport,
+              style: hasSelection ? null : disabled,
+            ),
           ),
-        PopupMenuItem(
-          value: _BulkMoreAction.selectAll,
-          child: Text(menuContext.l10n.bulkSelectAll),
-        ),
-        // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
-        PopupMenuItem(
-          value: _BulkMoreAction.export,
-          enabled: hasSelection,
-          child: Text(menuContext.l10n.bulkExport),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem(
-          key: const ValueKey('mina-recept-bulk-delete'),
-          value: _BulkMoreAction.delete,
-          enabled: hasSelection,
-          child: Text(
-            menuContext.l10n.bulkDelete,
-            // text.danger on the menu's surface.base: cs.error is the
-            // generated semantic.text.danger, #9C3B23 light and #DE9078
-            // dark (app_colors.dart:290, :326).
-            style: hasSelection ? TextStyle(color: cs.error) : null,
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            key: const ValueKey('mina-recept-bulk-delete'),
+            value: _BulkMoreAction.delete,
+            enabled: hasSelection,
+            child: Text(
+              menuContext.l10n.bulkDelete,
+              // text.danger on the menu's surface.base: cs.error is the
+              // generated semantic.text.danger, #9C3B23 light and #DE9078
+              // dark (app_colors.dart:290, :326).
+              style: hasSelection ? TextStyle(color: cs.error) : disabled,
+            ),
           ),
-        ),
-      ],
+        ];
+      },
     );
   }
 }

@@ -149,31 +149,7 @@ abstract final class ImportResultHandler {
             imageUrls: recipe.imageUrls,
             sourceUrl: recipe.sourceUrl,
           );
-          // BUT-1784 class: `updateRecipe` returns a bool and a refused write
-          // used to land on the error screen. Since BUT-1779 routes to the
-          // detail view with the in-memory object, discarding this would show
-          // a success snackbar AND a screen rendering content that was never
-          // saved — a failure the user cannot see until the next load.
-          final saved = await recipeService.updateRecipe(merged);
-          if (context.mounted) {
-            if (!saved) {
-              SnackBarUtils.showError(
-                context,
-                context.l10n.duplicateMergeFailed,
-              );
-              return false;
-            }
-            SnackBarUtils.showSuccess(
-              context,
-              context.l10n.duplicateMergeSuccess,
-            );
-            // BUT-1779: pass the just-persisted Recipe — a bare id decodes to
-            // null on the detail route, and `matches.first` is now stale.
-            Navigator.of(context).pushReplacementNamed(
-              Routes.recipeDetail,
-              arguments: merged,
-            );
-          }
+          await saveMergeAndOpen(context, recipeService, merged);
           return false;
 
         case DuplicateMergeChoice.saveAsNew:
@@ -181,37 +157,51 @@ abstract final class ImportResultHandler {
 
         case DuplicateMergeChoice.mergeBestFields:
           final merged = result.buildMergedRecipe();
-          // BUT-1784 class: `updateRecipe` returns a bool and a refused write
-          // used to land on the error screen. Since BUT-1779 routes to the
-          // detail view with the in-memory object, discarding this would show
-          // a success snackbar AND a screen rendering content that was never
-          // saved — a failure the user cannot see until the next load.
-          final saved = await recipeService.updateRecipe(merged);
-          if (context.mounted) {
-            if (!saved) {
-              SnackBarUtils.showError(
-                context,
-                context.l10n.duplicateMergeFailed,
-              );
-              return false;
-            }
-            SnackBarUtils.showSuccess(
-              context,
-              context.l10n.duplicateMergeSuccess,
-            );
-            // BUT-1779: pass the just-persisted Recipe — a bare id decodes to
-            // null on the detail route, and `matches.first` is now stale.
-            Navigator.of(context).pushReplacementNamed(
-              Routes.recipeDetail,
-              arguments: merged,
-            );
-          }
+          await saveMergeAndOpen(context, recipeService, merged);
           return false;
       }
     } catch (_) {
       // If duplicate check fails, let the user proceed with the import
       return true;
     }
+  }
+
+  /// Saves a merged duplicate and opens it.
+  ///
+  /// BUT-1784 class: `updateRecipe` returns a bool and a refused write used
+  /// to land on the error screen. Since BUT-1779 routes to the detail view
+  /// with the in-memory object, discarding this would show a success
+  /// snackbar AND a screen rendering content that was never saved.
+  ///
+  /// P5-U06: a refused save is three-part (content-style-guide.md:87-97):
+  /// what happened, that the existing recipe is unchanged (the write was
+  /// refused), and Försök igen, which saves the same merge again.
+  @visibleForTesting
+  static Future<void> saveMergeAndOpen(
+    BuildContext context,
+    UnifiedRecipeService recipeService,
+    Recipe merged,
+  ) async {
+    final saved = await recipeService.updateRecipe(merged);
+    if (!context.mounted) return;
+    if (!saved) {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.duplicateMergeFailed,
+        preserved: context.l10n.duplicateMergeFailedPreserved,
+        action: FailureAction.retry(
+          () => saveMergeAndOpen(context, recipeService, merged),
+        ),
+      );
+      return;
+    }
+    SnackBarUtils.showSuccess(context, context.l10n.duplicateMergeSuccess);
+    // BUT-1779: pass the just-persisted Recipe — a bare id decodes to null on
+    // the detail route, and the matched recipe is now stale.
+    Navigator.of(context).pushReplacementNamed(
+      Routes.recipeDetail,
+      arguments: merged,
+    );
   }
 
   /// Navigates to the recipe editor with the imported recipe.

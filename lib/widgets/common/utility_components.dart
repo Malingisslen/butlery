@@ -293,7 +293,12 @@ class UtilityComponents {
     SnackbarWidgets.showSuccessSnackbar(context, message);
   }
 
-  /// Show error snackbar.
+  /// Show error snackbar: the ink failure snackbar with "Stäng", never OK
+  /// (content-style-guide.md:96).
+  ///
+  /// A legacy channel: it takes one line. New code calls
+  /// SnackBarUtils.showFailure(what:, preserved:, action:), and
+  /// test/architecture/error_contract_test.dart freezes these calls.
   static void showErrorSnackbar(BuildContext context, String message) {
     SnackbarWidgets.showErrorSnackbar(context, message);
   }

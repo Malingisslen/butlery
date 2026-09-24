@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -39,9 +40,11 @@ class _TestBaseDialog extends BaseDialog<String> {
     this.additionalText,
     this.validateResult = true,
     this.contentChild,
+    this.onAction,
   });
 
   final bool shouldThrow;
+  final VoidCallback? onAction;
   final String contentText;
   final String? additionalText;
   final bool validateResult;
@@ -61,7 +64,20 @@ class _TestBaseDialog extends BaseDialog<String> {
   @override
   Future<String?> performAction(BuildContext context) async {
     if (shouldThrow) throw Exception('boom from action');
+    onAction?.call();
     return 'success';
+  }
+}
+
+class _ThrowingFormDialog extends BaseFormDialog<String> {
+  _ThrowingFormDialog() : super(title: 'Form');
+
+  @override
+  List<Widget> buildFormFields(BuildContext context) => [TextFormField()];
+
+  @override
+  Future<String?> performAction(BuildContext context) async {
+    throw Exception('boom');
   }
 }
 
@@ -267,11 +283,65 @@ void main() {
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
 
-      // Dialog still open — error_outline icon and exception message rendered
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
-      expect(find.textContaining('boom from action'), findsOneWidget);
+      // P5-U04: the dialog stays open with the three-part inline error:
+      // a readable sentence, never the exception text, and Försök igen
+      // (content-style-guide.md:87-97).
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.textContaining('boom from action'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.text('Åtgärden kunde inte slutföras.'), findsOneWidget);
+      expect(find.text('Försök igen'), findsOneWidget);
       // Title still visible
       expect(find.text('t'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('a known cause is named, and Försök igen runs it again', (
+      tester,
+    ) async {
+      var attempts = 0;
+      await tester.pumpWidget(_wrap(_trigger(() {})));
+      final ctx = tester.element(find.byType(ElevatedButton));
+      showDialog<String>(
+        context: ctx,
+        builder: (_) => _TestBaseDialog(
+          title: 't',
+          onAction: () {
+            attempts++;
+            if (attempts == 1) throw Exception('SocketException: failed');
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(InlineError)),
+      );
+      expect(find.text(l10n.errorNetwork), findsOneWidget);
+
+      await tester.tap(find.byKey(InlineError.actionKey));
+      await tester.pumpAndSettle();
+      expect(attempts, 2);
+      expect(find.byType(_TestBaseDialog), findsNothing, reason: 'it popped');
+    });
+
+    testWidgets('a form dialog says what was filled in is kept', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_wrap(_trigger(() {})));
+      final ctx = tester.element(find.byType(ElevatedButton));
+      showDialog<String>(
+        context: ctx,
+        builder: (_) => _ThrowingFormDialog(),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), 'Mjölk');
+      await tester.tap(find.text('Spara'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Det du fyllt i ligger kvar.'), findsOneWidget);
+      expect(find.text('Mjölk'), findsOneWidget);
     });
 
     testWidgets('validateBeforeAction=false short-circuits without loading', (

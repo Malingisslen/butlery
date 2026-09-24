@@ -1,5 +1,6 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -104,12 +105,9 @@ class _ReportsList extends StatelessWidget {
       return StateWidget.loading(message: context.l10n.loadingReports);
     }
     if (vm.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Text(vm.error!, textAlign: TextAlign.center),
-        ),
-      );
+      // The standard error state: what failed, then Försök igen
+      // (content-style-guide.md:89-94; state_widget.dart default action).
+      return StateWidget.error(message: vm.error!, onAction: vm.retry);
     }
     if (vm.reports.isEmpty) {
       return Center(
@@ -201,7 +199,7 @@ class _ReportCard extends StatelessWidget {
               children: [
                 if (report.status != ReportStatus.closed)
                   OutlinedButton(
-                    onPressed: () => vm.advance(report),
+                    onPressed: () => _advance(context, vm),
                     child: Text(context.l10n.moderatorActionAdvance),
                   ),
                 OutlinedButton(
@@ -214,7 +212,7 @@ class _ReportCard extends StatelessWidget {
                 ),
                 if (report.status != ReportStatus.closed)
                   TextButton(
-                    onPressed: () => vm.close(report),
+                    onPressed: () => _close(context, vm),
                     child: Text(context.l10n.moderatorActionClose),
                   ),
               ],
@@ -260,9 +258,55 @@ class _ReportCard extends StatelessWidget {
             cancelText: cancel,
           );
     final ok = await dialogFuture;
-    if (ok == true) {
-      await vm.takeDown(report);
+    if (ok == true && context.mounted) {
+      await _takeDown(context, vm, reversible: reversible);
     }
+  }
+
+  // A refused action is a failure snackbar with Försök igen, never the
+  // queue's load-error state and never the method name
+  // (content-style-guide.md:87-97; Komponentark v1:750, never OK).
+  Future<void> _advance(
+    BuildContext context,
+    ModeratorReviewViewModel vm,
+  ) async {
+    if (await vm.advance(report) || !context.mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.moderatorAdvanceFailed,
+      preserved: context.l10n.moderatorReportUnchanged,
+      action: FailureAction.retry(() => _advance(context, vm)),
+    );
+  }
+
+  Future<void> _close(BuildContext context, ModeratorReviewViewModel vm) async {
+    if (await vm.close(report) || !context.mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.moderatorCloseFailed,
+      preserved: context.l10n.moderatorReportUnchanged,
+      action: FailureAction.retry(() => _close(context, vm)),
+    );
+  }
+
+  /// The retry repeats the action the moderator already confirmed.
+  Future<void> _takeDown(
+    BuildContext context,
+    ModeratorReviewViewModel vm, {
+    required bool reversible,
+  }) async {
+    if (await vm.takeDown(report) || !context.mounted) return;
+    final l10n = context.l10n;
+    SnackBarUtils.showFailure(
+      context,
+      what: reversible ? l10n.moderatorHideFailed : l10n.moderatorDeleteFailed,
+      preserved: reversible
+          ? l10n.moderatorHidePreserved
+          : l10n.moderatorDeletePreserved,
+      action: FailureAction.retry(
+        () => _takeDown(context, vm, reversible: reversible),
+      ),
+    );
   }
 }
 

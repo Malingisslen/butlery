@@ -1571,7 +1571,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuShoppingListGenerationFailed =>
-      'Kunde inte skapa inköpslistan – försök igen';
+      'Inköpslistan kunde inte skapas.';
 
   @override
   String get menuShoppingScaledToPresence =>
@@ -4524,7 +4524,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get friendAccept => 'Acceptera';
 
   @override
-  String get friendDecline => 'Avvisa';
+  String get friendDecline => 'Avböj';
 
   @override
   String get friendRequestTitle => 'Vänförfrågan';
@@ -5672,8 +5672,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuUnnamed => 'Namnlös meny';
 
   @override
-  String get privacyCouldNotLoad =>
-      'Kunde inte ladda integritetspolicyn. Försök igen senare.';
+  String get privacyCouldNotLoad => 'Integritetspolicyn kunde inte hämtas.';
 
   @override
   String get privacyTitle => 'Integritetspolicy';
@@ -6248,7 +6247,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupSendInvitations(int count) {
-    return 'Skicka $count inbjudningar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bjud in $count valda',
+      one: 'Bjud in 1 vald',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6376,7 +6381,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuHideMenu => 'Dölj meny';
 
   @override
-  String get menuImportAll => 'Importera hela menyn';
+  String get menuImportAll => 'Spara till mina menyer';
 
   @override
   String menuImportDescription(int count) {
@@ -8224,7 +8229,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialCouldNotUnblockUser => 'Kunde inte avblockera användare';
 
   @override
-  String get socialDecline => 'Avvisa';
+  String get socialDecline => 'Avböj';
 
   @override
   String get socialDeclined => 'Avvisad';
@@ -14182,6 +14187,32 @@ class AppLocalizationsSv extends AppLocalizations {
       'Lösenord, e-post och tvåfaktorsautentisering';
 
   @override
+  String get selectionEnter => 'Välj';
+
+  @override
+  String get selectionEnterRecipes => 'Välj recept';
+
+  @override
+  String get selectionEnterShoppingItems => 'Välj varor';
+
+  @override
+  String get selectionEnterPantryItems => 'Välj varor i skafferiet';
+
+  @override
+  String get selectionEnterTags => 'Välj taggar';
+
+  @override
+  String get selectionEnterMembers => 'Välj medlemmar';
+
+  @override
+  String get selectionEnterBlockedUsers => 'Välj blockerade personer';
+
+  @override
+  String selectionSelectAllCount(int count) {
+    return 'Markera alla $count';
+  }
+
+  @override
   String bulkSelectedCount(int count) {
     return '$count valda';
   }
@@ -14359,26 +14390,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get reportReasonOther => 'Annat';
 
   @override
-  String get reportDescriptionHint => 'Beskriv vad som är fel (valfritt)';
+  String get reportDescriptionHint => 'Berätta vad som är fel …';
 
   @override
-  String get reportSubmitted => 'Rapporten har skickats';
+  String get reportSubmitted => 'Anmälan har skickats';
 
   @override
-  String get reportSubmitFailed => 'Kunde inte skicka rapporten';
+  String get reportSubmitFailed => 'Anmälan kunde inte skickas';
 
   @override
-  String get reportDialogTitle => 'Rapportera innehåll';
+  String get reportDialogTitle => 'Anmäl innehåll';
 
   @override
   String get reportSubmit => 'Skicka anmälan';
 
   @override
-  String get reportDialogGuidelinesNotePrefix =>
-      'Genom att rapportera bekräftar du att innehållet bryter mot';
+  String get reportDialogGuidelinesNotePrefix => 'Vi bedömer mot';
 
   @override
-  String get reportDialogGuidelinesLink => 'våra riktlinjer för communityn';
+  String get reportDialogGuidelinesLink => 'våra riktlinjer';
 
   @override
   String get settingsMyReports => 'Mina rapporter';
@@ -15218,6 +15248,27 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryLocationLabel => 'Plats';
 
   @override
+  String get pantryItemChangedNow => 'ändrad nu';
+
+  @override
+  String pantryItemChangedMinutesAgo(int count) {
+    return 'ändrad $count min sedan';
+  }
+
+  @override
+  String pantryItemChangedToday(String time) {
+    return 'ändrad i dag $time';
+  }
+
+  @override
+  String get pantryItemChangedYesterday => 'ändrad i går';
+
+  @override
+  String pantryItemChangedOn(String date) {
+    return 'ändrad $date';
+  }
+
+  @override
   String get pantryExpiryExpired => 'Utgånget';
 
   @override
@@ -15260,8 +15311,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryEditSheetTitle => 'Redigera ingrediens';
 
   @override
-  String get pantryCouldNotSaveItem =>
-      'Kunde inte spara i skafferiet. Försök igen.';
+  String get pantryCouldNotSaveItem => 'Varan kunde inte sparas i skafferiet.';
 
   @override
   String get pantryIngredientLabel => 'Ingrediens';
@@ -15988,8 +16038,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookingModeSubstitutionApplied => 'Ingrediens utbytt';
 
   @override
-  String get cookingModeSubstitutionFailed =>
-      'Kunde inte byta ingrediens. Försök igen.';
+  String get cookingModeSubstitutionFailed => 'Ingrediensen kunde inte bytas.';
 
   @override
   String get cookingModeOpenEditToSwap => 'Öppna redigering för att byta';
@@ -16800,4 +16849,432 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Delad meny';
+
+  @override
+  String get emailVerificationResendFailed =>
+      'Verifieringsmailet kunde inte skickas.';
+
+  @override
+  String emailVerificationResendFailedBecause(String cause) {
+    return 'Verifieringsmailet kunde inte skickas. $cause';
+  }
+
+  @override
+  String get emailVerificationAddressUnchanged =>
+      'Din e-postadress är oförändrad.';
+
+  @override
+  String get chatPollCouldNotBeCreated => 'Omröstningen kunde inte skapas.';
+
+  @override
+  String get chatEditCouldNotBeSaved => 'Ändringen kunde inte sparas.';
+
+  @override
+  String get chatEditOriginalKept => 'Meddelandet är oförändrat.';
+
+  @override
+  String get chatCouldNotSendReply => 'Svaret kunde inte skickas.';
+
+  @override
+  String get errorPreservedText => 'Texten ligger kvar i fältet.';
+
+  @override
+  String get errorPreservedForm => 'Det du fyllt i ligger kvar.';
+
+  @override
+  String get dialogActionFailed => 'Åtgärden kunde inte slutföras.';
+
+  @override
+  String get minaReceptRefreshFailed => 'Recepten kunde inte uppdateras.';
+
+  @override
+  String get minaReceptRefreshPreserved => 'Dina sparade recept visas nedan.';
+
+  @override
+  String get shoppingLeaveListStillMember => 'Du är fortfarande med i listan.';
+
+  @override
+  String get cookingModeRecipeUnchanged => 'Receptet är oförändrat.';
+
+  @override
+  String get accountSecurityPasswordChangeFailed =>
+      'Lösenordet kunde inte ändras.';
+
+  @override
+  String accountSecurityPasswordChangeFailedBecause(String cause) {
+    return 'Lösenordet kunde inte ändras. $cause';
+  }
+
+  @override
+  String get accountSecurityEmailChangeFailed =>
+      'E-postadressen kunde inte ändras.';
+
+  @override
+  String accountSecurityEmailChangeFailedBecause(String cause) {
+    return 'E-postadressen kunde inte ändras. $cause';
+  }
+
+  @override
+  String get recipeSaveFailed => 'Receptet kunde inte sparas.';
+
+  @override
+  String get recipeCopySaveFailed => 'Kopian kunde inte sparas.';
+
+  @override
+  String get recipeSaveIncomplete =>
+      'Receptet kunde inte sparas. Det behöver en titel, minst en ingrediens och minst ett steg.';
+
+  @override
+  String get recipeSaveNoPermission =>
+      'Receptet kunde inte sparas. Du har inte behörighet att ändra det.';
+
+  @override
+  String get errorPreservedRecipeEdits =>
+      'Dina ändringar ligger kvar i formuläret.';
+
+  @override
+  String get groupAddMembersLoadFailed => 'Dina vänner kunde inte hämtas.';
+
+  @override
+  String get adminFeedbackLoadFailed => 'Återkopplingen kunde inte hämtas.';
+
+  @override
+  String get moderatorReportsLoadFailed => 'Anmälningarna kunde inte hämtas.';
+
+  @override
+  String get legalGuidelinesCouldNotLoad => 'Riktlinjerna kunde inte hämtas.';
+
+  @override
+  String get legalTermsCouldNotLoad => 'Användarvillkoren kunde inte hämtas.';
+
+  @override
+  String get legalLinksNeedConnection =>
+      'Webblänkarna öppnas när du är ansluten igen.';
+
+  @override
+  String get imageCouldNotBeShown => 'Bilden kunde inte visas';
+
+  @override
+  String get imageRetriesWhenOnline => 'Försöker igen när nätet är tillbaka';
+
+  @override
+  String get ingredientSearchAgain => 'Sök igen';
+
+  @override
+  String get ingredientSearchSelectionKept => 'Dina ingredienser ligger kvar.';
+
+  @override
+  String importUrlBatchPartialTitle(int success, int total) {
+    return 'Vi hämtade $success av $total länkar';
+  }
+
+  @override
+  String get importUrlBatchPartialBody =>
+      'Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.';
+
+  @override
+  String get importUrlBatchReadyHeading => 'Klara att importera';
+
+  @override
+  String get importUrlReasonUnreachable => 'Sidan gick inte att nå';
+
+  @override
+  String get importUrlReasonNoContent => 'Sidan hade ingen recepttext';
+
+  @override
+  String get importUrlReasonUnreadable => 'Sidan gick inte att läsa';
+
+  @override
+  String importUrlBatchRetryA11y(String url) {
+    return 'Försök hämta $url igen';
+  }
+
+  @override
+  String weeklyMenuOverflowPlacedCount(int placed, int total) {
+    return '$placed av $total rätter placerade';
+  }
+
+  @override
+  String weeklyMenuOverflowReason(int week) {
+    return 'Vecka $week hade inga fler lediga platser för de här.';
+  }
+
+  @override
+  String get weeklyMenuOverflowPastDays =>
+      'Dagar som redan har passerat fylls aldrig.';
+
+  @override
+  String weeklyMenuOverflowKeepOrNextWeek(int week) {
+    return 'De ligger kvar här tills du placerar dem eller lägger dem i vecka $week.';
+  }
+
+  @override
+  String get weeklyMenuOverflowKeep =>
+      'De ligger kvar här tills du placerar dem.';
+
+  @override
+  String weeklyMenuOverflowNextWeekAction(int week) {
+    return 'Lägg i vecka $week';
+  }
+
+  @override
+  String weeklyMenuOverflowNextWeekA11y(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lägg de $count i vecka $week',
+      one: 'Lägg den i vecka $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyMenuOverflowMovedToNextWeek(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter lades i vecka $week',
+      one: '1 rätt lades i vecka $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String a11yWeeklyMenuPlacementOrder(int order) {
+    return 'Placerad som nummer $order';
+  }
+
+  @override
+  String menuPartialTitle(int found, int requested) {
+    return 'Vi hittade $found av $requested rätter';
+  }
+
+  @override
+  String get menuPartialBody => 'Det fanns inte fler recept som passar.';
+
+  @override
+  String menuPartialMissing(int found, int requested, int missing) {
+    return '$found av $requested, $missing saknas';
+  }
+
+  @override
+  String get weeklyMenuSaveFailed => 'Veckan kunde inte sparas.';
+
+  @override
+  String get pantryItemUpdateFailed => 'Varan kunde inte uppdateras.';
+
+  @override
+  String get moderatorAdvanceFailed =>
+      'Anmälan kunde inte flyttas till nästa steg.';
+
+  @override
+  String get moderatorCloseFailed => 'Anmälan kunde inte stängas.';
+
+  @override
+  String get moderatorReportUnchanged => 'Anmälan är oförändrad.';
+
+  @override
+  String get moderatorHideFailed => 'Profilen kunde inte döljas.';
+
+  @override
+  String get moderatorHidePreserved => 'Profilen syns som förut.';
+
+  @override
+  String get moderatorDeleteFailed => 'Innehållet kunde inte tas bort.';
+
+  @override
+  String get moderatorDeletePreserved => 'Innehållet ligger kvar.';
+
+  @override
+  String get adminFeedbackStatusFailed => 'Statusen kunde inte ändras.';
+
+  @override
+  String get adminFeedbackStatusPreserved =>
+      'Återkopplingen har kvar sin tidigare status.';
+
+  @override
+  String get weekPlacementFailedWeekUnchanged =>
+      'Veckan är oförändrad och den skapade menyn ligger kvar.';
+
+  @override
+  String get weekPlacementFailedMenuKept => 'Den skapade menyn ligger kvar.';
+
+  @override
+  String get menuShoppingListGenerationPreserved => 'Veckan är oförändrad.';
+
+  @override
+  String get importErrorNotImported => 'Receptet kunde inte importeras.';
+
+  @override
+  String get importFailurePreservedLink => 'Länken står kvar i fältet.';
+
+  @override
+  String get importFailurePreservedText => 'Texten står kvar i fältet.';
+
+  @override
+  String get importFailureOtherRoutes => 'Andra vägar till samma recept';
+
+  @override
+  String get importRoutePhoto => 'Fotografera skärmen';
+
+  @override
+  String get importRoutePasteText => 'Klistra in texten';
+
+  @override
+  String get duplicateMergeFailedPreserved =>
+      'Det befintliga receptet är oförändrat.';
+
+  @override
+  String get conflictDiffUseTheirs => 'Använd deras version';
+
+  @override
+  String get conflictDiffUsedTheirs => 'Deras version gäller nu';
+
+  @override
+  String get conflictDiffUseTheirsFailed => 'Deras version kunde inte sparas.';
+
+  @override
+  String get conflictDiffUseTheirsKept => 'Din version gäller fortfarande.';
+
+  @override
+  String get conflictWeekKeepMine => 'Behåll min';
+
+  @override
+  String get partialOutcomeDone => 'Klart';
+
+  @override
+  String groupMembersPartialTitle(int removed, int total) {
+    return '$removed av $total togs bort';
+  }
+
+  @override
+  String get groupMembersPartialMessage =>
+      'De som inte kunde tas bort ligger kvar valda ovan.';
+
+  @override
+  String groupMembersPartialRemoved(String names, String group) {
+    return '$names är inte längre med i $group.';
+  }
+
+  @override
+  String get partialOutcomeListAnd => ' och ';
+
+  @override
+  String get groupMemberRemoveNotSaved =>
+      'Kunde inte tas bort – ändringen sparades inte';
+
+  @override
+  String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';
+
+  @override
+  String get selectionFailedKept => 'De ligger kvar valda.';
+
+  @override
+  String personalTagBulkDeletePartialTitle(int deleted, int total) {
+    return '$deleted av $total taggar togs bort';
+  }
+
+  @override
+  String get personalTagBulkDeletePartialMessage =>
+      'De som inte kunde tas bort ligger kvar valda.';
+
+  @override
+  String personalTagBulkDeletePartialDeleted(String names) {
+    return '$names togs bort.';
+  }
+
+  @override
+  String get personalTagBulkDeleteNotSaved =>
+      'Kunde inte tas bort – borttagningen sparades inte';
+
+  @override
+  String get personalTagBulkDeleteNone => 'Taggarna kunde inte tas bort.';
+
+  @override
+  String get overwrittenRestoreAction => 'Återställ min version';
+
+  @override
+  String get overwrittenPickTitle => 'Vilken version vill du återställa?';
+
+  @override
+  String overwrittenVersionFrom(String when) {
+    return 'Din version från $when';
+  }
+
+  @override
+  String overwrittenVersionBy(String name, String until) {
+    return '$name sparade över den · kvar till $until';
+  }
+
+  @override
+  String overwrittenVersionByUnnamed(String until) {
+    return 'Någon annan sparade över den · kvar till $until';
+  }
+
+  @override
+  String overwrittenWhenToday(String time) {
+    return 'i dag $time';
+  }
+
+  @override
+  String get overwrittenWhenYesterday => 'i går';
+
+  @override
+  String get overwrittenConfirmTitleWeek => 'Återställa din vecka?';
+
+  @override
+  String get overwrittenConfirmTitleRecipe => 'Återställa ditt recept?';
+
+  @override
+  String overwrittenConfirmBodyWeek(String when) {
+    return 'Din version från $when ersätter veckan som gäller nu. Du kan ångra direkt efteråt.';
+  }
+
+  @override
+  String overwrittenConfirmBodyRecipe(String when) {
+    return 'Din version från $when ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.';
+  }
+
+  @override
+  String get overwrittenRestored => 'Din version är återställd';
+
+  @override
+  String get overwrittenRestoreFailed => 'Din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneWeek =>
+      'Veckan finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'Receptet finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String overwrittenKeptUntil(String until) {
+    return 'Den finns kvar till $until.';
+  }
+
+  @override
+  String get overwrittenUndoFailed => 'Ångra kunde inte slutföras';
+
+  @override
+  String get overwrittenUndoFailedKept =>
+      'Din återställda version gäller fortfarande.';
+
+  @override
+  String get messagingCreateConversation => 'Skapa konversation';
+
+  @override
+  String get reportDialogTitleRecipe => 'Anmäl det här receptet';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— den version du ser nu är den vi dömer efter.';
+
+  @override
+  String get reportDialogIntro =>
+      'Berätta vad som är fel. En människa i teamet läser din anmälan.';
+
+  @override
+  String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
 }

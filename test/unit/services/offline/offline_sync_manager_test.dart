@@ -284,6 +284,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-1',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         when(
@@ -316,6 +319,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-2',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         when(
@@ -349,6 +355,9 @@ void main() {
             queuedAt: DateTime.now(),
             retryCount: 0,
             lastError: null,
+            opId: 'op-3',
+            entityType: 'recipe',
+            permanentlyFailed: false,
           );
 
           when(
@@ -382,6 +391,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-4',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         final tagEntry2 = SyncQueueEntry(
@@ -392,6 +404,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-5',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         final taggedRecipes = <String>[];

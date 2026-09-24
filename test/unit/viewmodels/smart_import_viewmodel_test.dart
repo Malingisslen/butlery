@@ -596,7 +596,9 @@ void main() {
       'could not read text': 'Kunde inte läsa texten i bilden',
       'OCR failed': 'Kunde inte läsa texten i bilden',
       'operation cancelled': 'Importen avbröts',
-      'something else entirely': 'Ett oväntat fel uppstod',
+      // P5-U06: an unknown cause says what did not happen, never a bare
+      // "Ett oväntat fel uppstod" (content-style-guide.md:94).
+      'something else entirely': 'Receptet kunde inte importeras.',
     };
     cases.forEach((english, swedish) {
       test('"$english" → "$swedish"', () async {
@@ -620,8 +622,8 @@ void main() {
     });
 
     /// Null errorMessage (manager returned isSuccess=false with no detail)
-    /// must still produce a localized "unknown" failure, not surface null.
-    test('null error message → "Okänt fel"', () async {
+    /// must still say what did not happen: never "Okänt fel" alone (P5-U06).
+    test('null error message → "Receptet kunde inte importeras."', () async {
       when(
         () => mockImportManager.autoImport(
           any(),
@@ -631,7 +633,72 @@ void main() {
       viewModel.updateInput('https://example.com');
 
       final r = (await viewModel.startImport()) as ImportFailed;
-      expect(r.message, 'Okänt fel');
+      expect(r.message, 'Receptet kunde inte importeras.');
+    });
+  });
+
+  // P5-U06 (import-av-recept ERROR): a failure is three-part
+  // (content-style-guide.md:87-97) and draws the other routes it carries
+  // (produktregler.md:557, 9.2 Fel: availableStrategies "ritas").
+  group('startImport — the three-part failure', () {
+    void failWith(List<String>? strategies) {
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.failure(
+          'no recipe found',
+          availableStrategies: strategies,
+        ),
+      );
+    }
+
+    test('a link that failed keeps the link and offers photo, paste and '
+        'manual', () async {
+      failWith(const ['URL Import', 'Text Import', 'Photo Import']);
+      viewModel.updateInput('https://example.com/recept');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+        ImportRoute.manual,
+      ]);
+      expect(viewModel.failureRoutes, r.routes);
+      expect(viewModel.failurePreserved, 'Länken står kvar i fältet.');
+    });
+
+    test('pasted text is not offered pasting again', () async {
+      failWith(const ['Text Import', 'Photo Import']);
+      viewModel.updateInput('Pannkakor, 3 dl mjöl och 6 dl mjölk');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [ImportRoute.photo, ImportRoute.manual]);
+      expect(viewModel.failurePreserved, 'Texten står kvar i fältet.');
+    });
+
+    test('only the strategies the manager reported are drawn', () async {
+      failWith(const ['URL Import']);
+      viewModel.updateInput('https://example.com/recept');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [ImportRoute.manual]);
+    });
+
+    test('changing the input clears the routes and the kept line', () async {
+      failWith(const ['Photo Import']);
+      viewModel.updateInput('https://example.com/recept');
+      await viewModel.startImport();
+
+      viewModel.updateInput('https://example.com/annat');
+
+      expect(viewModel.failureRoutes, isEmpty);
+      expect(viewModel.failurePreserved, isNull);
     });
   });
 
@@ -652,7 +719,10 @@ void main() {
 
       expect(r, isA<ImportFailed>());
       expect(viewModel.phase, ImportPhase.error);
-      expect(viewModel.error, 'Import misslyckades');
+      // P5-U06: what happened, never the exception or a causeless line.
+      expect(viewModel.error, 'Receptet kunde inte importeras.');
+      expect((r as ImportFailed).message, 'Receptet kunde inte importeras.');
+      expect(viewModel.failureRoutes, contains(ImportRoute.manual));
     });
 
     /// Network-shaped exceptions must save the URL for retry-on-reconnect.
@@ -715,6 +785,9 @@ void main() {
 
     /// If manager.saveImportedRecipe returns failure (without throwing) the
     /// VM must convert it to ImportFailed and not pretend the save worked.
+    /// P5-U06: the manager's English never reaches the user, and the view
+    /// shows the failure as one snackbar with Försök igen, so no error line
+    /// is set as well.
     test('returns ImportFailed when save returns isSuccess=false', () async {
       when(
         () => mockImportManager.saveImportedRecipe(any()),
@@ -723,9 +796,9 @@ void main() {
       final r = await viewModel.handleAssistedRecipe(RecipeFactory.build());
 
       expect(r, isA<ImportFailed>());
-      expect((r as ImportFailed).message, 'disk full');
+      expect((r as ImportFailed).message, 'Receptet kunde inte sparas.');
       expect(viewModel.phase, ImportPhase.error);
-      expect(viewModel.error, 'disk full');
+      expect(viewModel.error, isNull);
     });
 
     /// Thrown exceptions during save must localize the error (not leak
@@ -738,7 +811,8 @@ void main() {
       final r = await viewModel.handleAssistedRecipe(RecipeFactory.build());
 
       expect(r, isA<ImportFailed>());
-      expect(viewModel.error, 'Kunde inte spara recept');
+      expect((r as ImportFailed).message, 'Receptet kunde inte sparas.');
+      expect(r.message, isNot(contains('Firebase')));
     });
   });
 

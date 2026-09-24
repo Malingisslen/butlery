@@ -2,6 +2,7 @@
 // to avoid centralized concrete @override conflicts with when().
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -194,8 +195,31 @@ void main() {
 
       expect(vm.hasError, isTrue);
       expect(vm.groupName, equals('Grupp'));
+      // P5-U17: the cause, not "Ett fel uppstod" (content-style-guide.md:95).
+      expect(vm.error, AppLocale.current.errorGroupNotFound);
       vm.dispose();
     });
+
+    test(
+      'a failed friends load names it, not a generic error (P5-U17)',
+      () async {
+        when(
+          () => mockManagement.getAllFriends(),
+        ).thenThrow(Exception('unavailable'));
+        final vm = AddMembersToGroupViewModel(
+          userService: MockUserService(),
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
+          groupId: testGroupId,
+          friendsService: mockFriendsService,
+        );
+        await Future.delayed(Duration.zero);
+
+        expect(vm.error, AppLocale.current.groupAddMembersLoadFailed);
+        expect(vm.error, isNot(AppLocale.current.errorGeneric));
+        vm.dispose();
+      },
+    );
   });
 
   group('Friend Selection', () {

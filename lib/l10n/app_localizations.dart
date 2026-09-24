@@ -2621,7 +2621,7 @@ abstract class AppLocalizations {
   /// BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte skapa inköpslistan – försök igen'**
+  /// **'Inköpslistan kunde inte skapas.'**
   String get menuShoppingListGenerationFailed;
 
   /// BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation.
@@ -7564,7 +7564,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendDecline.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa'**
+  /// **'Avböj'**
   String get friendDecline;
 
   /// No description provided for @friendRequestTitle.
@@ -9490,7 +9490,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyCouldNotLoad.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda integritetspolicyn. Försök igen senare.'**
+  /// **'Integritetspolicyn kunde inte hämtas.'**
   String get privacyCouldNotLoad;
 
   /// No description provided for @privacyTitle.
@@ -10492,7 +10492,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupSendInvitations.
   ///
   /// In sv, this message translates to:
-  /// **'Skicka {count} inbjudningar'**
+  /// **'{count, plural, =1{Bjud in 1 vald} other{Bjud in {count} valda}}'**
   String groupSendInvitations(int count);
 
   /// No description provided for @groupSharedFromGroup.
@@ -10726,7 +10726,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuImportAll.
   ///
   /// In sv, this message translates to:
-  /// **'Importera hela menyn'**
+  /// **'Spara till mina menyer'**
   String get menuImportAll;
 
   /// No description provided for @menuImportDescription.
@@ -13798,7 +13798,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialDecline.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa'**
+  /// **'Avböj'**
   String get socialDecline;
 
   /// No description provided for @socialDeclined.
@@ -23675,6 +23675,54 @@ abstract class AppLocalizations {
   /// **'Lösenord, e-post och tvåfaktorsautentisering'**
   String get profileAccountSecuritySubtitle;
 
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj'**
+  String get selectionEnter;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj recept'**
+  String get selectionEnterRecipes;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj varor'**
+  String get selectionEnterShoppingItems;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj varor i skafferiet'**
+  String get selectionEnterPantryItems;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj taggar'**
+  String get selectionEnterTags;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj medlemmar'**
+  String get selectionEnterMembers;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj blockerade personer'**
+  String get selectionEnterBlockedUsers;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as "Markera alla 24" (Skarmar v12 etapp 9 #flerbar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla {count}'**
+  String selectionSelectAllCount(int count);
+
   /// No description provided for @bulkSelectedCount.
   ///
   /// In sv, this message translates to:
@@ -23990,25 +24038,25 @@ abstract class AppLocalizations {
   /// No description provided for @reportDescriptionHint.
   ///
   /// In sv, this message translates to:
-  /// **'Beskriv vad som är fel (valfritt)'**
+  /// **'Berätta vad som är fel …'**
   String get reportDescriptionHint;
 
   /// No description provided for @reportSubmitted.
   ///
   /// In sv, this message translates to:
-  /// **'Rapporten har skickats'**
+  /// **'Anmälan har skickats'**
   String get reportSubmitted;
 
   /// No description provided for @reportSubmitFailed.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte skicka rapporten'**
+  /// **'Anmälan kunde inte skickas'**
   String get reportSubmitFailed;
 
   /// No description provided for @reportDialogTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Rapportera innehåll'**
+  /// **'Anmäl innehåll'**
   String get reportDialogTitle;
 
   /// No description provided for @reportSubmit.
@@ -24020,13 +24068,13 @@ abstract class AppLocalizations {
   /// No description provided for @reportDialogGuidelinesNotePrefix.
   ///
   /// In sv, this message translates to:
-  /// **'Genom att rapportera bekräftar du att innehållet bryter mot'**
+  /// **'Vi bedömer mot'**
   String get reportDialogGuidelinesNotePrefix;
 
   /// No description provided for @reportDialogGuidelinesLink.
   ///
   /// In sv, this message translates to:
-  /// **'våra riktlinjer för communityn'**
+  /// **'våra riktlinjer'**
   String get reportDialogGuidelinesLink;
 
   /// No description provided for @settingsMyReports.
@@ -25457,6 +25505,36 @@ abstract class AppLocalizations {
   /// **'Plats'**
   String get pantryLocationLabel;
 
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad nu'**
+  String get pantryItemChangedNow;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad {count} min sedan'**
+  String pantryItemChangedMinutesAgo(int count);
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad i dag {time}'**
+  String pantryItemChangedToday(String time);
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad i går'**
+  String get pantryItemChangedYesterday;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad {date}'**
+  String pantryItemChangedOn(String date);
+
   /// No description provided for @pantryExpiryExpired.
   ///
   /// In sv, this message translates to:
@@ -25526,7 +25604,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryCouldNotSaveItem.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte spara i skafferiet. Försök igen.'**
+  /// **'Varan kunde inte sparas i skafferiet.'**
   String get pantryCouldNotSaveItem;
 
   /// No description provided for @pantryIngredientLabel.
@@ -26648,7 +26726,7 @@ abstract class AppLocalizations {
   /// Snackbar shown when saving an ingredient substitution failed (e.g. offline); prompts the user to retry.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte byta ingrediens. Försök igen.'**
+  /// **'Ingrediensen kunde inte bytas.'**
   String get cookingModeSubstitutionFailed;
 
   /// Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead.
@@ -27970,6 +28048,690 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delad meny'**
   String get menuPreviewTitle;
+
+  /// P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR).
+  ///
+  /// In sv, this message translates to:
+  /// **'Verifieringsmailet kunde inte skickas.'**
+  String get emailVerificationResendFailed;
+
+  /// P5-T1: Part 1 with the cause, a mapped auth message such as the network or too-many-attempts text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Verifieringsmailet kunde inte skickas. {cause}'**
+  String emailVerificationResendFailedBecause(String cause);
+
+  /// P5-T1: Part 2 (content-style-guide.md:92): what was kept when a resend failed. Part 3 is the Skicka igen button under it.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din e-postadress är oförändrad.'**
+  String get emailVerificationAddressUnchanged;
+
+  /// P5-T1: Failure snackbar after creating a poll in a chat failed; the action is Försök igen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen kunde inte skapas.'**
+  String get chatPollCouldNotBeCreated;
+
+  /// P5-T1: Failure snackbar when editing a chat message failed; the action Försök igen saves the same edit again.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte sparas.'**
+  String get chatEditCouldNotBeSaved;
+
+  /// P5-T1: Part 2: what was kept when a chat message edit failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelandet är oförändrat.'**
+  String get chatEditOriginalKept;
+
+  /// P5-T1: A reply in a chat could not be sent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret kunde inte skickas.'**
+  String get chatCouldNotSendReply;
+
+  /// P5-T1: Part 2 of the error structure: typed text is still in the field (a failed chat send).
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten ligger kvar i fältet.'**
+  String get errorPreservedText;
+
+  /// P5-T1: Part 2 of the error structure: a form or sheet that stays open with its fields intact.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du fyllt i ligger kvar.'**
+  String get errorPreservedForm;
+
+  /// P5-T1: Part 1 in a dialog when the failure has no known cause; a known cause (network, permission) is shown instead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärden kunde inte slutföras.'**
+  String get dialogActionFailed;
+
+  /// P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten kunde inte uppdateras.'**
+  String get minaReceptRefreshFailed;
+
+  /// P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina sparade recept visas nedan.'**
+  String get minaReceptRefreshPreserved;
+
+  /// P5-T1: Part 2: what was kept when leaving a shared list failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är fortfarande med i listan.'**
+  String get shoppingLeaveListStillMember;
+
+  /// P5-T1: Part 2: what was kept when an ingredient swap in cooking mode could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är oförändrat.'**
+  String get cookingModeRecipeUnchanged;
+
+  /// P5-T1: Password change failed without a known cause.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte ändras.'**
+  String get accountSecurityPasswordChangeFailed;
+
+  /// P5-T1: Password change failed; cause is a mapped auth message.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte ändras. {cause}'**
+  String accountSecurityPasswordChangeFailedBecause(String cause);
+
+  /// P5-T1: Email change failed without a known cause.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postadressen kunde inte ändras.'**
+  String get accountSecurityEmailChangeFailed;
+
+  /// P5-T1: Email change failed; cause is a mapped auth message.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postadressen kunde inte ändras. {cause}'**
+  String accountSecurityEmailChangeFailedBecause(String cause);
+
+  /// P5-T1: Failure snackbar in the recipe editor; the action Försök igen saves again.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte sparas.'**
+  String get recipeSaveFailed;
+
+  /// P5-T1: Failure snackbar when saving a copy of a recipe failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian kunde inte sparas.'**
+  String get recipeCopySaveFailed;
+
+  /// P5-T1: Part 1 with its cause when the recipe editor refuses to save an incomplete recipe (RecipeFormState.isValid). The action is Stäng: trying again cannot help.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte sparas. Det behöver en titel, minst en ingrediens och minst ett steg.'**
+  String get recipeSaveIncomplete;
+
+  /// P5-T1: Part 1 with its cause when the user may not edit the recipe. The action is Stäng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte sparas. Du har inte behörighet att ändra det.'**
+  String get recipeSaveNoPermission;
+
+  /// P5-T1: Part 2: the recipe editor stays open with the edits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina ändringar ligger kvar i formuläret.'**
+  String get errorPreservedRecipeEdits;
+
+  /// P5-T1: Loading the friends that can be added to a group failed; the action is Försök igen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina vänner kunde inte hämtas.'**
+  String get groupAddMembersLoadFailed;
+
+  /// Error state when the admin feedback inbox stream fails; names what failed, never the raw exception (P5-U01, content-style-guide.md:89-94).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkopplingen kunde inte hämtas.'**
+  String get adminFeedbackLoadFailed;
+
+  /// Error state when the moderator review stream fails (P5-U01, content-style-guide.md:89-94).
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälningarna kunde inte hämtas.'**
+  String get moderatorReportsLoadFailed;
+
+  /// Error state of the community guidelines; each legal document names itself (P5-U08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Riktlinjerna kunde inte hämtas.'**
+  String get legalGuidelinesCouldNotLoad;
+
+  /// Error state of the terms of service; each legal document names itself (P5-U08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Användarvillkoren kunde inte hämtas.'**
+  String get legalTermsCouldNotLoad;
+
+  /// Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30).
+  ///
+  /// In sv, this message translates to:
+  /// **'Webblänkarna öppnas när du är ansluten igen.'**
+  String get legalLinksNeedConnection;
+
+  /// A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte visas'**
+  String get imageCouldNotBeShown;
+
+  /// Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försöker igen när nätet är tillbaka'**
+  String get imageRetriesWhenOnline;
+
+  /// Action in the ingredient search error state (P5-U13).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök igen'**
+  String get ingredientSearchAgain;
+
+  /// What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina ingredienser ligger kvar.'**
+  String get ingredientSearchSelectionKept;
+
+  /// P5-U22: partial outcome of a pasted URL list (produktregler.md:588, :905-909). Counted, never rounded up.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hämtade {success} av {total} länkar'**
+  String importUrlBatchPartialTitle(int success, int total);
+
+  /// P5-U22: why the rest did not go and that the failed links are kept (I-29).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.'**
+  String get importUrlBatchPartialBody;
+
+  /// P5-U22: heading over the links that were fetched in a partial batch. Interpretation: Skarmar v12 etapp 4:231 draws 'Klara att spara' for the file batch; the URL batch says 'importera' to match its 'Importera N recept' button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klara att importera'**
+  String get importUrlBatchReadyHeading;
+
+  /// P5-U22: why one link in a batch failed: network error or timeout (produktregler.md:907, I-29 names why).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan gick inte att nå'**
+  String get importUrlReasonUnreachable;
+
+  /// P5-U22: why one link in a batch failed: the page loaded but had no text to read (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan hade ingen recepttext'**
+  String get importUrlReasonNoContent;
+
+  /// P5-U22: why one link in a batch failed: the page could not be parsed, or another error (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan gick inte att läsa'**
+  String get importUrlReasonUnreadable;
+
+  /// P5-U22: accessible name of the retry button on one failed link.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök hämta {url} igen'**
+  String importUrlBatchRetryA11y(String url);
+
+  /// P5-U23: overflow tray title, counted in dishes (produktregler.md:206).
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed} av {total} rätter placerade'**
+  String weeklyMenuOverflowPlacedCount(int placed, int total);
+
+  /// P5-U23: why the rest did not fit (produktregler.md:1125).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} hade inga fler lediga platser för de här.'**
+  String weeklyMenuOverflowReason(int week);
+
+  /// P5-U23: part of the reason when the week is the current week (produktregler.md:201).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dagar som redan har passerat fylls aldrig.'**
+  String get weeklyMenuOverflowPastDays;
+
+  /// P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar här tills du placerar dem eller lägger dem i vecka {week}.'**
+  String weeklyMenuOverflowKeepOrNextWeek(int week);
+
+  /// P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar här tills du placerar dem.'**
+  String get weeklyMenuOverflowKeep;
+
+  /// P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i vecka {week}'**
+  String weeklyMenuOverflowNextWeekAction(int week);
+
+  /// P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lägg den i vecka {week}} other{Lägg de {count} i vecka {week}}}'**
+  String weeklyMenuOverflowNextWeekA11y(int count, int week);
+
+  /// P5-U23: receipt after the tray's next-week choice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt lades i vecka {week}} other{{count} rätter lades i vecka {week}}}'**
+  String weeklyMenuOverflowMovedToNextWeek(int count, int week);
+
+  /// P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).
+  ///
+  /// In sv, this message translates to:
+  /// **'Placerad som nummer {order}'**
+  String a11yWeeklyMenuPlacementOrder(int order);
+
+  /// P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade {found} av {requested} rätter'**
+  String menuPartialTitle(int found, int requested);
+
+  /// P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det fanns inte fler recept som passar.'**
+  String get menuPartialBody;
+
+  /// P5-U25: one short meal type (produktregler.md:893: what is missing is named).
+  ///
+  /// In sv, this message translates to:
+  /// **'{found} av {requested}, {missing} saknas'**
+  String menuPartialMissing(int found, int requested, int missing);
+
+  /// No description provided for @weeklyMenuSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan kunde inte sparas.'**
+  String get weeklyMenuSaveFailed;
+
+  /// No description provided for @pantryItemUpdateFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varan kunde inte uppdateras.'**
+  String get pantryItemUpdateFailed;
+
+  /// No description provided for @moderatorAdvanceFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan kunde inte flyttas till nästa steg.'**
+  String get moderatorAdvanceFailed;
+
+  /// No description provided for @moderatorCloseFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan kunde inte stängas.'**
+  String get moderatorCloseFailed;
+
+  /// No description provided for @moderatorReportUnchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan är oförändrad.'**
+  String get moderatorReportUnchanged;
+
+  /// No description provided for @moderatorHideFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen kunde inte döljas.'**
+  String get moderatorHideFailed;
+
+  /// No description provided for @moderatorHidePreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen syns som förut.'**
+  String get moderatorHidePreserved;
+
+  /// No description provided for @moderatorDeleteFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet kunde inte tas bort.'**
+  String get moderatorDeleteFailed;
+
+  /// No description provided for @moderatorDeletePreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet ligger kvar.'**
+  String get moderatorDeletePreserved;
+
+  /// No description provided for @adminFeedbackStatusFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Statusen kunde inte ändras.'**
+  String get adminFeedbackStatusFailed;
+
+  /// No description provided for @adminFeedbackStatusPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkopplingen har kvar sin tidigare status.'**
+  String get adminFeedbackStatusPreserved;
+
+  /// No description provided for @weekPlacementFailedWeekUnchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan är oförändrad och den skapade menyn ligger kvar.'**
+  String get weekPlacementFailedWeekUnchanged;
+
+  /// No description provided for @weekPlacementFailedMenuKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den skapade menyn ligger kvar.'**
+  String get weekPlacementFailedMenuKept;
+
+  /// No description provided for @menuShoppingListGenerationPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan är oförändrad.'**
+  String get menuShoppingListGenerationPreserved;
+
+  /// No description provided for @importErrorNotImported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte importeras.'**
+  String get importErrorNotImported;
+
+  /// No description provided for @importFailurePreservedLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länken står kvar i fältet.'**
+  String get importFailurePreservedLink;
+
+  /// No description provided for @importFailurePreservedText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten står kvar i fältet.'**
+  String get importFailurePreservedText;
+
+  /// No description provided for @importFailureOtherRoutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra vägar till samma recept'**
+  String get importFailureOtherRoutes;
+
+  /// No description provided for @importRoutePhoto.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotografera skärmen'**
+  String get importRoutePhoto;
+
+  /// No description provided for @importRoutePasteText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in texten'**
+  String get importRoutePasteText;
+
+  /// No description provided for @duplicateMergeFailedPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det befintliga receptet är oförändrat.'**
+  String get duplicateMergeFailedPreserved;
+
+  /// PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws "Använd Eriks version"; name-free to avoid the {name}s genitive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd deras version'**
+  String get conflictDiffUseTheirs;
+
+  /// Success snackbar after "Använd deras version".
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version gäller nu'**
+  String get conflictDiffUsedTheirs;
+
+  /// Failure (what happened) when "Använd deras version" could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version kunde inte sparas.'**
+  String get conflictDiffUseTheirsFailed;
+
+  /// Failure (what was kept) when "Använd deras version" could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version gäller fortfarande.'**
+  String get conflictDiffUseTheirsKept;
+
+  /// Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll min'**
+  String get conflictWeekKeepMine;
+
+  /// P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392).
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart'**
+  String get partialOutcomeDone;
+
+  /// P5-U33: partial outcome title after bulk member removal (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'{removed} av {total} togs bort'**
+  String groupMembersPartialTitle(int removed, int total);
+
+  /// P5-U33: partial outcome body after bulk member removal (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De som inte kunde tas bort ligger kvar valda ovan.'**
+  String get groupMembersPartialMessage;
+
+  /// P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} är inte längre med i {group}.'**
+  String groupMembersPartialRemoved(String names, String group);
+
+  /// P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces.
+  ///
+  /// In sv, this message translates to:
+  /// **' och '**
+  String get partialOutcomeListAnd;
+
+  /// P5-U33: reason on a member row in the partial outcome.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tas bort – ändringen sparades inte'**
+  String get groupMemberRemoveNotSaved;
+
+  /// P5-U33: failure when no selected member could be removed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen av de valda kunde tas bort.'**
+  String get groupMembersRemoveNone;
+
+  /// P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar valda.'**
+  String get selectionFailedKept;
+
+  /// P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'{deleted} av {total} taggar togs bort'**
+  String personalTagBulkDeletePartialTitle(int deleted, int total);
+
+  /// P5-U33: partial outcome body after bulk tag delete (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De som inte kunde tas bort ligger kvar valda.'**
+  String get personalTagBulkDeletePartialMessage;
+
+  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} togs bort.'**
+  String personalTagBulkDeletePartialDeleted(String names);
+
+  /// P5-U33: reason on a tag row in the partial outcome.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tas bort – borttagningen sparades inte'**
+  String get personalTagBulkDeleteNotSaved;
+
+  /// P5-U33: failure when no selected tag could be deleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggarna kunde inte tas bort.'**
+  String get personalTagBulkDeleteNone;
+
+  /// P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ min version'**
+  String get overwrittenRestoreAction;
+
+  /// P5-U26b: title of the picker when more than one overwritten version is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vilken version vill du återställa?'**
+  String get overwrittenPickTitle;
+
+  /// P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when}'**
+  String overwrittenVersionFrom(String when);
+
+  /// P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} sparade över den · kvar till {until}'**
+  String overwrittenVersionBy(String name, String until);
+
+  /// P5-U26b: picker row subtitle when the other person's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan sparade över den · kvar till {until}'**
+  String overwrittenVersionByUnnamed(String until);
+
+  /// P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag {time}'**
+  String overwrittenWhenToday(String time);
+
+  /// P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words).
+  ///
+  /// In sv, this message translates to:
+  /// **'i går'**
+  String get overwrittenWhenYesterday;
+
+  /// P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställa din vecka?'**
+  String get overwrittenConfirmTitleWeek;
+
+  /// P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställa ditt recept?'**
+  String get overwrittenConfirmTitleRecipe;
+
+  /// P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when} ersätter veckan som gäller nu. Du kan ångra direkt efteråt.'**
+  String overwrittenConfirmBodyWeek(String when);
+
+  /// P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when} ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.'**
+  String overwrittenConfirmBodyRecipe(String when);
+
+  /// P5-U26b: undo snackbar after a restore (7 s, Ångra).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version är återställd'**
+  String get overwrittenRestored;
+
+  /// P5-U26b: failure, what happened (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version kunde inte återställas'**
+  String get overwrittenRestoreFailed;
+
+  /// P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan finns inte längre, så din version kunde inte återställas'**
+  String get overwrittenRestoreGoneWeek;
+
+  /// P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre, så din version kunde inte återställas'**
+  String get overwrittenRestoreGoneRecipe;
+
+  /// P5-U26b: failure, what was kept; until = the date the version stops being kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den finns kvar till {until}.'**
+  String overwrittenKeptUntil(String until);
+
+  /// P5-U26b: failure when undoing a restore did not reach the server.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra kunde inte slutföras'**
+  String get overwrittenUndoFailed;
+
+  /// P5-U26b: failure, what is in place after a failed undo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din återställda version gäller fortfarande.'**
+  String get overwrittenUndoFailedKept;
+
+  /// No description provided for @messagingCreateConversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konversation'**
+  String get messagingCreateConversation;
+
+  /// No description provided for @reportDialogTitleRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäl det här receptet'**
+  String get reportDialogTitleRecipe;
+
+  /// No description provided for @reportDialogGuidelinesNoteSuffix.
+  ///
+  /// In sv, this message translates to:
+  /// **'— den version du ser nu är den vi dömer efter.'**
+  String get reportDialogGuidelinesNoteSuffix;
+
+  /// No description provided for @reportDialogIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta vad som är fel. En människa i teamet läser din anmälan.'**
+  String get reportDialogIntro;
+
+  /// No description provided for @reportDescriptionRequiredHelper.
+  ///
+  /// In sv, this message translates to:
+  /// **'Krävs när du väljer Annat.'**
+  String get reportDescriptionRequiredHelper;
 }
 
 class _AppLocalizationsDelegate

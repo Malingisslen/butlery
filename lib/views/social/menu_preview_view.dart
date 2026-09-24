@@ -307,8 +307,8 @@ class MenuPreviewView extends StatelessWidget {
             return Column(
               children: [
                 // Import knapp
-                // The view's one saffron action (Skarmar v12 del 3
-                // #menyforhands, drawn as "Spara till mina menyer"; Grafisk
+                // The view's one saffron action, "Spara till mina menyer"
+                // as drawn (Skarmar v12 del 3 #menyforhands:631; Grafisk
                 // manual v6:219). Imported, it takes the hero's disabled
                 // surface; importing keeps the name and draws the plate line.
                 HeroButton(

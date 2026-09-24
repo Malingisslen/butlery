@@ -125,8 +125,42 @@ void main() {
 
     await pumpAndTap(tester, confirmLabel: 'Lämna');
 
-    expect(find.text('Listan har ändrats på en annan enhet'), findsOneWidget);
+    // P5-U07: the reason, that you are still in the list, and Försök igen
+    // (content-style-guide.md:87-97).
+    // The reason has no full stop of its own; the parts are still separate
+    // sentences (content-style-guide.md:87-97).
+    expect(
+      find.text(
+        'Listan har ändrats på en annan enhet. '
+        '${l10n.shoppingLeaveListStillMember}',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(l10n.commonRetry), findsOneWidget);
     verify(() => service.consumeMutationError()).called(1);
+  });
+
+  testWidgets('Försök igen leaves again without asking again (P5-U07)', (
+    tester,
+  ) async {
+    var calls = 0;
+    when(() => collaborative.leaveList(any())).thenAnswer((_) async {
+      calls++;
+      return calls > 1;
+    });
+    when(() => service.consumeMutationError()).thenReturn(null);
+
+    await pumpAndTap(tester, confirmLabel: 'Lämna');
+    await tester.tap(find.text(l10n.commonRetry));
+    await tester.pumpAndSettle();
+
+    verify(() => collaborative.leaveList('list-1')).called(2);
+    // No second confirm dialog: the question was already answered.
+    expect(
+      find.text(l10n.shoppingLeaveListConfirm('Familjehandling')),
+      findsNothing,
+    );
+    expect(find.text(l10n.shoppingLeftList('Familjehandling')), findsOneWidget);
   });
 
   testWidgets('a refusal with no parked reason falls back', (tester) async {
@@ -135,7 +169,12 @@ void main() {
 
     await pumpAndTap(tester, confirmLabel: 'Lämna');
 
-    expect(find.text(l10n.shoppingCouldNotLeaveList), findsOneWidget);
+    expect(
+      find.text(
+        'Kunde inte lämna listan. ${l10n.shoppingLeaveListStillMember}',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('cancelling writes nothing and closes nothing', (tester) async {

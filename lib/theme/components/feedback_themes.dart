@@ -1,9 +1,13 @@
 /// Feedback and interactive component themes.
 ///
 /// **UI Redesign:**
-/// - All interactive elements use primary color
+/// - Filled controls (switch track, checkbox, chosen chip) are ink,
+///   control.checked, in both modes; dark mode adds a paper edge where the
+///   ink fill would vanish on the dark base
+/// - Marks drawn straight on the page (radio, slider, scrollbar) use
+///   text.primary: ink in light, paper in dark
 /// - Snackbar: the ink snackbar (Komponentark v1:745-750)
-/// - Progress indicators: Primary color
+/// - Progress indicators: ink in light, saffron in dark
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -74,9 +78,23 @@ class FeedbackThemes {
 
   /// Switch theme
   ///
-  /// On: ink track with a paper knob, opaque (Komponentark v1:172, "Ink =
-  /// på"; tokens.json:145-152 control.checked, the same in both modes and
-  /// carried by primary/onPrimary in both schemes).
+  /// On, light: ink track with a paper knob, opaque (Komponentark v1:170-172,
+  /// :176 "Ink = på"; tokens.json:145-152 control.checked, carried by
+  /// primary/onPrimary).
+  ///
+  /// On, dark: the same ink track #24382C and paper knob, control.checked,
+  /// which tokens.json:145-152 keeps identical in dark ("Toggle: ink = på",
+  /// Grafisk manual v6:403). The ink track reads 1.27:1 on the dark base
+  /// #17251D, so dark mode edges it with 1 px paper, the way the dark panel
+  /// draws the chosen chip (Komponentark v1:523: background #24382c,
+  /// border 1px solid #F5F4ED). The paper edge reads 15.6:1 on the base and
+  /// the paper knob 11.3:1 on the track.
+  ///
+  /// Interpretation, pending the product owner: one dark screen frame draws
+  /// the on-switch saffron (Skarmar v12 del 4:104), but saffron is the
+  /// view's single hero action (Grafisk manual v6) and a settings list with
+  /// several switches would break that budget. Until that is decided the
+  /// switch follows the tokens.
   ///
   /// Disabled: surface.raised track with a 1 px surface.disabled edge and a
   /// surface.disabled knob, never opacity (Komponentark v1:174). Light
@@ -85,7 +103,9 @@ class FeedbackThemes {
   /// position; an on-and-disabled switch takes the same colours and keeps
   /// its knob on the right, so position still carries the value.
   static SwitchThemeData switchTheme(ColorScheme cs) {
-    final disabled = AppModeColors.surfaceDisabled(cs.brightness);
+    final b = cs.brightness;
+    final dark = b == Brightness.dark;
+    final disabled = AppModeColors.surfaceDisabled(b);
     return SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
@@ -109,10 +129,16 @@ class FeedbackThemes {
         if (states.contains(WidgetState.disabled)) {
           return disabled;
         }
+        if (dark && states.contains(WidgetState.selected)) {
+          return cs.onSurface;
+        }
         return null;
       }),
       trackOutlineWidth: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
+          return 1.0;
+        }
+        if (dark && states.contains(WidgetState.selected)) {
           return 1.0;
         }
         return null;
@@ -121,6 +147,14 @@ class FeedbackThemes {
   }
 
   /// Checkbox theme
+  ///
+  /// Checked: control.checked, an ink #24382C box with a paper #F5F4ED tick
+  /// in BOTH modes (tokens.json:145-152). The dark panel draws exactly that,
+  /// an ink box with no edge and a paper tick (Komponentark v1:532), and
+  /// states the rule: "Bocken i en bockad kontroll är alltid papper — aldrig
+  /// ink på ink" (v1:491). So the fill stays cs.primary in dark as well; the
+  /// tick carries the state, 12.2:1 on the box (tokens.json:667-668 pair)
+  /// and far above 3:1 on the dark base.
   static CheckboxThemeData checkboxTheme(ColorScheme cs) {
     return CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
@@ -149,6 +183,14 @@ class FeedbackThemes {
   /// #4A5C50 / #2F4437 (tokens.json:108-123). Interpretation: the drawing
   /// shows only the unselected disabled radio; a selected one takes the same
   /// colours for ring and dot.
+  ///
+  /// Selected: text.primary through cs.onSurface, ink #24382C light as drawn
+  /// (Komponentark v1:162) and paper #F5F4ED dark. It used to be cs.primary,
+  /// ink in both schemes, 1.27:1 on the dark base #17251D. Interpretation:
+  /// no dark radio circle is drawn; the dark panel draws the chosen sort row
+  /// with a paper check (Komponentark v1:556) and names paper as the mode's
+  /// text and ring colour (v1:491). Light is unchanged: there
+  /// cs.onSurface == cs.primary.
   static RadioThemeData radioTheme(ColorScheme cs) {
     return RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
@@ -156,7 +198,7 @@ class FeedbackThemes {
           return AppModeColors.surfaceDisabled(cs.brightness);
         }
         if (states.contains(WidgetState.selected)) {
-          return cs.primary;
+          return cs.onSurface;
         }
         return cs.onSurfaceVariant;
       }),
@@ -170,12 +212,19 @@ class FeedbackThemes {
   }
 
   /// Slider theme
+  ///
+  /// Active track and thumb: text.primary through cs.onSurface, ink light
+  /// and paper dark (tokens.json:54-57). They used to be cs.primary, ink in
+  /// both schemes and 1.27:1 on the dark base #17251D. Light is unchanged.
+  /// Interpretation: no slider is drawn in either mode; paper is the dark
+  /// panel's colour for controls and text (Komponentark v1:491). The value
+  /// bubble stays an ink fill with paper text, like the ink snackbar.
   static SliderThemeData sliderTheme(ColorScheme cs) {
     return SliderThemeData(
-      activeTrackColor: cs.primary,
+      activeTrackColor: cs.onSurface,
       inactiveTrackColor: cs.outlineVariant,
-      thumbColor: cs.primary,
-      overlayColor: cs.primary.withValues(alpha: AppDimensions.opacityLight),
+      thumbColor: cs.onSurface,
+      overlayColor: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
       valueIndicatorColor: cs.primary,
       valueIndicatorTextStyle: AppTextStyles.labelSmall.copyWith(
         color: cs.onPrimary,
@@ -184,22 +233,37 @@ class FeedbackThemes {
   }
 
   /// Progress indicator theme
+  ///
+  /// Dark: the indicator is progressIndicator, saffron #CE7C1E, on the
+  /// progressTrack paper 18 % (tokens.json:161-168), as the dark panel draws
+  /// the progress bar (Komponentark v1:545). It used to be cs.primary, ink,
+  /// 1.27:1 on the dark base #17251D. The track is cs.outlineVariant, which
+  /// is that same paper 18 % in the dark scheme.
+  ///
+  /// Light keeps ink on border.subtle, unchanged. tokens.json names saffron
+  /// on #E6EAD9 for light too; that light change is outside this dark-mode
+  /// unit and is left open.
   static ProgressIndicatorThemeData progressIndicatorTheme(ColorScheme cs) {
     return ProgressIndicatorThemeData(
-      color: cs.primary,
+      color: cs.brightness == Brightness.dark
+          ? AppColorsDark.progressIndicator
+          : cs.primary,
       linearTrackColor: cs.outlineVariant,
       circularTrackColor: cs.outlineVariant,
     );
   }
 
   /// Scrollbar theme — desktop browsers + macOS/Windows. SQUARE design
-  /// (no corner radius), forestGreen thumb at 60% alpha, always visible
-  /// on web/desktop so users discover scrollable regions without hover.
+  /// (no corner radius), a text.primary thumb at 60% alpha (cs.onSurface:
+  /// ink light, unchanged, and paper dark, where the old ink thumb read
+  /// 1.27:1 on #17251D), always visible on web/desktop so users discover
+  /// scrollable regions without hover. Interpretation: no scrollbar is
+  /// drawn.
   static ScrollbarThemeData scrollbarTheme(ColorScheme cs) {
     return ScrollbarThemeData(
       thickness: const WidgetStatePropertyAll<double>(8),
       thumbColor: WidgetStatePropertyAll<Color>(
-        cs.primary.withValues(alpha: 0.6),
+        cs.onSurface.withValues(alpha: 0.6),
       ),
       radius: Radius.zero,
       thumbVisibility: const WidgetStatePropertyAll<bool>(true),

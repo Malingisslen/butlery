@@ -4704,6 +4704,13 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // rather than `FirestoreCollections.users` inline. The guard now resolves
   // local consts too, so the next one of this shape reddens.
   "acquisition",
+  // P5-U26b: the user's own week menus and recipes that another person's save
+  // overwrote, kept 30 days behind "Återställ" (produktregler.md:109), written
+  // by firebase_overwritten_version_repository.dart. A TTL policy on
+  // `expiresAt` removes each row after 30 days; this entry erases them at
+  // once when the account goes. Exported in the account-subcollections
+  // section, so EXPORT ⊇ DELETION holds.
+  "overwritten_versions",
   // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
   // an account predating a writer's removal can still hold rows, and by the
   // superset rule above such a row would otherwise be permanently residual.

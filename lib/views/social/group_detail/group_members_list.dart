@@ -5,6 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -13,6 +14,8 @@ import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -67,8 +70,33 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   bool _selectionMode = false;
   final Set<String> _selectedIds = {};
 
+  /// The last bulk removal when only some went (P5-U33). Cleared by "Klart",
+  /// by Avbryt and by the next removal.
+  MemberRemovalOutcome? _partial;
+
+  /// The display names of the members [_partial] removed, captured by uid
+  /// when the removal returned.
+  List<String> _partialRemovedNames = const [];
+
   bool get _canAddMembers =>
       ServiceLocator.get<PermissionService>().canInviteToGroup(widget.group.id);
+
+  /// The members this user may select: the ones she may remove. Mirrors
+  /// GroupMemberCard's rule — never yourself, never the owner, and only for
+  /// the owner or an admin. Identity is the uid, never the row.
+  int get _selectableCount {
+    final permissions = ServiceLocator.get<PermissionService>();
+    final group = widget.group;
+    if (!permissions.isOwner(group.ownerId) &&
+        !permissions.isGroupAdmin(group.id)) {
+      return 0;
+    }
+    return widget.members
+        .where(
+          (m) => m.uid != permissions.currentUserId && m.uid != group.ownerId,
+        )
+        .length;
+  }
 
   void _enterSelection(String uid) {
     setState(() {
@@ -77,9 +105,21 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     });
   }
 
+  /// "Välj" in the section's header row (B-46; Skarmar v12 etapp 9
+  /// #flervalingang: "sektionens rubrikrad").
+  void _startSelection() {
+    setState(() => _selectionMode = true);
+  }
+
+  /// Taking the last tick off leaves selection mode (produktregler.md:878).
   void _toggle(String uid) {
     setState(() {
       if (!_selectedIds.remove(uid)) _selectedIds.add(uid);
+      if (_selectedIds.isEmpty) {
+        _selectionMode = false;
+        // The outcome describes a selection that is gone now.
+        _partial = null;
+      }
     });
   }
 
@@ -87,6 +127,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     setState(() {
       _selectionMode = false;
       _selectedIds.clear();
+      _partial = null;
     });
   }
 
@@ -95,20 +136,47 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         .where((m) => _selectedIds.contains(m.uid))
         .toList(growable: false);
     if (selected.isEmpty) return;
+    setState(() => _partial = null);
 
-    // removeMultipleMembers shows its own bulk-confirm dialog + partial-fail
-    // reporting and returns the number actually removed.
-    final removed = await GroupDetailActions.removeMultipleMembers(
+    // removeMultipleMembers shows its own bulk-confirm dialog and reports the
+    // two whole outcomes; a partial one is shown here, by the rows.
+    final outcome = await GroupDetailActions.removeMultipleMembers(
       context,
       selected,
       widget.group,
     );
-    if (!mounted) return;
-    if (removed > 0) {
+    if (!mounted || outcome == null) return;
+    if (outcome.isComplete) {
       _cancelSelection();
       widget.onMemberRemoved();
+      return;
     }
+    if (outcome.isPartial) {
+      // The ones that did not go stay selected and the mode stays open, so
+      // the attempt can be made again (produktregler.md:908, :878; Skarmar
+      // v12 etapp 9 #flergrupp). Identity is the uid. The names of those who
+      // went are looked up by uid now, from the members as they were before
+      // the removal: the refreshed list no longer has them.
+      final removed = outcome.removedIds.toSet();
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(outcome.failed.map((m) => m.uid));
+        _partial = outcome;
+        _partialRemovedNames = [
+          for (final m in selected)
+            if (removed.contains(m.uid)) m.displayName,
+        ];
+      });
+      widget.onMemberRemoved();
+    }
+    // None went: the selection is left as it was, and the failure snackbar
+    // says so.
   }
+
+  /// "Klart" closes the outcome and leaves selection mode: the user's own
+  /// act (produktregler.md:878; Skarmar v12 etapp 9:392).
+  void _closePartial() => _cancelSelection();
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +199,24 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
                 onPressed: widget.onAddMembers,
                 icon: const Icon(Icons.person_add),
                 label: Text(context.l10n.commonAdd),
+              ),
+            // P5-U31: the list lives in the group view's scroll, so the
+            // section's header row carries "Välj", and Avbryt takes its
+            // place in selection mode (Skarmar v12 etapp 9 #flervalingang;
+            // produktregler.md:870-874). text.primary on the page surface in
+            // both modes (cs.onSurface; tokens.json:54).
+            if (_selectionMode)
+              ButleryCancelSelectionButton(
+                key: const ValueKey('group-members-selection-cancel'),
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                onPressed: _cancelSelection,
+              )
+            else if (ButlerySelectButton.shownFor(_selectableCount))
+              ButlerySelectButton(
+                key: const ValueKey('group-members-select-enter'),
+                semanticLabel: context.l10n.selectionEnterMembers,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                onPressed: _startSelection,
               ),
           ],
         ),
@@ -169,6 +255,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               );
             },
           ),
+        ],
+
+        if (_partial != null) ...[
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildPartialOutcome(context, _partial!),
         ],
 
         // Pending invitations section
@@ -215,6 +306,53 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     );
   }
 
+  /// P5-U33: "En av två togs bort" below the rows (Skarmar v12 etapp 9
+  /// :390-393, #flergrupp): what went, who did not and why, and the way on.
+  /// Those who did not go are still selected above.
+  ///
+  /// The body names who went, as drawn at :391 ("Johan Lind är inte längre
+  /// med i Matlaget."), then says the rest stay selected.
+  ///
+  /// Interpretation (recorded): the drawing marks the member who did not go
+  /// in her own row (1.5 px danger edge, the reason under the name, and the
+  /// name "Sara, vald, kunde inte tas bort", :381-383). That row state lives
+  /// in GroupMemberCard, which is outside this unit, so the reason is shown
+  /// per member in this box instead, keyed by uid. The row state is an open
+  /// item for the owner of the member card.
+  Widget _buildPartialOutcome(
+    BuildContext context,
+    MemberRemovalOutcome outcome,
+  ) {
+    final l = context.l10n;
+    final went = l.groupMembersPartialRemoved(
+      PartialOutcome.joinNames(_partialRemovedNames, l.partialOutcomeListAnd),
+      widget.group.name,
+    );
+    return PartialOutcome(
+      key: const ValueKey('group-members-partial-outcome'),
+      title: l.groupMembersPartialTitle(
+        outcome.removedIds.length,
+        outcome.removedIds.length + outcome.failed.length,
+      ),
+      message: '$went ${l.groupMembersPartialMessage}',
+      items: [
+        for (final member in outcome.failed)
+          PartialOutcomeItem(
+            id: member.uid,
+            label: member.displayName,
+            reason: l.groupMemberRemoveNotSaved,
+          ),
+      ],
+      actions: [
+        TextButton(
+          key: const ValueKey('group-members-partial-done'),
+          onPressed: _closePartial,
+          child: Text(l.partialOutcomeDone),
+        ),
+      ],
+    );
+  }
+
   /// Inline bulk-action bar shown above the member list while selecting.
   /// Inline (not a Scaffold bottom bar) because this list lives inside the
   /// parent's scroll view — keeps selection self-contained.
@@ -237,20 +375,40 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         color: cs.primaryContainer,
         border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
+      // The counter, "{n} valda" in tabular figures, and the action; Avbryt
+      // sits in the header row (produktregler.md:873, :876).
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: context.l10n.commonCancel,
-            visualDensity: VisualDensity.compact,
-            onPressed: _cancelSelection,
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: AppDimensions.spacingSm,
+            ),
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                context.l10n.bulkSelectedCount(count),
+                key: const ValueKey('group-members-selection-count'),
+                style: AppTextStyles.titleSmall.copyWith(
+                  color: cs.onSurface,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
           ),
           const Spacer(),
           TextButton.icon(
             onPressed: count > 0 ? _removeSelected : null,
             icon: const Icon(Icons.person_remove),
             label: Text(context.l10n.groupRemoveSelectedCount(count)),
-            style: TextButton.styleFrom(foregroundColor: cs.error),
+            style: TextButton.styleFrom(
+              foregroundColor: cs.error,
+              // Off at zero with the name readable (produktregler.md:876), in
+              // the disabled role on surface.raised, never a fade
+              // (tokens.json:71-74, :198).
+              disabledForegroundColor: AppModeColors.textDisabled(
+                cs.brightness,
+              ),
+            ),
           ),
         ],
       ),

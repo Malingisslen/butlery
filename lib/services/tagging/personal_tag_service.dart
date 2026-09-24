@@ -4,6 +4,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
@@ -66,9 +67,9 @@ class PersonalTagService extends BaseService {
   Future<void> deleteTag(String tagId) => _crud.deleteTag(tagId);
 
   /// BUT-994: bulk-delete N tags. Chunks at 100 per batch (Firestore 500-op
-  /// safety margin). Returns total tags deleted. Per-recipe cascade is
-  /// atomic per chunk — either every removal in a chunk lands or none.
-  Future<int> bulkDeleteTags(List<String> tagIds) =>
+  /// safety margin). Per-recipe cascade is atomic per chunk — either every
+  /// removal in a chunk lands or none. Returns what went per tag id (P5-U33).
+  Future<PersonalTagBulkDeleteResult> bulkDeleteTags(List<String> tagIds) =>
       _crud.bulkDeleteTags(tagIds);
 
   /// BUT-1042: merge [fromId] into [toId]. Retags every recipe carrying

@@ -35,6 +35,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
@@ -428,9 +430,32 @@ void main() {
     // ...but the sheet did not silently dismiss (it's a real modal route here,
     // so a stray pop would remove it) and it tells the user it failed.
     expect(find.byType(AddPantryItemSheet), findsOneWidget);
+    // P5-U14: three parts (content-style-guide.md:87-97) as a line in the
+    // sheet: not saved, what was typed is kept, and Försök igen.
+    expect(find.byType(InlineError), findsOneWidget);
+    expect(find.text('Varan kunde inte sparas i skafferiet.'), findsOneWidget);
+    expect(find.text('Det du fyllt i ligger kvar.'), findsOneWidget);
+    expect(find.text('Försök igen'), findsOneWidget);
+    expect(find.text('OK'), findsNothing);
+
+    // Försök igen saves again with the fields as they are.
+    await tester.tap(find.byKey(InlineError.actionKey));
+    await tester.pumpAndSettle();
+    verify(
+      () => vm.addItemFromText(
+        'Mjölk',
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
+    expect(find.byType(AddPantryItemSheet), findsOneWidget);
     expect(
-      find.text('Kunde inte spara i skafferiet. Försök igen.'),
+      find.widgetWithText(TextField, 'Mjölk'),
       findsOneWidget,
+      reason: 'the typed name is still in the field',
     );
   });
 

@@ -17,6 +17,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
 
@@ -259,7 +261,10 @@ void main() {
       expect(find.text('Ta bort markerade (1)'), findsOneWidget);
 
       // Tap the close (cancel) button on the bar.
-      await tester.tap(find.byIcon(Icons.close));
+      // P5-U31: Avbryt in the section's header row replaces the bar's X.
+      await tester.tap(
+        find.byKey(const ValueKey('group-members-selection-cancel')),
+      );
       await tester.pumpAndSettle();
 
       // Bar gone; re-entering selection starts from an empty set (count back
@@ -268,6 +273,129 @@ void main() {
       await tester.longPress(find.byType(ListTile));
       await tester.pumpAndSettle();
       expect(find.text('Ta bort markerade (1)'), findsOneWidget);
+    });
+  });
+
+  // P5-U31 / P5-U32: "Välj" in the section's header row (B-46; Skarmar v12
+  // etapp 9 #flervalingang), shown from two selectable members; the remove
+  // action off at zero in the disabled role (produktregler.md:874-878).
+  group('GroupMembersList — Välj in the header row (P5-U31, P5-U32)', () {
+    Future<void> pumpList(
+      WidgetTester tester,
+      List<UserProfile> members, {
+      ThemeData? theme,
+    }) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme ?? AppTheme.lightTheme,
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Builder(
+                builder: (ctx) => GroupMembersList.build(
+                  ctx,
+                  members: members,
+                  pendingInvitations: const [],
+                  group: _group(),
+                  onAddMembers: () {},
+                  onMemberRemoved: () {},
+                  onInvitationCancelled: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    final enter = find.byKey(const ValueKey('group-members-select-enter'));
+    final cancel = find.byKey(const ValueKey('group-members-selection-cancel'));
+
+    testWidgets('one selectable member shows no Välj', (tester) async {
+      // The owner is never selectable, so one other member is one row.
+      await pumpList(tester, [_profile('owner-uid'), _profile('other-uid')]);
+
+      expect(enter, findsNothing);
+    });
+
+    testWidgets('two selectable members show Välj, named for what it selects', (
+      tester,
+    ) async {
+      await pumpList(tester, [_profile('a-uid'), _profile('b-uid')]);
+
+      expect(enter, findsOneWidget);
+      expect(find.bySemanticsLabel('Välj medlemmar'), findsOneWidget);
+    });
+
+    for (final (name, theme, brightness) in [
+      ('light', AppTheme.lightTheme, Brightness.light),
+      ('dark', AppTheme.darkTheme, Brightness.dark),
+    ]) {
+      testWidgets('Välj starts at zero: counter, Avbryt in its place, remove '
+          'off in the disabled role ($name)', (tester) async {
+        await pumpList(tester, [
+          _profile('a-uid'),
+          _profile('b-uid'),
+        ], theme: theme);
+        final headerHeight = tester.getSize(enter).height;
+
+        await tester.tap(enter);
+        await tester.pumpAndSettle();
+
+        expect(enter, findsNothing);
+        expect(cancel, findsOneWidget);
+        expect(tester.getSize(cancel).height, headerHeight);
+        expect(find.text('0 valda'), findsOneWidget);
+
+        final remove = find.ancestor(
+          of: find.text('Ta bort markerade (0)'),
+          matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+        );
+        final button = tester.widget<ButtonStyleButton>(remove);
+        expect(button.onPressed, isNull);
+        final label = tester.widget<RichText>(
+          find.descendant(
+            of: find.text('Ta bort markerade (0)'),
+            matching: find.byType(RichText),
+          ),
+        );
+        expect(label.text.style?.color, AppModeColors.textDisabled(brightness));
+        expect(
+          find.ancestor(
+            of: find.text('Ta bort markerade (0)'),
+            matching: find.byType(Opacity),
+          ),
+          findsNothing,
+        );
+      });
+    }
+
+    testWidgets('Avbryt leaves, and taking the last tick off leaves too', (
+      tester,
+    ) async {
+      await pumpList(tester, [_profile('a-uid'), _profile('b-uid')]);
+
+      await tester.tap(enter);
+      await tester.pumpAndSettle();
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('valda'), findsNothing);
+      expect(enter, findsOneWidget);
+
+      await tester.longPress(find.byType(ListTile).first);
+      await tester.pumpAndSettle();
+      expect(find.text('1 valda'), findsOneWidget);
+      await tester.tap(find.byType(ListTile).first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('valda'), findsNothing);
     });
   });
 }

@@ -1,6 +1,7 @@
 // BUT-1340 (SET-11): Behavioural gate for TermsOfServiceView.
 //
-// This view has NO ViewModel and NO ServiceLocator dependency. It loads a
+// This view has NO ViewModel; its only ServiceLocator dependency is the
+// OfflineService behind the offline banner (P5-U30). It loads a
 // markdown asset in initState via `rootBundle.loadString`
 // (`assets/legal/terms_of_service_<lang>.md`, with a Swedish fallback) and
 // exposes content + an error/retry state when every asset load throws.
@@ -20,26 +21,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/services/offline_service.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/views/legal/terms_of_service_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
+class _OnlineService extends ChangeNotifier implements OfflineService {
+  @override
+  bool get isOnline => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   const assetChannel = 'flutter/assets';
   late TestDefaultBinaryMessenger messenger;
 
-  setUp(() {
+  setUp(() async {
     messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     // rootBundle caches successful loads; clear so each test starts cold.
     rootBundle.clear();
+    await GetIt.instance.reset();
+    GetIt.instance.registerSingleton<OfflineService>(_OnlineService());
+    prod.ServiceLocator.initialize(DIContainer());
   });
 
-  tearDown(() {
+  tearDown(() async {
     messenger.setMockMessageHandler(assetChannel, null);
     rootBundle.clear();
+    prod.ServiceLocator.reset();
+    await GetIt.instance.reset();
   });
 
   /// Makes every `rootBundle` asset load throw by failing the channel reply.
@@ -81,7 +100,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text(sv.privacyCouldNotLoad),
+        find.text(sv.legalTermsCouldNotLoad),
         findsOneWidget,
         reason:
             'When every asset load fails the localized error copy must '
@@ -91,11 +110,6 @@ void main() {
         find.text(sv.commonRetry),
         findsOneWidget,
         reason: 'A retry affordance must be offered in the error state.',
-      );
-      expect(
-        find.byIcon(Icons.refresh),
-        findsOneWidget,
-        reason: 'The retry button carries the refresh icon.',
       );
       expect(find.byType(SelectableText), findsNothing);
     });
@@ -113,24 +127,24 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(sv.privacyCouldNotLoad), findsOneWidget);
+      expect(find.text(sv.legalTermsCouldNotLoad), findsOneWidget);
 
       // Tapping retry while the bundle is STILL broken must re-invoke
       // _loadContent and land back in the error state — proving the button is
       // wired to the loader and not a dead control. (Recovery-to-content is
       // not asserted here: the in-test asset bundle does not reliably restore
       // real content after a mock handler is removed mid-test.)
-      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.tap(find.text(sv.commonRetry));
       await tester.pumpAndSettle();
 
       expect(
-        find.text(sv.privacyCouldNotLoad),
+        find.text(sv.legalTermsCouldNotLoad),
         findsOneWidget,
         reason:
             'Retry must re-attempt the load; with the bundle still '
             'broken the error state must persist.',
       );
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
+      expect(find.text(sv.commonRetry), findsOneWidget);
     });
   });
 }

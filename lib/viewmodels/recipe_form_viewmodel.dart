@@ -46,6 +46,26 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 // Import for tagging validation preview
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
+/// Why the last save or copy did not happen (P5-U12).
+///
+/// The view picks the failure's text and action from this, never from the
+/// error text (content-style-guide.md:93, :95): a cause that trying again
+/// cannot fix gets Stäng, the rest Försök igen.
+enum RecipeSaveFailure {
+  /// The form lacks a title, an ingredient or a step
+  /// (RecipeFormState.isValid).
+  incomplete,
+
+  /// The user may not edit this recipe.
+  noPermission,
+
+  /// There is no recipe to copy.
+  noOriginal,
+
+  /// The save itself did not go through; trying again can help.
+  failed,
+}
+
 /// Coordinator for recipe form operations with delegation to specialized managers.
 class RecipeFormViewModel extends BaseViewModel
     with
@@ -398,15 +418,38 @@ class RecipeFormViewModel extends BaseViewModel
 
   bool get isFirstRecipe => _persistenceManager.isFirstRecipe;
 
+  /// Why the last [saveRecipe] or [forkRecipe] returned null; null after a
+  /// success.
+  RecipeSaveFailure? get lastSaveFailure => _lastSaveFailure;
+  RecipeSaveFailure? _lastSaveFailure;
+
   Future<Recipe?> saveRecipe() async {
-    return await _persistenceManager.saveRecipe(
+    _lastSaveFailure = null;
+    final saved = await _persistenceManager.saveRecipe(
       isCollaborative: isCollaborative,
       onNotify: _coordinator.safeNotifyParent,
     );
+    if (saved == null && !_disposed) {
+      // The same checks, in the same order, that the persistence manager
+      // refuses on before it writes.
+      _lastSaveFailure = !_state.isValid
+          ? RecipeSaveFailure.incomplete
+          : !_permissionManager.canEdit
+          ? RecipeSaveFailure.noPermission
+          : RecipeSaveFailure.failed;
+    }
+    return saved;
   }
 
   Future<Recipe?> forkRecipe() async {
-    return await _persistenceManager.forkRecipe();
+    _lastSaveFailure = null;
+    final forked = await _persistenceManager.forkRecipe();
+    if (forked == null && !_disposed) {
+      _lastSaveFailure = _state.originalRecipe == null
+          ? RecipeSaveFailure.noOriginal
+          : RecipeSaveFailure.failed;
+    }
+    return forked;
   }
 
   Future<bool> deleteRecipe() async {

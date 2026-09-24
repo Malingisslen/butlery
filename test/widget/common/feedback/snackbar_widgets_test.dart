@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/feedback/snackbar_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -18,6 +20,9 @@ void main() {
     // Helper to create app with scaffold for snackbar testing
     Widget createTestApp({Widget? child}) {
       return MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
         theme: AppTheme.lightTheme,
         home: Scaffold(
           body: Builder(
@@ -117,6 +122,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -144,6 +152,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -190,16 +201,20 @@ void main() {
         expect(find.byType(SnackBar), findsOneWidget);
       });
 
-      testWidgets('should display error icon', (WidgetTester tester) async {
+      // P5-U00: the legacy error channel is the ink failure snackbar
+      // (content-style-guide.md:96; Komponentark v1:745-750).
+      testWidgets('carries Stäng, never OK', (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Error'));
         await tester.pump();
 
-        expect(find.byIcon(Icons.error), findsOneWidget);
+        expect(find.text('Stäng'), findsOneWidget);
+        expect(find.text('OK'), findsNothing);
+        expect(find.byIcon(Icons.error), findsNothing);
       });
 
-      testWidgets('should use error background color', (
+      testWidgets('is the ink snackbar, with no status colour', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(createTestApp());
@@ -208,17 +223,45 @@ void main() {
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.backgroundColor, equals(capturedColorScheme.error));
+        expect(snackBar.backgroundColor, isNull);
+        expect(find.byType(InkSnackBar), findsOneWidget);
       });
 
-      testWidgets('should have 4 second duration', (WidgetTester tester) async {
+      testWidgets('stays until the user acts', (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Error'));
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.duration, equals(const Duration(seconds: 4)));
+        expect(snackBar.persist, isTrue);
+      });
+
+      testWidgets('with retry, Försök igen runs it', (
+        WidgetTester tester,
+      ) async {
+        var retried = 0;
+        await tester.pumpWidget(
+          createTestApp(
+            child: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => SnackbarWidgets.showErrorSnackbarWithRetry(
+                  context,
+                  'Listan kunde inte hämtas.',
+                  onRetry: () => retried++,
+                ),
+                child: const Text('Show'),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Försök igen'));
+        await tester.pumpAndSettle();
+
+        expect(retried, 1);
       });
 
       testWidgets('should handle custom error message', (
@@ -228,6 +271,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -321,20 +367,6 @@ void main() {
         expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
       });
 
-      testWidgets('should show error icon with correct styling', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpWidget(createTestApp());
-
-        await tester.tap(find.text('Error'));
-        await tester.pump();
-
-        expect(find.byIcon(Icons.error), findsOneWidget);
-        final icon = tester.widget<Icon>(find.byIcon(Icons.error));
-        expect(icon.size, equals(AppDimensions.iconSizeM));
-        expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
-      });
-
       testWidgets('should show warning icon with correct styling', (
         WidgetTester tester,
       ) async {
@@ -358,6 +390,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -385,6 +420,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -412,6 +450,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -453,6 +494,9 @@ void main() {
       testWidgets('should handle empty message', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -481,6 +525,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
@@ -508,6 +555,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
             home: Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(

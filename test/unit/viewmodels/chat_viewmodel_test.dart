@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/l10n/app_localizations_en.dart';
@@ -698,7 +699,9 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        expect(viewModel.sendError, contains('Kunde inte skicka meddelande'));
+        // P5-U03: a localized key, not errorCouldNotSend('meddelande') with
+        // a hard-coded Swedish argument.
+        expect(viewModel.sendError, AppLocale.current.chatCouldNotSendMessage);
         expect(viewModel.isSending, isFalse);
       });
 

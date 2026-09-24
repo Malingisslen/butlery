@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
@@ -51,15 +53,24 @@ class FeedbackInboxViewModel extends BaseViewModel {
     _subscribe();
   }
 
-  Future<void> updateStatus(String id, FeedbackStatus status) async {
-    await executeAsyncVoid(
-      () => _repository.updateStatus(id, status),
-      errorPrefix: 'updateFeedbackStatus',
-    );
+  /// Returns false when the write was refused. The view shows that as a
+  /// failure snackbar (content-style-guide.md:87-97); the inbox and its
+  /// load-error state are left alone.
+  Future<bool> updateStatus(String id, FeedbackStatus status) async {
+    if (isDisposed) return false;
+    try {
+      await _repository.updateStatus(id, status);
+      return true;
+    } catch (e) {
+      AppLogger.error('Feedback status update failed', e);
+      return false;
+    }
   }
 
   void _subscribe() {
     _sub?.cancel();
+    // A retry starts clean, so an old failure does not outlive a fresh page.
+    if (error != null) clearError();
     setLoading(true);
     _sub = _repository
         .watchFeedback(status: _statusFilter, limit: _limit)
@@ -76,7 +87,10 @@ class FeedbackInboxViewModel extends BaseViewModel {
             // swallow a retry from the error-state action button.
             _sub?.cancel();
             _sub = null;
-            setError(err.toString());
+            // The error state names what failed; the raw exception belongs
+            // to the log (content-style-guide.md:89-94, P5-U01).
+            AppLogger.error('Feedback inbox stream failed', err);
+            setError(AppLocale.current.adminFeedbackLoadFailed);
           },
         );
   }

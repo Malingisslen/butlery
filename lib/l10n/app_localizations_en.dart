@@ -1568,7 +1568,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuShoppingListGenerationFailed =>
-      'Could not create the shopping list – try again';
+      'The shopping list could not be created.';
 
   @override
   String get menuShoppingScaledToPresence => 'Amounts follow who\'s home';
@@ -5666,8 +5666,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuUnnamed => 'Unnamed menu';
 
   @override
-  String get privacyCouldNotLoad =>
-      'Could not load the privacy policy. Try again later.';
+  String get privacyCouldNotLoad => 'The privacy policy could not be loaded.';
 
   @override
   String get privacyTitle => 'Privacy policy';
@@ -6241,7 +6240,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupSendInvitations(int count) {
-    return 'Send $count invitations';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Invite $count selected',
+      one: 'Invite 1 selected',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6370,7 +6375,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuHideMenu => 'Hide menu';
 
   @override
-  String get menuImportAll => 'Import entire menu';
+  String get menuImportAll => 'Save to my menus';
 
   @override
   String menuImportDescription(int count) {
@@ -14150,6 +14155,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password, email, and two-factor authentication';
 
   @override
+  String get selectionEnter => 'Select';
+
+  @override
+  String get selectionEnterRecipes => 'Select recipes';
+
+  @override
+  String get selectionEnterShoppingItems => 'Select items';
+
+  @override
+  String get selectionEnterPantryItems => 'Select pantry items';
+
+  @override
+  String get selectionEnterTags => 'Select tags';
+
+  @override
+  String get selectionEnterMembers => 'Select members';
+
+  @override
+  String get selectionEnterBlockedUsers => 'Select blocked people';
+
+  @override
+  String selectionSelectAllCount(int count) {
+    return 'Select all $count';
+  }
+
+  @override
   String bulkSelectedCount(int count) {
     return '$count selected';
   }
@@ -14327,13 +14358,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportReasonOther => 'Other';
 
   @override
-  String get reportDescriptionHint => 'Describe the issue (optional)';
+  String get reportDescriptionHint => 'Tell us what is wrong …';
 
   @override
-  String get reportSubmitted => 'Report submitted';
+  String get reportSubmitted => 'Report sent';
 
   @override
-  String get reportSubmitFailed => 'Could not submit report';
+  String get reportSubmitFailed => 'The report could not be sent';
 
   @override
   String get reportDialogTitle => 'Report content';
@@ -14342,11 +14373,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportSubmit => 'Send report';
 
   @override
-  String get reportDialogGuidelinesNotePrefix =>
-      'By reporting, you confirm the content violates';
+  String get reportDialogGuidelinesNotePrefix => 'We judge against';
 
   @override
-  String get reportDialogGuidelinesLink => 'our community guidelines';
+  String get reportDialogGuidelinesLink => 'our guidelines';
 
   @override
   String get settingsMyReports => 'My reports';
@@ -15183,6 +15213,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryLocationLabel => 'Location';
 
   @override
+  String get pantryItemChangedNow => 'changed just now';
+
+  @override
+  String pantryItemChangedMinutesAgo(int count) {
+    return 'changed $count min ago';
+  }
+
+  @override
+  String pantryItemChangedToday(String time) {
+    return 'changed today at $time';
+  }
+
+  @override
+  String get pantryItemChangedYesterday => 'changed yesterday';
+
+  @override
+  String pantryItemChangedOn(String date) {
+    return 'changed $date';
+  }
+
+  @override
   String get pantryExpiryExpired => 'Expired';
 
   @override
@@ -15226,7 +15277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryCouldNotSaveItem =>
-      'Couldn\'t save to pantry. Please try again.';
+      'The item could not be saved to the pantry.';
 
   @override
   String get pantryIngredientLabel => 'Ingredient';
@@ -15951,7 +16002,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookingModeSubstitutionFailed =>
-      'Couldn\'t swap ingredient. Please try again.';
+      'The ingredient could not be swapped.';
 
   @override
   String get cookingModeOpenEditToSwap => 'Open edit mode to swap';
@@ -16760,4 +16811,438 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Shared menu';
+
+  @override
+  String get emailVerificationResendFailed =>
+      'The verification email could not be sent.';
+
+  @override
+  String emailVerificationResendFailedBecause(String cause) {
+    return 'The verification email could not be sent. $cause';
+  }
+
+  @override
+  String get emailVerificationAddressUnchanged =>
+      'Your email address is unchanged.';
+
+  @override
+  String get chatPollCouldNotBeCreated => 'The poll could not be created.';
+
+  @override
+  String get chatEditCouldNotBeSaved => 'Your edit could not be saved.';
+
+  @override
+  String get chatEditOriginalKept => 'The message is unchanged.';
+
+  @override
+  String get chatCouldNotSendReply => 'The reply could not be sent.';
+
+  @override
+  String get errorPreservedText => 'Your text is still in the field.';
+
+  @override
+  String get errorPreservedForm => 'What you filled in is still here.';
+
+  @override
+  String get dialogActionFailed => 'The action could not be completed.';
+
+  @override
+  String get minaReceptRefreshFailed => 'Your recipes could not be refreshed.';
+
+  @override
+  String get minaReceptRefreshPreserved =>
+      'Your saved recipes are shown below.';
+
+  @override
+  String get shoppingLeaveListStillMember =>
+      'You are still a member of the list.';
+
+  @override
+  String get cookingModeRecipeUnchanged => 'The recipe is unchanged.';
+
+  @override
+  String get accountSecurityPasswordChangeFailed =>
+      'The password could not be changed.';
+
+  @override
+  String accountSecurityPasswordChangeFailedBecause(String cause) {
+    return 'The password could not be changed. $cause';
+  }
+
+  @override
+  String get accountSecurityEmailChangeFailed =>
+      'The email address could not be changed.';
+
+  @override
+  String accountSecurityEmailChangeFailedBecause(String cause) {
+    return 'The email address could not be changed. $cause';
+  }
+
+  @override
+  String get recipeSaveFailed => 'The recipe could not be saved.';
+
+  @override
+  String get recipeCopySaveFailed => 'The copy could not be saved.';
+
+  @override
+  String get recipeSaveIncomplete =>
+      'The recipe could not be saved. It needs a title, at least one ingredient and at least one step.';
+
+  @override
+  String get recipeSaveNoPermission =>
+      'The recipe could not be saved. You do not have permission to edit it.';
+
+  @override
+  String get errorPreservedRecipeEdits => 'Your changes are still in the form.';
+
+  @override
+  String get groupAddMembersLoadFailed => 'Your friends could not be loaded.';
+
+  @override
+  String get adminFeedbackLoadFailed => 'The feedback could not be fetched.';
+
+  @override
+  String get moderatorReportsLoadFailed => 'The reports could not be fetched.';
+
+  @override
+  String get legalGuidelinesCouldNotLoad =>
+      'The guidelines could not be loaded.';
+
+  @override
+  String get legalTermsCouldNotLoad =>
+      'The terms of service could not be loaded.';
+
+  @override
+  String get legalLinksNeedConnection =>
+      'The web links open when you are connected again.';
+
+  @override
+  String get imageCouldNotBeShown => 'The image could not be shown';
+
+  @override
+  String get imageRetriesWhenOnline =>
+      'Tries again when the connection is back';
+
+  @override
+  String get ingredientSearchAgain => 'Search again';
+
+  @override
+  String get ingredientSearchSelectionKept =>
+      'Your ingredients are still selected.';
+
+  @override
+  String importUrlBatchPartialTitle(int success, int total) {
+    return 'We fetched $success of $total links';
+  }
+
+  @override
+  String get importUrlBatchPartialBody =>
+      'We could not fetch the links below. They stay here and in the field above, so you can try again.';
+
+  @override
+  String get importUrlBatchReadyHeading => 'Ready to import';
+
+  @override
+  String get importUrlReasonUnreachable => 'The page could not be reached';
+
+  @override
+  String get importUrlReasonNoContent => 'The page had no recipe text';
+
+  @override
+  String get importUrlReasonUnreadable => 'The page could not be read';
+
+  @override
+  String importUrlBatchRetryA11y(String url) {
+    return 'Try fetching $url again';
+  }
+
+  @override
+  String weeklyMenuOverflowPlacedCount(int placed, int total) {
+    return '$placed of $total dishes placed';
+  }
+
+  @override
+  String weeklyMenuOverflowReason(int week) {
+    return 'Week $week had no more free places for these.';
+  }
+
+  @override
+  String get weeklyMenuOverflowPastDays =>
+      'Days that have already passed are never filled.';
+
+  @override
+  String weeklyMenuOverflowKeepOrNextWeek(int week) {
+    return 'They stay here until you place them or put them in week $week.';
+  }
+
+  @override
+  String get weeklyMenuOverflowKeep => 'They stay here until you place them.';
+
+  @override
+  String weeklyMenuOverflowNextWeekAction(int week) {
+    return 'Put in week $week';
+  }
+
+  @override
+  String weeklyMenuOverflowNextWeekA11y(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Put the $count in week $week',
+      one: 'Put it in week $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyMenuOverflowMovedToNextWeek(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes added to week $week',
+      one: '1 dish added to week $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String a11yWeeklyMenuPlacementOrder(int order) {
+    return 'Placed as number $order';
+  }
+
+  @override
+  String menuPartialTitle(int found, int requested) {
+    return 'We found $found of $requested dishes';
+  }
+
+  @override
+  String get menuPartialBody => 'There were no more recipes that match.';
+
+  @override
+  String menuPartialMissing(int found, int requested, int missing) {
+    return '$found of $requested, $missing missing';
+  }
+
+  @override
+  String get weeklyMenuSaveFailed => 'The week could not be saved.';
+
+  @override
+  String get pantryItemUpdateFailed => 'The item could not be updated.';
+
+  @override
+  String get moderatorAdvanceFailed =>
+      'The report could not be moved to the next step.';
+
+  @override
+  String get moderatorCloseFailed => 'The report could not be closed.';
+
+  @override
+  String get moderatorReportUnchanged => 'The report is unchanged.';
+
+  @override
+  String get moderatorHideFailed => 'The profile could not be hidden.';
+
+  @override
+  String get moderatorHidePreserved => 'The profile is still visible.';
+
+  @override
+  String get moderatorDeleteFailed => 'The content could not be removed.';
+
+  @override
+  String get moderatorDeletePreserved => 'The content is still there.';
+
+  @override
+  String get adminFeedbackStatusFailed => 'The status could not be changed.';
+
+  @override
+  String get adminFeedbackStatusPreserved =>
+      'The feedback keeps its earlier status.';
+
+  @override
+  String get weekPlacementFailedWeekUnchanged =>
+      'The week is unchanged and the menu you made is still here.';
+
+  @override
+  String get weekPlacementFailedMenuKept => 'The menu you made is still here.';
+
+  @override
+  String get menuShoppingListGenerationPreserved => 'The week is unchanged.';
+
+  @override
+  String get importErrorNotImported => 'The recipe could not be imported.';
+
+  @override
+  String get importFailurePreservedLink => 'The link is still in the field.';
+
+  @override
+  String get importFailurePreservedText => 'The text is still in the field.';
+
+  @override
+  String get importFailureOtherRoutes => 'Other ways to the same recipe';
+
+  @override
+  String get importRoutePhoto => 'Photograph the screen';
+
+  @override
+  String get importRoutePasteText => 'Paste the text';
+
+  @override
+  String get duplicateMergeFailedPreserved =>
+      'The existing recipe is unchanged.';
+
+  @override
+  String get conflictDiffUseTheirs => 'Use their version';
+
+  @override
+  String get conflictDiffUsedTheirs => 'Their version applies now';
+
+  @override
+  String get conflictDiffUseTheirsFailed => 'Their version could not be saved.';
+
+  @override
+  String get conflictDiffUseTheirsKept => 'Your version still applies.';
+
+  @override
+  String get conflictWeekKeepMine => 'Keep mine';
+
+  @override
+  String get partialOutcomeDone => 'Done';
+
+  @override
+  String groupMembersPartialTitle(int removed, int total) {
+    return '$removed of $total were removed';
+  }
+
+  @override
+  String get groupMembersPartialMessage =>
+      'The ones that could not be removed stay selected above.';
+
+  @override
+  String groupMembersPartialRemoved(String names, String group) {
+    return 'No longer in $group: $names.';
+  }
+
+  @override
+  String get partialOutcomeListAnd => ' and ';
+
+  @override
+  String get groupMemberRemoveNotSaved =>
+      'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMembersRemoveNone =>
+      'None of the selected members could be removed.';
+
+  @override
+  String get selectionFailedKept => 'They stay selected.';
+
+  @override
+  String personalTagBulkDeletePartialTitle(int deleted, int total) {
+    return '$deleted of $total tags were deleted';
+  }
+
+  @override
+  String get personalTagBulkDeletePartialMessage =>
+      'The ones that could not be deleted stay selected.';
+
+  @override
+  String personalTagBulkDeletePartialDeleted(String names) {
+    return 'Deleted: $names.';
+  }
+
+  @override
+  String get personalTagBulkDeleteNotSaved =>
+      'Could not be deleted — the deletion was not saved';
+
+  @override
+  String get personalTagBulkDeleteNone => 'The tags could not be deleted.';
+
+  @override
+  String get overwrittenRestoreAction => 'Restore my version';
+
+  @override
+  String get overwrittenPickTitle => 'Which version do you want to restore?';
+
+  @override
+  String overwrittenVersionFrom(String when) {
+    return 'Your version from $when';
+  }
+
+  @override
+  String overwrittenVersionBy(String name, String until) {
+    return '$name saved over it · kept until $until';
+  }
+
+  @override
+  String overwrittenVersionByUnnamed(String until) {
+    return 'Someone else saved over it · kept until $until';
+  }
+
+  @override
+  String overwrittenWhenToday(String time) {
+    return 'today $time';
+  }
+
+  @override
+  String get overwrittenWhenYesterday => 'yesterday';
+
+  @override
+  String get overwrittenConfirmTitleWeek => 'Restore your week?';
+
+  @override
+  String get overwrittenConfirmTitleRecipe => 'Restore your recipe?';
+
+  @override
+  String overwrittenConfirmBodyWeek(String when) {
+    return 'Your version from $when replaces the week as it is now. You can undo right after.';
+  }
+
+  @override
+  String overwrittenConfirmBodyRecipe(String when) {
+    return 'Your version from $when replaces the recipe as it is now. You can undo right after.';
+  }
+
+  @override
+  String get overwrittenRestored => 'Your version is restored';
+
+  @override
+  String get overwrittenRestoreFailed => 'Your version couldn\'t be restored';
+
+  @override
+  String get overwrittenRestoreGoneWeek =>
+      'The week no longer exists, so your version could not be restored';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'The recipe no longer exists, so your version could not be restored';
+
+  @override
+  String overwrittenKeptUntil(String until) {
+    return 'It\'s kept until $until.';
+  }
+
+  @override
+  String get overwrittenUndoFailed => 'Undo couldn\'t finish';
+
+  @override
+  String get overwrittenUndoFailedKept =>
+      'Your restored version still applies.';
+
+  @override
+  String get messagingCreateConversation => 'Create conversation';
+
+  @override
+  String get reportDialogTitleRecipe => 'Report this recipe';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— the version you see now is the one we judge by.';
+
+  @override
+  String get reportDialogIntro =>
+      'Tell us what is wrong. A person on the team reads your report.';
+
+  @override
+  String get reportDescriptionRequiredHelper =>
+      'Required when you choose Other.';
 }

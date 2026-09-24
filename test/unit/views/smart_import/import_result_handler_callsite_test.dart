@@ -439,10 +439,16 @@ void main() {
       (tester) async {
         final (spy, result) = await runBranch(tester, writeSucceeds: false);
 
+        // P5-U06: the failure snackbar is three-part, so the line is the
+        // start of its text, followed by what was kept.
         expect(
-          find.text('Kunde inte sammanfoga receptet'),
+          find.textContaining('Kunde inte sammanfoga receptet'),
           findsOneWidget,
           reason: 'the user must be told the merge did not happen',
+        );
+        expect(
+          find.textContaining('Det befintliga receptet är oförändrat.'),
+          findsOneWidget,
         );
         expect(
           find.text('Receptet har sammanfogats'),

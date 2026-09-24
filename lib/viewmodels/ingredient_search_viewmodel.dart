@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -159,7 +160,9 @@ class IngredientSearchViewModel extends BaseViewModel with DebounceMixin {
           _resolvedNames.addAll(names);
         }
       },
-      errorPrefix: 'Kunde inte söka recept',
+      // errorPrefix is what the user reads (base_viewmodel.dart:198), so it
+      // comes from l10n in the app's language (P5-U13).
+      errorPrefix: AppLocale.current.ingredientSearchError,
     );
   }
 }
