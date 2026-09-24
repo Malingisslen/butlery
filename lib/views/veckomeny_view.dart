@@ -190,7 +190,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         !VeckomenyConnectivity.isOnlineNow()) {
       await _setViewMode(VeckomenyViewMode.lista);
       if (!mounted) return;
-      SnackBarUtils.showInfo(context, context.l10n.menuGenerateOfflineStopped);
+      SnackBarUtils.showInfo(
+        context,
+        context.l10n.menuGenerateOfflineStopped,
+        showCloseButton: true,
+      );
       return;
     }
 
@@ -401,7 +405,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       context,
       label: context.l10n.menuToShoppingList,
       icon: Icons.shopping_cart,
-      isLoading: planVm.isMergingShoppingList,
+      isLoading: planVm.isShoppingFlowRunning,
       onPressed: () => unawaited(_openShoppingMerge()),
       style: ActionButtonStyle.primary,
     );
@@ -411,7 +415,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// nothing to generate (a warning), failed (what happened, what is kept,
   /// Försök igen) and already running (silence). A confirmed merge opens the
   /// list and offers Ångra for 7 s (produktregler.md:131, § 2.4).
-  Future<void> _openShoppingMerge() async {
+  ///
+  /// One flow at a time, from the tap until the sheet has closed and the
+  /// write has finished (WeeklyMenuPlanViewModel.runShoppingFlow): a second
+  /// tap during the week or pantry read opens no second sheet.
+  Future<void> _openShoppingMerge() => context
+      .read<WeeklyMenuPlanViewModel>()
+      .runShoppingFlow(_runShoppingMerge);
+
+  Future<void> _runShoppingMerge() async {
     final planVm = context.read<WeeklyMenuPlanViewModel>();
     final menuVm = context.read<MenuViewModel>();
     final source = _viewMode == VeckomenyViewMode.kalender
@@ -439,6 +451,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       source: source,
       pantry: pantry,
       retryPantry: planVm.readPantryForShopping,
+      canReplace: planVm.canReplaceShoppingList(source.week),
     );
     if (merge == null || !mounted) return;
     final receipt = await planVm.applyShoppingMerge(merge);

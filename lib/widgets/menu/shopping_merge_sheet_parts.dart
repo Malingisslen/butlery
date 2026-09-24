@@ -3,7 +3,8 @@
 part of 'shopping_merge_sheet.dart';
 
 /// "5 rätter ger 24 rader. Efter sammanslagning blir det **18 varor**."
-/// The item count is bold in text.primary (#inkopmerge).
+/// The line reads in text.secondary; the item count is bold in text.primary
+/// (Skarmar v12 del 2 #inkopmerge, lines 267 and 70).
 class _Summary extends StatelessWidget {
   const _Summary({required this.merge});
 
@@ -19,11 +20,10 @@ class _Summary extends StatelessWidget {
       merge.rawRowCount,
       items,
     );
-    // 13/400 as drawn; the summary reads in text.body, which no scheme slot
-    // carries: onSurface is its dark value exactly and the nearer ink in
-    // light (the same reading as VeckomenyGeneratingOverlay).
+    // 13/400 as drawn in --r04slot-702: #627061 light, #93a48d dark, which is
+    // text.secondary (tokens.json) = onSurfaceVariant in both modes.
     final style = AppTextStyles.bodySmall.copyWith(
-      color: cs.onSurface,
+      color: cs.onSurfaceVariant,
       fontWeight: FontWeight.w400,
     );
     final at = text.indexOf(items);
@@ -36,7 +36,10 @@ class _Summary extends StatelessWidget {
                 TextSpan(text: text.substring(0, at)),
                 TextSpan(
                   text: items,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 TextSpan(text: text.substring(at + items.length)),
               ],
@@ -47,8 +50,8 @@ class _Summary extends StatelessWidget {
 }
 
 /// The three figures: "6 slås samman · 3 konverteras · 6 finns hemma", in
-/// cells of surface.raised divided by border.subtle hairlines, 12 px corners
-/// (#inkopmerge).
+/// cells of the sheet's own paper divided by border.subtle hairlines, 12 px
+/// corners (#inkopmerge: cells --r04slot-648 = sheet --r04slot-619).
 class _Figures extends StatelessWidget {
   const _Figures({required this.merge});
 
@@ -60,8 +63,9 @@ class _Figures extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     Widget cell(String id, int value, String label) => Expanded(
       child: ColoredBox(
-        // surface.raised: #E6EAD9 light, #2F4437 dark.
-        color: cs.surfaceContainerHighest,
+        // The sheet's paper (BottomSheetThemeData.backgroundColor = surface),
+        // so only the hairlines set the cells apart, as drawn.
+        color: cs.surface,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: AppDimensions.spacingL,
@@ -82,8 +86,9 @@ class _Figures extends StatelessWidget {
                 Text(
                   label,
                   textAlign: TextAlign.center,
+                  // text.secondary (--r04slot-702), as the summary line.
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onSurface,
+                    color: cs.onSurfaceVariant,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -203,7 +208,9 @@ class _SwitchRow extends StatelessWidget {
   final String title;
   final String body;
   final bool value;
-  final ValueChanged<bool> onChanged;
+
+  /// Null switches the row off; its body then says why.
+  final ValueChanged<bool>? onChanged;
   final bool divider;
   final Widget? extra;
 
@@ -213,7 +220,7 @@ class _SwitchRow extends StatelessWidget {
     return MergeSemantics(
       child: InkWell(
         key: ShoppingMergeSheet.switchKey(which),
-        onTap: () => onChanged(!value),
+        onTap: onChanged == null ? null : () => onChanged!(!value),
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: divider
@@ -233,7 +240,9 @@ class _SwitchRow extends StatelessWidget {
                 children: [
                   Checkbox(
                     value: value,
-                    onChanged: (v) => onChanged(v ?? false),
+                    onChanged: onChanged == null
+                        ? null
+                        : (v) => onChanged!(v ?? false),
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(

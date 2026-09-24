@@ -249,6 +249,18 @@ class MenuShoppingListGenerator extends BaseService {
     MenuShoppingMergeOptions options,
   ) => MenuShoppingMergePlanner.preview(source, pantry, options);
 
+  /// Whether "Ersätt listan" can take anything off the week's list. False for
+  /// a list written before [UnifiedShoppingList.menuItemIds] existed: its
+  /// recipe rows cannot be told from the user's own, so a replace there would
+  /// only add. The sheet then switches "Ersätt listan" off and says why.
+  bool canReplaceWeekList(DateTime week) {
+    final weekKey = IsoWeekUtils.weekKeyOf(week);
+    final list = ServiceLocator.get<UnifiedShoppingService>().personalLists
+        .where((l) => l.generatedForWeek == weekKey)
+        .firstOrNull;
+    return list == null || list.menuItemIds != null;
+  }
+
   /// Writes [merge] into the week's generated list, creating it when it is
   /// missing (produktbeslut PQ-10 = A), and makes that list the active one
   /// so the shopping view opens on it. Returns what was written, or null
@@ -294,7 +306,11 @@ class MenuShoppingListGenerator extends BaseService {
       final list = shoppingService.lists.firstWhere((l) => l.id == listId);
       final previousMenuIds = list.menuItemIds;
       final menuIds = (previousMenuIds ?? const <String>[]).toSet();
-      final replace = merge.options.replaceList;
+      // A list written before menuItemIds existed has no known recipe rows,
+      // so a replace there adds, and the receipt says it added
+      // ([canReplaceWeekList]).
+      final replace =
+          merge.options.replaceList && (createdList || previousMenuIds != null);
       final removed = replace
           ? list.items.where((item) => menuIds.contains(item.id)).toList()
           : const <UnifiedShoppingItem>[];

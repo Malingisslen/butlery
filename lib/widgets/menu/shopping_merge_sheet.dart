@@ -26,6 +26,7 @@ Future<MenuShoppingMergePreview?> showShoppingMergeSheet(
   required MenuShoppingSource source,
   required MenuShoppingPantry pantry,
   required Future<MenuShoppingPantry> Function() retryPantry,
+  bool canReplace = true,
 }) {
   return showModalBottomSheet<MenuShoppingMergePreview>(
     context: context,
@@ -35,6 +36,7 @@ Future<MenuShoppingMergePreview?> showShoppingMergeSheet(
       source: source,
       pantry: pantry,
       retryPantry: retryPantry,
+      canReplace: canReplace,
     ),
   );
 }
@@ -52,11 +54,17 @@ class ShoppingMergeSheet extends StatefulWidget {
     required this.source,
     required this.pantry,
     required this.retryPantry,
+    this.canReplace = true,
   });
 
   final MenuShoppingSource source;
   final MenuShoppingPantry pantry;
   final Future<MenuShoppingPantry> Function() retryPantry;
+
+  /// False when the week's list was written before the app knew which rows
+  /// came from recipes: "Ersätt listan" is then off, with the reason
+  /// (MenuShoppingListGenerator.canReplaceWeekList).
+  final bool canReplace;
 
   static const Key detailsToggleKey = ValueKey<String>(
     'shopping-merge-details',
@@ -230,11 +238,16 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
             _SwitchRow(
               which: ShoppingMergeSwitch.replace,
               title: l.shoppingMergeReplaceTitle,
-              body: l.shoppingMergeReplaceBody,
+              body: widget.canReplace
+                  ? l.shoppingMergeReplaceBody
+                  : l.shoppingMergeReplaceUnavailable,
               value: _options.replaceList,
               divider: false,
-              onChanged: (v) =>
-                  setState(() => _options = _options.copyWith(replaceList: v)),
+              onChanged: widget.canReplace
+                  ? (v) => setState(
+                      () => _options = _options.copyWith(replaceList: v),
+                    )
+                  : null,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Row(

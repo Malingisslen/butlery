@@ -64,6 +64,7 @@ Future<_Harness> _open(
   ThemeData? theme,
   MenuShoppingPantry pantry = const MenuShoppingPantry.read([]),
   MenuShoppingPantry retryAnswer = const MenuShoppingPantry.read([]),
+  bool canReplace = true,
 }) async {
   final harness = _Harness();
   tester.view.physicalSize = const Size(1200, 2400);
@@ -87,6 +88,7 @@ Future<_Harness> _open(
                   harness.retries++;
                   return retryAnswer;
                 },
+                canReplace: canReplace,
               );
               harness.closed = true;
             },
@@ -182,6 +184,33 @@ void main() {
     expect(_hero('Ersätt med 6 varor'), findsOneWidget);
   });
 
+  testWidgets('a list from before recipe rows were tracked: Ersätt is off '
+      'and says why, and a tap changes nothing', (tester) async {
+    final harness = await _open(tester, canReplace: false);
+    final row = find.byKey(
+      ShoppingMergeSheet.switchKey(ShoppingMergeSwitch.replace),
+    );
+
+    expect(
+      find.text(
+        'Listan gjordes innan appen höll isär veckans varor och dina egna, '
+        'så den kan inte ersättas. Veckans varor läggs till.',
+      ),
+      findsOneWidget,
+    );
+    final box = tester.widget<Checkbox>(
+      find.descendant(of: row, matching: find.byType(Checkbox)),
+    );
+    expect(box.onChanged, isNull);
+
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    expect(_hero('Lägg till 3 varor'), findsOneWidget);
+    await tester.tap(find.byKey(ShoppingMergeSheet.confirmKey));
+    await tester.pumpAndSettle();
+    expect(harness.result!.options.replaceList, isFalse);
+  });
+
   testWidgets('what is at home in full is named under the pantry switch', (
     tester,
   ) async {
@@ -237,22 +266,24 @@ void main() {
     expect(harness.result, isNull);
   });
 
-  for (final (mode, theme, raised, link) in [
+  for (final (mode, theme, paper, secondary, link) in [
     (
       'light',
       AppTheme.lightTheme,
-      const Color(0xFFE6EAD9),
+      const Color(0xFFF5F4ED),
+      const Color(0xFF627061),
       const Color(0xFF8A5212),
     ),
     (
       'dark',
       AppTheme.darkTheme,
-      const Color(0xFF2F4437),
+      const Color(0xFF17251D),
+      const Color(0xFF93A48D),
       const Color(0xFFDCA968),
     ),
   ]) {
-    testWidgets('figures on surface.raised, Visa detaljer in text.link '
-        '($mode)', (tester) async {
+    testWidgets('figures on the sheet paper with text.secondary labels, '
+        'Visa detaljer in text.link ($mode)', (tester) async {
       await _open(tester, theme: theme);
 
       final cell = tester.widget<ColoredBox>(
@@ -263,7 +294,14 @@ void main() {
             )
             .first,
       );
-      expect(cell.color, raised);
+      expect(cell.color, paper);
+      expect(cell.color, theme.bottomSheetTheme.backgroundColor);
+      final figureLabel = tester.widget<Text>(find.text('slås samman'));
+      expect(figureLabel.style!.color, secondary);
+      final summary = tester.widget<Text>(
+        find.byKey(ShoppingMergeSheet.summaryKey),
+      );
+      expect(summary.style!.color, secondary);
       final label = tester.widget<Text>(find.text('Visa detaljer'));
       expect(label.style!.color, link);
       expect(

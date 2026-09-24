@@ -28766,13 +28766,13 @@ abstract class AppLocalizations {
   /// P6-U01: why Generera is switched off offline (produktregler.md:1131).
   ///
   /// In sv, this message translates to:
-  /// **'Du är offline, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.'**
+  /// **'Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.'**
   String get menuGenerateOfflineReason;
 
   /// P6-U01: generation finished offline in calendar mode; the saved week is untouched.
   ///
   /// In sv, this message translates to:
-  /// **'Du blev offline, så förslaget placerades inte. Veckan är oförändrad.'**
+  /// **'Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.'**
   String get menuGenerateOfflineStopped;
 
   /// P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge).
@@ -28856,7 +28856,7 @@ abstract class AppLocalizations {
   /// P6-U02: switch description (#inkopmergeoppen).
   ///
   /// In sv, this message translates to:
-  /// **'2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.'**
+  /// **'2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.'**
   String get shoppingMergeConvertBody;
 
   /// P6-U02: switch.
@@ -28868,7 +28868,7 @@ abstract class AppLocalizations {
   /// P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =0{Inget av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.'**
+  /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.'**
   String shoppingMergePantryBody(int count);
 
   /// P6-U02: rows the pantry left off, named (produktregler.md:234).
@@ -28894,6 +28894,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Dina egna, manuellt tillagda varor behålls alltid.'**
   String get shoppingMergeReplaceBody;
+
+  /// P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.'**
+  String get shoppingMergeReplaceUnavailable;
 
   /// P6-U02: the sheet hero (#inkopmerge).
   ///

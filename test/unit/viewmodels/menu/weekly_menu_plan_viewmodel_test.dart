@@ -1768,6 +1768,40 @@ void main() {
         },
       );
 
+      test('a second tap while the pantry is still being read opens no '
+          'second sheet', () async {
+        final pantry = Completer<MenuShoppingPantry>();
+        when(
+          () => mockGenerator.readPantry(),
+        ).thenAnswer((_) => pantry.future);
+        var sheets = 0;
+        Future<void> flow() async {
+          await viewModel.readPantryForShopping();
+          sheets++; // the sheet would open here
+        }
+
+        final first = viewModel.runShoppingFlow(flow);
+        expect(viewModel.isShoppingFlowRunning, isTrue);
+        await viewModel.runShoppingFlow(flow);
+        pantry.complete(const MenuShoppingPantry.read([]));
+        await first;
+
+        expect(sheets, 1);
+        verify(() => mockGenerator.readPantry()).called(1);
+        expect(viewModel.isShoppingFlowRunning, isFalse);
+        // Once the flow has ended, the next tap starts a new one.
+        await viewModel.runShoppingFlow(() async => sheets++);
+        expect(sheets, 2);
+      });
+
+      test('a flow that throws still ends, so the FAB comes back', () async {
+        await expectLater(
+          viewModel.runShoppingFlow(() async => throw StateError('x')),
+          throwsStateError,
+        );
+        expect(viewModel.isShoppingFlowRunning, isFalse);
+      });
+
       test('a failed write is null, never the sentinel', () async {
         when(() => mockGenerator.apply(merge)).thenThrow(StateError('x'));
 

@@ -329,28 +329,53 @@ void main() {
       expect(back.menuItemIds, ['old']);
     });
 
-    test(
-      'a list written before menuItemIds existed keeps all its rows',
-      () async {
-        final legacy = UnifiedShoppingItem(
-          id: 'legacy',
-          name: 'mjöl',
-          amount: 2,
-        );
-        final list = _weekList(items: [legacy]);
-        shopping.setShoppingState(lists: [list], personalLists: [list]);
+    test('a list written before menuItemIds existed cannot be replaced: '
+        'Ersätt adds, keeps every row and its bought status, and the receipt '
+        'says it added', () async {
+      final legacyBought = UnifiedShoppingItem(
+        id: 'legacy-bought',
+        name: 'gul lök',
+        unit: 'st',
+        amount: 3,
+        bought: true,
+      );
+      final legacyOpen = UnifiedShoppingItem(
+        id: 'legacy-open',
+        name: 'mjöl',
+        amount: 2,
+      );
+      final list = _weekList(items: [legacyBought, legacyOpen]);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+      expect(generator.canReplaceWeekList(_date), isFalse);
 
-        await generator.apply(
-          MenuShoppingListGenerator.preview(
-            _source(),
-            const MenuShoppingPantry.read([]),
-            const MenuShoppingMergeOptions(replaceList: true),
-          ),
-        );
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(replaceList: true),
+      );
+      final receipt = await generator.apply(merge);
 
-        expect(writes.single.items.map((i) => i.id), contains('legacy'));
-      },
-    );
+      final written = writes.single;
+      expect(receipt, isNotNull);
+      expect(receipt!.replaced, isFalse, reason: 'nothing was replaced');
+      expect(receipt.removedItems, isEmpty);
+      expect(written.items, hasLength(2 + merge.itemCount));
+      final legacy = written.items.where((i) => i.id.startsWith('legacy'));
+      expect(legacy.map((i) => (i.id, i.bought)), [
+        ('legacy-bought', true),
+        ('legacy-open', false),
+      ]);
+      // From now on the list knows its recipe rows, so the next Ersätt works.
+      expect(written.menuItemIds, receipt.addedItemIds);
+      expect(generator.canReplaceWeekList(_date), isTrue);
+    });
+
+    test('a tracked list and a missing list can be replaced', () {
+      expect(generator.canReplaceWeekList(_date), isTrue);
+      final list = _weekList(menuItemIds: const []);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+      expect(generator.canReplaceWeekList(_date), isTrue);
+    });
   });
 
   group(

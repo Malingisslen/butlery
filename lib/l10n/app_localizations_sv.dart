@@ -17305,11 +17305,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuGenerateOfflineReason =>
-      'Du är offline, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.';
+      'Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.';
 
   @override
   String get menuGenerateOfflineStopped =>
-      'Du blev offline, så förslaget placerades inte. Veckan är oförändrad.';
+      'Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.';
 
   @override
   String get shoppingMergeTitle => 'Till inköpslistan';
@@ -17377,7 +17377,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingMergeConvertBody =>
-      '2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.';
+      '2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.';
 
   @override
   String get shoppingMergePantryTitle => 'Dra bort skafferivaror';
@@ -17389,9 +17389,9 @@ class AppLocalizationsSv extends AppLocalizations {
       locale: localeName,
       other: '$count varor finns hemma.',
       one: '1 vara finns hemma.',
-      zero: 'Inget av varorna finns hemma.',
+      zero: 'Ingen av varorna finns hemma.',
     );
-    return '$_temp0 Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.';
+    return '$_temp0 Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.';
   }
 
   @override
@@ -17410,6 +17410,10 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get shoppingMergeReplaceBody =>
       'Dina egna, manuellt tillagda varor behålls alltid.';
+
+  @override
+  String get shoppingMergeReplaceUnavailable =>
+      'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.';
 
   @override
   String shoppingMergeAdd(int count) {

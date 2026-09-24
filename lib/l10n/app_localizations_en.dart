@@ -17273,11 +17273,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuGenerateOfflineReason =>
-      'You are offline, so the week cannot be planned now. You can still change the calendar.';
+      'No connection, so the week cannot be planned now. You can still change the calendar.';
 
   @override
   String get menuGenerateOfflineStopped =>
-      'You went offline, so the suggestion was not placed. The week is unchanged.';
+      'The connection dropped, so the suggestion was not placed. The week is unchanged.';
 
   @override
   String get shoppingMergeTitle => 'To the shopping list';
@@ -17375,6 +17375,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shoppingMergeReplaceBody =>
       'Items you added yourself are always kept.';
+
+  @override
+  String get shoppingMergeReplaceUnavailable =>
+      'This list was made before the app kept the week\'s items apart from your own, so it cannot be replaced. The week\'s items are added.';
 
   @override
   String shoppingMergeAdd(int count) {

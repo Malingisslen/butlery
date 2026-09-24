@@ -155,7 +155,7 @@ void main() {
         );
         expect(
           reason.data,
-          'Du är offline, så veckan kan inte planeras nu. Kalendern går att '
+          'Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att '
           'ändra som vanligt.',
         );
         // text.secondary in both modes.
