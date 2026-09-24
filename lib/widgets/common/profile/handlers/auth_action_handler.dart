@@ -5,18 +5,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
+import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Handler for authentication-related actions (logout, delete account).
 class AuthActionHandler {
@@ -38,8 +39,49 @@ class AuthActionHandler {
     return success;
   }
 
+  /// Builds the sign-out guard. Replaced in tests.
+  @visibleForTesting
+  static SignOutGuard Function() guardFactory = () =>
+      SignOutGuard(authService: ServiceLocator.get<AuthService>());
+
   /// Handle logout flow.
+  ///
+  /// With changes still in the queue, the sign-out is blocked with an
+  /// explanation instead of the plain question: "N ändringar har inte
+  /// sparats", Vänta på synk · Logga ut och släng (produktregler.md:193,
+  /// Skarmar v12 del 4 #utloggningko). The queue is only emptied when the
+  /// user picks the destructive choice; an ordinary sign-out leaves it on the
+  /// device, where it syncs at this account's next sign-in.
   static Future<void> handleLogout(BuildContext context) async {
+    final guard = guardFactory();
+    final pending = await guard.pendingForCurrentUser();
+    if (!context.mounted) return;
+
+    if (!pending.isEmpty) {
+      final choice = await ProfileDialogs.showPendingChangesDialog(
+        context,
+        pending,
+      );
+      if (choice != PendingChangesChoice.discardAndSignOut ||
+          !context.mounted) {
+        return;
+      }
+      try {
+        await guard.discardForCurrentUser();
+      } catch (e) {
+        AppLogger.error('Discarding queued changes failed', e);
+        if (context.mounted) {
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.signOutDiscardFailed,
+          );
+        }
+        return;
+      }
+      if (context.mounted) await _performLogout(context);
+      return;
+    }
+
     final shouldLogout = await ProfileDialogs.showLogoutDialog(context);
     if (shouldLogout == true && context.mounted) {
       await _performLogout(context);
@@ -80,12 +122,15 @@ class AuthActionHandler {
         .ownReportStatus();
     if (!context.mounted) return;
 
-    // Show initial confirmation dialog
-    final shouldDelete = await ProfileDialogs.showDeleteAccountDialog(
+    // Show initial confirmation dialog. It asks for the reason before
+    // anything else: "Ett skäl skickas med och hamnar i revisionsraden. Det
+    // frågas före, för efteråt finns ingen kvar att fråga"
+    // (produktregler.md:614; Skarmar v12 etapp 5-7 #kontoradera).
+    final reason = await ProfileDialogs.showDeleteAccountDialog(
       context,
       mayHaveOpenReview: reportStatus == OwnReportStatus.reported,
     );
-    if (shouldDelete != true || !context.mounted) return;
+    if (reason == null || !context.mounted) return;
 
     // Re-authenticate before proceeding
     String? reauthError;
@@ -101,30 +146,37 @@ class AuthActionHandler {
     }
     if (!context.mounted) return;
 
-    // The deletion runs: the plate line with what is happening, never a
-    // spinner (produktregler.md:163, B-18). "Raderar kontot" is the heading
-    // of Skarmar v12 etapp 5-7 'Konto — raderingen pågår'; its step list is
-    // not built here.
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
-          child: PlateLineMessage(
-            message: context.l10n.accountDeletingProgress,
-          ),
-        ),
-      ),
-    );
+    // The deletion runs as a waiting STATE that cannot be cancelled once it
+    // has started (produktregler.md:611; #kontovantan): the plate line with
+    // what is happening, never a spinner (produktregler.md:163, B-18).
+    ProfileDialogs.showDeletionWaitingDialog(context);
 
     try {
       // Perform deletion using ProfileViewModel
       final profileViewModel = ServiceLocator.get<ProfileViewModel>();
-      final outcome = await profileViewModel.deleteAccount(
-        reason: 'User requested account deletion',
-      );
-      final success = outcome.success;
+      var outcome = await profileViewModel.deleteAccount(reason: reason);
+
+      // The server wants a sign-in at most five minutes old. That is a step,
+      // not an error: sign in again and the same request is made again
+      // (produktregler.md:612; #kontoreauth). Nothing was deleted yet.
+      if (outcome.requiresReauth && context.mounted) {
+        Navigator.pop(context); // Close the waiting state
+        final again = await ProfileDialogs.showDeletionReauthStep(context);
+        if (!again || !context.mounted) return;
+        final reauthed = await reauthenticate(
+          context,
+          onError: (msg) => reauthError = msg,
+        );
+        if (!reauthed || !context.mounted) {
+          if (reauthError != null && context.mounted) {
+            ProfileDialogs.showErrorDialog(context, reauthError!);
+          }
+          return;
+        }
+        ProfileDialogs.showDeletionWaitingDialog(context);
+        outcome = await profileViewModel.deleteAccount(reason: reason);
+      }
+      final success = outcome.success || outcome.isComplete;
 
       // OUTSIDE the `context.mounted` gate below, and that placement is the
       // whole mechanism. `deleteUserAccount` signs out INSIDE itself before
@@ -222,7 +274,23 @@ class AuthActionHandler {
           if (!context.mounted) return;
         }
 
-        if (success) {
+        if (outcome.isPartial) {
+          // The account is gone and something remained. Its own words, the
+          // audit id, and support as the way on — never "Försök igen"
+          // (produktregler.md:613; #kontodelvis).
+          await ProfileDialogs.showPartialDeletionDialog(
+            context,
+            failedCount: outcome.genuinelyFailed.length,
+            auditLogId: outcome.auditLogId,
+            onContactSupport: (id) => _contactSupport(context, id),
+          );
+          if (!context.mounted) return;
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/auth',
+            (route) => false,
+          );
+        } else if (success) {
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/auth',
@@ -253,5 +321,27 @@ class AuthActionHandler {
         ProfileDialogs.showErrorDialog(context, e.toString());
       }
     }
+  }
+
+  /// Opens a mail to the privacy address with the audit id in the subject.
+  /// The same address the legal views use (legal_contact_footer.dart).
+  static Future<void> _contactSupport(
+    BuildContext context,
+    String? auditLogId,
+  ) async {
+    final subject = Uri.encodeComponent(
+      context.l10n.accountDeletionPartialEmailSubject(auditLogId.orEmpty()),
+    );
+    final uri = Uri.parse('mailto:integritet@butlery.se?subject=$subject');
+    final fallback = context.l10n.accountDeletionPartialNoEmail;
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+        return;
+      }
+    } on Exception catch (e) {
+      AppLogger.error('Could not open the mail app', e);
+    }
+    if (context.mounted) SnackBarUtils.showFailure(context, what: fallback);
   }
 }

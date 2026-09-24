@@ -37,6 +37,35 @@ class ConsentService extends BaseService implements Listenable {
   static const String _currentConsentVersion =
       '1.1.0'; // 1.1.0: Added aiProcessing consent purpose
 
+  /// What each consent version changed, per purpose. A version bump adds
+  /// its lines here in the same change, with one sentence per line in the
+  /// l10n files (Q-P6-A18; produktregler.md:731; Skarmar v12 etapp 6
+  /// #samtyckefornya).
+  static const List<ConsentChange> changelog = [
+    ConsentChange(
+      version: '1.1.0',
+      purpose: ConsentPurpose.aiProcessing,
+      kind: ConsentChangeKind.added,
+    ),
+  ];
+
+  /// The changes a person who accepted [acceptedVersion] has not seen yet,
+  /// oldest first. An unknown or empty version sees every change up to the
+  /// current version.
+  static List<ConsentChange> changesSince(String? acceptedVersion) {
+    return changelog
+        .where(
+          (c) => compareConsentVersions(c.version, _currentConsentVersion) <= 0,
+        )
+        .where(
+          (c) =>
+              acceptedVersion == null ||
+              acceptedVersion.isEmpty ||
+              compareConsentVersions(c.version, acceptedVersion) > 0,
+        )
+        .toList();
+  }
+
   final auth.AuthRepository _authRepository;
   final FirebaseConsentRepository _consentRepository;
 

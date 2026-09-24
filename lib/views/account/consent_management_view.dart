@@ -308,6 +308,19 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.pushNotifications,
           viewModel.setPushNotifications,
         ),
+        // AI-tolkning, drawn among "Dina val" (Skarmar v12 etapp 6
+        // #kontosamtycke). The model has carried the purpose since consent
+        // version 1.1.0 and the import checks it (llm_service.dart), but no
+        // switch set it, so it could only ever be lost (produktregler.md:728).
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildConsentToggle(
+          viewModel,
+          context.l10n.consentAiProcessing,
+          context.l10n.consentAiProcessingDescription,
+          Icons.auto_awesome_rounded,
+          viewModel.aiProcessing,
+          viewModel.setAiProcessing,
+        ),
       ],
     );
   }

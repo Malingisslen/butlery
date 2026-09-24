@@ -3,12 +3,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 
 /// Warning dialog shown before session timeout
 /// Provides user with option to extend session or logout immediately
+///
+/// Two modes (produktregler.md:832, § 16.2). With an empty queue it is the
+/// plain question and "Logga ut nu" signs out at once. With changes waiting,
+/// Fortsätt is primary, the waiting changes are named, and "Logga ut nu"
+/// leads to the same confirmation as the manual sign-out (#utloggningko).
+/// Only its destructive choice throws the queue away; "Vänta på synk" keeps
+/// the session going.
 class SessionTimeoutWarningDialog extends StatefulWidget {
   /// Remaining seconds until automatic logout
   final int remainingSeconds;
@@ -16,14 +25,23 @@ class SessionTimeoutWarningDialog extends StatefulWidget {
   /// Callback when user chooses to extend session
   final VoidCallback onExtendSession;
 
-  /// Callback when user chooses to logout immediately
+  /// Callback when user chooses to logout immediately (empty queue)
   final VoidCallback onLogoutNow;
+
+  /// The signed-in user's unsaved changes when the warning opened.
+  final PendingChanges pendingChanges;
+
+  /// Callback when the user chose "Logga ut och släng ändringarna" in the
+  /// queue confirmation. Required for the queue mode to offer a sign-out.
+  final Future<void> Function()? onDiscardAndLogout;
 
   const SessionTimeoutWarningDialog({
     super.key,
     required this.remainingSeconds,
     required this.onExtendSession,
     required this.onLogoutNow,
+    this.pendingChanges = PendingChanges.none,
+    this.onDiscardAndLogout,
   });
 
   /// Show the session timeout warning dialog
@@ -32,6 +50,8 @@ class SessionTimeoutWarningDialog extends StatefulWidget {
     required int remainingSeconds,
     required VoidCallback onExtendSession,
     required VoidCallback onLogoutNow,
+    PendingChanges pendingChanges = PendingChanges.none,
+    Future<void> Function()? onDiscardAndLogout,
   }) {
     return showDialog<bool>(
       context: context,
@@ -40,6 +60,8 @@ class SessionTimeoutWarningDialog extends StatefulWidget {
         remainingSeconds: remainingSeconds,
         onExtendSession: onExtendSession,
         onLogoutNow: onLogoutNow,
+        pendingChanges: pendingChanges,
+        onDiscardAndLogout: onDiscardAndLogout,
       ),
     );
   }
@@ -102,10 +124,33 @@ class _SessionTimeoutWarningDialogState
     Navigator.of(context).pop(true); // Extended
   }
 
-  void _handleLogoutNow() {
-    _countdownTimer?.cancel();
-    widget.onLogoutNow();
-    Navigator.of(context).pop(false); // Logging out
+  bool get _queueMode => !widget.pendingChanges.isEmpty;
+
+  Future<void> _handleLogoutNow() async {
+    if (!_queueMode) {
+      _countdownTimer?.cancel();
+      widget.onLogoutNow();
+      Navigator.of(context).pop(false); // Logging out
+      return;
+    }
+
+    // Queue mode: the same confirmation as the manual sign-out. The
+    // countdown keeps running underneath; if it runs out, the automatic
+    // sign-out still never clears the queue (produktregler.md:833).
+    final choice = await ProfileDialogs.showPendingChangesDialog(
+      context,
+      widget.pendingChanges,
+    );
+    if (!mounted) return;
+    if (choice == PendingChangesChoice.discardAndSignOut &&
+        widget.onDiscardAndLogout != null) {
+      _countdownTimer?.cancel();
+      Navigator.of(context).pop(false); // Logging out
+      await widget.onDiscardAndLogout!();
+      return;
+    }
+    // "Vänta på synk": staying signed in is what waiting means here.
+    _handleExtendSession();
   }
 
   @override
@@ -127,32 +172,51 @@ class _SessionTimeoutWarningDialogState
             context.l10n.sessionExpiringMessage,
             style: AppTextStyles.bodyLarge,
           ),
+          if (_queueMode) ...[
+            const SizedBox(height: AppDimensions.spacingM),
+            Text(
+              context.l10n.sessionPendingChangesIntro(
+                widget.pendingChanges.total,
+              ),
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: AppDimensions.spacingXs),
+            ...ProfileDialogs.pendingChangeLines(
+              context,
+              widget.pendingChanges,
+            ),
+          ],
           const SizedBox(height: AppDimensions.spacingM),
+          // Only the number updates, announced politely
+          // (produktregler.md:830).
           Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingL,
-                vertical: AppDimensions.spacingM,
-              ),
-              decoration: BoxDecoration(
-                color: warningColor.withValues(
-                  alpha: AppDimensions.opacityVeryLight,
+            child: Semantics(
+              liveRegion: true,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingL,
+                  vertical: AppDimensions.spacingM,
                 ),
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
-                ),
-                border: Border.all(
+                decoration: BoxDecoration(
                   color: warningColor.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
+                    alpha: AppDimensions.opacityVeryLight,
                   ),
-                  width: 2,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
+                  border: Border.all(
+                    color: warningColor.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: Text(
-                _formatDuration(_remainingSeconds),
-                style: AppTextStyles.headlineBold.copyWith(
-                  color: warningColor,
-                  fontFeatures: [const FontFeature.tabularFigures()],
+                child: Text(
+                  _formatDuration(_remainingSeconds),
+                  style: AppTextStyles.headlineBold.copyWith(
+                    color: warningColor,
+                    fontFeatures: [const FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
             ),
@@ -168,6 +232,7 @@ class _SessionTimeoutWarningDialogState
       ),
       actions: [
         TextButton(
+          key: const ValueKey('sessionTimeout.logoutNow'),
           onPressed: _handleLogoutNow,
           child: Text(
             context.l10n.commonLogoutNow,
@@ -177,6 +242,7 @@ class _SessionTimeoutWarningDialogState
           ),
         ),
         FilledButton(
+          key: const ValueKey('sessionTimeout.continue'),
           onPressed: _handleExtendSession,
           style: FilledButton.styleFrom(
             backgroundColor: cs.primary,

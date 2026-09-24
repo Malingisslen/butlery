@@ -19,6 +19,7 @@ import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:get_it/get_it.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
@@ -211,18 +212,35 @@ class AuthService extends ChangeNotifier
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
-      // PQ-12 = A (produktbeslut-2026-09-23.json): device drafts go when the
-      // user logs out herself (produktregler.md:164-172), never at an
-      // automatic logout, so this is not in [logoutDueToInactivity] or
-      // [forceSignOut]. Best-effort: it logs and never throws.
-      await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
+      await clearDeviceDraftsOnExplicitSignOut(userId);
       await _analyticsService.logLogout();
     }).catchError((e) {
       setError(AppLocale.current.errorCouldNotLogOut);
     });
   }
 
+  /// The device drafts a sign-out the user made herself deletes.
+  ///
+  /// PQ-12 = A (produktbeslut-2026-09-23.json): drafts go when the user logs
+  /// out herself (produktregler.md:164-172), never at an automatic logout, so
+  /// [logoutDueToInactivity] and [forceSignOut] do not call this. The one
+  /// user-initiated path that runs through [logoutDueToInactivity], "Logga ut
+  /// nu" in the timeout warning, calls it separately
+  /// (SessionTimeoutService.forceLogout). Neither store is the offline queue,
+  /// which no sign-out clears by itself (produktregler.md:193, :833).
+  /// Best-effort: both stores log and never throw.
+  static Future<void> clearDeviceDraftsOnExplicitSignOut(
+    String? userId,
+  ) async {
+    await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
+    await RecipeFormAutoSaveManager.clearAllDrafts();
+  }
+
   /// Logout for session timeout - tracks separately for security monitoring.
+  ///
+  /// Never touches the offline queue or the device drafts: "En utloggning på
+  /// grund av timeout får aldrig rensa kön" (produktregler.md:833), and PQ-12
+  /// = A keeps the drafts.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
       _clearConsentCacheIfAvailable();

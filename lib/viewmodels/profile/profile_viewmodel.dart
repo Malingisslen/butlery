@@ -81,6 +81,9 @@ class ProfileViewModel extends ChangeNotifier
     bool success = false;
     var accountDeleted = false;
     var retained = const <RetainedRecord>[];
+    var failedCollections = const <String>[];
+    String? auditLogId;
+    var requiresReauth = false;
 
     await executeAsync(() async {
       try {
@@ -112,7 +115,14 @@ class ProfileViewModel extends ChangeNotifier
         // stated rather than left to be inferred because it is the one this
         // flag exists to prevent.
         final failed = result['failedCollections'] as List? ?? const [];
-        accountDeleted = !failed.contains('auth_deletion');
+        // `cfCompleted` is false only when the callable never answered; then
+        // nothing server-side ran and the account is certainly still there.
+        // A missing key keeps the fail-open direction above.
+        accountDeleted =
+            result['cfCompleted'] != false && !failed.contains('auth_deletion');
+        failedCollections = failed.whereType<String>().toList();
+        auditLogId = result['auditLogId'] as String?;
+        requiresReauth = result['requiresReauth'] == true;
 
         if (success) {
           AppLogger.info('Account deleted successfully');
@@ -131,6 +141,9 @@ class ProfileViewModel extends ChangeNotifier
       success: success,
       accountDeleted: accountDeleted,
       retained: retained,
+      failedCollections: failedCollections,
+      auditLogId: auditLogId,
+      requiresReauth: requiresReauth,
     );
   }
 
@@ -174,7 +187,44 @@ class AccountDeletionOutcome {
     required this.success,
     this.accountDeleted = false,
     this.retained = const <RetainedRecord>[],
+    this.failedCollections = const <String>[],
+    this.auditLogId,
+    this.requiresReauth = false,
   });
+
+  /// The step names the server reported as failed, as it names them.
+  final List<String> failedCollections;
+
+  /// The id of the deletion's audit row — the "revisions-id" the partial
+  /// outcome shows so support can find it (produktregler.md:613).
+  final String? auditLogId;
+
+  /// The server refused because the sign-in was older than five minutes.
+  /// That is a step in the flow, not an error (produktregler.md:612).
+  final bool requiresReauth;
+
+  /// The step a provisional hold reports as failed. It is not data left
+  /// behind: the hold is the retention the Art. 12(4) notice already
+  /// explains (BUT-2047), so it never makes a deletion partial (Q-P6-E17).
+  static const String holdEvaluationStep = 'erasure_hold_evaluated';
+
+  /// The failed steps that genuinely left data behind: the Auth account's
+  /// own step and a provisional hold's evaluation are excluded.
+  List<String> get genuinelyFailed => failedCollections
+      .where((c) => c != 'auth_deletion')
+      .where(
+        (c) => !(c == holdEvaluationStep && retained.any((r) => r.provisional)),
+      )
+      .toList();
+
+  /// "Raderingen kan lyckas delvis … Delvis är ett eget utfall med egna
+  /// ord" (produktregler.md:613): the account is gone and something else was
+  /// not removed.
+  bool get isPartial => accountDeleted && genuinelyFailed.isNotEmpty;
+
+  /// The account is gone and nothing genuine failed. A provisional hold
+  /// alone still counts as done, and its notice says what was kept.
+  bool get isComplete => accountDeleted && genuinelyFailed.isEmpty;
 
   /// Whether the erasure completed. A lawful hold does NOT make this false —
   /// retention under an Art. 17(3) exception is a compliant outcome.

@@ -18,6 +18,8 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/session_timeout_service.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -91,7 +93,17 @@ class _AuthViewState extends State<AuthView> {
                           padding: const EdgeInsets.only(
                             top: AppDimensions.spacingLg,
                           ),
-                          child: _buildLoginCard(viewModel),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (SessionEndNotice.pending != null)
+                                _buildSessionEndNotice(
+                                  cs,
+                                  SessionEndNotice.pending!,
+                                ),
+                              _buildLoginCard(viewModel),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -148,6 +160,66 @@ class _AuthViewState extends State<AuthView> {
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onPrimary,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// A background timeout could not warn, so it is explained here, calmly:
+  /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
+  /// skälet och antalet väntande ändringar. Aldrig som fel"
+  /// (produktregler.md:834). `surface.raised` is `surfaceContainerHighest`
+  /// and `text.success` is `butleryColors.success`, in both modes
+  /// (app_colors.dart / app_colors_dark.dart).
+  Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
+    final l10n = context.l10n;
+    return Container(
+      key: const ValueKey('auth.sessionEndNotice'),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.check_circle_outline,
+            color: context.butleryColors.success,
+            size: AppDimensions.iconSizeM,
+          ),
+          const SizedBox(width: AppDimensions.spacingSm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.sessionEndedBackgroundTitle,
+                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  l10n.sessionEndedBackgroundReason,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  l10n.sessionEndedBackgroundPending(end.pendingChanges.total),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: l10n.commonClose,
+            icon: Icon(Icons.close, color: cs.onSurfaceVariant),
+            onPressed: () => setState(SessionEndNotice.clear),
           ),
         ],
       ),
@@ -687,9 +759,21 @@ class _AuthViewState extends State<AuthView> {
       // Route into the main nav shell (LayoutScaffolds.mainMenu), not the bare
       // MinaReceptView — the bare view has no bottom navigation bar, so logging
       // in used to land on a recipe list with no nav until the user moved tabs.
-      Navigator.of(context).pushReplacement(
+      final navigator = Navigator.of(context);
+      navigator.pushReplacement(
         MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
       );
+      SessionEndNotice.clear();
+      // After a timeout, the same account lands where it was
+      // (TR::FLOW::06::session::utgang; Q-P6-E07). Any other account, or
+      // no remembered place, lands on Hem.
+      final userId = ServiceLocator.get<AuthService>().currentUserId;
+      final returnTo = userId == null
+          ? null
+          : SessionReturnPath.takeFor(userId);
+      if (returnTo != null) {
+        navigator.pushNamed(returnTo.routeName, arguments: returnTo.arguments);
+      }
     }
   }
 

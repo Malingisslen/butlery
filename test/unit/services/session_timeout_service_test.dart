@@ -12,7 +12,9 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/session_timeout_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -160,6 +162,141 @@ void main() {
           reason: 'a timed-out session must not replay a stale warning',
         );
       });
+    });
+  });
+
+  // P6-U08a / P6-U06 (produktregler.md:829-834, § 16.2; flow 06 session).
+  group('session end: queue untouched, notice, return path', () {
+    const pending = PendingChanges(recipeChanges: 2, imageUploads: 1);
+
+    SessionTimeoutService buildWithQueue(List<SessionEnd> ends) {
+      final service = SessionTimeoutService(
+        authService: authService,
+        analyticsService: analyticsService,
+        timeoutDuration: const Duration(minutes: 10),
+        warningOffset: const Duration(minutes: 5),
+        pendingChangesReader: () async => pending,
+      );
+      service.registerSessionEndCallback(ends.add);
+      return service;
+    }
+
+    setUp(() {
+      SessionEndNotice.clear();
+      SessionReturnPath.reset();
+      SharedPreferences.setMockInitialValues({});
+    });
+
+    test('a foreground timeout signs out without clearing anything', () {
+      withFakeTime((async) {
+        final ends = <SessionEnd>[];
+        final service = buildWithQueue(ends);
+        service.initialize();
+        async.elapse(const Duration(minutes: 10, seconds: 1));
+        async.flushMicrotasks();
+
+        verify(() => authService.logoutDueToInactivity()).called(1);
+        expect(ends, hasLength(1));
+        expect(ends.single.reason, SessionEndReason.timeout);
+        expect(ends.single.userId, 'session_user');
+        expect(ends.single.pendingChanges, pending);
+        expect(
+          SessionEndNotice.pending,
+          isNull,
+          reason: 'the foreground timeout was warned about; no notice',
+        );
+      });
+    });
+
+    test('a background timeout records the calm notice with the count', () {
+      withFakeTime((async) {
+        final ends = <SessionEnd>[];
+        final service = buildWithQueue(ends);
+        service.initialize();
+        service.recordActivity();
+        service.onAppPaused();
+        async.elapse(const Duration(minutes: 11));
+        service.onAppResumed();
+        async.flushMicrotasks();
+
+        verify(() => authService.logoutDueToInactivity()).called(1);
+        expect(ends.single.reason, SessionEndReason.backgroundTimeout);
+        expect(SessionEndNotice.pending?.pendingChanges.total, 3);
+      });
+    });
+
+    test('"Logga ut nu" is user_requested: queue kept, drafts go', () async {
+      // PQ-12 = A: drafts go when the user signs out herself. The queue is
+      // never cleared by any timeout reason (produktregler.md:833); the
+      // service has no path to it at all, only to the pending COUNT.
+      SharedPreferences.setMockInitialValues({
+        'recipe_drafts_metadata': '[]',
+        'recipe_draft_d1': '{"title":"x"}',
+      });
+      final ends = <SessionEnd>[];
+      final service = buildWithQueue(ends);
+      await service.forceLogout();
+
+      verify(() => authService.logoutDueToInactivity()).called(1);
+      expect(ends.single.reason, SessionEndReason.userRequested);
+      expect(ends.single.pendingChanges, pending);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('recipe_draft_d1'), isNull);
+    });
+
+    test('an automatic timeout keeps the drafts (PQ-12 = A)', () async {
+      SharedPreferences.setMockInitialValues({
+        'recipe_drafts_metadata': '[]',
+        'recipe_draft_d1': '{"title":"x"}',
+      });
+      final ends = <SessionEnd>[];
+      final service = buildWithQueue(ends);
+      service.initialize();
+      service.recordActivity();
+      service.onAppPaused();
+      await withClock(
+        Clock.fixed(clock.now().add(const Duration(minutes: 11))),
+        () async => service.onAppResumed(),
+      );
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(ends.single.reason, SessionEndReason.backgroundTimeout);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('recipe_draft_d1'), isNotNull);
+    });
+
+    test('the return path goes to the same account only, once', () {
+      SessionReturnPath.remember(
+        userId: 'anna',
+        routeName: '/recipe-detail',
+        arguments: const {'recipeId': 'r1'},
+      );
+      expect(SessionReturnPath.takeFor('bertil'), isNull);
+      // Another account signing in drops it.
+      expect(SessionReturnPath.takeFor('anna'), isNull);
+
+      SessionReturnPath.remember(
+        userId: 'anna',
+        routeName: '/recipe-detail',
+        arguments: const {'recipeId': 'r1'},
+      );
+      final route = SessionReturnPath.takeFor('anna');
+      expect(route?.routeName, '/recipe-detail');
+      expect(route?.arguments, {'recipeId': 'r1'});
+      expect(SessionReturnPath.takeFor('anna'), isNull);
+    });
+
+    test('a route whose arguments are not plain values falls back to Hem', () {
+      SessionReturnPath.remember(
+        userId: 'anna',
+        routeName: '/recipe-detail',
+        arguments: Object(),
+      );
+      expect(SessionReturnPath.peek, isNull);
+
+      SessionReturnPath.remember(userId: 'anna', routeName: '/auth');
+      expect(SessionReturnPath.peek, isNull);
     });
   });
 }

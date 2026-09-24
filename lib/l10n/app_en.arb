@@ -3044,7 +3044,7 @@
   "consentGdprDescription": "Under GDPR you have full control over how we process your personal data. You can change or revoke your consents at any time.",
   "consentLastUpdated": "Last updated",
   "consentRequiredTitle": "Required consents",
-  "consentRequiredDescription": "These consents are required for the app to function and cannot be disabled.",
+  "consentRequiredDescription": "These cannot be switched off — without them there is no service to say yes or no to. If you want to leave entirely, the way is to delete your account, not a switch here.",
   "consentBasicServices": "Basic services",
   "consentBasicServicesDescription": "Authentication, security and basic functionality.",
   "consentDataProcessing": "Data processing",
@@ -13000,5 +13000,151 @@
   "reportDialogTitleRecipe": "Report this recipe",
   "reportDialogGuidelinesNoteSuffix": "— the version you see now is the one we judge by.",
   "reportDialogIntro": "Tell us what is wrong. A person on the team reads your report.",
-  "reportDescriptionRequiredHelper": "Required when you choose Other."
+  "reportDescriptionRequiredHelper": "Required when you choose Other.",
+  "signOutPendingTitle": "{count, plural, =1{1 change has not been saved} other{{count} changes have not been saved}}",
+  "@signOutPendingTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingBody": "If you sign out now, they are lost. Butlery is happy to wait until you are online again.",
+  "signOutPendingRecipes": "{count, plural, =1{Recipes · 1 change} other{Recipes · {count} changes}}",
+  "@signOutPendingRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingImages": "{count, plural, =1{Images · 1 waiting to upload} other{Images · {count} waiting to upload}}",
+  "@signOutPendingImages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingWait": "Wait for sync",
+  "signOutPendingDiscard": "Sign out and discard the changes",
+  "sessionPendingChangesIntro": "{count, plural, =1{1 change has not been saved yet:} other{{count} changes have not been saved yet:}}",
+  "@sessionPendingChangesIntro": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndedBackgroundTitle": "You were signed out while the app was in the background",
+  "sessionEndedBackgroundReason": "After 45 minutes without activity, Butlery signs out to protect your account.",
+  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is waiting and is saved when you sign in again.} other{{count} changes are waiting and are saved when you sign in again.}}",
+  "@sessionEndedBackgroundPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftDays": "{count, plural, =1{kept for 1 more day} other{kept for {count} more days}}",
+  "@draftTimeLeftDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftHours": "{count} h left",
+  "@draftTimeLeftHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileDeleteNoRecallWindow": "There is no grace period. When the deletion is done, the account is gone and cannot be restored.",
+  "profileDeleteReasonLabel": "Why are you deleting your account?",
+  "profileDeleteReasonHint": "For example: no longer using the app",
+  "profileDeleteReasonHelp": "The reason goes into the audit record. It is the only trace left afterwards, which is why we ask before.",
+  "accountDeletionWaitNotice": "This can take up to nine minutes. Do not close the app — the deletion continues on the server, but you get no receipt if you leave.",
+  "accountDeletionReauthTitle": "Confirm it is you",
+  "accountDeletionReauthBody": "For security, deleting an account needs a sign-in that is at most five minutes old. Sign in again and the deletion continues where it was.",
+  "accountDeletionReauthCancel": "Cancel the deletion",
+  "accountDeletionReauthConfirm": "Sign in again",
+  "accountDeletionPartialTitle": "The account is partly deleted",
+  "accountDeletionPartialHeading": "{count, plural, =1{The account is gone — one part remains} other{The account is gone — {count} parts remain}}",
+  "@accountDeletionPartialHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialBody": "{count, plural, =1{Your sign-in is deleted. One collection could not be removed and remains with us.} other{Your sign-in is deleted. {count} collections could not be removed and remain with us.}}",
+  "@accountDeletionPartialBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialAuditIdLabel": "Audit id",
+  "accountDeletionPartialNoAuditId": "There is no audit id. Mention the date and time of the deletion when you contact support.",
+  "accountDeletionPartialContact": "Contact support with the id",
+  "accountDeletionPartialEmailSubject": "Partly deleted account {auditId}",
+  "@accountDeletionPartialEmailSubject": {
+    "placeholders": {
+      "auditId": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionPartialNoEmail": "The email app could not be opened. Write to integritet@butlery.se and include the audit id.",
+  "dataExportMemoryNotice": "Save the file before you leave this page. It only lives in the phone's memory — if you go back, you have to export again.",
+  "dataExportNetworkTitle": "The export was interrupted",
+  "dataExportNetworkBody": "The connection dropped while we gathered your data. Nothing on your account has changed.",
+  "dataExportNoPartialFile": "We do not offer a partial file. Whoever receives your data cannot tell what is missing from it.",
+  "dataExportSignedOutTitle": "Your sign-in has expired",
+  "dataExportSignedOutBody": "Sign in again to get your data. Nothing on your account has changed.",
+  "dataExportSignIn": "Sign in again",
+  "dataExportDeniedTitle": "The export was refused",
+  "dataExportDeniedBody": "The fault is ours, not yours, and trying again will not help right now. Nothing on your account has changed.",
+  "dataExportNotNow": "Not now",
+  "consentAiProcessing": "AI interpretation",
+  "consentAiProcessingDescription": "Reads recipes from links, text and photos. Without it, imports are rougher.",
+  "consentRenewalChangedTitle": "{count, plural, =1{We have changed one thing} other{We have changed {count} things}}",
+  "@consentRenewalChangedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalSinceVersion": "You agreed to version {version} on {date}. This is new since then.",
+  "@consentRenewalSinceVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentRenewalUnchanged": "{count, plural, =1{The other purpose is unchanged and your choice stands.} other{The other {count} purposes are unchanged and your choices stand.}}",
+  "@consentRenewalUnchanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalAccept": "I agree",
+  "consentRenewalChooseMyself": "Let me choose",
+  "consentRenewalNotNow": "Not now",
+  "consentRenewalNotNowNote": "If you choose Not now, everything continues as before. Nothing is switched off because you have not answered.",
+  "consentChangeAiProcessingAddedTitle": "AI interpretation is a new purpose",
+  "consentChangeAiProcessingAddedBody": "Reads recipes from links, text and photos. If you agree it is switched on, otherwise it stays off.",
+  "consentRenewalSaveFailed": "Your consent could not be saved. Your earlier choices stand.",
+  "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in."
 }

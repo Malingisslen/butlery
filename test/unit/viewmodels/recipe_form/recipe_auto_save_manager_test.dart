@@ -2,11 +2,12 @@
 /// Sprint, Batch 13 — auto-save / data-loss terrain).
 ///
 /// Behaviours covered:
-///   * Debounce timing: regular = 3s, quickSave = 1s, rapid reschedules
-///     coalesce into a single write (off-by-one in delay = lost writes
-///     or excessive Firestore writes).
-///   * `_shouldAutoSave` gate: drafts with <2 filled fields are NOT
-///     persisted; drafts with >=2 ARE persisted.
+///   * First persistence (ux-beslut.json D-02): the first edit is written
+///     at once, with one filled field; after that, debounce timing is
+///     regular = 3s, quickSave = 1s, and rapid reschedules coalesce into a
+///     single write.
+///   * `_shouldAutoSave` gate: an empty form is NOT persisted; one filled
+///     field IS persisted.
 ///   * Template mode: auto-save suppressed until significant changes
 ///     (>=5 change score), then promoted to regular form.
 ///   * `_currentDraftId` stability: a second save reuses the same draft
@@ -15,8 +16,8 @@
 ///     written under the correct keys with the correct shape.
 ///   * `loadDraftData` round-trip works and returns null for unknown
 ///     draft ids.
-///   * `getAvailableDrafts` filters by `isRecent` (24h) and sorts
-///     newest-first.
+///   * `getAvailableDrafts` filters by `isRecent` (30 days, D-01), by
+///     owner, and sorts newest-first.
 ///   * `deleteDraft` removes the per-draft entry AND the metadata
 ///     index entry.
 ///   * Race: typing during in-flight save — `skipIfBusy: true` drops
@@ -26,10 +27,11 @@
 ///   * `dispose()` mid-save: no setState/notify-after-dispose crash;
 ///     pending timer is cancelled.
 ///   * `hasRecentAutoSave` window: true within 10s, false beyond.
-///   * Cleanup: `initialize()` purges drafts older than 24h from the
+///   * Cleanup: `initialize()` purges drafts older than 30 days from the
 ///     metadata index AND payload keys.
-///   * Max-drafts cap: oldest drafts beyond the 5-entry limit are
-///     pruned, including their per-draft payload key.
+///   * Max-drafts cap: oldest drafts beyond the 5-entry limit per account
+///     are pruned, including their per-draft payload key.
+///   * `clearAllDrafts` (explicit sign-out) removes every draft.
 ///   * `DraftMetadata` JSON round-trip with malformed/missing fields
 ///     defaults gracefully (via SerializationUtils + orEmpty/orZero).
 ///
@@ -102,12 +104,12 @@ void main() {
   });
 
   group('debounce timing', () {
-    /// Proves: a single 3-second debounce window collapses many rapid
-    /// `scheduleAutoSave` calls into exactly ONE persisted write.
-    /// A regression that fires per-keystroke would write N times to
-    /// SharedPreferences (and in production, Firestore).
+    /// Proves: the FIRST edit is persisted at once (D-02: no time limit may
+    /// delay the first persistence), and the later rapid reschedules
+    /// collapse into ONE debounced write of the same draft. A regression
+    /// that fires per-keystroke would write N times.
     test(
-      'coalesces rapid reschedules into a single write',
+      'first edit persists at once, later reschedules coalesce',
       () async {
         final manager = RecipeFormAutoSaveManager();
         addTearDown(manager.dispose);
@@ -123,48 +125,65 @@ void main() {
           await Future<void>.delayed(const Duration(milliseconds: 50));
         }
 
-        // Less than 3s total elapsed; nothing should be written yet.
+        // Less than 3s elapsed: only the first edit is written so far.
         var prefs = await SharedPreferences.getInstance();
-        expect(
-          prefs.getString(_draftsKey),
-          isNull,
-          reason: 'debounce should not have fired yet',
-        );
+        final early = jsonDecode(prefs.getString(_draftsKey)!) as List;
+        expect(early, hasLength(1));
+        expect((early.single as Map)['title'], 'edit #0');
 
         await _settle(const Duration(seconds: 3));
 
         prefs = await SharedPreferences.getInstance();
-        final metadata = prefs.getString(_draftsKey);
-        expect(metadata, isNotNull, reason: 'exactly one write expected');
-        final decoded = jsonDecode(metadata!) as List;
+        final decoded = jsonDecode(prefs.getString(_draftsKey)!) as List;
         expect(
           decoded.length,
           1,
           reason: 'reschedules must coalesce, not duplicate drafts',
         );
+        expect((decoded.single as Map)['title'], 'edit #4');
       },
       timeout: const Timeout(Duration(seconds: 15)),
     );
 
-    /// Proves: `isQuickSave: true` shortens the debounce window to 1s.
-    /// A regression that swapped the constants would fire at 3s
-    /// instead — or never (off-by-one).
+    /// D-02: "Utkastet persisteras från det första tecken användaren
+    /// skriver" — one character in the title is a draft, with no wait.
+    test('the first character is persisted without waiting', () async {
+      final manager = RecipeFormAutoSaveManager();
+      addTearDown(manager.dispose);
+
+      manager.scheduleAutoSave(_formWith(title: 'M'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(_draftsKey), isNotNull);
+      expect(manager.currentDraftId, isNotNull);
+    });
+
+    /// Proves: `isQuickSave: true` shortens the debounce window to 1s for
+    /// the saves after the first. A regression that swapped the constants
+    /// would fire at 3s instead — or never (off-by-one).
     test(
       'quickSave fires faster than the default delay',
       () async {
         final manager = RecipeFormAutoSaveManager();
         addTearDown(manager.dispose);
+        await manager.saveNow(_formWith(title: 't'));
 
         manager.scheduleAutoSave(
-          _formWith(title: 't', ingredients: const ['a']),
+          _formWith(title: 't2', ingredients: const ['a']),
           isQuickSave: true,
         );
 
         await _settle(const Duration(seconds: 1));
         final prefs = await SharedPreferences.getInstance();
+        final saved =
+            jsonDecode(
+                  prefs.getString('$_draftPrefix${manager.currentDraftId}')!,
+                )
+                as Map<String, dynamic>;
         expect(
-          prefs.getString(_draftsKey),
-          isNotNull,
+          saved['title'],
+          't2',
           reason: 'quickSave (1s) should fire well before the 3s default',
         );
       },
@@ -173,27 +192,37 @@ void main() {
   });
 
   group('shouldAutoSave gate', () {
-    /// Proves: a draft below the `_minFieldsForAutoSave` threshold (2)
-    /// is NOT written. The opposite — writing a single-field draft —
-    /// would generate hundreds of trivial "Untitled" drafts per session.
-    test('skips persist when <2 filled fields', () async {
+    /// Proves: an empty form is NOT written — there is no character yet.
+    test('skips persist when nothing is filled', () async {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
 
-      // Only "title" filled -> 1 field.
-      await manager.saveNow(_formWith(title: 'lonely'));
+      await manager.saveNow(_formWith(title: '   '));
 
       final prefs = await SharedPreferences.getInstance();
       expect(
         prefs.getString(_draftsKey),
         isNull,
-        reason: 'single-field forms must not be persisted',
+        reason: 'an empty form must not be persisted',
       );
       expect(
         manager.currentDraftId,
         isNull,
         reason: 'no draft id should be assigned when gate fails',
       );
+    });
+
+    /// Proves: one filled field persists (D-02 superseded the old
+    /// two-field minimum, produktregler.md:789).
+    test('persists with a single filled field', () async {
+      final manager = RecipeFormAutoSaveManager();
+      addTearDown(manager.dispose);
+
+      await manager.saveNow(_formWith(title: 'lonely'));
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(_draftsKey), isNotNull);
+      expect(manager.currentDraftId, isNotNull);
     });
 
     /// Proves: >= 2 filled fields persists.
@@ -397,10 +426,10 @@ void main() {
   });
 
   group('getAvailableDrafts filtering', () {
-    /// Proves: drafts older than 24h are hidden from the recovery UI
-    /// even when they're still in the SharedPreferences index. The
-    /// `isRecent` getter is the contract.
-    test('hides drafts older than 24h, sorts newest first', () async {
+    /// Proves: drafts older than 30 days (D-01) are hidden from the
+    /// recovery UI even when they're still in the SharedPreferences index.
+    /// The `isRecent` getter is the contract.
+    test('hides drafts older than 30 days, sorts newest first', () async {
       // Seed metadata directly with 3 drafts at different ages.
       final base = DateTime.utc(2026, 5, 27, 12);
       final fresh = DraftMetadata(
@@ -412,15 +441,15 @@ void main() {
       );
       final hourOld = DraftMetadata(
         draftId: 'hourOld',
-        createdAt: base.subtract(const Duration(hours: 6)),
-        lastModifiedAt: base.subtract(const Duration(hours: 6)),
+        createdAt: base.subtract(const Duration(days: 29)),
+        lastModifiedAt: base.subtract(const Duration(days: 29)),
         title: 'hourOld',
         fieldCount: 3,
       );
       final ancient = DraftMetadata(
         draftId: 'ancient',
-        createdAt: base.subtract(const Duration(days: 5)),
-        lastModifiedAt: base.subtract(const Duration(days: 5)),
+        createdAt: base.subtract(const Duration(days: 31)),
+        lastModifiedAt: base.subtract(const Duration(days: 31)),
         title: 'ancient',
         fieldCount: 3,
       );
@@ -553,6 +582,9 @@ void main() {
       () async {
         final manager = RecipeFormAutoSaveManager();
         addTearDown(manager.dispose);
+        // The first save is immediate (D-02); make one so the next
+        // schedule is debounced.
+        await manager.saveNow(_formWith(title: 'first'));
 
         // Schedule a debounced save we'll preempt with saveNow.
         manager.scheduleAutoSave(
@@ -597,13 +629,13 @@ void main() {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
 
-      await manager.saveNow(_formWith(title: 'only one field'));
+      await manager.saveNow(_formWith(title: ''));
 
       final prefs = await SharedPreferences.getInstance();
       expect(
         prefs.getString(_draftsKey),
         isNull,
-        reason: 'saveNow does not bypass the significance gate',
+        reason: 'saveNow does not bypass the empty-form gate',
       );
     });
   });
@@ -617,6 +649,8 @@ void main() {
       'dispose with pending timer is safe and cancels the write',
       () async {
         final manager = RecipeFormAutoSaveManager();
+        await manager.saveNow(_formWith(title: 'first'));
+        final id = manager.currentDraftId!;
 
         manager.scheduleAutoSave(
           _formWith(title: 'pending', ingredients: const ['x']),
@@ -626,9 +660,12 @@ void main() {
         // Wait past the original fire window.
         await _settle(const Duration(seconds: 3));
 
-        // Nothing should be written because the timer was cancelled.
+        // The pending write never happened because the timer was cancelled.
         final prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString(_draftsKey), isNull);
+        final saved =
+            jsonDecode(prefs.getString('$_draftPrefix$id')!)
+                as Map<String, dynamic>;
+        expect(saved['title'], 'first');
       },
       timeout: const Timeout(Duration(seconds: 15)),
     );
@@ -700,14 +737,14 @@ void main() {
   });
 
   group('cleanup on initialize', () {
-    /// Proves: stale drafts beyond the 24h retention are physically
+    /// Proves: stale drafts beyond the 30-day retention are physically
     /// purged on initialize (both payload and metadata). A regression
     /// where cleanup only updates the metadata leaks payload bytes.
     test('purges stale drafts from payload AND metadata', () async {
       final stale = DraftMetadata(
         draftId: 'old',
-        createdAt: DateTime.utc(2026, 5, 1),
-        lastModifiedAt: DateTime.utc(2026, 5, 1),
+        createdAt: DateTime.utc(2026, 4, 20),
+        lastModifiedAt: DateTime.utc(2026, 4, 20),
         title: 'old',
         fieldCount: 3,
       );
@@ -845,8 +882,9 @@ void main() {
       expect(restored.fieldCount, 0);
     });
 
-    /// Proves: `isRecent` flips at the 24h boundary.
-    test('isRecent is false beyond 24h', () {
+    /// Proves: `isRecent` flips at the 30-day boundary (D-01), and a draft
+    /// 29 days old is kept.
+    test('isRecent is false beyond 30 days', () {
       withClock(Clock.fixed(DateTime.utc(2026, 5, 27, 12)), () {
         final fresh = DraftMetadata(
           draftId: 'a',
@@ -855,15 +893,25 @@ void main() {
           title: 'a',
           fieldCount: 3,
         );
+        final day29 = DraftMetadata(
+          draftId: 'c',
+          createdAt: DateTime.utc(2026, 4, 28, 12),
+          lastModifiedAt: DateTime.utc(2026, 4, 28, 12),
+          title: 'c',
+          fieldCount: 3,
+        );
         final stale = DraftMetadata(
           draftId: 'b',
-          createdAt: DateTime.utc(2026, 5, 25),
-          lastModifiedAt: DateTime.utc(2026, 5, 25),
+          createdAt: DateTime.utc(2026, 4, 26, 12),
+          lastModifiedAt: DateTime.utc(2026, 4, 26, 12),
           title: 'b',
           fieldCount: 3,
         );
         expect(fresh.isRecent, isTrue);
+        expect(day29.isRecent, isTrue);
+        expect(day29.timeLeft, const Duration(days: 1));
         expect(stale.isRecent, isFalse);
+        expect(stale.timeLeft, Duration.zero);
       });
     });
   });
@@ -881,9 +929,12 @@ void main() {
     /// scenario via real `saveNow()` would itself cancel the queued
     /// timer (saveNow's own `_autoSaveTimer?.cancel()` prelude), masking
     /// the bug. The seam isolates the exact line under test.
-    test('skipIfBusy=true preserves the pending timer when busy', () {
+    test('skipIfBusy=true preserves the pending timer when busy', () async {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
+      // A draft exists, so later schedules are debounced (D-02 makes only
+      // the first one immediate).
+      await manager.saveNow(_formWith(title: 'first'));
 
       // Step 1: schedule a normal debounce — pending timer is now active.
       manager.scheduleAutoSave(
@@ -923,9 +974,10 @@ void main() {
     /// normal cancel+reschedule flow. Catches a regression that
     /// over-corrects by ignoring the schedule entirely when skipIfBusy is
     /// set.
-    test('skipIfBusy=true still schedules when not busy', () {
+    test('skipIfBusy=true still schedules when not busy', () async {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
+      await manager.saveNow(_formWith(title: 'first'));
 
       manager.scheduleAutoSave(
         _formWith(title: 'first', ingredients: const ['x']),
@@ -1053,6 +1105,67 @@ void main() {
         isNull,
         reason: 'cleared draft payload must be gone',
       );
+    });
+  });
+
+  group('P6-U08a: owners, per-account cap and explicit sign-out', () {
+    test('another account never sees the drafts', () async {
+      var owner = 'anna';
+      final manager = RecipeFormAutoSaveManager(ownerIdProvider: () => owner);
+      addTearDown(manager.dispose);
+      await manager.saveNow(_formWith(title: 'Annas soppa'));
+
+      expect(await manager.getAvailableDrafts(), hasLength(1));
+      owner = 'bertil';
+      expect(await manager.getAvailableDrafts(), isEmpty);
+    });
+
+    test('the five-slot cap is per account', () async {
+      final base = DateTime.utc(2026, 5, 27, 10);
+      final others = List.generate(5, (i) {
+        final ts = base.add(Duration(minutes: i));
+        return DraftMetadata(
+          draftId: 'b$i',
+          createdAt: ts,
+          lastModifiedAt: ts,
+          title: 'b$i',
+          fieldCount: 1,
+          ownerId: 'bertil',
+        );
+      });
+      SharedPreferences.setMockInitialValues({
+        _draftsKey: jsonEncode(others.map((m) => m.toJson()).toList()),
+      });
+      final manager = RecipeFormAutoSaveManager(ownerIdProvider: () => 'anna');
+      addTearDown(manager.dispose);
+
+      await withClock(Clock.fixed(base.add(const Duration(hours: 1))), () {
+        return manager.saveNow(_formWith(title: 'Annas'));
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final ids = (jsonDecode(prefs.getString(_draftsKey)!) as List)
+          .map((m) => (m as Map)['draftId'])
+          .toList();
+      expect(
+        ids,
+        hasLength(6),
+        reason: "Anna's draft pushes out none of Bertil's",
+      );
+      expect(ids, contains('b0'));
+    });
+
+    test('clearAllDrafts removes every draft and the index', () async {
+      final manager = RecipeFormAutoSaveManager(ownerIdProvider: () => 'anna');
+      addTearDown(manager.dispose);
+      await manager.saveNow(_formWith(title: 'x'));
+      final id = manager.currentDraftId!;
+
+      await RecipeFormAutoSaveManager.clearAllDrafts();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('$_draftPrefix$id'), isNull);
+      expect(prefs.getString(_draftsKey), isNull);
     });
   });
 }

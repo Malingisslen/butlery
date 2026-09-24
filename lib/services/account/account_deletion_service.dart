@@ -63,6 +63,13 @@ class AccountDeletionService extends BaseService {
   ///     `auth_time`; caller must trigger re-authentication and retry.
   ///   - `retained` (`List<RetainedRecord>`) — records lawfully kept under
   ///     GDPR Art. 17(3); empty on an ordinary deletion.
+  ///   - `cfCompleted` (bool) — whether the callable answered. False means
+  ///     the cascade never reported, so the account must be treated as
+  ///     still existing.
+  ///
+  /// [reason] is the user's own answer to "Varför raderar du kontot?", asked
+  /// before anything is deleted (produktregler.md:614); it reaches the audit
+  /// row through the callable.
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,
     bool createAuditLog = true,
@@ -80,6 +87,11 @@ class AccountDeletionService extends BaseService {
       // every ordinary deletion, which is the common case and must stay
       // indistinguishable from the old behaviour.
       'retained': <RetainedRecord>[],
+      // Whether the callable answered at all. Until it has, the account is
+      // certainly NOT gone, so a failure before that point can never be
+      // described as a partial deletion (produktregler.md:613 — "kontot *är*
+      // borta" is what makes an outcome partial rather than failed).
+      'cfCompleted': false,
     };
 
     final uid = _authService.currentUserId;
@@ -121,6 +133,7 @@ class AccountDeletionService extends BaseService {
         'reason': reason,
       });
       _mergeCfResult(response.data, result);
+      result['cfCompleted'] = true;
     } on FirebaseFunctionsException catch (e) {
       _handleCfException(e, result);
       return result;

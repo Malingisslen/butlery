@@ -4307,7 +4307,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get consentRequiredDescription =>
-      'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.';
+      'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen att radera kontot, inte ett reglage här.';
 
   @override
   String get consentBasicServices => 'Grundläggande tjänster';
@@ -17277,4 +17277,270 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
+
+  @override
+  String signOutPendingTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar har inte sparats',
+      one: '1 ändring har inte sparats',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get signOutPendingBody =>
+      'Om du loggar ut nu försvinner de. Butlery väntar gärna tills du har nät igen.';
+
+  @override
+  String signOutPendingRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recept · $count ändringar',
+      one: 'Recept · 1 ändring',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String signOutPendingImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bilder · $count väntar på uppladdning',
+      one: 'Bilder · 1 väntar på uppladdning',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get signOutPendingWait => 'Vänta på synk';
+
+  @override
+  String get signOutPendingDiscard => 'Logga ut och släng ändringarna';
+
+  @override
+  String sessionPendingChangesIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar har inte sparats än:',
+      one: '1 ändring har inte sparats än:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sessionEndedBackgroundTitle =>
+      'Du loggades ut medan appen låg i bakgrunden';
+
+  @override
+  String get sessionEndedBackgroundReason =>
+      'Efter 45 minuter utan aktivitet loggar Butlery ut för att skydda ditt konto.';
+
+  @override
+  String sessionEndedBackgroundPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar väntar och sparas när du loggar in igen.',
+      one: '1 ändring väntar och sparas när du loggar in igen.',
+      zero: 'Inga ändringar väntar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String draftTimeLeftDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'finns kvar i $count dagar',
+      one: 'finns kvar i 1 dag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String draftTimeLeftHours(int count) {
+    return '$count h kvar';
+  }
+
+  @override
+  String get profileDeleteNoRecallWindow =>
+      'Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.';
+
+  @override
+  String get profileDeleteReasonLabel => 'Varför raderar du kontot?';
+
+  @override
+  String get profileDeleteReasonHint =>
+      'Till exempel: använder appen inte längre';
+
+  @override
+  String get profileDeleteReasonHelp =>
+      'Skälet följer med till revisionsraden. Det är det enda spåret som finns efteråt, därför frågar vi före.';
+
+  @override
+  String get accountDeletionWaitNotice =>
+      'Detta kan ta upp till nio minuter. Stäng inte appen — raderingen fortsätter på servern, men du får inget kvitto om du går.';
+
+  @override
+  String get accountDeletionReauthTitle => 'Bekräfta att det är du';
+
+  @override
+  String get accountDeletionReauthBody =>
+      'Av säkerhetsskäl krävs en inloggning som är högst fem minuter gammal för att radera ett konto. Logga in igen, så fortsätter raderingen där den var.';
+
+  @override
+  String get accountDeletionReauthCancel => 'Avbryt raderingen';
+
+  @override
+  String get accountDeletionReauthConfirm => 'Logga in igen';
+
+  @override
+  String get accountDeletionPartialTitle => 'Kontot är raderat delvis';
+
+  @override
+  String accountDeletionPartialHeading(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Kontot är borta — $count delar kvarstår',
+      one: 'Kontot är borta — en del kvarstår',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountDeletionPartialBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Inloggningen är raderad. $count samlingar gick inte att ta bort och ligger kvar hos oss.',
+      one:
+          'Inloggningen är raderad. En samling gick inte att ta bort och ligger kvar hos oss.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeletionPartialAuditIdLabel => 'Revisions-id';
+
+  @override
+  String get accountDeletionPartialNoAuditId =>
+      'Revisions-id saknas. Nämn datum och tid för raderingen när du kontaktar support.';
+
+  @override
+  String get accountDeletionPartialContact => 'Kontakta support med id';
+
+  @override
+  String accountDeletionPartialEmailSubject(String auditId) {
+    return 'Delvis raderat konto $auditId';
+  }
+
+  @override
+  String get accountDeletionPartialNoEmail =>
+      'E-postappen gick inte att öppna. Skriv till integritet@butlery.se och ange revisions-id.';
+
+  @override
+  String get dataExportMemoryNotice =>
+      'Spara filen innan du lämnar sidan. Den ligger bara i telefonens minne — går du tillbaka får du göra om exporten.';
+
+  @override
+  String get dataExportNetworkTitle => 'Exporten avbröts';
+
+  @override
+  String get dataExportNetworkBody =>
+      'Anslutningen bröts medan vi samlade ihop uppgifterna. Ingenting är ändrat på ditt konto.';
+
+  @override
+  String get dataExportNoPartialFile =>
+      'Vi erbjuder ingen halv fil. Den som tar emot dina uppgifter kan inte se vad som saknas i den.';
+
+  @override
+  String get dataExportSignedOutTitle => 'Inloggningen har gått ut';
+
+  @override
+  String get dataExportSignedOutBody =>
+      'Logga in igen för att hämta ut dina uppgifter. Ingenting är ändrat på ditt konto.';
+
+  @override
+  String get dataExportSignIn => 'Logga in igen';
+
+  @override
+  String get dataExportDeniedTitle => 'Exporten nekades';
+
+  @override
+  String get dataExportDeniedBody =>
+      'Felet ligger hos oss, inte hos dig, och ett nytt försök hjälper inte just nu. Ingenting är ändrat på ditt konto.';
+
+  @override
+  String get dataExportNotNow => 'Inte nu';
+
+  @override
+  String get consentAiProcessing => 'AI-tolkning';
+
+  @override
+  String get consentAiProcessingDescription =>
+      'Läser recept ur länkar, text och foto. Utan detta blir importen grövre.';
+
+  @override
+  String consentRenewalChangedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Vi har ändrat $count saker',
+      one: 'Vi har ändrat en sak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String consentRenewalSinceVersion(String version, String date) {
+    return 'Du sa ja till version $version den $date. Det här är nytt sedan dess.';
+  }
+
+  @override
+  String consentRenewalUnchanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Övriga $count ändamål är oförändrade och dina val står kvar.',
+      one: 'Övriga ändamål är oförändrade och dina val står kvar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get consentRenewalAccept => 'Jag godkänner';
+
+  @override
+  String get consentRenewalChooseMyself => 'Låt mig välja själv';
+
+  @override
+  String get consentRenewalNotNow => 'Inte nu';
+
+  @override
+  String get consentRenewalNotNowNote =>
+      'Väljer du Inte nu fortsätter allt som förut. Ingenting slås av för att du inte svarat.';
+
+  @override
+  String get consentChangeAiProcessingAddedTitle =>
+      'AI-tolkning är ett nytt ändamål';
+
+  @override
+  String get consentChangeAiProcessingAddedBody =>
+      'Läser recept ur länkar, text och foto. Säger du ja slås den på, annars står den av.';
+
+  @override
+  String get consentRenewalSaveFailed =>
+      'Samtycket kunde inte sparas. Dina tidigare val står kvar.';
+
+  @override
+  String get signOutDiscardFailed =>
+      'Ändringarna kunde inte slängas, så du är fortfarande inloggad.';
 }

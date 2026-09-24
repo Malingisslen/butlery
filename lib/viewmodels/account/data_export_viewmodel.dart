@@ -1,10 +1,33 @@
+import 'dart:async';
+import 'dart:io' show SocketException;
+
 import 'package:clock/clock.dart';
+import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+
+/// Why an export failed. "Tre felorsaker, tre besked: utgången inloggning
+/// leder till inloggningen, nekad behörighet är vårt fel och ber inte om ett
+/// nytt försök, nätavbrott får försök igen" (produktregler.md:735), plus the
+/// general case, the only one that may ask for a retry without explaining
+/// (Skarmar v12 etapp 6 #dataexportfel).
+enum ExportFailure {
+  /// The sign-in has expired or is gone: the way on is signing in.
+  signedOut,
+
+  /// The server refused. Our fault; no retry is offered.
+  permissionDenied,
+
+  /// The connection dropped mid-export: retry.
+  network,
+
+  /// Anything else: retry.
+  other,
+}
 
 /// ViewModel for managing user data export UI state and operations
 /// Handles the GDPR data portability feature, allowing users to export
@@ -32,6 +55,7 @@ class DataExportViewModel extends ChangeNotifier
   // State
   String? _exportedData;
   DateTime? _exportTimestamp;
+  ExportFailure? _failure;
 
   // Getters
   bool get isExporting => isLoading; // Compatibility alias for UI
@@ -39,6 +63,9 @@ class DataExportViewModel extends ChangeNotifier
   String? get errorMessage =>
       error; // Compatibility alias for UI - StateNotifierMixin provides 'error'
   DateTime? get exportTimestamp => _exportTimestamp;
+
+  /// Why the last export failed, or null.
+  ExportFailure? get failure => _failure;
   bool get hasExportedData => _exportedData != null;
 
   /// Estimated export size in KB (rough estimate)
@@ -80,6 +107,7 @@ class DataExportViewModel extends ChangeNotifier
   /// Returns true on success, false on failure.
   /// Loading state, error handling, and duplicate prevention managed by AsyncOperationMixin.
   Future<bool> exportData() async {
+    _failure = null;
     try {
       return await executeNamedOperation(
         'export', // Prevents duplicate concurrent exports
@@ -100,7 +128,10 @@ class DataExportViewModel extends ChangeNotifier
       );
     } catch (e) {
       // executeNamedOperation already set loading=false and hasError=true
-      // Update error message to user-friendly format
+      // Update error message to user-friendly format. No partial file is
+      // ever kept: the bundle is only assigned on success
+      // (produktregler.md:734).
+      _failure = classifyExportError(e);
       setError(_formatErrorMessage(e));
       return false;
     }
@@ -116,6 +147,7 @@ class DataExportViewModel extends ChangeNotifier
   void clearExportedData() {
     _exportedData = null;
     _exportTimestamp = null;
+    _failure = null;
     clearError(); // AsyncOperationMixin provides clearError()
     notifyListeners();
     app_logger.AppLogger.info('[$_logTag] Exported data cleared');
@@ -125,10 +157,45 @@ class DataExportViewModel extends ChangeNotifier
   void reset() {
     _exportedData = null;
     _exportTimestamp = null;
+    _failure = null;
     clearError(); // AsyncOperationMixin provides clearError()
     // isLoading automatically managed by AsyncOperationMixin
     notifyListeners();
     app_logger.AppLogger.info('[$_logTag] Export state reset');
+  }
+
+  /// Sorts an export error into its cause. Typed errors first; the string
+  /// checks keep the old behaviour for errors that arrive as plain
+  /// exceptions ("No authenticated user found", data_export_service.dart).
+  @visibleForTesting
+  static ExportFailure classifyExportError(Object error) {
+    if (error is FirebaseException) {
+      switch (error.code) {
+        case 'permission-denied':
+          return ExportFailure.permissionDenied;
+        case 'unauthenticated':
+        case 'user-token-expired':
+        case 'invalid-user-token':
+        case 'user-not-found':
+        case 'requires-recent-login':
+          return ExportFailure.signedOut;
+        case 'unavailable':
+        case 'deadline-exceeded':
+        case 'network-request-failed':
+          return ExportFailure.network;
+      }
+      return ExportFailure.other;
+    }
+    if (error is SocketException || error is TimeoutException) {
+      return ExportFailure.network;
+    }
+    final text = error.toString();
+    if (text.contains('No authenticated user')) return ExportFailure.signedOut;
+    if (text.contains('permission')) return ExportFailure.permissionDenied;
+    if (text.contains('network') || text.contains('connection')) {
+      return ExportFailure.network;
+    }
+    return ExportFailure.other;
   }
 
   // Private helper methods
@@ -151,8 +218,11 @@ class DataExportViewModel extends ChangeNotifier
 
   @override
   void dispose() {
-    // Clear sensitive data from memory on dispose
+    // Clear sensitive data from memory on dispose: the file lives only in
+    // memory and is cleared when the view is left, which the view says
+    // (produktregler.md:733).
     _exportedData = null;
+    _exportTimestamp = null;
     app_logger.AppLogger.debug('[$_logTag] ViewModel disposed');
     super.dispose();
   }
