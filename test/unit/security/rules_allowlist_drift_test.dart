@@ -85,6 +85,8 @@ library;
 import 'dart:io';
 
 import 'package:butlery/models/messaging/conversation_participant.dart';
+import 'package:butlery/models/realtime/overwritten_version.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -131,6 +133,14 @@ const _allowlists = <_Allowlist>[
     mustContain: 'generatorVersion',
     anchor: 'function isValidTagResult',
     writer: 'lib/models/tagging/tag_result.dart TagResult.toFirestore',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/overwritten_versions',
+    mustContain: 'overwrittenByName',
+    anchor: 'match /users/{userId}/overwritten_versions/{versionId}',
+    writer:
+        'lib/models/realtime/overwritten_version.dart OverwrittenVersion.toFirestore, '
+        'stored by FirebaseOverwrittenVersionRepository (P5-U26b)',
   ),
   _Allowlist(
     label: 'users/{uid}/counters',
@@ -302,6 +312,19 @@ Map<String, Set<String>> _writtenKeys() => {
   // best-effort try/catch — so a typo throws before any write and sends no
   // field at all. Different failure (the badge silently stops moving, nothing
   // is denied), and not one this guard is the instrument for.
+  // Derived from the model, so a new field in toFirestore reddens here.
+  'users/{uid}/overwritten_versions': OverwrittenVersion(
+    id: 'v',
+    ownerId: 'u',
+    entity: ConflictEntity.values.first,
+    resourceType: RealtimeResourceType.values.first,
+    resourceId: 'r',
+    version: const <String, dynamic>{},
+    overwrittenBy: 'o',
+    overwrittenByName: 'O',
+    overwrittenAt: DateTime.utc(2026),
+    expiresAt: DateTime.utc(2026, 1, 31),
+  ).toFirestore().keys.toSet(),
   'users/{uid}/counters': {
     for (final type in const [
       'shared_recipes',
@@ -748,9 +771,11 @@ void main() {
     // Assert the FULL classification, not just this guard's slice. A rule
     // written as `let k = data.keys(); … k.hasOnly([...])` would slip past
     // `_allowlistCall` without moving its count; it cannot slip past the total.
+    // P5-U26b added users/{uid}/overwritten_versions (keys().hasOnly on create),
+    // guarded above in _allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      40,
+      41,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
