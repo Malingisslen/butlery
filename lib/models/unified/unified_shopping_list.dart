@@ -201,6 +201,16 @@ class UnifiedShoppingList {
   /// Null for manually created lists and legacy docs.
   final String? generatedForWeek;
 
+  /// P6-U02: the ids of the rows the week merge (#inkopmerge) put on this
+  /// list. "Ersätt listan" replaces exactly these rows and keeps every other
+  /// row, because "Dina egna, manuellt tillagda varor behålls alltid"
+  /// (Skarmar v12 del 2 #inkopmerge; flows-roles-budget.md:47; produktbeslut
+  /// PQ-10 = A, 2026-09-23). A row is told apart by its id, never by its
+  /// name (produktregler.md:118, "Namn är aldrig identitet"). Null on lists
+  /// written before this field existed: their rows cannot be told apart, so
+  /// all of them are kept.
+  final List<String>? menuItemIds;
+
   /// BUT-648: Schema version for lazy migration on read.
   /// Default 1 — old docs without this field are treated as v1.
   final int schemaVersion;
@@ -265,6 +275,7 @@ class UnifiedShoppingList {
     this.autoRemoveCompleted = false,
     this.collaborativeOrigin,
     this.generatedForWeek,
+    this.menuItemIds,
     this.schemaVersion = 1,
   }) : id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? clock.now(),
@@ -443,6 +454,7 @@ class UnifiedShoppingList {
     bool? autoRemoveCompleted,
     String? collaborativeOrigin,
     String? generatedForWeek,
+    List<String>? menuItemIds,
     int? schemaVersion,
   }) {
     return UnifiedShoppingList(
@@ -468,6 +480,7 @@ class UnifiedShoppingList {
       autoRemoveCompleted: autoRemoveCompleted ?? this.autoRemoveCompleted,
       collaborativeOrigin: collaborativeOrigin ?? this.collaborativeOrigin,
       generatedForWeek: generatedForWeek ?? this.generatedForWeek,
+      menuItemIds: menuItemIds ?? this.menuItemIds,
       schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
@@ -634,6 +647,7 @@ class UnifiedShoppingList {
       'autoRemoveCompleted': autoRemoveCompleted,
       'collaborativeOrigin': collaborativeOrigin,
       'generatedForWeek': generatedForWeek,
+      'menuItemIds': menuItemIds,
       'schemaVersion': schemaVersion,
     };
   }
@@ -666,6 +680,7 @@ class UnifiedShoppingList {
       'allowGuestEditing': allowGuestEditing,
       'autoRemoveCompleted': autoRemoveCompleted,
       'generatedForWeek': generatedForWeek,
+      'menuItemIds': menuItemIds,
       'schemaVersion': schemaVersion,
     };
   }
@@ -744,6 +759,7 @@ class UnifiedShoppingList {
         json,
         'generatedForWeek',
       ),
+      menuItemIds: _readMenuItemIds(json['menuItemIds']),
       schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
@@ -827,6 +843,7 @@ class UnifiedShoppingList {
         data,
         'generatedForWeek',
       ),
+      menuItemIds: _readMenuItemIds(data['menuItemIds']),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
@@ -846,6 +863,13 @@ class UnifiedShoppingList {
   @override
   String toString() {
     return 'UnifiedShoppingList(id: $id, name: $name, items: $totalItems, type: $type, sync: $syncStatus)';
+  }
+
+  /// Reads [menuItemIds]: null when the field is absent, and only string
+  /// ids otherwise.
+  static List<String>? _readMenuItemIds(Object? raw) {
+    if (raw is! List) return null;
+    return List.unmodifiable(raw.whereType<String>());
   }
 
   /// Compares two shopping lists for equality based on unique identifier.

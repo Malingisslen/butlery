@@ -1728,6 +1728,56 @@ void main() {
       });
     });
 
+    // P6-U02: the merge sheet's write. Three outcomes stay apart
+    // (produktregler.md:705): a receipt, null for failure, and the
+    // already-running sentinel, which the view renders as silence.
+    group('applyShoppingMerge (P6-U02)', () {
+      final merge = MenuShoppingListGenerator.preview(
+        MenuShoppingListGenerator.sourceForMenu(
+          const {},
+          DateTime(2026, 4, 13),
+        ),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(),
+      );
+      const receipt = MenuShoppingMergeReceipt(
+        listId: 'list-1',
+        listName: 'Inköpslista v.16',
+        addedItemIds: ['a'],
+        removedItems: [],
+        previousMenuItemIds: null,
+        replaced: false,
+        createdList: false,
+      );
+
+      test(
+        'a second tap while writing is silent, and only one write runs',
+        () async {
+          final gate = Completer<MenuShoppingMergeReceipt?>();
+          when(() => mockGenerator.apply(merge)).thenAnswer((_) => gate.future);
+
+          final first = viewModel.applyShoppingMerge(merge);
+          expect(viewModel.isMergingShoppingList, isTrue);
+          final second = await viewModel.applyShoppingMerge(merge);
+          gate.complete(receipt);
+
+          expect(identical(second, shoppingMergeAlreadyRunning), isTrue);
+          expect(await first, same(receipt));
+          expect(viewModel.isMergingShoppingList, isFalse);
+          verify(() => mockGenerator.apply(merge)).called(1);
+        },
+      );
+
+      test('a failed write is null, never the sentinel', () async {
+        when(() => mockGenerator.apply(merge)).thenThrow(StateError('x'));
+
+        final result = await viewModel.applyShoppingMerge(merge);
+
+        expect(result, isNull);
+        expect(viewModel.isMergingShoppingList, isFalse);
+      });
+    });
+
     group('generateShoppingList (BUT-1234)', () {
       const successResult = MenuShoppingGenerationResult(
         listId: 'list-1',

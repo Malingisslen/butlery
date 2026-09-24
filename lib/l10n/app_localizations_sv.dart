@@ -17277,4 +17277,198 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
+
+  @override
+  String get menuNoMatchTitle => 'Inga recept matchar';
+
+  @override
+  String menuNoMatchBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Beskrivningen ger noll träffar bland dina $count recept.',
+      one: 'Beskrivningen ger ingen träff på ditt enda recept.',
+    );
+    return '$_temp0 Ändra eller släpp ett krav så hittar vi förslag.';
+  }
+
+  @override
+  String menuNoMatchConstraints(String constraints) {
+    return 'Kraven: $constraints';
+  }
+
+  @override
+  String get menuNoMatchEditPrompt => 'Ändra beskrivningen';
+
+  @override
+  String get menuNoMatchPlanYourself => 'Lägg dagarna själv';
+
+  @override
+  String get menuGenerateOfflineReason =>
+      'Du är offline, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.';
+
+  @override
+  String get menuGenerateOfflineStopped =>
+      'Du blev offline, så förslaget placerades inte. Veckan är oförändrad.';
+
+  @override
+  String get shoppingMergeTitle => 'Till inköpslistan';
+
+  @override
+  String shoppingMergeItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor',
+      one: '1 vara',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeSummary(int recipes, int rows, String items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes rätter ger',
+      one: '1 rätt ger',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      rows,
+      locale: localeName,
+      other: '$rows rader',
+      one: '1 rad',
+    );
+    return '$_temp0 $_temp1. Efter sammanslagning blir det $items.';
+  }
+
+  @override
+  String get shoppingMergeStatMerged => 'slås samman';
+
+  @override
+  String get shoppingMergeStatConverted => 'konverteras';
+
+  @override
+  String get shoppingMergeStatAtHome => 'finns hemma';
+
+  @override
+  String get shoppingMergeShowDetails => 'Visa detaljer';
+
+  @override
+  String get shoppingMergeHideDetails => 'Dölj detaljer';
+
+  @override
+  String get shoppingMergeShowDetailsA11y =>
+      'Visa detaljer om sammanslagningen';
+
+  @override
+  String get shoppingMergeHideDetailsA11y =>
+      'Dölj detaljer om sammanslagningen';
+
+  @override
+  String get shoppingMergeDuplicatesTitle => 'Slå samman dubbletter';
+
+  @override
+  String get shoppingMergeDuplicatesBody =>
+      'Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.';
+
+  @override
+  String get shoppingMergeConvertTitle => 'Konvertera enheter';
+
+  @override
+  String get shoppingMergeConvertBody =>
+      '2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.';
+
+  @override
+  String get shoppingMergePantryTitle => 'Dra bort skafferivaror';
+
+  @override
+  String shoppingMergePantryBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor finns hemma.',
+      one: '1 vara finns hemma.',
+      zero: 'Inget av varorna finns hemma.',
+    );
+    return '$_temp0 Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.';
+  }
+
+  @override
+  String shoppingMergePantryCovered(String names) {
+    return 'Finns hemma i tillräcklig mängd: $names';
+  }
+
+  @override
+  String get shoppingMergePantryUnavailable =>
+      'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.';
+
+  @override
+  String get shoppingMergeReplaceTitle =>
+      'Ersätt listan i stället för att lägga till';
+
+  @override
+  String get shoppingMergeReplaceBody =>
+      'Dina egna, manuellt tillagda varor behålls alltid.';
+
+  @override
+  String shoppingMergeAdd(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lägg till $count varor',
+      one: 'Lägg till 1 vara',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeReplaceAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ersätt med $count varor',
+      one: 'Ersätt med 1 vara',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeAdded(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor lades till i $list.',
+      one: '1 vara lades till i $list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeReplaced(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor',
+      one: '1 vara',
+    );
+    return '$list har nu $_temp0 från veckan. Dina egna varor finns kvar.';
+  }
+
+  @override
+  String get shoppingMergeUndoFailed => 'Ångra gick inte att slutföra';
+
+  @override
+  String get shoppingMergeUndoFailedKept => 'Varorna finns kvar i listan.';
+
+  @override
+  String shoppingMergeRowRecipes(int count) {
+    return '$count recept';
+  }
+
+  @override
+  String get shoppingMergeMarkMaybeHome => 'Kanske hemma';
+
+  @override
+  String get shoppingMergeMarkCheckDate => 'Kolla datum';
 }

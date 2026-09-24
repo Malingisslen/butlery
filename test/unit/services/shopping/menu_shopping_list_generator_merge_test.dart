@@ -1,0 +1,411 @@
+/// P6-U02: flow 02, the week menu to the shopping list through the merge
+/// sheet (Skarmar v12 del 2 #inkopmerge, #inkopmergeoppen;
+/// flows-roles-budget.md:44-51).
+///
+/// Pins what the sheet shows before anything is written (the preview), and
+/// what "Lägg till N varor", "Ersätt listan" and Ångra write:
+/// - produktbeslut PQ-10 = A: your own rows are always kept, and the rows
+///   land in the week's generated list, created when missing.
+/// - produktbeslut PQ-11 = A: the pantry subtracts amounts (§ 4.2).
+/// - produktregler.md:131 (§ 2.4): Ångra takes back exactly the add, or the
+///   replace.
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+
+import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/factories/mock_factory.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
+import '../../../test_support/base_unit_test.dart';
+
+class _MockPantryService extends Mock implements PantryService {}
+
+const _userId = 'merge-user';
+const _weekKey = '2026-W24';
+final _date = DateTime(2026, 6, 10);
+
+Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
+  core: RecipeCore(
+    id: id,
+    title: id,
+    description: '',
+    ingredients: entries.map((e) => e.raw).toList(),
+    structuredIngredients: entries,
+    instructions: const ['x'],
+    mealType: 'Middag',
+  ),
+  type: RecipeType.personal,
+);
+
+RecipeIngredient _ing(double amount, String unit, String name) =>
+    RecipeIngredient(
+      amount: amount,
+      unit: unit,
+      name: name,
+      raw: '$amount $unit $name',
+    );
+
+/// Three dishes, 6 ingredient lines: lök three times (merged), mjölk in dl
+/// and ml (converted), and pasta once.
+MenuShoppingSource _source() => MenuShoppingListGenerator.sourceForMenu({
+  'Middag': [
+    _recipe('r1', [_ing(1, 'st', 'gul lök'), _ing(2, 'dl', 'mjölk')]),
+    _recipe('r2', [_ing(1, 'st', 'gul lök'), _ing(100, 'ml', 'mjölk')]),
+    _recipe('r3', [_ing(1, 'st', 'gul lök'), _ing(500, 'g', 'pasta')]),
+  ],
+}, _date);
+
+PantryItem _pantry(String name, double? quantity, String unit) => PantryItem(
+  id: 'p-$name',
+  ingredientName: name,
+  quantity: quantity,
+  unit: unit,
+  location: PantryLocation.pantry,
+  addedAt: DateTime(2026, 6, 1),
+);
+
+UnifiedShoppingList _weekList({
+  List<UnifiedShoppingItem> items = const [],
+  List<String>? menuItemIds,
+}) => UnifiedShoppingList(
+  id: 'week-list',
+  name: 'Inköpslista v.24',
+  ownerId: _userId,
+  ownerDisplayName: 'Test',
+  items: items,
+  generatedForWeek: _weekKey,
+  menuItemIds: menuItemIds,
+);
+
+void main() {
+  late MockUnifiedShoppingService shopping;
+  late MenuShoppingListGenerator generator;
+  late List<UnifiedShoppingList> writes;
+
+  setUpAll(() {
+    production.ServiceLocator.initialize(DIContainer());
+    registerFallbackValue(
+      UnifiedShoppingList(name: 'x', ownerId: 'x', ownerDisplayName: 'x'),
+    );
+  });
+
+  setUp(() async {
+    await BaseUnitTest.setupUnit();
+    await TestServiceLocator.initialize();
+    TestServiceLocator.registerMock<AuthRepository>(
+      MockFactory.createAuthRepository(isAuthenticated: true, userId: _userId),
+    );
+    shopping = MockUnifiedShoppingService();
+    TestServiceLocator.registerMock<UnifiedShoppingService>(shopping);
+    writes = [];
+    when(() => shopping.updateList(any())).thenAnswer((invocation) async {
+      final list = invocation.positionalArguments.single as UnifiedShoppingList;
+      writes.add(list);
+      // The service's cache holds what was written, as in production.
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+      return true;
+    });
+    when(() => shopping.setActiveList(any())).thenAnswer((_) async => true);
+    when(() => shopping.deleteList(any())).thenAnswer((_) async => true);
+    generator = MenuShoppingListGenerator();
+  });
+
+  tearDown(() async {
+    BaseUnitTest.resetMocks();
+    await TestServiceLocator.reset();
+  });
+
+  group('the preview (#inkopmerge summary)', () {
+    test('counts dishes, rows before merging, merged, converted', () {
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(),
+      );
+
+      expect(merge.recipeCount, 3);
+      expect(merge.rawRowCount, 6, reason: '"3 rätter ger 6 rader"');
+      expect(merge.itemCount, 3, reason: 'lök, mjölk, pasta');
+      expect(merge.mergedCount, 3, reason: '6 rows became 3');
+      expect(
+        merge.convertedCount,
+        1,
+        reason: '"2 dl + 100 ml blir 3 dl": the ml row is converted',
+      );
+      final mjolk = merge.lines.firstWhere((l) => l.name == 'mjölk');
+      expect(mjolk.amount, closeTo(3, 1e-9));
+      expect(mjolk.unit, 'dl');
+      final lok = merge.lines.firstWhere((l) => l.name == 'gul lök');
+      expect(lok.amount, 3);
+      expect(lok.sourceCount, 3);
+    });
+
+    test('Slå samman dubbletter off keeps every line as written', () {
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(mergeDuplicates: false),
+      );
+      expect(merge.itemCount, 6);
+      expect(merge.mergedCount, 0);
+      expect(merge.convertedCount, 0);
+    });
+
+    test('Konvertera enheter off keeps dl and ml apart', () {
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(convertUnits: false),
+      );
+      expect(merge.itemCount, 4);
+      expect(merge.convertedCount, 0);
+      expect(merge.lines.where((l) => l.name == 'mjölk'), hasLength(2));
+    });
+
+    test('Dra bort skafferivaror subtracts: 2 dl at home, 3 dl needed, '
+        '1 dl on the list (PQ-11 = A)', () {
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        MenuShoppingPantry.read([
+          _pantry('mjölk', 2, 'dl'),
+          _pantry('pasta', 1, 'kg'),
+        ]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(merge.atHomeCount, 2);
+      expect(
+        merge.lines.firstWhere((l) => l.name == 'mjölk').amount,
+        closeTo(1, 1e-9),
+      );
+      expect(
+        merge.lines.map((l) => l.name),
+        isNot(contains('pasta')),
+        reason: '1 kg at home covers 500 g',
+      );
+      expect(merge.coveredAtHome, ['pasta'], reason: 'the deduction is named');
+    });
+
+    test('with the switch off nothing is subtracted', () {
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        MenuShoppingPantry.read([_pantry('pasta', 1, 'kg')]),
+        const MenuShoppingMergeOptions(subtractPantry: false),
+      );
+      expect(merge.atHomeCount, 0);
+      expect(merge.lines.map((l) => l.name), contains('pasta'));
+    });
+
+    test('an unreadable pantry subtracts nothing and says so', () {
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        const MenuShoppingPantry.unavailable(),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(merge.pantryUnavailable, isTrue);
+      expect(merge.atHomeCount, 0);
+      expect(merge.itemCount, 3);
+    });
+  });
+
+  group('TR::FLOW::02::merge-ark::lägg-till-n-varor', () {
+    test('adds the rows next to every row already on the week list, and '
+        'Ångra takes back exactly those rows', () async {
+      final own = UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1);
+      final earlier = UnifiedShoppingItem(
+        id: 'earlier',
+        name: 'ris',
+        amount: 1,
+      );
+      final list = _weekList(items: [own, earlier], menuItemIds: ['earlier']);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+
+      final merge = MenuShoppingListGenerator.preview(
+        _source(),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(),
+      );
+      final receipt = await generator.apply(merge);
+
+      expect(receipt, isNotNull);
+      expect(receipt!.itemCount, 3);
+      expect(receipt.replaced, isFalse);
+      final written = writes.single;
+      expect(written.items.map((i) => i.id), containsAll(['own', 'earlier']));
+      expect(written.items, hasLength(5));
+      expect(
+        written.menuItemIds,
+        containsAll(['earlier', ...receipt.addedItemIds]),
+      );
+      final lok = written.items.firstWhere((i) => i.name == 'gul lök');
+      expect(lok.note, '3 recept', reason: 'Raden visar "3 recept"');
+      verify(() => shopping.setActiveList('week-list')).called(1);
+
+      final undone = await generator.undo(receipt);
+
+      expect(undone, isTrue);
+      final back = writes.last;
+      expect(back.items.map((i) => i.id), ['own', 'earlier']);
+      expect(back.menuItemIds, ['earlier']);
+    });
+
+    test(
+      'a missing week list is created, and Ångra removes it again',
+      () async {
+        shopping.setShoppingState(lists: [], personalLists: []);
+        when(
+          () => shopping.createPersonalList(any(), items: any(named: 'items')),
+        ).thenAnswer((_) async {
+          final created = _weekList();
+          shopping.setShoppingState(lists: [created], personalLists: [created]);
+          return 'week-list';
+        });
+
+        final receipt = await generator.apply(
+          MenuShoppingListGenerator.preview(
+            _source(),
+            const MenuShoppingPantry.read([]),
+            const MenuShoppingMergeOptions(),
+          ),
+        );
+
+        expect(receipt!.createdList, isTrue);
+        expect(writes.single.generatedForWeek, _weekKey);
+        await generator.undo(receipt);
+        verify(() => shopping.deleteList('week-list')).called(1);
+      },
+    );
+  });
+
+  group('TR::FLOW::02::merge-ark::ersätt-listan-på', () {
+    test('replaces only the rows that came from recipes, keeps your own, '
+        'and Ångra puts the old recipe rows back', () async {
+      final own = UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1);
+      final old = UnifiedShoppingItem(
+        id: 'old',
+        name: 'gul lök',
+        amount: 1,
+        unit: 'st',
+        bought: true,
+      );
+      final list = _weekList(items: [own, old], menuItemIds: ['old']);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+
+      final receipt = await generator.apply(
+        MenuShoppingListGenerator.preview(
+          _source(),
+          const MenuShoppingPantry.read([]),
+          const MenuShoppingMergeOptions(replaceList: true),
+        ),
+      );
+
+      final written = writes.single;
+      expect(written.items.map((i) => i.id), contains('own'));
+      expect(written.items.map((i) => i.id), isNot(contains('old')));
+      expect(written.items, hasLength(4));
+      expect(written.menuItemIds, receipt!.addedItemIds);
+      expect(
+        written.items.firstWhere((i) => i.name == 'gul lök').bought,
+        isTrue,
+        reason: 'bought status survives a replace by name and unit (§ 8.7)',
+      );
+
+      await generator.undo(receipt);
+
+      final back = writes.last;
+      expect(back.items.map((i) => i.id), unorderedEquals(['own', 'old']));
+      expect(back.menuItemIds, ['old']);
+    });
+
+    test(
+      'a list written before menuItemIds existed keeps all its rows',
+      () async {
+        final legacy = UnifiedShoppingItem(
+          id: 'legacy',
+          name: 'mjöl',
+          amount: 2,
+        );
+        final list = _weekList(items: [legacy]);
+        shopping.setShoppingState(lists: [list], personalLists: [list]);
+
+        await generator.apply(
+          MenuShoppingListGenerator.preview(
+            _source(),
+            const MenuShoppingPantry.read([]),
+            const MenuShoppingMergeOptions(replaceList: true),
+          ),
+        );
+
+        expect(writes.single.items.map((i) => i.id), contains('legacy'));
+      },
+    );
+  });
+
+  group(
+    'TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt',
+    () {
+      test('rows that reached the list after the sheet opened are kept: the '
+          'merge builds on the list as it is at the write', () async {
+        final list = _weekList();
+        shopping.setShoppingState(lists: [list], personalLists: [list]);
+        final merge = MenuShoppingListGenerator.preview(
+          _source(),
+          const MenuShoppingPantry.read([]),
+          const MenuShoppingMergeOptions(),
+        );
+        // Someone's row lands while the sheet is open.
+        final theirs = UnifiedShoppingItem(
+          id: 'theirs',
+          name: 'bröd',
+          amount: 1,
+        );
+        final changed = _weekList(items: [theirs]);
+        shopping.setShoppingState(lists: [changed], personalLists: [changed]);
+
+        await generator.apply(merge);
+
+        expect(writes.single.items.map((i) => i.id), contains('theirs'));
+        expect(writes.single.items, hasLength(4));
+      });
+    },
+  );
+
+  group('readPantry', () {
+    test('a failed read is unavailable, never an empty pantry', () async {
+      final pantry = _MockPantryService();
+      when(
+        () => pantry.watchAll(_userId),
+      ).thenAnswer((_) => Stream.error(StateError('offline')));
+      TestServiceLocator.registerMock<PantryService>(pantry);
+
+      final result = await generator.readPantry();
+
+      expect(result.unavailable, isTrue);
+    });
+
+    test('a read pantry carries its rows', () async {
+      final pantry = _MockPantryService();
+      when(() => pantry.watchAll(_userId)).thenAnswer(
+        (_) => Stream.value([_pantry('mjölk', 2, 'dl')]),
+      );
+      TestServiceLocator.registerMock<PantryService>(pantry);
+
+      final result = await generator.readPantry();
+
+      expect(result.unavailable, isFalse);
+      expect(result.items.single.ingredientName, 'mjölk');
+    });
+  });
+}

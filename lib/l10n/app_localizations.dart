@@ -28732,6 +28732,222 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Krävs när du väljer Annat.'**
   String get reportDescriptionRequiredHelper;
+
+  /// P6-U01: zero matches (Skarmar v12 del 1 #veckoingamatch).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept matchar'**
+  String get menuNoMatchTitle;
+
+  /// P6-U01: what stopped it, and the smallest way on (#veckoingamatch).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Beskrivningen ger ingen träff på ditt enda recept.} other{Beskrivningen ger noll träffar bland dina {count} recept.}} Ändra eller släpp ett krav så hittar vi förslag.'**
+  String menuNoMatchBody(int count);
+
+  /// P6-U01: the requirements the prompt was read as, comma separated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kraven: {constraints}'**
+  String menuNoMatchConstraints(String constraints);
+
+  /// P6-U01: moves focus to the prompt so a requirement can be dropped.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra beskrivningen'**
+  String get menuNoMatchEditPrompt;
+
+  /// P6-U01: opens the calendar to plan by hand (#veckoingamatch).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg dagarna själv'**
+  String get menuNoMatchPlanYourself;
+
+  /// P6-U01: why Generera is switched off offline (produktregler.md:1131).
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är offline, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.'**
+  String get menuGenerateOfflineReason;
+
+  /// P6-U01: generation finished offline in calendar mode; the saved week is untouched.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du blev offline, så förslaget placerades inte. Veckan är oförändrad.'**
+  String get menuGenerateOfflineStopped;
+
+  /// P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge).
+  ///
+  /// In sv, this message translates to:
+  /// **'Till inköpslistan'**
+  String get shoppingMergeTitle;
+
+  /// P6-U02: the item count, shown in bold inside shoppingMergeSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara} other{{count} varor}}'**
+  String shoppingMergeItemCount(int count);
+
+  /// P6-U02: the summary line; {items} is shoppingMergeItemCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipes, plural, =1{1 rätt ger} other{{recipes} rätter ger}} {rows, plural, =1{1 rad} other{{rows} rader}}. Efter sammanslagning blir det {items}.'**
+  String shoppingMergeSummary(int recipes, int rows, String items);
+
+  /// P6-U02: summary figure label.
+  ///
+  /// In sv, this message translates to:
+  /// **'slås samman'**
+  String get shoppingMergeStatMerged;
+
+  /// P6-U02: summary figure label.
+  ///
+  /// In sv, this message translates to:
+  /// **'konverteras'**
+  String get shoppingMergeStatConverted;
+
+  /// P6-U02: summary figure label.
+  ///
+  /// In sv, this message translates to:
+  /// **'finns hemma'**
+  String get shoppingMergeStatAtHome;
+
+  /// P6-U02: opens the four switches.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa detaljer'**
+  String get shoppingMergeShowDetails;
+
+  /// P6-U02: closes the four switches.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj detaljer'**
+  String get shoppingMergeHideDetails;
+
+  /// P6-U02: accessible name of Visa detaljer (#inkopmerge data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa detaljer om sammanslagningen'**
+  String get shoppingMergeShowDetailsA11y;
+
+  /// P6-U02: accessible name of Dölj detaljer (#inkopmergeoppen data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj detaljer om sammanslagningen'**
+  String get shoppingMergeHideDetailsA11y;
+
+  /// P6-U02: switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå samman dubbletter'**
+  String get shoppingMergeDuplicatesTitle;
+
+  /// P6-U02: switch description (#inkopmergeoppen).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.'**
+  String get shoppingMergeDuplicatesBody;
+
+  /// P6-U02: switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Konvertera enheter'**
+  String get shoppingMergeConvertTitle;
+
+  /// P6-U02: switch description (#inkopmergeoppen).
+  ///
+  /// In sv, this message translates to:
+  /// **'2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.'**
+  String get shoppingMergeConvertBody;
+
+  /// P6-U02: switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dra bort skafferivaror'**
+  String get shoppingMergePantryTitle;
+
+  /// P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inget av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.'**
+  String shoppingMergePantryBody(int count);
+
+  /// P6-U02: rows the pantry left off, named (produktregler.md:234).
+  ///
+  /// In sv, this message translates to:
+  /// **'Finns hemma i tillräcklig mängd: {names}'**
+  String shoppingMergePantryCovered(String names);
+
+  /// P6-U02: degraded mode (produktregler.md:697).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.'**
+  String get shoppingMergePantryUnavailable;
+
+  /// P6-U02: switch, off by default (#inkopmerge).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ersätt listan i stället för att lägga till'**
+  String get shoppingMergeReplaceTitle;
+
+  /// P6-U02: switch description (#inkopmerge; PQ-10 = A).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina egna, manuellt tillagda varor behålls alltid.'**
+  String get shoppingMergeReplaceBody;
+
+  /// P6-U02: the sheet hero (#inkopmerge).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}'**
+  String shoppingMergeAdd(int count);
+
+  /// P6-U02: the sheet hero while Ersätt listan is on.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}'**
+  String shoppingMergeReplaceAction(int count);
+
+  /// P6-U02: receipt with Ångra after Lägg till.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}'**
+  String shoppingMergeAdded(int count, String list);
+
+  /// P6-U02: receipt with Ångra after a replace.
+  ///
+  /// In sv, this message translates to:
+  /// **'{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.'**
+  String shoppingMergeReplaced(int count, String list);
+
+  /// P6-U02: failure, what happened.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra gick inte att slutföra'**
+  String get shoppingMergeUndoFailed;
+
+  /// P6-U02: failure, what is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varorna finns kvar i listan.'**
+  String get shoppingMergeUndoFailedKept;
+
+  /// P6-U02: row note, how many recipes a merged row came from.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept'**
+  String shoppingMergeRowRecipes(int count);
+
+  /// P6-U02: row mark (produktregler.md:230).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kanske hemma'**
+  String get shoppingMergeMarkMaybeHome;
+
+  /// P6-U02: row mark (produktregler.md:232).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolla datum'**
+  String get shoppingMergeMarkCheckDate;
 }
 
 class _AppLocalizationsDelegate

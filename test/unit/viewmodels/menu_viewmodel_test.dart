@@ -667,6 +667,109 @@ void main() {
       );
     });
 
+    // -- P6-U01: no matches is an outcome, an empty library an error --------
+    //
+    // flows-roles-budget.md:32 ("0 recept placerade -> inga matchningar");
+    // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
+    // REQUIRED. Before P6-U01 an empty result threw errorGeneric ("Ett fel
+    // uppstod").
+    group('TR::FLOW::01::genererar::0-recept-placerade', () {
+      test('an empty result is the no-match outcome, never an error', () async {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => <String, List<Recipe>>{});
+        when(() => mockMenuService.parsePrompt(any())).thenAnswer(
+          (_) async => const ParsedMenuRequest(
+            slotRequests: [],
+            globalAllergenAvoid: {},
+            globalDietaryRequire: {},
+            dayPins: [],
+            trace: ExtractionTrace(
+              understood: [
+                TraceEntry(label: '3 middagar', category: TraceCategory.count),
+                TraceEntry(
+                  label: 'Under 30 min',
+                  category: TraceCategory.time,
+                ),
+                TraceEntry(
+                  label: 'Vegetariskt',
+                  category: TraceCategory.dietary,
+                ),
+              ],
+            ),
+            rawPrompt: 'p',
+          ),
+        );
+
+        await viewModel.generateMenu('3 vegetariska middagar under 30 min');
+
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.error, isNull);
+        expect(viewModel.hasMenu, isFalse);
+        final outcome = viewModel.noMatchOutcome;
+        expect(outcome, isNotNull);
+        expect(outcome!.poolSize, 2, reason: 'the two recipes in the library');
+        expect(
+          outcome.constraints,
+          ['Under 30 min', 'Vegetariskt'],
+          reason: 'what stopped it, without the count',
+        );
+      });
+
+      test(
+        'an empty library keeps its own error, not the no-match state',
+        () async {
+          mockRecipeService.setRecipeState(
+            recipes: [],
+            currentUserId: testUserId,
+            isInitialized: true,
+            isLoading: false,
+            error: null,
+          );
+
+          await viewModel.generateMenu('Veckomeny');
+
+          expect(viewModel.noMatchOutcome, isNull);
+          expect(viewModel.hasError, isTrue);
+          expect(viewModel.error, contains('Inga recept tillgängliga'));
+        },
+      );
+
+      test('a later match or clearing ends the no-match outcome', () async {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => <String, List<Recipe>>{});
+        await viewModel.generateMenu('omöjligt');
+        expect(viewModel.noMatchOutcome, isNotNull);
+
+        viewModel.clearMenu();
+        expect(viewModel.noMatchOutcome, isNull);
+
+        await viewModel.generateMenu('omöjligt');
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => testMenuSnapshot);
+        await viewModel.generateMenu('Veckomeny');
+        expect(viewModel.noMatchOutcome, isNull);
+        expect(viewModel.hasMenu, isTrue);
+      });
+    });
+
     // -- BUT-1317: Personal flow allergen/dietary safety -----------------------
     //
     // The personal weekly-menu flow must filter out recipes containing the
