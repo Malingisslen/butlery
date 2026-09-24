@@ -13287,5 +13287,50 @@
   "consentChangeAiProcessingAddedTitle": "AI-tolkning är ett nytt ändamål",
   "consentChangeAiProcessingAddedBody": "Läser recept ur länkar, text och foto. Säger du ja slås den på, annars står den av.",
   "consentRenewalSaveFailed": "Samtycket kunde inte sparas. Dina tidigare val står kvar.",
-  "signOutDiscardFailed": "Ändringarna kunde inte slängas, så du är fortfarande inloggad."
+  "signOutDiscardFailed": "Ändringarna kunde inte slängas, så du är fortfarande inloggad.",
+  "mfaChallengeTitle": "Tvåstegsverifiering",
+  "mfaChallengeHeading": "Skriv koden",
+  "mfaChallengeSentTo": "Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
+  "@mfaChallengeSentTo": {
+    "placeholders": {
+      "tail": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaChallengeSentUnknown": "Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
+  "mfaChallengeTimeLeft": "Koden gäller i {total} sekunder. {left} s kvar.",
+  "@mfaChallengeTimeLeft": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "mfaChallengeCodeGone": "Koden har gått ut. Skicka en ny kod.",
+  "mfaChallengeResend": "Skicka en ny kod",
+  "mfaChallengeWrongCode": "Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.",
+  "mfaChallengeExpired": "Koden har gått ut. Skicka en ny kod.",
+  "mfaChallengeFailed": "Inloggningen kunde inte slutföras. Skicka en ny kod.",
+  "mfaBackupCodeUse": "Använd en reservkod",
+  "mfaBackupCodeHeading": "Logga in med en reservkod",
+  "mfaBackupCodeExplanation": "En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.",
+  "mfaBackupCodeLabel": "Reservkod",
+  "mfaBackupCodeEnter": "Skriv en av dina tio reservkoder.",
+  "mfaBackupCodeSubmit": "Logga in med reservkoden",
+  "mfaBackupCodeBack": "Tillbaka till SMS-koden",
+  "mfaBackupCodeRejected": "Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.",
+  "mfaBackupCodeLocked": "För många försök med reservkod. Vänta en timme innan du försöker igen.",
+  "mfaBackupCodeUnavailable": "Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.",
+  "mfaBackupCodeRecovered": "Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.",
+  "mfaBackupCodesTitle": "Tio reservkoder",
+  "mfaBackupCodesBody": "Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.",
+  "mfaBackupCodesCopy": "Kopiera koderna",
+  "mfaBackupCodesCopied": "Koderna är kopierade.",
+  "mfaBackupCodesSaved": "Jag har sparat koderna",
+  "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
+  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat."
 }

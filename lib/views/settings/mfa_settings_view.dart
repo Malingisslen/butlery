@@ -18,11 +18,15 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for managing Multi-Factor Authentication settings.
 ///
-/// Turning two-step verification ON is hidden (produktbeslut PQ-16 = A,
-/// 2026-09-23; Linear BUT-2142). The app has no MFA challenge at sign-in and
-/// no fallback path, so whoever turns it on can lock themselves out
-/// (produktregler.md:677). Someone who already has it on still sees the
-/// registered method and can remove it.
+/// Turning two-step verification ON is still hidden (produktbeslut PQ-16 = A,
+/// 2026-09-23; Linear BUT-2142). P6-U09 built the sign-in challenge
+/// (MfaChallengeView), the ten backup codes shown and acknowledged before
+/// the phone is enrolled (below), and the recovery with a code
+/// (functions/src/account/mfa-backup-codes.ts). The switch stays off until
+/// those callables are deployed with their `IDENTITY_TOOLKIT_API_KEY`
+/// parameter and have passed the security review: a recovery that cannot
+/// run is the lock-out §14.2 forbids (produktregler.md:749). Someone who
+/// already has it on still sees the registered method and can remove it.
 class MfaSettingsView extends StatefulWidget {
   const MfaSettingsView({this.offersEnrollment = false, super.key});
 
@@ -89,6 +93,27 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       }),
     );
     if (!reauthSuccess || !mounted) return;
+
+    // Ten one-time codes BEFORE the protection applies: "Reservkoder hör i
+    // påslagningen — tio engångskoder innan skyddet gäller"
+    // (produktregler.md:748; Skarmar v12 etapp 6 #mfaaktiv). No codes, or
+    // codes not acknowledged, and nothing is enrolled.
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    final codes = await _authService.generateBackupCodes();
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    if (codes == null) {
+      setState(() {
+        _errorMessage =
+            _authService.errorMessage ?? context.l10n.mfaBackupCodesFailed;
+      });
+      return;
+    }
+    final acknowledged = await MfaBackupCodesDialog.show(context, codes);
+    if (!acknowledged || !mounted) return;
 
     // Ensure phone number has country code
     final formattedPhone = phone.startsWith('+') ? phone : '+46$phone';
@@ -493,5 +518,91 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     if (timestamp == null) return context.l10n.commonUnknown;
     final date = DateTime.fromMillisecondsSinceEpoch(timestamp.toInt());
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+}
+
+/// The ten backup codes, shown once, before the phone is enrolled
+/// (produktregler.md:748). "Fortsätt" stays off until the user says the
+/// codes are saved; closing without that enrolls nothing.
+class MfaBackupCodesDialog extends StatefulWidget {
+  const MfaBackupCodesDialog({super.key, required this.codes});
+
+  final List<String> codes;
+
+  /// Returns true only when the user acknowledged the codes.
+  static Future<bool> show(BuildContext context, List<String> codes) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => MfaBackupCodesDialog(codes: codes),
+    );
+    return result ?? false;
+  }
+
+  @override
+  State<MfaBackupCodesDialog> createState() => _MfaBackupCodesDialogState();
+}
+
+class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
+  bool _saved = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    return AlertDialog(
+      key: const ValueKey('mfa.backupCodes'),
+      scrollable: true,
+      title: Text(l10n.mfaBackupCodesTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.mfaBackupCodesBody),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            color: cs.surfaceContainerHighest,
+            child: SelectableText(
+              widget.codes.join('\n'),
+              key: const ValueKey('mfa.backupCodes.list'),
+              style: AppTextStyles.bodyBold.copyWith(
+                color: cs.onSurface,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                height: 1.6,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          TextButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: widget.codes.join('\n')));
+              SnackBarUtils.showInfo(context, l10n.mfaBackupCodesCopied);
+            },
+            icon: const Icon(Icons.copy_rounded),
+            label: Text(l10n.mfaBackupCodesCopy),
+          ),
+          CheckboxListTile(
+            key: const ValueKey('mfa.backupCodes.saved'),
+            contentPadding: EdgeInsets.zero,
+            value: _saved,
+            onChanged: (v) => setState(() => _saved = v ?? false),
+            title: Text(l10n.mfaBackupCodesSaved),
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          key: const ValueKey('mfa.backupCodes.continue'),
+          onPressed: _saved ? () => Navigator.pop(context, true) : null,
+          child: Text(l10n.mfaBackupCodesContinue),
+        ),
+      ],
+    );
   }
 }

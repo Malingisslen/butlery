@@ -17543,4 +17543,102 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get signOutDiscardFailed =>
       'Ändringarna kunde inte slängas, så du är fortfarande inloggad.';
+
+  @override
+  String get mfaChallengeTitle => 'Tvåstegsverifiering';
+
+  @override
+  String get mfaChallengeHeading => 'Skriv koden';
+
+  @override
+  String mfaChallengeSentTo(String tail) {
+    return 'Vi skickade en sexsiffrig kod till numret som slutar på $tail. Fyller telefonen i den själv släpper vi in dig utan att du gör något.';
+  }
+
+  @override
+  String get mfaChallengeSentUnknown =>
+      'Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.';
+
+  @override
+  String mfaChallengeTimeLeft(int total, int left) {
+    return 'Koden gäller i $total sekunder. $left s kvar.';
+  }
+
+  @override
+  String get mfaChallengeCodeGone => 'Koden har gått ut. Skicka en ny kod.';
+
+  @override
+  String get mfaChallengeResend => 'Skicka en ny kod';
+
+  @override
+  String get mfaChallengeWrongCode =>
+      'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.';
+
+  @override
+  String get mfaChallengeExpired => 'Koden har gått ut. Skicka en ny kod.';
+
+  @override
+  String get mfaChallengeFailed =>
+      'Inloggningen kunde inte slutföras. Skicka en ny kod.';
+
+  @override
+  String get mfaBackupCodeUse => 'Använd en reservkod';
+
+  @override
+  String get mfaBackupCodeHeading => 'Logga in med en reservkod';
+
+  @override
+  String get mfaBackupCodeExplanation =>
+      'En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.';
+
+  @override
+  String get mfaBackupCodeLabel => 'Reservkod';
+
+  @override
+  String get mfaBackupCodeEnter => 'Skriv en av dina tio reservkoder.';
+
+  @override
+  String get mfaBackupCodeSubmit => 'Logga in med reservkoden';
+
+  @override
+  String get mfaBackupCodeBack => 'Tillbaka till SMS-koden';
+
+  @override
+  String get mfaBackupCodeRejected =>
+      'Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.';
+
+  @override
+  String get mfaBackupCodeLocked =>
+      'För många försök med reservkod. Vänta en timme innan du försöker igen.';
+
+  @override
+  String get mfaBackupCodeUnavailable =>
+      'Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.';
+
+  @override
+  String get mfaBackupCodeRecovered =>
+      'Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.';
+
+  @override
+  String get mfaBackupCodesTitle => 'Tio reservkoder';
+
+  @override
+  String get mfaBackupCodesBody =>
+      'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.';
+
+  @override
+  String get mfaBackupCodesCopy => 'Kopiera koderna';
+
+  @override
+  String get mfaBackupCodesCopied => 'Koderna är kopierade.';
+
+  @override
+  String get mfaBackupCodesSaved => 'Jag har sparat koderna';
+
+  @override
+  String get mfaBackupCodesContinue => 'Fortsätt till telefonnumret';
+
+  @override
+  String get mfaBackupCodesFailed =>
+      'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.';
 }

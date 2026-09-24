@@ -29044,6 +29044,174 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ändringarna kunde inte slängas, så du är fortfarande inloggad.'**
   String get signOutDiscardFailed;
+
+  /// No description provided for @mfaChallengeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifiering'**
+  String get mfaChallengeTitle;
+
+  /// No description provided for @mfaChallengeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv koden'**
+  String get mfaChallengeHeading;
+
+  /// No description provided for @mfaChallengeSentTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
+  String mfaChallengeSentTo(String tail);
+
+  /// No description provided for @mfaChallengeSentUnknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
+  String get mfaChallengeSentUnknown;
+
+  /// No description provided for @mfaChallengeTimeLeft.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden gäller i {total} sekunder. {left} s kvar.'**
+  String mfaChallengeTimeLeft(int total, int left);
+
+  /// No description provided for @mfaChallengeCodeGone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden har gått ut. Skicka en ny kod.'**
+  String get mfaChallengeCodeGone;
+
+  /// No description provided for @mfaChallengeResend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka en ny kod'**
+  String get mfaChallengeResend;
+
+  /// No description provided for @mfaChallengeWrongCode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.'**
+  String get mfaChallengeWrongCode;
+
+  /// No description provided for @mfaChallengeExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden har gått ut. Skicka en ny kod.'**
+  String get mfaChallengeExpired;
+
+  /// No description provided for @mfaChallengeFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen kunde inte slutföras. Skicka en ny kod.'**
+  String get mfaChallengeFailed;
+
+  /// No description provided for @mfaBackupCodeUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd en reservkod'**
+  String get mfaBackupCodeUse;
+
+  /// No description provided for @mfaBackupCodeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med en reservkod'**
+  String get mfaBackupCodeHeading;
+
+  /// No description provided for @mfaBackupCodeExplanation.
+  ///
+  /// In sv, this message translates to:
+  /// **'En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.'**
+  String get mfaBackupCodeExplanation;
+
+  /// No description provided for @mfaBackupCodeLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkod'**
+  String get mfaBackupCodeLabel;
+
+  /// No description provided for @mfaBackupCodeEnter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv en av dina tio reservkoder.'**
+  String get mfaBackupCodeEnter;
+
+  /// No description provided for @mfaBackupCodeSubmit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med reservkoden'**
+  String get mfaBackupCodeSubmit;
+
+  /// No description provided for @mfaBackupCodeBack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till SMS-koden'**
+  String get mfaBackupCodeBack;
+
+  /// No description provided for @mfaBackupCodeRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.'**
+  String get mfaBackupCodeRejected;
+
+  /// No description provided for @mfaBackupCodeLocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många försök med reservkod. Vänta en timme innan du försöker igen.'**
+  String get mfaBackupCodeLocked;
+
+  /// No description provided for @mfaBackupCodeUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.'**
+  String get mfaBackupCodeUnavailable;
+
+  /// No description provided for @mfaBackupCodeRecovered.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.'**
+  String get mfaBackupCodeRecovered;
+
+  /// No description provided for @mfaBackupCodesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tio reservkoder'**
+  String get mfaBackupCodesTitle;
+
+  /// No description provided for @mfaBackupCodesBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.'**
+  String get mfaBackupCodesBody;
+
+  /// No description provided for @mfaBackupCodesCopy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera koderna'**
+  String get mfaBackupCodesCopy;
+
+  /// No description provided for @mfaBackupCodesCopied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koderna är kopierade.'**
+  String get mfaBackupCodesCopied;
+
+  /// No description provided for @mfaBackupCodesSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag har sparat koderna'**
+  String get mfaBackupCodesSaved;
+
+  /// No description provided for @mfaBackupCodesContinue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt till telefonnumret'**
+  String get mfaBackupCodesContinue;
+
+  /// No description provided for @mfaBackupCodesFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
+  String get mfaBackupCodesFailed;
 }
 
 class _AppLocalizationsDelegate

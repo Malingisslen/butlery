@@ -20,6 +20,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
+import 'package:butlery/views/auth/mfa_challenge_view.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -732,11 +733,29 @@ class _AuthViewState extends State<AuthView> {
 
     bool success;
 
+    var signedInWithBackupCode = false;
     if (wasLoginMode) {
       success = await viewModel.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
+      // Two-step verification: the password was right and the second factor
+      // is asked for (P6-U09; Skarmar v12 etapp 3 #authmfa).
+      final challenge = viewModel.pendingMfaChallenge;
+      if (!success && challenge != null && mounted) {
+        final result = await Navigator.of(context).push<MfaChallengeResult>(
+          MaterialPageRoute(
+            builder: (_) => MfaChallengeView(
+              challenge: challenge,
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          ),
+        );
+        success = result != null;
+        signedInWithBackupCode =
+            result == MfaChallengeResult.signedInWithBackupCode;
+      }
     } else {
       success = await viewModel.register(
         email: _emailController.text,
@@ -773,6 +792,16 @@ class _AuthViewState extends State<AuthView> {
           : SessionReturnPath.takeFor(userId);
       if (returnTo != null) {
         navigator.pushNamed(returnTo.routeName, arguments: returnTo.arguments);
+      }
+      // A backup code switched the phone factor off; say so, and where to
+      // add a phone again (P6-U09, TR::FLOW::06::mfa::aterstallning-engangskoder).
+      if (signedInWithBackupCode) {
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.mfaBackupCodeRecovered,
+          duration: const Duration(seconds: 10),
+          showCloseButton: true,
+        );
       }
     }
   }

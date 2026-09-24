@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
@@ -35,6 +36,14 @@ class AuthService extends ChangeNotifier
   StreamSubscription<User?>? _authStateSubscription;
 
   bool _sessionExpired = false; // ignore: prefer_final_fields
+
+  /// A sign-in waiting for its second factor (P6-U09; Skarmar v12 etapp 3
+  /// #authmfa). The password was right; the account has two-step
+  /// verification, so Firebase handed back a resolver instead of a user.
+  MfaResolverInfo? _pendingMfa;
+
+  /// The challenge the sign-in screen must show, or null.
+  MfaResolverInfo? get pendingMfaChallenge => _pendingMfa;
 
   User? get currentUser => _currentUser;
   String? get currentUserDisplayName => _currentUser?.displayName;
@@ -156,6 +165,7 @@ class AuthService extends ChangeNotifier
     try {
       clearError();
       setLoading(true);
+      _pendingMfa = null;
 
       AppLogger.debug(
         'Attempting login for email: ${email.substring(0, 3)}...',
@@ -178,6 +188,21 @@ class AuthService extends ChangeNotifier
       await DIContainer().pushUserScope();
       await _analyticsService.logLogin(method: 'email');
       return true;
+    } on FirebaseAuthMultiFactorException catch (e) {
+      // Not an error: the first factor passed and the second is asked for.
+      // Before P6-U09 nothing caught this, so an account with two-step
+      // verification could not sign in at all.
+      setLoading(false);
+      final hint = e.resolver.hints
+          .whereType<PhoneMultiFactorInfo>()
+          .firstOrNull;
+      _pendingMfa = MfaResolverInfo(
+        resolver: e.resolver,
+        phoneHint: hint?.phoneNumber,
+      );
+      AppLogger.info('Sign-in waits for the second factor');
+      notifyListeners();
+      return false;
     } on FirebaseAuthException catch (e) {
       setLoading(false);
       AppLogger.error('Firebase Auth Error: ${e.code} - ${e.message}');
@@ -201,6 +226,28 @@ class AuthService extends ChangeNotifier
       _currentUser = _authRepository.currentUser;
       return _currentUser != null;
     }
+  }
+
+  /// Completes a sign-in whose second factor was just resolved, by the code
+  /// or by the phone reading it itself. Returns whether a user is signed in.
+  Future<bool> finishMfaSignIn() async {
+    _pendingMfa = null;
+    _currentUser = _authRepository.currentUser;
+    if (_currentUser == null) {
+      notifyListeners();
+      return false;
+    }
+    _sessionExpired = false;
+    await DIContainer().pushUserScope();
+    notifyListeners();
+    return true;
+  }
+
+  /// Drops a waiting challenge (the user went back to the sign-in form).
+  void clearPendingMfa() {
+    if (_pendingMfa == null) return;
+    _pendingMfa = null;
+    notifyListeners();
   }
 
   Future<void> signOut() async {

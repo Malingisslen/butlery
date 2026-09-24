@@ -57,6 +57,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -109,6 +110,11 @@ class AuthViewModel extends ChangeNotifier
   /// Controls password field visibility toggle allowing users to verify password
   /// input while maintaining security best practices for credential handling.
   bool get isPasswordVisible => _isPasswordVisible;
+
+  /// The second-factor challenge a sign-in is waiting for, or null. A
+  /// sign-in that returns false with this set is not a failure: the view
+  /// shows the challenge (Skarmar v12 etapp 3 #authmfa).
+  MfaResolverInfo? get pendingMfaChallenge => _authService.pendingMfaChallenge;
 
   /// Initializes authentication ViewModel with reactive AuthService integration and state synchronization.
   /// Establishes comprehensive listener connection to AuthService ensuring automatic state synchronization

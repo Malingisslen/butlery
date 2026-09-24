@@ -3836,6 +3836,18 @@ service cloud.firestore {
     }
 
 
+    // P6-U09: MFA backup codes (salted scrypt hashes) and the recovery
+    // attempt counters. Server-only: every reader and writer is the Admin SDK
+    // (functions/src/account/mfa-backup-codes.ts). Stated rather than
+    // inherited from the terminal deny below, so no future wildcard can hand
+    // a client the hashes or let it reset its own lockout.
+    match /mfa_backup_codes/{userId} {
+      allow read, write: if false;
+    }
+    match /mfa_recovery_attempts/{attemptKey} {
+      allow read, write: if false;
+    }
+
     // Deny all other document access by default
     match /{document=**} {
       allow read, write: if false;

@@ -17510,4 +17510,102 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signOutDiscardFailed =>
       'The changes could not be discarded, so you are still signed in.';
+
+  @override
+  String get mfaChallengeTitle => 'Two-step verification';
+
+  @override
+  String get mfaChallengeHeading => 'Enter the code';
+
+  @override
+  String mfaChallengeSentTo(String tail) {
+    return 'We sent a six-digit code to the number ending in $tail. If your phone fills it in by itself, we let you in without you doing anything.';
+  }
+
+  @override
+  String get mfaChallengeSentUnknown =>
+      'We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.';
+
+  @override
+  String mfaChallengeTimeLeft(int total, int left) {
+    return 'The code is valid for $total seconds. $left s left.';
+  }
+
+  @override
+  String get mfaChallengeCodeGone => 'The code has expired. Send a new code.';
+
+  @override
+  String get mfaChallengeResend => 'Send a new code';
+
+  @override
+  String get mfaChallengeWrongCode =>
+      'The code does not match. Check the digits or send a new code.';
+
+  @override
+  String get mfaChallengeExpired => 'The code has expired. Send a new code.';
+
+  @override
+  String get mfaChallengeFailed =>
+      'The sign-in could not be completed. Send a new code.';
+
+  @override
+  String get mfaBackupCodeUse => 'Use a backup code';
+
+  @override
+  String get mfaBackupCodeHeading => 'Sign in with a backup code';
+
+  @override
+  String get mfaBackupCodeExplanation =>
+      'A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.';
+
+  @override
+  String get mfaBackupCodeLabel => 'Backup code';
+
+  @override
+  String get mfaBackupCodeEnter => 'Enter one of your ten backup codes.';
+
+  @override
+  String get mfaBackupCodeSubmit => 'Sign in with the backup code';
+
+  @override
+  String get mfaBackupCodeBack => 'Back to the text message code';
+
+  @override
+  String get mfaBackupCodeRejected =>
+      'The password or the backup code does not match. A used code cannot be used again.';
+
+  @override
+  String get mfaBackupCodeLocked =>
+      'Too many backup code attempts. Wait an hour before you try again.';
+
+  @override
+  String get mfaBackupCodeUnavailable =>
+      'The backup code could not be checked right now. Nothing on your account has changed.';
+
+  @override
+  String get mfaBackupCodeRecovered =>
+      'Two-step verification is off. Add a phone number again under Account security.';
+
+  @override
+  String get mfaBackupCodesTitle => 'Ten backup codes';
+
+  @override
+  String get mfaBackupCodesBody =>
+      'Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.';
+
+  @override
+  String get mfaBackupCodesCopy => 'Copy the codes';
+
+  @override
+  String get mfaBackupCodesCopied => 'The codes are copied.';
+
+  @override
+  String get mfaBackupCodesSaved => 'I have saved the codes';
+
+  @override
+  String get mfaBackupCodesContinue => 'Continue to the phone number';
+
+  @override
+  String get mfaBackupCodesFailed =>
+      'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
 }

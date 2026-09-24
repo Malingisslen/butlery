@@ -13146,5 +13146,50 @@
   "consentChangeAiProcessingAddedTitle": "AI interpretation is a new purpose",
   "consentChangeAiProcessingAddedBody": "Reads recipes from links, text and photos. If you agree it is switched on, otherwise it stays off.",
   "consentRenewalSaveFailed": "Your consent could not be saved. Your earlier choices stand.",
-  "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in."
+  "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in.",
+  "mfaChallengeTitle": "Two-step verification",
+  "mfaChallengeHeading": "Enter the code",
+  "mfaChallengeSentTo": "We sent a six-digit code to the number ending in {tail}. If your phone fills it in by itself, we let you in without you doing anything.",
+  "@mfaChallengeSentTo": {
+    "placeholders": {
+      "tail": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaChallengeSentUnknown": "We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.",
+  "mfaChallengeTimeLeft": "The code is valid for {total} seconds. {left} s left.",
+  "@mfaChallengeTimeLeft": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "mfaChallengeCodeGone": "The code has expired. Send a new code.",
+  "mfaChallengeResend": "Send a new code",
+  "mfaChallengeWrongCode": "The code does not match. Check the digits or send a new code.",
+  "mfaChallengeExpired": "The code has expired. Send a new code.",
+  "mfaChallengeFailed": "The sign-in could not be completed. Send a new code.",
+  "mfaBackupCodeUse": "Use a backup code",
+  "mfaBackupCodeHeading": "Sign in with a backup code",
+  "mfaBackupCodeExplanation": "A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.",
+  "mfaBackupCodeLabel": "Backup code",
+  "mfaBackupCodeEnter": "Enter one of your ten backup codes.",
+  "mfaBackupCodeSubmit": "Sign in with the backup code",
+  "mfaBackupCodeBack": "Back to the text message code",
+  "mfaBackupCodeRejected": "The password or the backup code does not match. A used code cannot be used again.",
+  "mfaBackupCodeLocked": "Too many backup code attempts. Wait an hour before you try again.",
+  "mfaBackupCodeUnavailable": "The backup code could not be checked right now. Nothing on your account has changed.",
+  "mfaBackupCodeRecovered": "Two-step verification is off. Add a phone number again under Account security.",
+  "mfaBackupCodesTitle": "Ten backup codes",
+  "mfaBackupCodesBody": "Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.",
+  "mfaBackupCodesCopy": "Copy the codes",
+  "mfaBackupCodesCopied": "The codes are copied.",
+  "mfaBackupCodesSaved": "I have saved the codes",
+  "mfaBackupCodesContinue": "Continue to the phone number",
+  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed."
 }

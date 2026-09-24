@@ -278,6 +278,8 @@ class CoreModule implements DIModule {
         () => AuthMfaService(
           analyticsService: container<AnalyticsService>(),
           authRepository: container<AuthRepository>(),
+          // P6-U09: the backup-code callables (mfa-backup-codes.ts).
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
 
