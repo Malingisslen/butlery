@@ -162,6 +162,10 @@ dev_dependencies:
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
   sembast: ^3.8.5+2
+  # sqflite: test/widget/views/recipe_detail/fullscreen_image_failed_test.dart
+  # sets its database factory (already a transitive dependency via
+  # flutter_cache_manager).
+  sqflite: ^2.4.2
 
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).

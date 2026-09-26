@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
@@ -143,6 +144,7 @@ void main() {
     late _FakeOfflineService offline;
     late Directory tempDir;
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const sqfliteChannel = MethodChannel('com.tekartik.sqflite');
 
     setUp(() async {
       // The image cache needs a directory; the fetch itself then fails
@@ -150,6 +152,25 @@ void main() {
       tempDir = Directory.systemTemp.createTempSync('fullscreen_img_');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(pathChannel, (_) async => tempDir.path);
+      // On a macOS host flutter_cache_manager keeps its index in sqflite
+      // (`Platform.isMacOS` in its config), and flutter test never runs the
+      // plugin registrant that sets sqflite's factory. Without this the index
+      // throws before the fetch, the load never completes, and the plate
+      // never appears on a macOS runner.
+      sqflite.databaseFactoryOrNull = sqflite.databaseFactorySqflitePlugin;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(sqfliteChannel, (call) async {
+            switch (call.method) {
+              case 'getDatabasesPath':
+                return tempDir.path;
+              case 'openDatabase':
+                return 1;
+              case 'query':
+                return <Map<String, Object?>>[];
+              default:
+                return null;
+            }
+          });
       await GetIt.instance.reset();
       offline = _FakeOfflineService();
       GetIt.instance.registerSingleton<OfflineService>(offline);
@@ -159,6 +180,9 @@ void main() {
     tearDown(() async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(pathChannel, null);
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(sqfliteChannel, null);
+      sqflite.databaseFactoryOrNull = null;
       prod.ServiceLocator.reset();
       await GetIt.instance.reset();
       try {
