@@ -361,6 +361,56 @@ void main() {
     );
 
     testWidgets(
+      'the countdown running out under the confirmation closes both and '
+      'never extends the session',
+      (tester) async {
+        var loggedOut = 0;
+        var discarded = 0;
+        var extended = 0;
+        bool? result;
+        var resolved = false;
+        await tester.pumpWidget(
+          _wrap(
+            queueTrigger(
+              onLogoutNow: () => loggedOut++,
+              onExtendSession: () => extended++,
+              onDiscardAndLogout: () async => discarded++,
+              onResult: (r) {
+                result = r;
+                resolved = true;
+              },
+            ),
+          ),
+        );
+        await _openDialog(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('sessionTimeout.logoutNow')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(
+          find.byKey(const ValueKey('signOut.pendingChanges')),
+          findsOneWidget,
+        );
+
+        // Nobody answers; the 30 s run out with the confirmation on top.
+        await _drainTimers(tester, 31);
+
+        expect(extended, 0, reason: 'only a person may extend the session');
+        expect(discarded, 0, reason: 'the timeout never clears the queue');
+        expect(loggedOut, 0);
+        expect(resolved, isTrue);
+        expect(result, isFalse);
+        expect(
+          find.byKey(const ValueKey('signOut.pendingChanges')),
+          findsNothing,
+        );
+        expect(find.text('Session utgår snart'), findsNothing);
+      },
+    );
+
+    testWidgets(
       'Logga ut och släng ändringarna discards and signs out',
       (tester) async {
         var loggedOut = 0;

@@ -280,7 +280,7 @@ class AuthService extends ChangeNotifier
     String? userId,
   ) async {
     await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
-    await RecipeFormAutoSaveManager.clearAllDrafts();
+    await RecipeFormAutoSaveManager.clearDraftsFor(userId);
   }
 
   /// Logout for session timeout - tracks separately for security monitoring.

@@ -181,21 +181,20 @@ class ConsentViewModel extends ChangeNotifier
     app_logger.AppLogger.debug('[$_logTag] AI processing consent: $value');
   }
 
-  /// "Jag godkänner" in the renewal: the new version is accepted, every
-  /// earlier choice stays as it was, and a purpose that is NEW since the
-  /// accepted version is switched on, because the renewal listed it and
-  /// said that agreeing switches it on. A purpose that only CHANGED keeps
-  /// the earlier answer. "Befintliga val är förval, och att avstå stänger
-  /// aldrig av något" (produktregler.md:731).
+  /// "Jag godkänner" in the renewal: the new version is accepted and every
+  /// earlier choice stays as it was. "Befintliga val är förval, och att
+  /// avstå stänger aldrig av något" (produktregler.md:731).
+  ///
+  /// A purpose that is NEW since the accepted version keeps its earlier
+  /// value (off for a consent saved before the purpose existed). Whether a
+  /// blanket accept may switch a new processing purpose on is a consent
+  /// decision for the product owner; until it is made, a new purpose is
+  /// switched on only through "Låt mig välja själv", one purpose at a time
+  /// (GDPR art. 7).
   Future<bool> acceptRenewal() async {
     final consent = _currentConsent;
     if (consent == null) return false;
-    var purposes = consent.purposes;
-    for (final change in renewalChanges) {
-      if (change.kind == ConsentChangeKind.added) {
-        purposes = _withPurpose(purposes, change.purpose, true);
-      }
-    }
+    final purposes = consent.purposes;
     try {
       return await executeNamedOperation('renew', () async {
         final success = await _consentService.saveConsent(purposes);
@@ -212,20 +211,6 @@ class ConsentViewModel extends ChangeNotifier
       return false;
     }
   }
-
-  static ConsentPurposes _withPurpose(
-    ConsentPurposes p,
-    ConsentPurpose purpose,
-    bool value,
-  ) => switch (purpose) {
-    ConsentPurpose.essentialServices => p.copyWith(essentialServices: value),
-    ConsentPurpose.dataProcessing => p.copyWith(dataProcessing: value),
-    ConsentPurpose.analytics => p.copyWith(analytics: value),
-    ConsentPurpose.marketing => p.copyWith(marketing: value),
-    ConsentPurpose.socialFeatures => p.copyWith(socialFeatures: value),
-    ConsentPurpose.pushNotifications => p.copyWith(pushNotifications: value),
-    ConsentPurpose.aiProcessing => p.copyWith(aiProcessing: value),
-  };
 
   /// Revoke all optional consents
   Future<bool> revokeAllOptional() async {

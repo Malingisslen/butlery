@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -167,6 +168,8 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
+  /// Skarmar v12 etapp 9 #globsessiontyst (globala tillstand och flerval:98)
+  /// draws the notice and its words.
   /// A background timeout could not warn, so it is explained here, calmly:
   /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
   /// skälet och antalet väntande ändringar. Aldrig som fel"
@@ -175,6 +178,11 @@ class _AuthViewState extends State<AuthView> {
   /// (app_colors.dart / app_colors_dark.dart).
   Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
     final l10n = context.l10n;
+    // The drawn body is secondary ink, bold parts in ink (#globsessiontyst):
+    // semantic text.body, #37453A light / #F5F4ED dark (tokens.json:58-60).
+    // The drawing's dark #C9D3C4 is the palette's bodyOnDark, which the
+    // semantic token does not deliver; the token wins.
+    final bodyColor = AppModeColors.textBody(cs.brightness);
     return Container(
       key: const ValueKey('auth.sessionEndNotice'),
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXl),
@@ -203,16 +211,12 @@ class _AuthViewState extends State<AuthView> {
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   l10n.sessionEndedBackgroundReason,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                  ),
+                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   l10n.sessionEndedBackgroundPending(end.pendingChanges.total),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                  ),
+                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
                 ),
               ],
             ),

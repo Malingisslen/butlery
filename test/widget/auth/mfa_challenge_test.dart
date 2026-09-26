@@ -162,6 +162,35 @@ void main() {
     expect(find.text('Koden har gått ut. Skicka en ny kod.'), findsOneWidget);
   });
 
+  testWidgets('Verifiera stays off until six digits are there', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(_FakeMfa(), _FakeAuth(), (_) {}));
+    await _open(tester);
+
+    FilledButton verify() => tester.widget<FilledButton>(
+      find.descendant(
+        of: find.byKey(const ValueKey('mfaChallenge.verify')),
+        matching: find.byType(FilledButton),
+      ),
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('mfaChallenge.code')),
+      '41900',
+    );
+    await tester.pump();
+    expect(verify().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('mfaChallenge.code')),
+      '419000',
+    );
+    await tester.pump();
+    expect(verify().onPressed, isNotNull);
+    await _drain(tester);
+  });
+
   testWidgets('a wrong code says so and does not sign in', (tester) async {
     final mfa = _FakeMfa()..codeOk = false;
     final auth = _FakeAuth();
@@ -172,6 +201,7 @@ void main() {
       find.byKey(const ValueKey('mfaChallenge.code')),
       '123456',
     );
+    await tester.pump(); // Verifiera turns on at six digits
     await tester.tap(find.byKey(const ValueKey('mfaChallenge.verify')));
     await tester.pump();
 
@@ -196,6 +226,7 @@ void main() {
       find.byKey(const ValueKey('mfaChallenge.code')),
       '419000',
     );
+    await tester.pump(); // Verifiera turns on at six digits
     await tester.tap(find.byKey(const ValueKey('mfaChallenge.verify')));
     await tester.pumpAndSettle();
 

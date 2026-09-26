@@ -31,7 +31,8 @@
 ///     metadata index AND payload keys.
 ///   * Max-drafts cap: oldest drafts beyond the 5-entry limit per account
 ///     are pruned, including their per-draft payload key.
-///   * `clearAllDrafts` (explicit sign-out) removes every draft.
+///   * `clearDraftsFor` (explicit sign-out) removes that account's drafts
+///     and ownerless ones, never another account's.
 ///   * `DraftMetadata` JSON round-trip with malformed/missing fields
 ///     defaults gracefully (via SerializationUtils + orEmpty/orZero).
 ///
@@ -1155,17 +1156,66 @@ void main() {
       expect(ids, contains('b0'));
     });
 
-    test('clearAllDrafts removes every draft and the index', () async {
+    test("clearDraftsFor removes the account's drafts and the index", () async {
       final manager = RecipeFormAutoSaveManager(ownerIdProvider: () => 'anna');
       addTearDown(manager.dispose);
       await manager.saveNow(_formWith(title: 'x'));
       final id = manager.currentDraftId!;
 
-      await RecipeFormAutoSaveManager.clearAllDrafts();
+      await RecipeFormAutoSaveManager.clearDraftsFor('anna');
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('$_draftPrefix$id'), isNull);
       expect(prefs.getString(_draftsKey), isNull);
     });
+
+    test("one account signing out keeps another account's drafts", () async {
+      final anna = RecipeFormAutoSaveManager(ownerIdProvider: () => 'anna');
+      addTearDown(anna.dispose);
+      await anna.saveNow(_formWith(title: 'Annas'));
+      final annaId = anna.currentDraftId!;
+
+      final bertil = RecipeFormAutoSaveManager(ownerIdProvider: () => 'bertil');
+      addTearDown(bertil.dispose);
+      // A minute later, so the two drafts get their own ids.
+      await withClock(
+        Clock.fixed(DateTime.now().add(const Duration(minutes: 1))),
+        () => bertil.saveNow(_formWith(title: 'Bertils')),
+      );
+      final bertilId = bertil.currentDraftId!;
+
+      // Bertil signs out himself; Anna had only timed out earlier.
+      await RecipeFormAutoSaveManager.clearDraftsFor('bertil');
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('$_draftPrefix$bertilId'), isNull);
+      expect(prefs.getString('$_draftPrefix$annaId'), isNotNull);
+      final left = await anna.getAvailableDrafts();
+      expect(left.map((m) => m.draftId), [annaId]);
+    });
+
+    test(
+      'ownerless legacy drafts go with the account that signs out',
+      () async {
+        final ts = DateTime.now();
+        final legacy = DraftMetadata(
+          draftId: 'legacy',
+          createdAt: ts,
+          lastModifiedAt: ts,
+          title: 'gammalt',
+          fieldCount: 1,
+        );
+        SharedPreferences.setMockInitialValues({
+          _draftsKey: jsonEncode([legacy.toJson()]),
+          '${_draftPrefix}legacy': '{}',
+        });
+
+        await RecipeFormAutoSaveManager.clearDraftsFor('anna');
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('${_draftPrefix}legacy'), isNull);
+        expect(prefs.getString(_draftsKey), isNull);
+      },
+    );
   });
 }

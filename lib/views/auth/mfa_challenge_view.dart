@@ -87,14 +87,23 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   @override
   void initState() {
     super.initState();
+    // Verifiera follows the field: off until six digits are there.
+    _codeController.addListener(_onCodeChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _sendCode();
     });
   }
 
+  void _onCodeChanged() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _codeComplete => _codeController.text.trim().length == 6;
+
   @override
   void dispose() {
     _countdown?.cancel();
+    _codeController.removeListener(_onCodeChanged);
     _codeController.dispose();
     _backupController.dispose();
     super.dispose();
@@ -330,7 +339,9 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       HeroButton(
         key: const ValueKey('mfaChallenge.verify'),
         label: l10n.mfaVerify,
-        onPressed: _busy ? null : _verify,
+        // "Verifiera, avstängd till dess sex siffror är ifyllda"
+        // (Skarmar v12 etapp 3 #authmfa, data-a11y-state disabled).
+        onPressed: _busy || !_codeComplete ? null : _verify,
         busy: _busy,
         expand: true,
       ),

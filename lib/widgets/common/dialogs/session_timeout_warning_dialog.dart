@@ -6,7 +6,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 
 /// Warning dialog shown before session timeout
@@ -76,6 +75,20 @@ class _SessionTimeoutWarningDialogState
   late int _remainingSeconds;
   Timer? _countdownTimer;
 
+  /// This warning's own route. On expiry it is this route that closes, even
+  /// when the queue confirmation lies on top of it.
+  ModalRoute<Object?>? _ownRoute;
+
+  /// Set when the countdown reached zero. After that no answer from the
+  /// confirmation may extend the session: only a person's choice may.
+  bool _expired = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _ownRoute ??= ModalRoute.of(context);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -104,12 +117,26 @@ class _SessionTimeoutWarningDialogState
 
         if (_remainingSeconds <= 0) {
           timer.cancel();
-          if (mounted) {
-            Navigator.of(context).pop(false); // Timeout expired
-          }
+          _expire();
         }
       },
     );
+  }
+
+  /// The countdown ran out. Close whatever lies on top of this warning (the
+  /// queue confirmation), then the warning itself. The sign-out is the
+  /// service's; the queue is never cleared by it (produktregler.md:833).
+  void _expire() {
+    if (!mounted || _expired) return;
+    _expired = true;
+    final navigator = Navigator.of(context);
+    final own = _ownRoute;
+    if (own != null && own.isActive) {
+      navigator.popUntil((route) => route == own);
+      if (own.isCurrent) navigator.pop(false); // Timeout expired
+    } else {
+      navigator.pop(false); // Timeout expired
+    }
   }
 
   String _formatDuration(int seconds) {
@@ -141,7 +168,9 @@ class _SessionTimeoutWarningDialogState
       context,
       widget.pendingChanges,
     );
-    if (!mounted) return;
+    // The countdown ran out while the confirmation was open: its null
+    // answer is not "Vänta på synk", and the warning is already closed.
+    if (!mounted || _expired) return;
     if (choice == PendingChangesChoice.discardAndSignOut &&
         widget.onDiscardAndLogout != null) {
       _countdownTimer?.cancel();
@@ -156,11 +185,12 @@ class _SessionTimeoutWarningDialogState
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final warningColor = context.butleryColors.warning;
     return AlertDialog(
+      // The clock is drawn in ink (Skarmar v12 etapp 9 #globsession, stroke
+      // #24382c): onSurface in light and dark.
       icon: Icon(
         Icons.timer_outlined,
-        color: warningColor,
+        color: cs.onSurface,
         size: AppDimensions.iconSizeXxl,
       ),
       title: Text(context.l10n.sessionExpiringTitle),
@@ -188,7 +218,11 @@ class _SessionTimeoutWarningDialogState
           ],
           const SizedBox(height: AppDimensions.spacingM),
           // Only the number updates, announced politely
-          // (produktregler.md:830).
+          // (produktregler.md:830). It carries no accent colour
+          // (produktregler.md:831): ink on surface.raised, radius 8, no
+          // border (Skarmar v12 etapp 9 globala tillstand och flerval:66,72).
+          // onSurface on surfaceContainerHighest is text.primary on
+          // surface.raised in both light and dark.
           Center(
             child: Semantics(
               liveRegion: true,
@@ -198,23 +232,15 @@ class _SessionTimeoutWarningDialogState
                   vertical: AppDimensions.spacingM,
                 ),
                 decoration: BoxDecoration(
-                  color: warningColor.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
-                  ),
-                  border: Border.all(
-                    color: warningColor.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
-                    width: 2,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(
                   _formatDuration(_remainingSeconds),
                   style: AppTextStyles.headlineBold.copyWith(
-                    color: warningColor,
+                    color: cs.onSurface,
                     fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),

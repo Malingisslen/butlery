@@ -118,23 +118,49 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     }
   }
 
-  /// Deletes every recipe draft on the device, whoever wrote it.
+  /// Deletes the recipe drafts of the account that signs out, and the
+  /// ownerless drafts written before drafts carried an owner (those were
+  /// offered to that account, see [getAvailableDrafts]). Another account's
+  /// drafts on the same device stay: it may have kept them through its own
+  /// automatic sign-out (PQ-12 = A).
   ///
   /// Called on an explicit sign-out only (produktregler.md:171; PQ-12 = A in
   /// produktbeslut-2026-09-23.json: an automatic sign-out keeps drafts).
   /// Best-effort: logs and never throws, so a sign-out cannot fail on it.
-  static Future<void> clearAllDrafts() async {
+  static Future<void> clearDraftsFor(String? ownerId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final keys = prefs
-          .getKeys()
-          .where((k) => k.startsWith(_draftPrefix))
+      final raw = prefs.getString(_draftsKey);
+      final all = raw == null
+          ? const <DraftMetadata>[]
+          : (jsonDecode(raw) as List)
+                .map(
+                  (json) =>
+                      DraftMetadata.fromJson(json as Map<String, dynamic>),
+                )
+                .toList();
+      final kept = all
+          .where((m) => m.ownerId != null && m.ownerId != ownerId)
           .toList();
-      for (final key in keys) {
+      final keptKeys = {for (final m in kept) '$_draftPrefix${m.draftId}'};
+      // A draft body without an index entry is offered to nobody and has
+      // no known owner; it goes like an ownerless draft.
+      final gone = prefs
+          .getKeys()
+          .where((k) => k.startsWith(_draftPrefix) && !keptKeys.contains(k))
+          .toList();
+      for (final key in gone) {
         await prefs.remove(key);
       }
-      await prefs.remove(_draftsKey);
-      AppLogger.info('AUTO_SAVE: ${keys.length} drafts deleted at sign-out');
+      if (kept.isEmpty) {
+        await prefs.remove(_draftsKey);
+      } else {
+        await prefs.setString(
+          _draftsKey,
+          jsonEncode(kept.map((m) => m.toJson()).toList()),
+        );
+      }
+      AppLogger.info('AUTO_SAVE: ${gone.length} drafts deleted at sign-out');
     } catch (e) {
       AppLogger.warning('AUTO_SAVE: could not delete drafts: $e');
     }

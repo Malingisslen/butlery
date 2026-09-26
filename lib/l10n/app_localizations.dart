@@ -28778,19 +28778,19 @@ abstract class AppLocalizations {
   /// No description provided for @sessionEndedBackgroundTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Du loggades ut medan appen låg i bakgrunden'**
+  /// **'Du loggades ut medan appen låg still.'**
   String get sessionEndedBackgroundTitle;
 
   /// No description provided for @sessionEndedBackgroundReason.
   ///
   /// In sv, this message translates to:
-  /// **'Efter 45 minuter utan aktivitet loggar Butlery ut för att skydda ditt konto.'**
+  /// **'Det händer efter 45 minuter utan aktivitet, och det är meningen.'**
   String get sessionEndedBackgroundReason;
 
   /// No description provided for @sessionEndedBackgroundPending.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =0{Inga ändringar väntar.} =1{1 ändring väntar och sparas när du loggar in igen.} other{{count} ändringar väntar och sparas när du loggar in igen.}}'**
+  /// **'{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.}}'**
   String sessionEndedBackgroundPending(int count);
 
   /// No description provided for @draftTimeLeftDays.
@@ -28802,7 +28802,7 @@ abstract class AppLocalizations {
   /// No description provided for @draftTimeLeftHours.
   ///
   /// In sv, this message translates to:
-  /// **'{count} h kvar'**
+  /// **'{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}'**
   String draftTimeLeftHours(int count);
 
   /// No description provided for @profileDeleteNoRecallWindow.
@@ -29030,7 +29030,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentChangeAiProcessingAddedBody.
   ///
   /// In sv, this message translates to:
-  /// **'Läser recept ur länkar, text och foto. Säger du ja slås den på, annars står den av.'**
+  /// **'Läser recept ur länkar, text och foto. Den står av tills du själv slår på den under Låt mig välja själv.'**
   String get consentChangeAiProcessingAddedBody;
 
   /// No description provided for @consentRenewalSaveFailed.

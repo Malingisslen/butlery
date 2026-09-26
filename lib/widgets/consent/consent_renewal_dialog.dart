@@ -21,6 +21,7 @@ import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
 
 class ConsentRenewalDialog extends StatefulWidget {
@@ -43,9 +44,12 @@ class ConsentRenewalDialog extends StatefulWidget {
     );
   }
 
-  /// The sentence pair for one change. A version bump adds its own lines
-  /// here and in the l10n files (Q-P6-A18).
-  static (String, String) changeLines(
+  /// The change's own sentence pair, or null when none is written yet.
+  /// A version bump adds its own lines here and in the l10n files
+  /// (Q-P6-A18). "Gränssnittet får inte påstå att något viktigt hänt utan
+  /// att säga vad" (produktregler.md:731), so a test requires a pair for
+  /// every entry in ConsentService.changelog.
+  static (String, String)? ownChangeLines(
     AppLocalizations l10n,
     ConsentChange change,
   ) {
@@ -54,8 +58,18 @@ class ConsentRenewalDialog extends StatefulWidget {
         l10n.consentChangeAiProcessingAddedTitle,
         l10n.consentChangeAiProcessingAddedBody,
       ),
-      _ => (l10n.consentRenewalTitle, l10n.consentRenewalDescription),
+      _ => null,
     };
+  }
+
+  /// The sentence pair for one change. The general pair is only a last
+  /// resort for a release that skipped the test above.
+  static (String, String) changeLines(
+    AppLocalizations l10n,
+    ConsentChange change,
+  ) {
+    return ownChangeLines(l10n, change) ??
+        (l10n.consentRenewalTitle, l10n.consentRenewalDescription);
   }
 
   @override
@@ -164,10 +178,12 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
               : () => GdprConsentHandler.handleManageConsent(context),
           child: Text(l10n.consentRenewalChooseMyself),
         ),
-        FilledButton(
+        // Drawn saffron (Skarmar v12 etapp 6 konto och integritet:121,
+        // background #ce7c1e): the view's one hero (Komponentark v1:843-844).
+        HeroButton(
           key: const ValueKey('consentRenewal.accept'),
+          label: l10n.consentRenewalAccept,
           onPressed: _saving ? null : () => _accept(vm),
-          child: Text(l10n.consentRenewalAccept),
         ),
       ],
     );

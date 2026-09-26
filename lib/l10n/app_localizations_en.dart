@@ -17302,19 +17302,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionEndedBackgroundTitle =>
-      'You were signed out while the app was in the background';
+      'You were signed out while the app lay still.';
 
   @override
   String get sessionEndedBackgroundReason =>
-      'After 45 minutes without activity, Butlery signs out to protect your account.';
+      'That happens after 45 minutes without activity, and it is meant to.';
 
   @override
   String sessionEndedBackgroundPending(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count changes are waiting and are saved when you sign in again.',
-      one: '1 change is waiting and is saved when you sign in again.',
+      other:
+          '$count changes are still on the phone and are sent as soon as you are back in — nothing you did is lost.',
+      one:
+          '1 change is still on the phone and is sent as soon as you are back in — nothing you did is lost.',
       zero: 'No changes are waiting.',
     );
     return '$_temp0';
@@ -17333,7 +17335,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String draftTimeLeftHours(int count) {
-    return '$count h left';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'kept for $count more hours',
+      one: 'kept for 1 more hour',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -17501,7 +17509,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentChangeAiProcessingAddedBody =>
-      'Reads recipes from links, text and photos. If you agree it is switched on, otherwise it stays off.';
+      'Reads recipes from links, text and photos. It stays off until you switch it on yourself under Let me choose.';
 
   @override
   String get consentRenewalSaveFailed =>

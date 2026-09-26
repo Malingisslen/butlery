@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
@@ -102,14 +103,37 @@ void main() {
       expect(ConsentService.changesSince(''), hasLength(1));
     });
 
+    testWidgets('every changelog entry has its own sentence pair', (
+      tester,
+    ) async {
+      late AppLocalizations l10n;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              l10n = AppLocalizations.of(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      for (final change in ConsentService.changelog) {
+        expect(
+          ConsentRenewalDialog.ownChangeLines(l10n, change),
+          isNotNull,
+          reason: '${change.version} ${change.purpose} ${change.kind}',
+        );
+      }
+    });
+
     test('versions compare as numbers', () {
       expect(compareConsentVersions('1.10.0', '1.9.0'), greaterThan(0));
       expect(compareConsentVersions('1.1', '1.1.0'), 0);
       expect(compareConsentVersions('1.0.0', '1.1.0'), lessThan(0));
     });
 
-    test('"Jag godkänner" keeps every earlier choice and switches on only '
-        'the new purpose', () async {
+    test('"Jag godkänner" keeps every earlier choice and leaves a new '
+        'purpose off until it is chosen (open product question)', () async {
       final vm = await loaded(_consent(version: '1.0.0', analytics: false));
 
       expect(await vm.acceptRenewal(), isTrue);
@@ -117,7 +141,11 @@ void main() {
       final saved =
           verify(() => service.saveConsent(captureAny())).captured.single
               as ConsentPurposes;
-      expect(saved.aiProcessing, isTrue, reason: 'listed as new, agreed to');
+      expect(
+        saved.aiProcessing,
+        isFalse,
+        reason: 'a new purpose is switched on only one by one',
+      );
       expect(saved.analytics, isFalse, reason: 'an earlier no stays a no');
       expect(saved.marketing, isTrue);
       expect(saved.pushNotifications, isFalse);

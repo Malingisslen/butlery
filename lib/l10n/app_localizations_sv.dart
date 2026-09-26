@@ -17334,19 +17334,21 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sessionEndedBackgroundTitle =>
-      'Du loggades ut medan appen låg i bakgrunden';
+      'Du loggades ut medan appen låg still.';
 
   @override
   String get sessionEndedBackgroundReason =>
-      'Efter 45 minuter utan aktivitet loggar Butlery ut för att skydda ditt konto.';
+      'Det händer efter 45 minuter utan aktivitet, och det är meningen.';
 
   @override
   String sessionEndedBackgroundPending(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ändringar väntar och sparas när du loggar in igen.',
-      one: '1 ändring väntar och sparas när du loggar in igen.',
+      other:
+          '$count ändringar ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.',
+      one:
+          '1 ändring ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.',
       zero: 'Inga ändringar väntar.',
     );
     return '$_temp0';
@@ -17365,7 +17367,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String draftTimeLeftHours(int count) {
-    return '$count h kvar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'finns kvar i $count timmar',
+      one: 'finns kvar i 1 timme',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -17534,7 +17542,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get consentChangeAiProcessingAddedBody =>
-      'Läser recept ur länkar, text och foto. Säger du ja slås den på, annars står den av.';
+      'Läser recept ur länkar, text och foto. Den står av tills du själv slår på den under Låt mig välja själv.';
 
   @override
   String get consentRenewalSaveFailed =>

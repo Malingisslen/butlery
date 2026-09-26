@@ -7,6 +7,7 @@ import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// What the user chose when a sign-out met unsaved changes.
@@ -67,11 +68,14 @@ class ProfileDialogs {
               style: TextButton.styleFrom(foregroundColor: cs.error),
               child: Text(l10n.signOutPendingDiscard),
             ),
-            FilledButton(
+            // Drawn saffron (Skarmar v12 del 4 morkt lage och etapp 0-1:312,
+            // background #ce7c1e): the view's one hero, so waiting is the
+            // obvious answer (Komponentark v1:843-844).
+            HeroButton(
               key: const ValueKey('signOut.pendingChanges.wait'),
+              label: l10n.signOutPendingWait,
               onPressed: () =>
                   Navigator.pop(dialogContext, PendingChangesChoice.wait),
-              child: Text(l10n.signOutPendingWait),
             ),
           ],
         );

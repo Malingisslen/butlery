@@ -13036,9 +13036,9 @@
       }
     }
   },
-  "sessionEndedBackgroundTitle": "You were signed out while the app was in the background",
-  "sessionEndedBackgroundReason": "After 45 minutes without activity, Butlery signs out to protect your account.",
-  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is waiting and is saved when you sign in again.} other{{count} changes are waiting and are saved when you sign in again.}}",
+  "sessionEndedBackgroundTitle": "You were signed out while the app lay still.",
+  "sessionEndedBackgroundReason": "That happens after 45 minutes without activity, and it is meant to.",
+  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is still on the phone and is sent as soon as you are back in — nothing you did is lost.} other{{count} changes are still on the phone and are sent as soon as you are back in — nothing you did is lost.}}",
   "@sessionEndedBackgroundPending": {
     "placeholders": {
       "count": {
@@ -13054,7 +13054,7 @@
       }
     }
   },
-  "draftTimeLeftHours": "{count} h left",
+  "draftTimeLeftHours": "{count, plural, =1{kept for 1 more hour} other{kept for {count} more hours}}",
   "@draftTimeLeftHours": {
     "placeholders": {
       "count": {
@@ -13144,7 +13144,7 @@
   "consentRenewalNotNow": "Not now",
   "consentRenewalNotNowNote": "If you choose Not now, everything continues as before. Nothing is switched off because you have not answered.",
   "consentChangeAiProcessingAddedTitle": "AI interpretation is a new purpose",
-  "consentChangeAiProcessingAddedBody": "Reads recipes from links, text and photos. If you agree it is switched on, otherwise it stays off.",
+  "consentChangeAiProcessingAddedBody": "Reads recipes from links, text and photos. It stays off until you switch it on yourself under Let me choose.",
   "consentRenewalSaveFailed": "Your consent could not be saved. Your earlier choices stand.",
   "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in.",
   "mfaChallengeTitle": "Two-step verification",
