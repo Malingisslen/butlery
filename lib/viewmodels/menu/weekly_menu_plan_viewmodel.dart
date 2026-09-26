@@ -16,6 +16,18 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
+/// P6-U02: the re-entrancy sentinel of [WeeklyMenuPlanViewModel
+/// .applyShoppingMerge]. Compare with [identical].
+const shoppingMergeAlreadyRunning = MenuShoppingMergeReceipt(
+  listId: '',
+  listName: '',
+  addedItemIds: [],
+  removedItems: [],
+  previousMenuItemIds: null,
+  replaced: false,
+  createdList: false,
+);
+
 class WeeklyMenuPlanViewModel extends BaseViewModel {
   final WeeklyMenuPlanService _service;
   final UnifiedRecipeService _recipeService;
@@ -721,6 +733,76 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       return null;
     }
   }
+
+  /// P6-U02: the visible week's placements for the merge sheet, or null
+  /// when the week could not be read (a failure, never "nothing to
+  /// generate"; produktregler.md:705).
+  Future<MenuShoppingSource?> shoppingSource() async {
+    if (_readFailed) return null;
+    return _shoppingListGenerator.sourceForWeek(currentWeekStart);
+  }
+
+  /// P6-U02: the pantry for the merge sheet.
+  Future<MenuShoppingPantry> readPantryForShopping() =>
+      _shoppingListGenerator.readPantry();
+
+  /// P6-U02: whether "Ersätt listan" can take anything off the week's list
+  /// ([MenuShoppingListGenerator.canReplaceWeekList]).
+  bool canReplaceShoppingList(DateTime week) =>
+      _shoppingListGenerator.canReplaceWeekList(week);
+
+  bool _mergeInFlight = false;
+
+  /// Whether a confirmed merge is being written.
+  bool get isMergingShoppingList => _mergeInFlight;
+
+  bool _shoppingFlowRunning = false;
+
+  /// Whether a "Till inköpslistan" flow is running: the week and pantry
+  /// reads, the open sheet and the write. The FAB shows it as busy.
+  bool get isShoppingFlowRunning => _shoppingFlowRunning || _mergeInFlight;
+
+  /// P6-U02: runs [flow] unless one is already running. The guard covers
+  /// the whole flow, not just the write: the reads before the sheet can take
+  /// up to [MenuShoppingListGenerator.pantryReadTimeout], and a second tap
+  /// then must not open a second sheet whose confirm adds the week's rows
+  /// again. A second call is silence, not an error (produktregler.md:705).
+  Future<void> runShoppingFlow(Future<void> Function() flow) async {
+    if (_shoppingFlowRunning) return;
+    _shoppingFlowRunning = true;
+    notifyListeners();
+    try {
+      await flow();
+    } finally {
+      _shoppingFlowRunning = false;
+      if (!isDisposed) notifyListeners();
+    }
+  }
+
+  /// P6-U02: writes the merge the user confirmed in the sheet. Returns the
+  /// receipt, null when nothing could be written, or
+  /// [shoppingMergeAlreadyRunning] when a merge is already being written: a
+  /// double tap renders as silence, not an error (produktregler.md:705).
+  Future<MenuShoppingMergeReceipt?> applyShoppingMerge(
+    MenuShoppingMergePreview merge,
+  ) async {
+    if (_mergeInFlight) return shoppingMergeAlreadyRunning;
+    _mergeInFlight = true;
+    notifyListeners();
+    try {
+      return await _shoppingListGenerator.apply(merge);
+    } catch (e) {
+      AppLogger.error('Could not write the week to the shopping list', e);
+      return null;
+    } finally {
+      _mergeInFlight = false;
+      if (!isDisposed) notifyListeners();
+    }
+  }
+
+  /// P6-U02: Ångra for a merge (produktregler.md:131, § 2.4).
+  Future<bool> undoShoppingMerge(MenuShoppingMergeReceipt receipt) =>
+      _shoppingListGenerator.undo(receipt);
 
   /// Drop a recipe from the overflow tray into a slot.
   Future<void> assignFromOverflow({

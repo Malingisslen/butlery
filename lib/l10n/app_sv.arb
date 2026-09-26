@@ -13141,5 +13141,220 @@
   "reportDialogTitleRecipe": "Anmäl det här receptet",
   "reportDialogGuidelinesNoteSuffix": "— den version du ser nu är den vi dömer efter.",
   "reportDialogIntro": "Berätta vad som är fel. En människa i teamet läser din anmälan.",
-  "reportDescriptionRequiredHelper": "Krävs när du väljer Annat."
+  "reportDescriptionRequiredHelper": "Krävs när du väljer Annat.",
+  "menuNoMatchTitle": "Inga recept matchar",
+  "@menuNoMatchTitle": {
+    "description": "P6-U01: zero matches (Skarmar v12 del 1 #veckoingamatch)."
+  },
+  "menuNoMatchBody": "{count, plural, =1{Beskrivningen ger ingen träff på ditt enda recept.} other{Beskrivningen ger noll träffar bland dina {count} recept.}} Ändra eller släpp ett krav så hittar vi förslag.",
+  "@menuNoMatchBody": {
+    "description": "P6-U01: what stopped it, and the smallest way on (#veckoingamatch).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuNoMatchConstraints": "Kraven: {constraints}",
+  "@menuNoMatchConstraints": {
+    "description": "P6-U01: the requirements the prompt was read as, comma separated.",
+    "placeholders": {
+      "constraints": {
+        "type": "String"
+      }
+    }
+  },
+  "menuNoMatchEditPrompt": "Ändra beskrivningen",
+  "@menuNoMatchEditPrompt": {
+    "description": "P6-U01: moves focus to the prompt so a requirement can be dropped."
+  },
+  "menuNoMatchPlanYourself": "Lägg dagarna själv",
+  "@menuNoMatchPlanYourself": {
+    "description": "P6-U01: opens the calendar to plan by hand (#veckoingamatch)."
+  },
+  "menuGenerateOfflineReason": "Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.",
+  "@menuGenerateOfflineReason": {
+    "description": "P6-U01: why Generera is switched off offline (produktregler.md:1131)."
+  },
+  "menuGenerateOfflineStopped": "Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.",
+  "@menuGenerateOfflineStopped": {
+    "description": "P6-U01: generation finished offline in calendar mode; the saved week is untouched."
+  },
+  "shoppingMergeTitle": "Till inköpslistan",
+  "@shoppingMergeTitle": {
+    "description": "P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge)."
+  },
+  "shoppingMergeItemCount": "{count, plural, =1{1 vara} other{{count} varor}}",
+  "@shoppingMergeItemCount": {
+    "description": "P6-U02: the item count, shown in bold inside shoppingMergeSummary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeSummary": "{recipes, plural, =1{1 rätt ger} other{{recipes} rätter ger}} {rows, plural, =1{1 rad} other{{rows} rader}}. Efter sammanslagning blir det {items}.",
+  "@shoppingMergeSummary": {
+    "description": "P6-U02: the summary line; {items} is shoppingMergeItemCount.",
+    "placeholders": {
+      "recipes": {
+        "type": "int"
+      },
+      "rows": {
+        "type": "int"
+      },
+      "items": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergeStatMerged": "slås samman",
+  "@shoppingMergeStatMerged": {
+    "description": "P6-U02: summary figure label."
+  },
+  "shoppingMergeStatConverted": "konverteras",
+  "@shoppingMergeStatConverted": {
+    "description": "P6-U02: summary figure label."
+  },
+  "shoppingMergeStatAtHome": "finns hemma",
+  "@shoppingMergeStatAtHome": {
+    "description": "P6-U02: summary figure label."
+  },
+  "shoppingMergeShowDetails": "Visa detaljer",
+  "@shoppingMergeShowDetails": {
+    "description": "P6-U02: opens the four switches."
+  },
+  "shoppingMergeHideDetails": "Dölj detaljer",
+  "@shoppingMergeHideDetails": {
+    "description": "P6-U02: closes the four switches."
+  },
+  "shoppingMergeShowDetailsA11y": "Visa detaljer om sammanslagningen",
+  "@shoppingMergeShowDetailsA11y": {
+    "description": "P6-U02: accessible name of Visa detaljer (#inkopmerge data-a11y-name)."
+  },
+  "shoppingMergeHideDetailsA11y": "Dölj detaljer om sammanslagningen",
+  "@shoppingMergeHideDetailsA11y": {
+    "description": "P6-U02: accessible name of Dölj detaljer (#inkopmergeoppen data-a11y-name)."
+  },
+  "shoppingMergeDuplicatesTitle": "Slå samman dubbletter",
+  "@shoppingMergeDuplicatesTitle": {
+    "description": "P6-U02: switch."
+  },
+  "shoppingMergeDuplicatesBody": "Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+  "@shoppingMergeDuplicatesBody": {
+    "description": "P6-U02: switch description (#inkopmergeoppen)."
+  },
+  "shoppingMergeConvertTitle": "Konvertera enheter",
+  "@shoppingMergeConvertTitle": {
+    "description": "P6-U02: switch."
+  },
+  "shoppingMergeConvertBody": "2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.",
+  "@shoppingMergeConvertBody": {
+    "description": "P6-U02: switch description (#inkopmergeoppen)."
+  },
+  "shoppingMergePantryTitle": "Dra bort skafferivaror",
+  "@shoppingMergePantryTitle": {
+    "description": "P6-U02: switch."
+  },
+  "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.",
+  "@shoppingMergePantryBody": {
+    "description": "P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergePantryCovered": "Finns hemma i tillräcklig mängd: {names}",
+  "@shoppingMergePantryCovered": {
+    "description": "P6-U02: rows the pantry left off, named (produktregler.md:234).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergePantryUnavailable": "Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.",
+  "@shoppingMergePantryUnavailable": {
+    "description": "P6-U02: degraded mode (produktregler.md:697)."
+  },
+  "shoppingMergeReplaceTitle": "Ersätt listan i stället för att lägga till",
+  "@shoppingMergeReplaceTitle": {
+    "description": "P6-U02: switch, off by default (#inkopmerge)."
+  },
+  "shoppingMergeReplaceBody": "Dina egna, manuellt tillagda varor behålls alltid.",
+  "@shoppingMergeReplaceBody": {
+    "description": "P6-U02: switch description (#inkopmerge; PQ-10 = A)."
+  },
+  "shoppingMergeReplaceUnavailable": "Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.",
+  "@shoppingMergeReplaceUnavailable": {
+    "description": "P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows."
+  },
+  "shoppingMergeAdd": "{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}",
+  "@shoppingMergeAdd": {
+    "description": "P6-U02: the sheet hero (#inkopmerge).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeReplaceAction": "{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}",
+  "@shoppingMergeReplaceAction": {
+    "description": "P6-U02: the sheet hero while Ersätt listan is on.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeAdded": "{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}",
+  "@shoppingMergeAdded": {
+    "description": "P6-U02: receipt with Ångra after Lägg till.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergeReplaced": "{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.",
+  "@shoppingMergeReplaced": {
+    "description": "P6-U02: receipt with Ångra after a replace.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergeUndoFailed": "Ångra gick inte att slutföra",
+  "@shoppingMergeUndoFailed": {
+    "description": "P6-U02: failure, what happened."
+  },
+  "shoppingMergeUndoFailedKept": "Varorna finns kvar i listan.",
+  "@shoppingMergeUndoFailedKept": {
+    "description": "P6-U02: failure, what is kept."
+  },
+  "shoppingMergeRowRecipes": "{count} recept",
+  "@shoppingMergeRowRecipes": {
+    "description": "P6-U02: row note, how many recipes a merged row came from.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeMarkMaybeHome": "Kanske hemma",
+  "@shoppingMergeMarkMaybeHome": {
+    "description": "P6-U02: row mark (produktregler.md:230)."
+  },
+  "shoppingMergeMarkCheckDate": "Kolla datum",
+  "@shoppingMergeMarkCheckDate": {
+    "description": "P6-U02: row mark (produktregler.md:232)."
+  }
 }

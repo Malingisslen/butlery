@@ -17245,4 +17245,199 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reportDescriptionRequiredHelper =>
       'Required when you choose Other.';
+
+  @override
+  String get menuNoMatchTitle => 'No recipes match';
+
+  @override
+  String menuNoMatchBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The description gives no matches among your $count recipes.',
+      one: 'The description gives no match for your only recipe.',
+    );
+    return '$_temp0 Change or drop a requirement and we will find suggestions.';
+  }
+
+  @override
+  String menuNoMatchConstraints(String constraints) {
+    return 'Requirements: $constraints';
+  }
+
+  @override
+  String get menuNoMatchEditPrompt => 'Change the description';
+
+  @override
+  String get menuNoMatchPlanYourself => 'Plan the days yourself';
+
+  @override
+  String get menuGenerateOfflineReason =>
+      'No connection, so the week cannot be planned now. You can still change the calendar.';
+
+  @override
+  String get menuGenerateOfflineStopped =>
+      'The connection dropped, so the suggestion was not placed. The week is unchanged.';
+
+  @override
+  String get shoppingMergeTitle => 'To the shopping list';
+
+  @override
+  String shoppingMergeItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeSummary(int recipes, int rows, String items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes dishes give',
+      one: '1 dish gives',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      rows,
+      locale: localeName,
+      other: '$rows lines',
+      one: '1 line',
+    );
+    return '$_temp0 $_temp1. After merging that is $items.';
+  }
+
+  @override
+  String get shoppingMergeStatMerged => 'merged';
+
+  @override
+  String get shoppingMergeStatConverted => 'converted';
+
+  @override
+  String get shoppingMergeStatAtHome => 'at home';
+
+  @override
+  String get shoppingMergeShowDetails => 'Show details';
+
+  @override
+  String get shoppingMergeHideDetails => 'Hide details';
+
+  @override
+  String get shoppingMergeShowDetailsA11y => 'Show details about the merge';
+
+  @override
+  String get shoppingMergeHideDetailsA11y => 'Hide details about the merge';
+
+  @override
+  String get shoppingMergeDuplicatesTitle => 'Merge duplicates';
+
+  @override
+  String get shoppingMergeDuplicatesBody =>
+      'Yellow onion from three recipes becomes one line with the amounts added up. The line says “3 recipes”.';
+
+  @override
+  String get shoppingMergeConvertTitle => 'Convert units';
+
+  @override
+  String get shoppingMergeConvertBody =>
+      '2 dl + 100 ml becomes 3 dl. Volume and weight are never converted into each other — they stay two lines.';
+
+  @override
+  String get shoppingMergePantryTitle => 'Subtract pantry items';
+
+  @override
+  String shoppingMergePantryBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items are at home.',
+      one: '1 item is at home.',
+      zero: 'None of the items are at home.',
+    );
+    return '$_temp0 An unknown amount gives no deduction — the item is added marked “Maybe at home”.';
+  }
+
+  @override
+  String shoppingMergePantryCovered(String names) {
+    return 'At home in full: $names';
+  }
+
+  @override
+  String get shoppingMergePantryUnavailable =>
+      'The pantry could not be read, so the list is made without pantry deduction.';
+
+  @override
+  String get shoppingMergeReplaceTitle => 'Replace the list instead of adding';
+
+  @override
+  String get shoppingMergeReplaceBody =>
+      'Items you added yourself are always kept.';
+
+  @override
+  String get shoppingMergeReplaceUnavailable =>
+      'This list was made before the app kept the week\'s items apart from your own, so it cannot be replaced. The week\'s items are added.';
+
+  @override
+  String shoppingMergeAdd(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count items',
+      one: 'Add 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeReplaceAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Replace with $count items',
+      one: 'Replace with 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeAdded(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items were added to $list.',
+      one: '1 item was added to $list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeReplaced(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$list now has $_temp0 from the week. Your own items are still there.';
+  }
+
+  @override
+  String get shoppingMergeUndoFailed => 'The undo could not be completed';
+
+  @override
+  String get shoppingMergeUndoFailedKept => 'The items are still on the list.';
+
+  @override
+  String shoppingMergeRowRecipes(int count) {
+    return '$count recipes';
+  }
+
+  @override
+  String get shoppingMergeMarkMaybeHome => 'Maybe at home';
+
+  @override
+  String get shoppingMergeMarkCheckDate => 'Check the date';
 }

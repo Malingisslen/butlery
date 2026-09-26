@@ -1728,6 +1728,90 @@ void main() {
       });
     });
 
+    // P6-U02: the merge sheet's write. Three outcomes stay apart
+    // (produktregler.md:705): a receipt, null for failure, and the
+    // already-running sentinel, which the view renders as silence.
+    group('applyShoppingMerge (P6-U02)', () {
+      final merge = MenuShoppingListGenerator.preview(
+        MenuShoppingListGenerator.sourceForMenu(
+          const {},
+          DateTime(2026, 4, 13),
+        ),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(),
+      );
+      const receipt = MenuShoppingMergeReceipt(
+        listId: 'list-1',
+        listName: 'Inköpslista v.16',
+        addedItemIds: ['a'],
+        removedItems: [],
+        previousMenuItemIds: null,
+        replaced: false,
+        createdList: false,
+      );
+
+      test(
+        'a second tap while writing is silent, and only one write runs',
+        () async {
+          final gate = Completer<MenuShoppingMergeReceipt?>();
+          when(() => mockGenerator.apply(merge)).thenAnswer((_) => gate.future);
+
+          final first = viewModel.applyShoppingMerge(merge);
+          expect(viewModel.isMergingShoppingList, isTrue);
+          final second = await viewModel.applyShoppingMerge(merge);
+          gate.complete(receipt);
+
+          expect(identical(second, shoppingMergeAlreadyRunning), isTrue);
+          expect(await first, same(receipt));
+          expect(viewModel.isMergingShoppingList, isFalse);
+          verify(() => mockGenerator.apply(merge)).called(1);
+        },
+      );
+
+      test('a second tap while the pantry is still being read opens no '
+          'second sheet', () async {
+        final pantry = Completer<MenuShoppingPantry>();
+        when(
+          () => mockGenerator.readPantry(),
+        ).thenAnswer((_) => pantry.future);
+        var sheets = 0;
+        Future<void> flow() async {
+          await viewModel.readPantryForShopping();
+          sheets++; // the sheet would open here
+        }
+
+        final first = viewModel.runShoppingFlow(flow);
+        expect(viewModel.isShoppingFlowRunning, isTrue);
+        await viewModel.runShoppingFlow(flow);
+        pantry.complete(const MenuShoppingPantry.read([]));
+        await first;
+
+        expect(sheets, 1);
+        verify(() => mockGenerator.readPantry()).called(1);
+        expect(viewModel.isShoppingFlowRunning, isFalse);
+        // Once the flow has ended, the next tap starts a new one.
+        await viewModel.runShoppingFlow(() async => sheets++);
+        expect(sheets, 2);
+      });
+
+      test('a flow that throws still ends, so the FAB comes back', () async {
+        await expectLater(
+          viewModel.runShoppingFlow(() async => throw StateError('x')),
+          throwsStateError,
+        );
+        expect(viewModel.isShoppingFlowRunning, isFalse);
+      });
+
+      test('a failed write is null, never the sentinel', () async {
+        when(() => mockGenerator.apply(merge)).thenThrow(StateError('x'));
+
+        final result = await viewModel.applyShoppingMerge(merge);
+
+        expect(result, isNull);
+        expect(viewModel.isMergingShoppingList, isFalse);
+      });
+    });
+
     group('generateShoppingList (BUT-1234)', () {
       const successResult = MenuShoppingGenerationResult(
         listId: 'list-1',

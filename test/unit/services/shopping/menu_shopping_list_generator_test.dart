@@ -62,14 +62,21 @@ class _MockConsentService extends Mock implements ConsentService {}
 
 const _testUserId = 'test-user-123';
 
-PantryItem _stapleItem(String name) => PantryItem(
-  id: 'staple-$name',
+/// P6-U02 (PQ-11 = A): a pantry row with an amount, or none ([quantity]
+/// null = "har hemma, vet inte hur mycket").
+PantryItem _pantryItem(
+  String name, {
+  double? quantity,
+  String unit = 'st',
+  DateTime? expiryDate,
+}) => PantryItem(
+  id: 'pantry-$name',
   ingredientName: name,
-  quantity: 1,
-  unit: 'st',
+  quantity: quantity,
+  unit: unit,
   location: PantryLocation.pantry,
   addedAt: DateTime(2026, 6, 8),
-  isStaple: true,
+  expiryDate: expiryDate,
 );
 
 /// 2026-06-10 is a Wednesday in ISO week 24 — the expected list name and
@@ -162,6 +169,7 @@ UnifiedShoppingList _list(
   String name, {
   List<UnifiedShoppingItem> items = const [],
   String? generatedForWeek,
+  List<String>? menuItemIds,
 }) => UnifiedShoppingList(
   id: id,
   name: name,
@@ -169,6 +177,7 @@ UnifiedShoppingList _list(
   ownerDisplayName: 'Test',
   items: items,
   generatedForWeek: generatedForWeek,
+  menuItemIds: menuItemIds,
 );
 
 WeeklyMenuPlanRead _read(WeeklyMenuPlan plan) =>
@@ -216,9 +225,11 @@ void main() {
     recipeService = MockUnifiedRecipeService();
     shoppingService = MockUnifiedShoppingService();
     pantryService = _MockPantryService();
-    // BUT-1279: default to no staples so the existing generation contracts are
-    // unaffected; the staple-exclusion test overrides this.
-    when(() => pantryService.getAll(any())).thenAnswer((_) async => const []);
+    // P6-U02: an empty pantry by default, read from the stream so a failed
+    // read can be told from an empty pantry; the pantry tests override this.
+    when(
+      () => pantryService.watchAll(any()),
+    ).thenAnswer((_) => Stream.value(const <PantryItem>[]));
     TestServiceLocator.registerMock<WeeklyMenuPlanService>(menuService);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
     TestServiceLocator.registerMock<UnifiedShoppingService>(shoppingService);
@@ -247,6 +258,13 @@ void main() {
     final analytics = _MockAnalyticsService();
     when(() => analytics.shopping).thenReturn(tracker);
     TestServiceLocator.registerMock<AnalyticsService>(analytics);
+
+    // P6-U02: the merged list becomes the active one, so the shopping view
+    // opens on it.
+    when(
+      () => shoppingService.setActiveList(any()),
+    ).thenAnswer((_) async => true);
+    when(() => shoppingService.deleteList(any())).thenAnswer((_) async => true);
 
     generator = MenuShoppingListGenerator();
   });
@@ -381,18 +399,32 @@ void main() {
     });
 
     test('idempotent regeneration: existing week list is updated in place, '
-        'never duplicated, and its content is replaced', () async {
-      // Proves: re-running "Generera inköpslista" for the same week targets
-      // the existing MARKED list (no "Inköpslista v.24 (2)" pile-up) and the
-      // generator OWNS the content — stale/manual lines do not survive.
+        'never duplicated; its recipe rows are replaced and your own rows '
+        'kept (PQ-10 = A)', () async {
+      // Proves: re-running the week for the same week targets the existing
+      // MARKED list (no "Inköpslista v.24 (2)" pile-up). The rows an earlier
+      // merge put there are replaced; a row the user typed is always kept
+      // (flows-roles-budget.md:47; produktbeslut PQ-10 = A supersedes
+      // produktregler.md:704, where manual rows did not survive).
       seedTwoRecipePlan();
+      final stale = UnifiedShoppingItem(
+        id: 'stale-row',
+        name: 'gammal vara',
+        amount: 1,
+        unit: 'st',
+      );
+      final own = UnifiedShoppingItem(
+        id: 'own-row',
+        name: 'egen vara',
+        amount: 1,
+        unit: 'st',
+      );
       final existing = _list(
         'existing-1',
         _expectedListName,
         generatedForWeek: _expectedWeekKey,
-        items: [
-          UnifiedShoppingItem(name: 'gammal vara', amount: 1, unit: 'st'),
-        ],
+        items: [stale, own],
+        menuItemIds: const ['stale-row'],
       );
       shoppingService.setShoppingState(
         lists: [existing],
@@ -419,11 +451,19 @@ void main() {
       expect(
         written.items.map((i) => i.name),
         isNot(contains('gammal vara')),
-        reason:
-            'documented V1 contract: the generated list is owned by '
-            'the generator — regeneration replaces its content',
+        reason: 'a row an earlier merge put there is replaced',
+      );
+      expect(
+        written.items.map((i) => i.id),
+        contains('own-row'),
+        reason: 'PQ-10 = A: your own rows are always kept',
       );
       expect(written.items.map((i) => i.name), containsAll(['mjöl', 'ägg']));
+      expect(
+        written.menuItemIds,
+        isNot(contains('own-row')),
+        reason: 'the kept row stays yours: identity by id, never by name',
+      );
     });
 
     test('BUT-1234: a RENAMED generated list is still found via its '
@@ -602,12 +642,14 @@ void main() {
         generatedForWeek: _expectedWeekKey,
         items: [
           UnifiedShoppingItem(
+            id: 'old-mjol',
             name: 'mjöl',
             amount: 2,
             unit: 'dl',
             bought: true,
           ),
         ],
+        menuItemIds: const ['old-mjol'],
       );
       shoppingService.setShoppingState(
         lists: [existing],
@@ -667,12 +709,14 @@ void main() {
         generatedForWeek: _expectedWeekKey,
         items: [
           UnifiedShoppingItem(
+            id: 'old-mjol',
             name: 'Mjöl',
             amount: 2,
             unit: 'dl',
             bought: true,
           ),
         ],
+        menuItemIds: const ['old-mjol'],
       );
       shoppingService.setShoppingState(
         lists: [existing],
@@ -895,11 +939,11 @@ void main() {
       expect(written.items.single.amount, 1);
     });
 
-    test('BUT-1279: pantry staples are dropped from the generated list and '
-        'counted in excludedStaples', () async {
-      // Proves: an ingredient the user marked as a pantry staple (salt) never
-      // lands on the generated shopping list, while non-staples (mjöl) do —
-      // and the omission is reported so the UI can explain it.
+    test('PQ-11 = A: the pantry subtracts known amounts — enough at home '
+        'leaves the row off, less adds the difference', () async {
+      // produktregler.md:224-234 (§ 4.2), which PQ-11 = A put in place of
+      // § 8.7's whole-staple-row exclusion: 5 dl needed, 2 dl at home -> 3
+      // dl on the list; 1 tsk salt needed, 1 dl at home -> not on the list.
       when(
         () => menuService.readWeek(any()),
       ).thenAnswer((_) async => _read(_plan(['r1'])));
@@ -908,66 +952,87 @@ void main() {
           _recipe('r1', const [
             RecipeIngredient(amount: 1, unit: 'tsk', name: 'salt', raw: 'salt'),
             RecipeIngredient(
-              amount: 2,
+              amount: 5,
               unit: 'dl',
-              name: 'mjöl',
-              raw: '2 dl mjöl',
+              name: 'mjölk',
+              raw: '5 dl mjölk',
             ),
           ]),
         ],
         isInitialized: true,
       );
-      when(
-        () => pantryService.getAll(_testUserId),
-      ).thenAnswer((_) async => [_stapleItem('Salt')]);
-      shoppingService.setShoppingState(lists: [], personalLists: []);
-      when(
-        () => shoppingService.createPersonalList(
-          any(),
-          items: any(named: 'items'),
-        ),
-      ).thenAnswer((_) async {
-        shoppingService.setShoppingState(
-          lists: [_list('new-list-1', _expectedListName)],
-          personalLists: [_list('new-list-1', _expectedListName)],
-        );
-        return 'new-list-1';
-      });
-      when(
-        () => shoppingService.updateList(any()),
-      ).thenAnswer((_) async => true);
+      when(() => pantryService.watchAll(_testUserId)).thenAnswer(
+        (_) => Stream.value([
+          _pantryItem('Salt', quantity: 1, unit: 'dl'),
+          _pantryItem('mjölk', quantity: 2, unit: 'dl'),
+        ]),
+      );
+      seedFreshListCreation();
 
       final result = await generator.generateForWeek(_date);
 
-      expect(
-        result,
-        isNotNull,
-        reason: 'staple exclusion must not abort generation',
-      );
+      expect(result, isNotNull, reason: 'the deduction must not abort');
       expect(
         result!.excludedStaples,
-        1,
-        reason: 'one staple line (salt) was kept off the list',
+        2,
+        reason: 'both rows were touched by the pantry',
       );
+      // BUT-1296: the pantry is read for THIS user.
+      verify(() => pantryService.watchAll(_testUserId)).called(1);
 
-      // BUT-1296: the staples must be read for THIS user, not some default or
-      // empty id. An explicit-arg verify (not any()) catches a regression that
-      // reads the wrong user's pantry — which would either leak another user's
-      // staples or silently exclude nothing.
-      verify(() => pantryService.getAll(_testUserId)).called(1);
-
-      final written = capturedUpdate();
-      expect(
-        written.items.map((i) => i.name),
-        ['mjöl'],
-        reason: 'salt is a staple and must be excluded; mjöl remains',
-      );
+      final written = writtenByName();
+      expect(written.keys, ['mjölk'], reason: 'enough salt is at home');
+      expect(written['mjölk']!.amount, closeTo(3, 1e-9));
+      expect(written['mjölk']!.unit, 'dl');
     });
 
-    test('BUT-1279: a failing/absent pantry never blocks generation — list is '
-        'built with no exclusions', () async {
-      // Proves the defensive degrade: if the pantry read throws, the list is
-      // still generated (every ingredient present, nothing excluded).
+    test('PQ-11 = A: an unknown amount or an unconvertible unit gives no '
+        'deduction and Kanske hemma; a row past its date gives '
+        'Kolla datum', () async {
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipe('r1', const [
+            RecipeIngredient(amount: 2, unit: 'dl', name: 'grädde', raw: 'x'),
+            RecipeIngredient(amount: 200, unit: 'g', name: 'smör', raw: 'x'),
+            RecipeIngredient(amount: 3, unit: 'st', name: 'ägg', raw: 'x'),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      when(() => pantryService.watchAll(any())).thenAnswer(
+        (_) => Stream.value([
+          _pantryItem('grädde'),
+          _pantryItem('smör', quantity: 1, unit: 'dl'),
+          _pantryItem(
+            'ägg',
+            quantity: 12,
+            unit: 'st',
+            expiryDate: DateTime(2020),
+          ),
+        ]),
+      );
+      seedFreshListCreation();
+
+      await generator.generateForWeek(_date);
+
+      final written = writtenByName();
+      expect(written['grädde']!.amount, 2);
+      expect(written['grädde']!.note, 'Kanske hemma');
+      expect(written['smör']!.amount, 200);
+      expect(
+        written['smör']!.note,
+        'Kanske hemma',
+        reason: 'weight is never converted against volume',
+      );
+      expect(written['ägg']!.amount, 3);
+      expect(written['ägg']!.note, 'Kolla datum');
+    });
+
+    test('a failing pantry never blocks generation — the list is built '
+        'without deduction (produktregler.md:697)', () async {
       when(
         () => menuService.readWeek(any()),
       ).thenAnswer((_) async => _read(_plan(['r1'])));
@@ -980,24 +1045,9 @@ void main() {
         isInitialized: true,
       );
       when(
-        () => pantryService.getAll(any()),
-      ).thenThrow(StateError('pantry unavailable'));
-      shoppingService.setShoppingState(lists: [], personalLists: []);
-      when(
-        () => shoppingService.createPersonalList(
-          any(),
-          items: any(named: 'items'),
-        ),
-      ).thenAnswer((_) async {
-        shoppingService.setShoppingState(
-          lists: [_list('new-list-1', _expectedListName)],
-          personalLists: [_list('new-list-1', _expectedListName)],
-        );
-        return 'new-list-1';
-      });
-      when(
-        () => shoppingService.updateList(any()),
-      ).thenAnswer((_) async => true);
+        () => pantryService.watchAll(any()),
+      ).thenAnswer((_) => Stream.error(StateError('pantry unavailable')));
+      seedFreshListCreation();
 
       final result = await generator.generateForWeek(_date);
 
@@ -1010,7 +1060,7 @@ void main() {
       expect(
         capturedUpdate().items.map((i) => i.name),
         ['salt'],
-        reason: 'with no staple data, every ingredient is kept',
+        reason: 'with no pantry data, every ingredient is kept',
       );
     });
   });

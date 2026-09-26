@@ -71,11 +71,29 @@ class MenuShoppingAggregator {
   static List<AggregatedShoppingItem> aggregate(
     List<ScaledRecipe> placements, {
     Set<String> excludeNames = const {},
+  }) => aggregateForMerge(placements, excludeNames: excludeNames).items;
+
+  /// P6-U02: the aggregation the merge sheet (#inkopmerge) reads, with the
+  /// numbers its summary shows.
+  ///
+  /// [mergeDuplicates] and [convertUnits] are the sheet's first two switches
+  /// (Skarmar v12 del 2 #inkopmergeoppen: "Slå samman dubbletter",
+  /// "Konvertera enheter"). With [mergeDuplicates] off every ingredient line
+  /// stays its own row, as written. Conversion only ever joins rows of the
+  /// same ingredient, so with merging off it has nothing to join and does
+  /// nothing (an interpretation: the drawing shows both switches on).
+  /// [convertUnits] off keeps "2 dl" and "100 ml" as two rows.
+  static MenuShoppingAggregation aggregateForMerge(
+    List<ScaledRecipe> placements, {
+    Set<String> excludeNames = const {},
+    bool mergeDuplicates = true,
+    bool convertUnits = true,
   }) {
     // Keyed by "<normalizedName>|<normalizedUnit>"; amount-less entries use
     // the unit-less key so "1-2 vitlöksklyftor" and "vitlök efter smak"
     // don't multiply into near-duplicate lines per recipe.
     final byKey = <String, _Accumulator>{};
+    var rawRows = 0;
 
     for (final placement in placements) {
       final factor = placement.factor;
@@ -86,9 +104,11 @@ class MenuShoppingAggregator {
         if (displayName.isEmpty) continue;
         final nameKey = SwedishCharacterNormalizer.normalize(displayName);
         if (excludeNames.contains(nameKey)) continue;
+        rawRows++;
         final hasAmount = entry.amount != null;
         final unit = hasAmount ? entry.unit.orEmpty().toLowerCase().trim() : '';
-        final key = '$nameKey|$unit';
+        // Merging off: the row counter keeps every line apart.
+        final key = mergeDuplicates ? '$nameKey|$unit' : '$rawRows';
 
         final acc = byKey.putIfAbsent(
           key,
@@ -117,7 +137,10 @@ class MenuShoppingAggregator {
       }
     }
 
-    final merged = _mergeCompatibleUnits(byKey.values);
+    final converted = _ConversionCount();
+    final merged = mergeDuplicates && convertUnits
+        ? _mergeCompatibleUnits(byKey.values, converted)
+        : byKey.values;
 
     final items =
         merged
@@ -137,7 +160,11 @@ class MenuShoppingAggregator {
             if (byCategory != 0) return byCategory;
             return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           });
-    return items;
+    return MenuShoppingAggregation(
+      items: items,
+      rawRowCount: rawRows,
+      convertedCount: converted.value,
+    );
   }
 
   /// BUT-1278: second pass that collapses same-name lines whose units share a
@@ -149,6 +176,7 @@ class MenuShoppingAggregator {
   /// already merged exactly-by-unit-string in the first pass.
   static Iterable<_Accumulator> _mergeCompatibleUnits(
     Iterable<_Accumulator> accumulators,
+    _ConversionCount converted,
   ) {
     // Keyed by "<nameKey>|<baseUnit>" — only entries with a usable amount AND
     // a recognized family unit are candidates; everything else stays as-is.
@@ -178,14 +206,49 @@ class MenuShoppingAggregator {
         'menu_shopping_aggregator unit merge',
       );
       group.sourceCount += acc.sourceCount;
+      group.memberUnits.add(acc.unit);
     }
 
     final result = <_Accumulator>[...passthrough];
     for (final group in byBase.values) {
-      result.add(group.toAccumulator());
+      final joined = group.toAccumulator();
+      // P6-U02: a row counts as converted when it was joined with another
+      // row and now reads in a unit other than its own ("2 dl + 100 ml blir
+      // 3 dl": the 100 ml row is converted).
+      if (group.memberUnits.length > 1) {
+        converted.value += group.memberUnits
+            .where((unit) => unit != joined.unit)
+            .length;
+      }
+      result.add(joined);
     }
     return result;
   }
+}
+
+/// P6-U02: the aggregated rows and the numbers the merge sheet shows.
+class MenuShoppingAggregation {
+  const MenuShoppingAggregation({
+    required this.items,
+    required this.rawRowCount,
+    required this.convertedCount,
+  });
+
+  /// The rows after merging, sorted by category and name.
+  final List<AggregatedShoppingItem> items;
+
+  /// Ingredient lines before any merging ("5 rätter ger 24 rader").
+  final int rawRowCount;
+
+  /// Rows that were joined into a row written in another unit.
+  final int convertedCount;
+
+  /// Rows that merging removed ("6 slås samman").
+  int get mergedCount => rawRowCount - items.length;
+}
+
+class _ConversionCount {
+  int value = 0;
 }
 
 class _Accumulator {
@@ -214,6 +277,9 @@ class _MergeGroup {
   final String baseUnit;
   double baseQuantity = 0;
   int sourceCount = 0;
+
+  /// The unit each joined row was written in, one entry per row.
+  final List<String> memberUnits = [];
 
   _Accumulator toAccumulator() {
     // Sum lives in the base unit; convert up to the most readable Swedish
