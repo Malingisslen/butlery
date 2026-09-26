@@ -33,15 +33,55 @@ class NotificationPreferencesView extends StatefulWidget {
 }
 
 class _NotificationPreferencesViewState
-    extends State<NotificationPreferencesView> {
+    extends State<NotificationPreferencesView>
+    with WidgetsBindingObserver {
   NotificationPreferences _preferences = NotificationPreferences.defaults();
   bool _isLoading = true;
   bool _hasError = false;
 
+  /// Notifications are off for Butlery in the phone's settings. Then no
+  /// choice here means anything: a row at the top leads to the system
+  /// settings, and the switches stay visible but inactive
+  /// (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
+  bool _systemOff = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadPreferences();
+    _checkSystemPermission();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Coming back from the system settings: read the answer again.
+    if (state == AppLifecycleState.resumed) _checkSystemPermission();
+  }
+
+  Future<void> _checkSystemPermission() async {
+    var off = false;
+    try {
+      off = await ServiceLocator.get<NotificationPermissionService>()
+          .blockedInSystem();
+    } catch (_) {
+      // Unknown means not off: never hide the switches on a guess.
+      off = false;
+    }
+    if (mounted && off != _systemOff) setState(() => _systemOff = off);
+  }
+
+  Future<void> _openSystemSettings() async {
+    try {
+      await ServiceLocator.get<NotificationPermissionService>()
+          .openSystemSettings();
+    } catch (_) {}
   }
 
   Future<void> _loadPreferences() async {
@@ -156,6 +196,10 @@ class _NotificationPreferencesViewState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (_systemOff) ...[
+                                _buildSystemOffRow(),
+                                const SizedBox(height: AppDimensions.spacingLg),
+                              ],
                               _buildMasterToggle(),
                               const SizedBox(height: AppDimensions.spacingXl),
                               _buildCategorySection(),
@@ -169,6 +213,67 @@ class _NotificationPreferencesViewState
                       ),
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The row at the top when notifications are off in the phone
+  /// (produktregler.md:739; Skarmar v12 etapp 3 #behnotiser :570): a 1.5 px
+  /// outline, a warning glyph and the text in error red, #9C3B23 light /
+  /// #DE9078 dark = cs.error in both schemes, and a way to the system
+  /// settings.
+  Widget _buildSystemOffRow() {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    return Container(
+      key: const ValueKey('notification-system-off-row'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(color: cs.error, width: 1.5),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  Icons.warning_amber_rounded,
+                  color: cs.error,
+                  size: AppDimensions.iconSizeS,
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                child: Text(
+                  l10n.notifSystemOffRow,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Semantics(
+              button: true,
+              label: l10n.a11yOpenSystemSettings,
+              excludeSemantics: true,
+              child: TextButton(
+                key: const ValueKey('notification-system-off-open'),
+                onPressed: _openSystemSettings,
+                child: Text(l10n.permOpenSettings),
+              ),
+            ),
           ),
         ],
       ),
@@ -198,7 +303,7 @@ class _NotificationPreferencesViewState
         size: AppDimensions.iconSizeL,
       ),
       value: _preferences.enabled,
-      onChanged: (value) => _onMasterToggle(value),
+      onChanged: _systemOff ? null : (value) => _onMasterToggle(value),
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -234,7 +339,7 @@ class _NotificationPreferencesViewState
           size: AppDimensions.iconSizeL,
         ),
         value: isEnabled,
-        onChanged: _preferences.enabled
+        onChanged: _preferences.enabled && !_systemOff
             ? (value) {
                 final updatedSettings = Map<NotificationCategory, bool>.from(
                   _preferences.categorySettings,
@@ -287,7 +392,7 @@ class _NotificationPreferencesViewState
               isDense: true,
               isExpanded: true,
               items: _digestFrequencyItems(l10n),
-              onChanged: _preferences.enabled
+              onChanged: _preferences.enabled && !_systemOff
                   ? (value) {
                       if (value != null) {
                         _savePreferences(
@@ -353,22 +458,24 @@ class _NotificationPreferencesViewState
             size: AppDimensions.iconSizeL,
           ),
           value: hasQuietHours,
-          onChanged: (value) {
-            if (value) {
-              // Enable with defaults 22:00-08:00
-              _savePreferences(
-                _copyPreferences(
-                  quietHoursStart: const TimeOfDay(hour: 22, minute: 0),
-                  quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),
-                  clearQuietHours: false,
-                ),
-              );
-            } else {
-              _savePreferences(
-                _copyPreferences(clearQuietHours: true),
-              );
-            }
-          },
+          onChanged: _systemOff
+              ? null
+              : (value) {
+                  if (value) {
+                    // Enable with defaults 22:00-08:00
+                    _savePreferences(
+                      _copyPreferences(
+                        quietHoursStart: const TimeOfDay(hour: 22, minute: 0),
+                        quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),
+                        clearQuietHours: false,
+                      ),
+                    );
+                  } else {
+                    _savePreferences(
+                      _copyPreferences(clearQuietHours: true),
+                    );
+                  }
+                },
           contentPadding: EdgeInsets.zero,
         ),
         if (hasQuietHours) ...[

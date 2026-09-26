@@ -6035,7 +6035,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importPhotoDescription =>
-      'Take a picture of a recipe or choose from gallery to import text automatically';
+      'Photograph the recipe or choose photos from your library, one page at a time. The text is read when you tap Read.';
 
   @override
   String get importPhotoImport => 'Photo import';
@@ -17811,4 +17811,178 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mfaBackupCodesFailed =>
       'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
+
+  @override
+  String get permAllow => 'Allow';
+
+  @override
+  String get permNotNow => 'Not now';
+
+  @override
+  String get permAskAgain => 'Ask again';
+
+  @override
+  String get permOpenSettings => 'Open settings';
+
+  @override
+  String get permImportCameraTitle => 'Photograph the recipe';
+
+  @override
+  String get permImportCameraBody =>
+      'I read the text in the photo and fill in the recipe for you.';
+
+  @override
+  String get permImportPhotosTitle => 'Choose photos of the recipe';
+
+  @override
+  String get permImportPhotosBody =>
+      'I read the text in the photos you choose and fill in the recipe for you.';
+
+  @override
+  String get permImportConsequence =>
+      'If you say no, you can still type the recipe or paste a link.';
+
+  @override
+  String get permCameraTitle => 'Take a photo with the camera';
+
+  @override
+  String get permCameraBody =>
+      'The camera is only used when you take a photo yourself.';
+
+  @override
+  String get permPhotosTitle => 'Choose photos from your library';
+
+  @override
+  String get permPhotosBody => 'Butlery only reads the photos you choose.';
+
+  @override
+  String get permCameraDenied =>
+      'The camera is not allowed, so I cannot photograph the recipe.';
+
+  @override
+  String get permPhotosDenied =>
+      'The photo library is not allowed, so I cannot read the recipe from a photo.';
+
+  @override
+  String get permCameraPermanentlyDenied =>
+      'The camera is switched off for Butlery in the phone\'s settings.';
+
+  @override
+  String get permPhotosPermanentlyDenied =>
+      'The photo library is switched off for Butlery in the phone\'s settings.';
+
+  @override
+  String get permCameraRestricted =>
+      'This device blocks the camera. It cannot be changed here.';
+
+  @override
+  String get permPhotosRestricted =>
+      'This device blocks the photo library. It cannot be changed here.';
+
+  @override
+  String get permFallbackGallery => 'Choose from the library';
+
+  @override
+  String get permFallbackWriteYourself => 'Write it yourself';
+
+  @override
+  String get permPhotosLimited =>
+      'You have shared some photos with Butlery. I only see those.';
+
+  @override
+  String get permPhotosLimitedHint =>
+      'If you cannot find the photo, it is missing from your selection, not from the library. You can add more without giving me the whole library.';
+
+  @override
+  String get permPhotosChooseMore => 'Choose more photos';
+
+  @override
+  String get timerNotifDeniedTitle => 'The timer only shows in the app';
+
+  @override
+  String get timerNotifDeniedBody =>
+      'Notifications are off for Butlery, so the timer cannot alert you while the app is in the background or the phone is locked.';
+
+  @override
+  String get timerNotifDeniedStart => 'Start the timer';
+
+  @override
+  String get notifSystemOffRow =>
+      'Notifications are off for Butlery in the system settings. Nothing below can be switched on until you change that there.';
+
+  @override
+  String get a11yOpenSystemSettings => 'Open the system settings';
+
+  @override
+  String get cookingExitConfirmTitle => 'Stop cooking?';
+
+  @override
+  String cookingExitConfirmBody(int step, int total) {
+    return 'You are on step $step of $total. The recipe does not count as cooked until you tap Done.';
+  }
+
+  @override
+  String get cookingExitConfirmStay => 'Keep cooking';
+
+  @override
+  String get cookingExitConfirmLeave => 'Stop cooking';
+
+  @override
+  String get cookingDone => 'Done';
+
+  @override
+  String get cookingNoStepsTitle => 'The recipe has no steps yet';
+
+  @override
+  String get cookingNoStepsBody =>
+      'The ingredients are there, but nobody has written how to make it. Write the steps, or take the ingredients to the shopping list.';
+
+  @override
+  String get cookingNoStepsBodyNoIngredients =>
+      'Nobody has written how to make it yet. Write the steps and you can cook from here.';
+
+  @override
+  String get cookingNoStepsWrite => 'Write the steps';
+
+  @override
+  String get cookingNoStepsShopping => 'To the shopping list';
+
+  @override
+  String get parseConfidenceConfirm => 'Correct';
+
+  @override
+  String get parseConfidenceConfirmed => 'Confirmed';
+
+  @override
+  String a11yParseConfidenceConfirm(String line) {
+    return 'Confirm the line $line';
+  }
+
+  @override
+  String parseConfidencePendingSave(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Confirm $count lines before you save',
+      one: 'Confirm 1 line before you save',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get parseConfidenceUnreadLine => 'The line could not be read';
+
+  @override
+  String get a11yParseConfidenceUnreadLine => 'A line that could not be read';
+
+  @override
+  String importReadPages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count pages',
+      one: 'Read 1 page',
+    );
+    return '$_temp0';
+  }
 }

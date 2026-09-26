@@ -6043,7 +6043,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get importPhotoDescription =>
-      'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt';
+      'Fota receptet eller välj bilder ur biblioteket, en sida i taget. Texten läses av när du trycker Läs av.';
 
   @override
   String get importPhotoImport => 'Fotoimport';
@@ -17847,4 +17847,177 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get mfaBackupCodesFailed =>
       'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.';
+
+  @override
+  String get permAllow => 'Tillåt';
+
+  @override
+  String get permNotNow => 'Inte nu';
+
+  @override
+  String get permAskAgain => 'Fråga igen';
+
+  @override
+  String get permOpenSettings => 'Öppna inställningar';
+
+  @override
+  String get permImportCameraTitle => 'Fotografera receptet';
+
+  @override
+  String get permImportCameraBody =>
+      'Jag läser texten ur bilden och fyller i receptet åt dig.';
+
+  @override
+  String get permImportPhotosTitle => 'Välj bilder av receptet';
+
+  @override
+  String get permImportPhotosBody =>
+      'Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.';
+
+  @override
+  String get permImportConsequence =>
+      'Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.';
+
+  @override
+  String get permCameraTitle => 'Ta en bild med kameran';
+
+  @override
+  String get permCameraBody => 'Kameran används bara när du själv tar en bild.';
+
+  @override
+  String get permPhotosTitle => 'Välj bilder ur bildbiblioteket';
+
+  @override
+  String get permPhotosBody => 'Butlery läser bara de bilder du själv väljer.';
+
+  @override
+  String get permCameraDenied =>
+      'Kameran är inte tillåten, så jag kan inte fotografera receptet.';
+
+  @override
+  String get permPhotosDenied =>
+      'Bildbiblioteket är inte tillåtet, så jag kan inte läsa receptet ur en bild.';
+
+  @override
+  String get permCameraPermanentlyDenied =>
+      'Kameran är avstängd för Butlery i telefonens inställningar.';
+
+  @override
+  String get permPhotosPermanentlyDenied =>
+      'Bildbiblioteket är avstängt för Butlery i telefonens inställningar.';
+
+  @override
+  String get permCameraRestricted =>
+      'Enheten har spärrat kameran. Det går inte att ändra här.';
+
+  @override
+  String get permPhotosRestricted =>
+      'Enheten har spärrat bildbiblioteket. Det går inte att ändra här.';
+
+  @override
+  String get permFallbackGallery => 'Välj ur bildbiblioteket';
+
+  @override
+  String get permFallbackWriteYourself => 'Skriv själv';
+
+  @override
+  String get permPhotosLimited =>
+      'Du har delat några bilder med Butlery. Jag ser bara dem.';
+
+  @override
+  String get permPhotosLimitedHint =>
+      'Hittar du inte bilden är det urvalet som saknar den, inte biblioteket. Du kan lägga till fler utan att ge mig hela biblioteket.';
+
+  @override
+  String get permPhotosChooseMore => 'Välj fler bilder';
+
+  @override
+  String get timerNotifDeniedTitle => 'Timern syns bara i appen';
+
+  @override
+  String get timerNotifDeniedBody =>
+      'Notiser är avstängda för Butlery, så timern kan inte säga till när appen ligger i bakgrunden eller telefonen är låst.';
+
+  @override
+  String get timerNotifDeniedStart => 'Starta timern';
+
+  @override
+  String get notifSystemOffRow =>
+      'Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.';
+
+  @override
+  String get a11yOpenSystemSettings => 'Öppna systeminställningarna';
+
+  @override
+  String get cookingExitConfirmTitle => 'Avsluta matlagningen?';
+
+  @override
+  String cookingExitConfirmBody(int step, int total) {
+    return 'Du är på steg $step av $total. Receptet räknas inte som lagat förrän du trycker Klart.';
+  }
+
+  @override
+  String get cookingExitConfirmStay => 'Fortsätt laga';
+
+  @override
+  String get cookingExitConfirmLeave => 'Avsluta matlagningen';
+
+  @override
+  String get cookingDone => 'Klart';
+
+  @override
+  String get cookingNoStepsTitle => 'Receptet har inga steg än';
+
+  @override
+  String get cookingNoStepsBody =>
+      'Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.';
+
+  @override
+  String get cookingNoStepsBodyNoIngredients =>
+      'Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.';
+
+  @override
+  String get cookingNoStepsWrite => 'Skriv stegen';
+
+  @override
+  String get cookingNoStepsShopping => 'Till inköpslistan';
+
+  @override
+  String get parseConfidenceConfirm => 'Stämmer';
+
+  @override
+  String get parseConfidenceConfirmed => 'Bekräftad';
+
+  @override
+  String a11yParseConfidenceConfirm(String line) {
+    return 'Bekräfta raden $line';
+  }
+
+  @override
+  String parseConfidencePendingSave(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bekräfta $count rader innan du sparar',
+      one: 'Bekräfta 1 rad innan du sparar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get parseConfidenceUnreadLine => 'Raden kunde inte läsas';
+
+  @override
+  String get a11yParseConfidenceUnreadLine => 'Rad som inte kunde läsas';
+
+  @override
+  String importReadPages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Läs av $count sidor',
+      one: 'Läs av 1 sida',
+    );
+    return '$_temp0';
+  }
 }

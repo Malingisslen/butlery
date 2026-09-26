@@ -10,6 +10,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -103,8 +104,18 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
   Future<void> _pickImages() async {
     if (_atImageCap) return;
     final remaining = RecipeComment.maxImageUrls - _selectedImages.length;
-    final picked = await _imagePicker.pickMultipleImages(maxImages: remaining);
-    if (picked.isEmpty || !mounted) return;
+    // Flow 07: explanation before the system prompt (produktregler.md:682).
+    final outcome = await _imagePicker.pickMultipleImagesWithOutcome(
+      maxImages: remaining,
+      rationale: mediaRationalePrompt(context),
+    );
+    if (!mounted) return;
+    if (outcome.blockedByPermission) {
+      explainMediaPermission(context, outcome.permission, ImageSource.gallery);
+      return;
+    }
+    final picked = outcome.files;
+    if (picked.isEmpty) return;
     setState(() {
       _selectedImages.addAll(picked.take(remaining));
     });

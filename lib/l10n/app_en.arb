@@ -4103,7 +4103,7 @@
   "importPasteLinkOrText": "Paste link or text here...",
   "importPasteText": "Paste text",
   "importAddManually": "Add manually",
-  "importPhotoDescription": "Take a picture of a recipe or choose from gallery to import text automatically",
+  "importPhotoDescription": "Photograph the recipe or choose photos from your library, one page at a time. The text is read when you tap Read.",
   "importPhotoImport": "Photo import",
   "importProceedToEdit": "Proceed to edit",
   "importMultipleRecipesFound": "We found {count} recipes",
@@ -13228,5 +13228,82 @@
   "mfaBackupCodesCopied": "The codes are copied.",
   "mfaBackupCodesSaved": "I have saved the codes",
   "mfaBackupCodesContinue": "Continue to the phone number",
-  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed."
+  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.",
+  "permAllow": "Allow",
+  "permNotNow": "Not now",
+  "permAskAgain": "Ask again",
+  "permOpenSettings": "Open settings",
+  "permImportCameraTitle": "Photograph the recipe",
+  "permImportCameraBody": "I read the text in the photo and fill in the recipe for you.",
+  "permImportPhotosTitle": "Choose photos of the recipe",
+  "permImportPhotosBody": "I read the text in the photos you choose and fill in the recipe for you.",
+  "permImportConsequence": "If you say no, you can still type the recipe or paste a link.",
+  "permCameraTitle": "Take a photo with the camera",
+  "permCameraBody": "The camera is only used when you take a photo yourself.",
+  "permPhotosTitle": "Choose photos from your library",
+  "permPhotosBody": "Butlery only reads the photos you choose.",
+  "permCameraDenied": "The camera is not allowed, so I cannot photograph the recipe.",
+  "permPhotosDenied": "The photo library is not allowed, so I cannot read the recipe from a photo.",
+  "permCameraPermanentlyDenied": "The camera is switched off for Butlery in the phone's settings.",
+  "permPhotosPermanentlyDenied": "The photo library is switched off for Butlery in the phone's settings.",
+  "permCameraRestricted": "This device blocks the camera. It cannot be changed here.",
+  "permPhotosRestricted": "This device blocks the photo library. It cannot be changed here.",
+  "permFallbackGallery": "Choose from the library",
+  "permFallbackWriteYourself": "Write it yourself",
+  "permPhotosLimited": "You have shared some photos with Butlery. I only see those.",
+  "permPhotosLimitedHint": "If you cannot find the photo, it is missing from your selection, not from the library. You can add more without giving me the whole library.",
+  "permPhotosChooseMore": "Choose more photos",
+  "timerNotifDeniedTitle": "The timer only shows in the app",
+  "timerNotifDeniedBody": "Notifications are off for Butlery, so the timer cannot alert you while the app is in the background or the phone is locked.",
+  "timerNotifDeniedStart": "Start the timer",
+  "notifSystemOffRow": "Notifications are off for Butlery in the system settings. Nothing below can be switched on until you change that there.",
+  "a11yOpenSystemSettings": "Open the system settings",
+  "cookingExitConfirmTitle": "Stop cooking?",
+  "cookingExitConfirmBody": "You are on step {step} of {total}. The recipe does not count as cooked until you tap Done.",
+  "@cookingExitConfirmBody": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingExitConfirmStay": "Keep cooking",
+  "cookingExitConfirmLeave": "Stop cooking",
+  "cookingDone": "Done",
+  "cookingNoStepsTitle": "The recipe has no steps yet",
+  "cookingNoStepsBody": "The ingredients are there, but nobody has written how to make it. Write the steps, or take the ingredients to the shopping list.",
+  "cookingNoStepsBodyNoIngredients": "Nobody has written how to make it yet. Write the steps and you can cook from here.",
+  "cookingNoStepsWrite": "Write the steps",
+  "cookingNoStepsShopping": "To the shopping list",
+  "parseConfidenceConfirm": "Correct",
+  "parseConfidenceConfirmed": "Confirmed",
+  "a11yParseConfidenceConfirm": "Confirm the line {line}",
+  "@a11yParseConfidenceConfirm": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "parseConfidencePendingSave": "{count, plural, =1{Confirm 1 line before you save} other{Confirm {count} lines before you save}}",
+  "@parseConfidencePendingSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parseConfidenceUnreadLine": "The line could not be read",
+  "a11yParseConfidenceUnreadLine": "A line that could not be read",
+  "importReadPages": "{count, plural, =1{Read 1 page} other{Read {count} pages}}",
+  "@importReadPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

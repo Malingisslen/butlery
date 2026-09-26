@@ -143,6 +143,8 @@ void main() {
       buildVm(page: page, layoutFlag: true);
 
       await vm.loadImagesFromPaths([writeImage()]);
+      // Q4-04: shared pages are read on "Läs av N sidor".
+      await vm.readPages();
 
       expect(
         vm.ocrText,
@@ -163,6 +165,8 @@ void main() {
       buildVm(page: page, layoutFlag: false);
 
       await vm.loadImagesFromPaths([writeImage()]);
+      // Q4-04: shared pages are read on "Läs av N sidor".
+      await vm.readPages();
 
       // Asserted on the STRING, not only the count: the fake's two strings
       // differ by a trailing row, so this says the flag really selected the

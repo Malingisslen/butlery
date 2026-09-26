@@ -52,6 +52,13 @@ class StepTimerWidget extends StatefulWidget {
   /// pulse.
   final VoidCallback? onExpired;
 
+  /// Awaited before a new timer starts. Cooking mode passes the notice that
+  /// a timer without notification permission only shows in the app, which
+  /// must come before the timer starts, never after (produktregler.md:423;
+  /// flows-roles-budget.md:70). Not called when re-attaching to a running or
+  /// paused timer.
+  final Future<void> Function()? beforeStart;
+
   const StepTimerWidget({
     super.key,
     required this.service,
@@ -59,6 +66,7 @@ class StepTimerWidget extends StatefulWidget {
     this.timerId = StepTimerService.defaultTimerId,
     this.sourcePhrase,
     this.onExpired,
+    this.beforeStart,
   });
 
   @override
@@ -78,11 +86,16 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
       duration: ThemeConstants.durationMedium,
     );
     // Auto-start once at mount — no need to re-check on every rebuild.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       if (widget.service.isRunningFor(widget.timerId) ||
           widget.service.isPausedFor(widget.timerId)) {
         return;
+      }
+      final beforeStart = widget.beforeStart;
+      if (beforeStart != null) {
+        await beforeStart();
+        if (!mounted) return;
       }
       widget.service.startTimer(
         id: widget.timerId,

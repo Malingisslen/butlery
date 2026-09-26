@@ -34,11 +34,13 @@ class CookingVoiceController extends ChangeNotifier {
     required StepTimerService timers,
     required CookingModeViewModel cookingVm,
     required SubstitutionSuggestionService substitutions,
+    Future<void> Function()? beforeTimerStart,
   }) : _voice = voiceCapture,
        _tts = tts,
        _timers = timers,
        _cookingVm = cookingVm,
-       _substitutions = substitutions;
+       _substitutions = substitutions,
+       _beforeTimerStart = beforeTimerStart;
 
   /// Command captures are seconds, not minutes — the service cap doubles
   /// as the talk-window length, so the window can never hang open.
@@ -49,6 +51,11 @@ class CookingVoiceController extends ChangeNotifier {
   final StepTimerService _timers;
   final CookingModeViewModel _cookingVm;
   final SubstitutionSuggestionService _substitutions;
+
+  /// Awaited before a voice-started timer starts: the notice that a timer
+  /// without notification permission only shows in the app comes before the
+  /// timer, never after (produktregler.md:423; flows-roles-budget.md:70).
+  final Future<void> Function()? _beforeTimerStart;
 
   VoiceAssistState _state = VoiceAssistState.idle;
   VoiceListenSource? _listenSource;
@@ -229,6 +236,11 @@ class CookingVoiceController extends ChangeNotifier {
               : lines.join('. '),
         );
       case SetTimer(:final duration):
+        final beforeTimerStart = _beforeTimerStart;
+        if (beforeTimerStart != null) {
+          await beforeTimerStart();
+          if (_isDisposed) return;
+        }
         _timers.startTimer(
           id: 'voice-${clock.now().microsecondsSinceEpoch}',
           duration: duration,

@@ -417,4 +417,122 @@ void main() {
       ).called(1);
     });
   });
+
+  // P6-U07 (flow 07): a typed outcome instead of null or [] —
+  // flows-roles-budget.md:98-106; produktregler.md:680-687.
+  group('typed permission outcome', () {
+    test(
+      'our explanation comes first; "Inte nu" never reaches the OS',
+      () async {
+        when(
+          () => mockPermission.checkPermission(Permission.camera),
+        ).thenAnswer((_) async => PermissionStatus.denied);
+
+        final outcome = await service.pickImageWithOutcome(
+          ImageSource.camera,
+          rationale: (_) async => false,
+        );
+
+        expect(outcome.permission, OsPermissionOutcome.denied);
+        expect(outcome.blockedByPermission, isTrue);
+        expect(outcome.files, isEmpty);
+        verifyNever(() => mockPermission.requestPermission(any()));
+        verifyNever(
+          () => mockPicker.pickImage(
+            source: any(named: 'source'),
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        );
+      },
+    );
+
+    test('Tillåt then an OS yes picks the image', () async {
+      final path = await createTempImage('ok.jpg');
+      var explained = 0;
+      when(
+        () => mockPermission.checkPermission(Permission.camera),
+      ).thenAnswer((_) async => PermissionStatus.denied);
+      when(
+        () => mockPermission.requestPermission(Permission.camera),
+      ).thenAnswer((_) async => PermissionStatus.granted);
+      when(
+        () => mockPicker.pickImage(
+          source: any(named: 'source'),
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => XFile(path));
+      when(() => mockValidator.isValidImageFile(any())).thenReturn(true);
+
+      final outcome = await service.pickImageWithOutcome(
+        ImageSource.camera,
+        rationale: (_) async {
+          explained++;
+          return true;
+        },
+      );
+
+      expect(explained, 1);
+      expect(outcome.permission, OsPermissionOutcome.granted);
+      expect(outcome.file?.path, path);
+    });
+
+    test(
+      'a permanent no on the camera is permanentlyDenied, not asked',
+      () async {
+        when(
+          () => mockPermission.checkPermission(Permission.camera),
+        ).thenAnswer((_) async => PermissionStatus.permanentlyDenied);
+
+        final outcome = await service.pickImageWithOutcome(
+          ImageSource.camera,
+          rationale: (_) async => fail('no explanation on a permanent no'),
+        );
+
+        expect(outcome.permission, OsPermissionOutcome.permanentlyDenied);
+        verifyNever(() => mockPermission.requestPermission(any()));
+      },
+    );
+
+    test('a device-blocked camera is restricted', () async {
+      when(
+        () => mockPermission.checkPermission(Permission.camera),
+      ).thenAnswer((_) async => PermissionStatus.restricted);
+
+      final outcome = await service.pickImageWithOutcome(ImageSource.camera);
+
+      expect(outcome.permission, OsPermissionOutcome.restricted);
+      expect(outcome.blockedByPermission, isTrue);
+    });
+
+    test('limited gallery access is its own usable state', () async {
+      when(
+        () => mockPermission.checkPermission(Permission.photos),
+      ).thenAnswer((_) async => PermissionStatus.limited);
+      when(
+        () => mockPicker.pickMultiImage(
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      final outcome = await service.pickMultipleImagesWithOutcome();
+
+      expect(outcome.permission, OsPermissionOutcome.limited);
+      expect(outcome.blockedByPermission, isFalse);
+    });
+
+    test('the legacy API keeps returning null / [] on a no', () async {
+      when(
+        () => mockPermission.checkPermission(any()),
+      ).thenAnswer((_) async => PermissionStatus.restricted);
+
+      expect(await service.pickImage(ImageSource.camera), isNull);
+      expect(await service.pickMultipleImages(), isEmpty);
+    });
+  });
 }
