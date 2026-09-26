@@ -50,15 +50,13 @@ enum MfaRecoveryOutcome {
   /// The phone factor is gone; sign in again with the password.
   recovered,
 
-  /// The password or the code did not match. Deliberately one outcome: the
-  /// server gives the same answer for both.
+  /// The password or the code did not match, or the account has no second
+  /// factor, or its code lock is on. Deliberately one outcome: the server
+  /// gives the same answer for all of them, so it confirms no password.
   rejected,
 
-  /// Too many failed attempts; recovery is locked for a while.
+  /// Too many attempts from this device or network; try again later.
   locked,
-
-  /// The account has no second factor; a plain sign-in works.
-  notNeeded,
 
   /// The server could not be reached or is not set up.
   unavailable,

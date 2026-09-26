@@ -4,7 +4,11 @@
  * Covers the security properties the module header promises: hashes only,
  * a wrong code fails, a used code fails, the lock after five failures, the
  * first factor proven before any code is looked at, the same refusal for a
- * wrong password and a wrong code, and an audit row for each outcome.
+ * wrong password, a wrong code and an account without MFA, check-and-count in
+ * one transaction (parallel requests cannot pass the cap), wrong passwords
+ * never touching the account's code lock, the per-IP and global throttles,
+ * peppered keys with a TTL field, the fail-closed pepper, the server-side
+ * clean-up after MFA is switched off, and an audit row for each outcome.
  *
  * Run: npx ts-node src/__tests__/mfa-backup-codes.test.ts
  */
@@ -17,6 +21,8 @@ import {
   BACKUP_CODE_COUNT,
   BACKUP_CODES_COLLECTION,
   CODE_ALPHABET,
+  GLOBAL_ATTEMPT_KEY,
+  MAX_IP_ATTEMPTS,
   MAX_RECOVERY_FAILURES,
   NO_ATTEMPTS,
   RECOVERY_ATTEMPTS_COLLECTION,
@@ -24,8 +30,11 @@ import {
   RECOVERY_WINDOW_MS,
   FirstFactor,
   RecoveryDeps,
-  attemptKey,
   buildStoredCodes,
+  ipAttemptKey,
+  pepperedKey,
+  runClearBackupCodes,
+  uidAttemptKey,
   evaluateAttempt,
   generateCodes,
   matchCode,
@@ -41,6 +50,26 @@ if (admin.apps.length === 0) admin.initializeApp({ projectId: "demo-mfa" });
 const EMAIL = "anna@example.com";
 const PASSWORD = "correct horse";
 const UID = "uid-anna";
+const PEPPER = "test-pepper-not-a-secret";
+const T0 = 1_700_000_000_000;
+
+/**
+ * The shared fake runs every transaction callback without isolation, so two
+ * interleaved transactions can both read the same counter. Real Firestore
+ * transactions are serialisable (contention aborts and retries the loser), and
+ * that is exactly the property the attempt counter relies on. This wrapper
+ * runs transactions one at a time — nothing more — so the parallel cases
+ * below measure the CODE's use of transactions: a counter read outside a
+ * transaction (the reviewed bug) still races here and would fail them.
+ */
+class SerialFirestore extends FakeFirestore {
+  private queue: Promise<unknown> = Promise.resolve();
+  async runTransaction<T>(fn: (tx: unknown) => Promise<T>): Promise<T> {
+    const run = this.queue.then(() => super.runTransaction(fn));
+    this.queue = run.catch(() => undefined);
+    return run;
+  }
+}
 
 interface Harness {
   fake: FakeFirestore;
@@ -54,8 +83,8 @@ interface Harness {
 }
 
 function harness(): Harness {
-  const fake = new FakeFirestore();
-  let now = 1_700_000_000_000;
+  const fake = new SerialFirestore();
+  let now = T0;
   let first: FirstFactor = { outcome: "mfa-required", uid: UID };
   const h: Harness = {
     fake,
@@ -69,8 +98,11 @@ function harness(): Harness {
   };
   h.deps = {
     db: fake.db,
+    pepper: PEPPER,
     verifyFirstFactor: async (email, password) => {
       h.firstFactorCalls++;
+      // A real network round trip: lets parallel requests interleave here.
+      await new Promise((r) => setImmediate(r));
       if (email !== EMAIL || password !== PASSWORD) return { outcome: "invalid" };
       return first;
     },
@@ -80,6 +112,21 @@ function harness(): Harness {
     now: () => now,
   };
   return h;
+}
+
+/** A distinct client address per call unless one is given. */
+let ipCounter = 0;
+function freshIp(): string {
+  ipCounter++;
+  return `203.0.113.${ipCounter % 250}`;
+}
+
+function recover(
+  h: Harness,
+  request: { email?: string; password?: string; code?: string },
+  ip: string = freshIp(),
+) {
+  return runMfaRecovery(h.deps, request, { ip });
 }
 
 async function seedCodes(h: Harness, codes: string[], usedIndex: number[] = []) {
@@ -107,6 +154,23 @@ async function expectRefusal(
   }
   throw new Error(`${msg}: resolved instead of refusing`);
 }
+
+/** Every settled refusal, by HttpsError code. */
+async function settleCodes(ps: Promise<unknown>[]): Promise<Record<string, number>> {
+  const out: Record<string, number> = {};
+  for (const r of await Promise.allSettled(ps)) {
+    const key =
+      r.status === "fulfilled"
+        ? "ok"
+        : r.reason instanceof HttpsError
+          ? r.reason.code
+          : `non-HttpsError:${String(r.reason)}`;
+    out[key] = (out[key] ?? 0) + 1;
+  }
+  return out;
+}
+
+const UID_DOC = `${RECOVERY_ATTEMPTS_COLLECTION}/${uidAttemptKey(UID)}`;
 
 const cases: UnitCase[] = [
   {
@@ -165,7 +229,7 @@ const cases: UnitCase[] = [
     fn: async () => {
       const h = harness();
       await seedCodes(h, ["ABCDE-FGHJK", "KLMNP-QRSTU"]);
-      const result = await runMfaRecovery(h.deps, {
+      const result = await recover(h, {
         email: EMAIL,
         password: PASSWORD,
         code: "abcde-fghjk",
@@ -174,6 +238,7 @@ const cases: UnitCase[] = [
       assertEqual(h.removed.join(), UID, "second factor removed");
       assertEqual(h.revoked.join(), UID, "sessions revoked");
       assertEqual(h.fake.has(`${BACKUP_CODES_COLLECTION}/${UID}`), false, "set retired");
+      assertEqual(h.fake.has(UID_DOC), false, "account counter released on success");
       assertEqual(h.audits.at(-1)?.action, "mfa_backup_code_used", "audited");
     },
   },
@@ -183,16 +248,16 @@ const cases: UnitCase[] = [
       const h = harness();
       await seedCodes(h, ["ABCDE-FGHJK", "KLMNP-QRSTU"], [0]);
       await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
         "permission-denied",
         "used code",
       );
       assertEqual(h.removed.length, 0, "nothing removed on a used code");
 
       // The other code works once; replaying it fails.
-      await runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "KLMNP-QRSTU" });
+      await recover(h, { email: EMAIL, password: PASSWORD, code: "KLMNP-QRSTU" });
       await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "KLMNP-QRSTU" }),
+        recover(h, { email: EMAIL, password: PASSWORD, code: "KLMNP-QRSTU" }),
         "permission-denied",
         "replayed code",
       );
@@ -200,16 +265,16 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "a wrong code fails, counts, and is audited without the code",
+    name: "a wrong code fails, counts on the account, and is audited without the code",
     fn: async () => {
       const h = harness();
       await seedCodes(h, ["ABCDE-FGHJK"]);
       await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "ZZZZZ-ZZZZZ" }),
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ZZZZZ-ZZZZZ" }),
         "permission-denied",
         "wrong code",
       );
-      const attempts = h.fake.read(`${RECOVERY_ATTEMPTS_COLLECTION}/${attemptKey(EMAIL)}`);
+      const attempts = h.fake.read(UID_DOC);
       assertEqual(attempts?.failures, 1, "failure counted");
       assertEqual(h.audits[0].action, "mfa_backup_code_rejected", "rejection audited");
       assertEqual(JSON.stringify(h.audits).includes("ZZZZZ"), false, "code in audit");
@@ -222,12 +287,12 @@ const cases: UnitCase[] = [
       const h = harness();
       await seedCodes(h, ["ABCDE-FGHJK"]);
       const wrongPassword = await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }),
+        recover(h, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }),
         "permission-denied",
         "wrong password",
       );
       const wrongCode = await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "ZZZZZ-ZZZZZ" }),
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ZZZZZ-ZZZZZ" }),
         "permission-denied",
         "wrong code",
       );
@@ -245,39 +310,240 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "five failures lock recovery, even for the right code, until the lock ends",
+    name: "finding 1: an account without MFA gets exactly the wrong-password refusal",
+    fn: async () => {
+      const h = harness();
+      const wrongPassword = await expectRefusal(
+        recover(h, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }),
+        "permission-denied",
+        "wrong password",
+      );
+      const unknownEmail = await expectRefusal(
+        recover(h, { email: "nobody@example.com", password: "x", code: "ABCDE-FGHJK" }),
+        "permission-denied",
+        "unknown address",
+      );
+      h.setFirstFactor({ outcome: "no-mfa" });
+      const noMfa = await expectRefusal(
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+        "permission-denied",
+        "no mfa must not be failed-precondition",
+      );
+      for (const [label, other] of [
+        ["unknown address", unknownEmail],
+        ["no mfa", noMfa],
+      ] as const) {
+        assertEqual(other.code, wrongPassword.code, `${label}: same code`);
+        assertEqual(other.message, wrongPassword.message, `${label}: same words`);
+        assertEqual(
+          JSON.stringify(other.details),
+          JSON.stringify(wrongPassword.details),
+          `${label}: same details`,
+        );
+      }
+      assertEqual(h.fake.has(UID_DOC), false, "no account counter without MFA");
+      assertEqual(h.removed.length + h.revoked.length, 0, "nothing touched");
+    },
+  },
+  {
+    name: "five wrong codes lock the account; the lock answers like a wrong password and ends",
     fn: async () => {
       const h = harness();
       await seedCodes(h, ["ABCDE-FGHJK"]);
       for (let i = 0; i < MAX_RECOVERY_FAILURES; i++) {
         await expectRefusal(
-          runMfaRecovery(h.deps, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }),
+          recover(h, { email: EMAIL, password: PASSWORD, code: "ZZZZZ-ZZZZZ" }),
           "permission-denied",
-          `failure ${i + 1}`,
+          `code failure ${i + 1}`,
+        );
+      }
+      const lockedErr = await expectRefusal(
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+        "permission-denied",
+        "locked account: same refusal as a wrong password, so no oracle",
+      );
+      assertEqual(
+        (lockedErr.details as { code?: string }).code,
+        "recovery-rejected",
+        "lock reason is not revealed",
+      );
+      const stored = h.fake.read(`${BACKUP_CODES_COLLECTION}/${UID}`)!.codes as {
+        usedAt: number | null;
+      }[];
+      assertEqual(stored[0].usedAt, null, "a locked request never spends the code");
+      assertEqual(h.removed.length, 0, "nothing removed while locked");
+      assertEqual(h.audits.at(-1)?.action, "mfa_backup_code_locked", "lock audited");
+
+      h.setNow(T0 + RECOVERY_LOCKOUT_MS + 1);
+      await recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" });
+      assertEqual(h.removed.length, 1, "recovers after the lock");
+      assertEqual(h.fake.has(UID_DOC), false, "counter cleared on success");
+    },
+  },
+  {
+    name: "finding 2: twenty PARALLEL wrong codes check at most five, transactionally",
+    fn: async () => {
+      const h = harness();
+      await seedCodes(h, ["ABCDE-FGHJK"]);
+      const results = await settleCodes(
+        Array.from({ length: 20 }, () =>
+          recover(h, { email: EMAIL, password: PASSWORD, code: "ZZZZZ-ZZZZZ" }),
+        ),
+      );
+      assertEqual(results["permission-denied"], 20, "all refused alike");
+      const checked = h.audits.filter((a) => a.action === "mfa_backup_code_rejected");
+      assertEqual(checked.length, MAX_RECOVERY_FAILURES, "codes actually checked");
+      assertEqual(h.fake.read(UID_DOC)?.failures, MAX_RECOVERY_FAILURES, "counter at the cap");
+      // Even the right code is refused now.
+      await expectRefusal(
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+        "permission-denied",
+        "locked after the parallel burst",
+      );
+      assertEqual(h.removed.length, 0, "nothing removed");
+    },
+  },
+  {
+    name: "finding 2: parallel requests from one IP cannot pass the per-IP cap",
+    fn: async () => {
+      const h = harness();
+      const ip = "198.51.100.7";
+      const results = await settleCodes(
+        Array.from({ length: 25 }, () =>
+          recover(h, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }, ip),
+        ),
+      );
+      assertEqual(h.firstFactorCalls, MAX_IP_ATTEMPTS, "password checks from one IP");
+      assertEqual(results["permission-denied"], MAX_IP_ATTEMPTS, "refused after the check");
+      assertEqual(results["resource-exhausted"], 25 - MAX_IP_ATTEMPTS, "throttled");
+    },
+  },
+  {
+    name: "finding 3: wrong passwords never touch the account's code lock",
+    fn: async () => {
+      const h = harness();
+      await seedCodes(h, ["ABCDE-FGHJK"]);
+      // A stranger who knows only the address, from many addresses.
+      for (let i = 0; i < 4 * MAX_RECOVERY_FAILURES; i++) {
+        await expectRefusal(
+          recover(h, { email: EMAIL, password: `guess-${i}`, code: "ZZZZZ-ZZZZZ" }),
+          "permission-denied",
+          `wrong password ${i + 1}`,
+        );
+      }
+      assertEqual(h.fake.has(UID_DOC), false, "no account counter");
+      // The owner still gets in at once.
+      await recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" });
+      assertEqual(h.removed.join(), UID, "owner recovers");
+    },
+  },
+  {
+    name: "per-IP throttle: the eleventh attempt from one IP is refused before the password check",
+    fn: async () => {
+      const h = harness();
+      await seedCodes(h, ["ABCDE-FGHJK"]);
+      const ip = "192.0.2.44";
+      for (let i = 0; i < MAX_IP_ATTEMPTS; i++) {
+        await expectRefusal(
+          recover(h, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }, ip),
+          "permission-denied",
+          `attempt ${i + 1}`,
         );
       }
       const calls = h.firstFactorCalls;
-      const lockedErr = await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+      const throttled = await expectRefusal(
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }, ip),
         "resource-exhausted",
-        "locked",
+        "throttled IP",
       );
-      assertEqual(h.firstFactorCalls, calls, "a locked request never reaches the password check");
+      assertEqual(h.firstFactorCalls, calls, "no password check once throttled");
       assertEqual(
-        (lockedErr.details as { code?: string }).code,
+        (throttled.details as { code?: string }).code,
         "recovery-locked",
         "lock reason",
       );
-      assertEqual(h.removed.length, 0, "nothing removed while locked");
-
-      h.setNow(1_700_000_000_000 + RECOVERY_LOCKOUT_MS + 1);
-      await runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" });
-      assertEqual(h.removed.length, 1, "recovers after the lock");
-      assertEqual(
-        h.fake.has(`${RECOVERY_ATTEMPTS_COLLECTION}/${attemptKey(EMAIL)}`),
-        false,
-        "counter cleared on success",
+      // Another address is unaffected; the owner recovers from there.
+      await recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }, "192.0.2.45");
+      assertEqual(h.removed.length, 1, "other IP recovers");
+      // The window ends.
+      h.setNow(T0 + RECOVERY_WINDOW_MS + 1);
+      await expectRefusal(
+        recover(h, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }, ip),
+        "permission-denied",
+        "throttle lifted after the window",
       );
+    },
+  },
+  {
+    name: "the coarse global budget refuses before the password check",
+    fn: async () => {
+      const h = harness();
+      h.fake.seed(`${RECOVERY_ATTEMPTS_COLLECTION}/${GLOBAL_ATTEMPT_KEY}`, {
+        failures: 500,
+        windowStart: T0,
+        lockedUntil: T0 + 60_000,
+      });
+      await expectRefusal(
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+        "resource-exhausted",
+        "global budget spent",
+      );
+      assertEqual(h.firstFactorCalls, 0, "no password check");
+    },
+  },
+  {
+    name: "counter keys are peppered HMACs with a TTL field; no address or IP is stored",
+    fn: async () => {
+      const h = harness();
+      const ip = "192.0.2.99";
+      await expectRefusal(
+        recover(h, { email: EMAIL, password: "guess", code: "ABCDE-FGHJK" }, ip),
+        "permission-denied",
+        "wrong password",
+      );
+      const paths = h.fake.childPaths(RECOVERY_ATTEMPTS_COLLECTION);
+      const ipPath = `${RECOVERY_ATTEMPTS_COLLECTION}/${ipAttemptKey(PEPPER, ip)}`;
+      assertEqual(paths.includes(ipPath), true, "IP counter under its HMAC key");
+      const everything = JSON.stringify(paths) + JSON.stringify(paths.map((p) => h.fake.read(p)));
+      assertEqual(everything.includes(ip), false, "raw IP stored");
+      assertEqual(everything.includes(EMAIL), false, "e-mail stored");
+      assertEqual(
+        ipAttemptKey("another-pepper", ip) === ipAttemptKey(PEPPER, ip),
+        false,
+        "key depends on the pepper",
+      );
+      for (const p of paths) {
+        const expiresAt = h.fake.read(p)?.expiresAt;
+        assertEqual(expiresAt instanceof admin.firestore.Timestamp, true, `${p} expiresAt`);
+        assertEqual(
+          (expiresAt as admin.firestore.Timestamp).toMillis() > T0,
+          true,
+          `${p} expires in the future`,
+        );
+      }
+      let threw = false;
+      try {
+        pepperedKey("", "ip", ip);
+      } catch {
+        threw = true;
+      }
+      assertEqual(threw, true, "no key without a pepper");
+    },
+  },
+  {
+    name: "without the pepper recovery fails closed and writes nothing",
+    fn: async () => {
+      const h = harness();
+      await seedCodes(h, ["ABCDE-FGHJK"]);
+      h.deps.pepper = "";
+      await expectRefusal(
+        recover(h, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
+        "unavailable",
+        "no pepper",
+      );
+      assertEqual(h.firstFactorCalls, 0, "no password check");
+      assertEqual(h.fake.childPaths(RECOVERY_ATTEMPTS_COLLECTION).length, 0, "no counters");
+      assertEqual(h.removed.length, 0, "nothing removed");
     },
   },
   {
@@ -293,32 +559,40 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "an account without two-step verification is not a failure",
-    fn: async () => {
-      const h = harness();
-      h.setFirstFactor({ outcome: "no-mfa" });
-      await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD, code: "ABCDE-FGHJK" }),
-        "failed-precondition",
-        "no mfa",
-      );
-      assertEqual(
-        h.fake.has(`${RECOVERY_ATTEMPTS_COLLECTION}/${attemptKey(EMAIL)}`),
-        false,
-        "not counted",
-      );
-    },
-  },
-  {
     name: "missing fields are rejected before anything is read",
     fn: async () => {
       const h = harness();
       await expectRefusal(
-        runMfaRecovery(h.deps, { email: EMAIL, password: PASSWORD }),
+        recover(h, { email: EMAIL, password: PASSWORD }),
         "invalid-argument",
         "no code",
       );
       assertEqual(h.firstFactorCalls, 0, "no password check");
+    },
+  },
+  {
+    name: "finding 7: switching MFA off deletes the codes server-side, never while a factor remains",
+    fn: async () => {
+      const h = harness();
+      await seedCodes(h, ["ABCDE-FGHJK"]);
+      let factors = 1;
+      const deps = {
+        db: h.fake.db,
+        enrolledFactorCount: async () => factors,
+        audit: h.deps.audit,
+        now: h.deps.now,
+      };
+      await expectRefusal(
+        runClearBackupCodes(deps, UID),
+        "failed-precondition",
+        "factor still enrolled",
+      );
+      assertEqual(h.fake.has(`${BACKUP_CODES_COLLECTION}/${UID}`), true, "kept while enrolled");
+      factors = 0;
+      assertEqual((await runClearBackupCodes(deps, UID)).cleared, true, "cleared");
+      assertEqual(h.fake.has(`${BACKUP_CODES_COLLECTION}/${UID}`), false, "codes gone");
+      assertEqual(h.audits.at(-1)?.action, "mfa_backup_codes_cleared", "audited");
+      assertEqual((await runClearBackupCodes(deps, UID)).cleared, false, "idempotent");
     },
   },
   {
@@ -339,9 +613,10 @@ const cases: UnitCase[] = [
         EMAIL,
         PASSWORD,
         "key",
-        respond({ idToken: "t", localId: UID }),
+        respond({ idToken: "t", refreshToken: "r", localId: UID }),
       );
       assertEqual(plain.outcome, "no-mfa", "no mfa");
+      assertEqual(JSON.stringify(plain), JSON.stringify({ outcome: "no-mfa" }), "no token kept");
       const bad = await verifyFirstFactorWithIdentityToolkit(
         EMAIL,
         "guess",

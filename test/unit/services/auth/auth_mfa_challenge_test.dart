@@ -44,6 +44,12 @@ class _FakeMultiFactorAssertion extends Fake implements MultiFactorAssertion {}
 
 class _FakeUserCredential extends Fake implements UserCredential {}
 
+class _MockUser extends Mock implements User {}
+
+class _MockMultiFactor extends Mock implements MultiFactor {}
+
+class _FakeMultiFactorInfo extends Fake implements MultiFactorInfo {}
+
 class _MockMapResult extends Mock
     implements HttpsCallableResult<Map<dynamic, dynamic>> {}
 
@@ -154,6 +160,8 @@ void main() {
       registerFallbackValue(MultiFactorSession('fallback'));
       registerFallbackValue(Duration.zero);
       registerFallbackValue(_FakeMultiFactorAssertion());
+      registerFallbackValue(HttpsCallableOptions());
+      registerFallbackValue(_FakeMultiFactorInfo());
     });
 
     setUp(() {
@@ -246,6 +254,72 @@ void main() {
       expect(await mfa.generateBackupCodes(), isNull);
     });
 
+    group('switching two-step verification off', () {
+      late _MockUser user;
+      late _MockMultiFactor multiFactor;
+      late _MockCallable clear;
+
+      setUp(() {
+        user = _MockUser();
+        multiFactor = _MockMultiFactor();
+        clear = _MockCallable();
+        when(() => repo.currentUser).thenReturn(user);
+        when(() => user.multiFactor).thenReturn(multiFactor);
+        when(
+          () => multiFactor.unenroll(
+            multiFactorInfo: any(named: 'multiFactorInfo'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => functions.httpsCallable('clearMfaBackupCodes'),
+        ).thenReturn(clear);
+      });
+
+      MfaFactorInfo factor() => MfaFactorInfo(
+        factor: _hint('+*******4547'),
+        displayName: null,
+        enrollmentTimestamp: 0,
+      );
+
+      test(
+        'deletes the backup codes on the server after unenrolling',
+        () async {
+          when(
+            () => clear.call<dynamic>(),
+          ).thenAnswer((_) async => _MockResult());
+
+          expect(await mfa.unenrollMfa(factor()), isTrue);
+
+          verifyInOrder([
+            () => multiFactor.unenroll(
+              multiFactorInfo: any(named: 'multiFactorInfo'),
+            ),
+            () => clear.call<dynamic>(),
+          ]);
+        },
+      );
+
+      test('a failed clean-up does not undo a done unenrollment', () async {
+        when(() => clear.call<dynamic>()).thenThrow(
+          FirebaseFunctionsException(message: 'x', code: 'unavailable'),
+        );
+
+        expect(await mfa.unenrollMfa(factor()), isTrue);
+        verify(() => clear.call<dynamic>()).called(1);
+      });
+
+      test('a refused unenrollment never clears the codes', () async {
+        when(
+          () => multiFactor.unenroll(
+            multiFactorInfo: any(named: 'multiFactorInfo'),
+          ),
+        ).thenThrow(FirebaseAuthException(code: 'requires-recent-login'));
+
+        expect(await mfa.unenrollMfa(factor()), isFalse);
+        verifyNever(() => functions.httpsCallable('clearMfaBackupCodes'));
+      });
+    });
+
     test('without the callables there are no codes and no recovery', () async {
       final offline = AuthMfaService(
         analyticsService: analytics,
@@ -266,7 +340,10 @@ void main() {
       Future<MfaRecoveryOutcome> recoverWith(Object error) async {
         final callable = _MockCallable();
         when(
-          () => functions.httpsCallable('recoverWithMfaBackupCode'),
+          () => functions.httpsCallable(
+            'recoverWithMfaBackupCode',
+            options: any(named: 'options'),
+          ),
         ).thenReturn(callable);
         when(() => callable.call<dynamic>(any())).thenThrow(error);
         return mfa.recoverWithBackupCode(
@@ -279,7 +356,10 @@ void main() {
       test('a right code recovers', () async {
         final callable = _MockCallable();
         when(
-          () => functions.httpsCallable('recoverWithMfaBackupCode'),
+          () => functions.httpsCallable(
+            'recoverWithMfaBackupCode',
+            options: any(named: 'options'),
+          ),
         ).thenReturn(callable);
         when(
           () => callable.call<dynamic>(any()),
@@ -318,17 +398,51 @@ void main() {
         );
       });
 
-      test('an account without MFA needs no recovery', () async {
-        expect(
-          await recoverWith(
-            FirebaseFunctionsException(
-              message: 'x',
-              code: 'failed-precondition',
-            ),
+      test('recovery asks for a limited-use App Check token', () async {
+        final callable = _MockCallable();
+        HttpsCallableOptions? options;
+        when(
+          () => functions.httpsCallable(
+            'recoverWithMfaBackupCode',
+            options: any(named: 'options'),
           ),
-          MfaRecoveryOutcome.notNeeded,
+        ).thenAnswer((invocation) {
+          options =
+              invocation.namedArguments[#options] as HttpsCallableOptions?;
+          return callable;
+        });
+        when(
+          () => callable.call<dynamic>(any()),
+        ).thenAnswer((_) async => _MockResult());
+        await mfa.recoverWithBackupCode(
+          email: 'anna@example.com',
+          password: 'hemligt123',
+          code: 'ABCDE-FGHJK',
         );
+        expect(options?.limitedUseAppCheckToken, isTrue);
       });
+
+      test(
+        'there is no "not needed" outcome: it would confirm the password',
+        () async {
+          // The server no longer tells an account without MFA apart from a
+          // wrong password. Should anything still answer failed-precondition,
+          // it must not become a success path that signs in.
+          expect(
+            MfaRecoveryOutcome.values.map((o) => o.name),
+            isNot(contains('notNeeded')),
+          );
+          expect(
+            await recoverWith(
+              FirebaseFunctionsException(
+                message: 'x',
+                code: 'failed-precondition',
+              ),
+            ),
+            MfaRecoveryOutcome.unavailable,
+          );
+        },
+      );
 
       test('anything else is unavailable, never a success', () async {
         expect(

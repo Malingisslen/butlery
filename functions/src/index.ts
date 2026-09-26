@@ -168,6 +168,7 @@ export { verifySignupAge } from "./account/verify-signup-age";
 export {
   generateMfaBackupCodes,
   recoverWithMfaBackupCode,
+  clearMfaBackupCodes,
 } from "./account/mfa-backup-codes";
 
 // Social - Profile propagation

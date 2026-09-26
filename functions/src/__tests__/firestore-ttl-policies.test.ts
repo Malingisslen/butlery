@@ -188,11 +188,21 @@ const TARGETS: {
     writer: "lib/models/realtime/overwritten_version.dart",
     stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
   },
+  // P6-U09 security review — the backup-code recovery counters (per IP, per
+  // account, global). Kept for their window or lock, at most about an hour.
+  {
+    group: "mfa_recovery_attempts",
+    field: "expiresAt",
+    retention: "1h",
+    writer: "functions/src/account/mfa-backup-codes.ts",
+    stamp: /expiresAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
 ];
 
 /**
  * Every TTL policy declared today: 13 pre-existing + 2 (BUT-1699) + 4 (BUT-1792)
- * + 1 (BUT-2046, `report_history`) + 1 (P5-U26b, `overwritten_versions`).
+ * + 1 (BUT-2046, `report_history`) + 1 (P5-U26b, `overwritten_versions`)
+ * + 1 (P6-U09 review, `mfa_recovery_attempts`).
  *
  * The SET, not just the count. A count catches a `--force` prune (net loss),
  * which is the main threat — but it stays green when one entry is deleted and
@@ -217,6 +227,7 @@ const EXPECTED_TTL_GROUPS = [
   "globalRecipeCache",
   "ingredients",
   "llm_response_samples",
+  "mfa_recovery_attempts",
   "notification_delivery",
   "notification_engagement",
   "notification_history",

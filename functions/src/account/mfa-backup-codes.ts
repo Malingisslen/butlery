@@ -30,23 +30,34 @@
  *  - a code is compared against every stored hash in constant time per hash,
  *    without an early exit;
  *  - a used code fails, and a spent set cannot be replayed;
- *  - failures are counted per e-mail (hashed) and lock recovery for an hour
- *    after five, whether the password or the code was wrong, with the same
- *    answer for both so the endpoint is no password oracle;
+ *  - a wrong password, an unknown address, an account WITHOUT two-step
+ *    verification and a wrong code all get the same refusal, so the endpoint
+ *    is no password oracle and no credential-stuffing proxy;
+ *  - every attempt takes a slot per client IP and in a coarse global budget
+ *    before the password is checked; wrong codes are counted per account
+ *    only after the password is proven, so knowing an address is not enough
+ *    to lock its owner out. Each counter is checked and incremented in ONE
+ *    transaction, so parallel requests cannot exceed the cap;
+ *  - counter keys are HMACs under a secret pepper (no address or IP stored),
+ *    and each counter carries `expiresAt` for the Firestore TTL policy;
+ *  - every call spends a limited-use App Check token;
+ *  - switching two-step verification off deletes the codes server-side
+ *    (`clearMfaBackupCodes`), so a stale set never becomes valid again;
  *  - every accepted and every rejected code is written to the audit log.
  *
- * NEEDS the web API key as the `IDENTITY_TOOLKIT_API_KEY` parameter at
- * deploy time. Without it recovery answers `unavailable` and never unlocks
- * anything — which is why the app keeps "Slå på tvåstegsverifiering" hidden
- * until this is deployed and reviewed (PQ-16, BUT-2142).
+ * NEEDS the web API key as the `IDENTITY_TOOLKIT_API_KEY` parameter and the
+ * `MFA_RECOVERY_PEPPER` secret at deploy time. Without either, recovery
+ * answers `unavailable` and never unlocks anything — which is why the app
+ * keeps "Slå på tvåstegsverifiering" hidden until this is deployed and
+ * reviewed (PQ-16, BUT-2142).
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { defineString } from "firebase-functions/params";
+import { defineSecret, defineString } from "firebase-functions/params";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import {
-  createHash,
+  createHmac,
   randomBytes,
   randomInt,
   scrypt,
@@ -59,11 +70,6 @@ export const BACKUP_CODE_COUNT = 10;
 /** No 0/O, 1/I/L: a code is read off paper. 31 symbols, 10 of them ≈ 49 bits. */
 export const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 export const CODE_LENGTH = 10;
-
-/** Recovery lock: five failures within an hour lock it for an hour. */
-export const MAX_RECOVERY_FAILURES = 5;
-export const RECOVERY_WINDOW_MS = 60 * 60 * 1000;
-export const RECOVERY_LOCKOUT_MS = 60 * 60 * 1000;
 
 /** Same recent-login rule as account deletion (request-account-deletion.ts). */
 export const REAUTH_MAX_AGE_SECONDS = 5 * 60;
@@ -154,6 +160,59 @@ export async function matchCode(
 
 // --- attempt limiting --------------------------------------------------------
 
+/**
+ * One fixed-window limiter. Every counter below reserves its slot INSIDE a
+ * Firestore transaction before the work it guards is done, so parallel
+ * requests serialise on the counter document and cannot slip past the cap
+ * (review finding 2: a read outside a transaction plus a blind `.set` let N
+ * parallel guesses all read "4 failures" and all proceed).
+ */
+export interface AttemptPolicy {
+  limit: number;
+  windowMs: number;
+  lockoutMs: number;
+}
+
+/**
+ * Backup-code failures per account, counted only AFTER the password is proven
+ * (finding 3): a stranger who merely knows the address cannot lock the owner
+ * out. Five wrong codes within an hour lock the account's recovery for an hour.
+ */
+export const MAX_RECOVERY_FAILURES = 5;
+export const RECOVERY_WINDOW_MS = 60 * 60 * 1000;
+export const RECOVERY_LOCKOUT_MS = 60 * 60 * 1000;
+export const UID_POLICY: AttemptPolicy = {
+  limit: MAX_RECOVERY_FAILURES,
+  windowMs: RECOVERY_WINDOW_MS,
+  lockoutMs: RECOVERY_LOCKOUT_MS,
+};
+
+/**
+ * Every recovery attempt per client IP (keyed by an HMAC of the IP), whatever
+ * its outcome. This is what throttles password guessing and credential
+ * stuffing through this endpoint; per-account password throttling is left to
+ * Identity Toolkit itself.
+ */
+export const MAX_IP_ATTEMPTS = 10;
+export const IP_POLICY: AttemptPolicy = {
+  limit: MAX_IP_ATTEMPTS,
+  windowMs: 60 * 60 * 1000,
+  lockoutMs: 60 * 60 * 1000,
+};
+
+/**
+ * A coarse ceiling on all recovery attempts together, against a botnet that
+ * rotates IPs. Recovery is rare; this is far above honest use.
+ */
+export const MAX_GLOBAL_ATTEMPTS = 500;
+export const GLOBAL_POLICY: AttemptPolicy = {
+  limit: MAX_GLOBAL_ATTEMPTS,
+  windowMs: 60 * 60 * 1000,
+  lockoutMs: 15 * 60 * 1000,
+};
+
+export const GLOBAL_ATTEMPT_KEY = "global";
+
 export interface AttemptState {
   failures: number;
   windowStart: number;
@@ -173,21 +232,43 @@ export function evaluateAttempt(
   return { allowed: true, retryAfterMs: 0 };
 }
 
-/** The state after one more failure; the fifth in a window locks. */
-export function recordFailure(state: AttemptState, now: number): AttemptState {
-  const inWindow = now - state.windowStart < RECOVERY_WINDOW_MS;
+/** The state after one more counted attempt; reaching the limit locks. */
+export function recordFailure(
+  state: AttemptState,
+  now: number,
+  policy: AttemptPolicy = UID_POLICY,
+): AttemptState {
+  const inWindow = now - state.windowStart < policy.windowMs;
   const failures = (inWindow ? state.failures : 0) + 1;
   const windowStart = inWindow ? state.windowStart : now;
   return {
     failures,
     windowStart,
-    lockedUntil: failures >= MAX_RECOVERY_FAILURES ? now + RECOVERY_LOCKOUT_MS : null,
+    lockedUntil: failures >= policy.limit ? now + policy.lockoutMs : null,
   };
 }
 
-/** The attempt key: a hash of the e-mail, so the collection holds no address. */
-export function attemptKey(email: string): string {
-  return createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+/** When a counter document is useless and the TTL policy may delete it. */
+export function attemptExpiry(state: AttemptState, policy: AttemptPolicy): number {
+  return Math.max(state.windowStart + policy.windowMs, state.lockedUntil ?? 0);
+}
+
+/**
+ * A keyed HMAC under the server-only pepper, so the collection holds neither
+ * an address nor an IP, and a leaked document cannot be reversed by hashing
+ * candidate values (a plain SHA-256 of an e-mail can).
+ */
+export function pepperedKey(pepper: string, kind: string, value: string): string {
+  if (!pepper) throw new Error("mfa recovery pepper is not set");
+  return createHmac("sha256", pepper).update(`${kind}:${value}`).digest("hex");
+}
+
+export function ipAttemptKey(pepper: string, ip: string | null | undefined): string {
+  return `ip_${pepperedKey(pepper, "ip", ip && ip.length > 0 ? ip : "unknown")}`;
+}
+
+export function uidAttemptKey(uid: string): string {
+  return `uid_${uid}`;
 }
 
 // --- recovery ----------------------------------------------------------------
@@ -201,6 +282,8 @@ export type FirstFactor =
 
 export interface RecoveryDeps {
   db: admin.firestore.Firestore;
+  /** The HMAC pepper. Empty means not configured: recovery fails closed. */
+  pepper: string;
   verifyFirstFactor(email: string, password: string): Promise<FirstFactor>;
   removeSecondFactors(uid: string): Promise<void>;
   revokeSessions(uid: string): Promise<void>;
@@ -214,7 +297,16 @@ export interface RecoveryRequest {
   code?: unknown;
 }
 
-/** Same words for a wrong password and a wrong code: no oracle. */
+/** Where the request came from. Used only as a peppered key, never logged. */
+export interface RecoveryContext {
+  ip?: string | null;
+}
+
+/**
+ * The same words for a wrong password, an unknown address, an account without
+ * two-step verification, an account whose code lock is on, and a wrong code:
+ * the endpoint must not tell an attacker that a password is right (finding 1).
+ */
 function rejected(): HttpsError {
   return new HttpsError("permission-denied", "The details do not match.", {
     code: "recovery-rejected",
@@ -228,18 +320,17 @@ function locked(retryAfterMs: number): HttpsError {
   });
 }
 
+function unavailable(): HttpsError {
+  return new HttpsError("unavailable", "Sign-in could not be checked.");
+}
+
 function asBoundedString(value: unknown, max: number): string | null {
   return typeof value === "string" && value.length > 0 && value.length <= max
     ? value
     : null;
 }
 
-async function readAttempts(
-  db: admin.firestore.Firestore,
-  key: string,
-): Promise<AttemptState> {
-  const snap = await db.collection(RECOVERY_ATTEMPTS_COLLECTION).doc(key).get();
-  const data = snap.exists ? snap.data() : undefined;
+function parseAttempts(data: admin.firestore.DocumentData | undefined): AttemptState {
   if (!data) return NO_ATTEMPTS;
   return {
     failures: typeof data.failures === "number" ? data.failures : 0,
@@ -248,16 +339,31 @@ async function readAttempts(
   };
 }
 
-async function countFailure(
-  deps: RecoveryDeps,
+/**
+ * Checks the counter and takes one slot in the same transaction. The slot is
+ * taken BEFORE the guarded work runs, so a request that is still in flight
+ * already counts; only a successful recovery gives its slot back (by deleting
+ * the account counter).
+ */
+export async function reserveAttempt(
+  db: admin.firestore.Firestore,
   key: string,
-  state: AttemptState,
-): Promise<void> {
-  const next = recordFailure(state, deps.now());
-  await deps.db
-    .collection(RECOVERY_ATTEMPTS_COLLECTION)
-    .doc(key)
-    .set({ ...next });
+  policy: AttemptPolicy,
+  now: number,
+): Promise<{ allowed: boolean; retryAfterMs: number }> {
+  const ref = db.collection(RECOVERY_ATTEMPTS_COLLECTION).doc(key);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const state = parseAttempts(snap.exists ? snap.data() : undefined);
+    const gate = evaluateAttempt(state, now);
+    if (!gate.allowed) return gate;
+    const next = recordFailure(state, now, policy);
+    tx.set(ref, {
+      ...next,
+      expiresAt: admin.firestore.Timestamp.fromMillis(attemptExpiry(next, policy)),
+    });
+    return { allowed: true, retryAfterMs: 0 };
+  });
 }
 
 /**
@@ -267,6 +373,7 @@ async function countFailure(
 export async function runMfaRecovery(
   deps: RecoveryDeps,
   request: RecoveryRequest,
+  context: RecoveryContext = {},
 ): Promise<{ recovered: true }> {
   const email = asBoundedString(request.email, 320);
   const password = asBoundedString(request.password, 4096);
@@ -274,29 +381,48 @@ export async function runMfaRecovery(
   if (!email || !password || !code) {
     throw new HttpsError("invalid-argument", "email, password and code are required.");
   }
+  // Without the pepper no key can be derived safely: fail closed.
+  if (!deps.pepper) throw unavailable();
 
-  const key = attemptKey(email);
-  const state = await readAttempts(deps.db, key);
-  const gate = evaluateAttempt(state, deps.now());
-  if (!gate.allowed) throw locked(gate.retryAfterMs);
+  // Per-IP first, so a throttled client does not also spend the global budget.
+  const ipGate = await reserveAttempt(
+    deps.db,
+    ipAttemptKey(deps.pepper, context.ip),
+    IP_POLICY,
+    deps.now(),
+  );
+  if (!ipGate.allowed) throw locked(ipGate.retryAfterMs);
+  const globalGate = await reserveAttempt(
+    deps.db,
+    GLOBAL_ATTEMPT_KEY,
+    GLOBAL_POLICY,
+    deps.now(),
+  );
+  if (!globalGate.allowed) throw locked(globalGate.retryAfterMs);
 
   const first = await deps.verifyFirstFactor(email, password);
-  if (first.outcome === "unavailable") {
-    throw new HttpsError("unavailable", "Sign-in could not be checked.");
-  }
-  if (first.outcome === "invalid") {
-    await countFailure(deps, key, state);
+  if (first.outcome === "unavailable") throw unavailable();
+  // A wrong password and an account without two-step verification answer
+  // alike. The client only offers recovery after Firebase demanded a second
+  // factor, so an honest caller never lands in "no-mfa".
+  if (first.outcome === "invalid" || first.outcome === "no-mfa") {
     throw rejected();
   }
-  if (first.outcome === "no-mfa") {
-    // The password is right and there is nothing to recover: plain sign-in
-    // works. Not a failure.
-    throw new HttpsError("failed-precondition", "Two-step verification is off.", {
-      code: "no-mfa",
+
+  // The password is proven: from here on the account's own code lock counts.
+  const uid = first.uid;
+  const uidKey = uidAttemptKey(uid);
+  const uidGate = await reserveAttempt(deps.db, uidKey, UID_POLICY, deps.now());
+  if (!uidGate.allowed) {
+    // Answered like a wrong password: "locked" here would confirm the password.
+    await deps.audit({
+      userId: uid,
+      action: "mfa_backup_code_locked",
+      at: deps.now(),
     });
+    throw rejected();
   }
 
-  const uid = first.uid;
   const codesRef = deps.db.collection(BACKUP_CODES_COLLECTION).doc(uid);
   const spent = await deps.db.runTransaction(async (tx) => {
     const snap = await tx.get(codesRef);
@@ -314,7 +440,7 @@ export async function runMfaRecovery(
   });
 
   if (spent === null) {
-    await countFailure(deps, key, state);
+    // The slot reserved above stays taken: that is the counted failure.
     await deps.audit({
       userId: uid,
       action: "mfa_backup_code_rejected",
@@ -329,7 +455,7 @@ export async function runMfaRecovery(
   // Two-step verification is off now, so the remaining codes protect nothing;
   // a new set comes with the next enrollment.
   await codesRef.delete();
-  await deps.db.collection(RECOVERY_ATTEMPTS_COLLECTION).doc(key).delete();
+  await deps.db.collection(RECOVERY_ATTEMPTS_COLLECTION).doc(uidKey).delete();
   await deps.audit({
     userId: uid,
     action: "mfa_backup_code_used",
@@ -339,6 +465,45 @@ export async function runMfaRecovery(
     uid_prefix: uid.slice(0, 6),
   });
   return { recovered: true };
+}
+
+// --- unenrolment -------------------------------------------------------------
+
+export interface ClearDeps {
+  db: admin.firestore.Firestore;
+  enrolledFactorCount(uid: string): Promise<number>;
+  audit(entry: Record<string, unknown>): Promise<void>;
+  now(): number;
+}
+
+/**
+ * Deletes the backup codes of an account that no longer has a second factor
+ * (finding 7). Called after the user switches two-step verification off, so a
+ * stale set can never become valid again when a phone is enrolled later. The
+ * server checks the factor list itself; it does not take the client's word.
+ */
+export async function runClearBackupCodes(
+  deps: ClearDeps,
+  uid: string,
+): Promise<{ cleared: boolean }> {
+  if ((await deps.enrolledFactorCount(uid)) > 0) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Two-step verification is still on.",
+      { code: "mfa-still-enrolled" },
+    );
+  }
+  const ref = deps.db.collection(BACKUP_CODES_COLLECTION).doc(uid);
+  const existed = (await ref.get()).exists;
+  if (existed) {
+    await ref.delete();
+    await deps.audit({
+      userId: uid,
+      action: "mfa_backup_codes_cleared",
+      at: deps.now(),
+    });
+  }
+  return { cleared: existed };
 }
 
 // --- generation --------------------------------------------------------------
@@ -387,6 +552,20 @@ const identityToolkitApiKey = defineString("IDENTITY_TOOLKIT_API_KEY", {
 });
 
 /**
+ * The HMAC pepper for the attempt-counter keys. A secret, never a plain
+ * parameter; unset or unreadable means recovery answers `unavailable`.
+ */
+const recoveryPepper = defineSecret("MFA_RECOVERY_PEPPER");
+
+function readPepper(): string {
+  try {
+    return recoveryPepper.value() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/**
  * The first factor, proven server-side by a password sign-in. An enrolled
  * account answers with `mfaPendingCredential` and no token.
  */
@@ -425,7 +604,12 @@ export async function verifyFirstFactorWithIdentityToolkit(
         : await lookupUid(email);
     return { outcome: "mfa-required", uid };
   }
-  if (typeof body.idToken === "string") return { outcome: "no-mfa" };
+  if (typeof body.idToken === "string") {
+    // The password is right but there is no second factor. The tokens in
+    // [body] are never read, returned, stored or logged; the caller answers
+    // exactly as for a wrong password.
+    return { outcome: "no-mfa" };
+  }
   const message =
     (body.error as { message?: unknown } | undefined)?.message ?? "";
   if (
@@ -486,11 +670,19 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
   {
     cors: ["https://butlery.app", "https://www.butlery.app"],
     enforceAppCheck: true,
+    // Replay protection: every call needs a fresh, limited-use App Check
+    // token (the client asks for one with `limitedUseAppCheckToken`).
+    consumeAppCheckToken: true,
+    secrets: [recoveryPepper],
   },
   async (request): Promise<{ recovered: true }> => {
+    if (request.app?.alreadyConsumed === true) {
+      throw new HttpsError("unauthenticated", "App Check token already used.");
+    }
     return runMfaRecovery(
       {
         db: admin.firestore(),
+        pepper: readPepper(),
         verifyFirstFactor: (email, password) =>
           verifyFirstFactorWithIdentityToolkit(
             email,
@@ -507,6 +699,35 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
         now: () => Date.now(),
       },
       request.data ?? {},
+      { ip: request.rawRequest?.ip ?? null },
+    );
+  },
+);
+
+/**
+ * Called by the app right after the user switches two-step verification off:
+ * deletes the now-useless backup codes so they cannot come back to life with
+ * a later enrollment. The server checks that no factor is left.
+ */
+export const clearMfaBackupCodes = onCall(
+  {
+    cors: ["https://butlery.app", "https://www.butlery.app"],
+    enforceAppCheck: true,
+  },
+  async (request): Promise<{ cleared: boolean }> => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign-in required.");
+    }
+    return runClearBackupCodes(
+      {
+        db: admin.firestore(),
+        enrolledFactorCount: async (uid) =>
+          (await admin.auth().getUser(uid)).multiFactor?.enrolledFactors
+            ?.length ?? 0,
+        audit: writeAudit,
+        now: () => Date.now(),
+      },
+      request.auth.uid,
     );
   },
 );

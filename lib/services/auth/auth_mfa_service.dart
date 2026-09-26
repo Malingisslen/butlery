@@ -73,19 +73,29 @@ class AuthMfaService extends ChangeNotifier
     final functions = _functions;
     if (functions == null) return MfaRecoveryOutcome.unavailable;
     try {
-      await functions.httpsCallable('recoverWithMfaBackupCode').call<dynamic>({
-        'email': email,
-        'password': password,
-        'code': code,
-      });
+      // The server spends the App Check token (consumeAppCheckToken), so ask
+      // for a limited-use one: a replayed request is refused.
+      await functions
+          .httpsCallable(
+            'recoverWithMfaBackupCode',
+            options: HttpsCallableOptions(limitedUseAppCheckToken: true),
+          )
+          .call<dynamic>({
+            'email': email,
+            'password': password,
+            'code': code,
+          });
       await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
       return MfaRecoveryOutcome.recovered;
     } on FirebaseFunctionsException catch (e) {
       AppLogger.warning('MFA recovery refused: ${e.code}');
+      // No "not needed" outcome: the server answers an account without a
+      // second factor exactly like a wrong password, so the endpoint cannot
+      // confirm a password. Recovery is only offered after Firebase demanded
+      // a second factor, so an honest caller never lands there.
       return switch (e.code) {
         'permission-denied' => MfaRecoveryOutcome.rejected,
         'resource-exhausted' => MfaRecoveryOutcome.locked,
-        'failed-precondition' => MfaRecoveryOutcome.notNeeded,
         _ => MfaRecoveryOutcome.unavailable,
       };
     } catch (e) {
@@ -229,6 +239,7 @@ class AuthMfaService extends ChangeNotifier
       AppLogger.info(
         'MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}',
       );
+      await _clearBackupCodes();
       await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
       return true;
     } on FirebaseAuthException catch (e) {
@@ -239,6 +250,23 @@ class AuthMfaService extends ChangeNotifier
       AppLogger.error('MFA unenroll error: $e');
       setError(AppLocale.current.errorCouldNotRemoveMfa);
       return false;
+    }
+  }
+
+  /// Asks the server to delete the backup codes now that two-step
+  /// verification is off, so an old set cannot become valid again with a
+  /// later enrollment. The server checks that no factor is left and refuses
+  /// otherwise. Best effort: the unenrollment itself already succeeded, and
+  /// a new enrollment replaces the set anyway.
+  Future<void> _clearBackupCodes() async {
+    final functions = _functions;
+    if (functions == null) return;
+    try {
+      await functions.httpsCallable('clearMfaBackupCodes').call<dynamic>();
+    } on FirebaseFunctionsException catch (e) {
+      AppLogger.warning('Backup codes were not cleared: ${e.code}');
+    } catch (e) {
+      AppLogger.warning('Backup codes were not cleared: ${e.runtimeType}');
     }
   }
 

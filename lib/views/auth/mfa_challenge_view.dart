@@ -212,9 +212,8 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       code: code,
     );
     if (!mounted) return;
-    if (outcome == MfaRecoveryOutcome.recovered ||
-        outcome == MfaRecoveryOutcome.notNeeded) {
-      // The phone factor is gone (or never was): an ordinary sign-in works.
+    if (outcome == MfaRecoveryOutcome.recovered) {
+      // The phone factor is gone: an ordinary sign-in works.
       final signedIn = await _auth.signInWithEmail(
         email: widget.email,
         password: widget.password,
@@ -223,11 +222,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       if (signedIn) {
         _done = true;
         _countdown?.cancel();
-        Navigator.of(context).pop(
-          outcome == MfaRecoveryOutcome.recovered
-              ? MfaChallengeResult.signedInWithBackupCode
-              : MfaChallengeResult.signedIn,
-        );
+        Navigator.of(context).pop(MfaChallengeResult.signedInWithBackupCode);
         return;
       }
     }
