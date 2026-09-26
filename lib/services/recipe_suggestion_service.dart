@@ -15,6 +15,8 @@ library;
 
 import 'package:clock/clock.dart';
 
+import 'package:butlery/core/providers/application_provider.dart';
+
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
@@ -22,6 +24,7 @@ import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dar
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Thrown when the recipe a suggestion is for no longer exists or is no
 /// longer shared, so there is nothing to accept it into. The suggestion is
@@ -62,6 +65,20 @@ class RecipeSuggestionService {
                 if (s.isPending) s,
             ],
           );
+
+  /// The name to show for who made [suggestion], or empty when it is not
+  /// known. Resolved from [RecipeSuggestion.suggesterId], which
+  /// firestore.rules pins to the writer's own account, through the signed-in
+  /// user's friends (the people a recipe is shared with); never from text the
+  /// suggester stored, so a member cannot pose as someone else.
+  static String suggesterNameOf(RecipeSuggestion suggestion) {
+    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+    if (friends == null) return '';
+    for (final f in friends.friendsList) {
+      if (f.uid == suggestion.suggesterId) return f.displayName.trim();
+    }
+    return '';
+  }
 
   /// [rows] without those whose 7 days have passed at [clock.now]. The app
   /// stops offering a suggestion at its expiry even before the TTL sweep.

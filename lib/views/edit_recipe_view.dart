@@ -747,6 +747,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   /// failed copy says so, keeps the edits, and asks again.
   Future<void> _onEditAccessLost(RecipeFormViewModel viewModel) async {
     final l10n = context.l10n;
+    // A sheet, picker or dialog the user had opened from the editor edits
+    // something that can no longer be saved. Close it first, so the notice is
+    // over the editor and every pop below closes the editor, not that route.
+    final editorRoute = ModalRoute.of(context);
+    if (editorRoute != null && !editorRoute.isCurrent) {
+      Navigator.of(context).popUntil((route) => route == editorRoute);
+    }
     if (!viewModel.hasUnsavedChanges) {
       // Shown before the pop: the app's messenger carries the snackbar to the
       // screen underneath.

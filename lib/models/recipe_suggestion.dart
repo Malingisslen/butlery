@@ -20,8 +20,6 @@ library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:butlery/core/utils/serialization_utils.dart';
-
 /// Where a suggestion stands. Only [pending] is offered to the owner.
 enum RecipeSuggestionStatus { pending, accepted, dismissed }
 
@@ -32,7 +30,6 @@ class RecipeSuggestion {
     required this.recipeId,
     required this.ownerId,
     required this.suggesterId,
-    required this.suggesterName,
     required this.suggestion,
     required this.status,
     required this.createdAt,
@@ -56,8 +53,10 @@ class RecipeSuggestion {
   /// Who suggested it: the only one who may create it.
   final String suggesterId;
 
-  /// The name shown for [suggesterId] to the owner.
-  final String suggesterName;
+  // No name is stored: the owner decides on a name no one but the suggester
+  // could have typed. The app resolves the name from [suggesterId], which
+  // firestore.rules pins to the signed-in writer
+  // (RecipeSuggestionService.suggesterNameOf).
 
   /// The suggested recipe, serialized as the realtime recipe's own
   /// `toFirestore()` map.
@@ -78,7 +77,6 @@ class RecipeSuggestion {
     required String recipeId,
     required String ownerId,
     required String suggesterId,
-    required String suggesterName,
     required Map<String, dynamic> suggestion,
     required DateTime at,
   }) {
@@ -88,7 +86,6 @@ class RecipeSuggestion {
       recipeId: recipeId,
       ownerId: ownerId,
       suggesterId: suggesterId,
-      suggesterName: suggesterName.trim(),
       suggestion: suggestion,
       status: RecipeSuggestionStatus.pending,
       createdAt: createdAt,
@@ -107,7 +104,6 @@ class RecipeSuggestion {
     recipeId: recipeId,
     ownerId: ownerId,
     suggesterId: suggesterId,
-    suggesterName: suggesterName,
     suggestion: suggestion,
     status: status,
     createdAt: createdAt,
@@ -121,7 +117,6 @@ class RecipeSuggestion {
     'recipeId': recipeId,
     'ownerId': ownerId,
     'suggesterId': suggesterId,
-    'suggesterName': suggesterName,
     'suggestion': suggestion,
     'status': status.name,
     'createdAt': Timestamp.fromDate(createdAt),
@@ -157,10 +152,6 @@ class RecipeSuggestion {
       recipeId: recipeId,
       ownerId: ownerId,
       suggesterId: suggesterId,
-      suggesterName: SerializationUtils.safeString(
-        data,
-        'suggesterName',
-      ).trim(),
       suggestion: Map<String, dynamic>.from(suggestion),
       status: status,
       createdAt: createdAt,

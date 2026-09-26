@@ -26,6 +26,7 @@ import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -76,7 +77,6 @@ RecipeSuggestion _suggestion(
   recipeId: recipeId,
   ownerId: ownerId,
   suggesterId: suggesterId,
-  suggesterName: 'Mia',
   suggestion: const {},
   status: status,
   createdAt: DateTime.now().toUtc(),
@@ -462,6 +462,18 @@ void main() {
           suggesterId: _friendUserId,
         ),
       ];
+      // The name comes from the suggester's id through the owner's friends,
+      // never from text stored with the suggestion.
+      (TestServiceLocator.get<UnifiedFriendsService>()
+              as MockUnifiedFriendsService)
+          .setFriendsState(
+            friends: [
+              MockFactory.createUserProfile(
+                userId: _friendUserId,
+                displayName: 'Mia',
+              ),
+            ],
+          );
       await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
       await tester.pump();
       final l10n = AppLocalizations.of(

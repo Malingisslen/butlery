@@ -29444,7 +29444,7 @@ abstract class AppLocalizations {
   /// P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83).
   ///
   /// In sv, this message translates to:
-  /// **'Din behörighet är ändrad till Endast läsa, så ändringarna sparas inte i receptet. Du kan spara dem som en egen kopia.'**
+  /// **'Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.'**
   String get roleLoweredRecipeBody;
 
   /// P6-U05: dialog action that saves the unsaved edits as the user's own recipe.
@@ -29462,22 +29462,22 @@ abstract class AppLocalizations {
   /// P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan inte längre redigera receptet. Din behörighet är ändrad till Endast läsa.'**
+  /// **'Du kan inte längre redigera receptet, bara läsa det.'**
   String get roleLoweredRecipeClosed;
 
   /// P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa.'**
+  /// **'Du kan inte längre ändra i listan, bara läsa den.'**
   String get roleLoweredShoppingList;
 
-  /// P6-U05: snackbar when the role drops while an item was typed but not added; text = what was typed.
+  /// P6-U05: lead line of the notice that stays in the list view when the role drops while an item was typed but not added; the typed text is shown below it.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa. Det du skrev lades inte till: {text}'**
-  String roleLoweredShoppingUnsaved(String text);
+  /// **'Det du skrev lades inte till i listan:'**
+  String get roleLoweredShoppingUnsaved;
 
-  /// P6-U05: snackbar action that copies the typed, unadded item text.
+  /// P6-U05: notice action that copies the typed, unadded item text.
   ///
   /// In sv, this message translates to:
   /// **'Kopiera texten'**
@@ -29492,7 +29492,7 @@ abstract class AppLocalizations {
   /// P6-U05: notice when the role on the group week menu drops to read-only while it is open.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan inte längre ändra gruppens meny. Din behörighet är ändrad till Endast läsa.'**
+  /// **'Du kan inte längre ändra gruppens meny, bara läsa den.'**
   String get roleLoweredGroupMenu;
 
   /// P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103).
@@ -29510,7 +29510,7 @@ abstract class AppLocalizations {
   /// P5-U27b: conflict banner body when the other editor's name is unknown.
   ///
   /// In sv, this message translates to:
-  /// **'Ägaren ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
+  /// **'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
   String get conflictBannerBodySuggestionUnnamed;
 
   /// P5-U27b: banner action, verbatim from produktregler.md:103.

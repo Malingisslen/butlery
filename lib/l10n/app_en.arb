@@ -13233,7 +13233,7 @@
   "@roleLoweredRecipeTitle": {
     "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
   },
-  "roleLoweredRecipeBody": "Your permission was changed to read-only, so the changes are not saved to the recipe. You can save them as your own copy.",
+  "roleLoweredRecipeBody": "You can now only read the recipe, so the changes are not saved to it. You can save them as your own copy.",
   "@roleLoweredRecipeBody": {
     "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
   },
@@ -13245,32 +13245,27 @@
   "@roleLoweredDiscard": {
     "description": "P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md)."
   },
-  "roleLoweredRecipeClosed": "You can no longer edit the recipe. Your permission was changed to read-only.",
+  "roleLoweredRecipeClosed": "You can no longer edit the recipe, only read it.",
   "@roleLoweredRecipeClosed": {
     "description": "P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved."
   },
-  "roleLoweredShoppingList": "You can no longer change the list. Your permission was changed to read-only.",
+  "roleLoweredShoppingList": "You can no longer change the list, only read it.",
   "@roleLoweredShoppingList": {
     "description": "P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open."
   },
-  "roleLoweredShoppingUnsaved": "You can no longer change the list. Your permission was changed to read-only. What you typed was not added: {text}",
+  "roleLoweredShoppingUnsaved": "What you typed was not added to the list:",
   "@roleLoweredShoppingUnsaved": {
-    "description": "P6-U05: snackbar when the role drops while an item was typed but not added; text = what was typed.",
-    "placeholders": {
-      "text": {
-        "type": "String"
-      }
-    }
+    "description": "P6-U05: lead line of the notice that stays in the list view when the role drops while an item was typed but not added; the typed text is shown below it."
   },
   "roleLoweredCopyText": "Copy the text",
   "@roleLoweredCopyText": {
-    "description": "P6-U05: snackbar action that copies the typed, unadded item text."
+    "description": "P6-U05: notice action that copies the typed, unadded item text."
   },
   "roleLoweredTextCopied": "The text is copied.",
   "@roleLoweredTextCopied": {
     "description": "P6-U05: confirmation after the typed item text was copied."
   },
-  "roleLoweredGroupMenu": "You can no longer change the group's menu. Your permission was changed to read-only.",
+  "roleLoweredGroupMenu": "You can no longer change the group's menu, only read it.",
   "@roleLoweredGroupMenu": {
     "description": "P6-U05: notice when the role on the group week menu drops to read-only while it is open."
   },
@@ -13287,7 +13282,7 @@
       }
     }
   },
-  "conflictBannerBodySuggestionUnnamed": "The owner changed it at the same time. Your change is kept as a suggestion for 7 days.",
+  "conflictBannerBodySuggestionUnnamed": "Someone else changed it at the same time. Your change is kept as a suggestion for 7 days.",
   "@conflictBannerBodySuggestionUnnamed": {
     "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
   },

@@ -858,15 +858,43 @@ void main() {
         tester.element(find.byType(CollaborativeShoppingView)),
       );
 
+      final notice = find.byKey(
+        const ValueKey('collaborativeShopping.unaddedText'),
+      );
       expect(find.text('Lägg till'), findsNothing);
+      // The snackbar is short and says why; the typed text is in a notice in
+      // the view, not in the snackbar, so it is never cut off.
+      expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
+      expect(notice, findsOneWidget);
       expect(
-        find.text(l10n.roleLoweredShoppingUnsaved('Havregryn')),
+        find.descendant(
+          of: notice,
+          matching: find.text(l10n.roleLoweredShoppingUnsaved),
+        ),
         findsOneWidget,
       );
-      await tester.tap(find.text(l10n.roleLoweredCopyText));
+      expect(
+        find.descendant(of: notice, matching: find.text('Havregryn')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.descendant(
+          of: notice,
+          matching: find.text(l10n.roleLoweredCopyText),
+        ),
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(copied, ['Havregryn']);
+
+      // No timeout takes it away: it stays until the user closes it.
+      await tester.pump(const Duration(seconds: 30));
+      expect(notice, findsOneWidget);
+      await tester.tap(
+        find.descendant(of: notice, matching: find.text(l10n.commonClose)),
+      );
+      await tester.pump();
+      expect(notice, findsNothing);
       verifyNever(
         () => shoppingService.addItemToActiveList(
           name: any(named: 'name'),
@@ -886,6 +914,10 @@ void main() {
       );
       expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
       expect(find.text(l10n.commonClose), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('collaborativeShopping.unaddedText')),
+        findsNothing,
+      );
     });
   });
 }

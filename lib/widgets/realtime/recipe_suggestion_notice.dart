@@ -110,7 +110,7 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
     final newest = rows.first;
     if (widget.isOwner) {
       if (rows.length > 1) return l.recipeSuggestionFromMany(rows.length);
-      final name = newest.suggesterName;
+      final name = RecipeSuggestionService.suggesterNameOf(newest);
       return name.isEmpty
           ? l.recipeSuggestionFromOneUnnamed
           : l.recipeSuggestionFromOne(name);

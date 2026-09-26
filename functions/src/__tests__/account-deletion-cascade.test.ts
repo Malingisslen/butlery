@@ -4570,41 +4570,51 @@ async function scenario_recipeSuggestionsErasedWithEitherAccountAndProbed(): Pro
 }
 
 /**
- * P5-U27b: above the cap on either leg the sweep DECLINES and deletes nothing,
- * as [scenario_ingredientSuggestionsDeclineAboveCap] explains.
+ * P5-U27b: the `ownerId` leg is filled by OTHER people's writes, so the sweep
+ * has no decline cap: many suggestions made to the user's recipes cannot hold
+ * the user's erasure in a failed state. It pages through both legs until they
+ * are empty, and a row between two other people survives.
  */
-async function scenario_recipeSuggestionsDeclineAboveCap(): Promise<void> {
+async function scenario_recipeSuggestionsManyRowsArePagedNotDeclined(): Promise<void> {
   const {
     deleteRecipeSuggestions,
-    MAX_RECIPE_SUGGESTION_SWEEP_ROWS,
+    RECIPE_SUGGESTION_SWEEP_PAGE,
   } = require("../account/account-deletion-cascade");
 
   const store = new FakeFirestore();
-  const cap = MAX_RECIPE_SUGGESTION_SWEEP_ROWS;
-  for (let i = 0; i <= cap; i++) {
+  const many = RECIPE_SUGGESTION_SWEEP_PAGE * 4 + 7;
+  for (let i = 0; i < many; i++) {
     store.set(`recipe_suggestions/to-me-${i}`, {
       suggesterId: OTHER,
       ownerId: UID,
       recipeId: `r-${i}`,
     });
   }
-  store.set("recipe_suggestions/i-suggested", {
-    suggesterId: UID,
-    ownerId: OTHER,
+  for (let i = 0; i < RECIPE_SUGGESTION_SWEEP_PAGE + 1; i++) {
+    store.set(`recipe_suggestions/i-suggested-${i}`, {
+      suggesterId: UID,
+      ownerId: OTHER,
+      recipeId: `s-${i}`,
+    });
+  }
+  store.set("recipe_suggestions/between-others", {
+    suggesterId: OTHER,
+    ownerId: "third-person",
     recipeId: "r",
   });
 
   const ok = await deleteRecipeSuggestions(asDb(store), UID);
 
   check(
-    "an implausible recipe-suggestion count is DECLINED, not truncated",
-    ok === false,
-    `returned ${ok}; a truncating sweep would report success with rows left`,
+    "many suggestions made to the user's recipes do not block the sweep",
+    ok === true,
+    `returned ${ok}; another person's writes must not fail this erasure`,
   );
   check(
-    "and nothing is deleted on the declining path, on either leg",
-    store.idsIn("recipe_suggestions").length === cap + 2,
-    `rows left: ${store.idsIn("recipe_suggestions").length} of ${cap + 2}`,
+    "every page is deleted, on both legs",
+    store.idsIn("recipe_suggestions").length === 1 &&
+      store.has("recipe_suggestions/between-others"),
+    `rows left: ${JSON.stringify(store.idsIn("recipe_suggestions").slice(0, 5))}`,
   );
 }
 
@@ -9031,7 +9041,7 @@ async function main(): Promise<void> {
   await scenario_ingredientSuggestionsDeclineAboveCap();
   await scenario_householdAllergenSharesErasedAndProbed();
   await scenario_recipeSuggestionsErasedWithEitherAccountAndProbed();
-  await scenario_recipeSuggestionsDeclineAboveCap();
+  await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
   await scenario_householdAllergenSharesDeclineAboveCap();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();

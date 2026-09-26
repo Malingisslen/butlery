@@ -434,6 +434,13 @@ class RecipeFormViewModel extends BaseViewModel
   StreamSubscription<bool>? _editAccessSub;
   bool _editAccessLost = false;
 
+  /// The last live answer to "may I edit this recipe", null until the first.
+  /// A lowered role is a change from true to false seen while the form is
+  /// open, as on the shopping list and the group menu: a first answer of
+  /// false (a live participants map that does not list a legitimate editor)
+  /// is not a change, and never closes the editor.
+  bool? _couldEdit;
+
   /// P6-U05: the role on this shared recipe dropped to read-only while the
   /// form was open. From then on no save reaches the recipe; the view closes
   /// the editor, says why, and offers anything unsaved as the user's own copy
@@ -441,7 +448,9 @@ class RecipeFormViewModel extends BaseViewModel
   bool get editAccessLost => _editAccessLost;
 
   void _onEditAccess(bool canEdit) {
-    if (canEdit || _editAccessLost || _disposed) return;
+    final couldEdit = _couldEdit;
+    _couldEdit = canEdit;
+    if (couldEdit != true || canEdit || _editAccessLost || _disposed) return;
     _editAccessLost = true;
     _permissionManager.markEditAccessLost();
     notifyListeners();

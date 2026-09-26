@@ -17853,7 +17853,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get roleLoweredRecipeBody =>
-      'Din behörighet är ändrad till Endast läsa, så ändringarna sparas inte i receptet. Du kan spara dem som en egen kopia.';
+      'Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.';
 
   @override
   String get roleLoweredSaveCopy => 'Spara som egen kopia';
@@ -17863,16 +17863,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get roleLoweredRecipeClosed =>
-      'Du kan inte längre redigera receptet. Din behörighet är ändrad till Endast läsa.';
+      'Du kan inte längre redigera receptet, bara läsa det.';
 
   @override
   String get roleLoweredShoppingList =>
-      'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa.';
+      'Du kan inte längre ändra i listan, bara läsa den.';
 
   @override
-  String roleLoweredShoppingUnsaved(String text) {
-    return 'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa. Det du skrev lades inte till: $text';
-  }
+  String get roleLoweredShoppingUnsaved =>
+      'Det du skrev lades inte till i listan:';
 
   @override
   String get roleLoweredCopyText => 'Kopiera texten';
@@ -17882,7 +17881,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get roleLoweredGroupMenu =>
-      'Du kan inte längre ändra gruppens meny. Din behörighet är ändrad till Endast läsa.';
+      'Du kan inte längre ändra gruppens meny, bara läsa den.';
 
   @override
   String get conflictBannerTitleSuggestion => 'Ägarens version gäller';
@@ -17894,7 +17893,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get conflictBannerBodySuggestionUnnamed =>
-      'Ägaren ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.';
+      'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.';
 
   @override
   String get recipeSuggestionSeeMine => 'Se ditt förslag';

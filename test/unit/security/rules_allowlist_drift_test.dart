@@ -145,7 +145,7 @@ const _allowlists = <_Allowlist>[
   ),
   _Allowlist(
     label: 'recipe_suggestions',
-    mustContain: 'suggesterName',
+    mustContain: 'suggesterId',
     anchor: 'match /recipe_suggestions/{suggestionId}',
     writer:
         'lib/models/recipe_suggestion.dart RecipeSuggestion.toFirestore, '
@@ -342,7 +342,6 @@ Map<String, Set<String>> _writtenKeys() => {
     recipeId: 'r',
     ownerId: 'o',
     suggesterId: 's',
-    suggesterName: 'S',
     suggestion: const <String, dynamic>{},
     at: DateTime.utc(2026),
   ).toFirestore().keys.toSet(),

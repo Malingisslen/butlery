@@ -17817,7 +17817,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleLoweredRecipeBody =>
-      'Your permission was changed to read-only, so the changes are not saved to the recipe. You can save them as your own copy.';
+      'You can now only read the recipe, so the changes are not saved to it. You can save them as your own copy.';
 
   @override
   String get roleLoweredSaveCopy => 'Save as your own copy';
@@ -17827,16 +17827,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleLoweredRecipeClosed =>
-      'You can no longer edit the recipe. Your permission was changed to read-only.';
+      'You can no longer edit the recipe, only read it.';
 
   @override
   String get roleLoweredShoppingList =>
-      'You can no longer change the list. Your permission was changed to read-only.';
+      'You can no longer change the list, only read it.';
 
   @override
-  String roleLoweredShoppingUnsaved(String text) {
-    return 'You can no longer change the list. Your permission was changed to read-only. What you typed was not added: $text';
-  }
+  String get roleLoweredShoppingUnsaved =>
+      'What you typed was not added to the list:';
 
   @override
   String get roleLoweredCopyText => 'Copy the text';
@@ -17846,7 +17845,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleLoweredGroupMenu =>
-      'You can no longer change the group\'s menu. Your permission was changed to read-only.';
+      'You can no longer change the group\'s menu, only read it.';
 
   @override
   String get conflictBannerTitleSuggestion => 'The owner\'s version stays';
@@ -17858,7 +17857,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conflictBannerBodySuggestionUnnamed =>
-      'The owner changed it at the same time. Your change is kept as a suggestion for 7 days.';
+      'Someone else changed it at the same time. Your change is kept as a suggestion for 7 days.';
 
   @override
   String get recipeSuggestionSeeMine => 'See your suggestion';

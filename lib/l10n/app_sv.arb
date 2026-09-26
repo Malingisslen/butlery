@@ -13552,7 +13552,7 @@
   "@roleLoweredRecipeTitle": {
     "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
   },
-  "roleLoweredRecipeBody": "Din behörighet är ändrad till Endast läsa, så ändringarna sparas inte i receptet. Du kan spara dem som en egen kopia.",
+  "roleLoweredRecipeBody": "Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.",
   "@roleLoweredRecipeBody": {
     "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
   },
@@ -13564,32 +13564,27 @@
   "@roleLoweredDiscard": {
     "description": "P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md)."
   },
-  "roleLoweredRecipeClosed": "Du kan inte längre redigera receptet. Din behörighet är ändrad till Endast läsa.",
+  "roleLoweredRecipeClosed": "Du kan inte längre redigera receptet, bara läsa det.",
   "@roleLoweredRecipeClosed": {
     "description": "P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved."
   },
-  "roleLoweredShoppingList": "Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa.",
+  "roleLoweredShoppingList": "Du kan inte längre ändra i listan, bara läsa den.",
   "@roleLoweredShoppingList": {
     "description": "P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open."
   },
-  "roleLoweredShoppingUnsaved": "Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa. Det du skrev lades inte till: {text}",
+  "roleLoweredShoppingUnsaved": "Det du skrev lades inte till i listan:",
   "@roleLoweredShoppingUnsaved": {
-    "description": "P6-U05: snackbar when the role drops while an item was typed but not added; text = what was typed.",
-    "placeholders": {
-      "text": {
-        "type": "String"
-      }
-    }
+    "description": "P6-U05: lead line of the notice that stays in the list view when the role drops while an item was typed but not added; the typed text is shown below it."
   },
   "roleLoweredCopyText": "Kopiera texten",
   "@roleLoweredCopyText": {
-    "description": "P6-U05: snackbar action that copies the typed, unadded item text."
+    "description": "P6-U05: notice action that copies the typed, unadded item text."
   },
   "roleLoweredTextCopied": "Texten är kopierad.",
   "@roleLoweredTextCopied": {
     "description": "P6-U05: confirmation after the typed item text was copied."
   },
-  "roleLoweredGroupMenu": "Du kan inte längre ändra gruppens meny. Din behörighet är ändrad till Endast läsa.",
+  "roleLoweredGroupMenu": "Du kan inte längre ändra gruppens meny, bara läsa den.",
   "@roleLoweredGroupMenu": {
     "description": "P6-U05: notice when the role on the group week menu drops to read-only while it is open."
   },
@@ -13606,7 +13601,7 @@
       }
     }
   },
-  "conflictBannerBodySuggestionUnnamed": "Ägaren ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
+  "conflictBannerBodySuggestionUnnamed": "Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
   "@conflictBannerBodySuggestionUnnamed": {
     "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
   },

@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_en.dart';
@@ -222,6 +223,8 @@ void main() {
         'nothing is written anywhere', (tester) async {
       final recipe = sharedRecipe();
       await openEditor(tester, recipe);
+      roles.add(_live(recipe, ResourcePermission.editor));
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Olles pannkakor'),
         'Något annat',
@@ -242,6 +245,8 @@ void main() {
         'with no copy offer', (tester) async {
       final recipe = sharedRecipe();
       await openEditor(tester, recipe);
+      roles.add(_live(recipe, ResourcePermission.editor));
+      await tester.pumpAndSettle();
 
       roles.add(_live(recipe, ResourcePermission.viewer));
       await tester.pumpAndSettle();
@@ -252,6 +257,46 @@ void main() {
       expect(find.text(l10n.commonClose), findsOneWidget);
       verifyNever(() => personal.addUnifiedRecipe(any()));
       verifyNever(() => personal.updateUnifiedRecipe(any()));
+    });
+
+    testWidgets('a sheet open over the editor is closed first, then the '
+        'editor', (tester) async {
+      final recipe = sharedRecipe();
+      await openEditor(tester, recipe);
+      roles.add(_live(recipe, ResourcePermission.editor));
+      await tester.pumpAndSettle();
+
+      unawaited(
+        showDialog<void>(
+          context: tester.element(find.byType(EditRecipeView)),
+          builder: (_) => const AlertDialog(content: Text('picker')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('picker'), findsOneWidget);
+
+      roles.add(_live(recipe, ResourcePermission.viewer));
+      await tester.pumpAndSettle();
+
+      expect(find.text('picker'), findsNothing);
+      expect(find.byType(EditRecipeView), findsNothing);
+      expect(find.text('open'), findsOneWidget);
+      expect(find.text(l10n.roleLoweredRecipeClosed), findsOneWidget);
+    });
+
+    testWidgets('a first answer of read-only is not a lowered role: the '
+        'editor stays open', (tester) async {
+      final recipe = sharedRecipe();
+      await openEditor(tester, recipe);
+
+      // The live participants map does not list me when the editor opens
+      // (for example a map that does not follow sharing). Nothing changed.
+      roles.add(_live(recipe, ResourcePermission.viewer));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditRecipeView), findsOneWidget);
+      expect(find.text(l10n.roleLoweredRecipeTitle), findsNothing);
+      expect(find.text(l10n.roleLoweredRecipeClosed), findsNothing);
     });
 
     testWidgets('my own recipe is never watched: an owner cannot be lowered', (
@@ -274,6 +319,30 @@ void main() {
   });
 
   group('revoked or expired link (PQ-13 = A)', () {
+    testWidgets('the notice carries Stäng (content-style-guide.md:97)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => DeepLinkHandler.showDeepLinkNotice(
+                context,
+                l10n.deepLinkExpired,
+              ),
+              child: const Text('open link'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open link'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 750));
+
+      expect(find.text(l10n.deepLinkExpired), findsOneWidget);
+      expect(find.text(l10n.commonClose), findsOneWidget);
+    });
+
     test('the notice says the link no longer holds and who to ask', () {
       expect(
         l10n.deepLinkExpired,

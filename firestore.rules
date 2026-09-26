@@ -3093,7 +3093,9 @@ service cloud.firestore {
     // in firestore.indexes.json deletes on `expiresAt`, exactly 7 days after
     // `createdAt` (at most 7 days and one hour from the server's clock, for a
     // device clock that runs ahead), and the account deletion cascade erases
-    // it with either account (deleteRecipeSuggestions).
+    // it with either account (deleteRecipeSuggestions). No display name is
+    // stored: the owner sees a name the app resolves from suggesterId, which
+    // this rule pins to the writer, never text the suggester typed.
     // ========================================
     match /recipe_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
@@ -3102,8 +3104,8 @@ service cloud.firestore {
 
       allow create: if isAuthenticated()
         && request.resource.data.keys().hasOnly([
-          'recipeId', 'ownerId', 'suggesterId', 'suggesterName',
-          'suggestion', 'status', 'createdAt', 'expiresAt'
+          'recipeId', 'ownerId', 'suggesterId', 'suggestion', 'status',
+          'createdAt', 'expiresAt'
         ])
         && hasRequiredFields([
           'recipeId', 'ownerId', 'suggesterId', 'suggestion', 'status',
@@ -3115,7 +3117,6 @@ service cloud.firestore {
         && request.resource.data.ownerId != request.auth.uid
         && request.resource.data.recipeId is string
         && request.resource.data.recipeId.size() > 0
-        && request.resource.data.get('suggesterName', '') is string
         && request.resource.data.suggestion is map
         && request.resource.data.status == 'pending'
         && request.resource.data.createdAt is timestamp

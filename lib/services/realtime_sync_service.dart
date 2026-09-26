@@ -410,7 +410,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
           recipeId: edit.id,
           ownerId: remote.ownerId,
           suggesterId: userId,
-          suggesterName: edit.lastEditedByDisplayName,
           suggestion: edit.toFirestore(),
           at: clock.now(),
         ),

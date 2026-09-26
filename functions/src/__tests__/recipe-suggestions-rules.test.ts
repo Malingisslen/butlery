@@ -91,7 +91,6 @@ function suggestion(
     recipeId: RECIPE,
     ownerId: OWNER,
     suggesterId,
-    suggesterName: "Mia",
     suggestion: { title: "Pannkakor med mer smör", editCount: 3 },
     status: "pending",
     createdAt,
@@ -170,6 +169,18 @@ test("a new suggestion is pending, never already decided", async () => {
       .firestore()
       .doc(doc(freshId()))
       .set(suggestion(MEMBER, { status: "accepted" })),
+  );
+});
+
+test("a display name typed by the suggester is refused", async () => {
+  // The owner decides on the name the app resolves from suggesterId, which
+  // the rule pins to the writer; a stored name could pose as someone else.
+  const ctx = env.authenticatedContext(MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(doc(freshId()))
+      .set(suggestion(MEMBER, { suggesterName: "Olle" })),
   );
 });
 

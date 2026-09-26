@@ -27,7 +27,6 @@ final _suggestion = RecipeSuggestion(
   recipeId: 'r1',
   ownerId: 'owner',
   suggesterId: 'member',
-  suggesterName: 'Mia',
   suggestion: const {'title': 'Pannkakor med sylt'},
   status: RecipeSuggestionStatus.pending,
   createdAt: DateTime.utc(2026, 9, 26, 10),

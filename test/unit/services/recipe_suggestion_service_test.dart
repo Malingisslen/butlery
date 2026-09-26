@@ -212,7 +212,6 @@ void main() {
       expect(s.recipeId, 'r1');
       expect(s.ownerId, _owner);
       expect(s.suggesterId, _member);
-      expect(s.suggesterName, 'Mia');
       expect(s.status, RecipeSuggestionStatus.pending);
       expect(s.expiresAt.difference(s.createdAt), const Duration(days: 7));
       expect(RealtimeRecipe.fromMap('r1', s.suggestion).title, 'Mias förslag');
@@ -282,7 +281,6 @@ void main() {
       recipeId: recipeId,
       ownerId: ownerId,
       suggesterId: suggesterId,
-      suggesterName: 'Mia',
       suggestion: const {'title': 'x'},
       at: at ?? DateTime.utc(2026, 4, 1, 12),
     );
@@ -356,7 +354,6 @@ void main() {
           recipeId: id,
           ownerId: _owner,
           suggesterId: _member,
-          suggesterName: 'Mia',
           suggestion: edit.toFirestore(),
           at: clock.now(),
         ),

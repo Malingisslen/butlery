@@ -175,7 +175,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
     final cs = Theme.of(context).colorScheme;
     final l = context.l10n;
     final keptUntil = _keptUntil(context);
-    final name = widget.suggestion.suggesterName;
+    final name = RecipeSuggestionService.suggesterNameOf(widget.suggestion);
     final intro = widget.asOwner
         ? l.recipeSuggestionIntroOwner(
             name.isEmpty ? l.displayUnknownUser : name,

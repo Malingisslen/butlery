@@ -13,6 +13,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
@@ -149,19 +150,23 @@ class DeepLinkHandler {
   /// Surface a short Butler-voice notice when a deep link cannot be opened —
   /// either it has expired or the target content is gone/inaccessible (BUT-1587).
   /// Replaces this handler's previous silent-return convention for those two
-  /// user-facing dead ends. Uses [ScaffoldMessenger.maybeOf] so a missing
-  /// messenger ancestor degrades to the old silent behaviour instead of throwing.
+  /// user-facing dead ends. A context without a messenger ancestor degrades to
+  /// the old silent behaviour instead of throwing.
   ///
-  /// P6-U05: the notice carries no action. PQ-13 = A (2026-09-23): the app has
-  /// no way to ask for a new link, and it never offers what it cannot do
-  /// (produktregler.md:535), so the text itself says who to ask. The request
-  /// button is BUT-2143.
-  void _showDeepLinkNotice(BuildContext context, String message) {
+  /// P6-U05: the notice is a failure snackbar whose only action is "Stäng"
+  /// (content-style-guide.md:97, Komponentark v1:750). PQ-13 = A (2026-09-23):
+  /// the app has no way to ask for a new link, and it never offers what it
+  /// cannot do (produktregler.md:535), so the text itself says who to ask.
+  /// The request button is BUT-2143.
+  @visibleForTesting
+  static void showDeepLinkNotice(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.maybeOf(
-      context,
-    )?.showSnackBar(SnackBar(content: Text(message)));
+    if (ScaffoldMessenger.maybeOf(context) == null) return;
+    SnackBarUtils.showFailure(context, what: message);
   }
+
+  void _showDeepLinkNotice(BuildContext context, String message) =>
+      showDeepLinkNotice(context, message);
 
   /// Process a deep link URL and navigate to the appropriate view.
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
@@ -318,10 +323,12 @@ class DeepLinkHandler {
           arguments: recipe,
         );
       } else {
-        // The recipe is gone or no longer shared with this user: to them the
-        // link was revoked (flows-roles-budget.md:80, "Länken gäller inte
-        // längre"). PQ-13 = A: no request button; the text says who to ask.
-        _showDeepLinkNotice(context, context.l10n.deepLinkExpired);
+        // Link is valid but the recipe is gone or not shared with this user.
+        // The read cannot tell the two apart, so the notice says only that
+        // the content is no longer available: "ask for a new link" would not
+        // help when the recipe is deleted (flows-roles-budget.md:80 covers a
+        // revoked or expired link, which is the expiry gate above).
+        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }
   }
@@ -343,9 +350,9 @@ class DeepLinkHandler {
       if (menu != null) {
         Navigator.of(context).pushNamed(Routes.menuPreview, arguments: menu);
       } else {
-        // The shared menu is gone or no longer accessible: a revoked link, as
-        // for a recipe above (flows-roles-budget.md:80; PQ-13 = A).
-        _showDeepLinkNotice(context, context.l10n.deepLinkExpired);
+        // Link is valid but the shared menu is gone or no longer accessible;
+        // as for a recipe above, the read cannot tell which.
+        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }
   }
