@@ -56,6 +56,8 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/auth/sign_out_guard.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -68,6 +70,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class AuthViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final AuthService _authService;
+  final SignOutGuard _signOutGuard;
 
   /// Authentication mode state controlling login/register UI flow presentation.
   /// true = login mode, false = register mode
@@ -108,6 +111,11 @@ class AuthViewModel extends ChangeNotifier
   /// input while maintaining security best practices for credential handling.
   bool get isPasswordVisible => _isPasswordVisible;
 
+  /// The second-factor challenge a sign-in is waiting for, or null. A
+  /// sign-in that returns false with this set is not a failure: the view
+  /// shows the challenge (Skarmar v12 etapp 3 #authmfa).
+  MfaResolverInfo? get pendingMfaChallenge => _authService.pendingMfaChallenge;
+
   /// Initializes authentication ViewModel with reactive AuthService integration and state synchronization.
   /// Establishes comprehensive listener connection to AuthService ensuring automatic state synchronization
   /// for authentication status, loading indicators, and error messages to maintain reactive UI updates
@@ -115,7 +123,9 @@ class AuthViewModel extends ChangeNotifier
   /// [authService] The authentication service for handling auth operations
   AuthViewModel({
     required AuthService authService,
-  }) : _authService = authService {
+    SignOutGuard? signOutGuard,
+  }) : _authService = authService,
+       _signOutGuard = signOutGuard ?? SignOutGuard(authService: authService) {
     // Clear any existing errors on initialization
     _validationError = null;
     _authService.clearError();
@@ -238,7 +248,23 @@ class AuthViewModel extends ChangeNotifier
   /// Coordinates with AuthService to perform secure user logout including session termination,
   /// token cleanup, and authentication state reset for complete user session management.
   /// Essential for secure authentication flows and proper user session lifecycle management.
-  Future<void> signOut() async {
+  ///
+  /// A user-initiated sign-out, so the queue guard runs first
+  /// (produktregler.md:193; Q-P6-E16). Returns the unsaved changes that
+  /// blocked it; [PendingChanges.none] means the user was signed out. A
+  /// blocked caller shows the confirmation (#utloggningko) and calls
+  /// [discardPendingAndSignOut] only if the user chose to throw them away.
+  Future<PendingChanges> signOut() async {
+    final pending = await _signOutGuard.pendingForCurrentUser();
+    if (!pending.isEmpty) return pending;
+    await _authService.signOut();
+    return PendingChanges.none;
+  }
+
+  /// "Logga ut och släng ändringarna": empties this user's queue, then signs
+  /// out. Only ever after the user chose it.
+  Future<void> discardPendingAndSignOut() async {
+    await _signOutGuard.discardForCurrentUser();
     await _authService.signOut();
   }
 

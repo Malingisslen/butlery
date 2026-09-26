@@ -23,11 +23,148 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+
+/// Why a session ended without the user signing out from the profile.
+enum SessionEndReason {
+  /// The inactivity timer ran out in the foreground, after the warning.
+  timeout,
+
+  /// The timeout passed while the app was in the background; nothing could
+  /// warn (produktregler.md:834).
+  backgroundTimeout,
+
+  /// "Logga ut nu" in the timeout warning.
+  userRequested,
+}
+
+/// One ended session: who, why, and how many changes still wait in the
+/// queue. The queue itself is untouched by every one of these endings
+/// (produktregler.md:833).
+@immutable
+class SessionEnd {
+  const SessionEnd({
+    required this.reason,
+    required this.userId,
+    required this.pendingChanges,
+    required this.endedAt,
+  });
+
+  final SessionEndReason reason;
+  final String? userId;
+  final PendingChanges pendingChanges;
+  final DateTime endedAt;
+}
+
+/// The calm notice the sign-in screen gives after a background timeout:
+/// "Beskedet ges i stället vid återkomsten, på inloggningsskärmen, som en
+/// lugn upplysning … med skälet och antalet väntande ändringar"
+/// (produktregler.md:834).
+///
+/// Held in memory only. If the process died in the background there is no
+/// session to explain, and a stored notice could meet another person on a
+/// shared device.
+class SessionEndNotice {
+  SessionEndNotice._();
+
+  static SessionEnd? _pending;
+
+  /// The notice waiting for the sign-in screen, if any.
+  static SessionEnd? get pending => _pending;
+
+  static void record(SessionEnd end) => _pending = end;
+
+  /// Clears the notice: the user signed in again or closed it.
+  static void clear() => _pending = null;
+}
+
+/// Where the user was when the session timed out, so signing in again as the
+/// same account lands there (flow 06, TR::FLOW::06::session::utgang;
+/// Q-P6-E07).
+@immutable
+class ReturnRoute {
+  const ReturnRoute({
+    required this.userId,
+    required this.routeName,
+    this.arguments,
+  });
+
+  final String userId;
+  final String routeName;
+  final Object? arguments;
+}
+
+/// In-memory store for the one [ReturnRoute]. After a background timeout
+/// the process may be gone; then there is nothing here and sign-in lands on
+/// Hem, which is the fallback Q-P6-E07 names.
+class SessionReturnPath {
+  SessionReturnPath._();
+
+  static ReturnRoute? _route;
+
+  /// Routes that are never a place to return to.
+  static const Set<String> _notReturnable = {'/', '/auth', '/home'};
+
+  /// Remembers [routeName] for [userId]. A route whose arguments cannot be
+  /// rebuilt from plain values is not remembered: pushing it again without
+  /// its arguments could open the wrong thing, and Hem is the honest
+  /// fallback.
+  static void remember({
+    required String userId,
+    required String? routeName,
+    Object? arguments,
+  }) {
+    if (routeName == null || _notReturnable.contains(routeName)) {
+      _route = null;
+      return;
+    }
+    if (!isPlainValue(arguments)) {
+      _route = null;
+      return;
+    }
+    _route = ReturnRoute(
+      userId: userId,
+      routeName: routeName,
+      arguments: arguments,
+    );
+  }
+
+  /// Hands out the remembered route once, and only to the same account.
+  /// Another account signing in drops it, so nobody is led into someone
+  /// else's screen.
+  static ReturnRoute? takeFor(String userId) {
+    final route = _route;
+    _route = null;
+    if (route == null || route.userId != userId) return null;
+    return route;
+  }
+
+  @visibleForTesting
+  static ReturnRoute? get peek => _route;
+
+  @visibleForTesting
+  static void reset() => _route = null;
+
+  /// Null, strings, numbers and booleans, and lists and string-keyed maps of
+  /// those: values that mean the same thing when pushed a second time.
+  static bool isPlainValue(Object? value) {
+    if (value == null || value is String || value is num || value is bool) {
+      return true;
+    }
+    if (value is List) return value.every(isPlainValue);
+    if (value is Map) {
+      return value.entries.every(
+        (e) => e.key is String && isPlainValue(e.value),
+      );
+    }
+    return false;
+  }
+}
 
 /// Session timeout service managing automatic logout after user inactivity.
 /// This service provides comprehensive inactivity tracking and automatic logout functionality
@@ -84,6 +221,13 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   /// Callback for showing warning dialog (set by UI layer)
   VoidCallback? _onShowWarning;
 
+  /// Callback run after a session ended here (set by UI layer), so the app
+  /// can leave the signed-in screens.
+  void Function(SessionEnd end)? _onSessionEnded;
+
+  /// Reads the signed-in user's queued changes before the session ends.
+  final Future<PendingChanges> Function() _pendingChangesReader;
+
   /// Configurable timeout duration (default 45 minutes)
   final Duration timeoutDuration;
 
@@ -122,8 +266,12 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
     required AnalyticsService analyticsService,
     this.timeoutDuration = defaultTimeoutDuration,
     this.warningOffset = defaultWarningOffset,
+    Future<PendingChanges> Function()? pendingChangesReader,
   }) : _authService = authService,
-       _analyticsService = analyticsService {
+       _analyticsService = analyticsService,
+       _pendingChangesReader =
+           pendingChangesReader ??
+           SignOutGuard(authService: authService).pendingForCurrentUser {
     // Validate configuration
     if (warningOffset >= timeoutDuration) {
       throw ArgumentError(
@@ -238,11 +386,27 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
     }
   }
 
+  /// Register the callback run after this service ended a session. The UI
+  /// uses it to leave the signed-in screens and to remember the return path.
+  void registerSessionEndCallback(void Function(SessionEnd end) callback) {
+    _onSessionEnded = callback;
+  }
+
   /// Force immediate logout (called from warning dialog "Logout Now" action).
   /// Bypasses normal timeout flow and performs immediate logout with analytics tracking.
+  ///
+  /// The user chose this, so her device drafts go as at any sign-out she
+  /// makes herself (PQ-12 = A). The queue does not: "Kravet gäller alla tre
+  /// skäl: timeout, background_timeout, user_requested"
+  /// (produktregler.md:833). When the queue has entries, the dialog asks
+  /// first, and only "Logga ut och släng ändringarna" empties it.
   Future<void> forceLogout() async {
     AppLogger.info('SessionTimeoutService: Force logout requested');
-    await _performLogout(reason: 'user_requested');
+    final userId = _authService.currentUserId;
+    final ended = await _performLogout(reason: 'user_requested');
+    if (ended) {
+      await AuthService.clearDeviceDraftsOnExplicitSignOut(userId);
+    }
   }
 
   /// Start or restart inactivity timers.
@@ -323,13 +487,20 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   /// Perform logout due to timeout or user request.
   /// Coordinates with AuthService to execute logout and tracks analytics event.
   /// [reason] Reason for logout (for analytics and logging)
-  Future<void> _performLogout({required String reason}) async {
+  ///
+  /// Returns whether a session was ended.
+  Future<bool> _performLogout({required String reason}) async {
     if (!_authService.isAuthenticated) {
       AppLogger.debug(
         'SessionTimeoutService: User already logged out, skipping',
       );
-      return;
+      return false;
     }
+
+    // Read before the sign-out: afterwards there is no user to read for. The
+    // count only explains; nothing is removed from the queue here.
+    final userId = _authService.currentUserId;
+    final pending = await _pendingChangesReader();
 
     AppLogger.info(
       'SessionTimeoutService: Performing logout (reason: $reason)',
@@ -354,6 +525,24 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
     } catch (e) {
       AppLogger.error('SessionTimeoutService: Logout failed', e);
     }
+
+    final end = SessionEnd(
+      reason: switch (reason) {
+        'background_timeout' => SessionEndReason.backgroundTimeout,
+        'user_requested' => SessionEndReason.userRequested,
+        _ => SessionEndReason.timeout,
+      },
+      userId: userId,
+      pendingChanges: pending,
+      endedAt: clock.now(),
+    );
+    // Only the background timeout could not warn, so only it is explained on
+    // the sign-in screen (produktregler.md:834).
+    if (end.reason == SessionEndReason.backgroundTimeout) {
+      SessionEndNotice.record(end);
+    }
+    _onSessionEnded?.call(end);
+    return true;
   }
 
   /// Dispose service and cleanup all resources.
@@ -364,5 +553,6 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
     _cancelTimers();
     _isActive = false;
     _onShowWarning = null;
+    _onSessionEnded = null;
   }
 }

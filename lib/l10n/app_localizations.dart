@@ -7174,7 +7174,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentRequiredDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.'**
+  /// **'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen att radera kontot, inte ett reglage här.'**
   String get consentRequiredDescription;
 
   /// No description provided for @consentBasicServices.
@@ -28954,6 +28954,486 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kolla datum'**
   String get shoppingMergeMarkCheckDate;
+
+  /// No description provided for @signOutPendingTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring har inte sparats} other{{count} ändringar har inte sparats}}'**
+  String signOutPendingTitle(int count);
+
+  /// No description provided for @signOutPendingBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om du loggar ut nu försvinner de. Butlery väntar gärna tills du har nät igen.'**
+  String get signOutPendingBody;
+
+  /// No description provided for @signOutPendingRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Recept · 1 ändring} other{Recept · {count} ändringar}}'**
+  String signOutPendingRecipes(int count);
+
+  /// No description provided for @signOutPendingImages.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Bilder · 1 väntar på uppladdning} other{Bilder · {count} väntar på uppladdning}}'**
+  String signOutPendingImages(int count);
+
+  /// No description provided for @signOutPendingWait.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänta på synk'**
+  String get signOutPendingWait;
+
+  /// No description provided for @signOutPendingDiscard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut och släng ändringarna'**
+  String get signOutPendingDiscard;
+
+  /// No description provided for @sessionPendingChangesIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}'**
+  String sessionPendingChangesIntro(int count);
+
+  /// No description provided for @sessionEndedBackgroundTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du loggades ut medan appen låg still.'**
+  String get sessionEndedBackgroundTitle;
+
+  /// No description provided for @sessionEndedBackgroundReason.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det händer efter 45 minuter utan aktivitet, och det är meningen.'**
+  String get sessionEndedBackgroundReason;
+
+  /// No description provided for @sessionEndedBackgroundPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.}}'**
+  String sessionEndedBackgroundPending(int count);
+
+  /// No description provided for @draftTimeLeftDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}'**
+  String draftTimeLeftDays(int count);
+
+  /// No description provided for @draftTimeLeftHours.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}'**
+  String draftTimeLeftHours(int count);
+
+  /// No description provided for @profileDeleteNoRecallWindow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.'**
+  String get profileDeleteNoRecallWindow;
+
+  /// No description provided for @profileDeleteReasonLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför raderar du kontot?'**
+  String get profileDeleteReasonLabel;
+
+  /// No description provided for @profileDeleteReasonHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Till exempel: använder appen inte längre'**
+  String get profileDeleteReasonHint;
+
+  /// No description provided for @profileDeleteReasonHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skälet följer med till revisionsraden. Det är det enda spåret som finns efteråt, därför frågar vi före.'**
+  String get profileDeleteReasonHelp;
+
+  /// No description provided for @accountDeletionWaitNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta kan ta upp till nio minuter. Stäng inte appen — raderingen fortsätter på servern, men du får inget kvitto om du går.'**
+  String get accountDeletionWaitNotice;
+
+  /// No description provided for @accountDeletionReauthTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta att det är du'**
+  String get accountDeletionReauthTitle;
+
+  /// No description provided for @accountDeletionReauthBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Av säkerhetsskäl krävs en inloggning som är högst fem minuter gammal för att radera ett konto. Logga in igen, så fortsätter raderingen där den var.'**
+  String get accountDeletionReauthBody;
+
+  /// No description provided for @accountDeletionReauthCancel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt raderingen'**
+  String get accountDeletionReauthCancel;
+
+  /// No description provided for @accountDeletionReauthConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen'**
+  String get accountDeletionReauthConfirm;
+
+  /// No description provided for @accountDeletionPartialTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är raderat delvis'**
+  String get accountDeletionPartialTitle;
+
+  /// No description provided for @accountDeletionPartialHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Kontot är borta — en del kvarstår} other{Kontot är borta — {count} delar kvarstår}}'**
+  String accountDeletionPartialHeading(int count);
+
+  /// No description provided for @accountDeletionPartialBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Inloggningen är raderad. En samling gick inte att ta bort och ligger kvar hos oss.} other{Inloggningen är raderad. {count} samlingar gick inte att ta bort och ligger kvar hos oss.}}'**
+  String accountDeletionPartialBody(int count);
+
+  /// No description provided for @accountDeletionPartialAuditIdLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Revisions-id'**
+  String get accountDeletionPartialAuditIdLabel;
+
+  /// No description provided for @accountDeletionPartialNoAuditId.
+  ///
+  /// In sv, this message translates to:
+  /// **'Revisions-id saknas. Nämn datum och tid för raderingen när du kontaktar support.'**
+  String get accountDeletionPartialNoAuditId;
+
+  /// No description provided for @accountDeletionPartialContact.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontakta support med id'**
+  String get accountDeletionPartialContact;
+
+  /// No description provided for @accountDeletionPartialEmailSubject.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delvis raderat konto {auditId}'**
+  String accountDeletionPartialEmailSubject(String auditId);
+
+  /// No description provided for @accountDeletionPartialNoEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postappen gick inte att öppna. Skriv till integritet@butlery.se och ange revisions-id.'**
+  String get accountDeletionPartialNoEmail;
+
+  /// No description provided for @dataExportMemoryNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara filen innan du lämnar sidan. Den ligger bara i telefonens minne — går du tillbaka får du göra om exporten.'**
+  String get dataExportMemoryNotice;
+
+  /// No description provided for @dataExportNetworkTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exporten avbröts'**
+  String get dataExportNetworkTitle;
+
+  /// No description provided for @dataExportNetworkBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anslutningen bröts medan vi samlade ihop uppgifterna. Ingenting är ändrat på ditt konto.'**
+  String get dataExportNetworkBody;
+
+  /// No description provided for @dataExportNoPartialFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi erbjuder ingen halv fil. Den som tar emot dina uppgifter kan inte se vad som saknas i den.'**
+  String get dataExportNoPartialFile;
+
+  /// No description provided for @dataExportSignedOutTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen har gått ut'**
+  String get dataExportSignedOutTitle;
+
+  /// No description provided for @dataExportSignedOutBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen för att hämta ut dina uppgifter. Ingenting är ändrat på ditt konto.'**
+  String get dataExportSignedOutBody;
+
+  /// No description provided for @dataExportSignIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen'**
+  String get dataExportSignIn;
+
+  /// No description provided for @dataExportDeniedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exporten nekades'**
+  String get dataExportDeniedTitle;
+
+  /// No description provided for @dataExportDeniedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Felet ligger hos oss, inte hos dig, och ett nytt försök hjälper inte just nu. Ingenting är ändrat på ditt konto.'**
+  String get dataExportDeniedBody;
+
+  /// No description provided for @dataExportNotNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get dataExportNotNow;
+
+  /// No description provided for @consentAiProcessing.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tolkning'**
+  String get consentAiProcessing;
+
+  /// No description provided for @consentAiProcessingDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läser recept ur länkar, text och foto. Utan detta blir importen grövre.'**
+  String get consentAiProcessingDescription;
+
+  /// No description provided for @consentRenewalChangedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Vi har ändrat en sak} other{Vi har ändrat {count} saker}}'**
+  String consentRenewalChangedTitle(int count);
+
+  /// No description provided for @consentRenewalSinceVersion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du sa ja till version {version} den {date}. Det här är nytt sedan dess.'**
+  String consentRenewalSinceVersion(String version, String date);
+
+  /// No description provided for @consentRenewalUnchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Övriga ändamål är oförändrade och dina val står kvar.} other{Övriga {count} ändamål är oförändrade och dina val står kvar.}}'**
+  String consentRenewalUnchanged(int count);
+
+  /// No description provided for @consentRenewalAccept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag godkänner'**
+  String get consentRenewalAccept;
+
+  /// No description provided for @consentRenewalChooseMyself.
+  ///
+  /// In sv, this message translates to:
+  /// **'Låt mig välja själv'**
+  String get consentRenewalChooseMyself;
+
+  /// No description provided for @consentRenewalNotNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get consentRenewalNotNow;
+
+  /// No description provided for @consentRenewalNotNowNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väljer du Inte nu fortsätter allt som förut. Ingenting slås av för att du inte svarat.'**
+  String get consentRenewalNotNowNote;
+
+  /// No description provided for @consentChangeAiProcessingAddedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tolkning är ett nytt ändamål'**
+  String get consentChangeAiProcessingAddedTitle;
+
+  /// No description provided for @consentChangeAiProcessingAddedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läser recept ur länkar, text och foto. Den står av tills du själv slår på den under Låt mig välja själv.'**
+  String get consentChangeAiProcessingAddedBody;
+
+  /// No description provided for @consentRenewalSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycket kunde inte sparas. Dina tidigare val står kvar.'**
+  String get consentRenewalSaveFailed;
+
+  /// No description provided for @signOutDiscardFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringarna kunde inte slängas, så du är fortfarande inloggad.'**
+  String get signOutDiscardFailed;
+
+  /// No description provided for @mfaChallengeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifiering'**
+  String get mfaChallengeTitle;
+
+  /// No description provided for @mfaChallengeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv koden'**
+  String get mfaChallengeHeading;
+
+  /// No description provided for @mfaChallengeSentTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
+  String mfaChallengeSentTo(String tail);
+
+  /// No description provided for @mfaChallengeSentUnknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
+  String get mfaChallengeSentUnknown;
+
+  /// No description provided for @mfaChallengeTimeLeft.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden gäller i {total} sekunder. {left} s kvar.'**
+  String mfaChallengeTimeLeft(int total, int left);
+
+  /// No description provided for @mfaChallengeCodeGone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden har gått ut. Skicka en ny kod.'**
+  String get mfaChallengeCodeGone;
+
+  /// No description provided for @mfaChallengeResend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka en ny kod'**
+  String get mfaChallengeResend;
+
+  /// No description provided for @mfaChallengeWrongCode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.'**
+  String get mfaChallengeWrongCode;
+
+  /// No description provided for @mfaChallengeExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden har gått ut. Skicka en ny kod.'**
+  String get mfaChallengeExpired;
+
+  /// No description provided for @mfaChallengeFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen kunde inte slutföras. Skicka en ny kod.'**
+  String get mfaChallengeFailed;
+
+  /// No description provided for @mfaBackupCodeUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd en reservkod'**
+  String get mfaBackupCodeUse;
+
+  /// No description provided for @mfaBackupCodeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med en reservkod'**
+  String get mfaBackupCodeHeading;
+
+  /// No description provided for @mfaBackupCodeExplanation.
+  ///
+  /// In sv, this message translates to:
+  /// **'En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.'**
+  String get mfaBackupCodeExplanation;
+
+  /// No description provided for @mfaBackupCodeLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkod'**
+  String get mfaBackupCodeLabel;
+
+  /// No description provided for @mfaBackupCodeEnter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv en av dina tio reservkoder.'**
+  String get mfaBackupCodeEnter;
+
+  /// No description provided for @mfaBackupCodeSubmit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med reservkoden'**
+  String get mfaBackupCodeSubmit;
+
+  /// No description provided for @mfaBackupCodeBack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till SMS-koden'**
+  String get mfaBackupCodeBack;
+
+  /// No description provided for @mfaBackupCodeRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.'**
+  String get mfaBackupCodeRejected;
+
+  /// No description provided for @mfaBackupCodeLocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många försök med reservkod. Vänta en timme innan du försöker igen.'**
+  String get mfaBackupCodeLocked;
+
+  /// No description provided for @mfaBackupCodeUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.'**
+  String get mfaBackupCodeUnavailable;
+
+  /// No description provided for @mfaBackupCodeRecovered.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.'**
+  String get mfaBackupCodeRecovered;
+
+  /// No description provided for @mfaBackupCodesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tio reservkoder'**
+  String get mfaBackupCodesTitle;
+
+  /// No description provided for @mfaBackupCodesBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.'**
+  String get mfaBackupCodesBody;
+
+  /// No description provided for @mfaBackupCodesCopy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera koderna'**
+  String get mfaBackupCodesCopy;
+
+  /// No description provided for @mfaBackupCodesCopied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koderna är kopierade.'**
+  String get mfaBackupCodesCopied;
+
+  /// No description provided for @mfaBackupCodesSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag har sparat koderna'**
+  String get mfaBackupCodesSaved;
+
+  /// No description provided for @mfaBackupCodesContinue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt till telefonnumret'**
+  String get mfaBackupCodesContinue;
+
+  /// No description provided for @mfaBackupCodesFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
+  String get mfaBackupCodesFailed;
 }
 
 class _AppLocalizationsDelegate

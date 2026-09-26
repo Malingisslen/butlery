@@ -40,6 +40,7 @@ class ConsentViewModel extends ChangeNotifier
   bool _marketing = false;
   bool _socialFeatures = false;
   bool _pushNotifications = false;
+  bool _aiProcessing = false;
 
   // Getters - State
   bool get isSaving =>
@@ -59,6 +60,12 @@ class ConsentViewModel extends ChangeNotifier
   bool get marketing => _marketing;
   bool get socialFeatures => _socialFeatures;
   bool get pushNotifications => _pushNotifications;
+  bool get aiProcessing => _aiProcessing;
+
+  /// What changed since the version the user accepted, for the renewal
+  /// (produktregler.md:731; Skarmar v12 etapp 6 #samtyckefornya).
+  List<ConsentChange> get renewalChanges =>
+      ConsentService.changesSince(_currentConsent?.consentVersion);
 
   /// Load current user consent
   Future<void> loadConsent() async {
@@ -75,6 +82,7 @@ class ConsentViewModel extends ChangeNotifier
           _marketing = consent.purposes.marketing;
           _socialFeatures = consent.purposes.socialFeatures;
           _pushNotifications = consent.purposes.pushNotifications;
+          _aiProcessing = consent.purposes.aiProcessing;
 
           // Check if renewal needed
           _needsRenewal = await _consentService.needsConsentRenewal();
@@ -84,6 +92,7 @@ class ConsentViewModel extends ChangeNotifier
           _marketing = false;
           _socialFeatures = false;
           _pushNotifications = false;
+          _aiProcessing = false;
           _needsRenewal = true;
         }
 
@@ -101,13 +110,20 @@ class ConsentViewModel extends ChangeNotifier
       return await executeNamedOperation('save', () async {
         app_logger.AppLogger.info('[$_logTag] Saving user consent');
 
-        final purposes = ConsentPurposes(
+        // Start from the consent that was READ and change only what the
+        // user can touch here. Building a fresh object from a subset of the
+        // purposes silently revoked AI processing on every save, because
+        // its default is no (produktregler.md:728; Skarmar v12 etapp 6
+        // #samtyckeai).
+        final base = _currentConsent?.purposes ?? ConsentPurposes.defaults();
+        final purposes = base.copyWith(
           essentialServices: true, // Always required
           dataProcessing: true, // Always required
           analytics: _analytics,
           marketing: _marketing,
           socialFeatures: _socialFeatures,
           pushNotifications: _pushNotifications,
+          aiProcessing: _aiProcessing,
         );
 
         final success = await _consentService.saveConsent(purposes);
@@ -157,6 +173,45 @@ class ConsentViewModel extends ChangeNotifier
     app_logger.AppLogger.debug('[$_logTag] Push notifications consent: $value');
   }
 
+  /// Toggle AI interpretation consent ("AI-tolkning", Skarmar v12 etapp 6
+  /// #kontosamtycke).
+  void setAiProcessing(bool value) {
+    _aiProcessing = value;
+    notifyListeners();
+    app_logger.AppLogger.debug('[$_logTag] AI processing consent: $value');
+  }
+
+  /// "Jag godkänner" in the renewal: the new version is accepted and every
+  /// earlier choice stays as it was. "Befintliga val är förval, och att
+  /// avstå stänger aldrig av något" (produktregler.md:731).
+  ///
+  /// A purpose that is NEW since the accepted version keeps its earlier
+  /// value (off for a consent saved before the purpose existed). Whether a
+  /// blanket accept may switch a new processing purpose on is a consent
+  /// decision for the product owner; until it is made, a new purpose is
+  /// switched on only through "Låt mig välja själv", one purpose at a time
+  /// (GDPR art. 7).
+  Future<bool> acceptRenewal() async {
+    final consent = _currentConsent;
+    if (consent == null) return false;
+    final purposes = consent.purposes;
+    try {
+      return await executeNamedOperation('renew', () async {
+        final success = await _consentService.saveConsent(purposes);
+        if (success) {
+          await loadConsent();
+        } else {
+          setError(AppLocale.current.consentRenewalSaveFailed);
+        }
+        return success;
+      });
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to renew consent', e);
+      setError(AppLocale.current.consentRenewalSaveFailed);
+      return false;
+    }
+  }
+
   /// Revoke all optional consents
   Future<bool> revokeAllOptional() async {
     try {
@@ -171,6 +226,7 @@ class ConsentViewModel extends ChangeNotifier
           _marketing = false;
           _socialFeatures = false;
           _pushNotifications = false;
+          _aiProcessing = false;
 
           await loadConsent();
           app_logger.AppLogger.success(
@@ -195,6 +251,7 @@ class ConsentViewModel extends ChangeNotifier
     _marketing = true;
     _socialFeatures = true;
     _pushNotifications = true;
+    _aiProcessing = true;
     notifyListeners();
     app_logger.AppLogger.debug('[$_logTag] Accepted all consents');
   }
@@ -205,6 +262,7 @@ class ConsentViewModel extends ChangeNotifier
     _marketing = false;
     _socialFeatures = false;
     _pushNotifications = false;
+    _aiProcessing = false;
     notifyListeners();
     app_logger.AppLogger.debug('[$_logTag] Rejected all optional consents');
   }

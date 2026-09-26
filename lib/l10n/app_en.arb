@@ -3044,7 +3044,7 @@
   "consentGdprDescription": "Under GDPR you have full control over how we process your personal data. You can change or revoke your consents at any time.",
   "consentLastUpdated": "Last updated",
   "consentRequiredTitle": "Required consents",
-  "consentRequiredDescription": "These consents are required for the app to function and cannot be disabled.",
+  "consentRequiredDescription": "These cannot be switched off — without them there is no service to say yes or no to. If you want to leave entirely, the way is to delete your account, not a switch here.",
   "consentBasicServices": "Basic services",
   "consentBasicServicesDescription": "Authentication, security and basic functionality.",
   "consentDataProcessing": "Data processing",
@@ -13037,5 +13037,196 @@
   "shoppingMergeUndoFailedKept": "The items are still on the list.",
   "shoppingMergeRowRecipes": "{count} recipes",
   "shoppingMergeMarkMaybeHome": "Maybe at home",
-  "shoppingMergeMarkCheckDate": "Check the date"
+  "shoppingMergeMarkCheckDate": "Check the date",
+  "signOutPendingTitle": "{count, plural, =1{1 change has not been saved} other{{count} changes have not been saved}}",
+  "@signOutPendingTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingBody": "If you sign out now, they are lost. Butlery is happy to wait until you are online again.",
+  "signOutPendingRecipes": "{count, plural, =1{Recipes · 1 change} other{Recipes · {count} changes}}",
+  "@signOutPendingRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingImages": "{count, plural, =1{Images · 1 waiting to upload} other{Images · {count} waiting to upload}}",
+  "@signOutPendingImages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingWait": "Wait for sync",
+  "signOutPendingDiscard": "Sign out and discard the changes",
+  "sessionPendingChangesIntro": "{count, plural, =1{1 change has not been saved yet:} other{{count} changes have not been saved yet:}}",
+  "@sessionPendingChangesIntro": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndedBackgroundTitle": "You were signed out while the app lay still.",
+  "sessionEndedBackgroundReason": "That happens after 45 minutes without activity, and it is meant to.",
+  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is still on the phone and is sent as soon as you are back in — nothing you did is lost.} other{{count} changes are still on the phone and are sent as soon as you are back in — nothing you did is lost.}}",
+  "@sessionEndedBackgroundPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftDays": "{count, plural, =1{kept for 1 more day} other{kept for {count} more days}}",
+  "@draftTimeLeftDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftHours": "{count, plural, =1{kept for 1 more hour} other{kept for {count} more hours}}",
+  "@draftTimeLeftHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileDeleteNoRecallWindow": "There is no grace period. When the deletion is done, the account is gone and cannot be restored.",
+  "profileDeleteReasonLabel": "Why are you deleting your account?",
+  "profileDeleteReasonHint": "For example: no longer using the app",
+  "profileDeleteReasonHelp": "The reason goes into the audit record. It is the only trace left afterwards, which is why we ask before.",
+  "accountDeletionWaitNotice": "This can take up to nine minutes. Do not close the app — the deletion continues on the server, but you get no receipt if you leave.",
+  "accountDeletionReauthTitle": "Confirm it is you",
+  "accountDeletionReauthBody": "For security, deleting an account needs a sign-in that is at most five minutes old. Sign in again and the deletion continues where it was.",
+  "accountDeletionReauthCancel": "Cancel the deletion",
+  "accountDeletionReauthConfirm": "Sign in again",
+  "accountDeletionPartialTitle": "The account is partly deleted",
+  "accountDeletionPartialHeading": "{count, plural, =1{The account is gone — one part remains} other{The account is gone — {count} parts remain}}",
+  "@accountDeletionPartialHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialBody": "{count, plural, =1{Your sign-in is deleted. One collection could not be removed and remains with us.} other{Your sign-in is deleted. {count} collections could not be removed and remain with us.}}",
+  "@accountDeletionPartialBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialAuditIdLabel": "Audit id",
+  "accountDeletionPartialNoAuditId": "There is no audit id. Mention the date and time of the deletion when you contact support.",
+  "accountDeletionPartialContact": "Contact support with the id",
+  "accountDeletionPartialEmailSubject": "Partly deleted account {auditId}",
+  "@accountDeletionPartialEmailSubject": {
+    "placeholders": {
+      "auditId": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionPartialNoEmail": "The email app could not be opened. Write to integritet@butlery.se and include the audit id.",
+  "dataExportMemoryNotice": "Save the file before you leave this page. It only lives in the phone's memory — if you go back, you have to export again.",
+  "dataExportNetworkTitle": "The export was interrupted",
+  "dataExportNetworkBody": "The connection dropped while we gathered your data. Nothing on your account has changed.",
+  "dataExportNoPartialFile": "We do not offer a partial file. Whoever receives your data cannot tell what is missing from it.",
+  "dataExportSignedOutTitle": "Your sign-in has expired",
+  "dataExportSignedOutBody": "Sign in again to get your data. Nothing on your account has changed.",
+  "dataExportSignIn": "Sign in again",
+  "dataExportDeniedTitle": "The export was refused",
+  "dataExportDeniedBody": "The fault is ours, not yours, and trying again will not help right now. Nothing on your account has changed.",
+  "dataExportNotNow": "Not now",
+  "consentAiProcessing": "AI interpretation",
+  "consentAiProcessingDescription": "Reads recipes from links, text and photos. Without it, imports are rougher.",
+  "consentRenewalChangedTitle": "{count, plural, =1{We have changed one thing} other{We have changed {count} things}}",
+  "@consentRenewalChangedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalSinceVersion": "You agreed to version {version} on {date}. This is new since then.",
+  "@consentRenewalSinceVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentRenewalUnchanged": "{count, plural, =1{The other purpose is unchanged and your choice stands.} other{The other {count} purposes are unchanged and your choices stand.}}",
+  "@consentRenewalUnchanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalAccept": "I agree",
+  "consentRenewalChooseMyself": "Let me choose",
+  "consentRenewalNotNow": "Not now",
+  "consentRenewalNotNowNote": "If you choose Not now, everything continues as before. Nothing is switched off because you have not answered.",
+  "consentChangeAiProcessingAddedTitle": "AI interpretation is a new purpose",
+  "consentChangeAiProcessingAddedBody": "Reads recipes from links, text and photos. It stays off until you switch it on yourself under Let me choose.",
+  "consentRenewalSaveFailed": "Your consent could not be saved. Your earlier choices stand.",
+  "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in.",
+  "mfaChallengeTitle": "Two-step verification",
+  "mfaChallengeHeading": "Enter the code",
+  "mfaChallengeSentTo": "We sent a six-digit code to the number ending in {tail}. If your phone fills it in by itself, we let you in without you doing anything.",
+  "@mfaChallengeSentTo": {
+    "placeholders": {
+      "tail": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaChallengeSentUnknown": "We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.",
+  "mfaChallengeTimeLeft": "The code is valid for {total} seconds. {left} s left.",
+  "@mfaChallengeTimeLeft": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "mfaChallengeCodeGone": "The code has expired. Send a new code.",
+  "mfaChallengeResend": "Send a new code",
+  "mfaChallengeWrongCode": "The code does not match. Check the digits or send a new code.",
+  "mfaChallengeExpired": "The code has expired. Send a new code.",
+  "mfaChallengeFailed": "The sign-in could not be completed. Send a new code.",
+  "mfaBackupCodeUse": "Use a backup code",
+  "mfaBackupCodeHeading": "Sign in with a backup code",
+  "mfaBackupCodeExplanation": "A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.",
+  "mfaBackupCodeLabel": "Backup code",
+  "mfaBackupCodeEnter": "Enter one of your ten backup codes.",
+  "mfaBackupCodeSubmit": "Sign in with the backup code",
+  "mfaBackupCodeBack": "Back to the text message code",
+  "mfaBackupCodeRejected": "The password or the backup code does not match. A used code cannot be used again.",
+  "mfaBackupCodeLocked": "Too many backup code attempts. Wait an hour before you try again.",
+  "mfaBackupCodeUnavailable": "The backup code could not be checked right now. Nothing on your account has changed.",
+  "mfaBackupCodeRecovered": "Two-step verification is off. Add a phone number again under Account security.",
+  "mfaBackupCodesTitle": "Ten backup codes",
+  "mfaBackupCodesBody": "Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.",
+  "mfaBackupCodesCopy": "Copy the codes",
+  "mfaBackupCodesCopied": "The codes are copied.",
+  "mfaBackupCodesSaved": "I have saved the codes",
+  "mfaBackupCodesContinue": "Continue to the phone number",
+  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed."
 }

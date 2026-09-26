@@ -4303,7 +4303,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentRequiredDescription =>
-      'These consents are required for the app to function and cannot be disabled.';
+      'These cannot be switched off — without them there is no service to say yes or no to. If you want to leave entirely, the way is to delete your account, not a switch here.';
 
   @override
   String get consentBasicServices => 'Basic services';
@@ -17440,4 +17440,375 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingMergeMarkCheckDate => 'Check the date';
+
+  @override
+  String signOutPendingTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes have not been saved',
+      one: '1 change has not been saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get signOutPendingBody =>
+      'If you sign out now, they are lost. Butlery is happy to wait until you are online again.';
+
+  @override
+  String signOutPendingRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recipes · $count changes',
+      one: 'Recipes · 1 change',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String signOutPendingImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Images · $count waiting to upload',
+      one: 'Images · 1 waiting to upload',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get signOutPendingWait => 'Wait for sync';
+
+  @override
+  String get signOutPendingDiscard => 'Sign out and discard the changes';
+
+  @override
+  String sessionPendingChangesIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes have not been saved yet:',
+      one: '1 change has not been saved yet:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sessionEndedBackgroundTitle =>
+      'You were signed out while the app lay still.';
+
+  @override
+  String get sessionEndedBackgroundReason =>
+      'That happens after 45 minutes without activity, and it is meant to.';
+
+  @override
+  String sessionEndedBackgroundPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are still on the phone and are sent as soon as you are back in — nothing you did is lost.',
+      one:
+          '1 change is still on the phone and is sent as soon as you are back in — nothing you did is lost.',
+      zero: 'No changes are waiting.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String draftTimeLeftDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'kept for $count more days',
+      one: 'kept for 1 more day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String draftTimeLeftHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'kept for $count more hours',
+      one: 'kept for 1 more hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileDeleteNoRecallWindow =>
+      'There is no grace period. When the deletion is done, the account is gone and cannot be restored.';
+
+  @override
+  String get profileDeleteReasonLabel => 'Why are you deleting your account?';
+
+  @override
+  String get profileDeleteReasonHint => 'For example: no longer using the app';
+
+  @override
+  String get profileDeleteReasonHelp =>
+      'The reason goes into the audit record. It is the only trace left afterwards, which is why we ask before.';
+
+  @override
+  String get accountDeletionWaitNotice =>
+      'This can take up to nine minutes. Do not close the app — the deletion continues on the server, but you get no receipt if you leave.';
+
+  @override
+  String get accountDeletionReauthTitle => 'Confirm it is you';
+
+  @override
+  String get accountDeletionReauthBody =>
+      'For security, deleting an account needs a sign-in that is at most five minutes old. Sign in again and the deletion continues where it was.';
+
+  @override
+  String get accountDeletionReauthCancel => 'Cancel the deletion';
+
+  @override
+  String get accountDeletionReauthConfirm => 'Sign in again';
+
+  @override
+  String get accountDeletionPartialTitle => 'The account is partly deleted';
+
+  @override
+  String accountDeletionPartialHeading(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The account is gone — $count parts remain',
+      one: 'The account is gone — one part remains',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountDeletionPartialBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Your sign-in is deleted. $count collections could not be removed and remain with us.',
+      one:
+          'Your sign-in is deleted. One collection could not be removed and remains with us.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeletionPartialAuditIdLabel => 'Audit id';
+
+  @override
+  String get accountDeletionPartialNoAuditId =>
+      'There is no audit id. Mention the date and time of the deletion when you contact support.';
+
+  @override
+  String get accountDeletionPartialContact => 'Contact support with the id';
+
+  @override
+  String accountDeletionPartialEmailSubject(String auditId) {
+    return 'Partly deleted account $auditId';
+  }
+
+  @override
+  String get accountDeletionPartialNoEmail =>
+      'The email app could not be opened. Write to integritet@butlery.se and include the audit id.';
+
+  @override
+  String get dataExportMemoryNotice =>
+      'Save the file before you leave this page. It only lives in the phone\'s memory — if you go back, you have to export again.';
+
+  @override
+  String get dataExportNetworkTitle => 'The export was interrupted';
+
+  @override
+  String get dataExportNetworkBody =>
+      'The connection dropped while we gathered your data. Nothing on your account has changed.';
+
+  @override
+  String get dataExportNoPartialFile =>
+      'We do not offer a partial file. Whoever receives your data cannot tell what is missing from it.';
+
+  @override
+  String get dataExportSignedOutTitle => 'Your sign-in has expired';
+
+  @override
+  String get dataExportSignedOutBody =>
+      'Sign in again to get your data. Nothing on your account has changed.';
+
+  @override
+  String get dataExportSignIn => 'Sign in again';
+
+  @override
+  String get dataExportDeniedTitle => 'The export was refused';
+
+  @override
+  String get dataExportDeniedBody =>
+      'The fault is ours, not yours, and trying again will not help right now. Nothing on your account has changed.';
+
+  @override
+  String get dataExportNotNow => 'Not now';
+
+  @override
+  String get consentAiProcessing => 'AI interpretation';
+
+  @override
+  String get consentAiProcessingDescription =>
+      'Reads recipes from links, text and photos. Without it, imports are rougher.';
+
+  @override
+  String consentRenewalChangedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'We have changed $count things',
+      one: 'We have changed one thing',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String consentRenewalSinceVersion(String version, String date) {
+    return 'You agreed to version $version on $date. This is new since then.';
+  }
+
+  @override
+  String consentRenewalUnchanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The other $count purposes are unchanged and your choices stand.',
+      one: 'The other purpose is unchanged and your choice stands.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get consentRenewalAccept => 'I agree';
+
+  @override
+  String get consentRenewalChooseMyself => 'Let me choose';
+
+  @override
+  String get consentRenewalNotNow => 'Not now';
+
+  @override
+  String get consentRenewalNotNowNote =>
+      'If you choose Not now, everything continues as before. Nothing is switched off because you have not answered.';
+
+  @override
+  String get consentChangeAiProcessingAddedTitle =>
+      'AI interpretation is a new purpose';
+
+  @override
+  String get consentChangeAiProcessingAddedBody =>
+      'Reads recipes from links, text and photos. It stays off until you switch it on yourself under Let me choose.';
+
+  @override
+  String get consentRenewalSaveFailed =>
+      'Your consent could not be saved. Your earlier choices stand.';
+
+  @override
+  String get signOutDiscardFailed =>
+      'The changes could not be discarded, so you are still signed in.';
+
+  @override
+  String get mfaChallengeTitle => 'Two-step verification';
+
+  @override
+  String get mfaChallengeHeading => 'Enter the code';
+
+  @override
+  String mfaChallengeSentTo(String tail) {
+    return 'We sent a six-digit code to the number ending in $tail. If your phone fills it in by itself, we let you in without you doing anything.';
+  }
+
+  @override
+  String get mfaChallengeSentUnknown =>
+      'We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.';
+
+  @override
+  String mfaChallengeTimeLeft(int total, int left) {
+    return 'The code is valid for $total seconds. $left s left.';
+  }
+
+  @override
+  String get mfaChallengeCodeGone => 'The code has expired. Send a new code.';
+
+  @override
+  String get mfaChallengeResend => 'Send a new code';
+
+  @override
+  String get mfaChallengeWrongCode =>
+      'The code does not match. Check the digits or send a new code.';
+
+  @override
+  String get mfaChallengeExpired => 'The code has expired. Send a new code.';
+
+  @override
+  String get mfaChallengeFailed =>
+      'The sign-in could not be completed. Send a new code.';
+
+  @override
+  String get mfaBackupCodeUse => 'Use a backup code';
+
+  @override
+  String get mfaBackupCodeHeading => 'Sign in with a backup code';
+
+  @override
+  String get mfaBackupCodeExplanation =>
+      'A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.';
+
+  @override
+  String get mfaBackupCodeLabel => 'Backup code';
+
+  @override
+  String get mfaBackupCodeEnter => 'Enter one of your ten backup codes.';
+
+  @override
+  String get mfaBackupCodeSubmit => 'Sign in with the backup code';
+
+  @override
+  String get mfaBackupCodeBack => 'Back to the text message code';
+
+  @override
+  String get mfaBackupCodeRejected =>
+      'The password or the backup code does not match. A used code cannot be used again.';
+
+  @override
+  String get mfaBackupCodeLocked =>
+      'Too many backup code attempts. Wait an hour before you try again.';
+
+  @override
+  String get mfaBackupCodeUnavailable =>
+      'The backup code could not be checked right now. Nothing on your account has changed.';
+
+  @override
+  String get mfaBackupCodeRecovered =>
+      'Two-step verification is off. Add a phone number again under Account security.';
+
+  @override
+  String get mfaBackupCodesTitle => 'Ten backup codes';
+
+  @override
+  String get mfaBackupCodesBody =>
+      'Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.';
+
+  @override
+  String get mfaBackupCodesCopy => 'Copy the codes';
+
+  @override
+  String get mfaBackupCodesCopied => 'The codes are copied.';
+
+  @override
+  String get mfaBackupCodesSaved => 'I have saved the codes';
+
+  @override
+  String get mfaBackupCodesContinue => 'Continue to the phone number';
+
+  @override
+  String get mfaBackupCodesFailed =>
+      'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
 }

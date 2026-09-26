@@ -141,7 +141,10 @@ class DraftRecoveryDialog extends StatelessWidget {
                       ),
                       const SizedBox(height: AppDimensions.spacingXxs),
                       Text(
-                        '${draft.timeAgo} • ${context.l10n.draftFieldsFilledCount(draft.fieldCount)}',
+                        // How long the draft is kept, not only when it
+                        // was written (Skarmar v12 etapp 4 #editorutkastval;
+                        // 30 days, ux-beslut.json D-01).
+                        '${draft.timeAgo} · ${context.l10n.draftFieldsFilledCount(draft.fieldCount)} · ${draftTimeLeftLabel(context, draft.timeLeft)}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -169,4 +172,12 @@ extension DraftRecoveryDialogExtension on BuildContext {
   Future<String?> showDraftRecovery(List<DraftMetadata> availableDrafts) {
     return DraftRecoveryDialog.show(this, availableDrafts);
   }
+}
+
+/// "finns kvar i 23 dagar", or hours on the last day: the row says how long
+/// the draft is still kept (Skarmar v12 etapp 4 #editorutkastval).
+String draftTimeLeftLabel(BuildContext context, Duration left) {
+  if (left.inDays >= 1) return context.l10n.draftTimeLeftDays(left.inDays);
+  final hours = left.inHours < 1 ? 1 : left.inHours;
+  return context.l10n.draftTimeLeftHours(hours);
 }

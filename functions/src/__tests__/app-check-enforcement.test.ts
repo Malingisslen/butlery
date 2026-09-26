@@ -59,6 +59,8 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "addChatGroupMembers", // groups/add-chat-group-members.ts — admin-only member add (enforceAppCheck: true)
   "removeChatGroupMember", // groups/remove-chat-group-member.ts — leave / admin removal (enforceAppCheck: true)
   "ensureCategoryChat", // groups/ensure-category-chat.ts — BUT-1856 meal-vote chat reuse (enforceAppCheck: true)
+  "generateMfaBackupCodes", // account/mfa-backup-codes.ts — P6-U09 ten one-time backup codes (enforceAppCheck: true)
+  "recoverWithMfaBackupCode", // account/mfa-backup-codes.ts — P6-U09 sign-in with a backup code (enforceAppCheck: true)
 ]);
 
 /**

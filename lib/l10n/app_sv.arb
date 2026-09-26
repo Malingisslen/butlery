@@ -3050,7 +3050,7 @@
   "consentGdprDescription": "Enligt GDPR har du full kontroll över hur vi behandlar dina personuppgifter. Du kan när som helst ändra eller återkalla dina samtycken.",
   "consentLastUpdated": "Senast uppdaterad",
   "consentRequiredTitle": "Nödvändiga samtycken",
-  "consentRequiredDescription": "Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.",
+  "consentRequiredDescription": "De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen att radera kontot, inte ett reglage här.",
   "consentBasicServices": "Grundläggande tjänster",
   "consentBasicServicesDescription": "Autentisering, säkerhet och grundläggande funktioner.",
   "consentDataProcessing": "Databehandling",
@@ -13356,5 +13356,196 @@
   "shoppingMergeMarkCheckDate": "Kolla datum",
   "@shoppingMergeMarkCheckDate": {
     "description": "P6-U02: row mark (produktregler.md:232)."
-  }
+  },
+  "signOutPendingTitle": "{count, plural, =1{1 ändring har inte sparats} other{{count} ändringar har inte sparats}}",
+  "@signOutPendingTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingBody": "Om du loggar ut nu försvinner de. Butlery väntar gärna tills du har nät igen.",
+  "signOutPendingRecipes": "{count, plural, =1{Recept · 1 ändring} other{Recept · {count} ändringar}}",
+  "@signOutPendingRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingImages": "{count, plural, =1{Bilder · 1 väntar på uppladdning} other{Bilder · {count} väntar på uppladdning}}",
+  "@signOutPendingImages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingWait": "Vänta på synk",
+  "signOutPendingDiscard": "Logga ut och släng ändringarna",
+  "sessionPendingChangesIntro": "{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}",
+  "@sessionPendingChangesIntro": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndedBackgroundTitle": "Du loggades ut medan appen låg still.",
+  "sessionEndedBackgroundReason": "Det händer efter 45 minuter utan aktivitet, och det är meningen.",
+  "sessionEndedBackgroundPending": "{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.}}",
+  "@sessionEndedBackgroundPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftDays": "{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}",
+  "@draftTimeLeftDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftHours": "{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}",
+  "@draftTimeLeftHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileDeleteNoRecallWindow": "Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.",
+  "profileDeleteReasonLabel": "Varför raderar du kontot?",
+  "profileDeleteReasonHint": "Till exempel: använder appen inte längre",
+  "profileDeleteReasonHelp": "Skälet följer med till revisionsraden. Det är det enda spåret som finns efteråt, därför frågar vi före.",
+  "accountDeletionWaitNotice": "Detta kan ta upp till nio minuter. Stäng inte appen — raderingen fortsätter på servern, men du får inget kvitto om du går.",
+  "accountDeletionReauthTitle": "Bekräfta att det är du",
+  "accountDeletionReauthBody": "Av säkerhetsskäl krävs en inloggning som är högst fem minuter gammal för att radera ett konto. Logga in igen, så fortsätter raderingen där den var.",
+  "accountDeletionReauthCancel": "Avbryt raderingen",
+  "accountDeletionReauthConfirm": "Logga in igen",
+  "accountDeletionPartialTitle": "Kontot är raderat delvis",
+  "accountDeletionPartialHeading": "{count, plural, =1{Kontot är borta — en del kvarstår} other{Kontot är borta — {count} delar kvarstår}}",
+  "@accountDeletionPartialHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialBody": "{count, plural, =1{Inloggningen är raderad. En samling gick inte att ta bort och ligger kvar hos oss.} other{Inloggningen är raderad. {count} samlingar gick inte att ta bort och ligger kvar hos oss.}}",
+  "@accountDeletionPartialBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialAuditIdLabel": "Revisions-id",
+  "accountDeletionPartialNoAuditId": "Revisions-id saknas. Nämn datum och tid för raderingen när du kontaktar support.",
+  "accountDeletionPartialContact": "Kontakta support med id",
+  "accountDeletionPartialEmailSubject": "Delvis raderat konto {auditId}",
+  "@accountDeletionPartialEmailSubject": {
+    "placeholders": {
+      "auditId": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionPartialNoEmail": "E-postappen gick inte att öppna. Skriv till integritet@butlery.se och ange revisions-id.",
+  "dataExportMemoryNotice": "Spara filen innan du lämnar sidan. Den ligger bara i telefonens minne — går du tillbaka får du göra om exporten.",
+  "dataExportNetworkTitle": "Exporten avbröts",
+  "dataExportNetworkBody": "Anslutningen bröts medan vi samlade ihop uppgifterna. Ingenting är ändrat på ditt konto.",
+  "dataExportNoPartialFile": "Vi erbjuder ingen halv fil. Den som tar emot dina uppgifter kan inte se vad som saknas i den.",
+  "dataExportSignedOutTitle": "Inloggningen har gått ut",
+  "dataExportSignedOutBody": "Logga in igen för att hämta ut dina uppgifter. Ingenting är ändrat på ditt konto.",
+  "dataExportSignIn": "Logga in igen",
+  "dataExportDeniedTitle": "Exporten nekades",
+  "dataExportDeniedBody": "Felet ligger hos oss, inte hos dig, och ett nytt försök hjälper inte just nu. Ingenting är ändrat på ditt konto.",
+  "dataExportNotNow": "Inte nu",
+  "consentAiProcessing": "AI-tolkning",
+  "consentAiProcessingDescription": "Läser recept ur länkar, text och foto. Utan detta blir importen grövre.",
+  "consentRenewalChangedTitle": "{count, plural, =1{Vi har ändrat en sak} other{Vi har ändrat {count} saker}}",
+  "@consentRenewalChangedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalSinceVersion": "Du sa ja till version {version} den {date}. Det här är nytt sedan dess.",
+  "@consentRenewalSinceVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentRenewalUnchanged": "{count, plural, =1{Övriga ändamål är oförändrade och dina val står kvar.} other{Övriga {count} ändamål är oförändrade och dina val står kvar.}}",
+  "@consentRenewalUnchanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalAccept": "Jag godkänner",
+  "consentRenewalChooseMyself": "Låt mig välja själv",
+  "consentRenewalNotNow": "Inte nu",
+  "consentRenewalNotNowNote": "Väljer du Inte nu fortsätter allt som förut. Ingenting slås av för att du inte svarat.",
+  "consentChangeAiProcessingAddedTitle": "AI-tolkning är ett nytt ändamål",
+  "consentChangeAiProcessingAddedBody": "Läser recept ur länkar, text och foto. Den står av tills du själv slår på den under Låt mig välja själv.",
+  "consentRenewalSaveFailed": "Samtycket kunde inte sparas. Dina tidigare val står kvar.",
+  "signOutDiscardFailed": "Ändringarna kunde inte slängas, så du är fortfarande inloggad.",
+  "mfaChallengeTitle": "Tvåstegsverifiering",
+  "mfaChallengeHeading": "Skriv koden",
+  "mfaChallengeSentTo": "Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
+  "@mfaChallengeSentTo": {
+    "placeholders": {
+      "tail": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaChallengeSentUnknown": "Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
+  "mfaChallengeTimeLeft": "Koden gäller i {total} sekunder. {left} s kvar.",
+  "@mfaChallengeTimeLeft": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "mfaChallengeCodeGone": "Koden har gått ut. Skicka en ny kod.",
+  "mfaChallengeResend": "Skicka en ny kod",
+  "mfaChallengeWrongCode": "Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.",
+  "mfaChallengeExpired": "Koden har gått ut. Skicka en ny kod.",
+  "mfaChallengeFailed": "Inloggningen kunde inte slutföras. Skicka en ny kod.",
+  "mfaBackupCodeUse": "Använd en reservkod",
+  "mfaBackupCodeHeading": "Logga in med en reservkod",
+  "mfaBackupCodeExplanation": "En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.",
+  "mfaBackupCodeLabel": "Reservkod",
+  "mfaBackupCodeEnter": "Skriv en av dina tio reservkoder.",
+  "mfaBackupCodeSubmit": "Logga in med reservkoden",
+  "mfaBackupCodeBack": "Tillbaka till SMS-koden",
+  "mfaBackupCodeRejected": "Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.",
+  "mfaBackupCodeLocked": "För många försök med reservkod. Vänta en timme innan du försöker igen.",
+  "mfaBackupCodeUnavailable": "Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.",
+  "mfaBackupCodeRecovered": "Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.",
+  "mfaBackupCodesTitle": "Tio reservkoder",
+  "mfaBackupCodesBody": "Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.",
+  "mfaBackupCodesCopy": "Kopiera koderna",
+  "mfaBackupCodesCopied": "Koderna är kopierade.",
+  "mfaBackupCodesSaved": "Jag har sparat koderna",
+  "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
+  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat."
 }
