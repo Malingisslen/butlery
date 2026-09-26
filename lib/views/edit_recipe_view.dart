@@ -128,9 +128,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         .orEmpty();
   }
 
+  /// P6-U05: set once the drop to read-only has been handled, so a rebuild
+  /// never offers the copy twice.
+  bool _editAccessLossHandled = false;
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
+    if (viewModel.editAccessLost && !_editAccessLossHandled) {
+      _editAccessLossHandled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onEditAccessLost(viewModel);
+      });
+    }
 
     return PopScope(
       canPop: false,
@@ -722,6 +732,82 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
       }
     }
+  }
+
+  /// P6-U05 (flows-roles-budget.md:83: "öppna redigeringsvyer stängs med
+  /// förklaring, osparat erbjuds som kopia"; :132: the drop takes effect at
+  /// once in open views).
+  ///
+  /// Nothing unsaved: the editor closes and a snackbar says why, with Stäng
+  /// (content-style-guide.md:96-97). Unsaved edits: a dialog that cannot be
+  /// dismissed says why and offers them as the user's own copy, or to discard
+  /// them by name; either way the editor then closes. The copy goes to the
+  /// user's own library ([RecipeFormViewModel.forkRecipe]); nothing is written
+  /// to the shared recipe, whose saves the permission manager now refuses. A
+  /// failed copy says so, keeps the edits, and asks again.
+  Future<void> _onEditAccessLost(RecipeFormViewModel viewModel) async {
+    final l10n = context.l10n;
+    if (!viewModel.hasUnsavedChanges) {
+      // Shown before the pop: the app's messenger carries the snackbar to the
+      // screen underneath.
+      SnackBarUtils.showFailure(context, what: l10n.roleLoweredRecipeClosed);
+      Navigator.of(context).pop();
+      return;
+    }
+    while (mounted) {
+      final keepCopy = await _showRoleLoweredDialog(context);
+      if (!mounted) return;
+      if (keepCopy != true) {
+        Navigator.of(context).pop();
+        return;
+      }
+      final copy = await viewModel.forkRecipe();
+      if (!mounted) return;
+      if (copy != null) {
+        UtilityComponents.showSuccessSnackbar(context, l10n.recipeCopySaved);
+        Navigator.of(context).pop(true);
+        return;
+      }
+      SnackBarUtils.showFailure(
+        context,
+        what: l10n.recipeCopySaveFailed,
+        preserved: l10n.errorPreservedRecipeEdits,
+      );
+    }
+  }
+
+  /// True keeps the edits as a copy, false discards them. It cannot be
+  /// dismissed any other way: the choice is what closes the editor.
+  Future<bool?> _showRoleLoweredDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(context.l10n.roleLoweredRecipeTitle),
+          content: Text(context.l10n.roleLoweredRecipeBody),
+          actions: [
+            KeyedSubtree(
+              key: const ValueKey('role-lowered-discard'),
+              child: ActionButtons.secondaryButton(
+                context,
+                label: context.l10n.roleLoweredDiscard,
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+            ),
+            KeyedSubtree(
+              key: const ValueKey('role-lowered-save-copy'),
+              child: ActionButtons.primaryButton(
+                context,
+                label: context.l10n.roleLoweredSaveCopy,
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Shows confirmation dialog for unsaved changes

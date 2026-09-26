@@ -35,6 +35,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
+import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -327,10 +328,23 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               // it, the two-column choice (produktregler.md:102: own
               // recipe, both versions shown, the choice is the decision),
               // mounted as edit_recipe_view does. Scoped by the recipe's id,
-              // never by position. A shared recipe gets the same banner until
-              // suggestions exist (PQ-02 = A). Collapses when idle.
+              // never by position. On a shared recipe whose edit was kept as a
+              // suggestion the banner says so and opens it (P5-U27b); without
+              // a stored suggestion it keeps the choice (PQ-02 = A).
               SliverToBoxAdapter(
                 child: ConflictBanner(filterDocId: recipe.id),
+              ),
+              // P5-U27b: suggestions to this recipe, for their 7 days
+              // (produktregler.md:103, :241). The owner is found from the
+              // recipe's owner id, never from what the page shows. Collapses
+              // when nothing is kept.
+              SliverToBoxAdapter(
+                child: RecipeSuggestionNotice(
+                  recipeId: recipe.id,
+                  isOwner:
+                      (recipe.socialData?.ownerId ?? recipe.createdBy) ==
+                      ServiceLocator.get<PermissionService>().currentUserId,
+                ),
               ),
               // App bar with recipe title and actions
               // UI Redesign: Hero buttons are solid cream squares with green icons

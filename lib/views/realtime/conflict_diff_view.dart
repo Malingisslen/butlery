@@ -204,7 +204,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       separatorBuilder: (_, __) =>
           const SizedBox(height: AppDimensions.spacingL),
       itemBuilder: (context, index) =>
-          _DiffFieldCard(field: _diff.changedFields[index]),
+          ConflictDiffFieldCard(field: _diff.changedFields[index]),
     );
   }
 
@@ -283,10 +283,21 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
 /// A single changed field, showing the local and remote values stacked with
 /// colour-coded accents (success = my version, warning = collaborator's).
-class _DiffFieldCard extends StatelessWidget {
+///
+/// P5-U27b: also the field card of the suggestion view, which names the two
+/// values "Förslaget" and "Receptet nu" through [localLabel] and
+/// [remoteLabel]. Without them the conflict labels are used.
+class ConflictDiffFieldCard extends StatelessWidget {
   final ConflictFieldDiff field;
+  final String? localLabel;
+  final String? remoteLabel;
 
-  const _DiffFieldCard({required this.field});
+  const ConflictDiffFieldCard({
+    super.key,
+    required this.field,
+    this.localLabel,
+    this.remoteLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +322,7 @@ class _DiffFieldCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _ValueRow(
-            label: context.l10n.conflictDiffLocalLabel,
+            label: localLabel ?? context.l10n.conflictDiffLocalLabel,
             text: field.localText,
             accent: butlery.success,
             background: butlery.success.withValues(
@@ -321,7 +332,7 @@ class _DiffFieldCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _ValueRow(
-            label: context.l10n.conflictDiffRemoteLabel,
+            label: remoteLabel ?? context.l10n.conflictDiffRemoteLabel,
             text: field.remoteText,
             accent: butlery.warning,
             background: butlery.warning.withValues(

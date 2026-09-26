@@ -86,6 +86,7 @@ import 'dart:io';
 
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
+import 'package:butlery/models/recipe_suggestion.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
@@ -141,6 +142,14 @@ const _allowlists = <_Allowlist>[
     writer:
         'lib/models/realtime/overwritten_version.dart OverwrittenVersion.toFirestore, '
         'stored by FirebaseOverwrittenVersionRepository (P5-U26b)',
+  ),
+  _Allowlist(
+    label: 'recipe_suggestions',
+    mustContain: 'suggesterName',
+    anchor: 'match /recipe_suggestions/{suggestionId}',
+    writer:
+        'lib/models/recipe_suggestion.dart RecipeSuggestion.toFirestore, '
+        'stored by FirebaseRecipeSuggestionRepository.suggest (P5-U27b)',
   ),
   _Allowlist(
     label: 'users/{uid}/counters',
@@ -324,6 +333,18 @@ Map<String, Set<String>> _writtenKeys() => {
     overwrittenByName: 'O',
     overwrittenAt: DateTime.utc(2026),
     expiresAt: DateTime.utc(2026, 1, 31),
+  ).toFirestore().keys.toSet(),
+  // P5-U27b. Derived from the model, so a new field in toFirestore reddens
+  // here. The owner's decision is an `affectedKeys().hasOnly` diff
+  // (status, decidedAt), not a payload, so it is counted in the census below
+  // and not compared here.
+  'recipe_suggestions': RecipeSuggestion.create(
+    recipeId: 'r',
+    ownerId: 'o',
+    suggesterId: 's',
+    suggesterName: 'S',
+    suggestion: const <String, dynamic>{},
+    at: DateTime.utc(2026),
   ).toFirestore().keys.toSet(),
   'users/{uid}/counters': {
     for (final type in const [
@@ -773,9 +794,13 @@ void main() {
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     // P5-U26b added users/{uid}/overwritten_versions (keys().hasOnly on create),
     // guarded above in _allowlists.
+    // P5-U27b added recipe_suggestions: one keys().hasOnly on create (guarded
+    // above in _allowlists, writer RecipeSuggestion.toFirestore) and one
+    // affectedKeys().hasOnly(['status', 'decidedAt']) on the owner's decision,
+    // a diff restriction and so outside this guard's payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      41,
+      43,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

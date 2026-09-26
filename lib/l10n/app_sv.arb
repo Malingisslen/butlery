@@ -12191,9 +12191,9 @@
       }
     }
   },
-  "deepLinkExpired": "Länken har gått ut och kan inte längre öppnas.",
+  "deepLinkExpired": "Länken gäller inte längre. Be den som delade om en ny.",
   "@deepLinkExpired": {
-    "description": "Butler-voice snackbar shown when a shared recipe/menu/shopping deep link is older than 7 days and is dropped (BUT-1587)"
+    "description": "Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143)."
   },
   "deepLinkUnavailable": "Innehållet är inte längre tillgängligt.",
   "@deepLinkUnavailable": {
@@ -13547,5 +13547,201 @@
   "mfaBackupCodesCopied": "Koderna är kopierade.",
   "mfaBackupCodesSaved": "Jag har sparat koderna",
   "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
-  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat."
+  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.",
+  "roleLoweredRecipeTitle": "Du kan inte längre redigera receptet",
+  "@roleLoweredRecipeTitle": {
+    "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
+  },
+  "roleLoweredRecipeBody": "Din behörighet är ändrad till Endast läsa, så ändringarna sparas inte i receptet. Du kan spara dem som en egen kopia.",
+  "@roleLoweredRecipeBody": {
+    "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
+  },
+  "roleLoweredSaveCopy": "Spara som egen kopia",
+  "@roleLoweredSaveCopy": {
+    "description": "P6-U05: dialog action that saves the unsaved edits as the user's own recipe."
+  },
+  "roleLoweredDiscard": "Släng ändringarna",
+  "@roleLoweredDiscard": {
+    "description": "P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md)."
+  },
+  "roleLoweredRecipeClosed": "Du kan inte längre redigera receptet. Din behörighet är ändrad till Endast läsa.",
+  "@roleLoweredRecipeClosed": {
+    "description": "P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved."
+  },
+  "roleLoweredShoppingList": "Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa.",
+  "@roleLoweredShoppingList": {
+    "description": "P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open."
+  },
+  "roleLoweredShoppingUnsaved": "Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa. Det du skrev lades inte till: {text}",
+  "@roleLoweredShoppingUnsaved": {
+    "description": "P6-U05: snackbar when the role drops while an item was typed but not added; text = what was typed.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "roleLoweredCopyText": "Kopiera texten",
+  "@roleLoweredCopyText": {
+    "description": "P6-U05: snackbar action that copies the typed, unadded item text."
+  },
+  "roleLoweredTextCopied": "Texten är kopierad.",
+  "@roleLoweredTextCopied": {
+    "description": "P6-U05: confirmation after the typed item text was copied."
+  },
+  "roleLoweredGroupMenu": "Du kan inte längre ändra gruppens meny. Din behörighet är ändrad till Endast läsa.",
+  "@roleLoweredGroupMenu": {
+    "description": "P6-U05: notice when the role on the group week menu drops to read-only while it is open."
+  },
+  "conflictBannerTitleSuggestion": "Ägarens version gäller",
+  "@conflictBannerTitleSuggestion": {
+    "description": "P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103)."
+  },
+  "conflictBannerBodySuggestion": "{name} ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
+  "@conflictBannerBodySuggestion": {
+    "description": "P5-U27b: conflict banner body; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionUnnamed": "Ägaren ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
+  "@conflictBannerBodySuggestionUnnamed": {
+    "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
+  },
+  "recipeSuggestionSeeMine": "Se ditt förslag",
+  "@recipeSuggestionSeeMine": {
+    "description": "P5-U27b: banner action, verbatim from produktregler.md:103."
+  },
+  "recipeSuggestionSee": "Se förslaget",
+  "@recipeSuggestionSee": {
+    "description": "P5-U27b: the owner's action that opens a suggestion made to their recipe."
+  },
+  "recipeSuggestionFromOne": "{name} föreslår en ändring i receptet.",
+  "@recipeSuggestionFromOne": {
+    "description": "P5-U27b: owner's notice in recipe detail; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUnnamed": "En medlem föreslår en ändring i receptet.",
+  "@recipeSuggestionFromOneUnnamed": {
+    "description": "P5-U27b: owner's notice when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromMany": "{count} förslag på ändringar väntar på dig.",
+  "@recipeSuggestionFromMany": {
+    "description": "P5-U27b: owner's notice when more than one suggestion waits; count >= 2.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionMinePending": "Ditt förslag väntar på ägaren. Det sparas till {date}.",
+  "@recipeSuggestionMinePending": {
+    "description": "P5-U27b: suggester's notice in recipe detail; date = when the 7 days end, written as content-style-guide.md:25.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionMineAccepted": "Ägaren tog in ditt förslag i receptet.",
+  "@recipeSuggestionMineAccepted": {
+    "description": "P5-U27b: suggester's notice after the owner accepted."
+  },
+  "recipeSuggestionMineDismissed": "Ägaren avvisade ditt förslag. Det sparas till {date}.",
+  "@recipeSuggestionMineDismissed": {
+    "description": "P5-U27b: suggester's notice after the owner dismissed; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionTitle": "Förslag till ändring",
+  "@recipeSuggestionTitle": {
+    "description": "P5-U27b: title of the view that shows one suggestion."
+  },
+  "recipeSuggestionIntroOwner": "{name} föreslår det här. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroOwner": {
+    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMine": "Det här föreslog du. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroMine": {
+    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionSuggestedLabel": "Förslaget",
+  "@recipeSuggestionSuggestedLabel": {
+    "description": "P5-U27b: label over the suggested value of a field."
+  },
+  "recipeSuggestionCurrentLabel": "Receptet nu",
+  "@recipeSuggestionCurrentLabel": {
+    "description": "P5-U27b: label over the recipe's current value of a field."
+  },
+  "recipeSuggestionAccept": "Använd förslaget",
+  "@recipeSuggestionAccept": {
+    "description": "P5-U27b: the owner accepts the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionDismiss": "Avvisa förslaget",
+  "@recipeSuggestionDismiss": {
+    "description": "P5-U27b: the owner dismisses the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionAccepted": "Förslaget är nu en del av receptet.",
+  "@recipeSuggestionAccepted": {
+    "description": "P5-U27b: confirmation after the owner accepted."
+  },
+  "recipeSuggestionDismissed": "Förslaget är avvisat. Receptet är oförändrat.",
+  "@recipeSuggestionDismissed": {
+    "description": "P5-U27b: confirmation after the owner dismissed."
+  },
+  "recipeSuggestionAcceptFailed": "Förslaget kunde inte tas in i receptet.",
+  "@recipeSuggestionAcceptFailed": {
+    "description": "P5-U27b: what did not happen when accepting failed (content-style-guide.md:87-97)."
+  },
+  "recipeSuggestionDismissFailed": "Förslaget kunde inte avvisas.",
+  "@recipeSuggestionDismissFailed": {
+    "description": "P5-U27b: what did not happen when dismissing failed."
+  },
+  "recipeSuggestionKeptUntil": "Förslaget finns kvar till {date}.",
+  "@recipeSuggestionKeptUntil": {
+    "description": "P5-U27b: what was kept, after a failed decision; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionRecipeGone": "Receptet finns inte längre, så förslaget kan inte tas in.",
+  "@recipeSuggestionRecipeGone": {
+    "description": "P5-U27b: the recipe was deleted or unshared; nothing to accept into."
+  },
+  "recipeSuggestionLoadFailed": "Förslaget kunde inte jämföras med receptet. Kontrollera anslutningen.",
+  "@recipeSuggestionLoadFailed": {
+    "description": "P5-U27b: the view could not read the current recipe; offered with Försök igen."
+  },
+  "recipeSuggestionNoChanges": "Förslaget är likadant som receptet nu.",
+  "@recipeSuggestionNoChanges": {
+    "description": "P5-U27b: the suggestion changes nothing against the current recipe."
+  },
+  "recipeSuggestionLoading": "Hämtar förslaget …",
+  "@recipeSuggestionLoading": {
+    "description": "P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63)."
+  }
 }

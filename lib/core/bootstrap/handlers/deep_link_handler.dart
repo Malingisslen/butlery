@@ -151,6 +151,11 @@ class DeepLinkHandler {
   /// Replaces this handler's previous silent-return convention for those two
   /// user-facing dead ends. Uses [ScaffoldMessenger.maybeOf] so a missing
   /// messenger ancestor degrades to the old silent behaviour instead of throwing.
+  ///
+  /// P6-U05: the notice carries no action. PQ-13 = A (2026-09-23): the app has
+  /// no way to ask for a new link, and it never offers what it cannot do
+  /// (produktregler.md:535), so the text itself says who to ask. The request
+  /// button is BUT-2143.
   void _showDeepLinkNotice(BuildContext context, String message) {
     if (!context.mounted) return;
     ScaffoldMessenger.maybeOf(
@@ -313,8 +318,10 @@ class DeepLinkHandler {
           arguments: recipe,
         );
       } else {
-        // Link is valid but the recipe is gone or not shared with this user.
-        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
+        // The recipe is gone or no longer shared with this user: to them the
+        // link was revoked (flows-roles-budget.md:80, "Länken gäller inte
+        // längre"). PQ-13 = A: no request button; the text says who to ask.
+        _showDeepLinkNotice(context, context.l10n.deepLinkExpired);
       }
     }
   }
@@ -336,8 +343,9 @@ class DeepLinkHandler {
       if (menu != null) {
         Navigator.of(context).pushNamed(Routes.menuPreview, arguments: menu);
       } else {
-        // Link is valid but the shared menu is gone or no longer accessible.
-        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
+        // The shared menu is gone or no longer accessible: a revoked link, as
+        // for a recipe above (flows-roles-budget.md:80; PQ-13 = A).
+        _showDeepLinkNotice(context, context.l10n.deepLinkExpired);
       }
     }
   }

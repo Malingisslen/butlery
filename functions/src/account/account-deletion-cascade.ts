@@ -578,6 +578,11 @@ export async function probeResidualData(
     // above `MAX_BLOCK_SWEEP_ROWS` and deleted nothing at all.
     [Collections.blocks, "blockerId", "=="],
     [Collections.blocks, "blockedId", "=="],
+    // P5-U27b: recipe suggestions name two people and go with either account,
+    // so both legs of `deleteRecipeSuggestions` are probed. Uncapped, so they
+    // still fire when the sweep DECLINED above its cap and deleted nothing.
+    ["recipe_suggestions", "suggesterId", "=="],
+    ["recipe_suggestions", "ownerId", "=="],
     // BUT-1971: the group weekly menu scrubs membership, per-dish provenance
     // and the edit trail in ONE `batch.update` under `strict: false`, which
     // returns `true` on a failed chunk. The provenance fields are arrays of
@@ -1564,6 +1569,58 @@ export async function deleteIngredientSuggestions(
     return false;
   }
   await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
+/**
+ * Hard ceiling for [deleteRecipeSuggestions], per leg. A suggestion is kept 7
+ * days and deleted by TTL after that, so a person holds at most what they
+ * suggested, or were suggested, in one week; above this the sweep declines.
+ *
+ * Exported so its scenario can import it rather than retype the number.
+ */
+export const MAX_RECIPE_SUGGESTION_SWEEP_ROWS = 2000;
+
+/**
+ * P5-U27b: suggestions to someone else's shared recipe
+ * (`recipe_suggestions`, produktregler.md:103, :241).
+ *
+ * A row names TWO people, the suggester (`suggesterId`) and the recipe's owner
+ * (`ownerId`), and it is deleted with EITHER account: the suggester's change is
+ * their content, and a suggestion to a recipe whose owner is gone has nobody
+ * to decide it. So both legs run, and both ship with a probe leg in
+ * `probeResidualData`. Declines above [MAX_RECIPE_SUGGESTION_SWEEP_ROWS] on
+ * either leg rather than truncating, like [deleteIngredientSuggestions], and
+ * then deletes nothing at all.
+ */
+export async function deleteRecipeSuggestions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const legs = await Promise.all(
+    (["suggesterId", "ownerId"] as const).map((field) =>
+      db
+        .collection("recipe_suggestions")
+        .where(field, "==", uid)
+        .limit(MAX_RECIPE_SUGGESTION_SWEEP_ROWS + 1)
+        .get(),
+    ),
+  );
+  if (legs.some((snap) => snap.size > MAX_RECIPE_SUGGESTION_SWEEP_ROWS)) {
+    logger.error(
+      "[deletion-cascade] implausible recipe-suggestion count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: legs.map((s) => s.size) },
+    );
+    return false;
+  }
+  // A row the user both suggested and owns cannot exist (the create rule
+  // refuses a suggestion to one's own recipe), but de-duplicate by path anyway
+  // so a batch never deletes the same document twice.
+  const byPath = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+  for (const snap of legs) {
+    for (const doc of snap.docs) byPath.set(doc.ref.path, doc);
+  }
+  await batchDeleteAll(db, [...byPath.values()]);
   return true;
 }
 

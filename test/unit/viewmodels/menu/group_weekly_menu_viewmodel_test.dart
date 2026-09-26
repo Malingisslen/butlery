@@ -973,6 +973,9 @@ void main() {
       when(() => hostile.entries).thenReturn(const []);
       when(() => hostile.participantUserIds).thenReturn(const []);
       when(() => hostile.participants).thenReturn(const []);
+      // P6-U05: the live update compares the week and the user's role.
+      when(() => hostile.id).thenReturn(loaded.id);
+      when(() => hostile.canEdit(any())).thenReturn(true);
       when(
         () => hostile.copyWith(entries: any(named: 'entries')),
       ).thenThrow(StateError('cannot copy'));
@@ -1406,6 +1409,32 @@ void main() {
 
       await vm.goToPreviousWeek();
       expect(vm.weekStart, start);
+    });
+  });
+
+  // P6-U05 (flows-roles-budget.md:83, :132): the live week drops this user
+  // to read-only. The controls follow canEdit; the notice says why.
+  group('role lowered while open (P6-U05)', () {
+    test('editor to read-only on the same week raises the notice', () async {
+      stubRead(_plan());
+      await vm.loadWeek(_week);
+      expect(vm.canEdit, isTrue);
+
+      stream.add(_plan(permission: SharedListPermission.view));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(vm.canEdit, isFalse);
+      expect(vm.editNotice, GroupMenuEditProblem.roleLowered);
+    });
+
+    test('a week that was read-only from the start raises nothing', () async {
+      stubRead(_plan(permission: SharedListPermission.view));
+      await vm.loadWeek(_week);
+
+      stream.add(_plan(permission: SharedListPermission.view));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(vm.editNotice, GroupMenuEditProblem.none);
     });
   });
 }

@@ -26,6 +26,11 @@ enum GroupMenuEditProblem {
   saveFailed,
   undoUnavailable,
   undoFailed,
+
+  /// P6-U05: the user's role dropped to read-only while the week was open
+  /// (flows-roles-budget.md:83, :132). Not a failed edit: the notice says why
+  /// the edit controls just went away.
+  roleLowered,
 }
 
 /// Why the screen cannot show the week.
@@ -189,6 +194,16 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
       date: _weekStart,
       onUpdate: (incoming) {
         if (isDisposed) return;
+        // P6-U05: the same week, seen live, where this user could edit a
+        // moment ago and no longer can. The controls follow canEdit; this
+        // says why they went.
+        final couldEdit = canEdit;
+        if (couldEdit &&
+            incoming != null &&
+            incoming.id == _plan?.id &&
+            !incoming.canEdit(currentUserId)) {
+          _editNotice = GroupMenuEditProblem.roleLowered;
+        }
         _plan = incoming;
         _failure = GroupMenuFailure.none;
         notifyListeners();

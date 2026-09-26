@@ -12072,7 +12072,7 @@
       }
     }
   },
-  "deepLinkExpired": "This link has expired and can no longer be opened.",
+  "deepLinkExpired": "This link is no longer valid. Ask the person who shared it for a new one.",
   "deepLinkUnavailable": "This content is no longer available.",
   "familyDislikesSectionTitle": "disliked ingredients",
   "familyDislikesNote": "Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies.",
@@ -13228,5 +13228,201 @@
   "mfaBackupCodesCopied": "The codes are copied.",
   "mfaBackupCodesSaved": "I have saved the codes",
   "mfaBackupCodesContinue": "Continue to the phone number",
-  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed."
+  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.",
+  "roleLoweredRecipeTitle": "You can no longer edit the recipe",
+  "@roleLoweredRecipeTitle": {
+    "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
+  },
+  "roleLoweredRecipeBody": "Your permission was changed to read-only, so the changes are not saved to the recipe. You can save them as your own copy.",
+  "@roleLoweredRecipeBody": {
+    "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
+  },
+  "roleLoweredSaveCopy": "Save as your own copy",
+  "@roleLoweredSaveCopy": {
+    "description": "P6-U05: dialog action that saves the unsaved edits as the user's own recipe."
+  },
+  "roleLoweredDiscard": "Discard the changes",
+  "@roleLoweredDiscard": {
+    "description": "P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md)."
+  },
+  "roleLoweredRecipeClosed": "You can no longer edit the recipe. Your permission was changed to read-only.",
+  "@roleLoweredRecipeClosed": {
+    "description": "P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved."
+  },
+  "roleLoweredShoppingList": "You can no longer change the list. Your permission was changed to read-only.",
+  "@roleLoweredShoppingList": {
+    "description": "P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open."
+  },
+  "roleLoweredShoppingUnsaved": "You can no longer change the list. Your permission was changed to read-only. What you typed was not added: {text}",
+  "@roleLoweredShoppingUnsaved": {
+    "description": "P6-U05: snackbar when the role drops while an item was typed but not added; text = what was typed.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "roleLoweredCopyText": "Copy the text",
+  "@roleLoweredCopyText": {
+    "description": "P6-U05: snackbar action that copies the typed, unadded item text."
+  },
+  "roleLoweredTextCopied": "The text is copied.",
+  "@roleLoweredTextCopied": {
+    "description": "P6-U05: confirmation after the typed item text was copied."
+  },
+  "roleLoweredGroupMenu": "You can no longer change the group's menu. Your permission was changed to read-only.",
+  "@roleLoweredGroupMenu": {
+    "description": "P6-U05: notice when the role on the group week menu drops to read-only while it is open."
+  },
+  "conflictBannerTitleSuggestion": "The owner's version stays",
+  "@conflictBannerTitleSuggestion": {
+    "description": "P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103)."
+  },
+  "conflictBannerBodySuggestion": "{name} changed it at the same time. Your change is kept as a suggestion for 7 days.",
+  "@conflictBannerBodySuggestion": {
+    "description": "P5-U27b: conflict banner body; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionUnnamed": "The owner changed it at the same time. Your change is kept as a suggestion for 7 days.",
+  "@conflictBannerBodySuggestionUnnamed": {
+    "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
+  },
+  "recipeSuggestionSeeMine": "See your suggestion",
+  "@recipeSuggestionSeeMine": {
+    "description": "P5-U27b: banner action, verbatim from produktregler.md:103."
+  },
+  "recipeSuggestionSee": "See the suggestion",
+  "@recipeSuggestionSee": {
+    "description": "P5-U27b: the owner's action that opens a suggestion made to their recipe."
+  },
+  "recipeSuggestionFromOne": "{name} suggests a change to the recipe.",
+  "@recipeSuggestionFromOne": {
+    "description": "P5-U27b: owner's notice in recipe detail; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUnnamed": "A member suggests a change to the recipe.",
+  "@recipeSuggestionFromOneUnnamed": {
+    "description": "P5-U27b: owner's notice when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromMany": "{count} suggested changes are waiting for you.",
+  "@recipeSuggestionFromMany": {
+    "description": "P5-U27b: owner's notice when more than one suggestion waits; count >= 2.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionMinePending": "Your suggestion is waiting for the owner. It is kept until {date}.",
+  "@recipeSuggestionMinePending": {
+    "description": "P5-U27b: suggester's notice in recipe detail; date = when the 7 days end, written as content-style-guide.md:25.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionMineAccepted": "The owner took your suggestion into the recipe.",
+  "@recipeSuggestionMineAccepted": {
+    "description": "P5-U27b: suggester's notice after the owner accepted."
+  },
+  "recipeSuggestionMineDismissed": "The owner dismissed your suggestion. It is kept until {date}.",
+  "@recipeSuggestionMineDismissed": {
+    "description": "P5-U27b: suggester's notice after the owner dismissed; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionTitle": "Suggested change",
+  "@recipeSuggestionTitle": {
+    "description": "P5-U27b: title of the view that shows one suggestion."
+  },
+  "recipeSuggestionIntroOwner": "{name} suggests this. The suggestion is kept until {date}.",
+  "@recipeSuggestionIntroOwner": {
+    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMine": "You suggested this. The suggestion is kept until {date}.",
+  "@recipeSuggestionIntroMine": {
+    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionSuggestedLabel": "Suggestion",
+  "@recipeSuggestionSuggestedLabel": {
+    "description": "P5-U27b: label over the suggested value of a field."
+  },
+  "recipeSuggestionCurrentLabel": "Recipe now",
+  "@recipeSuggestionCurrentLabel": {
+    "description": "P5-U27b: label over the recipe's current value of a field."
+  },
+  "recipeSuggestionAccept": "Use the suggestion",
+  "@recipeSuggestionAccept": {
+    "description": "P5-U27b: the owner accepts the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionDismiss": "Dismiss the suggestion",
+  "@recipeSuggestionDismiss": {
+    "description": "P5-U27b: the owner dismisses the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionAccepted": "The suggestion is now part of the recipe.",
+  "@recipeSuggestionAccepted": {
+    "description": "P5-U27b: confirmation after the owner accepted."
+  },
+  "recipeSuggestionDismissed": "The suggestion is dismissed. The recipe is unchanged.",
+  "@recipeSuggestionDismissed": {
+    "description": "P5-U27b: confirmation after the owner dismissed."
+  },
+  "recipeSuggestionAcceptFailed": "The suggestion could not be taken into the recipe.",
+  "@recipeSuggestionAcceptFailed": {
+    "description": "P5-U27b: what did not happen when accepting failed (content-style-guide.md:87-97)."
+  },
+  "recipeSuggestionDismissFailed": "The suggestion could not be dismissed.",
+  "@recipeSuggestionDismissFailed": {
+    "description": "P5-U27b: what did not happen when dismissing failed."
+  },
+  "recipeSuggestionKeptUntil": "The suggestion is kept until {date}.",
+  "@recipeSuggestionKeptUntil": {
+    "description": "P5-U27b: what was kept, after a failed decision; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionRecipeGone": "The recipe no longer exists, so the suggestion cannot be taken in.",
+  "@recipeSuggestionRecipeGone": {
+    "description": "P5-U27b: the recipe was deleted or unshared; nothing to accept into."
+  },
+  "recipeSuggestionLoadFailed": "The suggestion could not be compared with the recipe. Check the connection.",
+  "@recipeSuggestionLoadFailed": {
+    "description": "P5-U27b: the view could not read the current recipe; offered with Försök igen."
+  },
+  "recipeSuggestionNoChanges": "The suggestion is the same as the recipe now.",
+  "@recipeSuggestionNoChanges": {
+    "description": "P5-U27b: the suggestion changes nothing against the current recipe."
+  },
+  "recipeSuggestionLoading": "Loading the suggestion …",
+  "@recipeSuggestionLoading": {
+    "description": "P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63)."
+  }
 }

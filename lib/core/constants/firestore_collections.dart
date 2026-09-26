@@ -138,6 +138,10 @@ abstract final class FirestoreCollections {
   // P5-U26b: a user's own versions that another person's save overwrote,
   // kept 30 days behind "Återställ" (produktregler.md:109). Owner-only.
   static const String overwrittenVersions = 'overwritten_versions';
+  // P5-U27b: a change to someone else's shared recipe, kept 7 days as a
+  // suggestion the owner accepts or dismisses (produktregler.md:103, :241).
+  // Top-level: the suggester and the owner both read it.
+  static const String recipeSuggestions = 'recipe_suggestions';
   static const String userSharedMenus = 'user_shared_menus';
   static const String userSharedShoppingLists = 'user_shared_shopping_lists';
   static const String categoryPreferences = 'category_preferences';

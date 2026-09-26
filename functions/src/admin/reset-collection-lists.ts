@@ -219,6 +219,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // A member's shared allergen list (BUT-1693). The cascade reaches it too
   // (`deleteHouseholdAllergenShares`, with a probe leg).
   { name: "household_allergen_shares" },
+  // Suggestions to someone else's shared recipe (P5-U27b), 7 days under TTL.
+  // The cascade reaches both people on a row (`deleteRecipeSuggestions`, with
+  // two probe legs).
+  { name: "recipe_suggestions" },
   // Captured model input and output for QA. Both are PII-scrubbed at capture
   // and the uid is stored as `authUidHash`, never raw — so the ground for
   // deleting these is not that they are personal data but that they are a

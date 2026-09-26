@@ -188,11 +188,23 @@ const TARGETS: {
     writer: "lib/models/realtime/overwritten_version.dart",
     stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
   },
+  // P5-U27b — a change to someone else's shared recipe, kept 7 days as a
+  // suggestion (produktregler.md:103). One writer: the model's `toFirestore`,
+  // which RealtimeSyncService stores through the repository. firestore.rules
+  // pins expiresAt to createdAt + 7 d on create.
+  {
+    group: "recipe_suggestions",
+    field: "expiresAt",
+    retention: "7d",
+    writer: "lib/models/recipe_suggestion.dart",
+    stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
+  },
 ];
 
 /**
  * Every TTL policy declared today: 13 pre-existing + 2 (BUT-1699) + 4 (BUT-1792)
- * + 1 (BUT-2046, `report_history`) + 1 (P5-U26b, `overwritten_versions`).
+ * + 1 (BUT-2046, `report_history`) + 1 (P5-U26b, `overwritten_versions`)
+ * + 1 (P5-U27b, `recipe_suggestions`).
  *
  * The SET, not just the count. A count catches a `--force` prune (net loss),
  * which is the main threat — but it stays green when one entry is deleted and
@@ -227,6 +239,7 @@ const EXPECTED_TTL_GROUPS = [
   "report_history",
   "report_processing_markers",
   "rate_limits",
+  "recipe_suggestions",
   "scheduled_notifications",
   "system_ip_audit_caps",
   "views",

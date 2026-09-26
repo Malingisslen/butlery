@@ -139,6 +139,21 @@ class ConflictResolutionModule {
     }
   }
 
+  /// P5-U27b: announces a conflict settled outside [resolveConflict]: on
+  /// someone else's shared recipe the owner's version wins and the losing edit
+  /// is kept as the suggestion [suggestionId] (produktregler.md:103).
+  void announceSuggestion<T extends RealtimeResource>(
+    T local,
+    T remote, {
+    required String suggestionId,
+  }) => _emitConflict(
+    local,
+    remote,
+    ConflictResolutionStrategy.remoteWon,
+    ConflictEntity.recipeShared,
+    suggestionId: suggestionId,
+  );
+
   /// Hands one [ConflictEvent] to [onConflict]. A sink that throws is logged
   /// and contained here, so a broken listener can neither flip the resolver's
   /// choice nor cause a second emission from the error branch.
@@ -146,8 +161,9 @@ class ConflictResolutionModule {
     T local,
     T remote,
     ConflictResolutionStrategy strategy,
-    ConflictEntity entity,
-  ) {
+    ConflictEntity entity, {
+    String? suggestionId,
+  }) {
     final sink = onConflict;
     if (sink == null) return;
     try {
@@ -160,6 +176,7 @@ class ConflictResolutionModule {
           chosenStrategy: strategy,
           entity: entity,
           occurredAt: clock.now(),
+          suggestionId: suggestionId,
         ),
       );
     } catch (e) {

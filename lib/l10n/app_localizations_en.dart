@@ -16425,7 +16425,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deepLinkExpired =>
-      'This link has expired and can no longer be opened.';
+      'This link is no longer valid. Ask the person who shared it for a new one.';
 
   @override
   String get deepLinkUnavailable => 'This content is no longer available.';
@@ -17811,4 +17811,147 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mfaBackupCodesFailed =>
       'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
+
+  @override
+  String get roleLoweredRecipeTitle => 'You can no longer edit the recipe';
+
+  @override
+  String get roleLoweredRecipeBody =>
+      'Your permission was changed to read-only, so the changes are not saved to the recipe. You can save them as your own copy.';
+
+  @override
+  String get roleLoweredSaveCopy => 'Save as your own copy';
+
+  @override
+  String get roleLoweredDiscard => 'Discard the changes';
+
+  @override
+  String get roleLoweredRecipeClosed =>
+      'You can no longer edit the recipe. Your permission was changed to read-only.';
+
+  @override
+  String get roleLoweredShoppingList =>
+      'You can no longer change the list. Your permission was changed to read-only.';
+
+  @override
+  String roleLoweredShoppingUnsaved(String text) {
+    return 'You can no longer change the list. Your permission was changed to read-only. What you typed was not added: $text';
+  }
+
+  @override
+  String get roleLoweredCopyText => 'Copy the text';
+
+  @override
+  String get roleLoweredTextCopied => 'The text is copied.';
+
+  @override
+  String get roleLoweredGroupMenu =>
+      'You can no longer change the group\'s menu. Your permission was changed to read-only.';
+
+  @override
+  String get conflictBannerTitleSuggestion => 'The owner\'s version stays';
+
+  @override
+  String conflictBannerBodySuggestion(String name) {
+    return '$name changed it at the same time. Your change is kept as a suggestion for 7 days.';
+  }
+
+  @override
+  String get conflictBannerBodySuggestionUnnamed =>
+      'The owner changed it at the same time. Your change is kept as a suggestion for 7 days.';
+
+  @override
+  String get recipeSuggestionSeeMine => 'See your suggestion';
+
+  @override
+  String get recipeSuggestionSee => 'See the suggestion';
+
+  @override
+  String recipeSuggestionFromOne(String name) {
+    return '$name suggests a change to the recipe.';
+  }
+
+  @override
+  String get recipeSuggestionFromOneUnnamed =>
+      'A member suggests a change to the recipe.';
+
+  @override
+  String recipeSuggestionFromMany(int count) {
+    return '$count suggested changes are waiting for you.';
+  }
+
+  @override
+  String recipeSuggestionMinePending(String date) {
+    return 'Your suggestion is waiting for the owner. It is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionMineAccepted =>
+      'The owner took your suggestion into the recipe.';
+
+  @override
+  String recipeSuggestionMineDismissed(String date) {
+    return 'The owner dismissed your suggestion. It is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionTitle => 'Suggested change';
+
+  @override
+  String recipeSuggestionIntroOwner(String name, String date) {
+    return '$name suggests this. The suggestion is kept until $date.';
+  }
+
+  @override
+  String recipeSuggestionIntroMine(String date) {
+    return 'You suggested this. The suggestion is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionSuggestedLabel => 'Suggestion';
+
+  @override
+  String get recipeSuggestionCurrentLabel => 'Recipe now';
+
+  @override
+  String get recipeSuggestionAccept => 'Use the suggestion';
+
+  @override
+  String get recipeSuggestionDismiss => 'Dismiss the suggestion';
+
+  @override
+  String get recipeSuggestionAccepted =>
+      'The suggestion is now part of the recipe.';
+
+  @override
+  String get recipeSuggestionDismissed =>
+      'The suggestion is dismissed. The recipe is unchanged.';
+
+  @override
+  String get recipeSuggestionAcceptFailed =>
+      'The suggestion could not be taken into the recipe.';
+
+  @override
+  String get recipeSuggestionDismissFailed =>
+      'The suggestion could not be dismissed.';
+
+  @override
+  String recipeSuggestionKeptUntil(String date) {
+    return 'The suggestion is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionRecipeGone =>
+      'The recipe no longer exists, so the suggestion cannot be taken in.';
+
+  @override
+  String get recipeSuggestionLoadFailed =>
+      'The suggestion could not be compared with the recipe. Check the connection.';
+
+  @override
+  String get recipeSuggestionNoChanges =>
+      'The suggestion is the same as the recipe now.';
+
+  @override
+  String get recipeSuggestionLoading => 'Loading the suggestion …';
 }

@@ -16462,7 +16462,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get deepLinkExpired =>
-      'Länken har gått ut och kan inte längre öppnas.';
+      'Länken gäller inte längre. Be den som delade om en ny.';
 
   @override
   String get deepLinkUnavailable => 'Innehållet är inte längre tillgängligt.';
@@ -17847,4 +17847,145 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get mfaBackupCodesFailed =>
       'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.';
+
+  @override
+  String get roleLoweredRecipeTitle => 'Du kan inte längre redigera receptet';
+
+  @override
+  String get roleLoweredRecipeBody =>
+      'Din behörighet är ändrad till Endast läsa, så ändringarna sparas inte i receptet. Du kan spara dem som en egen kopia.';
+
+  @override
+  String get roleLoweredSaveCopy => 'Spara som egen kopia';
+
+  @override
+  String get roleLoweredDiscard => 'Släng ändringarna';
+
+  @override
+  String get roleLoweredRecipeClosed =>
+      'Du kan inte längre redigera receptet. Din behörighet är ändrad till Endast läsa.';
+
+  @override
+  String get roleLoweredShoppingList =>
+      'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa.';
+
+  @override
+  String roleLoweredShoppingUnsaved(String text) {
+    return 'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa. Det du skrev lades inte till: $text';
+  }
+
+  @override
+  String get roleLoweredCopyText => 'Kopiera texten';
+
+  @override
+  String get roleLoweredTextCopied => 'Texten är kopierad.';
+
+  @override
+  String get roleLoweredGroupMenu =>
+      'Du kan inte längre ändra gruppens meny. Din behörighet är ändrad till Endast läsa.';
+
+  @override
+  String get conflictBannerTitleSuggestion => 'Ägarens version gäller';
+
+  @override
+  String conflictBannerBodySuggestion(String name) {
+    return '$name ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.';
+  }
+
+  @override
+  String get conflictBannerBodySuggestionUnnamed =>
+      'Ägaren ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.';
+
+  @override
+  String get recipeSuggestionSeeMine => 'Se ditt förslag';
+
+  @override
+  String get recipeSuggestionSee => 'Se förslaget';
+
+  @override
+  String recipeSuggestionFromOne(String name) {
+    return '$name föreslår en ändring i receptet.';
+  }
+
+  @override
+  String get recipeSuggestionFromOneUnnamed =>
+      'En medlem föreslår en ändring i receptet.';
+
+  @override
+  String recipeSuggestionFromMany(int count) {
+    return '$count förslag på ändringar väntar på dig.';
+  }
+
+  @override
+  String recipeSuggestionMinePending(String date) {
+    return 'Ditt förslag väntar på ägaren. Det sparas till $date.';
+  }
+
+  @override
+  String get recipeSuggestionMineAccepted =>
+      'Ägaren tog in ditt förslag i receptet.';
+
+  @override
+  String recipeSuggestionMineDismissed(String date) {
+    return 'Ägaren avvisade ditt förslag. Det sparas till $date.';
+  }
+
+  @override
+  String get recipeSuggestionTitle => 'Förslag till ändring';
+
+  @override
+  String recipeSuggestionIntroOwner(String name, String date) {
+    return '$name föreslår det här. Förslaget sparas till $date.';
+  }
+
+  @override
+  String recipeSuggestionIntroMine(String date) {
+    return 'Det här föreslog du. Förslaget sparas till $date.';
+  }
+
+  @override
+  String get recipeSuggestionSuggestedLabel => 'Förslaget';
+
+  @override
+  String get recipeSuggestionCurrentLabel => 'Receptet nu';
+
+  @override
+  String get recipeSuggestionAccept => 'Använd förslaget';
+
+  @override
+  String get recipeSuggestionDismiss => 'Avvisa förslaget';
+
+  @override
+  String get recipeSuggestionAccepted => 'Förslaget är nu en del av receptet.';
+
+  @override
+  String get recipeSuggestionDismissed =>
+      'Förslaget är avvisat. Receptet är oförändrat.';
+
+  @override
+  String get recipeSuggestionAcceptFailed =>
+      'Förslaget kunde inte tas in i receptet.';
+
+  @override
+  String get recipeSuggestionDismissFailed => 'Förslaget kunde inte avvisas.';
+
+  @override
+  String recipeSuggestionKeptUntil(String date) {
+    return 'Förslaget finns kvar till $date.';
+  }
+
+  @override
+  String get recipeSuggestionRecipeGone =>
+      'Receptet finns inte längre, så förslaget kan inte tas in.';
+
+  @override
+  String get recipeSuggestionLoadFailed =>
+      'Förslaget kunde inte jämföras med receptet. Kontrollera anslutningen.';
+
+  @override
+  String get recipeSuggestionNoChanges =>
+      'Förslaget är likadant som receptet nu.';
+
+  @override
+  String get recipeSuggestionLoading => 'Hämtar förslaget …';
 }

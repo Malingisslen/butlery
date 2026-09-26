@@ -27413,10 +27413,10 @@ abstract class AppLocalizations {
   /// **'Ändra betyg för {name}'**
   String a11yEditMemberRating(String name);
 
-  /// Butler-voice snackbar shown when a shared recipe/menu/shopping deep link is older than 7 days and is dropped (BUT-1587)
+  /// Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143).
   ///
   /// In sv, this message translates to:
-  /// **'Länken har gått ut och kan inte längre öppnas.'**
+  /// **'Länken gäller inte längre. Be den som delade om en ny.'**
   String get deepLinkExpired;
 
   /// Butler-voice snackbar shown when a shared deep link is valid but its target content is gone or no longer accessible to this user (BUT-1587)
@@ -29434,6 +29434,228 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
   String get mfaBackupCodesFailed;
+
+  /// P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83).
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre redigera receptet'**
+  String get roleLoweredRecipeTitle;
+
+  /// P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din behörighet är ändrad till Endast läsa, så ändringarna sparas inte i receptet. Du kan spara dem som en egen kopia.'**
+  String get roleLoweredRecipeBody;
+
+  /// P6-U05: dialog action that saves the unsaved edits as the user's own recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som egen kopia'**
+  String get roleLoweredSaveCopy;
+
+  /// P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng ändringarna'**
+  String get roleLoweredDiscard;
+
+  /// P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre redigera receptet. Din behörighet är ändrad till Endast läsa.'**
+  String get roleLoweredRecipeClosed;
+
+  /// P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa.'**
+  String get roleLoweredShoppingList;
+
+  /// P6-U05: snackbar when the role drops while an item was typed but not added; text = what was typed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre ändra i listan. Din behörighet är ändrad till Endast läsa. Det du skrev lades inte till: {text}'**
+  String roleLoweredShoppingUnsaved(String text);
+
+  /// P6-U05: snackbar action that copies the typed, unadded item text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera texten'**
+  String get roleLoweredCopyText;
+
+  /// P6-U05: confirmation after the typed item text was copied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten är kopierad.'**
+  String get roleLoweredTextCopied;
+
+  /// P6-U05: notice when the role on the group week menu drops to read-only while it is open.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre ändra gruppens meny. Din behörighet är ändrad till Endast läsa.'**
+  String get roleLoweredGroupMenu;
+
+  /// P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägarens version gäller'**
+  String get conflictBannerTitleSuggestion;
+
+  /// P5-U27b: conflict banner body; name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
+  String conflictBannerBodySuggestion(String name);
+
+  /// P5-U27b: conflict banner body when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
+  String get conflictBannerBodySuggestionUnnamed;
+
+  /// P5-U27b: banner action, verbatim from produktregler.md:103.
+  ///
+  /// In sv, this message translates to:
+  /// **'Se ditt förslag'**
+  String get recipeSuggestionSeeMine;
+
+  /// P5-U27b: the owner's action that opens a suggestion made to their recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Se förslaget'**
+  String get recipeSuggestionSee;
+
+  /// P5-U27b: owner's notice in recipe detail; name = who suggested it.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} föreslår en ändring i receptet.'**
+  String recipeSuggestionFromOne(String name);
+
+  /// P5-U27b: owner's notice when the suggester's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'En medlem föreslår en ändring i receptet.'**
+  String get recipeSuggestionFromOneUnnamed;
+
+  /// P5-U27b: owner's notice when more than one suggestion waits; count >= 2.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} förslag på ändringar väntar på dig.'**
+  String recipeSuggestionFromMany(int count);
+
+  /// P5-U27b: suggester's notice in recipe detail; date = when the 7 days end, written as content-style-guide.md:25.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt förslag väntar på ägaren. Det sparas till {date}.'**
+  String recipeSuggestionMinePending(String date);
+
+  /// P5-U27b: suggester's notice after the owner accepted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren tog in ditt förslag i receptet.'**
+  String get recipeSuggestionMineAccepted;
+
+  /// P5-U27b: suggester's notice after the owner dismissed; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren avvisade ditt förslag. Det sparas till {date}.'**
+  String recipeSuggestionMineDismissed(String date);
+
+  /// P5-U27b: title of the view that shows one suggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag till ändring'**
+  String get recipeSuggestionTitle;
+
+  /// P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} föreslår det här. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroOwner(String name, String date);
+
+  /// P5-U27b: intro line for the suggester; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här föreslog du. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroMine(String date);
+
+  /// P5-U27b: label over the suggested value of a field.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget'**
+  String get recipeSuggestionSuggestedLabel;
+
+  /// P5-U27b: label over the recipe's current value of a field.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet nu'**
+  String get recipeSuggestionCurrentLabel;
+
+  /// P5-U27b: the owner accepts the suggestion (produktregler.md:241).
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd förslaget'**
+  String get recipeSuggestionAccept;
+
+  /// P5-U27b: the owner dismisses the suggestion (produktregler.md:241).
+  ///
+  /// In sv, this message translates to:
+  /// **'Avvisa förslaget'**
+  String get recipeSuggestionDismiss;
+
+  /// P5-U27b: confirmation after the owner accepted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är nu en del av receptet.'**
+  String get recipeSuggestionAccepted;
+
+  /// P5-U27b: confirmation after the owner dismissed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är avvisat. Receptet är oförändrat.'**
+  String get recipeSuggestionDismissed;
+
+  /// P5-U27b: what did not happen when accepting failed (content-style-guide.md:87-97).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte tas in i receptet.'**
+  String get recipeSuggestionAcceptFailed;
+
+  /// P5-U27b: what did not happen when dismissing failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte avvisas.'**
+  String get recipeSuggestionDismissFailed;
+
+  /// P5-U27b: what was kept, after a failed decision; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget finns kvar till {date}.'**
+  String recipeSuggestionKeptUntil(String date);
+
+  /// P5-U27b: the recipe was deleted or unshared; nothing to accept into.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre, så förslaget kan inte tas in.'**
+  String get recipeSuggestionRecipeGone;
+
+  /// P5-U27b: the view could not read the current recipe; offered with Försök igen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte jämföras med receptet. Kontrollera anslutningen.'**
+  String get recipeSuggestionLoadFailed;
+
+  /// P5-U27b: the suggestion changes nothing against the current recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är likadant som receptet nu.'**
+  String get recipeSuggestionNoChanges;
+
+  /// P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar förslaget …'**
+  String get recipeSuggestionLoading;
 }
 
 class _AppLocalizationsDelegate

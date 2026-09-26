@@ -2,8 +2,11 @@
 
 // lib/views/social/collaborative_shopping_view.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
@@ -48,7 +51,36 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   void initState() {
     super.initState();
     _vm = _createViewModel();
+    _vm.addListener(_onViewModelChanged);
     _actions = _createActions();
+  }
+
+  /// P6-U05 (flows-roles-budget.md:83, :132): the role on this list dropped
+  /// to read-only while it was open. The add field is gone at once (it is
+  /// drawn only while the user can edit); this says why. An item typed but
+  /// not added is not written to the list; the notice shows it and offers to
+  /// copy it, so nothing typed is lost without a word.
+  void _onViewModelChanged() {
+    if (!_vm.consumeEditAccessLost()) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final l10n = context.l10n;
+      final typed = _newItemController.text.trim();
+      if (typed.isEmpty) {
+        SnackBarUtils.showFailure(context, what: l10n.roleLoweredShoppingList);
+        return;
+      }
+      SnackBarUtils.showFailure(
+        context,
+        what: l10n.roleLoweredShoppingUnsaved(typed),
+        action: FailureAction.named(l10n.roleLoweredCopyText, () {
+          unawaited(Clipboard.setData(ClipboardData(text: typed)));
+          if (mounted) {
+            SnackBarUtils.showSuccess(context, l10n.roleLoweredTextCopied);
+          }
+        }),
+      );
+    });
   }
 
   @override
@@ -59,8 +91,10 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     // element) the VM must follow — it is constructed around a single listId.
     if (oldWidget.listId != widget.listId) {
       final oldVm = _vm;
+      oldVm.removeListener(_onViewModelChanged);
       setState(() {
         _vm = _createViewModel();
+        _vm.addListener(_onViewModelChanged);
         _actions = _createActions();
         _newItemController.clear();
       });
@@ -72,6 +106,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
   @override
   void dispose() {
+    _vm.removeListener(_onViewModelChanged);
     _vm.dispose();
     _newItemController.dispose();
     super.dispose();

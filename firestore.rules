@@ -3079,6 +3079,66 @@ service cloud.firestore {
     }
 
     // ========================================
+    // RECIPE SUGGESTIONS (P5-U27b)
+    // A change to someone else's shared recipe, kept 7 days as a suggestion
+    // the owner accepts or dismisses (produktregler.md:103, :241; PQ-02 = A).
+    // Two people and no one else: the suggester and the recipe's owner read
+    // it. Only the suggester creates it, as themselves, never to their own
+    // recipe, and only for a recipe the owner has shared with them: the
+    // owner's recipe document must exist at users/{ownerId}/recipes/{recipeId}
+    // with the suggester as a key of socialData.memberPermissions, the same
+    // key the recipe's own read rule grants on. Only the owner decides it,
+    // once, by moving `status` from pending to accepted or dismissed with a
+    // server-set `decidedAt`. Nobody deletes it from a client: the TTL policy
+    // in firestore.indexes.json deletes on `expiresAt`, exactly 7 days after
+    // `createdAt` (at most 7 days and one hour from the server's clock, for a
+    // device clock that runs ahead), and the account deletion cascade erases
+    // it with either account (deleteRecipeSuggestions).
+    // ========================================
+    match /recipe_suggestions/{suggestionId} {
+      allow read: if isAuthenticated()
+        && (resource.data.suggesterId == request.auth.uid
+          || resource.data.ownerId == request.auth.uid);
+
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly([
+          'recipeId', 'ownerId', 'suggesterId', 'suggesterName',
+          'suggestion', 'status', 'createdAt', 'expiresAt'
+        ])
+        && hasRequiredFields([
+          'recipeId', 'ownerId', 'suggesterId', 'suggestion', 'status',
+          'createdAt', 'expiresAt'
+        ])
+        && request.resource.data.suggesterId == request.auth.uid
+        && request.resource.data.ownerId is string
+        && request.resource.data.ownerId.size() > 0
+        && request.resource.data.ownerId != request.auth.uid
+        && request.resource.data.recipeId is string
+        && request.resource.data.recipeId.size() > 0
+        && request.resource.data.get('suggesterName', '') is string
+        && request.resource.data.suggestion is map
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt
+          == request.resource.data.createdAt + duration.value(7, 'd')
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt
+          <= request.time + duration.value(169, 'h')
+        && request.auth.uid in get(/databases/$(database)/documents/users/$(request.resource.data.ownerId)/recipes/$(request.resource.data.recipeId)).data.get('socialData', {}).get('memberPermissions', {});
+
+      allow update: if isAuthenticated()
+        && resource.data.ownerId == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'decidedAt'])
+        && request.resource.data.status in ['accepted', 'dismissed']
+        && request.resource.data.decidedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    // ========================================
     // ONBOARDING PROGRESS (BUT-675)
     // Resume-onboarding state: which step the user finished, when, and
     // whether onboarding has been completed. Owner-only read/write.
