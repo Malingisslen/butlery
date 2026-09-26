@@ -14,6 +14,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
+import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
 
 // Realtime modules
 import 'package:butlery/services/realtime/realtime_types.dart';
@@ -33,6 +35,11 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// exercise it, and any build without the repository registered).
   final OverwrittenVersionRepository? _overwrittenVersions;
 
+  /// P5-U27b: where a change to someone else's shared recipe is kept as a
+  /// suggestion for 7 days (produktregler.md:103). Null keeps none, and the
+  /// package 5 choice applies instead (PQ-02 = A).
+  final RecipeSuggestionRepository? _suggestions;
+
   // Modules
   late final ConnectionStateModule _connectionModule;
   late final ResourceParserModule _parserModule;
@@ -42,9 +49,11 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
     OverwrittenVersionRepository? overwrittenVersions,
+    RecipeSuggestionRepository? suggestions,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
-       _overwrittenVersions = overwrittenVersions {
+       _overwrittenVersions = overwrittenVersions,
+       _suggestions = suggestions {
     // Initialize StreamControllers using StreamManagementMixin
     _connectionController = createBroadcastController<bool>(
       name: 'connection_state',
@@ -284,18 +293,35 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         // The model declares which conflict rule applies to this user's
         // edit (produktregler.md:97-107), for the user who started it.
         final entity = resource.conflictEntityFor(userId);
-        persisted = await _conflictModule.resolveConflict<T>(
-          resource,
-          remote,
-          entity: entity,
-        );
-        // P5-U26b: the user's version lost, so keep it before the winner is
-        // written (produktregler.md:109). The resolver hands back the remote
-        // instance itself when the remote wins, including on its error path.
-        if (identical(persisted, remote)) {
-          await _keepOverwritten(userId, entity, resource, remote);
+        // P5-U27b: someone else's shared recipe. The owner's version wins and
+        // this edit becomes a suggestion (produktregler.md:103, :241), so
+        // nothing is written to the shared recipe. Only once the suggestion
+        // is stored: until then the package 5 choice below still applies
+        // (PQ-02 = A), so the edit is never dropped.
+        final suggestionId = entity == ConflictEntity.recipeShared
+            ? await _keepAsSuggestion(userId, resource, remote)
+            : null;
+        if (suggestionId != null) {
+          persisted = remote;
+          _conflictModule.announceSuggestion<T>(
+            resource,
+            remote,
+            suggestionId: suggestionId,
+          );
+        } else {
+          persisted = await _conflictModule.resolveConflict<T>(
+            resource,
+            remote,
+            entity: entity,
+          );
+          // P5-U26b: the user's version lost, so keep it before the winner is
+          // written (produktregler.md:109). The resolver hands back the remote
+          // instance itself when the remote wins, including on its error path.
+          if (identical(persisted, remote)) {
+            await _keepOverwritten(userId, entity, resource, remote);
+          }
+          await _conflictModule.performUpdate(docRef, persisted);
         }
-        await _conflictModule.performUpdate(docRef, persisted);
       } else {
         persisted = resource;
         await _conflictModule.performUpdate(docRef, resource);
@@ -362,6 +388,36 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         '❌ Den överskrivna versionen kunde inte sparas för ${lost.id}',
         e,
       );
+    }
+  }
+
+  /// P5-U27b: keeps [edit], this user's change to someone else's shared
+  /// recipe, as a suggestion to its owner and returns its id. Null when there
+  /// is no store, when [remote] is this user's own save from another device
+  /// (that is not the owner's version winning), or when storing fails; the
+  /// caller then falls back to the package 5 choice (PQ-02 = A).
+  Future<String?> _keepAsSuggestion(
+    String userId,
+    RealtimeResource edit,
+    RealtimeResource remote,
+  ) async {
+    final store = _suggestions;
+    if (store == null) return null;
+    if (remote.lastEditedBy == userId) return null;
+    try {
+      final kept = await store.suggest(
+        RecipeSuggestion.create(
+          recipeId: edit.id,
+          ownerId: remote.ownerId,
+          suggesterId: userId,
+          suggestion: edit.toFirestore(),
+          at: clock.now(),
+        ),
+      );
+      return kept.id;
+    } catch (e) {
+      AppLogger.error('❌ Förslaget kunde inte sparas för ${edit.id}', e);
+      return null;
     }
   }
 

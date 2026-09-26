@@ -95,9 +95,35 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
       final updated = state.lists.firstWhereOrNull((l) => l.id == listId);
       if (updated != null) {
         _currentList = updated;
+        _followEditAccess();
         notifyListeners();
       }
     }
+  }
+
+  /// P6-U05: the last seen answer to [canEdit], so a drop to read-only while
+  /// the list is open is told apart from a list that was read-only from the
+  /// start. Null until the first update.
+  bool? _couldEdit;
+  bool _editAccessLost = false;
+
+  /// The role on this list dropped to read-only while it was open
+  /// (flows-roles-budget.md:83, :132). The view says why once and calls
+  /// [consumeEditAccessLost]; the add field is already gone, because it is
+  /// drawn only while [canEdit] holds.
+  bool get editAccessLost => _editAccessLost;
+
+  /// Returns [editAccessLost] and clears it, so it is told once.
+  bool consumeEditAccessLost() {
+    final lost = _editAccessLost;
+    _editAccessLost = false;
+    return lost;
+  }
+
+  void _followEditAccess() {
+    final can = canEdit;
+    if (_couldEdit == true && !can) _editAccessLost = true;
+    _couldEdit = can;
   }
 
   void _onManagerChanged() {

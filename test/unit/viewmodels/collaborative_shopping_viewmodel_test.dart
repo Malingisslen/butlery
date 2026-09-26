@@ -16,6 +16,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -593,6 +594,45 @@ void main() {
             category: 'Övrigt',
           ),
         ).called(1);
+      });
+    });
+
+    // P6-U05 (flows-roles-budget.md:83, :132): a drop to read-only while the
+    // list is open is told once; a list that was read-only from the start is
+    // not a drop.
+    group('role lowered while open (P6-U05)', () {
+      test('editor to read-only is told once', () async {
+        mockShoppingService.emitState(
+          ShoppingStateData(lists: [testShoppingList]),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(viewModel.canEdit, isTrue);
+        expect(viewModel.editAccessLost, isFalse);
+
+        mockPermissionService.setPermissionState(
+          currentUserId: testUserId,
+          defaultHasPermission: false,
+        );
+        mockShoppingService.emitState(
+          ShoppingStateData(lists: [testShoppingList]),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(viewModel.canEdit, isFalse);
+        expect(viewModel.consumeEditAccessLost(), isTrue);
+        expect(viewModel.consumeEditAccessLost(), isFalse);
+      });
+
+      test('read-only from the first update is not a drop', () async {
+        mockPermissionService.setPermissionState(
+          currentUserId: testUserId,
+          defaultHasPermission: false,
+        );
+        mockShoppingService.emitState(
+          ShoppingStateData(lists: [testShoppingList]),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(viewModel.editAccessLost, isFalse);
       });
     });
   });

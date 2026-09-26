@@ -2,12 +2,16 @@
 
 // lib/views/social/collaborative_shopping_view.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -48,8 +52,46 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   void initState() {
     super.initState();
     _vm = _createViewModel();
+    _vm.addListener(_onViewModelChanged);
     _actions = _createActions();
   }
+
+  /// P6-U05: what the user had typed but not added when the role on this
+  /// list dropped to read-only. Kept on screen until they close it, so the
+  /// text is never lost to a timeout or cut off (produktregler.md:108).
+  String? _unaddedText;
+
+  /// P6-U05 (flows-roles-budget.md:83, :132): the role on this list dropped
+  /// to read-only while it was open. The add field is gone at once (it is
+  /// drawn only while the user can edit); a short snackbar says why, with
+  /// "Stäng" (content-style-guide.md:97, :108). An item typed but not added
+  /// is not written to the list; it stays in a notice in the view, with
+  /// "Kopiera texten", until the user closes it ("osparat erbjuds som
+  /// kopia", flows-roles-budget.md:83).
+  void _onViewModelChanged() {
+    if (!_vm.consumeEditAccessLost()) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final typed = _newItemController.text.trim();
+      if (typed.isNotEmpty) {
+        setState(() => _unaddedText = typed);
+        _newItemController.clear();
+      }
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.roleLoweredShoppingList,
+      );
+    });
+  }
+
+  void _copyUnaddedText() {
+    final typed = _unaddedText;
+    if (typed == null) return;
+    unawaited(Clipboard.setData(ClipboardData(text: typed)));
+    SnackBarUtils.showSuccess(context, context.l10n.roleLoweredTextCopied);
+  }
+
+  void _closeUnaddedText() => setState(() => _unaddedText = null);
 
   @override
   void didUpdateWidget(CollaborativeShoppingView oldWidget) {
@@ -59,10 +101,13 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     // element) the VM must follow — it is constructed around a single listId.
     if (oldWidget.listId != widget.listId) {
       final oldVm = _vm;
+      oldVm.removeListener(_onViewModelChanged);
       setState(() {
         _vm = _createViewModel();
+        _vm.addListener(_onViewModelChanged);
         _actions = _createActions();
         _newItemController.clear();
+        _unaddedText = null;
       });
       // Safe before the rebuild swaps providers: ChangeNotifier.removeListener
       // is explicitly allowed after dispose.
@@ -72,6 +117,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
   @override
   void dispose() {
+    _vm.removeListener(_onViewModelChanged);
     _vm.dispose();
     _newItemController.dispose();
     super.dispose();
@@ -101,6 +147,9 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       child: _CollaborativeShoppingViewContent(
         actions: _actions,
         onToggleItem: _toggleItem,
+        unaddedText: _unaddedText,
+        onCopyUnaddedText: _copyUnaddedText,
+        onCloseUnaddedText: _closeUnaddedText,
       ),
     );
   }
@@ -165,10 +214,16 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 class _CollaborativeShoppingViewContent extends StatelessWidget {
   final CollaborativeShoppingActions actions;
   final ValueChanged<String> onToggleItem;
+  final String? unaddedText;
+  final VoidCallback onCopyUnaddedText;
+  final VoidCallback onCloseUnaddedText;
 
   const _CollaborativeShoppingViewContent({
     required this.actions,
     required this.onToggleItem,
+    required this.unaddedText,
+    required this.onCopyUnaddedText,
+    required this.onCloseUnaddedText,
   });
 
   @override
@@ -265,6 +320,12 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
       children: [
         CollaborativeShoppingHeader(viewModel: viewModel),
         actions.buildAddItemSection(context),
+        if (unaddedText != null)
+          _UnaddedTextNotice(
+            text: unaddedText!,
+            onCopy: onCopyUnaddedText,
+            onClose: onCloseUnaddedText,
+          ),
         Expanded(
           child: CollaborativeShoppingItems(
             viewModel: viewModel,
@@ -272,6 +333,92 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// P6-U05: the item a user had typed but not added when their role on the
+/// list dropped to read-only, kept in the view until they close it.
+///
+/// No drawing shows it. It uses the neutral notice anatomy of the recipe
+/// suggestion line (the conflict banner of Komponentark v1:755-757 without
+/// the danger colour): surface.base with a 1 px border.subtle outline and the
+/// 8 px control radius, text.body. colorScheme.surface is surface.base
+/// (#F5F4ED / #17251D, tokens.json:104-106), outlineVariant is border.subtle
+/// (#CCD1C2 / rgba(245,244,237,0.18), tokens.json:124-127) and
+/// AppModeColors.textBody is text.body (#37453A / #F5F4ED, tokens.json:58-60).
+/// The typed text is body text, so it is never cut off
+/// (content-style-guide.md:109) and can be selected as well as copied.
+class _UnaddedTextNotice extends StatelessWidget {
+  const _UnaddedTextNotice({
+    required this.text,
+    required this.onCopy,
+    required this.onClose,
+  });
+
+  final String text;
+  final VoidCallback onCopy;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final l = context.l10n;
+    final body = AppModeColors.textBody(theme.brightness);
+    return Padding(
+      key: const ValueKey('collaborativeShopping.unaddedText'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingS,
+      ),
+      child: Material(
+        color: cs.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          side: BorderSide(
+            color: cs.outlineVariant,
+            width: AppDimensions.borderWidthStandard,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.spacingModerate,
+            AppDimensions.paddingS,
+            AppDimensions.spacingXs,
+            AppDimensions.spacingXs,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l.roleLoweredShoppingUnsaved,
+                style: AppTextStyles.captionBase.copyWith(color: body),
+              ),
+              const SizedBox(height: AppDimensions.spacingXs),
+              SelectableText(
+                text,
+                style: AppTextStyles.bodyMedium.copyWith(color: body),
+              ),
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Wrap(
+                  children: [
+                    TextButton(
+                      onPressed: onCopy,
+                      child: Text(l.roleLoweredCopyText),
+                    ),
+                    TextButton(
+                      onPressed: onClose,
+                      child: Text(l.commonClose),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

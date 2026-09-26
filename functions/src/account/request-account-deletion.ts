@@ -48,6 +48,7 @@ import {
   deleteActivityEvents,
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
+  deleteRecipeSuggestions,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
   deleteNotificationEffectiveness,
@@ -271,6 +272,9 @@ export async function runAccountDeletionWithDeps(
       "household_allergen_shares",
       () => deleteHouseholdAllergenShares(database, uid),
     ],
+    // P5-U27b: suggestions to shared recipes, both as suggester and as the
+    // recipe's owner. Ships with its two probe legs.
+    ["recipe_suggestions", () => deleteRecipeSuggestions(database, uid)],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
     // BUT-1800: `analytics/retention/events` and `analytics/lapsed_users/events`.

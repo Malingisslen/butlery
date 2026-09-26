@@ -26,6 +26,7 @@ import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -37,6 +38,9 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
+import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -59,6 +63,25 @@ class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 
 class _MockOverwrittenVersionService extends Mock
     implements OverwrittenVersionService {}
+
+class _MockRecipeSuggestionService extends Mock
+    implements RecipeSuggestionService {}
+
+RecipeSuggestion _suggestion(
+  String recipeId, {
+  required String ownerId,
+  required String suggesterId,
+  RecipeSuggestionStatus status = RecipeSuggestionStatus.pending,
+}) => RecipeSuggestion(
+  id: 'suggestion-$recipeId-$suggesterId',
+  recipeId: recipeId,
+  ownerId: ownerId,
+  suggesterId: suggesterId,
+  suggestion: const {},
+  status: status,
+  createdAt: DateTime.now().toUtc(),
+  expiresAt: DateTime.now().toUtc().add(RecipeSuggestion.keptFor),
+);
 
 OverwrittenVersion _kept(String recipeId) => OverwrittenVersion(
   id: 'kept-$recipeId',
@@ -356,6 +379,145 @@ void main() {
       await tester.pump();
 
       expect(find.text(l10n.conflictBannerTitleRecipe), findsOneWidget);
+    });
+  });
+
+  // P5-U27b: someone else's shared recipe. The owner's version stays and the
+  // edit is a suggestion behind "Se ditt förslag" for 7 days
+  // (produktregler.md:103); the owner accepts or dismisses it (:241).
+  group('RecipeDetailView — suggestions (P5-U27b)', () {
+    late _MockRecipeSuggestionService suggestions;
+    late List<RecipeSuggestion> mine;
+    late List<RecipeSuggestion> toMe;
+
+    setUp(() {
+      mine = const [];
+      toMe = const [];
+      suggestions = _MockRecipeSuggestionService();
+      when(
+        () => suggestions.watchMine(any()),
+      ).thenAnswer(
+        (inv) => Stream.value([
+          for (final s in mine)
+            if (s.recipeId == inv.positionalArguments.first) s,
+        ]),
+      );
+      when(
+        () => suggestions.watchPendingToMe(any()),
+      ).thenAnswer(
+        (inv) => Stream.value([
+          for (final s in toMe)
+            if (s.recipeId == inv.positionalArguments.first) s,
+        ]),
+      );
+      TestServiceLocator.registerMock<RecipeSuggestionService>(suggestions);
+    });
+
+    testWidgets('a kept suggestion turns the banner into "Se ditt förslag"', (
+      tester,
+    ) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RecipeDetailView)),
+      );
+
+      conflicts.add(
+        ConflictEvent(
+          collectionPath: 'recipes',
+          docId: friendRecipe.id,
+          localValue: _FakeResource('Mia'),
+          remoteValue: _FakeResource('Per'),
+          chosenStrategy: ConflictResolutionStrategy.remoteWon,
+          entity: ConflictEntity.recipeShared,
+          occurredAt: DateTime(2026, 9, 26),
+          suggestionId: 'suggestion-1',
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(l10n.conflictBannerTitleSuggestion), findsOneWidget);
+      expect(
+        find.text(l10n.conflictBannerBodySuggestion('Per')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.recipeSuggestionSeeMine), findsOneWidget);
+      expect(find.text(l10n.conflictBannerTitleRecipe), findsNothing);
+    });
+
+    testWidgets('the owner sees a waiting suggestion with "Se förslaget"', (
+      tester,
+    ) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      toMe = [
+        _suggestion(
+          ownedRecipe.id,
+          ownerId: _testUserId,
+          suggesterId: _friendUserId,
+        ),
+      ];
+      // The name comes from the suggester's id through the owner's friends,
+      // never from text stored with the suggestion.
+      (TestServiceLocator.get<UnifiedFriendsService>()
+              as MockUnifiedFriendsService)
+          .setFriendsState(
+            friends: [
+              MockFactory.createUserProfile(
+                userId: _friendUserId,
+                displayName: 'Mia',
+              ),
+            ],
+          );
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await tester.pump();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RecipeDetailView)),
+      );
+
+      expect(find.byKey(RecipeSuggestionNotice.noticeKey), findsOneWidget);
+      expect(find.text(l10n.recipeSuggestionFromOne('Mia')), findsOneWidget);
+      expect(find.text(l10n.recipeSuggestionSee), findsOneWidget);
+      verifyNever(() => suggestions.watchMine(any()));
+    });
+
+    testWidgets('the suggester sees their own suggestion on the owner recipe '
+        'recipe with "Se ditt förslag"', (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      mine = [
+        _suggestion(
+          friendRecipe.id,
+          ownerId: _friendUserId,
+          suggesterId: _testUserId,
+        ),
+      ];
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      await tester.pump();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RecipeDetailView)),
+      );
+
+      expect(find.byKey(RecipeSuggestionNotice.noticeKey), findsOneWidget);
+      expect(find.text(l10n.recipeSuggestionSeeMine), findsOneWidget);
+      verifyNever(() => suggestions.watchPendingToMe(any()));
+    });
+
+    testWidgets('nothing kept, no line', (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await tester.pump();
+
+      expect(find.byKey(RecipeSuggestionNotice.noticeKey), findsNothing);
     });
   });
 }

@@ -578,6 +578,11 @@ export async function probeResidualData(
     // above `MAX_BLOCK_SWEEP_ROWS` and deleted nothing at all.
     [Collections.blocks, "blockerId", "=="],
     [Collections.blocks, "blockedId", "=="],
+    // P5-U27b: recipe suggestions name two people and go with either account,
+    // so both legs of `deleteRecipeSuggestions` are probed. Uncapped, so they
+    // still fire when the sweep DECLINED above its cap and deleted nothing.
+    ["recipe_suggestions", "suggesterId", "=="],
+    ["recipe_suggestions", "ownerId", "=="],
     // BUT-1971: the group weekly menu scrubs membership, per-dish provenance
     // and the edit trail in ONE `batch.update` under `strict: false`, which
     // returns `true` on a failed chunk. The provenance fields are arrays of
@@ -1564,6 +1569,61 @@ export async function deleteIngredientSuggestions(
     return false;
   }
   await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
+/**
+ * Page size for [deleteRecipeSuggestions]: one Firestore batch.
+ *
+ * Exported so its scenario can import it rather than retype the number.
+ */
+export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
+
+/**
+ * P5-U27b: suggestions to someone else's shared recipe
+ * (`recipe_suggestions`, produktregler.md:103, :241).
+ *
+ * A row names TWO people, the suggester (`suggesterId`) and the recipe's owner
+ * (`ownerId`), and it is deleted with EITHER account: the suggester's change is
+ * their content, and a suggestion to a recipe whose owner is gone has nobody
+ * to decide it. So both legs run, and both ship with a probe leg in
+ * `probeResidualData`.
+ *
+ * Unlike [deleteIngredientSuggestions] this sweep has NO decline cap. The
+ * `ownerId` leg is filled by OTHER people's writes (any member the recipe is
+ * shared with may suggest), so a large count is no sign of a bug in this
+ * user's data, and declining would let someone else hold this user's erasure
+ * in a failed state. It pages through each leg in batches of
+ * [RECIPE_SUGGESTION_SWEEP_PAGE] until the leg is empty. It returns false only
+ * when a page makes no progress (its deletes did not land), which the probe
+ * then also reports.
+ */
+export async function deleteRecipeSuggestions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  for (const field of ["suggesterId", "ownerId"] as const) {
+    let previous: Set<string> | null = null;
+    for (;;) {
+      const snap = await db
+        .collection("recipe_suggestions")
+        .where(field, "==", uid)
+        .limit(RECIPE_SUGGESTION_SWEEP_PAGE)
+        .get();
+      if (snap.empty) break;
+      const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+      const prior: Set<string> | null = previous;
+      if (prior !== null && [...paths].every((path) => prior.has(path))) {
+        logger.error(
+          "[deletion-cascade] recipe-suggestion page did not shrink; stopping",
+          { uid_prefix: uid.slice(0, 6), leg: field, rows: snap.size },
+        );
+        return false;
+      }
+      previous = paths;
+      await batchDeleteAll(db, snap.docs);
+    }
+  }
   return true;
 }
 

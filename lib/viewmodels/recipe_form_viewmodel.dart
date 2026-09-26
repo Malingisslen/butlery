@@ -173,6 +173,14 @@ class RecipeFormViewModel extends BaseViewModel
     // Register lifecycle observer for auto-save on app background/kill
     WidgetsBinding.instance.addObserver(this);
 
+    // P6-U05: a shared recipe's editor follows the live role, so a drop to
+    // read-only is seen while the form is open (flows-roles-budget.md:83).
+    if (initialRecipe != null && !isTemplate) {
+      _editAccessSub = _permissionManager
+          .watchCanEdit(initialRecipe)
+          .listen(_onEditAccess);
+    }
+
     // Feedback loop: Retrieve the pre-edit parse snapshot for imported recipes
     // so saving captures the user's corrections as training data.
     // BUT-1469: keyed by recipe id (not sourceUrl) so EVERY import path
@@ -463,6 +471,31 @@ class RecipeFormViewModel extends BaseViewModel
   /// success.
   RecipeSaveFailure? get lastSaveFailure => _lastSaveFailure;
   RecipeSaveFailure? _lastSaveFailure;
+
+  StreamSubscription<bool>? _editAccessSub;
+  bool _editAccessLost = false;
+
+  /// The last live answer to "may I edit this recipe", null until the first.
+  /// A lowered role is a change from true to false seen while the form is
+  /// open, as on the shopping list and the group menu: a first answer of
+  /// false (a live participants map that does not list a legitimate editor)
+  /// is not a change, and never closes the editor.
+  bool? _couldEdit;
+
+  /// P6-U05: the role on this shared recipe dropped to read-only while the
+  /// form was open. From then on no save reaches the recipe; the view closes
+  /// the editor, says why, and offers anything unsaved as the user's own copy
+  /// ([forkRecipe] writes only to the user's own library).
+  bool get editAccessLost => _editAccessLost;
+
+  void _onEditAccess(bool canEdit) {
+    final couldEdit = _couldEdit;
+    _couldEdit = canEdit;
+    if (couldEdit != true || canEdit || _editAccessLost || _disposed) return;
+    _editAccessLost = true;
+    _permissionManager.markEditAccessLost();
+    notifyListeners();
+  }
 
   Future<Recipe?> saveRecipe() async {
     _lastSaveFailure = null;
@@ -819,6 +852,7 @@ class RecipeFormViewModel extends BaseViewModel
   @override
   void dispose() {
     _disposed = true;
+    unawaited(_editAccessSub?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     clearComponentErrors();
 

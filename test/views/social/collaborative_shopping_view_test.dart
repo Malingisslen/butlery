@@ -35,6 +35,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -46,6 +47,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -785,5 +787,137 @@ void main() {
         );
       },
     );
+  });
+
+  // P6-U05 (flows-roles-budget.md:83, :132): the role on the list drops to
+  // read-only while it is open. The add field goes at once; a snackbar says
+  // why, and an item typed but not added is shown and can be copied, so it is
+  // not lost without a word. Nothing is written to the list.
+  group('CollaborativeShoppingView — role lowered while open (P6-U05)', () {
+    Future<FakePermissionService> openWithTyped(
+      WidgetTester tester,
+      String typed,
+    ) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      final permissions =
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      // The first live update: the user can edit.
+      shoppingService.emitState(ShoppingStateData(lists: [list]));
+      await tester.pump();
+      if (typed.isNotEmpty) {
+        await tester.enterText(find.byType(TextField), typed);
+        await tester.pump();
+      }
+      // The owner lowers the role; the next live update carries it.
+      permissions.setPermissionState(
+        currentUserId: 'test-user-123',
+        defaultHasPermission: false,
+      );
+      shoppingService.emitState(ShoppingStateData(lists: [list]));
+      await tester.pump();
+      // The notice is posted after the frame; let the snackbar slide in.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 750));
+      return permissions;
+    }
+
+    testWidgets('typed but not added: the notice shows it and offers a copy', (
+      tester,
+    ) async {
+      final copied = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied.add((call.arguments as Map)['text'] as String);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+
+      await openWithTyped(tester, 'Havregryn');
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+
+      final notice = find.byKey(
+        const ValueKey('collaborativeShopping.unaddedText'),
+      );
+      expect(find.text('Lägg till'), findsNothing);
+      // The snackbar is short and says why; the typed text is in a notice in
+      // the view, not in the snackbar, so it is never cut off.
+      expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
+      expect(notice, findsOneWidget);
+      expect(
+        find.descendant(
+          of: notice,
+          matching: find.text(l10n.roleLoweredShoppingUnsaved),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: notice, matching: find.text('Havregryn')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.descendant(
+          of: notice,
+          matching: find.text(l10n.roleLoweredCopyText),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(copied, ['Havregryn']);
+
+      // No timeout takes it away: it stays until the user closes it.
+      await tester.pump(const Duration(seconds: 30));
+      expect(notice, findsOneWidget);
+      await tester.tap(
+        find.descendant(of: notice, matching: find.text(l10n.commonClose)),
+      );
+      await tester.pump();
+      expect(notice, findsNothing);
+      verifyNever(
+        () => shoppingService.addItemToActiveList(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      );
+    });
+
+    testWidgets('nothing typed: the notice says why, with Stäng', (
+      tester,
+    ) async {
+      await openWithTyped(tester, '');
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
+      expect(find.text(l10n.commonClose), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('collaborativeShopping.unaddedText')),
+        findsNothing,
+      );
+    });
   });
 }

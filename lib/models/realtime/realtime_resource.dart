@@ -71,10 +71,11 @@ enum ConflictEntity {
   recipeOwn,
 
   /// "Recept (delat, andras)": the owner's version wins and the change becomes
-  /// a suggestion (produktregler.md:103). No suggestion model exists yet
-  /// (package 6), so PQ-02 = A (2026-09-23) applies meanwhile: the non-owner
-  /// gets the owner's notice and the same choice in ConflictDiffView,
-  /// "Behåll min version" and "Använd deras version".
+  /// a suggestion (produktregler.md:103), kept 7 days in `recipe_suggestions`
+  /// (P5-U27b, RealtimeSyncService). Only when the suggestion cannot be stored
+  /// does PQ-02 = A (2026-09-23) still apply: the non-owner gets the owner's
+  /// notice and the same choice in ConflictDiffView, "Behåll min version" and
+  /// "Använd deras version".
   recipeShared,
 
   /// "Veckomeny": the last save wins, with a 30 s snackbar

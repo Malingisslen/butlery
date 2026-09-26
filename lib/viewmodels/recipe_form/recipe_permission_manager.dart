@@ -5,6 +5,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 
 /// Consolidated recipe permission manager providing comprehensive access control and collaborative sharing.
 /// Simplified permission management system consolidated during architecture refactoring,
@@ -63,8 +66,47 @@ class RecipePermissionManager {
   /// ensuring proper access control and collaborative feature availability.
   void checkPermissions() {}
 
+  /// P6-U05: set once the live role on this recipe dropped to read-only.
+  /// From then on [canEdit] is false whatever any cache says, so the
+  /// persistence manager refuses every save and nothing reaches the shared
+  /// recipe (flows-roles-budget.md:83, :132).
+  bool _editAccessLost = false;
+
+  /// Records that the role dropped to read-only while the form was open.
+  void markEditAccessLost() => _editAccessLost = true;
+
+  /// P6-U05: whether the signed-in user may still edit [recipe], live.
+  ///
+  /// The role on someone else's shared recipe is the participants map of its
+  /// realtime resource, the one the collaborative editor syncs through
+  /// (RealtimeResource.canUserEdit), keyed by the recipe's id. Emits on every
+  /// change; an error is not a downgrade, so it emits nothing then. The owner
+  /// cannot be lowered, and a new recipe has no role, so both get an empty
+  /// stream, as does a build without the sync service.
+  ///
+  /// Scope, stated honestly: realtime_resources has no Firestore rules yet
+  /// (BUT-2151), so in production this stream errors and a downgrade is not
+  /// seen until that lands. Everything after the signal is in place.
+  Stream<bool> watchCanEdit(Recipe recipe) {
+    final uid = _permissionService.currentUserId;
+    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    if (uid == null || recipe.id.isEmpty || ownerId == uid) {
+      return const Stream.empty();
+    }
+    final sync = ServiceLocator.tryGet<RealtimeSyncService>();
+    if (sync == null) return const Stream.empty();
+    return sync
+        .watchResource<RealtimeRecipe>(recipe.id)
+        .map((live) => live.canUserEdit(uid))
+        .handleError((Object e) {
+          AppLogger.warning('Live role for recipe ${recipe.id} unreadable: $e');
+        })
+        .distinct();
+  }
+
   /// Edit permission for recipe form modification and content management.
   bool get canEdit {
+    if (_editAccessLost) return false;
     if (_recipeId == null) return true; // New recipe creation
     return _permissionService.canEditRecipe(_recipeId!);
   }

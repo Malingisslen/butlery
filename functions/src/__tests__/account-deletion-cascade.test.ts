@@ -4486,6 +4486,139 @@ async function scenario_ingredientSuggestionsDeclineAboveCap(): Promise<void> {
 }
 
 /**
+ * P5-U27b: `recipe_suggestions` names two people, and a row goes with EITHER
+ * account: the ones the user suggested (`suggesterId`) and the ones made to the
+ * user's recipes (`ownerId`). A row between two OTHER people survives, which is
+ * what makes the delete assertions non-vacuous. The probe sees a leftover on
+ * each leg.
+ */
+async function scenario_recipeSuggestionsErasedWithEitherAccountAndProbed(): Promise<void> {
+  const {
+    deleteRecipeSuggestions,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set("recipe_suggestions/i-suggested", {
+    suggesterId: UID,
+    ownerId: OTHER,
+    recipeId: "r1",
+  });
+  store.set("recipe_suggestions/made-to-me", {
+    suggesterId: OTHER,
+    ownerId: UID,
+    recipeId: "r2",
+  });
+  store.set("recipe_suggestions/between-others", {
+    suggesterId: OTHER,
+    ownerId: "third-person",
+    recipeId: "r3",
+  });
+
+  const ok = await deleteRecipeSuggestions(asDb(store), UID);
+
+  check(
+    "the recipe-suggestion sweep reports success below its cap",
+    ok === true,
+    `returned ${ok}`,
+  );
+  check(
+    "a suggestion the user made is deleted",
+    !store.has("recipe_suggestions/i-suggested"),
+    `left behind: ${JSON.stringify(store.idsIn("recipe_suggestions"))}`,
+  );
+  check(
+    "a suggestion made to the user's recipe is deleted",
+    !store.has("recipe_suggestions/made-to-me"),
+    `left behind: ${JSON.stringify(store.idsIn("recipe_suggestions"))}`,
+  );
+  check(
+    "a suggestion between two other people survives",
+    store.has("recipe_suggestions/between-others"),
+    "the sweep is not filtered on the two people — it deleted a row it does not own",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const clean = emptyResult();
+  await probeResidualData(asDb(store), UID, clean);
+  check(
+    "with only other people's suggestions left, the probe stays clean",
+    !clean.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(clean.failedCollections)}`,
+  );
+
+  for (const field of ["suggesterId", "ownerId"]) {
+    const leftover = new FakeFirestore();
+    leftover.set("recipe_suggestions/survivor", {
+      suggesterId: field === "suggesterId" ? UID : OTHER,
+      ownerId: field === "ownerId" ? UID : OTHER,
+      recipeId: "r1",
+    });
+    const result = emptyResult();
+    await probeResidualData(asDb(leftover), UID, result);
+    check(
+      `a surviving recipe suggestion is reported on its ${field} leg`,
+      result.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(result.failedCollections)}`,
+    );
+  }
+}
+
+/**
+ * P5-U27b: the `ownerId` leg is filled by OTHER people's writes, so the sweep
+ * has no decline cap: many suggestions made to the user's recipes cannot hold
+ * the user's erasure in a failed state. It pages through both legs until they
+ * are empty, and a row between two other people survives.
+ */
+async function scenario_recipeSuggestionsManyRowsArePagedNotDeclined(): Promise<void> {
+  const {
+    deleteRecipeSuggestions,
+    RECIPE_SUGGESTION_SWEEP_PAGE,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  const many = RECIPE_SUGGESTION_SWEEP_PAGE * 4 + 7;
+  for (let i = 0; i < many; i++) {
+    store.set(`recipe_suggestions/to-me-${i}`, {
+      suggesterId: OTHER,
+      ownerId: UID,
+      recipeId: `r-${i}`,
+    });
+  }
+  for (let i = 0; i < RECIPE_SUGGESTION_SWEEP_PAGE + 1; i++) {
+    store.set(`recipe_suggestions/i-suggested-${i}`, {
+      suggesterId: UID,
+      ownerId: OTHER,
+      recipeId: `s-${i}`,
+    });
+  }
+  store.set("recipe_suggestions/between-others", {
+    suggesterId: OTHER,
+    ownerId: "third-person",
+    recipeId: "r",
+  });
+
+  const ok = await deleteRecipeSuggestions(asDb(store), UID);
+
+  check(
+    "many suggestions made to the user's recipes do not block the sweep",
+    ok === true,
+    `returned ${ok}; another person's writes must not fail this erasure`,
+  );
+  check(
+    "every page is deleted, on both legs",
+    store.idsIn("recipe_suggestions").length === 1 &&
+      store.has("recipe_suggestions/between-others"),
+    `rows left: ${JSON.stringify(store.idsIn("recipe_suggestions").slice(0, 5))}`,
+  );
+}
+
+/**
  * BUT-1693: `household_allergen_shares` is erased by the flat `userId` field,
  * across every household id, and the probe SEES a leftover.
  *
@@ -8907,6 +9040,8 @@ async function main(): Promise<void> {
   await scenario_ingredientSuggestionsErasedAndProbed();
   await scenario_ingredientSuggestionsDeclineAboveCap();
   await scenario_householdAllergenSharesErasedAndProbed();
+  await scenario_recipeSuggestionsErasedWithEitherAccountAndProbed();
+  await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
   await scenario_householdAllergenSharesDeclineAboveCap();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();
