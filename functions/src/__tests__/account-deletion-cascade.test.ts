@@ -4619,6 +4619,87 @@ async function scenario_recipeSuggestionsManyRowsArePagedNotDeclined(): Promise<
 }
 
 /**
+ * P6-U09: `mfa_backup_codes/{uid}` and the per-account counter
+ * `mfa_recovery_attempts/uid_{uid}` go with the account. The HMAC-keyed
+ * per-IP counter and the global counter are not linkable to the account and
+ * are left to their TTL, and another account's codes survive — which is what
+ * makes the delete assertions non-vacuous. The probe sees a leftover of
+ * either document.
+ */
+async function scenario_mfaRecoveryDataErasedAndProbed(): Promise<void> {
+  const {
+    deleteMfaRecoveryData,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`mfa_backup_codes/${UID}`, {
+    codes: [{ salt: "s", hash: "h", usedAt: null }],
+    createdAt: 1,
+  });
+  store.set(`mfa_backup_codes/${OTHER}`, {
+    codes: [{ salt: "s", hash: "h", usedAt: null }],
+    createdAt: 1,
+  });
+  store.set(`mfa_recovery_attempts/uid_${UID}`, { failures: 2 });
+  store.set(`mfa_recovery_attempts/uid_${OTHER}`, { failures: 1 });
+  store.set("mfa_recovery_attempts/ip_0123abcd", { failures: 3 });
+  store.set("mfa_recovery_attempts/global", { failures: 9 });
+
+  const ok = await deleteMfaRecoveryData(asDb(store), UID);
+
+  check("the MFA recovery step reports success", ok === true, `returned ${ok}`);
+  check(
+    "the user's backup-code hashes are deleted",
+    !store.has(`mfa_backup_codes/${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("mfa_backup_codes"))}`,
+  );
+  check(
+    "the user's per-account recovery counter is deleted",
+    !store.has(`mfa_recovery_attempts/uid_${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("mfa_recovery_attempts"))}`,
+  );
+  check(
+    "another account's codes and counter survive, and so do the unlinkable counters",
+    store.has(`mfa_backup_codes/${OTHER}`) &&
+      store.has(`mfa_recovery_attempts/uid_${OTHER}`) &&
+      store.has("mfa_recovery_attempts/ip_0123abcd") &&
+      store.has("mfa_recovery_attempts/global"),
+    `codes: ${JSON.stringify(store.idsIn("mfa_backup_codes"))}, ` +
+      `attempts: ${JSON.stringify(store.idsIn("mfa_recovery_attempts"))}`,
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const clean = emptyResult();
+  await probeResidualData(asDb(store), UID, clean);
+  check(
+    "with only other accounts' MFA rows left, the probe stays clean",
+    !clean.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(clean.failedCollections)}`,
+  );
+
+  for (const path of [
+    `mfa_backup_codes/${UID}`,
+    `mfa_recovery_attempts/uid_${UID}`,
+  ]) {
+    const leftover = new FakeFirestore();
+    leftover.set(path, { failures: 1 });
+    const result = emptyResult();
+    await probeResidualData(asDb(leftover), UID, result);
+    check(
+      `a surviving ${path.split("/")[0]} document is reported by the probe`,
+      result.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(result.failedCollections)}`,
+    );
+  }
+}
+
+/**
  * BUT-1693: `household_allergen_shares` is erased by the flat `userId` field,
  * across every household id, and the probe SEES a leftover.
  *
@@ -9042,6 +9123,7 @@ async function main(): Promise<void> {
   await scenario_householdAllergenSharesErasedAndProbed();
   await scenario_recipeSuggestionsErasedWithEitherAccountAndProbed();
   await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
+  await scenario_mfaRecoveryDataErasedAndProbed();
   await scenario_householdAllergenSharesDeclineAboveCap();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();

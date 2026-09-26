@@ -441,6 +441,8 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     "household_allergen_shares",
     // P5-U27b, same reason.
     "recipe_suggestions",
+    // P6-U09, same reason.
+    "mfa_recovery_data",
     // BUT-2032, and the same reason a third time: the cascade suite's own
     // scenarios `require()` `deleteModerationSystemEvents` directly, so dropping
     // this tier entry stops the erasure with every one of them still green.

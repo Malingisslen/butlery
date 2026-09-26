@@ -49,6 +49,7 @@ import {
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
   deleteRecipeSuggestions,
+  deleteMfaRecoveryData,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
   deleteNotificationEffectiveness,
@@ -275,6 +276,9 @@ export async function runAccountDeletionWithDeps(
     // P5-U27b: suggestions to shared recipes, both as suggester and as the
     // recipe's owner. Ships with its two probe legs.
     ["recipe_suggestions", () => deleteRecipeSuggestions(database, uid)],
+    // P6-U09: the backup-code hashes and the per-account wrong-code counter,
+    // both keyed by the uid. Ships with its two existence probe legs.
+    ["mfa_recovery_data", () => deleteMfaRecoveryData(database, uid)],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
     // BUT-1800: `analytics/retention/events` and `analytics/lapsed_users/events`.
