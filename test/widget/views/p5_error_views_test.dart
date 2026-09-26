@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
@@ -45,6 +46,9 @@ void main() {
 
   setUp(() async {
     await TestServiceLocator.initialize();
+    // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+    // so the real auto-save manager reaches SharedPreferences in every test.
+    SharedPreferences.setMockInitialValues({});
     auth = MockFactory.createAuthService(
       isAuthenticated: true,
       userId: 'test-user-123',

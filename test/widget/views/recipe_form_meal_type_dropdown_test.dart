@@ -23,6 +23,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
@@ -61,6 +62,9 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
+      // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+      // so the real auto-save manager reaches SharedPreferences in every test.
+      SharedPreferences.setMockInitialValues({});
       // Both views build a real RecipeFormViewModel; EditRecipeView also
       // resolves CollaborativeStatusViewModel in initState. Same seam the
       // BUT-1309 tab-order suite uses (focus_traversal_group_test.dart).

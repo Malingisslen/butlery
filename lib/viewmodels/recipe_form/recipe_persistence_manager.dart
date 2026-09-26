@@ -113,6 +113,17 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         await Future.delayed(const Duration(milliseconds: 50));
         return true;
       });
+      // The loop above also ends when the form closes during the wait. Since
+      // the first keystroke now writes a draft at once (P6-U08a, D-02), an
+      // auto-save is usually in flight when Spara is tapped, so closing the
+      // form here is an ordinary path: stop quietly instead of validating and
+      // setting an error on a disposed RecipeFormState (BUT-1667).
+      if (_disposed) {
+        AppLogger.warning(
+          '⚠️ Save operation prevented - Manager disposed while waiting for auto-save',
+        );
+        return null;
+      }
     }
 
     if (!_state.isValid) {

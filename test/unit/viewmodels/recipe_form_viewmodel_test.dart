@@ -14,6 +14,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Production imports
@@ -69,6 +70,10 @@ void main() {
     });
 
     setUp(() async {
+      // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+      // so the real auto-save manager reaches SharedPreferences in every test.
+      SharedPreferences.setMockInitialValues({});
+
       // Reset and initialize service locator for each test
       await TestServiceLocator.reset();
       await TestServiceLocator.initialize();
@@ -1083,6 +1088,14 @@ void main() {
     // RecipeFormViewModel.dispose() actually reaches them, and never that the
     // REAL RecipeFormState is the thing being notified.
     group('closing the form mid-operation (BUT-1667)', () {
+      // Waits until the draft the first edit started has been written.
+      Future<void> waitForDraftWrite(RecipeFormViewModel vm) async {
+        for (var i = 0; i < 100 && vm.isAutoSaving; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        expect(vm.isAutoSaving, isFalse, reason: 'the draft write never ended');
+      }
+
       // Fills the form with the minimum a save needs.
       void fillValidForm(RecipeFormViewModel vm) {
         vm.addIngredient();
@@ -1091,6 +1104,30 @@ void main() {
         vm.updateIngredient(0, '3 dl mjöl');
         vm.updateInstruction(0, 'Vispa smeten');
       }
+
+      test(
+        'a save still waiting for the draft write when the form closes writes nothing',
+        () async {
+          final vm = RecipeFormViewModel(recipeService: mockRecipeService);
+          fillValidForm(vm);
+          // The first edit started a draft write (P6-U08a, D-02), so Spara
+          // waits for it before doing anything else.
+          expect(vm.isAutoSaving, isTrue);
+
+          final saving = vm.saveRecipe();
+          await Future<void>.delayed(Duration.zero);
+
+          // The user backs out while the save is still waiting.
+          vm.dispose();
+
+          // Resolves quietly with "not saved": without the disposed check
+          // after the wait, the save went on to validate and set an error on
+          // the disposed RecipeFormState, and this await threw.
+          expect(await saving, isNull);
+          verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+          verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+        },
+      );
 
       test('a save still uploading when the form closes writes nothing', () async {
         // Park the image upload so the save is provably mid-flight when the
@@ -1105,6 +1142,11 @@ void main() {
         final vm = RecipeFormViewModel(recipeService: mockRecipeService);
         fillValidForm(vm);
         vm.imageManager.addPendingImage(File('pending.jpg'));
+        // The first edit wrote a draft at once (P6-U08a). Let it land, so the
+        // save below is past its auto-save wait and parked in the upload,
+        // which is the moment this test is about. Closing during the wait is
+        // the next test.
+        await waitForDraftWrite(vm);
 
         final saving = vm.saveRecipe();
         await Future<void>.delayed(Duration.zero);
