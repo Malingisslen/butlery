@@ -17857,11 +17857,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permCameraDenied =>
-      'The camera is not allowed, so I cannot photograph the recipe.';
+      'The camera is not allowed, so the recipe cannot be photographed.';
 
   @override
   String get permPhotosDenied =>
-      'The photo library is not allowed, so I cannot read the recipe from a photo.';
+      'The photo library is not allowed, so the recipe cannot be read from a photo.';
 
   @override
   String get permCameraPermanentlyDenied =>
@@ -17905,6 +17905,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timerNotifDeniedStart => 'Start the timer';
+
+  @override
+  String get timerInAppOnly => 'The timer only shows in the app.';
 
   @override
   String get notifSystemOffRow =>

@@ -120,6 +120,20 @@ class PhotoImportViewModel extends ImportBaseViewModel
     );
   }
 
+  /// "Välj ur bildbiblioteket" after the camera was refused
+  /// (flows-roles-budget.md:102). Keeps what the refused pick was for: a
+  /// refused add-page leads to adding a page from the library, so the pages
+  /// already taken stay; a refused fresh import starts a fresh one.
+  Future<void> chooseFromGalleryInstead() async {
+    final addAsPage = _permissionNotice?.addAsPage ?? false;
+    clearPermissionNotice();
+    if (addAsPage) {
+      await addPageFromGallery();
+    } else {
+      await pickImageFromGallery();
+    }
+  }
+
   /// Clears the permission notice (the user chose a fallback).
   void clearPermissionNotice() {
     if (_permissionNotice == null) return;
@@ -172,7 +186,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// against and no reason to lock the toggle once a capture exists (the old
   /// `_pages.isEmpty` lock trapped the user ON after a handwritten capture). We
   /// only block mid-processing, where flipping would race the running pipeline.
-  bool get canToggleHandwritten => !isProcessing;
+  ///
+  /// Q4-04 stages pages before reading, and the handwriting path reads one
+  /// image. So handwritten mode cannot be switched on while more than one
+  /// page is staged: "Läs av N sidor" would otherwise read the first page and
+  /// drop the rest without a word. Switching it off is always allowed.
+  bool get canToggleHandwritten =>
+      !isProcessing && (_isHandwritten || _pages.length <= 1);
 
   /// BUT-684: flip handwritten mode. Applies to the NEXT capture — the toggle
   /// sits next to the pick action so the user sets it before choosing a photo.
@@ -397,8 +417,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
     await executeAsyncVoid(() async {
       clearError();
-      if (_isHandwritten) {
-        // Handwritten mode is a single-image flow (BUT-1460).
+      if (_isHandwritten && _pages.length == 1) {
+        // Handwritten mode is a single-image flow (BUT-1460). With more than
+        // one page (not reachable through the toggle, see
+        // canToggleHandwritten) every page goes through the printed path
+        // below rather than being dropped.
         final page = _pages.first;
         _lastQualityScore = null;
         _lastRecommendations = null;

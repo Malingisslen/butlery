@@ -11,6 +11,8 @@
 ///   from the timer sheet as well as from the voice command.
 library;
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
@@ -40,8 +42,14 @@ class _Gateway implements PermissionGateway {
   @override
   Future<PermissionStatus> checkStatus(Permission permission) async => status;
 
+  PermissionStatus? requestAnswer;
+  int requests = 0;
+
   @override
-  Future<PermissionStatus> request(Permission permission) async => status;
+  Future<PermissionStatus> request(Permission permission) async {
+    requests++;
+    return requestAnswer ?? status;
+  }
 
   @override
   Future<bool> openSettings() async {
@@ -53,6 +61,30 @@ class _Gateway implements PermissionGateway {
 class _NonAndroid implements AndroidSdkVersionProvider {
   @override
   Future<int?> sdkInt() async => null;
+}
+
+class _Sdk implements AndroidSdkVersionProvider {
+  _Sdk(this.value);
+  final int value;
+
+  @override
+  Future<int?> sdkInt() async => value;
+}
+
+/// Pumps an empty screen and hands back a context under it.
+Future<BuildContext> _context(WidgetTester tester) async {
+  late BuildContext ctx;
+  await tester.pumpWidget(
+    _app(
+      Builder(
+        builder: (c) {
+          ctx = c;
+          return const SizedBox.shrink();
+        },
+      ),
+    ),
+  );
+  return ctx;
 }
 
 Widget _app(Widget child, {ThemeData? theme}) => MaterialApp(
@@ -223,6 +255,58 @@ void main() {
       },
     );
 
+    test(
+      'a refused camera on add-page: the library fallback keeps the pages '
+      'already taken and adds to them',
+      () async {
+        vm.stagePageForTesting(Uint8List.fromList([1]));
+        vm.stagePageForTesting(Uint8List.fromList([2]));
+        final asked = <ImageSource>[];
+        vm.permissionResolver = (source, _) async {
+          asked.add(source);
+          return source == ImageSource.camera
+              ? OsPermissionOutcome.denied
+              : OsPermissionOutcome.granted;
+        };
+
+        await vm.addPageFromCamera();
+        expect(vm.permissionNotice?.addAsPage, isTrue);
+
+        // No platform picker in a unit test, so the pick itself fails after
+        // the permission step; what matters is that nothing was cleared.
+        await vm.chooseFromGalleryInstead();
+
+        expect(asked, [ImageSource.camera, ImageSource.gallery]);
+        expect(vm.pageCount, 2);
+        expect(vm.permissionNotice, isNull);
+      },
+    );
+
+    test(
+      'handwritten cannot be switched on with several staged pages, so Läs '
+      'av reads every page',
+      () async {
+        vm.stagePageForTesting(Uint8List.fromList([1]));
+        vm.stagePageForTesting(Uint8List.fromList([2]));
+        vm.stagePageForTesting(Uint8List.fromList([3]));
+
+        expect(vm.canToggleHandwritten, isFalse);
+        vm.setHandwritten(true);
+
+        expect(vm.isHandwritten, isFalse);
+        expect(vm.pageCount, 3);
+        expect(vm.unreadPageCount, 3);
+      },
+    );
+
+    test('handwritten can still be switched on with one staged page', () {
+      vm.stagePageForTesting(Uint8List.fromList([1]));
+      expect(vm.canToggleHandwritten, isTrue);
+      vm.setHandwritten(true);
+      expect(vm.isHandwritten, isTrue);
+      expect(vm.canToggleHandwritten, isTrue, reason: 'off is always allowed');
+    });
+
     test('clearing the photo clears the notice', () async {
       vm.permissionResolver = (_, __) async => OsPermissionOutcome.restricted;
       await vm.pickImageFromCamera();
@@ -236,12 +320,13 @@ void main() {
 
   group('timer notice before the timer starts', () {
     testWidgets(
-      'notifications denied: the notice shows, and says timers stay in the app',
+      'notifications permanently off: the notice shows, and says timers stay '
+      'in the app',
       (tester) async {
-        final gateway = _Gateway(PermissionStatus.denied);
+        final gateway = _Gateway(PermissionStatus.permanentlyDenied);
         final service = NotificationPermissionService(
           gateway: gateway,
-          sdkVersionProvider: _NonAndroid(),
+          sdkVersionProvider: _Sdk(33),
         );
         late BuildContext ctx;
         await tester.pumpWidget(
@@ -274,7 +359,7 @@ void main() {
       final gateway = _Gateway(PermissionStatus.permanentlyDenied);
       final service = NotificationPermissionService(
         gateway: gateway,
-        sdkVersionProvider: _NonAndroid(),
+        sdkVersionProvider: _Sdk(34),
       );
       late BuildContext ctx;
       await tester.pumpWidget(
@@ -296,6 +381,79 @@ void main() {
       expect(await shown, isTrue);
       expect(gateway.settingsCalls, 1);
     });
+
+    for (final (label, provider) in [
+      ('iOS', _NonAndroid()),
+      ('Android 12', _Sdk(32)),
+    ]) {
+      testWidgets('$label is never asked: no notice, no prompt', (
+        tester,
+      ) async {
+        // permission_handler reads a never-asked permission as denied; the
+        // question is only asked on Android 13+ (produktregler.md:685).
+        final gateway = _Gateway(PermissionStatus.denied);
+        final service = NotificationPermissionService(
+          gateway: gateway,
+          sdkVersionProvider: provider,
+        );
+        final ctx = await _context(tester);
+
+        expect(await service.warnBeforeTimerIfNeeded(ctx), isFalse);
+        await tester.pumpAndSettle();
+        expect(find.text(sv.timerNotifDeniedTitle), findsNothing);
+        expect(find.text(sv.permOpenSettings), findsNothing);
+        expect(gateway.requests, 0);
+        expect(await service.notificationsAllowed(), isTrue);
+      });
+    }
+
+    testWidgets(
+      'Android 13+ never asked: our explanation, then the OS prompt; a yes '
+      'starts the timer with no notice',
+      (tester) async {
+        final gateway = _Gateway(PermissionStatus.denied)
+          ..requestAnswer = PermissionStatus.granted;
+        var explained = 0;
+        final service = NotificationPermissionService(
+          gateway: gateway,
+          sdkVersionProvider: _Sdk(33),
+          rationalePresenter: (_) async {
+            explained++;
+            expect(gateway.requests, 0, reason: 'explanation comes first');
+            return true;
+          },
+        );
+        final ctx = await _context(tester);
+
+        expect(await service.warnBeforeTimerIfNeeded(ctx), isFalse);
+        await tester.pumpAndSettle();
+        expect(explained, 1);
+        expect(gateway.requests, 1);
+        expect(find.text(sv.timerNotifDeniedBody), findsNothing);
+        expect(find.text(sv.permOpenSettings), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Android 13+ never asked, the user says Inte nu: no OS prompt, no '
+      'settings link, one line that the timer only shows in the app',
+      (tester) async {
+        final gateway = _Gateway(PermissionStatus.denied);
+        final service = NotificationPermissionService(
+          gateway: gateway,
+          sdkVersionProvider: _Sdk(33),
+          rationalePresenter: (_) async => false,
+        );
+        final ctx = await _context(tester);
+
+        expect(await service.warnBeforeTimerIfNeeded(ctx), isTrue);
+        await tester.pump();
+        expect(gateway.requests, 0);
+        expect(find.text(sv.timerInAppOnly), findsOneWidget);
+        expect(find.text(sv.timerNotifDeniedBody), findsNothing);
+        expect(find.text(sv.permOpenSettings), findsNothing);
+      },
+    );
 
     testWidgets('notifications allowed: no notice', (tester) async {
       final service = NotificationPermissionService(

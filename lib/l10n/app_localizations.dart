@@ -29516,13 +29516,13 @@ abstract class AppLocalizations {
   /// No description provided for @permCameraDenied.
   ///
   /// In sv, this message translates to:
-  /// **'Kameran är inte tillåten, så jag kan inte fotografera receptet.'**
+  /// **'Kameran är inte tillåten, så receptet går inte att fotografera.'**
   String get permCameraDenied;
 
   /// No description provided for @permPhotosDenied.
   ///
   /// In sv, this message translates to:
-  /// **'Bildbiblioteket är inte tillåtet, så jag kan inte läsa receptet ur en bild.'**
+  /// **'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.'**
   String get permPhotosDenied;
 
   /// No description provided for @permCameraPermanentlyDenied.
@@ -29596,6 +29596,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Starta timern'**
   String get timerNotifDeniedStart;
+
+  /// No description provided for @timerInAppOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timern syns bara i appen.'**
+  String get timerInAppOnly;
 
   /// No description provided for @notifSystemOffRow.
   ///

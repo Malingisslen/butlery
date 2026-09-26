@@ -17892,11 +17892,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get permCameraDenied =>
-      'Kameran är inte tillåten, så jag kan inte fotografera receptet.';
+      'Kameran är inte tillåten, så receptet går inte att fotografera.';
 
   @override
   String get permPhotosDenied =>
-      'Bildbiblioteket är inte tillåtet, så jag kan inte läsa receptet ur en bild.';
+      'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.';
 
   @override
   String get permCameraPermanentlyDenied =>
@@ -17940,6 +17940,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get timerNotifDeniedStart => 'Starta timern';
+
+  @override
+  String get timerInAppOnly => 'Timern syns bara i appen.';
 
   @override
   String get notifSystemOffRow =>

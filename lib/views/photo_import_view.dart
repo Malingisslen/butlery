@@ -452,11 +452,10 @@ class _PhotoImportViewContent extends StatelessWidget {
                     ),
                     child: SwitchListTile(
                       value: viewModel.isHandwritten,
-                      // BUT-1460: freely switchable except while an import is
-                      // processing (canToggleHandwritten == !isProcessing).
-                      // Handwritten is a single-image replace flow, so there are
-                      // no captured pages to strand — the old capture-lock is
-                      // gone. Only blocked mid-pipeline to avoid a race.
+                      // BUT-1460: switchable except while an import is
+                      // processing, and it cannot be switched on while more
+                      // than one page is staged (the handwriting path reads
+                      // one image; see canToggleHandwritten).
                       onChanged: viewModel.canToggleHandwritten
                           ? (value) => viewModel.setHandwritten(value)
                           : null,
@@ -483,10 +482,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                       notice: viewModel.permissionNotice!,
                       onAskAgain: viewModel.askPermissionAgain,
                       onOpenSettings: () => OsPermissionHelper.openSettings(),
-                      onChooseFromGallery: () {
-                        viewModel.clearPermissionNotice();
-                        viewModel.pickImageFromGallery();
-                      },
+                      // A refused add-page keeps the pages already taken.
+                      onChooseFromGallery: viewModel.chooseFromGalleryInstead,
                       onWriteYourself: () {
                         viewModel.clearPermissionNotice();
                         Navigator.pushNamed(context, Routes.manualEntry);

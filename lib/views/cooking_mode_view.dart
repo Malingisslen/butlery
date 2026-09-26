@@ -705,7 +705,14 @@ class _IngredientsPanel extends StatelessWidget {
                 ),
               ),
             ),
-            child: Row(
+            // On a portrait tablet the panel is 35 % of about 800 px, too
+            // narrow for label and stepper on one line (produktregler.md:1199
+            // no longer forces landscape there), so the stepper wraps under
+            // the label instead of overflowing.
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppDimensions.spacingMd,
+              runSpacing: AppDimensions.spacingSm,
               children: [
                 Text(
                   context.l10n.cookingModePortions,
@@ -714,34 +721,38 @@ class _IngredientsPanel extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingMd),
-                _buildPortionButton(
-                  context,
-                  icon: Icons.remove,
-                  onPressed:
-                      vm.currentPortions > CookingModeViewModel.minPortions
-                      ? () => vm.updatePortions(vm.currentPortions - 1)
-                      : null,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                  ),
-                  child: Text(
-                    '${vm.currentPortions}',
-                    style: AppTextStyles.groupTitle.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: cs.onPrimary,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildPortionButton(
+                      context,
+                      icon: Icons.remove,
+                      onPressed:
+                          vm.currentPortions > CookingModeViewModel.minPortions
+                          ? () => vm.updatePortions(vm.currentPortions - 1)
+                          : null,
                     ),
-                  ),
-                ),
-                _buildPortionButton(
-                  context,
-                  icon: Icons.add,
-                  onPressed:
-                      vm.currentPortions < CookingModeViewModel.maxPortions
-                      ? () => vm.updatePortions(vm.currentPortions + 1)
-                      : null,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingL,
+                      ),
+                      child: Text(
+                        '${vm.currentPortions}',
+                        style: AppTextStyles.groupTitle.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onPrimary,
+                        ),
+                      ),
+                    ),
+                    _buildPortionButton(
+                      context,
+                      icon: Icons.add,
+                      onPressed:
+                          vm.currentPortions < CookingModeViewModel.maxPortions
+                          ? () => vm.updatePortions(vm.currentPortions + 1)
+                          : null,
+                    ),
+                  ],
                 ),
               ],
             ),

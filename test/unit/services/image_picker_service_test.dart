@@ -497,6 +497,29 @@ void main() {
       },
     );
 
+    test(
+      'photos permanently denied, storage refused without a dialog '
+      '(Android 13+): no repeated explanation, a permanent no',
+      () async {
+        when(
+          () => mockPermission.checkPermission(Permission.photos),
+        ).thenAnswer((_) async => PermissionStatus.permanentlyDenied);
+        when(
+          () => mockPermission.checkPermission(Permission.storage),
+        ).thenAnswer((_) async => PermissionStatus.denied);
+        when(
+          () => mockPermission.requestPermission(Permission.storage),
+        ).thenAnswer((_) async => PermissionStatus.denied);
+
+        final outcome = await service.pickImageWithOutcome(
+          ImageSource.gallery,
+          rationale: (_) async => fail('no explanation after a permanent no'),
+        );
+
+        expect(outcome.permission, OsPermissionOutcome.permanentlyDenied);
+      },
+    );
+
     test('a device-blocked camera is restricted', () async {
       when(
         () => mockPermission.checkPermission(Permission.camera),

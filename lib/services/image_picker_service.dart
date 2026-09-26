@@ -511,7 +511,7 @@ class ImagePickerService extends BaseService {
       if (status == OsPermissionOutcome.permanentlyDenied) {
         // Older Android keeps the gallery behind the storage permission.
         if (source == ImageSource.gallery) {
-          return _resolveLegacyStorage(rationale, source, skipRationale);
+          return _resolveLegacyStorage();
         }
         return status;
       }
@@ -531,11 +531,12 @@ class ImagePickerService extends BaseService {
     }
   }
 
-  Future<OsPermissionOutcome> _resolveLegacyStorage(
-    MediaRationalePrompt? rationale,
-    ImageSource source,
-    bool skipRationale,
-  ) async {
+  /// The storage route behind a permanent photos no. Our explanation is not
+  /// shown here: the user has already said no to photos, and a second no is
+  /// a silent skip with no repeated explanation (produktregler.md:683). On
+  /// Android 13+ storage reads as denied and a request is refused without a
+  /// dialog, so this falls through to the permanent-no notice.
+  Future<OsPermissionOutcome> _resolveLegacyStorage() async {
     final storage = OsPermissionHelper.outcomeOf(
       await _permissionProvider.checkPermission(Permission.storage),
     );
@@ -543,10 +544,6 @@ class ImagePickerService extends BaseService {
     if (storage != OsPermissionOutcome.denied) {
       // Photos permanently denied and no storage route either.
       return OsPermissionOutcome.permanentlyDenied;
-    }
-    if (rationale != null && !skipRationale) {
-      final wantsToGrant = await rationale(source);
-      if (!wantsToGrant) return OsPermissionOutcome.denied;
     }
     final result = OsPermissionHelper.outcomeOf(
       await _permissionProvider.requestPermission(Permission.storage),

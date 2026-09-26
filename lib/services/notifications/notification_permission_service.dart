@@ -93,8 +93,14 @@ class NotificationPermissionService extends BaseService {
     if (sdk == null || sdk < _androidTiramisuSdkInt) return true;
 
     if (!context.mounted) return false;
+    return (await _request(context)).isUsable;
+  }
+
+  /// Our explanation, then the OS prompt, then the settings link on a
+  /// permanent no (produktregler.md:682), with the typed answer.
+  Future<OsPermissionOutcome> _request(BuildContext context) {
     final l10n = context.l10n;
-    return OsPermissionHelper.requestWithRationale(
+    return OsPermissionHelper.request(
       context: context,
       permission: Permission.notification,
       rationaleTitle: l10n.notificationPermissionTitle,
@@ -115,18 +121,28 @@ class NotificationPermissionService extends BaseService {
   }
 
   /// Whether the phone lets Butlery post notifications right now, read
-  /// without asking. A timer started while this is false only shows inside
-  /// the app, and the user is told so before it starts (produktregler.md:423;
-  /// flows-roles-budget.md:70,106). Unknown platforms and plugin failures
-  /// count as allowed, so no false warning is shown.
-  Future<bool> notificationsAllowed() async {
-    if (kIsWeb) return true;
+  /// without asking. iOS and Android 12 or lower count as allowed: the
+  /// question is only asked on Android 13 and later (produktregler.md:685;
+  /// iOS permission is owned by `FCMService`). Plugin failures count as
+  /// allowed, so no false warning is shown.
+  Future<bool> notificationsAllowed() async =>
+      (await _timerPermissionOutcome()).isUsable;
+
+  /// The notification answer as the timer notice needs it: granted on every
+  /// platform where the question is never asked (produktregler.md:685).
+  Future<OsPermissionOutcome> _timerPermissionOutcome() async {
+    if (kIsWeb) return OsPermissionOutcome.granted;
+    final sdk = await _sdkVersionProvider.sdkInt();
+    if (sdk == null || sdk < _androidTiramisuSdkInt) {
+      return OsPermissionOutcome.granted;
+    }
     try {
-      final status = await _gateway.checkStatus(Permission.notification);
-      return OsPermissionHelper.outcomeOf(status).isUsable;
+      return OsPermissionHelper.outcomeOf(
+        await _gateway.checkStatus(Permission.notification),
+      );
     } catch (e) {
       AppLogger.warning('NotificationPermissionService: status failed: $e');
-      return true;
+      return OsPermissionOutcome.granted;
     }
   }
 
@@ -152,17 +168,41 @@ class NotificationPermissionService extends BaseService {
   /// Opens the phone's settings for Butlery.
   Future<bool> openSystemSettings() => _gateway.openSettings();
 
-  /// The notice before a timer starts without notification permission
-  /// (flow 04 "app i bakgrunden", flow 07 "Notiser → timers syns bara i
-  /// appen (sägs explicit)"). Says that the timer only shows in the app and
-  /// offers the phone's settings; the timer starts whichever the user picks
-  /// — the feature is never hard-gated (produktregler.md:682).
+  /// What happens before a timer starts (flow 04 "app i bakgrunden", flow 07
+  /// "Notiser → timers syns bara i appen (sägs explicit)";
+  /// produktregler.md:682-685). The timer starts whatever the user picks —
+  /// the feature is never hard-gated.
   ///
-  /// Returns true when the notice was shown.
+  /// - iOS, Android 12 or lower, or already allowed: nothing.
+  /// - Android 13+ not yet asked, or a no that can still be asked again
+  ///   (`denied`): our explanation, then the OS prompt. A no there is said
+  ///   in one line: the timer only shows in the app.
+  /// - A permanent no or a device block: the notice that the timer only
+  ///   shows in the app, with the phone's settings as the way back (a
+  ///   permanent no only; a device block gets no button,
+  ///   flows-roles-budget.md:104).
+  ///
+  /// Returns true when the user was told anything, so the caller does not
+  /// ask again in the same cooking session (produktregler.md:683).
   Future<bool> warnBeforeTimerIfNeeded(BuildContext context) async {
-    if (await notificationsAllowed()) return false;
-    if (!context.mounted) return false;
+    final outcome = await _timerPermissionOutcome();
+    if (outcome.isUsable || !context.mounted) return false;
     final l10n = context.l10n;
+
+    if (outcome == OsPermissionOutcome.denied) {
+      final answer = await _request(context);
+      if (answer.isUsable) return false;
+      if (context.mounted) {
+        OsPermissionHelper.presentRestricted(context, l10n.timerInAppOnly);
+      }
+      return true;
+    }
+
+    if (outcome == OsPermissionOutcome.restricted) {
+      OsPermissionHelper.presentRestricted(context, l10n.timerInAppOnly);
+      return true;
+    }
+
     final choice = await OsPermissionHelper.presentExplanationChoice(
       context,
       title: l10n.timerNotifDeniedTitle,

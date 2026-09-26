@@ -407,6 +407,24 @@ void main() {
       expect(results, [CookingModeExit.finished]);
     });
 
+    for (final size in const [Size(810, 1080), Size(800, 1280)]) {
+      testWidgets(
+        'a portrait tablet ${size.width.toInt()}x${size.height.toInt()} is '
+        'not rotated and lays out without overflow',
+        (tester) async {
+          tester.view.devicePixelRatio = 1;
+          tester.view.physicalSize = size;
+          addTearDown(tester.view.reset);
+          final effects = _FakeEffects();
+          await openCooking(tester, effects: effects);
+
+          expect(effects.calls, isNot(contains('lock')));
+          expect(tester.takeException(), isNull);
+          expect(find.text(sv.cookingModeStepOf(1, 3)), findsOneWidget);
+        },
+      );
+    }
+
     testWidgets('a rotation keeps the step and the running timer', (
       tester,
     ) async {
