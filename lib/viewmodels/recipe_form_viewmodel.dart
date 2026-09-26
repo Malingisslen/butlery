@@ -7,6 +7,7 @@
 
 // lib/viewmodels/recipe_form_viewmodel.dart
 
+import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -299,6 +300,46 @@ class RecipeFormViewModel extends BaseViewModel
   /// manually-entered recipes or when the cache entry expired.
   List<ParsedIngredient>? get parsedIngredients =>
       _state.originalParsedRecipe?.ingredients.value;
+
+  /// P6-U03: rows of the import review the user has confirmed, kept by
+  /// object identity — never by position or text (two identical lines are
+  /// two rows). Reset when another parse arrives.
+  final Set<ParsedIngredient> _confirmedParseRows =
+      Set<ParsedIngredient>.identity();
+  Object? _confirmedParseSource;
+
+  void _syncConfirmedParseRows() {
+    final source = _state.originalParsedRecipe;
+    if (!identical(source, _confirmedParseSource)) {
+      _confirmedParseRows.clear();
+      _confirmedParseSource = source;
+    }
+  }
+
+  /// Whether the user confirmed [row] in the import review.
+  bool isParseRowConfirmed(ParsedIngredient row) {
+    _syncConfirmedParseRows();
+    return _confirmedParseRows.contains(row);
+  }
+
+  /// Confirms a low- or failed-confidence row (flows-roles-budget.md:61).
+  void confirmParseRow(ParsedIngredient row) {
+    _syncConfirmedParseRows();
+    if (_confirmedParseRows.add(row)) notifyListeners();
+  }
+
+  /// Low- and failed-confidence rows still waiting for confirmation. Spara
+  /// stays disabled while this is above zero, and the view says how many
+  /// are left (flows-roles-budget.md:61; Q-P6-E03).
+  int get pendingParseConfirmations {
+    _syncConfirmedParseRows();
+    final rows = parsedIngredients;
+    if (rows == null) return 0;
+    return rows
+        .where(ParseConfidenceReview.needsConfirmation)
+        .where((row) => !_confirmedParseRows.contains(row))
+        .length;
+  }
 
   FormFieldsManager get ingredientsManager => _state.ingredientsManager;
   FormFieldsManager get instructionsManager => _state.instructionsManager;

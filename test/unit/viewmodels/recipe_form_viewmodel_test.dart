@@ -18,6 +18,10 @@ import 'package:mocktail/mocktail.dart';
 
 // Production imports
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -1151,6 +1155,81 @@ void main() {
 
         // No error surfaced for a form the user already left.
         expect(vm.error, isNull);
+      });
+    });
+
+    // P6-U03 (flow 03): low- and failed-confidence rows must be confirmed
+    // before Spara, with a count of how many are left
+    // (flows-roles-budget.md:61; Q-P6-E03).
+    group('P6-U03 import review gates Spara', () {
+      ParsedRecipe parsedWith(List<ParsedIngredient> rows) => ParsedRecipe(
+        title: FieldResult.success('Pannkakor'),
+        portions: FieldResult.success(4),
+        ingredients: FieldResult(
+          value: rows,
+          confidence: ParseConfidence.medium,
+        ),
+        instructions: FieldResult.success(const ['Vispa.']),
+        totalTime: const FieldResult(confidence: ParseConfidence.failed),
+        metadata: ParseMetadata(
+          source: ImportSource.url,
+          parserVersion: '1.0',
+          timestamp: DateTime.utc(2026),
+          totalParseTime: Duration.zero,
+          tierResults: const [],
+        ),
+      );
+
+      test('only high-confidence rows: nothing waits', () {
+        viewModel.state.setOriginalParsedRecipe(
+          parsedWith([
+            const ParsedIngredient(
+              name: 'mjöl',
+              originalLine: '3 dl mjöl',
+              confidence: ParseConfidence.high,
+            ),
+          ]),
+        );
+
+        expect(viewModel.pendingParseConfirmations, 0);
+      });
+
+      ParsedIngredient row(String name, String line, ParseConfidence c) =>
+          ParsedIngredient(name: name, originalLine: line, confidence: c);
+
+      test('each low or failed row waits until it is confirmed', () {
+        final rows = [
+          row('mjölk', '6 dl mjölk', ParseConfidence.low),
+          // Same text, another row: identity is the row, never its text.
+          row('mjölk', '6 dl mjölk', ParseConfidence.low),
+          row('', '2 ?? salt', ParseConfidence.failed),
+        ];
+        viewModel.state.setOriginalParsedRecipe(parsedWith(rows));
+
+        expect(viewModel.pendingParseConfirmations, 3);
+
+        viewModel.confirmParseRow(rows[0]);
+        expect(viewModel.pendingParseConfirmations, 2);
+        expect(viewModel.isParseRowConfirmed(rows[0]), isTrue);
+        expect(viewModel.isParseRowConfirmed(rows[1]), isFalse);
+
+        viewModel.confirmParseRow(rows[1]);
+        viewModel.confirmParseRow(rows[2]);
+        expect(viewModel.pendingParseConfirmations, 0);
+      });
+
+      test('a new parse starts the confirmations over', () {
+        const low = ParsedIngredient(
+          name: 'ägg',
+          originalLine: '3 ägg',
+          confidence: ParseConfidence.low,
+        );
+        viewModel.state.setOriginalParsedRecipe(parsedWith(const [low]));
+        viewModel.confirmParseRow(low);
+        expect(viewModel.pendingParseConfirmations, 0);
+
+        viewModel.state.setOriginalParsedRecipe(parsedWith(const [low]));
+        expect(viewModel.pendingParseConfirmations, 1);
       });
     });
   });

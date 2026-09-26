@@ -200,6 +200,27 @@ void main() {
       vm.dispose();
     });
   });
+
+  // P6-U04: a recipe without steps is not cooking — no "lagar just nu"
+  // signal about something that is not happening (produktregler.md:1227).
+  group('CookingModeViewModel.onEnter · a recipe without steps', () {
+    test('sends no broadcast', () async {
+      final vm = CookingModeViewModel(
+        recipe: RecipeFactory.build(
+          id: 'empty',
+          title: 'Utan steg',
+          ingredients: ['1 ägg'],
+          instructions: const [],
+        ),
+      );
+
+      await vm.onEnter();
+
+      expect(vm.hasSteps, isFalse);
+      expect(fakeModule.startCalls, isEmpty);
+      vm.dispose();
+    });
+  });
 }
 
 class _ThrowingModule implements CookingSessionModule {

@@ -10156,7 +10156,7 @@ abstract class AppLocalizations {
   /// No description provided for @importPhotoDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt'**
+  /// **'Fota receptet eller välj bilder ur biblioteket, en sida i taget. Texten läses av när du trycker Läs av.'**
   String get importPhotoDescription;
 
   /// No description provided for @importPhotoImport.
@@ -29434,6 +29434,288 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
   String get mfaBackupCodesFailed;
+
+  /// No description provided for @permAllow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt'**
+  String get permAllow;
+
+  /// No description provided for @permNotNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get permNotNow;
+
+  /// No description provided for @permAskAgain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fråga igen'**
+  String get permAskAgain;
+
+  /// No description provided for @permOpenSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna inställningar'**
+  String get permOpenSettings;
+
+  /// No description provided for @permImportCameraTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotografera receptet'**
+  String get permImportCameraTitle;
+
+  /// No description provided for @permImportCameraBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag läser texten ur bilden och fyller i receptet åt dig.'**
+  String get permImportCameraBody;
+
+  /// No description provided for @permImportPhotosTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj bilder av receptet'**
+  String get permImportPhotosTitle;
+
+  /// No description provided for @permImportPhotosBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.'**
+  String get permImportPhotosBody;
+
+  /// No description provided for @permImportConsequence.
+  ///
+  /// In sv, this message translates to:
+  /// **'Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.'**
+  String get permImportConsequence;
+
+  /// No description provided for @permCameraTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta en bild med kameran'**
+  String get permCameraTitle;
+
+  /// No description provided for @permCameraBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran används bara när du själv tar en bild.'**
+  String get permCameraBody;
+
+  /// No description provided for @permPhotosTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj bilder ur bildbiblioteket'**
+  String get permPhotosTitle;
+
+  /// No description provided for @permPhotosBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery läser bara de bilder du själv väljer.'**
+  String get permPhotosBody;
+
+  /// No description provided for @permCameraDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran är inte tillåten, så receptet går inte att fotografera.'**
+  String get permCameraDenied;
+
+  /// No description provided for @permPhotosDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.'**
+  String get permPhotosDenied;
+
+  /// No description provided for @permCameraPermanentlyDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran är avstängd för Butlery i telefonens inställningar.'**
+  String get permCameraPermanentlyDenied;
+
+  /// No description provided for @permPhotosPermanentlyDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildbiblioteket är avstängt för Butlery i telefonens inställningar.'**
+  String get permPhotosPermanentlyDenied;
+
+  /// No description provided for @permCameraRestricted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enheten har spärrat kameran. Det går inte att ändra här.'**
+  String get permCameraRestricted;
+
+  /// No description provided for @permPhotosRestricted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enheten har spärrat bildbiblioteket. Det går inte att ändra här.'**
+  String get permPhotosRestricted;
+
+  /// No description provided for @permFallbackGallery.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ur bildbiblioteket'**
+  String get permFallbackGallery;
+
+  /// No description provided for @permFallbackWriteYourself.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv själv'**
+  String get permFallbackWriteYourself;
+
+  /// No description provided for @permPhotosLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har delat några bilder med Butlery. Jag ser bara dem.'**
+  String get permPhotosLimited;
+
+  /// No description provided for @permPhotosLimitedHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hittar du inte bilden är det urvalet som saknar den, inte biblioteket. Du kan lägga till fler utan att ge mig hela biblioteket.'**
+  String get permPhotosLimitedHint;
+
+  /// No description provided for @permPhotosChooseMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj fler bilder'**
+  String get permPhotosChooseMore;
+
+  /// No description provided for @timerNotifDeniedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timern syns bara i appen'**
+  String get timerNotifDeniedTitle;
+
+  /// No description provided for @timerNotifDeniedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser är avstängda för Butlery, så timern kan inte säga till när appen ligger i bakgrunden eller telefonen är låst.'**
+  String get timerNotifDeniedBody;
+
+  /// No description provided for @timerNotifDeniedStart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta timern'**
+  String get timerNotifDeniedStart;
+
+  /// No description provided for @timerInAppOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timern syns bara i appen.'**
+  String get timerInAppOnly;
+
+  /// No description provided for @notifSystemOffRow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.'**
+  String get notifSystemOffRow;
+
+  /// No description provided for @a11yOpenSystemSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna systeminställningarna'**
+  String get a11yOpenSystemSettings;
+
+  /// No description provided for @cookingExitConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta matlagningen?'**
+  String get cookingExitConfirmTitle;
+
+  /// No description provided for @cookingExitConfirmBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är på steg {step} av {total}. Receptet räknas inte som lagat förrän du trycker Klart.'**
+  String cookingExitConfirmBody(int step, int total);
+
+  /// No description provided for @cookingExitConfirmStay.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt laga'**
+  String get cookingExitConfirmStay;
+
+  /// No description provided for @cookingExitConfirmLeave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta matlagningen'**
+  String get cookingExitConfirmLeave;
+
+  /// No description provided for @cookingDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart'**
+  String get cookingDone;
+
+  /// No description provided for @cookingNoStepsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet har inga steg än'**
+  String get cookingNoStepsTitle;
+
+  /// No description provided for @cookingNoStepsBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.'**
+  String get cookingNoStepsBody;
+
+  /// No description provided for @cookingNoStepsBodyNoIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.'**
+  String get cookingNoStepsBodyNoIngredients;
+
+  /// No description provided for @cookingNoStepsWrite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv stegen'**
+  String get cookingNoStepsWrite;
+
+  /// No description provided for @cookingNoStepsShopping.
+  ///
+  /// In sv, this message translates to:
+  /// **'Till inköpslistan'**
+  String get cookingNoStepsShopping;
+
+  /// No description provided for @parseConfidenceConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stämmer'**
+  String get parseConfidenceConfirm;
+
+  /// No description provided for @parseConfidenceConfirmed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräftad'**
+  String get parseConfidenceConfirmed;
+
+  /// No description provided for @a11yParseConfidenceConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta raden {line}'**
+  String a11yParseConfidenceConfirm(String line);
+
+  /// No description provided for @parseConfidencePendingSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Bekräfta 1 rad innan du sparar} other{Bekräfta {count} rader innan du sparar}}'**
+  String parseConfidencePendingSave(int count);
+
+  /// No description provided for @parseConfidenceUnreadLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Raden kunde inte läsas'**
+  String get parseConfidenceUnreadLine;
+
+  /// No description provided for @a11yParseConfidenceUnreadLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rad som inte kunde läsas'**
+  String get a11yParseConfidenceUnreadLine;
+
+  /// No description provided for @importReadPages.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Läs av 1 sida} other{Läs av {count} sidor}}'**
+  String importReadPages(int count);
 }
 
 class _AppLocalizationsDelegate

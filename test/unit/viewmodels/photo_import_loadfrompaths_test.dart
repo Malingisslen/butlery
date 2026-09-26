@@ -173,4 +173,63 @@ void main() {
     expect(offlineVm.hasError, isTrue);
     verifyNever(() => mockClient.send(any()));
   });
+
+  // Q4-04 = A (produktbeslut-2026-09-24.json; Skarmar v12 del 2
+  // #fotoimport): the pages come first, the reading only on "Läs av N
+  // sidor".
+  test('shared pages wait unread until readPages, then read once', () async {
+    await vm.loadImagesFromPaths([writeImage(21), writeImage(22)]);
+
+    expect(vm.pageCount, 2);
+    expect(vm.unreadPageCount, 2);
+    expect(vm.canReadPages, isTrue);
+    expect(vm.hasOcrResult, isFalse);
+    verifyNever(() => mockClient.send(any()));
+
+    await vm.readPages();
+
+    expect(vm.unreadPageCount, 0);
+    expect(vm.hasOcrResult, isTrue);
+    verify(() => mockClient.send(any())).called(2);
+  });
+
+  test(
+    'a page added after reading waits for its own "Läs av 1 sida"',
+    () async {
+      await vm.loadImagesFromPaths([writeImage(31)]);
+      await vm.readPages();
+      expect(vm.hasOcrResult, isTrue);
+
+      vm.stagePageForTesting(OCRTestImages.uniqueImage(32));
+
+      expect(vm.unreadPageCount, 1);
+      expect(
+        vm.hasOcrResult,
+        isFalse,
+        reason: 'the text of one page must not stand in for two',
+      );
+
+      await vm.readPages();
+      expect(vm.unreadPageCount, 0);
+      expect(vm.hasOcrResult, isTrue);
+    },
+  );
+
+  test('offline: Läs av says so and reads nothing', () async {
+    final offlineVm = PhotoImportViewModel(
+      importManager: ImportManager.withStrategies(
+        mockPersonalOps,
+        [TextImportStrategy()],
+      ),
+      connectivity: _OfflineConnectivity(),
+    );
+    addTearDown(offlineVm.dispose);
+    offlineVm.stagePageForTesting(OCRTestImages.uniqueImage(41));
+
+    await offlineVm.readPages();
+
+    expect(offlineVm.hasError, isTrue);
+    expect(offlineVm.unreadPageCount, 1);
+    verifyNever(() => mockClient.send(any()));
+  });
 }

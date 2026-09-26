@@ -4109,7 +4109,7 @@
   "importPasteLinkOrText": "Klistra in länk eller text här...",
   "importPasteText": "Klistra in text",
   "importAddManually": "Lägg till manuellt",
-  "importPhotoDescription": "Ta bild av ett recept eller välj från galleriet för att importera text automatiskt",
+  "importPhotoDescription": "Fota receptet eller välj bilder ur biblioteket, en sida i taget. Texten läses av när du trycker Läs av.",
   "importPhotoImport": "Fotoimport",
   "importProceedToEdit": "Gå vidare till redigera",
   "importMultipleRecipesFound": "Vi hittade {count} recept",
@@ -13547,5 +13547,83 @@
   "mfaBackupCodesCopied": "Koderna är kopierade.",
   "mfaBackupCodesSaved": "Jag har sparat koderna",
   "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
-  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat."
+  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.",
+  "permAllow": "Tillåt",
+  "permNotNow": "Inte nu",
+  "permAskAgain": "Fråga igen",
+  "permOpenSettings": "Öppna inställningar",
+  "permImportCameraTitle": "Fotografera receptet",
+  "permImportCameraBody": "Jag läser texten ur bilden och fyller i receptet åt dig.",
+  "permImportPhotosTitle": "Välj bilder av receptet",
+  "permImportPhotosBody": "Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.",
+  "permImportConsequence": "Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.",
+  "permCameraTitle": "Ta en bild med kameran",
+  "permCameraBody": "Kameran används bara när du själv tar en bild.",
+  "permPhotosTitle": "Välj bilder ur bildbiblioteket",
+  "permPhotosBody": "Butlery läser bara de bilder du själv väljer.",
+  "permCameraDenied": "Kameran är inte tillåten, så receptet går inte att fotografera.",
+  "permPhotosDenied": "Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.",
+  "permCameraPermanentlyDenied": "Kameran är avstängd för Butlery i telefonens inställningar.",
+  "permPhotosPermanentlyDenied": "Bildbiblioteket är avstängt för Butlery i telefonens inställningar.",
+  "permCameraRestricted": "Enheten har spärrat kameran. Det går inte att ändra här.",
+  "permPhotosRestricted": "Enheten har spärrat bildbiblioteket. Det går inte att ändra här.",
+  "permFallbackGallery": "Välj ur bildbiblioteket",
+  "permFallbackWriteYourself": "Skriv själv",
+  "permPhotosLimited": "Du har delat några bilder med Butlery. Jag ser bara dem.",
+  "permPhotosLimitedHint": "Hittar du inte bilden är det urvalet som saknar den, inte biblioteket. Du kan lägga till fler utan att ge mig hela biblioteket.",
+  "permPhotosChooseMore": "Välj fler bilder",
+  "timerNotifDeniedTitle": "Timern syns bara i appen",
+  "timerNotifDeniedBody": "Notiser är avstängda för Butlery, så timern kan inte säga till när appen ligger i bakgrunden eller telefonen är låst.",
+  "timerNotifDeniedStart": "Starta timern",
+  "timerInAppOnly": "Timern syns bara i appen.",
+  "notifSystemOffRow": "Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.",
+  "a11yOpenSystemSettings": "Öppna systeminställningarna",
+  "cookingExitConfirmTitle": "Avsluta matlagningen?",
+  "cookingExitConfirmBody": "Du är på steg {step} av {total}. Receptet räknas inte som lagat förrän du trycker Klart.",
+  "@cookingExitConfirmBody": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingExitConfirmStay": "Fortsätt laga",
+  "cookingExitConfirmLeave": "Avsluta matlagningen",
+  "cookingDone": "Klart",
+  "cookingNoStepsTitle": "Receptet har inga steg än",
+  "cookingNoStepsBody": "Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.",
+  "cookingNoStepsBodyNoIngredients": "Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.",
+  "cookingNoStepsWrite": "Skriv stegen",
+  "cookingNoStepsShopping": "Till inköpslistan",
+  "parseConfidenceConfirm": "Stämmer",
+  "parseConfidenceConfirmed": "Bekräftad",
+  "a11yParseConfidenceConfirm": "Bekräfta raden {line}",
+  "@a11yParseConfidenceConfirm": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "parseConfidencePendingSave": "{count, plural, =1{Bekräfta 1 rad innan du sparar} other{Bekräfta {count} rader innan du sparar}}",
+  "@parseConfidencePendingSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parseConfidenceUnreadLine": "Raden kunde inte läsas",
+  "a11yParseConfidenceUnreadLine": "Rad som inte kunde läsas",
+  "importReadPages": "{count, plural, =1{Läs av 1 sida} other{Läs av {count} sidor}}",
+  "@importReadPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

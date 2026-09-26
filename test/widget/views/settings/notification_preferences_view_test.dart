@@ -61,6 +61,13 @@ void main() {
 
       notificationService = MockNotificationService();
       permissionService = MockNotificationPermissionService();
+      // P6-U07: notifications are on in the phone unless a test says not.
+      when(
+        () => permissionService.blockedInSystem(),
+      ).thenAnswer((_) async => false);
+      when(
+        () => permissionService.openSystemSettings(),
+      ).thenAnswer((_) async => true);
       offlineService = MockOfflineService();
 
       when(() => offlineService.isOnline).thenReturn(true);
@@ -404,6 +411,61 @@ void main() {
         findsOneWidget,
         reason: 'A failed load must offer a retry action.',
       );
+    });
+
+    // P6-U07: notifications off in the phone — a row at the top leads to the
+    // system settings and the switches stay visible but inactive
+    // (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
+    testWidgets(
+      'notifications off in the phone: top row, switches visible but inactive',
+      (tester) async {
+        when(
+          () => notificationService.getPreferences(),
+        ).thenAnswer((_) async => NotificationPreferences.defaults());
+        when(
+          () => permissionService.blockedInSystem(),
+        ).thenAnswer((_) async => true);
+
+        await pumpView(tester);
+
+        expect(
+          find.byKey(const ValueKey('notification-system-off-row')),
+          findsOneWidget,
+        );
+        expect(find.text(sv.notifSystemOffRow), findsOneWidget);
+        final tiles = tester
+            .widgetList<SwitchListTile>(find.byType(SwitchListTile))
+            .toList();
+        expect(tiles, isNotEmpty, reason: 'the switches stay visible');
+        for (final tile in tiles) {
+          expect(tile.onChanged, isNull, reason: 'and inactive');
+        }
+
+        await tester.tap(
+          find.byKey(const ValueKey('notification-system-off-open')),
+        );
+        await tester.pump();
+        verify(() => permissionService.openSystemSettings()).called(1);
+      },
+    );
+
+    testWidgets('notifications on in the phone: no row, switches work', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+
+      await pumpView(tester);
+
+      expect(
+        find.byKey(const ValueKey('notification-system-off-row')),
+        findsNothing,
+      );
+      final master = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, sv.notificationEnableTitle),
+      );
+      expect(master.onChanged, isNotNull);
     });
   });
 }

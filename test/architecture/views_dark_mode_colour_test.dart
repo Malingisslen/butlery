@@ -163,8 +163,10 @@ const _foregroundCalls = {
 /// found: a site that goes away fails until its count is lowered.
 const _inkOnPaperSites = <String, int>{
   // The font-size plate and the X on paper plates on the cooking base
-  // (cs.onPrimary behind them, paper in both modes).
-  'lib/views/cooking_mode_view.dart': 2,
+  // (cs.onPrimary behind them, paper in both modes). P6-U04: the empty
+  // state's X on its paper plate and "Skriv stegen", ink on a paper fill
+  // (Skarmar v12 etapp 11 #lgbutan).
+  'lib/views/cooking_mode_view.dart': 4,
   // The hero buttons' glyphs inside _PaperRing (cs.onPrimary, Komponentark
   // v1:81-89).
   'lib/views/recipe_detail_view.dart': 2,

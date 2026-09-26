@@ -20,6 +20,7 @@ import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/fork_placement.dart';
+import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
@@ -278,16 +279,46 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
-        void startCooking() => Navigator.pushNamed(
-          context,
-          Routes.cookingMode,
-          // BUT-1613: forward the present count (map form) when this detail
-          // view was opened from a planned meal, so cooking mode opens
-          // pre-scaled. Bare Recipe otherwise.
-          arguments: widget.presentServings == null
-              ? recipe
-              : {'recipe': recipe, 'presentServings': widget.presentServings},
-        );
+        Future<void> startCooking() async {
+          final exit = await Navigator.pushNamed<Object?>(
+            context,
+            Routes.cookingMode,
+            // BUT-1613: forward the present count (map form) when this detail
+            // view was opened from a planned meal, so cooking mode opens
+            // pre-scaled. Bare Recipe otherwise.
+            arguments: widget.presentServings == null
+                ? recipe
+                : {'recipe': recipe, 'presentServings': widget.presentServings},
+          );
+          if (!context.mounted) return;
+          switch (exit) {
+            // "Klart" counts the recipe as cooked and the chip shows the new
+            // count (flows-roles-budget.md:72). The per-day debounce stays:
+            // a second Klart the same day leaves the count, and the chip
+            // already says "Lagat idag". Klart never opens the who's-eating
+            // picker, and cooking mode knows no member ids, so none are
+            // passed (Q-P6-E18).
+            case CookingModeExit.finished:
+              await viewModel.markAsCooked();
+            // A recipe without steps: "Skriv stegen" opens the editor, or
+            // the copy path when the recipe is not the user's to edit.
+            case CookingModeExit.editRecipe:
+              if (widget.readOnly || isOthersRecipe) {
+                await _handleMenuAction(
+                  context,
+                  _MenuAction.fork,
+                  viewModel,
+                  recipe,
+                );
+              } else {
+                await _actions.editRecipe(context);
+              }
+            case CookingModeExit.toShoppingList:
+              await _actions.showAddToCartConfirmation(context);
+            default:
+              break;
+          }
+        }
 
         return Scaffold(
           backgroundColor: cs.surface,

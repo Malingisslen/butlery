@@ -101,6 +101,20 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   // The view's dispose() calls removeListener + dispose() on the VM it resolved.
   // ChangeNotifier provides both; nothing else of the VM is invoked.
 
+  // P6-U07 / Q4-04: the view wires the permission resolver and reads the
+  // permission notice and the pages waiting for "Läs av".
+  @override
+  PhotoPermissionResolver? permissionResolver;
+
+  @override
+  PhotoPermissionNotice? get permissionNotice => null;
+
+  @override
+  int get unreadPageCount => 0;
+
+  @override
+  bool get canReadPages => false;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -319,6 +319,14 @@ class _SkrivSjalvReceptViewContentState
 
     // CRITICAL FIX: Initialize controllers once on first build
     _initializeControllersIfNeeded(viewModel);
+    // P6-U03: Spara waits for low- and failed-confidence import rows to be
+    // confirmed (flows-roles-budget.md:61).
+    final pendingConfirmations = viewModel.pendingParseConfirmations;
+    final saveBlocked =
+        _isSaving ||
+        viewModel.isSaving ||
+        !viewModel.isValid ||
+        pendingConfirmations > 0;
 
     return PopScope(
       canPop:
@@ -403,7 +411,8 @@ class _SkrivSjalvReceptViewContentState
                     onSubmit: () {
                       if (_isSaving ||
                           viewModel.isSaving ||
-                          !viewModel.isValid) {
+                          !viewModel.isValid ||
+                          viewModel.pendingParseConfirmations > 0) {
                         return;
                       }
                       _saveRecipe();
@@ -626,6 +635,8 @@ class _SkrivSjalvReceptViewContentState
                             const SizedBox(height: AppDimensions.spacingM),
                             ParseConfidenceReview(
                               ingredients: viewModel.parsedIngredients!,
+                              isConfirmed: viewModel.isParseRowConfirmed,
+                              onConfirm: viewModel.confirmParseRow,
                             ),
                           ],
                           const SizedBox(height: AppDimensions.spacingXl),
@@ -729,34 +740,56 @@ class _SkrivSjalvReceptViewContentState
         ),
         bottomNavigationBar: BottomActionContainer(
           // BUT-403: `btn-save-recipe` identifier for browser a11y tree.
-          child: Semantics(
-            identifier: 'btn-save-recipe',
-            button: true,
-            enabled: !(_isSaving || viewModel.isSaving || !viewModel.isValid),
-            label: context.l10n.recipeSave,
-            child: SizedBox(
-              key: const ValueKey('test-skriv-sjalv-save'),
-              // The view's one saffron action (Grafisk manual v6:219).
-              // Busy shows the plate line in its place.
-              width: double.infinity,
-              child: FilledButton(
-                style: ComponentThemes.heroButtonStyle(
-                  Theme.of(context).colorScheme,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // P6-U03: low- and failed-confidence rows must be confirmed
+              // before Spara, and the line says how many are left
+              // (flows-roles-budget.md:61).
+              if (pendingConfirmations > 0)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppDimensions.spacingSm,
+                  ),
+                  child: Text(
+                    context.l10n.parseConfidencePendingSave(
+                      pendingConfirmations,
+                    ),
+                    key: const ValueKey('skriv-sjalv-pending-confirmations'),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                 ),
-                onPressed:
-                    (_isSaving || viewModel.isSaving || !viewModel.isValid)
-                    ? null
-                    : _saveRecipe,
-                child: (_isSaving || viewModel.isSaving)
-                    ? SizedBox(
-                        width: AppDimensions.iconSizeXl * 2,
-                        child: PlateLine(
-                          semanticLabel: context.l10n.statusSaving,
-                        ),
-                      )
-                    : Text(context.l10n.recipeSave),
+              Semantics(
+                identifier: 'btn-save-recipe',
+                button: true,
+                enabled: !saveBlocked,
+                label: context.l10n.recipeSave,
+                child: SizedBox(
+                  key: const ValueKey('test-skriv-sjalv-save'),
+                  // The view's one saffron action (Grafisk manual v6:219).
+                  // Busy shows the plate line in its place.
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: ComponentThemes.heroButtonStyle(
+                      Theme.of(context).colorScheme,
+                    ),
+                    onPressed: saveBlocked ? null : _saveRecipe,
+                    child: (_isSaving || viewModel.isSaving)
+                        ? SizedBox(
+                            width: AppDimensions.iconSizeXl * 2,
+                            child: PlateLine(
+                              semanticLabel: context.l10n.statusSaving,
+                            ),
+                          )
+                        : Text(context.l10n.recipeSave),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

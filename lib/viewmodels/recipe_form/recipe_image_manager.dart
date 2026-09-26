@@ -317,18 +317,21 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         context,
       );
 
-      if (imageSource != null) {
-        final pickedFile = await _imagePickerService.pickImage(
+      if (imageSource != null && context.mounted) {
+        final outcome = await _imagePickerService.pickImageWithOutcome(
           imageSource,
+          rationale: mediaRationalePrompt(context),
           enableCrop: true,
         );
-
+        final pickedFile = outcome.file;
         if (pickedFile != null) {
           final xFile = XFile(pickedFile.path);
           await _processImagePickerResult(xFile, recipeId: recipeId);
-        } else {
-          _setImageUploadError(AppLocale.current.errorGeneric);
+        } else if (outcome.blockedByPermission && context.mounted) {
+          // Flow 07: the permission, not a failure, stopped the pick.
+          explainMediaPermission(context, outcome.permission, imageSource);
         }
+        // A cancelled pick is no error (content-style-guide.md:94).
       }
     } catch (e) {
       AppLogger.error('Image picker error: $e');
@@ -350,17 +353,20 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile = await _imagePickerService.pickImage(
+      final outcome = await _imagePickerService.pickImageWithOutcome(
         ImageSource.camera,
+        rationale: mediaRationalePrompt(context),
         enableCrop: true,
       );
-
+      final pickedFile = outcome.file;
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
-      } else {
-        _setImageUploadError(AppLocale.current.errorGeneric);
+      } else if (outcome.blockedByPermission && context.mounted) {
+        // Flow 07: the permission, not a failure, stopped the pick.
+        explainMediaPermission(context, outcome.permission, ImageSource.camera);
       }
+      // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
       AppLogger.error('Camera picker error: $e');
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -383,17 +389,24 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile = await _imagePickerService.pickImage(
+      final outcome = await _imagePickerService.pickImageWithOutcome(
         ImageSource.gallery,
+        rationale: mediaRationalePrompt(context),
         enableCrop: true,
       );
-
+      final pickedFile = outcome.file;
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
-      } else {
-        _setImageUploadError(AppLocale.current.errorGeneric);
+      } else if (outcome.blockedByPermission && context.mounted) {
+        // Flow 07: the permission, not a failure, stopped the pick.
+        explainMediaPermission(
+          context,
+          outcome.permission,
+          ImageSource.gallery,
+        );
       }
+      // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
       AppLogger.error('Gallery picker error: $e');
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -416,14 +429,22 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFiles = await _imagePickerService.pickMultipleImages();
-
+      final outcome = await _imagePickerService.pickMultipleImagesWithOutcome(
+        rationale: mediaRationalePrompt(context),
+      );
+      final pickedFiles = outcome.files;
       if (pickedFiles.isNotEmpty) {
         final xFiles = pickedFiles.map((file) => XFile(file.path)).toList();
         await _processImagePickerResult(xFiles, recipeId: recipeId);
-      } else {
-        _setImageUploadError(AppLocale.current.errorGeneric);
+      } else if (outcome.blockedByPermission && context.mounted) {
+        // Flow 07: the permission, not a failure, stopped the pick.
+        explainMediaPermission(
+          context,
+          outcome.permission,
+          ImageSource.gallery,
+        );
       }
+      // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
       AppLogger.error('Multiple image picker error: $e');
       _setImageUploadError(AppLocale.current.errorGeneric);
