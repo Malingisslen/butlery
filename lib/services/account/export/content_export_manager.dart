@@ -668,6 +668,52 @@ class ContentExportManager {
     }
   }
 
+  /// P5-U27b: suggestions to shared recipes, both directions — the ones the
+  /// user made to someone else's recipe (`suggesterId`) and the ones made to
+  /// the user's own recipes (`ownerId`). The deletion cascade erases both
+  /// (`deleteRecipeSuggestions`), so Art. 15 reaches both first.
+  ///
+  /// Rows are reproduced as stored, like `overwritten_versions`: the other
+  /// person on a row is named only by the uid the app already resolves to a
+  /// name for the user, and a suggestion made to the user's recipe is content
+  /// the user was shown in order to decide on it.
+  Future<Map<String, dynamic>> exportRecipeSuggestions(String userId) async {
+    try {
+      final made = await ExportPaginationHelper.fetchCapped(
+        type: 'recipe_suggestions_made',
+        fetch: (max) =>
+            _exports.exportRecipeSuggestionsMade(userId, maxDocuments: max),
+      );
+      final received = await ExportPaginationHelper.fetchCapped(
+        type: 'recipe_suggestions_received',
+        fetch: (max) =>
+            _exports.exportRecipeSuggestionsReceived(userId, maxDocuments: max),
+      );
+      List<Map<String, dynamic>> rows(List<Map<String, dynamic>> items) => [
+        for (final entry in items)
+          {
+            'suggestion_id': entry['id'],
+            'data': sanitizeForJson(entry['data']),
+          },
+      ];
+      return {
+        'total_count': made.items.length + received.items.length,
+        'suggestions_made': rows(made.items),
+        'suggestions_received': rows(received.items),
+        'data_minimisation':
+            'A suggestion is kept for 7 days and then deleted, so only '
+            'suggestions from the last 7 days are included.',
+        if (made.truncated || received.truncated) 'truncated': true,
+      };
+    } catch (e) {
+      return _failed(
+        'recipe suggestions',
+        'recipe-suggestions-export-failed',
+        e,
+      );
+    }
+  }
+
   Map<String, dynamic> _projectIngredientSuggestion(Object? data) {
     if (data is! Map) return const {};
     return {

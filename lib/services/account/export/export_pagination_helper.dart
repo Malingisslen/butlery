@@ -386,6 +386,11 @@ class ExportPaginationHelper {
     // BUT-1693: a user holds at most one share per household. Different from
     // `defaultBatchSize` on purpose, so a deleted entry changes behaviour.
     'household_allergen_shares': 50,
+    // P5-U27b: recipe suggestions, one key per direction so a busy shared
+    // recipe's incoming suggestions cannot decide how many of the user's own
+    // are shown. They live 7 days, so 200 is far above a week's use.
+    'recipe_suggestions_made': 200,
+    'recipe_suggestions_received': 200,
   };
 
   /// Get export limit for content type

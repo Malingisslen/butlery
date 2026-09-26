@@ -285,6 +285,9 @@ class DataExportService extends BaseService {
       'ingredient_suggestions': _contentManager.exportIngredientSuggestions(
         userId,
       ),
+      // P5-U27b: erased with either account by the cascade, so exported in
+      // both directions (Art. 15 ⊇ Art. 17).
+      'recipe_suggestions': _contentManager.exportRecipeSuggestions(userId),
       'group_weekly_menu_plans': _contentManager.exportGroupWeeklyMenuPlans(
         userId,
       ),

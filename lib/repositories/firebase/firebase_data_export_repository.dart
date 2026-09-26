@@ -65,7 +65,10 @@ enum ExportResourceType {
   // BUT-2028: ingredient suggestions (Art. 15 ⊇ Art. 17).
   ingredientSuggestions('ingredient_suggestions'),
   // BUT-1693: a member's own shared allergen list (Art. 15 ⊇ Art. 17).
-  householdAllergenShares('household_allergen_shares')
+  householdAllergenShares('household_allergen_shares'),
+  // P5-U27b: suggestions to shared recipes, made by or to the user
+  // (Art. 15 ⊇ Art. 17: the cascade erases them with either account).
+  recipeSuggestions('recipe_suggestions')
   ;
 
   const ExportResourceType(this.tag);
@@ -1019,6 +1022,38 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('userId', isEqualTo: userId),
     userId,
     ExportResourceType.ingredientSuggestions,
+    limit: maxDocuments,
+  );
+
+  /// Top-level `recipe_suggestions` the user MADE (`suggesterId == userId`):
+  /// their changes to someone else's shared recipe, kept 7 days (P5-U27b).
+  ///
+  /// Filtered on equality against the caller's uid on one of the two fields
+  /// the read rule tests, which is what makes the list query permitted.
+  Future<List<Map<String, dynamic>>> exportRecipeSuggestionsMade(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.recipeSuggestions)
+        .where('suggesterId', isEqualTo: userId),
+    userId,
+    ExportResourceType.recipeSuggestions,
+    limit: maxDocuments,
+  );
+
+  /// Top-level `recipe_suggestions` made TO the user's recipes
+  /// (`ownerId == userId`), which the user accepts or dismisses (P5-U27b).
+  /// The other arm of the same read rule.
+  Future<List<Map<String, dynamic>>> exportRecipeSuggestionsReceived(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.recipeSuggestions)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.recipeSuggestions,
     limit: maxDocuments,
   );
 
