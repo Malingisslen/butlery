@@ -1,0 +1,504 @@
+{
+  "$om": "Vendored copy of block 288 interaktion (70 rows: 33 REQUIRED, 33 UNSPECIFIED, 4 NOT_REQUIRED). Do not edit by hand; re-vendor from the design repo. The set hash is sha256 over ROW_ID=STATUS joined by newline, as tools/block288/uxfrysning.mjs:153 computes it.",
+  "$source": "fas2/block288-uxfrysning.json",
+  "$source_commit": "b5fcf5c (Butlery design system, 2026-09-22)",
+  "$source_sha256": "663e5c449d0e4b76ad1c0d70eb5357c64e588645e8fc0a712cc1195261aa8c37",
+  "$vendored": "2026-09-27, package 8",
+  "INTERACTION_SET_HASH": "34ed0d011c8552877f4f823d8bf0092e5107583b944b0740b7c5403562fa59fd",
+  "INTERACTION_ROWS": 70,
+  "INTERACTION_REQUIRED": 33,
+  "INTERACTION_UNSPECIFIED": 33,
+  "INTERACTION_NOT_REQUIRED": 4,
+  "interaktion": [
+    {
+      "ROW_ID": "CSR::ROLE::button::COLLAPSED",
+      "CONTROL_TYPE": "button",
+      "STATE": "COLLAPSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::button::DEFAULT",
+      "CONTROL_TYPE": "button",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::button::DISABLED",
+      "CONTROL_TYPE": "button",
+      "STATE": "DISABLED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::button::EXPANDED",
+      "CONTROL_TYPE": "button",
+      "STATE": "EXPANDED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::button::FOCUSED",
+      "CONTROL_TYPE": "button",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::button::PRESSED",
+      "CONTROL_TYPE": "button",
+      "STATE": "PRESSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::button::SELECTED",
+      "CONTROL_TYPE": "button",
+      "STATE": "SELECTED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::COLLAPSED",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::DEFAULT",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::DISABLED",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "DISABLED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::EXPANDED",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::FOCUSED",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::PRESSED",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::checkbox::SELECTED",
+      "CONTROL_TYPE": "checkbox",
+      "STATE": "SELECTED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::COLLAPSED",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "COLLAPSED",
+      "STATUS": "NOT_REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::DEFAULT",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::DISABLED",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "DISABLED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::EXPANDED",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "EXPANDED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::FOCUSED",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "FOCUSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::PRESSED",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::combobox::SELECTED",
+      "CONTROL_TYPE": "combobox",
+      "STATE": "SELECTED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::COLLAPSED",
+      "CONTROL_TYPE": "link",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::DEFAULT",
+      "CONTROL_TYPE": "link",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::DISABLED",
+      "CONTROL_TYPE": "link",
+      "STATE": "DISABLED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::EXPANDED",
+      "CONTROL_TYPE": "link",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::FOCUSED",
+      "CONTROL_TYPE": "link",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::PRESSED",
+      "CONTROL_TYPE": "link",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::link::SELECTED",
+      "CONTROL_TYPE": "link",
+      "STATE": "SELECTED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::COLLAPSED",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "COLLAPSED",
+      "STATUS": "NOT_REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::DEFAULT",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::DISABLED",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "DISABLED",
+      "STATUS": "NOT_REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::EXPANDED",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "EXPANDED",
+      "STATUS": "NOT_REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::FOCUSED",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::PRESSED",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::menuitem::SELECTED",
+      "CONTROL_TYPE": "menuitem",
+      "STATE": "SELECTED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::COLLAPSED",
+      "CONTROL_TYPE": "radio",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::DEFAULT",
+      "CONTROL_TYPE": "radio",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::DISABLED",
+      "CONTROL_TYPE": "radio",
+      "STATE": "DISABLED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::EXPANDED",
+      "CONTROL_TYPE": "radio",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::FOCUSED",
+      "CONTROL_TYPE": "radio",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::PRESSED",
+      "CONTROL_TYPE": "radio",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::radio::SELECTED",
+      "CONTROL_TYPE": "radio",
+      "STATE": "SELECTED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::COLLAPSED",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::DEFAULT",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::DISABLED",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "DISABLED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::EXPANDED",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::FOCUSED",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::PRESSED",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::searchbox::SELECTED",
+      "CONTROL_TYPE": "searchbox",
+      "STATE": "SELECTED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "285"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::COLLAPSED",
+      "CONTROL_TYPE": "switch",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::DEFAULT",
+      "CONTROL_TYPE": "switch",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::DISABLED",
+      "CONTROL_TYPE": "switch",
+      "STATE": "DISABLED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::EXPANDED",
+      "CONTROL_TYPE": "switch",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::FOCUSED",
+      "CONTROL_TYPE": "switch",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::PRESSED",
+      "CONTROL_TYPE": "switch",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::switch::SELECTED",
+      "CONTROL_TYPE": "switch",
+      "STATE": "SELECTED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::COLLAPSED",
+      "CONTROL_TYPE": "tab",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::DEFAULT",
+      "CONTROL_TYPE": "tab",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::DISABLED",
+      "CONTROL_TYPE": "tab",
+      "STATE": "DISABLED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::EXPANDED",
+      "CONTROL_TYPE": "tab",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::FOCUSED",
+      "CONTROL_TYPE": "tab",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::PRESSED",
+      "CONTROL_TYPE": "tab",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::tab::SELECTED",
+      "CONTROL_TYPE": "tab",
+      "STATE": "SELECTED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::COLLAPSED",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "COLLAPSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::DEFAULT",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "DEFAULT",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::DISABLED",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "DISABLED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::EXPANDED",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "EXPANDED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::FOCUSED",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "FOCUSED",
+      "STATUS": "REQUIRED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::PRESSED",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "PRESSED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    },
+    {
+      "ROW_ID": "CSR::ROLE::textbox::SELECTED",
+      "CONTROL_TYPE": "textbox",
+      "STATE": "SELECTED",
+      "STATUS": "UNSPECIFIED",
+      "AVGJORD_I": "283"
+    }
+  ]
+}
