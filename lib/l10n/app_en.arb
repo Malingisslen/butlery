@@ -13789,6 +13789,15 @@
   "@syncQueueSaveAsCopy": {
     "description": "P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188)."
   },
+  "syncQueueCopyTitle": "{title} (copy)",
+  "@syncQueueCopyTitle": {
+    "description": "Q6-14 = C (produktbeslut 2026-09-27b): the title of the recipe Spara som kopia makes from a change that could not be synced; title = the original's.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "syncQueueSaveAsCopyA11y": "Save as a copy — {what}",
   "@syncQueueSaveAsCopyA11y": {
     "description": "P6-U08b: accessible name of Spara som kopia, naming the change.",

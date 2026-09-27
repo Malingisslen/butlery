@@ -178,14 +178,18 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     }
   }
 
-  /// "Spara som kopia" (produktregler.md:188).
-  void _saveAsCopy(QueuedChange change) => unawaited(
-    _act(
-      change,
-      _source.saveAsCopy,
-      failed: () => context.l10n.syncQueueCopyFailed,
-    ),
-  );
+  /// "Spara som kopia" (produktregler.md:188). Q6-14 = C: the copy's title
+  /// gets "(kopia)", so the user sees which one is the copy.
+  void _saveAsCopy(QueuedChange change) {
+    final l10n = context.l10n;
+    unawaited(
+      _act(
+        change,
+        (c) => _source.saveAsCopy(c, copyTitle: l10n.syncQueueCopyTitle),
+        failed: () => context.l10n.syncQueueCopyFailed,
+      ),
+    );
+  }
 
   /// "Försök mindre" (#synkko).
   void _trySmaller(QueuedChange change) => unawaited(

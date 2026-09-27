@@ -30287,6 +30287,12 @@ abstract class AppLocalizations {
   /// **'Spara som kopia'**
   String get syncQueueSaveAsCopy;
 
+  /// Q6-14 = C (produktbeslut 2026-09-27b): the title of the recipe Spara som kopia makes from a change that could not be synced; title = the original's.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} (kopia)'**
+  String syncQueueCopyTitle(String title);
+
   /// P6-U08b: accessible name of Spara som kopia, naming the change.
   ///
   /// In sv, this message translates to:

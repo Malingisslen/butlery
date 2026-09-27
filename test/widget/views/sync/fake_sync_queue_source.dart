@@ -85,10 +85,18 @@ class FakeSyncQueueSource extends SyncQueueSource {
   }
 
   @override
-  Future<void> saveAsCopy(QueuedChange change) async {
+  Future<void> saveAsCopy(
+    QueuedChange change, {
+    required String Function(String title) copyTitle,
+  }) async {
     _maybeFail();
     copied.add(change);
+    // Q6-14 = C: what the view makes of a title, read off a known one.
+    copyTitleOfCitronrisotto = copyTitle('Citronrisotto');
   }
+
+  /// The view's copy title for "Citronrisotto", once Spara som kopia ran.
+  String? copyTitleOfCitronrisotto;
 
   @override
   Future<void> trySmaller(QueuedChange change) async {

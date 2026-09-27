@@ -18355,6 +18355,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncQueueSaveAsCopy => 'Save as a copy';
 
   @override
+  String syncQueueCopyTitle(String title) {
+    return '$title (copy)';
+  }
+
+  @override
   String syncQueueSaveAsCopyA11y(String what) {
     return 'Save as a copy — $what';
   }

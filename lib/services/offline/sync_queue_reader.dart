@@ -194,15 +194,18 @@ Future<void> discardQueuedChange(
 /// entries stay as they are.
 ///
 /// The copy gets a new id ([newId], else a UUID v4), is the user's personal
-/// recipe (no sharing, created by her) and keeps everything else, title
-/// included. One transaction: either the copy is queued and the failure is
-/// gone, or nothing changed. Throws [StateError] when the device has no copy
-/// of the recipe to keep; the failure then stays.
+/// recipe (no sharing, created by her) and keeps everything else, the shared
+/// description included; its title is [copyTitle] of the original's (Q6-14 =
+/// C: "(kopia)" appended, so the user sees which one is the copy). One
+/// transaction: either the copy is queued and the failure is gone, or
+/// nothing changed. Throws [StateError] when the device has no copy of the
+/// recipe to keep; the failure then stays.
 Future<String> saveQueuedChangeAsCopy(
   AppDatabase db,
   String userId,
   QueuedChange change, {
   String? newId,
+  String Function(String title)? copyTitle,
 }) {
   if (change.kind != QueuedChangeKind.recipe) {
     throw ArgumentError.value(change.kind, 'change.kind', 'not a recipe');
@@ -222,6 +225,7 @@ Future<String> saveQueuedChangeAsCopy(
       jsonDecode(stored.recipeJson) as Map<String, dynamic>,
       id: id,
       userId: userId,
+      copyTitle: copyTitle,
     );
     await db.recipeDao.upsertRecipe(
       id: id,
@@ -245,10 +249,18 @@ Future<String> saveQueuedChangeAsCopy(
 /// [userId], with no sharing, collaboration or offline state carried over.
 /// Reads the stored shape through [Recipe.fromJson], so a nested or a flat
 /// record both work.
+///
+/// Q6-14 = C (produktbeslut 2026-09-27b): the shared description
+/// (socialData.descriptionCollaborative) comes along, and the title is
+/// [copyTitle] of the original's when given. Who the recipe was shared with
+/// (memberPermissions, grants and the share groups in categoryIds) does not:
+/// the copy is private, and a group id without a grant would be a revoke row
+/// that matches nobody (RecipeShareGrants.mergeCategoryIds).
 Map<String, dynamic> ownCopyOfRecipeJson(
   Map<String, dynamic> stored, {
   required String id,
   required String userId,
+  String Function(String title)? copyTitle,
 }) {
   final recipe = Recipe.fromJson(stored);
   final now = clock.now().toIso8601String();
@@ -258,9 +270,16 @@ Map<String, dynamic> ownCopyOfRecipeJson(
     ..['isPublic'] = false
     ..['createdAt'] = now
     ..['updatedAt'] = now;
+  if (copyTitle != null) core['title'] = copyTitle(recipe.title);
+  final sharedDescription = recipe.socialData?.descriptionCollaborative;
   return Recipe.fromJson({
     'core': core,
     'type': RecipeType.personal.index,
+    if (sharedDescription != null && sharedDescription.isNotEmpty)
+      'socialData': RecipeSocialData(
+        ownerId: userId,
+        descriptionCollaborative: sharedDescription,
+      ).toJson(),
   }).toJson();
 }
 

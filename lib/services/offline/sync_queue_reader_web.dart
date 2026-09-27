@@ -28,6 +28,7 @@ Future<String> saveQueuedChangeAsCopy(
   String userId,
   QueuedChange change, {
   String? newId,
+  String Function(String title)? copyTitle,
 }) async => throw UnsupportedError('The web has no offline queue');
 
 /// Nothing to shrink on the web.

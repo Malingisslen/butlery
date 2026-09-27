@@ -606,6 +606,8 @@ void main() {
 
       expect(source.copied, [b]);
       expect(source.shrunk, [img]);
+      // Q6-14 = C: the copy's title says it is the copy.
+      expect(source.copyTitleOfCitronrisotto, 'Citronrisotto (kopia)');
     });
 
     testWidgets('a failed copy says so and keeps the change', (tester) async {

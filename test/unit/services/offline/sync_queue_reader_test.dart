@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline/sync_queue_reader.dart';
 import 'package:clock/clock.dart';
@@ -355,6 +356,61 @@ void main() {
         contains('other'),
         reason: 'the rest of the queue is untouched',
       );
+    });
+
+    // Q6-14 = C (produktbeslut 2026-09-27b): the copy takes the shared
+    // description along and its title says it is the copy. Who the original
+    // was shared with, share groups included, stays with the original.
+    test('the copy keeps the shared description and gets "(kopia)", but not '
+        'the sharing', () async {
+      await db.recipeDao.upsertRecipe(
+        id: 'r1',
+        userId: 'u1',
+        recipeJson: jsonEncode(
+          RecipeFactory.build(
+            id: 'r1',
+            title: 'Citronrisotto',
+            createdBy: 'anna',
+            socialData: const RecipeSocialData(
+              ownerId: 'anna',
+              memberPermissions: {'u1': ResourcePermission.editor},
+              categoryIds: ['familj'],
+              descriptionCollaborative: 'Gör dubbel sats till söndagen',
+              grants: {
+                'u1': ['group:familj'],
+              },
+            ),
+          ).toJson(),
+        ),
+        needsSync: true,
+      );
+      await enqueue('op-1', 'r1', SyncOperation.update);
+      await db.syncQueueDao.markPermanentlyFailed('op-1', reason: 'not-found');
+      final failed = (await readQueuedChanges(db, 'u1')).single;
+
+      await saveQueuedChangeAsCopy(
+        db,
+        'u1',
+        failed,
+        newId: 'copy-1',
+        copyTitle: (t) => '$t (kopia)',
+      );
+
+      final stored = await db.recipeDao.getRecipe('copy-1', 'u1');
+      final copy = Recipe.fromJson(
+        jsonDecode(stored!.recipeJson) as Map<String, dynamic>,
+      );
+      expect(copy.title, 'Citronrisotto (kopia)');
+      expect(
+        copy.socialData?.descriptionCollaborative,
+        'Gör dubbel sats till söndagen',
+      );
+      expect(copy.socialData?.ownerId, 'u1');
+      expect(copy.socialData?.memberPermissions, isNull);
+      expect(copy.socialData?.grants, isNull);
+      expect(copy.socialData?.categoryIds, isNull);
+      expect(copy.type, RecipeType.personal);
+      expect(copy.createdBy, 'u1');
     });
 
     test('with no copy on the device nothing changes and it says so', () async {

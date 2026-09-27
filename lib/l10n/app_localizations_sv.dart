@@ -18387,6 +18387,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get syncQueueSaveAsCopy => 'Spara som kopia';
 
   @override
+  String syncQueueCopyTitle(String title) {
+    return '$title (kopia)';
+  }
+
+  @override
   String syncQueueSaveAsCopyA11y(String what) {
     return 'Spara som kopia — $what';
   }

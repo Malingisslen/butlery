@@ -65,7 +65,11 @@ abstract class SyncQueueSource {
   /// "Spara som kopia" (produktregler.md:188): the recipe's content on the
   /// device becomes a new recipe of the user's own, queued to be saved, and
   /// the failure leaves the queue. Only for [QueuedChange.canSaveAsCopy].
-  Future<void> saveAsCopy(QueuedChange change);
+  /// The copy's title is [copyTitle] of the original's (Q6-14 = C).
+  Future<void> saveAsCopy(
+    QueuedChange change, {
+    required String Function(String title) copyTitle,
+  });
 
   /// "Försök mindre" (Skarmar v12 del 4 #synkko): a too-large image is sent
   /// again as a smaller copy. Only for [QueuedChange.canTrySmaller].
@@ -198,11 +202,19 @@ class OfflineSyncQueueSource extends SyncQueueSource {
   }
 
   @override
-  Future<void> saveAsCopy(QueuedChange change) async {
+  Future<void> saveAsCopy(
+    QueuedChange change, {
+    required String Function(String title) copyTitle,
+  }) async {
     final signedIn = _signedIn();
     if (signedIn == null) return;
     final offline = signedIn.offline;
-    await saveQueuedChangeAsCopy(offline.database, signedIn.userId, change);
+    await saveQueuedChangeAsCopy(
+      offline.database,
+      signedIn.userId,
+      change,
+      copyTitle: copyTitle,
+    );
     await offline.refreshSyncState();
     if (offline.isOnline) unawaited(offline.syncNow());
   }
