@@ -1128,105 +1128,103 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                         padding: const EdgeInsets.only(
                           bottom: AppDimensions.spacingLg,
                         ),
-                        child: Opacity(
-                          // 0.6 (was 0.4): inactive steps stay legible for the
-                          // cook glancing at upcoming steps (WCAG contrast).
-                          opacity: isActive ? 1.0 : 0.6,
-                          child: Container(
-                            decoration: isActive
-                                ? BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: cs.onPrimary,
-                                        width: 3,
-                                      ),
+                        // Every step's text is paper at full strength, as
+                        // drawn in Skarmar v12 del 1 #laga (:277-288): the
+                        // current step is marked by the paper left border
+                        // and the paper plate, the others by the 0.6 plate
+                        // (tokens.json:47-51 onInk). Never a faded step:
+                        // opacity is never a state (tokens.json:41).
+                        child: Container(
+                          decoration: isActive
+                              ? BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: cs.onPrimary,
+                                      width: 3,
                                     ),
-                                  )
-                                : null,
-                            padding: isActive
-                                ? const EdgeInsetsDirectional.only(
-                                    start: AppDimensions.spacingSm,
-                                  )
-                                : null,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: AppDimensions.minTouchTarget,
-                                  height: AppDimensions.minTouchTarget,
-                                  alignment: Alignment.center,
-                                  // As drawn in Skarmar v12 del 1 #laga: the
-                                  // current step is a paper plate, the others
-                                  // paper at 0.6, an allowed on-ink ladder
-                                  // step (tokens.json:40-53 onInk). The digit
-                                  // is the base colour on both, so it reads
-                                  // on the 0.6 plate in dark mode too.
-                                  decoration: BoxDecoration(
-                                    color: isActive
-                                        ? cs.onPrimary
-                                        : cs.onPrimary.withValues(
-                                            alpha: _onInkStepPlate,
-                                          ),
                                   ),
-                                  child: Text(
-                                    '$stepNumber',
-                                    style: AppTextStyles.contentTitle.copyWith(
-                                      color: _cookingBase(cs),
-                                      fontWeight: FontWeight.w700,
-                                      fontSize:
-                                          AppTextStyles.contentTitle.fontSize! *
-                                          vm.fontScale,
-                                    ),
+                                )
+                              : null,
+                          padding: isActive
+                              ? const EdgeInsetsDirectional.only(
+                                  start: AppDimensions.spacingSm,
+                                )
+                              : null,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: AppDimensions.minTouchTarget,
+                                height: AppDimensions.minTouchTarget,
+                                alignment: Alignment.center,
+                                // As drawn in Skarmar v12 del 1 #laga: the
+                                // current step is a paper plate, the others
+                                // paper at 0.6, an allowed on-ink ladder
+                                // step (tokens.json:40-53 onInk). The digit
+                                // is the base colour on both, so it reads
+                                // on the 0.6 plate in dark mode too.
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? cs.onPrimary
+                                      : cs.onPrimary.withValues(
+                                          alpha: _onInkStepPlate,
+                                        ),
+                                ),
+                                child: Text(
+                                  '$stepNumber',
+                                  style: AppTextStyles.contentTitle.copyWith(
+                                    color: _cookingBase(cs),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize:
+                                        AppTextStyles.contentTitle.fontSize! *
+                                        vm.fontScale,
                                   ),
                                 ),
-                                const SizedBox(width: AppDimensions.spacingMd),
-                                Expanded(
-                                  child: Semantics(
-                                    label: context.l10n
-                                        .a11yCookingStepLongPressTimer(
-                                          stepNumber,
-                                        ),
-                                    button: true,
-                                    child: GestureDetector(
-                                      // BUT-406: long-press opens a step timer
-                                      // sheet, pre-filled with the duration
-                                      // parsed from this instruction (5 min
-                                      // default fallback).
-                                      // BUT-948 exception: long-press activates
-                                      // the step timer (feature affordance),
-                                      // not multi-select.
-                                      onLongPress: () => _openStepTimer(
+                              ),
+                              const SizedBox(width: AppDimensions.spacingMd),
+                              Expanded(
+                                child: Semantics(
+                                  label: context.l10n
+                                      .a11yCookingStepLongPressTimer(
+                                        stepNumber,
+                                      ),
+                                  button: true,
+                                  child: GestureDetector(
+                                    // BUT-406: long-press opens a step timer
+                                    // sheet, pre-filled with the duration
+                                    // parsed from this instruction (5 min
+                                    // default fallback).
+                                    // BUT-948 exception: long-press activates
+                                    // the step timer (feature affordance),
+                                    // not multi-select.
+                                    onLongPress: () => _openStepTimer(
+                                      context,
+                                      index,
+                                      instruction,
+                                    ),
+                                    // BUT-604: the duration phrase renders
+                                    // as an inline tappable chip — visible
+                                    // affordance for the same timer sheet.
+                                    child: InlineTimerText(
+                                      text: instruction,
+                                      onTimerTap: (_) => _openStepTimer(
                                         context,
                                         index,
                                         instruction,
                                       ),
-                                      // BUT-604: the duration phrase renders
-                                      // as an inline tappable chip — visible
-                                      // affordance for the same timer sheet.
-                                      child: InlineTimerText(
-                                        text: instruction,
-                                        onTimerTap: (_) => _openStepTimer(
-                                          context,
-                                          index,
-                                          instruction,
-                                        ),
-                                        chipColor: cs.onPrimary,
-                                        style: AppTextStyles.titleLarge
-                                            .copyWith(
-                                              color: cs.onPrimary,
-                                              height: 1.7,
-                                              fontSize:
-                                                  AppTextStyles
-                                                      .titleLarge
-                                                      .fontSize! *
-                                                  vm.fontScale,
-                                            ),
+                                      chipColor: cs.onPrimary,
+                                      style: AppTextStyles.titleLarge.copyWith(
+                                        color: cs.onPrimary,
+                                        height: 1.7,
+                                        fontSize:
+                                            AppTextStyles.titleLarge.fontSize! *
+                                            vm.fontScale,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

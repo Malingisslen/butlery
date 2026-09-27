@@ -14483,5 +14483,13 @@
   "hemEmptyAllergyLink": "Ställ in allergener",
   "@hemEmptyAllergyLink": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
+  },
+  "bulkAddToMenuFailed": "Recepten kunde inte läggas till i veckomenyn.",
+  "@bulkAddToMenuFailed": {
+    "description": "P7-A1: failure snackbar when adding the selected recipes to the week menu fails. Says what failed, without the exception (content-style-guide.md:87-95)."
+  },
+  "bulkExportFailed": "Recepten kunde inte exporteras.",
+  "@bulkExportFailed": {
+    "description": "P7-A1: failure snackbar when exporting the selected recipes fails. Says what failed, without the exception (content-style-guide.md:87-95)."
   }
 }

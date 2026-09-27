@@ -39,7 +39,7 @@ class _OnboardingAgeGateBlockedViewState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.l10n.commonOk),
+            child: Text(ctx.l10n.commonClose),
           ),
         ],
       ),

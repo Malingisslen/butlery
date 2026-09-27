@@ -18639,4 +18639,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get hemEmptyAllergyLink => 'Ställ in allergener';
+
+  @override
+  String get bulkAddToMenuFailed =>
+      'Recepten kunde inte läggas till i veckomenyn.';
+
+  @override
+  String get bulkExportFailed => 'Recepten kunde inte exporteras.';
 }

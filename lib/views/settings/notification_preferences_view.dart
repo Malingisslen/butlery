@@ -9,6 +9,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -157,7 +158,10 @@ class _NotificationPreferencesViewState
     } catch (e) {
       if (mounted) {
         setState(() => _preferences = previous);
-        SnackBarUtils.showError(context, context.l10n.notificationSaveError);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.notificationSaveError,
+        );
       }
     }
   }
@@ -328,34 +332,41 @@ class _NotificationPreferencesViewState
     final cs = Theme.of(context).colorScheme;
     final isEnabled = _preferences.categorySettings[item.category] ?? true;
 
-    return Opacity(
-      // Dim category toggles when master toggle is off
-      opacity: _preferences.enabled ? 1.0 : AppDimensions.opacityMedium,
-      child: SwitchListTile(
-        title: Text(item.label, style: AppTextStyles.titleMedium),
-        secondary: Icon(
-          item.icon,
-          color: cs.onSurface,
-          size: AppDimensions.iconSizeL,
-        ),
-        value: isEnabled,
-        onChanged: _preferences.enabled && !_systemOff
-            ? (value) {
-                final updatedSettings = Map<NotificationCategory, bool>.from(
-                  _preferences.categorySettings,
-                );
-                updatedSettings[item.category] = value;
-                _savePreferences(
-                  _copyPreferences(categorySettings: updatedSettings),
-                );
-                _logPreferenceChange(
-                  category: item.category.name,
-                  enabled: value,
-                );
-              }
-            : null,
-        contentPadding: EdgeInsets.zero,
+    // A category that cannot be switched (the master toggle or the system
+    // setting is off) is drawn disabled, in text.disabled, never faded
+    // (tokens.json:41, :120-123, :198; Butlery tillganglighetshandoff).
+    final disabled = !_preferences.enabled || _systemOff;
+    final fg = disabled
+        ? AppModeColors.textDisabled(cs.brightness)
+        : cs.onSurface;
+
+    return SwitchListTile(
+      title: Text(
+        item.label,
+        style: AppTextStyles.titleMedium.copyWith(color: fg),
       ),
+      secondary: Icon(
+        item.icon,
+        color: fg,
+        size: AppDimensions.iconSizeL,
+      ),
+      value: isEnabled,
+      onChanged: !disabled
+          ? (value) {
+              final updatedSettings = Map<NotificationCategory, bool>.from(
+                _preferences.categorySettings,
+              );
+              updatedSettings[item.category] = value;
+              _savePreferences(
+                _copyPreferences(categorySettings: updatedSettings),
+              );
+              _logPreferenceChange(
+                category: item.category.name,
+                enabled: value,
+              );
+            }
+          : null,
+      contentPadding: EdgeInsets.zero,
     );
   }
 

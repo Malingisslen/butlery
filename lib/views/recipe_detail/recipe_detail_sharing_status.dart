@@ -186,11 +186,14 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
         );
         onSharingChanged();
       } else {
-        SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.commonUnknownError,
+        );
       }
     } catch (_) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
     }
   }
 
@@ -258,11 +261,14 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
         );
         onSharingChanged();
       } else {
-        SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.commonUnknownError,
+        );
       }
     } catch (_) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
     }
   }
 }

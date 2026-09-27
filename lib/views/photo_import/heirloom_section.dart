@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -83,11 +83,11 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                 margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.warning.withValues(
+                  color: context.modeColors.warning.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   border: Border.all(
-                    color: context.butleryColors.warning.withValues(
+                    color: context.modeColors.warning.withValues(
                       alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
@@ -96,7 +96,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                   children: [
                     Icon(
                       Icons.cloud_off,
-                      color: context.butleryColors.warning,
+                      color: context.modeColors.warning,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
@@ -104,7 +104,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                       child: Text(
                         context.l10n.heirloomUploadOffline,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: context.butleryColors.onWarningContainer,
+                          color: context.modeColors.onWarningContainer,
                         ),
                       ),
                     ),

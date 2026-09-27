@@ -15,7 +15,6 @@ import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
@@ -244,7 +243,7 @@ class _PantrySection extends StatelessWidget {
         border: Border(
           left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),

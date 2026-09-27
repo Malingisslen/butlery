@@ -18,7 +18,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/component_themes.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
@@ -174,7 +173,7 @@ class _AuthViewState extends State<AuthView> {
   /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
   /// skälet och antalet väntande ändringar. Aldrig som fel"
   /// (produktregler.md:834). `surface.raised` is `surfaceContainerHighest`
-  /// and `text.success` is `butleryColors.success`, in both modes
+  /// and `text.success` is `modeColors.success`, in both modes
   /// (app_colors.dart / app_colors_dark.dart).
   Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
     final l10n = context.l10n;
@@ -196,7 +195,7 @@ class _AuthViewState extends State<AuthView> {
         children: [
           Icon(
             Icons.check_circle_outline,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -612,7 +611,7 @@ class _AuthViewState extends State<AuthView> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
         borderSide: BorderSide(
-          color: context.butleryColors.focusRing,
+          color: context.modeColors.focusRing,
           width: AppDimensions.focusRingWidth,
         ),
       ),
@@ -898,9 +897,9 @@ class _AuthViewState extends State<AuthView> {
       if (success) {
         SnackBarUtils.showSuccess(this.context, l10n.authResetEmailSent);
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           this.context,
-          viewModel.errorMessage ?? l10n.authResetEmailFailed,
+          what: viewModel.errorMessage ?? l10n.authResetEmailFailed,
         );
       }
     });

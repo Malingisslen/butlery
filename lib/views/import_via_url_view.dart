@@ -10,7 +10,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -476,7 +476,7 @@ class _UrlResultRow extends StatelessWidget {
       case UrlFetchStatus.success:
         return Icon(
           Icons.check_circle,
-          color: context.butleryColors.success,
+          color: context.modeColors.success,
           size: 20,
         );
       case UrlFetchStatus.failure:

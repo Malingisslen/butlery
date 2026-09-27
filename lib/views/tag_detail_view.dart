@@ -22,7 +22,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
@@ -98,7 +98,10 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     final newName = _nameController.text.trim();
 
     if (newName.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.tagDetailNameRequired);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.tagDetailNameRequired,
+      );
       return;
     }
 
@@ -112,7 +115,10 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.tagDetailCouldNotUpdate);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.tagDetailCouldNotUpdate,
+        );
       }
     }
   }
@@ -340,7 +346,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.tagShareError);
+        SnackBarUtils.showFailure(context, what: context.l10n.tagShareError);
       }
     }
   }
@@ -356,9 +362,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotCreateRule,
+            what: context.l10n.tagDetailCouldNotCreateRule,
           );
         }
       }
@@ -380,9 +386,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotUpdateRule,
+            what: context.l10n.tagDetailCouldNotUpdateRule,
           );
         }
       }
@@ -415,9 +421,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       await viewModel.toggleRuleEnabled(tag.id, rule.id);
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.tagDetailCouldNotChangeRuleStatus,
+          what: context.l10n.tagDetailCouldNotChangeRuleStatus,
         );
       }
     }
@@ -458,9 +464,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotDeleteRule,
+            what: context.l10n.tagDetailCouldNotDeleteRule,
           );
         }
       }
@@ -487,13 +493,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        content: Row(
-          children: [
-            const LoadingIndicator.small(),
-            const SizedBox(width: AppDimensions.spacingMd),
-            Text(context.l10n.tagDetailApplyingRules),
-          ],
-        ),
+        // The plate line with its text, never a spinner (produktregler.md
+        // :163, :304; beslutslogg B-18).
+        content: PlateLineMessage(message: context.l10n.tagDetailApplyingRules),
       ),
     );
 
@@ -523,9 +525,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
       if (context.mounted) {
         Navigator.pop(context);
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.tagDetailCouldNotApplyRules,
+          what: context.l10n.tagDetailCouldNotApplyRules,
         );
       }
     }
@@ -571,9 +573,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotDelete,
+            what: context.l10n.tagDetailCouldNotDelete,
           );
         }
       }

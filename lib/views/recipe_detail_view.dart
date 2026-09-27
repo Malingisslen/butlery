@@ -444,7 +444,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               // UI Redesign: Hero buttons are solid cream squares with green icons
               // BUT-706: stays a Material SliverAppBar — the Hero-image
               // flexibleSpace collapsing header has no CupertinoSliverNavigationBar
-              // equivalent. (The deleting-state bar above uses AdaptiveAppBar.)
+              // equivalent.
               SliverAppBar(
                 expandedHeight: Breakpoints.isMobile(context)
                     ? 200.0
@@ -1250,7 +1250,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           // optimistic local update + revert-on-failure.
           final saved = await viewModel.updateRecipeTagOverrides(overrides);
           if (!saved && context.mounted) {
-            SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
+            SnackBarUtils.showFailure(
+              context,
+              what: context.l10n.commonErrorOccurred,
+            );
           }
         }
       case _MenuAction.delete:
@@ -1330,9 +1333,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         context.l10n.recipeSourceReextractSuccess,
       );
     } else {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.recipeSourceReextractFailed,
+        what: context.l10n.recipeSourceReextractFailed,
       );
     }
   }

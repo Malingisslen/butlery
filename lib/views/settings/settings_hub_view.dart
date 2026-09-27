@@ -201,12 +201,18 @@ class SettingsHubView extends StatelessWidget {
     try {
       final launched = await launchUrl(uri);
       if (!launched && context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.appealEmailLaunchFailed);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.appealEmailLaunchFailed,
+        );
       }
     } catch (e) {
       AppLogger.error('[SettingsHub] Failed to launch appeal mailto', e);
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.appealEmailLaunchFailed);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.appealEmailLaunchFailed,
+        );
       }
     }
   }

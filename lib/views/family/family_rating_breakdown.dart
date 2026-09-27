@@ -6,7 +6,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_breakdown_viewmodel.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
@@ -160,11 +160,11 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.butleryColors.heroPaleGreen,
+        color: context.modeColors.heroPaleGreen,
         border: Border(
           left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),
@@ -329,7 +329,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           if (showPersonal)
             _compareRow(
               context,
-              color: context.butleryColors.warning,
+              color: context.modeColors.warning,
               label: l10n.familyRatingYourOwnLabel,
               trailing: StarRatingRow(rating: personal, size: 16),
             ),

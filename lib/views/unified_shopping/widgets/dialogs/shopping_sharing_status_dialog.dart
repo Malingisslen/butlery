@@ -531,9 +531,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       if (context.mounted) {
         // The ink snackbar (PQ-09 = A), and the cause in words, never the
         // raw exception (content-style-guide.md:96).
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingCouldNotLoadFriends(
+          what: context.l10n.shoppingCouldNotLoadFriends(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

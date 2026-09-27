@@ -64,9 +64,9 @@ class RecipeSocialHandler {
     final currentUserId = authService.currentUserId;
 
     if (currentUserId == null) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialMustBeLoggedInToComment,
+        what: context.l10n.socialMustBeLoggedInToComment,
       );
       return;
     }
@@ -76,9 +76,9 @@ class RecipeSocialHandler {
       final userProfile = await userService.getUserProfile(currentUserId);
       if (userProfile == null) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.socialCouldNotFetchUserData,
+            what: context.l10n.socialCouldNotFetchUserData,
           );
         }
         return;
@@ -108,7 +108,10 @@ class RecipeSocialHandler {
       );
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.socialCouldNotPostComment);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.socialCouldNotPostComment,
+      );
     }
   }
 
@@ -136,9 +139,9 @@ class RecipeSocialHandler {
       SnackBarUtils.showSuccess(context, context.l10n.socialUserProfileCreated);
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialCouldNotCreateProfile,
+        what: context.l10n.socialCouldNotCreateProfile,
       );
     }
   }

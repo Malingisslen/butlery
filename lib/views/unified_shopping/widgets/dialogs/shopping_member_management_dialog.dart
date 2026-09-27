@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -151,9 +152,12 @@ class _ShoppingMemberManagementDialogState
         });
       }
     } catch (e) {
+      AppLogger.error('Shopping member permission update failed', e);
       if (!mounted) return;
       setState(() {
-        _error = context.l10n.shoppingErrorUpdating(e.toString());
+        // What failed, never the exception (content-style-guide.md:95); the
+        // exception goes to the log.
+        _error = context.l10n.shoppingCouldNotUpdatePermission;
       });
     } finally {
       if (mounted) {
@@ -225,9 +229,12 @@ class _ShoppingMemberManagementDialogState
         });
       }
     } catch (e) {
+      AppLogger.error('Shopping member removal failed', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.shoppingErrorRemoving(e.toString());
+          // What failed, never the exception (content-style-guide.md:95); the
+          // exception goes to the log.
+          _error = context.l10n.shoppingCouldNotRemoveMember;
         });
       }
     } finally {
@@ -332,9 +339,12 @@ class _ShoppingMemberManagementDialogState
         }
       }
     } catch (e) {
+      AppLogger.error('Adding shopping members failed', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.shoppingErrorAdding(e.toString());
+          // What failed, never the exception (content-style-guide.md:95); the
+          // exception goes to the log.
+          _error = context.l10n.shoppingCouldNotAddMembers;
         });
       }
     } finally {

@@ -26,7 +26,6 @@ class MockUnifiedShoppingViewModel extends Mock
 void main() {
   late MockUnifiedShoppingViewModel viewModel;
   late List<Invocation> saves;
-  late List<String> successes;
   late List<String> errors;
 
   /// The named arguments of the single save the dialog performed. Reading the
@@ -41,7 +40,6 @@ void main() {
   setUp(() {
     viewModel = MockUnifiedShoppingViewModel();
     saves = [];
-    successes = [];
     errors = [];
 
     when(
@@ -94,7 +92,6 @@ void main() {
             onPressed: () => ShoppingItemDialogs.showAddItemDialog(
               ctx,
               viewModel,
-              successes.add,
               errors.add,
             ),
             child: const Text('öppna'),
@@ -118,7 +115,6 @@ void main() {
               ctx,
               item,
               viewModel,
-              successes.add,
               errors.add,
             ),
             child: const Text('öppna'),
@@ -154,7 +150,6 @@ void main() {
       );
       // P4-U11: add is class 1, so the receipt is the undo snackbar, not a
       // plain confirmation (produktregler.md:131).
-      expect(successes, isEmpty);
       expect(find.text('La till "Mjölk"'), findsOneWidget);
       expect(find.text('Ångra'), findsOneWidget);
       expect(errors, isEmpty);
@@ -353,7 +348,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(saves, isEmpty);
-      expect(successes, isEmpty);
       expect(errors, isEmpty);
     });
   });
@@ -396,8 +390,8 @@ void main() {
       expect(savedArgs()[#name], 'Havredryck');
       expect(savedArgs()[#notes], 'Osötad');
       expect(
-        successes,
-        isEmpty,
+        find.byType(SnackBar),
+        findsNothing,
         reason:
             'update{namn, mängd, enhet, kategori} is class 3: no friction on '
             'success (produktregler.md:133). The row changing is the receipt.',
@@ -423,7 +417,6 @@ void main() {
       await tester.tap(find.text('Spara'));
       await tester.pumpAndSettle();
 
-      expect(successes, isEmpty);
       expect(errors, hasLength(1), reason: 'class 3 silences success only');
     });
 

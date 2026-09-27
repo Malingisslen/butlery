@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
@@ -217,12 +217,12 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: context.butleryColors.info.withValues(
+        color: context.modeColors.info.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         border: Border(
           bottom: BorderSide(
-            color: context.butleryColors.info.withValues(
+            color: context.modeColors.info.withValues(
               alpha: AppDimensions.opacityMediumLight,
             ),
             width: 1,
@@ -233,7 +233,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         children: [
           Icon(
             Icons.info_outline,
-            color: context.butleryColors.info,
+            color: context.modeColors.info,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingL),
@@ -241,7 +241,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             child: Text(
               context.l10n.privacyGdprCompliant,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: context.butleryColors.info,
+                color: context.modeColors.info,
               ),
             ),
           ),

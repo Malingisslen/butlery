@@ -23,29 +23,21 @@ class ShoppingDialogs {
   static Future<void> showAddItemDialog(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
-    return ShoppingItemDialogs.showAddItemDialog(
-      context,
-      viewModel,
-      onSuccess,
-      onError,
-    );
+    return ShoppingItemDialogs.showAddItemDialog(context, viewModel, onError);
   }
 
   static Future<void> showEditItemDialog(
     BuildContext context,
     UnifiedShoppingItem item,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
     return ShoppingItemDialogs.showEditItemDialog(
       context,
       item,
       viewModel,
-      onSuccess,
       onError,
     );
   }
@@ -165,7 +157,9 @@ class ShoppingDialogs {
               actions: [
                 ActionButtons.primaryButton(
                   context,
-                  label: context.l10n.commonOk,
+                  // It only closes: Stäng, never OK (content-style-guide.md
+                  // :77, :96).
+                  label: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -195,9 +189,9 @@ class ShoppingDialogs {
       AppLogger.error('Error showing share dialog: $e');
       if (context.mounted) {
         // The ink snackbar (PQ-09 = A).
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingCouldNotShowShareDialog(
+          what: context.l10n.shoppingCouldNotShowShareDialog(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

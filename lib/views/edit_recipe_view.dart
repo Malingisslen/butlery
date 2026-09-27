@@ -671,10 +671,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     if (result != null) {
       viewModel.setTagOverrides(result);
       if (context.mounted) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.recipeTagsUpdated,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.recipeTagsUpdated);
       }
     }
   }
@@ -707,10 +704,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             .read<CollaborativeStatusViewModel>();
         collaborativeViewModel.invalidateRecipeStatus(widget.recipe.id);
 
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.recipeChangesSaved,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.recipeChangesSaved);
         Navigator.pop(context, true);
       } else {
         // A failure stays until tapped; a second one replaces it.
@@ -757,10 +751,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     if (context.mounted) {
       if (forkedRecipe != null) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.recipeCopySaved,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.recipeCopySaved);
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -815,7 +806,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       final copy = await viewModel.forkRecipe();
       if (!mounted) return;
       if (copy != null) {
-        UtilityComponents.showSuccessSnackbar(context, l10n.recipeCopySaved);
+        SnackBarUtils.showSuccess(context, l10n.recipeCopySaved);
         Navigator.of(context).pop(true);
         return;
       }

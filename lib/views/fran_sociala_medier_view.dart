@@ -2,6 +2,7 @@
 
 // lib/views/fran_sociala_medier_view.dart
 
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -217,8 +218,7 @@ class _FranSocialaMedierViewContentState
         },
       );
     } else if (context.mounted && viewModel.hasError) {
-      // Use UtilityComponents.showErrorSnackbar
-      UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 
@@ -251,7 +251,7 @@ class _FranSocialaMedierViewContentState
       if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
         AllergenSetupBanner.show(context);
       }
-      UtilityComponents.showSuccessSnackbar(
+      SnackBarUtils.showSuccess(
         context,
         context.l10n.importComplete(selected.length, 0),
       );
@@ -264,7 +264,7 @@ class _FranSocialaMedierViewContentState
         );
       }
     } else if (viewModel.hasError) {
-      UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 

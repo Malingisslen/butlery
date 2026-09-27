@@ -1,5 +1,6 @@
 // lib/views/importera_fran_arkiv_view.dart
 
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
@@ -63,13 +64,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (context.mounted) {
       if (viewModel.error == null) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.importRecipesImported,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.importRecipesImported);
         Navigator.pop(context);
       } else {
-        UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+        SnackBarUtils.showFailure(context, what: viewModel.error!);
         viewModel.clearError();
       }
     }
@@ -91,7 +89,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.error, color: cs.error),
               onPressed: () {
-                UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+                SnackBarUtils.showFailure(context, what: viewModel.error!);
                 viewModel.clearError();
               },
               tooltip: context.l10n.importShowError,
@@ -143,18 +141,27 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                 Wrap(
                                   spacing: AppDimensions.spacingS,
                                   children: allTags.map((tag) {
+                                    final chosen = viewModel.selectedTags
+                                        .contains(tag);
+                                    // Chosen is surface.selected with a real
+                                    // text.primary border, never a tint
+                                    // (tokens.json:41, :116-119; Grafisk
+                                    // manual v6:209).
                                     return FilterChip(
                                       label: Text(tag),
-                                      selected: viewModel.selectedTags.contains(
-                                        tag,
+                                      selected: chosen,
+                                      side: BorderSide(
+                                        color: chosen
+                                            ? cs.onSurface
+                                            : cs.outlineVariant,
+                                        width: chosen ? 1.5 : 1,
                                       ),
                                       onSelected: (_) =>
                                           viewModel.toggleTag(tag),
-                                      backgroundColor:
-                                          cs.surfaceContainerHighest,
-                                      selectedColor: cs.onSurface.withValues(
-                                        alpha: AppDimensions.opacityLight,
-                                      ),
+                                      // Unchosen stays on paper; only the
+                                      // chosen chip wears the Vald plate.
+                                      backgroundColor: cs.surface,
+                                      selectedColor: cs.surfaceContainerHighest,
                                       checkmarkColor: cs.onSurface,
                                     );
                                   }).toList(),

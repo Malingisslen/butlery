@@ -422,7 +422,8 @@ Future<void> _runBulkAddToMenu(
   } catch (e) {
     AppLogger.error('Bulk add-to-menu failed', e);
     if (!context.mounted) return;
-    SnackBarUtils.showError(context, e.toString());
+    // What failed, never the exception (content-style-guide.md:95).
+    SnackBarUtils.showFailure(context, what: context.l10n.bulkAddToMenuFailed);
   }
 }
 
@@ -485,7 +486,8 @@ Future<void> _openBulkExport(
   } catch (e) {
     AppLogger.error('Bulk export failed', e);
     if (!context.mounted) return;
-    SnackBarUtils.showError(context, e.toString());
+    // What failed, never the exception (content-style-guide.md:95).
+    SnackBarUtils.showFailure(context, what: context.l10n.bulkExportFailed);
   }
 }
 

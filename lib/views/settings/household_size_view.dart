@@ -159,9 +159,9 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
     } else {
       // Mirror the profile-edit save path — surface the failure instead of
       // leaving the user with un-saved changes and no explanation.
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.error ?? context.l10n.profileCouldNotSave,
+        what: viewModel.error ?? context.l10n.profileCouldNotSave,
       );
     }
   }

@@ -48,7 +48,7 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -100,7 +100,10 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
     if (svc == null) {
       if (mounted) {
         setState(() => _saving = false);
-        SnackBarUtils.showError(context, context.l10n.conflictDiffKeepFailed);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.conflictDiffKeepFailed,
+        );
       }
       return;
     }
@@ -120,7 +123,10 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       AppLogger.error('Failed to re-apply local version after conflict', e);
       if (!mounted) return;
       setState(() => _saving = false);
-      SnackBarUtils.showError(context, context.l10n.conflictDiffKeepFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.conflictDiffKeepFailed,
+      );
     }
   }
 
@@ -311,7 +317,7 @@ class ConflictDiffFieldCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final cs = Theme.of(context).colorScheme;
 
     return Container(

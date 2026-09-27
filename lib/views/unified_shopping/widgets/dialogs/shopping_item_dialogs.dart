@@ -20,7 +20,6 @@ class ShoppingItemDialogs {
   static Future<void> showAddItemDialog(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
     final result = await showDialog<UnifiedShoppingItem>(
@@ -46,7 +45,6 @@ class ShoppingItemDialogs {
             // (produktregler.md:131; content-style-guide.md:96). Ångra
             // removes the row by the id the service returned, so it takes
             // away exactly this row, on a personal list and a shared one.
-            // [onSuccess] is not used for an add any more.
             SnackBarUtils.showUndo(
               context,
               context.l10n.shoppingItemAdded(result.name),
@@ -68,14 +66,12 @@ class ShoppingItemDialogs {
     }
   }
 
-  /// [onSuccess] is no longer called: editing is class 3 (produktregler.md:133).
-  /// The parameter stays until the legacy-removal package drops it together
-  /// with the unused `shoppingItemUpdated` string.
+  /// Editing is class 3 (produktregler.md:133): no receipt on success, so
+  /// only a failure is reported, through [onError].
   static Future<void> showEditItemDialog(
     BuildContext context,
     UnifiedShoppingItem item,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
     final result = await showDialog<UnifiedShoppingItem>(

@@ -18,7 +18,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/widgets/common/indicators/status_indicator.dart';
@@ -324,7 +324,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.ContentType.recipeText:
         icon = Icons.restaurant_menu;
         title = context.l10n.importRecipeTextDetected;
-        color = context.butleryColors.success;
+        color = context.modeColors.success;
         break;
       case content_detector.ContentType.recipeUrl:
         icon = Icons.public;
@@ -482,7 +482,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: context.butleryColors.success.withValues(
+                    color: context.modeColors.success.withValues(
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
@@ -494,14 +494,14 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                     children: [
                       Icon(
                         Icons.check_circle,
-                        color: context.butleryColors.success,
+                        color: context.modeColors.success,
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
                       Expanded(
                         child: Text(
                           context.l10n.importRecipeTextCanImport,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: context.butleryColors.success,
+                            color: context.modeColors.success,
                           ),
                         ),
                       ),

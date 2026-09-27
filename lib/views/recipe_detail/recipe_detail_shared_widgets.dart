@@ -288,10 +288,13 @@ abstract final class RecipeDetailSharedWidgets {
     try {
       if (await openExternalLink(Uri.parse(url))) return;
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorCouldNotOpenLink);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.errorCouldNotOpenLink,
+      );
     } catch (_) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorInvalidLink);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorInvalidLink);
     }
   }
 
