@@ -16,7 +16,8 @@
   {
    "id": "Q6-14",
    "beslut": "C",
-   "innebord": "Spara som kopia tar med kategorier och delad beskrivning, och titeln får (kopia)."
+   "innebord": "Spara som kopia tar med kategorier och delad beskrivning, och titeln får (kopia).",
+   "tolkning": "\"Kategorier\" i alternativtexten var ledarens formulering. I receptmodellen är socialData.categoryIds de vänkategorier originalet DELATS med, inte receptkategorier. Kopian är privat och får därför inga vänkategorier (den delas inte automatiskt). Den delade beskrivningen och (kopia) följer med. Avgjort av ledet 2026-09-27; säg till om kopian ska delas som originalet."
   },
   {
    "id": "Q6-09",
