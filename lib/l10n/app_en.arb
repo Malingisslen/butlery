@@ -13978,7 +13978,7 @@
   "@hemLoadingPlan": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar)."
   },
-  "hemPlanErrorWhat": "This week's plan could not be fetched. The server did not answer.",
+  "hemPlanErrorWhat": "This week's plan could not be fetched.",
   "@hemPlanErrorWhat": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel)."
   },
@@ -13986,7 +13986,7 @@
   "@hemPlanErrorPreserved": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293)."
   },
-  "hemShowSavedPlan": "Show saved plan",
+  "hemShowSavedPlan": "Open the week menu",
   "@hemShowSavedPlan": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel)."
   },

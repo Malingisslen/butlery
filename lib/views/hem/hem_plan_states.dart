@@ -147,10 +147,12 @@ class HemPlanError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // What happened and what was kept, in the section error box.
-          InlineError(
-            what: l10n.hemPlanErrorWhat,
-            preserved: l10n.hemPlanErrorPreserved,
-          ),
+          // What happened. #hemfel draws a cause ("Servern svarade inte") and
+          // "Din plan är sparad", but readWeek cannot tell which of those is
+          // true (it fails the same way offline, signed out or denied), and a
+          // failure never claims what it does not know (content-style-guide.md,
+          // the three-part error). So only what happened is said here.
+          InlineError(what: l10n.hemPlanErrorWhat),
           const SizedBox(height: AppDimensions.spacingSm),
           // What you can do: the two actions under the text, as #hemfel
           // :225-228 draws them. A Wrap, so 200 % text stacks them.

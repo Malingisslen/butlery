@@ -18521,15 +18521,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get hemLoadingPlan => 'Hämtar veckans plan …';
 
   @override
-  String get hemPlanErrorWhat =>
-      'Veckans plan kunde inte hämtas. Servern svarade inte.';
+  String get hemPlanErrorWhat => 'Veckans plan kunde inte hämtas.';
 
   @override
   String get hemPlanErrorPreserved =>
       'Din plan är sparad och ligger kvar – det är hämtningen som misslyckades, inte planen.';
 
   @override
-  String get hemShowSavedPlan => 'Visa sparad plan';
+  String get hemShowSavedPlan => 'Öppna veckomenyn';
 
   @override
   String hemPlanFetchedAt(String time) {

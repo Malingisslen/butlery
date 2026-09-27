@@ -9,7 +9,7 @@
 //             skeleton only after 300 ms.
 //   offline   del 4 #hemoffline (:651-703): the plan with its fetch time.
 //   error     del 4 #hemfel (:704-742): what happened, what was kept,
-//             Försök igen, Visa sparad plan.
+//             Försök igen, Öppna veckomenyn.
 //
 // Each in light and dark, at 320 dp and at 200 % text.
 
@@ -358,7 +358,7 @@ void main() {
 
   group('error (#hemfel)', () {
     for (final (mode, b) in modes) {
-      testWidgets('what happened, what was kept, what to do ($mode)', (
+      testWidgets('what happened and what to do, nothing unverified ($mode)', (
         tester,
       ) async {
         final vm = await _vm(HemPlanStatus.failed);
@@ -369,11 +369,10 @@ void main() {
         await tester.pumpAndSettle();
 
         final error = tester.widget<InlineError>(find.byType(InlineError));
-        expect(
-          error.what,
-          'Veckans plan kunde inte hämtas. Servern svarade inte.',
-        );
-        expect(error.preserved, startsWith('Din plan är sparad'));
+        expect(error.what, 'Veckans plan kunde inte hämtas.');
+        // The read cannot tell whether a plan was saved, so the box never
+        // claims it was.
+        expect(error.preserved, isNull);
         expect(
           find.descendant(
             of: find.byKey(HemPlanError.retryKey),

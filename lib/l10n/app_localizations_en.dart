@@ -18490,15 +18490,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hemLoadingPlan => 'Fetching this week\'s plan …';
 
   @override
-  String get hemPlanErrorWhat =>
-      'This week\'s plan could not be fetched. The server did not answer.';
+  String get hemPlanErrorWhat => 'This week\'s plan could not be fetched.';
 
   @override
   String get hemPlanErrorPreserved =>
       'Your plan is saved and still there – it was the fetch that failed, not the plan.';
 
   @override
-  String get hemShowSavedPlan => 'Show saved plan';
+  String get hemShowSavedPlan => 'Open the week menu';
 
   @override
   String hemPlanFetchedAt(String time) {

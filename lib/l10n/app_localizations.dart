@@ -30482,7 +30482,7 @@ abstract class AppLocalizations {
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel).
   ///
   /// In sv, this message translates to:
-  /// **'Veckans plan kunde inte hämtas. Servern svarade inte.'**
+  /// **'Veckans plan kunde inte hämtas.'**
   String get hemPlanErrorWhat;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293).
@@ -30494,7 +30494,7 @@ abstract class AppLocalizations {
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel).
   ///
   /// In sv, this message translates to:
-  /// **'Visa sparad plan'**
+  /// **'Öppna veckomenyn'**
   String get hemShowSavedPlan;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).
