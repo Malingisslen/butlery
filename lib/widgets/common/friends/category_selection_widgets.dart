@@ -181,7 +181,7 @@ class CategorySelectionWidgets {
               color: isSelected
                   ? Theme.of(context).colorScheme.surface
                   : Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               '${category.friendCount}',
@@ -270,7 +270,7 @@ class CategorySelectionWidgets {
           color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: AppDimensions.opacityVeryLight,
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: Theme.of(context).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityMediumLight,
@@ -284,7 +284,7 @@ class CategorySelectionWidgets {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius6,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Icon(
@@ -349,7 +349,7 @@ class CategorySelectionWidgets {
           border: Border.all(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: ExpansionTile(
           title: Text(

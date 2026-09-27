@@ -93,7 +93,7 @@ class MinaReceptSortChip extends StatelessWidget {
     // The shared grip: ring around the chip's 48 dp box, no saffron focus
     // tint (Grafisk manual v6:209, :381).
     return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       child: PopupMenuButton<SortCriteria>(
         onSelected: (criteria) => _onSortChanged(context, criteria),
         itemBuilder: (context) => SortMenuBuilder.buildItems(
@@ -109,7 +109,7 @@ class MinaReceptSortChip extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               border: Border.all(
                 color: cs.outlineVariant,
                 width: 1.5,

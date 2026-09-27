@@ -62,14 +62,14 @@ class DynamicListBuilder extends StatelessWidget {
               return Material(
                 elevation: 4,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
                 child: child,
               );
             }
             return Material(
               elevation: animation.value * 4,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: child,
             );
           },

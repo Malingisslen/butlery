@@ -76,7 +76,7 @@ class SharedContentCard extends StatelessWidget {
         button: true,
         child: InkWell(
           onTap: onView,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             child: Column(
@@ -92,7 +92,7 @@ class SharedContentCard extends StatelessWidget {
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                       child: Icon(

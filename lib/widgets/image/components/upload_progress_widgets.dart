@@ -39,7 +39,7 @@ class UploadProgressWidgets {
             color: cs.onSurface.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityMediumLight,
@@ -196,13 +196,13 @@ class UploadProgressWidgets {
         final cs = Theme.of(context).colorScheme;
         return Material(
           color: color.withValues(alpha: AppDimensions.opacityExtraDark),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Semantics(
             label: context.l10n.a11yBulkUploadAction(label),
             button: true,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingM,

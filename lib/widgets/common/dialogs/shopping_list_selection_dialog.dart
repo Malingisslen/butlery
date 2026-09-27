@@ -233,7 +233,7 @@ class _ShoppingListSelectionDialogState
                       context,
                     ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Row(

@@ -69,7 +69,7 @@ class CookingPreferenceControls extends StatelessWidget {
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius8,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -110,7 +110,7 @@ class CookingPreferenceControls extends StatelessWidget {
               },
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius8,
+                  AppDimensions.radiusControl,
                 ),
               ),
             );

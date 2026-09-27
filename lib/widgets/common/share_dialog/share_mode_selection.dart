@@ -38,7 +38,7 @@ class ShareModeSelection {
                 child: InkWell(
                   onTap: () => onModeChanged(ShareMode.staticCopy),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -49,7 +49,7 @@ class ShareModeSelection {
                             : Theme.of(context).colorScheme.outline,
                       ),
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       color: selectedMode == ShareMode.staticCopy
                           ? Theme.of(
@@ -105,7 +105,7 @@ class ShareModeSelection {
               child: InkWell(
                 onTap: () => onModeChanged(ShareMode.realtime),
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -116,7 +116,7 @@ class ShareModeSelection {
                           : Theme.of(context).colorScheme.outline,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     color: selectedMode == ShareMode.realtime
                         ? Theme.of(

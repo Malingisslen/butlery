@@ -111,16 +111,21 @@ class NavigationThemes {
 
   /// Dialog theme
   ///
-  /// BUT-1237: square (no border radius) per the SQUARE-everywhere design
-  /// rule, cream background per mockup spec §4.17 (`cs.surface` = cream in
-  /// light mode, stays scheme-correct in dark mode). Dialogs must NOT
-  /// hand-override shape/background — the theme is the single source.
+  /// Corners take the control radius, 8: the drawn dialog box has
+  /// border-radius 8px (Komponentark v1:336; tokens.json space.radius.control).
+  /// Background is `cs.surface` (paper in light mode, the dark surface in dark
+  /// mode). Dialogs must NOT hand-override shape/background (BUT-1237): the
+  /// theme is the single source.
   static DialogThemeData dialogTheme(ColorScheme cs) {
     return DialogThemeData(
       backgroundColor: cs.surface,
       elevation: 8,
       shadowColor: cs.shadow,
-      shape: const RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppDimensions.radiusControl),
+        ),
+      ),
       titleTextStyle: AppTextStyles.dialogTitle.copyWith(
         color: cs.onSurface,
       ),

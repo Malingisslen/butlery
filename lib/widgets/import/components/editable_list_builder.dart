@@ -132,7 +132,7 @@ class EditableListHeader extends StatelessWidget {
           padding: AppDimensions.badgePadding,
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           ),
           child: Text(
             '$count',

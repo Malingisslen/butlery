@@ -132,7 +132,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                   border: Border.all(
                     color: context.modeColors.info.withValues(
@@ -340,7 +340,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Card(
       elevation: value ? 2 : 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: value
               ? cs.onSurface.withValues(alpha: AppDimensions.opacityHalf)
@@ -361,7 +361,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                       )
                     : cs.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Icon(
@@ -526,7 +526,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),

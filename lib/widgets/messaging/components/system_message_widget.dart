@@ -48,7 +48,7 @@ class SystemMessageWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -147,7 +147,7 @@ class ReplyPreviewWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: (isFromCurrentUser ? cs.surfaceContainerHighest : cs.secondary)
             .withValues(alpha: AppDimensions.opacityLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border(
           left: BorderSide(color: cs.secondary, width: 3),
         ),

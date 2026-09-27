@@ -88,7 +88,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
             ),
             decoration: BoxDecoration(
               color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(
                 color: color.withValues(
                   alpha: AppDimensions.opacityMediumLight,

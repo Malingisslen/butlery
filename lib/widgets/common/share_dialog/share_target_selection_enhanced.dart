@@ -73,7 +73,7 @@ class ShareTargetSelectionEnhanced {
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: selectedTab == ShareTargetType.friends
               ? _buildFriendsList(
@@ -107,7 +107,7 @@ class ShareTargetSelectionEnhanced {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -161,7 +161,7 @@ class ShareTargetSelectionEnhanced {
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -340,7 +340,7 @@ class ShareTargetSelectionEnhanced {
           leading: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: SizedBox(
               width: 40,

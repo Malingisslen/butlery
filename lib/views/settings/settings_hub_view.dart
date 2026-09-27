@@ -104,16 +104,23 @@ class SettingsHubView extends StatelessWidget {
                 ),
                 // BUT-970: surface backup_service from ProfileMenu into formal
                 // Settings (it was already wired via BackupRestoreHandler, just
-                // not discoverable from /settings).
+                // not discoverable from /settings). BUT-2150: this is a plain
+                // page, not a modal, so nothing closes before the result.
                 _SettingsTile(
                   icon: Icons.download_outlined,
                   title: context.l10n.profileDownloadBackup,
-                  onTap: () => BackupRestoreHandler.handleBackup(context),
+                  onTap: () => BackupRestoreHandler.handleBackup(
+                    context,
+                    closeModal: false,
+                  ),
                 ),
                 _SettingsTile(
                   icon: Icons.upload_outlined,
                   title: context.l10n.profileRestoreFromBackup,
-                  onTap: () => BackupRestoreHandler.handleRestore(context),
+                  onTap: () => BackupRestoreHandler.handleRestore(
+                    context,
+                    closeModal: false,
+                  ),
                 ),
                 // BUT-913: GDPR-required Sign-out + Delete-Account surfaces.
                 // Handlers already exist on AuthActionHandler (used by

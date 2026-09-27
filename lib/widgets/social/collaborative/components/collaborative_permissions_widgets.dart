@@ -24,7 +24,7 @@ class CollaborativePermissionsWidgets {
       margin: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
           color: color.withValues(alpha: AppDimensions.opacityMediumLight),
           width: 1,
@@ -35,7 +35,7 @@ class CollaborativePermissionsWidgets {
         button: onTap != null,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Row(
             children: [
               Icon(

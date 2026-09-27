@@ -220,7 +220,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -233,7 +233,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),
@@ -303,7 +303,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             ),
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Row(
               children: [

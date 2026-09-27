@@ -50,7 +50,7 @@ class _SkeletonBox extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         borderRadius:
-            borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius ?? BorderRadius.circular(AppDimensions.radiusControl),
         // En lugn yta, inte en gradient. Färgen är den upphöjda ytans, så
         // rutan läses som "här kommer något" och inte som innehåll.
         color: cs.surfaceContainerHighest,

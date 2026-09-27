@@ -24,7 +24,7 @@ class MenuItemBuilders {
                 onTap();
               }
             : null,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(AppDimensions.space4),
@@ -84,7 +84,7 @@ class MenuItemBuilders {
                 onTap();
               }
             : null,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(AppDimensions.space4),
@@ -168,13 +168,13 @@ class MenuItemBuilders {
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(AppDimensions.space4),
           decoration: BoxDecoration(
             color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: color.withValues(alpha: AppDimensions.opacityMediumLight),
             ),

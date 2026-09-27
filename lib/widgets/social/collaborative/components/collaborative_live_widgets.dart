@@ -36,7 +36,7 @@ class CollaborativeLiveWidgets {
                   color: indicatorColor.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
-                  borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
                     color: indicatorColor.withValues(
                       alpha: AppDimensions.opacityMediumLight,

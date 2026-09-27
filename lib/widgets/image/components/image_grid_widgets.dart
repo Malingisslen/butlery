@@ -150,7 +150,7 @@ class ImageGridWidgets {
                             alpha: AppDimensions.opacityMediumDark,
                           ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Row(

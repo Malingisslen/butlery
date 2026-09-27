@@ -277,7 +277,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                                   alpha: AppDimensions.opacityVeryLight,
                                 ),
                             borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM,
+                              AppDimensions.radiusControl,
                             ),
                             border: Border.all(
                               color: Theme.of(context).colorScheme.error

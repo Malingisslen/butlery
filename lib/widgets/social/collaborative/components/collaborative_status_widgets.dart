@@ -34,7 +34,7 @@ class CollaborativeStatusWidgets {
             color: effectiveColor.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             border: Border.all(
               color: effectiveColor.withValues(
                 alpha: AppDimensions.opacityMediumLight,
@@ -99,7 +99,7 @@ class CollaborativeStatusWidgets {
             button: onTap != null,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Row(
                 children: [
                   Icon(

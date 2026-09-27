@@ -187,7 +187,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cs.surface,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                     child: const Text(
@@ -207,7 +207,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: cs.surface,
                           borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusM,
+                            AppDimensions.radiusControl,
                           ),
                           border: Border.all(color: cs.outlineVariant),
                         ),

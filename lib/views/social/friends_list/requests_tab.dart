@@ -101,7 +101,7 @@ class RequestsTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Text(
@@ -156,7 +156,7 @@ class RequestsTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cs.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Text(
@@ -189,7 +189,7 @@ class RequestsTab extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.outline,
           width: AppDimensions.borderWidthThin,
@@ -198,7 +198,7 @@ class RequestsTab extends StatelessWidget {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius25),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             child: Container(
               width: 40,
               height: 40,
@@ -332,7 +332,7 @@ class _DiscoverySection extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
           color: cs.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,

@@ -171,7 +171,7 @@ class _ShoppingListItem extends StatelessWidget {
               color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Icon(
               Icons.shopping_cart,

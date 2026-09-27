@@ -48,7 +48,7 @@ class MenuCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final restDecoration = BoxDecoration(
       color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       border: Border.all(
         color: cs.outline,
         width: AppDimensions.borderWidthThin,
@@ -71,7 +71,7 @@ class MenuCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
                 child: _buildContent(context),
@@ -206,7 +206,7 @@ class MenuCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           children: [
@@ -289,7 +289,7 @@ class MenuCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,

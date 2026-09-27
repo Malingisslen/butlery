@@ -37,7 +37,7 @@ class ImagePreviewCard extends StatelessWidget {
     required BuildContext context,
   }) : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
        borderRadius = const BorderRadius.all(
-         Radius.circular(AppDimensions.borderRadiusL),
+         Radius.circular(AppDimensions.radiusCard),
        ),
        boxShadow = AppShadows.card,
        showBorder = false,
@@ -52,7 +52,7 @@ class ImagePreviewCard extends StatelessWidget {
     required BuildContext context,
   }) : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
        borderRadius = const BorderRadius.all(
-         Radius.circular(AppDimensions.borderRadiusL),
+         Radius.circular(AppDimensions.radiusCard),
        ),
        boxShadow = null,
        showBorder = true,
@@ -66,7 +66,7 @@ class ImagePreviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius:
-            borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius ?? BorderRadius.circular(AppDimensions.radiusCard),
         boxShadow: boxShadow,
         border: showBorder
             ? Border.all(

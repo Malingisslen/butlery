@@ -185,7 +185,7 @@ void main() {
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+          equals(BorderRadius.circular(AppDimensions.radiusControl)),
         );
       });
 

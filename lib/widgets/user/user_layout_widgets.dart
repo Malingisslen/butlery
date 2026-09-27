@@ -73,7 +73,7 @@ class UserLayoutWidgets {
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Padding(
           padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
           child: Row(
@@ -132,14 +132,14 @@ class UserLayoutWidgets {
       margin: margin ?? const EdgeInsets.all(AppDimensions.paddingL),
       elevation: AppDimensions.elevationLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: Semantics(
         label: displayName,
         button: true,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
             child: Column(

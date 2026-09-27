@@ -32,12 +32,12 @@ class SharedRecipeCard {
       elevation: isRead
           ? AppDimensions.elevationLow
           : AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
         label: context.l10n.a11ySharedRecipe(sharedRecipe.recipeTitle),
         button: true,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           onTap: () {
             if (!isRead) {
               viewModel.recipeViewModel.markAsViewed(sharedRecipe);
@@ -52,7 +52,7 @@ class SharedRecipeCard {
           child: Container(
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: !isRead
                   ? Border.all(
                       color: Theme.of(context).colorScheme.onSurface,
@@ -127,7 +127,7 @@ class SharedRecipeCard {
       children: [
         if (hasImage)
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               width: 100,
               height: 100,
@@ -141,7 +141,7 @@ class SharedRecipeCard {
           ),
         if (!hasImage)
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               width: 100,
               height: 100,
@@ -214,7 +214,7 @@ class SharedRecipeCard {
       padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '"$message"',

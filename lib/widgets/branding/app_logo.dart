@@ -71,7 +71,7 @@ class AppLogo extends StatelessWidget {
       height: logoSize,
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         boxShadow: showShadow ? AppShadows.elevated : null,
       ),
       child: Icon(

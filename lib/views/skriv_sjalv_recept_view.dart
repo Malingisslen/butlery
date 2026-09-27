@@ -821,7 +821,7 @@ class _SkrivSjalvReceptViewContentState
                 builder: (context, child) => Material(
                   elevation: animation.value * 4,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                   child: child,
                 ),
@@ -943,7 +943,7 @@ class _SkrivSjalvReceptViewContentState
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           color: colors.warningContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: colors.warning.withValues(alpha: 0.4),
           ),

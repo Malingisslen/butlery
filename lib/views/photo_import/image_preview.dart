@@ -36,7 +36,7 @@ class ImagePreview extends StatelessWidget {
         context: context,
         height: adaptiveHeight,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Stack(
             children: [
               Image.memory(

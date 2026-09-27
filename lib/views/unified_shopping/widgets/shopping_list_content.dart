@@ -434,7 +434,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   decoration: BoxDecoration(
                     color: categoryColor,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                     border: isDragOver
                         ? Border.all(color: cs.onPrimary, width: 2)
@@ -481,7 +481,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                             decoration: BoxDecoration(
                               border: Border.all(color: cs.onPrimary),
                               borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusS,
+                                AppDimensions.radiusControl,
                               ),
                             ),
                             child: Text(
@@ -664,7 +664,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             color: isDragOver
                 ? categoryColor.withValues(alpha: 0.3)
                 : cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: isDragOver ? categoryColor : cs.outlineVariant,
               width: isDragOver ? 2 : 1,
@@ -678,7 +678,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                 decoration: BoxDecoration(
                   color: categoryColor,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),

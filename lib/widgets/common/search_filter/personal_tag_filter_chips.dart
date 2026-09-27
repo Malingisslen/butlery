@@ -187,7 +187,7 @@ class _PersonalTagFilterChip extends StatelessWidget {
       // The shared grip: ring around the chip's 48 dp target and no saffron
       // focus tint (Grafisk manual v6:209, :381).
       child: ButleryControlFocus(
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         child: FilterChip(
           label: Text(tag.name),
           avatar: isSelected
@@ -245,7 +245,7 @@ class _PersonalTagExcludeChip extends StatelessWidget {
       // The shared grip: ring around the chip's 48 dp target and no saffron
       // focus tint (Grafisk manual v6:209, :381).
       child: ButleryControlFocus(
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         child: FilterChip(
           label: Text(tag.name),
           // The drawn "utan" chip: no glyph, the tag name struck through,

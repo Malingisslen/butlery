@@ -199,7 +199,7 @@ void main() {
         expect(decoration.color, capturedColorScheme.surfaceContainerHighest);
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusL)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
 
@@ -356,7 +356,7 @@ void main() {
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(
                         color: AppColors.error.withValues(alpha: 0.3),
@@ -390,7 +390,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+          equals(BorderRadius.circular(AppDimensions.radiusControl)),
         );
       });
 

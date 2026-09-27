@@ -160,7 +160,7 @@ class InputThemes {
       ),
       minVerticalPadding: AppDimensions.spacingSm,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
     );
   }
@@ -252,7 +252,7 @@ class InputThemes {
     color: AppColors.primaryContainer.withValues(
       alpha: AppDimensions.opacityVeryLight,
     ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     border: Border.all(
       color: AppColors.forestGreen.withValues(
         alpha: AppDimensions.opacityLight,
@@ -265,7 +265,7 @@ class InputThemes {
     color: AppColors.secondaryContainer.withValues(
       alpha: AppDimensions.opacityVeryLight,
     ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     border: Border.all(
       color: AppColors.rust.withValues(alpha: AppDimensions.opacityLight),
     ),
@@ -276,7 +276,7 @@ class InputThemes {
     color: AppColors.primaryContainer.withValues(
       alpha: AppDimensions.opacityVeryLight,
     ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     border: Border.all(
       color: AppColors.forestGreen.withValues(
         alpha: AppDimensions.opacityLight,

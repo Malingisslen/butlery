@@ -76,7 +76,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
     });

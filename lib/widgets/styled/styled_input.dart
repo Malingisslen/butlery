@@ -283,14 +283,14 @@ class StyledInput extends StatelessWidget {
         semanticLabel ?? (label == null ? hint : null);
 
     final restingBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       borderSide: BorderSide(
         color: showWarning ? context.modeColors.warning : cs.outline,
         width: AppDimensions.borderWidthStandard,
       ),
     );
     final restingErrorBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       borderSide: BorderSide(
         color: cs.error,
         width: AppDimensions.borderWidthStandard,
@@ -333,7 +333,7 @@ class StyledInput extends StatelessWidget {
               vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
             ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           borderSide: const BorderSide(),
         ),
         enabledBorder: restingBorder,
@@ -349,7 +349,7 @@ class StyledInput extends StatelessWidget {
         // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
         // light, :514 dark).
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           borderSide: BorderSide(
             color: AppModeColors.surfaceDisabled(cs.brightness),
             width: AppDimensions.borderWidthStandard,
@@ -363,7 +363,7 @@ class StyledInput extends StatelessWidget {
     // The ring goes around the input box only, not the helper, error or
     // counter line under it, and shows for keyboard focus (decision D3).
     final field = ButleryFocusRing(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       bounds: FocusRingBounds.textFieldBox,
       child: textField,
     );

@@ -630,7 +630,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -642,7 +642,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),

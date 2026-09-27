@@ -208,7 +208,7 @@ class PollMessageWidget extends StatelessWidget {
                         : cs.surface.withValues(
                             alpha: AppDimensions.opacityHalf,
                           )),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: hasVoted
                     ? (isFromCurrentUser
@@ -276,7 +276,7 @@ class PollMessageWidget extends StatelessWidget {
                               ))
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -426,7 +426,7 @@ class PollMessageWidget extends StatelessWidget {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                 ),
@@ -450,7 +450,7 @@ class PollMessageWidget extends StatelessWidget {
                                 alpha: AppDimensions.opacityExtraVeryLight,
                               ),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                     ),

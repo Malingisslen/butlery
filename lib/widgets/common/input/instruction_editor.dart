@@ -89,7 +89,7 @@ class _InstructionEditorState extends State<InstructionEditor> {
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
               ),
               labelText: context.l10n.instructionLabel(i + 1),

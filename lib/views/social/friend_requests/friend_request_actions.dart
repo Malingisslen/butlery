@@ -44,6 +44,10 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
         // The FAB theme's own surface, never a fill in a status colour
         // (Komponentark v1:300).
+        // The theme's CircleBorder is for the round create button only; a
+        // labelled FAB is the same shape stretched to its label, a pill
+        // (Komponentark v1:665, tokens.json space.radius.pill).
+        shape: const StadiumBorder(),
       );
     }
     return null;

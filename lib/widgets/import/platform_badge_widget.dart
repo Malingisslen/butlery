@@ -47,7 +47,7 @@ class PlatformBadgeWidget extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: _getBackgroundColor(detection!.platform, colorScheme),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           border: Border.all(
             color: _getBorderColor(detection!.platform, colorScheme),
             width: 1,

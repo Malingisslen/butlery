@@ -246,7 +246,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         // Image container
         DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: cs.outlineVariant.withValues(
                 alpha: AppDimensions.opacityLight,
@@ -254,7 +254,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: imagePath.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: imagePath,
@@ -332,7 +332,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               color: cs.surfaceContainerHighest.withValues(
                 alpha: AppDimensions.opacityExtraDark,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               '${index + 1}',

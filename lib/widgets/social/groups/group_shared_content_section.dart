@@ -315,7 +315,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                                     alpha: AppDimensions.opacityVeryLight,
                                   ),
                                   borderRadius: BorderRadius.circular(
-                                    AppDimensions.borderRadiusS,
+                                    AppDimensions.radiusControl,
                                   ),
                                 ),
                                 child: Text(
@@ -340,7 +340,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                           decoration: BoxDecoration(
                             color: cs.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM,
+                              AppDimensions.radiusControl,
                             ),
                           ),
                           child: TabBar(

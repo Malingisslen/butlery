@@ -81,7 +81,7 @@ void main() {
       );
       expect(
         rest.borderRadius,
-        BorderRadius.circular(AppDimensions.borderRadiusM),
+        BorderRadius.circular(AppDimensions.radiusControl),
       );
       expect(
         rest.boxShadow,

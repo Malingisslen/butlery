@@ -35,7 +35,7 @@ class ParticipantListWidget extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         boxShadow: AppShadows.subtle,
       ),
       child: Padding(
@@ -83,7 +83,7 @@ class ParticipantListWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         border: Border.all(
           color: successColor.withValues(
             alpha: AppDimensions.opacityMediumLight,

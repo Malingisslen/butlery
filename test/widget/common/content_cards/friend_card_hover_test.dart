@@ -98,7 +98,7 @@ void main() {
       expect(border.top.width, AppDimensions.borderWidthThin);
       expect(
         rest.borderRadius,
-        BorderRadius.circular(AppDimensions.borderRadiusM),
+        BorderRadius.circular(AppDimensions.radiusCard),
       );
     });
 

@@ -382,7 +382,7 @@ class _FranSocialaMedierViewContentState
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
@@ -436,7 +436,7 @@ class _FranSocialaMedierViewContentState
           hintText: context.l10n.importPasteRecipeHint,
           hintMaxLines: 10,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           filled: true,
           fillColor: Theme.of(context).colorScheme.surfaceContainerLow,

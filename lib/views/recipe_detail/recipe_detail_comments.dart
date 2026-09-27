@@ -120,7 +120,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
@@ -356,7 +356,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(

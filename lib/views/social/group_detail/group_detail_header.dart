@@ -67,7 +67,7 @@ class GroupDetailHeader {
             padding: const EdgeInsets.all(AppDimensions.space4),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -89,7 +89,7 @@ class ProfileSectionBuilders {
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusL,
+                    AppDimensions.radiusCard,
                   ),
                 ),
               ),

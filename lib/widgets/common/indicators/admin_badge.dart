@@ -24,7 +24,7 @@ class AdminBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

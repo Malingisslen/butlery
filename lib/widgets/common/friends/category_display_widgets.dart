@@ -69,7 +69,7 @@ class CategoryDisplayWidgets {
             button: true,
             child: InkWell(
               onTap: () => onCategoryTap(category),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.spacingMd),
                 child: Column(
@@ -211,7 +211,7 @@ class CategoryDisplayWidgets {
           button: true,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Column(
@@ -330,7 +330,7 @@ class CategoryDisplayWidgets {
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [

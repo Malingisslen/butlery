@@ -51,7 +51,7 @@ class FriendCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final restDecoration = BoxDecoration(
       color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       border: Border.all(
         color: cs.outline,
         width: AppDimensions.borderWidthThin,
@@ -74,7 +74,7 @@ class FriendCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
                 child: _buildContent(context),
@@ -268,13 +268,13 @@ class FriendRequestCard extends StatelessWidget {
           button: true,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               padding: padding ?? const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 border: Border.all(
                   color: Theme.of(context).colorScheme.outline,

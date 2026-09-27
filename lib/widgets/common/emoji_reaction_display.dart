@@ -55,7 +55,7 @@ class EmojiReactionDisplay extends StatelessWidget {
                     ? cs.surfaceContainerHighest
                     : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusPill,
                 ),
                 border: Border.all(
                   color: hasReacted ? cs.onSurface : cs.outlineVariant,

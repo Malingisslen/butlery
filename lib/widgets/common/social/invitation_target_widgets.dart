@@ -203,7 +203,7 @@ class InvitationTargetWidgets {
         hintText: hint ?? context.l10n.commonSearch,
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,

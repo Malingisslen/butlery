@@ -63,7 +63,7 @@ class CategoryPickerSheet extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusS,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                   ),

@@ -96,7 +96,7 @@ class MenuPreviewView extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant,
             ),
@@ -195,7 +195,7 @@ class MenuPreviewView extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outlineVariant,

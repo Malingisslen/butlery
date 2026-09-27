@@ -28,12 +28,12 @@ class SharedMenuCard {
       elevation: isRead
           ? AppDimensions.elevationLow
           : AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
         label: context.l10n.a11ySharedMenu(sharedMenu.menuTitle),
         button: true,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           onTap: () {
             if (!isRead) {
               viewModel.menuViewModel.markAsViewed(sharedMenu);
@@ -51,7 +51,7 @@ class SharedMenuCard {
           child: Container(
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: !isRead
                   ? Border.all(
                       color: Theme.of(context).colorScheme.onSurface,
@@ -123,7 +123,7 @@ class SharedMenuCard {
             color: isCollaborative
                 ? Theme.of(context).colorScheme.tertiaryContainer
                 : Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Icon(
             isCollaborative ? Icons.group : Icons.calendar_month,
@@ -158,7 +158,7 @@ class SharedMenuCard {
                               context,
                             ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusXs,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                     child: Row(
@@ -241,7 +241,7 @@ class SharedMenuCard {
       padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '"$message"',

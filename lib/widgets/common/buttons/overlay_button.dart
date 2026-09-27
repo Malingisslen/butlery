@@ -37,7 +37,7 @@ class OverlayButton extends StatelessWidget {
         // Dark scrim behind the light icon — the previous light-surface scrim
         // gave a light-on-light icon with poor contrast over photos.
         color: backgroundColor ?? ThemeConstants.blackOverlay60,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: IconButton(
         onPressed: onPressed,

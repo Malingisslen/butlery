@@ -80,7 +80,7 @@ class ServiceWidgets {
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
             color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: cs.error.withValues(
                 alpha: AppDimensions.opacityMediumLight,
@@ -110,7 +110,7 @@ class ServiceWidgets {
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusL,
+                  AppDimensions.radiusCard,
                 ),
               ),
               // The overlay has no message of its own, so the text is the

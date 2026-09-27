@@ -31,7 +31,7 @@ class CollaborativeConnectionWidgets {
               color: successColor.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

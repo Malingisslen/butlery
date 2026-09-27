@@ -128,7 +128,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 boxShadow: AppShadows.subtle,
               ),

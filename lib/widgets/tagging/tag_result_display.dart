@@ -220,7 +220,7 @@ class TagResultDisplay extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
         color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: warningColor.withValues(
             alpha: AppDimensions.opacityMediumLight,

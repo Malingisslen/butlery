@@ -103,54 +103,6 @@ class AppDimensions {
   /// Medium margin (8px)
   static const double marginM = 8.0;
 
-  /// Small border radius - UI Redesign: sharp corners
-  static const double borderRadiusS = 0.0;
-
-  /// Medium border radius - UI Redesign: sharp corners
-  static const double borderRadiusM = 0.0;
-
-  /// Large border radius - UI Redesign: sharp corners
-  static const double borderRadiusL = 0.0;
-
-  /// Round border radius (50px) for fully rounded elements (avatars, pills)
-  static const double borderRadiusRound = 50.0;
-
-  // BUT-695 / SQUARE design language (memory note 2026-02-17): all named
-  // `borderRadiusN` constants below are intentionally `0.0` regardless of
-  // the `N` in the identifier. The `N` is the radius the call site asked
-  // for, NOT the value it gets — the design language collapses every
-  // requested radius onto sharp corners. Two named exceptions remain:
-  //   - `borderRadiusRound` (50.0) — pills / avatars
-  //   - `borderRadius100` (100.0) — full-circle clip (search box pill)
-  // A wholesale rename to `borderRadiusSquare` was deferred because the
-  // 122 call sites across 39 files want to keep their semantic intent
-  // ("this corner WAS 8px") for the day the design loosens. Until that
-  // day, the 0.0 value is load-bearing — do not change without a
-  // design-system review.
-  //
-  // That review has now happened. The frozen design system defines five
-  // radii (see `radiusSharp`…`radiusPill` above), not one. These
-  // `borderRadiusN` constants are therefore LEGACY: they stay at 0.0 so
-  // this foundation package changes no geometry, and the call sites move to
-  // the canonical scale in the component-geometry package. Do not add new
-  // `borderRadiusN` members, and do not change these values here.
-  //
-  // The move has started in the theme layer (lib/theme/components): buttons,
-  // fields, cards, chips, sheets and the checkbox now read the canonical
-  // scale. Widgets and views still use these constants.
-  static const double borderRadius0 = 0.0;
-  static const double borderRadius2 = 0.0;
-  static const double borderRadius4 = 0.0;
-  static const double borderRadius6 = 0.0;
-  static const double borderRadius7 = 0.0;
-  static const double borderRadius8 = 0.0;
-  static const double borderRadius10 = 0.0;
-  static const double borderRadius12 = 0.0;
-  static const double borderRadius16 = 0.0;
-  static const double borderRadius20 = 0.0;
-  static const double borderRadius25 = 0.0;
-  static const double borderRadius100 = 100.0;
-
   /// Low elevation (matching original AppTheme)
   static const double elevationLow = 2.0;
 
@@ -530,24 +482,11 @@ class AppDimensions {
   /// Width 12px (3 usages)
   static const double width12 = 12.0;
 
-  // Component-specific radius aliases (semantic value)
-  /// Card border radius (8px)
-  static const double cardBorderRadius = borderRadiusM;
-
-  /// Chip radius (4px)
-  static const double chipRadius = borderRadiusS;
-
-  /// Bottom sheet border radius (12px)
-  static const double bottomSheetBorderRadius = borderRadiusL;
-
   /// Divider height
   static const double dividerHeight = 1.0;
 
   /// Button width (standard)
   static const double buttonWidth = 120.0;
-
-  /// Extra small border radius - UI Redesign: sharp corners
-  static const double borderRadiusXs = 0.0;
 
   /// Extra large buttons width
   static const double buttonWidthXLarge = 280.0;

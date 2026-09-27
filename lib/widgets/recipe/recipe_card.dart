@@ -111,7 +111,7 @@ class RecipeCard extends StatelessWidget {
     final BoxDecoration restDecoration = isSelected
         ? BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             border: Border.all(color: cs.onSurface, width: 1.5),
           )
         : InputThemes.recipeCardDecoration;
@@ -135,10 +135,10 @@ class RecipeCard extends StatelessWidget {
           hoverDecoration: _hoverDecoration(restDecoration),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             child: InkWell(
               borderRadius: BorderRadius.circular(
-                AppDimensions.borderRadiusM,
+                AppDimensions.radiusCard,
               ),
               // The ring carries focus; no saffron focus tint under it.
               focusColor: Colors.transparent,
@@ -153,7 +153,7 @@ class RecipeCard extends StatelessWidget {
               // inside the card rings only that button.
               child: ButleryAncestorFocusRing(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusCard,
                 ),
                 child: Container(
                   padding:
@@ -442,11 +442,11 @@ class RecipeCard extends StatelessWidget {
       width: width ?? imageSize,
       height: height ?? imageSize,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         color: Theme.of(context).colorScheme.surface,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: hasImage
             ? SimpleImageWidget(
                 imageUrl: thumbnailOrImage,
@@ -454,7 +454,7 @@ class RecipeCard extends StatelessWidget {
                 // PERFORMANCE FIX: Use thumbnail config for 64x64 display
                 config: ImageConfig.thumbnail(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                   heroTag: ImageConfig.recipeHeroTag(recipe.id),
                 ),
@@ -788,7 +788,7 @@ class RecipeCard extends StatelessWidget {
       padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: isUserAdded ? cs.surfaceContainerHighest : cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: isUserAdded ? cs.onSurface : cs.outlineVariant,
         ),
@@ -947,7 +947,7 @@ class RecipeCard extends StatelessWidget {
       padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityLightSubtle),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -970,7 +970,7 @@ class RecipeCard extends StatelessWidget {
       padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
         ),
@@ -1000,7 +1000,7 @@ class RecipeCard extends StatelessWidget {
           color: (hasFailed ? cs.error : context.modeColors.warning).withValues(
             alpha: AppDimensions.opacityVeryLight,
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1068,7 +1068,7 @@ class RecipeCard extends StatelessWidget {
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
           color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1113,7 +1113,7 @@ class RecipeCard extends StatelessWidget {
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
           color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

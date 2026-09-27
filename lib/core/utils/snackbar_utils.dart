@@ -995,5 +995,5 @@ class SnackBarConfig {
   static const EdgeInsets defaultMargin = EdgeInsets.all(
     AppDimensions.spacingMd,
   );
-  static const double defaultBorderRadius = AppDimensions.borderRadius8;
+  static const double defaultBorderRadius = AppDimensions.radiusControl;
 }

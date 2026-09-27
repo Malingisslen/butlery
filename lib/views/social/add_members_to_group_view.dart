@@ -199,7 +199,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
       ),
@@ -355,7 +355,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     border: Border.all(color: cs.error),
                   ),

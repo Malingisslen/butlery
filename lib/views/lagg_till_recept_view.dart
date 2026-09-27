@@ -239,10 +239,10 @@ class _AddRecipeButton extends StatelessWidget {
       height: size,
       child: Material(
         color: color,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
             child: Column(

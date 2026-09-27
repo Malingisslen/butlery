@@ -146,7 +146,7 @@ class UserCollectionWidgets {
           padding: padding ?? AppDimensions.badgePadding,
           decoration: BoxDecoration(
             color: backgroundColor ?? cs.primary,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Text(
             label,

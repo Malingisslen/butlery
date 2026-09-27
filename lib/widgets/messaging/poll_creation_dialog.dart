@@ -127,7 +127,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
     return Dialog(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(AppDimensions.borderRadiusS),
+          Radius.circular(AppDimensions.radiusControl),
         ),
       ),
       child: ConstrainedBox(
@@ -154,7 +154,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   hintText: context.l10n.pollQuestionHint,
                   border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(
-                      Radius.circular(AppDimensions.borderRadiusS),
+                      Radius.circular(AppDimensions.radiusControl),
                     ),
                   ),
                   labelStyle: AppTextStyles.labelMedium.copyWith(
@@ -186,7 +186,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                               ),
                               border: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
-                                  Radius.circular(AppDimensions.borderRadiusS),
+                                  Radius.circular(AppDimensions.radiusControl),
                                 ),
                               ),
                               labelStyle: AppTextStyles.labelMedium.copyWith(
@@ -267,7 +267,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       foregroundColor: cs.onPrimary,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(
-                          Radius.circular(AppDimensions.borderRadiusS),
+                          Radius.circular(AppDimensions.radiusControl),
                         ),
                       ),
                     ),

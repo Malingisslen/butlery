@@ -214,7 +214,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         // both modes and would vanish on dark.
         decoration: BoxDecoration(
           color: selected ? cs.primaryContainer : cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: selected ? cs.onSurface : cs.outlineVariant,
             width: selected ? 1.5 : AppDimensions.borderWidthStandard,
@@ -250,7 +250,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
               onLongPress: (selection == null || selectionMode)
                   ? null
                   : () => selection.enterSelectionMode(widget.item.id),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 child: Row(
@@ -287,7 +287,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         width: _checkboxSize,
         height: _checkboxSize,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           // Ticked: control.checked.background, ink in both modes, edge
           // and fill (tokens.json:145-148). Unticked: a text.primary edge
           // (onSurface), ink on light, paper on dark, where ink vanished.
@@ -410,13 +410,13 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
       data: widget.item,
       feedback: Material(
         elevation: 4,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(color: cs.onSurface, width: 2),
           ),
           child: Text(

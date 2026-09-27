@@ -51,7 +51,7 @@ class FilterChipsWidget extends StatelessWidget {
                 // no saffron focus tint (Grafisk manual v6:209, :381).
                 child: ButleryControlFocus(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.chipRadius,
+                    AppDimensions.radiusPill,
                   ),
                   child: FilterChip(
                     label: Row(

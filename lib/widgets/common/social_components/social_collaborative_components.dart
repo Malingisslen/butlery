@@ -123,7 +123,7 @@ class SocialCollaborativeComponents {
         color: (activeColor ?? context.modeColors.success).withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: activeColor ?? context.modeColors.success),
       ),
       child: Row(
@@ -245,7 +245,7 @@ class SocialCollaborativeComponents {
             context.modeColors.success.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: color ?? context.modeColors.success),
       ),
       child: Row(
@@ -289,7 +289,7 @@ class SocialCollaborativeComponents {
             cs.onSurfaceVariant.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: color ?? cs.onSurfaceVariant),
       ),
       child: Row(
@@ -334,7 +334,7 @@ class SocialCollaborativeComponents {
             alpha: AppDimensions.opacityMediumLight,
           ),
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,7 +455,7 @@ class SocialCollaborativeComponents {
         color: (color ?? config.color).withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: color ?? config.color),
       ),
       child: Row(

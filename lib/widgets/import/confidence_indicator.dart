@@ -70,7 +70,7 @@ class ConfidenceIndicator extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: badgeBackgroundColor,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           border: Border.all(
             color: badgeBorderColor,
             width: AppDimensions.borderWidthStandard,
