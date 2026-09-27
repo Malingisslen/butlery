@@ -36,7 +36,7 @@ class ImagePickerDialogs {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusM),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => Container(
@@ -51,7 +51,7 @@ class ImagePickerDialogs {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius10,
+                  AppDimensions.radiusControl,
                 ),
               ),
             ),

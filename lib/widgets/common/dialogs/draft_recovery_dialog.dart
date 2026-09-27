@@ -106,7 +106,7 @@ class DraftRecoveryDialog extends StatelessWidget {
         label: context.l10n.a11yDraftRecoverTile(draftTitle),
         button: true,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           onTap: () => Navigator.of(context).pop(draft.draftId),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
@@ -119,7 +119,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Icon(

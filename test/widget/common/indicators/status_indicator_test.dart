@@ -94,7 +94,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusS)),
+          equals(BorderRadius.circular(AppDimensions.radiusControl)),
         );
       });
     });

@@ -309,9 +309,10 @@ class ButtonThemes {
       foregroundColor: cs.onPrimary,
       elevation: 4,
       highlightElevation: 6,
-      // The FAB stays square: no canonical source names its radius, so the
-      // component package leaves it (BUT-964).
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      // The create button is round: the central plus in the bottom row is a
+      // 56 dp circle, border-radius 999 (Komponentark v1:665; tokens.json
+      // space.radius.pill). Interpretation of an unlabelled drawing (Q10).
+      shape: const CircleBorder(),
       iconSize: AppDimensions.iconSizeL,
     );
   }
@@ -513,7 +514,13 @@ class ButtonThemes {
           horizontal: AppDimensions.paddingXl,
           vertical: AppDimensions.paddingM,
         ),
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        // An extended create button is the round plus stretched to fit its
+        // label: a pill (tokens.json space.radius.pill; Komponentark v1:665).
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(AppDimensions.radiusPill),
+          ),
+        ),
         minimumSize: const Size(200, 56),
         textStyle: AppTextStyles.buttonText,
       );

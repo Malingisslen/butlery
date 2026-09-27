@@ -58,7 +58,7 @@ class BorderedContainer extends StatelessWidget {
         border: Border.all(
           color: borderColor ?? Theme.of(context).colorScheme.outline,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: child,
     );
@@ -154,7 +154,7 @@ class CategoryHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -183,7 +183,7 @@ class CategoryHeader extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: Text(
               '$count',

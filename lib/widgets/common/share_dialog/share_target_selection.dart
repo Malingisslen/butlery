@@ -49,7 +49,7 @@ class ShareTargetSelection {
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: _buildFriendsList(
             context,

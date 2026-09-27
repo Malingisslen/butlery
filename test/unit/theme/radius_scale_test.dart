@@ -3,7 +3,8 @@
 /// checkbox's locked 6 from controls.checkbox.radius).
 ///
 /// Buttons and fields are control 8, cards are card 12, chips are pill,
-/// sheets round only their top edge at 12, and the checkbox is 6. Radius does
+/// sheets round only their top edge at 12, dialogs and snackbars are 8, the
+/// create button is a circle, and the checkbox is 6. Radius does
 /// not depend on the mode, so every assertion runs for both themes.
 library;
 
@@ -83,6 +84,22 @@ void main() {
         expect(radius.topRight, const Radius.circular(12));
         expect(radius.bottomLeft, Radius.zero);
         expect(radius.bottomRight, Radius.zero);
+      });
+
+      // P7-U04 (Q10): the drawings name these three radii.
+      test('dialogs take the control radius, 8 (Komponentark v1:336)', () {
+        expect(_radiusOf(theme.dialogTheme.shape as OutlinedBorder?), control);
+      });
+
+      test('snackbars take the control radius, 8 (Komponentark v1:746)', () {
+        expect(
+          _radiusOf(theme.snackBarTheme.shape as OutlinedBorder?),
+          control,
+        );
+      });
+
+      test('the create button is round (Komponentark v1:665)', () {
+        expect(theme.floatingActionButtonTheme.shape, isA<CircleBorder>());
       });
 
       test('the checkbox keeps its locked radius, 6', () {

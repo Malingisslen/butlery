@@ -47,7 +47,7 @@ class MenuContentWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
@@ -237,7 +237,7 @@ class MenuContentWidgets {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: cs.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
@@ -383,8 +383,8 @@ class MenuContentWidgets {
             color: cs.onSurface.withValues(alpha: 0.08),
             // Rounded right corners only for left-border effect
             borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(AppDimensions.borderRadiusS),
-              bottomRight: Radius.circular(AppDimensions.borderRadiusS),
+              topRight: Radius.circular(AppDimensions.radiusControl),
+              bottomRight: Radius.circular(AppDimensions.radiusControl),
             ),
             // 4px green left border
             border: Border(
@@ -415,7 +415,7 @@ class MenuContentWidgets {
               Material(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
                 child: Semantics(
                   label: context.l10n.a11yMenuSectionRegenerate(
@@ -428,7 +428,7 @@ class MenuContentWidgets {
                         ? null
                         : () => viewModel.regenerateSection(category),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(AppDimensions.spacingSm),

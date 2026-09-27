@@ -179,7 +179,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         hintText: context.l10n.chatSearchFriends,
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       ),
     );

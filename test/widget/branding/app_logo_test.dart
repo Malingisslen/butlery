@@ -47,7 +47,7 @@ void main() {
         expect(decoration.color, equals(AppColors.forestGreen));
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
         expect(decoration.boxShadow, isNull); // No shadow by default
 
@@ -234,7 +234,7 @@ void main() {
                 as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
     });

@@ -233,7 +233,7 @@ void main() {
         expect(decoration.color, equals(cs.surfaceContainerHighest));
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusL)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
 

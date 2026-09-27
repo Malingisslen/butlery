@@ -119,7 +119,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         color: Theme.of(context).colorScheme.primaryContainer.withValues(
           alpha: AppDimensions.opacityMediumLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +204,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           height: 150,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child:
               widget.availableFriends == null ||

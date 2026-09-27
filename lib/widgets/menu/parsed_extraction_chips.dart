@@ -106,7 +106,7 @@ class _UnderstoodChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: colors.successContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Text(
         entry.label,
@@ -133,7 +133,7 @@ class _NotUnderstoodChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: colors.warningContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

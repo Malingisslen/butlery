@@ -174,7 +174,7 @@ class _CreateSharedShoppingListViewState
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                   border: Border.all(
                     color: Theme.of(context).colorScheme.error.withValues(
@@ -200,7 +200,7 @@ class _CreateSharedShoppingListViewState
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
@@ -304,7 +304,7 @@ class _CreateSharedShoppingListViewState
         color: context.modeColors.success.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: context.modeColors.success.withValues(
             alpha: AppDimensions.opacityMediumLight,

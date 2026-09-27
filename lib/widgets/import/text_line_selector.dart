@@ -273,7 +273,7 @@ class _LineItem extends StatelessWidget {
       ),
       child: Material(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Semantics(
           label: isAiSuggested
               ? '${text.trim()}, ${context.l10n.importAiSuggestedA11y}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}'
@@ -281,7 +281,7 @@ class _LineItem extends StatelessWidget {
           button: true,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingM,
@@ -289,7 +289,7 @@ class _LineItem extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 border: Border.all(
                   color: borderColor,
@@ -354,7 +354,7 @@ class _LineItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: colorScheme.secondaryContainer,
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                       child: Row(
@@ -387,7 +387,7 @@ class _LineItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(color: modeColor),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                       child: Text(

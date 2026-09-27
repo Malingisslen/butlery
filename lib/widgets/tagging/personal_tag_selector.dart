@@ -183,7 +183,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
@@ -219,7 +219,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
@@ -368,7 +368,7 @@ class PersonalTagDisplay extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
             child: Text(
               '+$remainingCount',
@@ -398,7 +398,7 @@ class _MiniTagChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: cs.primaryContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           // border.control (outline), never a faded ink (tokens.json:40-53).
           border: Border.all(color: cs.outline),
         ),
@@ -437,7 +437,7 @@ class _PlaceholderTagChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
           color: cs.outline,
         ),
@@ -454,7 +454,7 @@ class _PlaceholderTagChip extends StatelessWidget {
           SkeletonComponents.skeletonBox(
             width: 48,
             height: 12,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ],
       ),
@@ -676,7 +676,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
             ),
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
             child: Text(
               '+$remainingCount',

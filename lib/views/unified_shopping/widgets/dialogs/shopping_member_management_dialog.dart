@@ -392,7 +392,7 @@ class _ShoppingMemberManagementDialogState
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(
@@ -413,7 +413,7 @@ class _ShoppingMemberManagementDialogState
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: ListView.builder(
@@ -458,7 +458,7 @@ class _ShoppingMemberManagementDialogState
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: _filteredFriends.isEmpty

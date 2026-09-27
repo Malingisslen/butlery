@@ -188,7 +188,7 @@ class _AuthViewState extends State<AuthView> {
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

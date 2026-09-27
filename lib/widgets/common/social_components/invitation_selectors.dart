@@ -358,7 +358,7 @@ class InvitationSelectors {
             ).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,

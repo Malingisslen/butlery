@@ -274,7 +274,7 @@ class ImageComponents {
               color: cs.surfaceContainerHighest.withValues(
                 alpha: AppDimensions.opacityExtraDark,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: cs.outlineVariant,
               ),
@@ -325,7 +325,7 @@ class ImageComponents {
               color: cs.surfaceContainerHighest.withValues(
                 alpha: AppDimensions.opacityExtraDark,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(
                 color: cs.outlineVariant,
               ),

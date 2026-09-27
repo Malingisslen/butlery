@@ -90,7 +90,7 @@ class PhotoPageStrip extends StatelessWidget {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (sheetContext) {
@@ -150,7 +150,7 @@ class _PageThumbnail extends StatelessWidget {
         Stack(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Image.memory(
                 bytes,
                 height: size,
@@ -196,12 +196,12 @@ class _AddPageTile extends StatelessWidget {
       button: true,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           height: size,
           width: size,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: onPressed == null ? cs.outlineVariant : cs.onSurface,
               width: AppDimensions.borderWidthStandard,

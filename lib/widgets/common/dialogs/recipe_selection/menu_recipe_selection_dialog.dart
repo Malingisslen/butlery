@@ -79,7 +79,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                   ),
@@ -205,7 +205,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               color: Theme.of(context).colorScheme.onSurface.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
@@ -265,7 +265,7 @@ class MenuRecipeListItem extends StatelessWidget {
               width: AppDimensions.iconSizeDisplay,
               height: AppDimensions.iconSizeDisplay,
               fit: BoxFit.contain,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               errorWidget: _buildPlaceholder(context),
             )
           : _buildPlaceholder(context),
@@ -281,7 +281,7 @@ class MenuRecipeListItem extends StatelessWidget {
         onChanged: (value) => onSelectionChanged(value ?? false),
         activeColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       ),
       onTap: () => onSelectionChanged(!isSelected),
@@ -357,7 +357,7 @@ class MenuRecipeListItem extends StatelessWidget {
             ).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Icon(
         Icons.restaurant_menu,

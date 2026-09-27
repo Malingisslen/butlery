@@ -185,7 +185,7 @@ class InvitationTargetStates {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius20,
+                  AppDimensions.radiusPill,
                 ),
               ),
             ),
@@ -195,7 +195,7 @@ class InvitationTargetStates {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius8,
+                  AppDimensions.radiusControl,
                 ),
               ),
             ),
@@ -205,7 +205,7 @@ class InvitationTargetStates {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius7,
+                  AppDimensions.radiusControl,
                 ),
               ),
             ),

@@ -128,7 +128,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     return Dialog(
       backgroundColor: cs.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -236,7 +236,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                   hintText: context.l10n.tagWriteTagHint,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(
-                                      AppDimensions.borderRadiusM,
+                                      AppDimensions.radiusControl,
                                     ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(

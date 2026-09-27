@@ -72,7 +72,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.bottomSheetBorderRadius,
+          AppDimensions.radiusCard,
         ),
       ),
       child: Column(
@@ -173,7 +173,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           height: AppDimensions.iconSizeDisplay,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Icon(
             Icons.restaurant_menu,

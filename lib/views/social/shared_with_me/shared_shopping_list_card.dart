@@ -34,12 +34,12 @@ class SharedShoppingListCard {
       elevation: isRead
           ? AppDimensions.elevationLow
           : AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
         label: context.l10n.a11ySharedShoppingList(sharedShoppingList.listName),
         button: true,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           onTap: () {
             if (!isRead) {
               viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
@@ -49,7 +49,7 @@ class SharedShoppingListCard {
           child: Container(
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: !isRead
                   ? Border.all(
                       color: Theme.of(context).colorScheme.onSurface,
@@ -116,7 +116,7 @@ class SharedShoppingListCard {
           height: 100,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Icon(
             Icons.shopping_cart,
@@ -192,7 +192,7 @@ class SharedShoppingListCard {
       padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '"$message"',
@@ -284,7 +284,7 @@ class SharedShoppingListCard {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: Column(
@@ -298,7 +298,7 @@ class SharedShoppingListCard {
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
           ),
 

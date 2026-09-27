@@ -180,7 +180,7 @@ class _QuickChip extends StatelessWidget {
     // The shared grip (Grafisk manual v6:381): the InkWell fills a 48 dp box
     // around the visible chip, and the focus ring goes around that box.
     return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       child: Material(
         color: Colors.transparent,
         child: Semantics(
@@ -191,7 +191,7 @@ class _QuickChip extends StatelessWidget {
           selected: isSelected,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             child: ButleryControlFocus.box(
               child: AnimatedContainer(
                 duration: AnimationUtils.getDuration(
@@ -205,7 +205,7 @@ class _QuickChip extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected ? cs.primary : cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius20,
+                    AppDimensions.radiusPill,
                   ),
                   border: Border.all(
                     color: isSelected ? cs.onSurface : cs.outlineVariant,

@@ -246,7 +246,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             padding: AppDimensions.paddingAll3,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Row(
               children: [
@@ -297,7 +297,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                       : context.l10n.commentWriteComment,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   contentPadding: AppDimensions.paddingAll3,

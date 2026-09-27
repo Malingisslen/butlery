@@ -216,7 +216,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -226,7 +226,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             boxShadow: AppShadows.floating,
           ),
           child: Column(

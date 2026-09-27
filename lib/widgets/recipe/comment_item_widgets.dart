@@ -285,7 +285,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       alpha: AppDimensions.opacityHalf,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   )
                 : null,

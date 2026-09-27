@@ -159,7 +159,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -199,7 +199,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
       height: 4,
       decoration: BoxDecoration(
         color: colorScheme.onSurfaceVariant,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusKnob),
       ),
     );
   }

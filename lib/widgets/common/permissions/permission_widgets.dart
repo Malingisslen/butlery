@@ -86,7 +86,7 @@ class PermissionWidgets {
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
             color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(color: cs.error),
           ),
           child: Row(

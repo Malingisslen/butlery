@@ -35,7 +35,7 @@ class EmojiReactionPicker extends StatelessWidget {
       padding: AppDimensions.paddingSymmetric4x3,
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
         boxShadow: AppShadows.card,
       ),
@@ -104,7 +104,7 @@ class _EmojiButtonState extends State<_EmojiButton> {
               color: _isHovered
                   ? Theme.of(context).colorScheme.surface
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: ExcludeSemantics(
               child: Text(

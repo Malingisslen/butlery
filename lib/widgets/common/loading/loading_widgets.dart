@@ -34,7 +34,7 @@ class LoadingWidgets {
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusL,
+                  AppDimensions.radiusCard,
                 ),
               ),
               // Plate line plus text, never a spinner (produktregler.md:163,
@@ -83,7 +83,7 @@ class LoadingWidgets {
                             alpha: AppDimensions.opacityVeryLight,
                           ),
                           borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusM,
+                            AppDimensions.radiusControl,
                           ),
                           border: Border.all(
                             color: cs.error.withValues(

@@ -49,7 +49,7 @@ class ImportDialogFooter extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.errorContainer,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Row(

@@ -22,7 +22,7 @@ class GroupInvitationCard {
         alpha: AppDimensions.opacityMediumLight,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: Theme.of(context).colorScheme.tertiary.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -45,7 +45,7 @@ class GroupInvitationCard {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Center(
@@ -100,7 +100,7 @@ class GroupInvitationCard {
                     alpha: AppDimensions.opacityExtraVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(

@@ -31,7 +31,7 @@ class ImagePickerDialog extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: SafeArea(
@@ -109,13 +109,13 @@ class _SourceOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       child: Semantics(
         label: label,
         button: true,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(

@@ -180,7 +180,7 @@ class UserAvatarWidgets {
                   child: InkWell(
                     onTap: onEditTap,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
+                      AppDimensions.radiusPill,
                     ),
                     child: Container(
                       width: AppDimensions.iconSizeXl,

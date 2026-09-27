@@ -106,7 +106,7 @@ class RateLimitDialog extends StatelessWidget {
         color: context.modeColors.warning.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -243,12 +243,12 @@ class _ActionTile extends StatelessWidget {
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           decoration: BoxDecoration(
             border: Border.all(color: cs.outlineVariant),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             children: [

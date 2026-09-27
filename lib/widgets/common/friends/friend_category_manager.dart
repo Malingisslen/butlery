@@ -81,7 +81,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               color: Theme.of(context).colorScheme.error.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: Theme.of(context).colorScheme.error.withValues(
                   alpha: AppDimensions.opacityMediumLight,
@@ -105,7 +105,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               color: Theme.of(context).colorScheme.error.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: Theme.of(context).colorScheme.error.withValues(
                   alpha: AppDimensions.opacityMediumLight,
@@ -252,7 +252,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                               context,
                             ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadius8,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                     child: Text(
@@ -324,7 +324,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               border: Border.all(
                 color: Theme.of(context).colorScheme.outline,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: friends.isEmpty
                 ? StateWidget.empty(
@@ -405,7 +405,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -418,7 +418,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             padding: const EdgeInsets.all(AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Icon(
               Icons.group,

@@ -346,7 +346,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),

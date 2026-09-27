@@ -50,7 +50,7 @@ class ShoppingListCard extends StatelessWidget {
     // shadow on hover (web/desktop only). Square corners are preserved.
     final restDecoration = BoxDecoration(
       color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       boxShadow: AppShadows.elevated,
     );
 
@@ -71,7 +71,7 @@ class ShoppingListCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Padding(
                 padding: padding ?? _getDefaultPadding(),
                 child: _buildContent(context),
@@ -219,7 +219,7 @@ class ShoppingListCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           children: [
@@ -310,7 +310,7 @@ class ShoppingListCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -380,7 +380,7 @@ class ShoppingListCard extends StatelessWidget {
         color: isComplete
             ? bc.success.withValues(alpha: AppDimensions.opacityLightSubtle)
             : bc.warning.withValues(alpha: AppDimensions.opacityLightSubtle),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

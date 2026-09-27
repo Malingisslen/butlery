@@ -100,7 +100,7 @@ class StyledModalBottomSheet {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => child,

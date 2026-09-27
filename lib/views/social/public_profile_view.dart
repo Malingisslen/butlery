@@ -193,7 +193,7 @@ class _CookingSkillBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -315,7 +315,7 @@ class _PublicRecipeCard extends StatelessWidget {
                 arguments: recipe,
               );
             },
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingM),
               child: Row(
@@ -323,7 +323,7 @@ class _PublicRecipeCard extends StatelessWidget {
                   // Recipe image or placeholder
                   ClipRRect(
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                     child: SizedBox(
                       width: 64,

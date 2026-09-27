@@ -27,7 +27,7 @@ class FilterStatusChip extends StatelessWidget {
         color: Theme.of(context).colorScheme.secondaryContainer.withValues(
           alpha: AppDimensions.opacityMediumLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         border: Border.all(
           color: Theme.of(
             context,

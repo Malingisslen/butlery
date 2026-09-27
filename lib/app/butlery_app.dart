@@ -850,7 +850,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                     decoration: BoxDecoration(
                       color: cs.primary,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusL,
+                        AppDimensions.radiusCard,
                       ),
                     ),
                     child: Icon(

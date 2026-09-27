@@ -74,13 +74,13 @@ class _EditActionButton extends StatelessWidget {
       message: tooltip,
       child: Material(
         color: isDestructive ? cs.error : cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Semantics(
           label: context.l10n.a11yEditImageAction(tooltip),
           button: true,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.spacingSm),
               child: Icon(

@@ -77,7 +77,7 @@ class ShoppingListHeader {
             padding: AppDimensions.paddingSymmetric16x12,
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(color: cs.outlineVariant),
             ),
             child: DropdownButtonHideUnderline(
@@ -110,7 +110,7 @@ class ShoppingListHeader {
           DecoratedBox(
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(color: cs.outlineVariant),
             ),
             child: AppIconButton(
@@ -130,7 +130,7 @@ class ShoppingListHeader {
               decoration: BoxDecoration(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius12,
+                  AppDimensions.radiusCard,
                 ),
                 border: Border.all(color: cs.outlineVariant),
               ),
@@ -154,7 +154,7 @@ class ShoppingListHeader {
           DecoratedBox(
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(color: cs.outlineVariant),
             ),
             child: AppIconButton(

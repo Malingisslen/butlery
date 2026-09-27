@@ -372,7 +372,7 @@ class SocialBuilderComponents {
           onTap: onTap,
           borderRadius:
               borderRadius ??
-              BorderRadius.circular(AppDimensions.borderRadius8),
+              BorderRadius.circular(AppDimensions.radiusControl),
           child: Container(
             padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: border != null
@@ -380,7 +380,7 @@ class SocialBuilderComponents {
                     border: border,
                     borderRadius:
                         borderRadius ??
-                        BorderRadius.circular(AppDimensions.borderRadius8),
+                        BorderRadius.circular(AppDimensions.radiusControl),
                   )
                 : null,
             child: child,
@@ -400,7 +400,7 @@ class SocialBuilderComponents {
             elevation: elevation ?? AppDimensions.elevationLow,
             borderRadius:
                 borderRadius ??
-                BorderRadius.circular(AppDimensions.borderRadius8),
+                BorderRadius.circular(AppDimensions.radiusControl),
             child: semanticLabel == null
                 ? inkwell
                 : Semantics(

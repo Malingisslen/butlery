@@ -146,7 +146,7 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       final classicField = DecoratedBox(
         decoration: BoxDecoration(
           color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(color: cs.onSurface, width: 2),
         ),
         child: searchField,

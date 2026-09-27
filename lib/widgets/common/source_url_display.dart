@@ -22,7 +22,7 @@ class SourceUrlDisplay extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(

@@ -59,7 +59,7 @@ class SharedContentSearchBar {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),

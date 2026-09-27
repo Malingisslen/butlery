@@ -146,7 +146,7 @@ class UserCollectionWidgets {
           padding: padding ?? AppDimensions.paddingSymmetric4x2,
           decoration: BoxDecoration(
             color: backgroundColor ?? cs.primary,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Text(
             label,

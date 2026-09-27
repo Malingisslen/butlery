@@ -271,7 +271,7 @@ class FriendRecipeListItem extends StatelessWidget {
               width: AppDimensions.iconSizeXl,
               height: AppDimensions.iconSizeXl,
               fit: BoxFit.contain,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               errorWidget: _buildPlaceholder(context),
             )
           : _buildPlaceholder(context),
@@ -409,7 +409,7 @@ class FriendRecipeListItem extends StatelessWidget {
         color: isAlreadyShared
             ? successColor.withValues(alpha: AppDimensions.opacityVeryLight)
             : cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Icon(
         Icons.restaurant_menu,

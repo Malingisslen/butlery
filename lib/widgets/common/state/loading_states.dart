@@ -105,7 +105,7 @@ class LoadingStates {
       child: Card(
         elevation: AppDimensions.elevationLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingS),
@@ -116,7 +116,7 @@ class LoadingStates {
                 width: 80,
                 height: 80,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingS),

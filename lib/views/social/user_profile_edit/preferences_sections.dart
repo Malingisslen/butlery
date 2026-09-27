@@ -195,7 +195,7 @@ class ProfileActionButtons extends StatelessWidget {
               color: context.modeColors.warning.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: context.modeColors.warning.withValues(
                   alpha: AppDimensions.opacityMediumLight,

@@ -446,7 +446,7 @@ class _MessageBubbleState extends State<MessageBubble>
       color: _isFromCurrentUser
           ? Theme.of(context).colorScheme.primary
           : Theme.of(context).colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     );
     return HoverableCard(
       restDecoration: restDecoration,

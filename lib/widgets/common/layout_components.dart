@@ -181,7 +181,7 @@ class LayoutComponents {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => LoadMenuBottomSheet(

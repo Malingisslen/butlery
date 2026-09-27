@@ -164,7 +164,7 @@ class MessageContentBuilder {
       decoration: BoxDecoration(
         color: (isFromCurrentUser ? cs.onPrimary : cs.inversePrimary)
             .withValues(alpha: AppDimensions.opacityLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -174,7 +174,7 @@ class MessageContentBuilder {
               color: cs.inversePrimary.withValues(
                 alpha: AppDimensions.opacityMediumLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Icon(
               icon,
@@ -261,7 +261,7 @@ class MessageContentBuilder {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,

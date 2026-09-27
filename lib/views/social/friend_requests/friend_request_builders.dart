@@ -141,7 +141,7 @@ class FriendRequestsHeaderBuilder {
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),

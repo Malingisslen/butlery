@@ -142,8 +142,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppDimensions.borderRadiusL),
-          topRight: Radius.circular(AppDimensions.borderRadiusL),
+          topLeft: Radius.circular(AppDimensions.radiusCard),
+          topRight: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: Column(
@@ -160,7 +160,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
                 alpha: AppDimensions.opacityMedium,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
           ),
 

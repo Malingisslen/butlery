@@ -30,8 +30,8 @@ class ShareDialogActions {
     return Material(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
-        bottomRight: Radius.circular(AppDimensions.borderRadiusM),
+        bottomLeft: Radius.circular(AppDimensions.radiusControl),
+        bottomRight: Radius.circular(AppDimensions.radiusControl),
       ),
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -112,7 +112,7 @@ class ShareDialogActions {
         ),
         decoration: BoxDecoration(
           color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: warningColor.withValues(
               alpha: AppDimensions.opacityMediumLight,
@@ -148,7 +148,7 @@ class ShareDialogActions {
       ),
       decoration: BoxDecoration(
         color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: successColor.withValues(
             alpha: AppDimensions.opacityMediumLight,

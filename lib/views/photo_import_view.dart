@@ -204,7 +204,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (BuildContext context) {
@@ -405,7 +405,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(color: cs.outlineVariant),
                     ),
@@ -449,7 +449,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(color: cs.outlineVariant),
                     ),
@@ -551,7 +551,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusM,
+                          AppDimensions.radiusControl,
                         ),
                         border: Border.all(
                           color: context.modeColors.warning.withValues(

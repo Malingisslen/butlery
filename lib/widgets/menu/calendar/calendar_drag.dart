@@ -47,13 +47,13 @@ Widget wrapAsDraggable({
   final cs = Theme.of(context).colorScheme;
   final feedback = Material(
     elevation: 4,
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     child: Container(
       width: _kDragFeedbackWidth,
       padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.onSurface),
       ),
       child: Text(

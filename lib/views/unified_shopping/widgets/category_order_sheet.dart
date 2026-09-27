@@ -149,7 +149,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: ListTile(
@@ -158,7 +158,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
           height: 24,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
         title: Text(

@@ -24,7 +24,7 @@ class SharedContentTabBar {
         margin: AppDimensions.screenPadding,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: TabBar(
           // Tabs carry the canonical ring (ButleryTab), never a focus tint
@@ -106,7 +106,7 @@ class SharedContentTabBar {
           ],
           indicator: BoxDecoration(
             color: Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           labelColor: Theme.of(context).colorScheme.onPrimary,
           unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -121,7 +121,7 @@ class SharedContentTabBar {
       padding: AppDimensions.paddingSymmetric6x2,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.error,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '$count',

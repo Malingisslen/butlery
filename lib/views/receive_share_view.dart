@@ -401,7 +401,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                         alpha: AppDimensions.opacityVeryLight,
                       ),
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(color: cs.error),
                     ),
@@ -486,7 +486,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     border: Border.all(color: cs.outlineVariant),
                   ),

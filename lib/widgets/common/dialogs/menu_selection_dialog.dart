@@ -200,7 +200,7 @@ class _MenuListItem extends StatelessWidget {
             decoration: BoxDecoration(
               // surface.raised, never a tint (tokens.json:40-53).
               color: cs.primaryContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Icon(
               Icons.calendar_today,

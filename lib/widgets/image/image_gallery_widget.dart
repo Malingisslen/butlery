@@ -180,7 +180,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         color: cs.primary,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: Row(

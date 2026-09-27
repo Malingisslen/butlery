@@ -47,7 +47,7 @@ class FriendRequestCard {
           : null,
       shape: isSelected
           ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface,
                 width: 1.5,
@@ -60,7 +60,7 @@ class FriendRequestCard {
         selected: isSelected,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Column(
@@ -135,7 +135,7 @@ class FriendRequestCard {
                                       alpha: AppDimensions.opacityHalf,
                                     ),
                                 borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadius8,
+                                  AppDimensions.radiusControl,
                                 ),
                               ),
                               child: Text(
@@ -269,7 +269,7 @@ class FriendRequestCard {
           : null,
       shape: isSelected
           ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface,
                 width: 1.5,
@@ -282,7 +282,7 @@ class FriendRequestCard {
         selected: isSelected,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Row(

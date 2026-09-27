@@ -96,7 +96,7 @@ class GroupMemberCard {
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusS,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                     child: Text(
@@ -120,7 +120,7 @@ class GroupMemberCard {
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondary,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusS,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                     child: Text(
