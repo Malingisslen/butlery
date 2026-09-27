@@ -18,8 +18,7 @@ class KnownInteractionFinding {
   /// contrast.
   final Set<String> checks;
 
-  /// BUT-#### once filed, or a proposed NY-* until then (listed in
-  /// interaction_census.json).
+  /// The BUT-#### Linear ticket.
   final String ticket;
 
   final String reason;
@@ -27,7 +26,7 @@ class KnownInteractionFinding {
 
 const _comboboxExpanded = KnownInteractionFinding(
   checks: {'semantics'},
-  ticket: 'NY-I',
+  ticket: 'BUT-2176',
   reason:
       "The open dropdown is drawn, but its node still says collapsed: Flutter's "
       'DropdownButton sets _isMenuExpanded without setState '
@@ -37,7 +36,7 @@ const _comboboxExpanded = KnownInteractionFinding(
 
 const _linkDefault = KnownInteractionFinding(
   checks: {'hitbox'},
-  ticket: 'NY-J',
+  ticket: 'BUT-2177',
   reason:
       "The app's links (LinkifiedText, the recipe source link, the terms "
       'links in auth_view) are a GestureDetector around one line of text, '
@@ -46,7 +45,7 @@ const _linkDefault = KnownInteractionFinding(
 
 const _linkFocused = KnownInteractionFinding(
   checks: {'reached', 'semantics', 'hitbox', 'visible'},
-  ticket: 'NY-J',
+  ticket: 'BUT-2177',
   reason:
       'A link cannot take keyboard focus: the GestureDetector has no Focus, '
       'so Tab passes it by and no ring is drawn (HA285-A requires visible '
@@ -73,7 +72,7 @@ const _switchFocused = KnownInteractionFinding(
 
 const _searchDisabled = KnownInteractionFinding(
   checks: {'contrast'},
-  ticket: 'NY-K',
+  ticket: 'BUT-2178',
   reason:
       'The disabled search box hint reads 2.98:1 in light (#7D897C on '
       'surface.raised #E6EAD9) and 2.57:1 in dark (paper at 35 % on '

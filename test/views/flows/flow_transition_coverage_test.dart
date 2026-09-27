@@ -13,14 +13,17 @@
 ///    22/8/17;
 /// 2. every test the census cites exists and still carries that name (and
 ///    group, when one is given);
-/// 3. every entry that is not TESTED, and every known gap, names a ticket
-///    (BUT-#### or a proposed NY-* listed in the census) and a reason;
+/// 3. every entry that is not TESTED names a BUT-#### Linear ticket and a
+///    reason; a PARTIAL entry carries them in its known_gap, and only a
+///    PARTIAL entry has a known_gap, so a transition whose canonical outcome
+///    fails is never counted as TESTED;
 /// 4. none of the 5 NOT_REQUIRED transitions is in the census as present;
 /// 5. the negative D-03 and D-04 assertions exist in flow_01.
 ///
-/// It writes test_results/transition-census.json with the counts and the
-/// open gaps, so CI shows what is proven, what is built but not reachable,
-/// and what is missing.
+/// On CI (the CI environment variable is set) it writes
+/// test_results/transition-census.json with the counts and the open gaps,
+/// so the run shows what is proven, what is partial, what is built but not
+/// reachable, and what is missing. A local run writes nothing.
 library;
 
 import 'dart:convert';
@@ -32,7 +35,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _pinnedHash =
     '51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e';
 
-const _statuses = {'TESTED', 'BUILT_NOT_REACHABLE', 'MISSING'};
+const _statuses = {'TESTED', 'PARTIAL', 'BUILT_NOT_REACHABLE', 'MISSING'};
 
 final _ticket = RegExp(r'^BUT-\d+$');
 
@@ -53,7 +56,6 @@ void main() {
   final rows = (fixture['overgangar'] as List).cast<Map<String, dynamic>>();
   final census = _json('test/fixtures/design/transition_census.json');
   final entries = (census['entries'] as List).cast<Map<String, dynamic>>();
-  final proposed = (census['proposed_tickets'] as Map).cast<String, String>();
 
   final required = [
     for (final r in rows)
@@ -133,8 +135,12 @@ void main() {
     for (final e in entries) {
       final id = e['id'] as String;
       final tests = (e['tests'] as List).cast<Map<String, dynamic>>();
-      if (e['status'] == 'TESTED') {
-        expect(tests, isNotEmpty, reason: '$id is TESTED without a test');
+      if (e['status'] == 'TESTED' || e['status'] == 'PARTIAL') {
+        expect(
+          tests,
+          isNotEmpty,
+          reason: '$id is ${e['status']} without a test',
+        );
         expect(e['test_file'], tests.first['file']);
         expect(e['test_name'], tests.first['name']);
       }
@@ -147,16 +153,15 @@ void main() {
     }
   });
 
-  test('3 · every gap names a ticket and a reason', () {
+  test('3 · every gap names a BUT ticket and a reason', () {
     void hasTicket(String id, Map<String, dynamic> m) {
       final ticket = m['ticket'] as String?;
-      final draft = m['proposed_ticket'] as String?;
       expect(
-        (ticket != null && _ticket.hasMatch(ticket)) ||
-            (draft != null && proposed.containsKey(draft)),
+        ticket != null && _ticket.hasMatch(ticket),
         isTrue,
-        reason: '$id needs a BUT ticket or a listed proposed ticket',
+        reason: '$id needs a BUT-#### Linear ticket, not "$ticket"',
       );
+      expect(m.containsKey('proposed_ticket'), isFalse, reason: id);
       expect(
         (m['reason'] as String?)?.trim(),
         isNotEmpty,
@@ -164,15 +169,22 @@ void main() {
       );
     }
 
+    expect(census.containsKey('proposed_tickets'), isFalse);
     for (final e in entries) {
       final id = e['id'] as String;
-      if (e['status'] != 'TESTED') hasTicket(id, e);
       final gap = e['known_gap'] as Map<String, dynamic>?;
-      if (gap != null) hasTicket(id, gap);
-    }
-    for (final entry in proposed.entries) {
-      expect(entry.key, matches(RegExp(r'^NY-[A-Z]$')));
-      expect(entry.value.trim(), isNotEmpty);
+      // A known gap means the canonical outcome fails today: PARTIAL, and
+      // never TESTED.
+      expect(
+        gap != null,
+        e['status'] == 'PARTIAL',
+        reason: '$id: a known_gap goes with PARTIAL, and only with PARTIAL',
+      );
+      if (e['status'] == 'PARTIAL') {
+        hasTicket(id, gap!);
+      } else if (e['status'] != 'TESTED') {
+        hasTicket(id, e);
+      }
     }
   });
 
@@ -203,6 +215,7 @@ void main() {
       'TRANSITION_SET_HASH': _pinnedHash,
       'required': entries.length,
       'tested': count('TESTED'),
+      'partial': count('PARTIAL'),
       'built_not_reachable': count('BUILT_NOT_REACHABLE'),
       'missing': count('MISSING'),
       'not_done': [
@@ -211,21 +224,13 @@ void main() {
             {
               'id': e['id'],
               'status': e['status'],
-              'ticket': e['ticket'] ?? e['proposed_ticket'],
+              'ticket': e['status'] == 'PARTIAL'
+                  ? (e['known_gap'] as Map)['ticket']
+                  : e['ticket'],
             },
       ],
-      'known_gaps': [
-        for (final e in entries)
-          if (e['known_gap'] != null)
-            {
-              'id': e['id'],
-              'ticket':
-                  (e['known_gap'] as Map)['ticket'] ??
-                  (e['known_gap'] as Map)['proposed_ticket'],
-            },
-      ],
-      'proposed_tickets': proposed,
     };
+    if (!Platform.environment.containsKey('CI')) return;
     try {
       Directory('test_results').createSync(recursive: true);
       File('test_results/transition-census.json').writeAsStringSync(

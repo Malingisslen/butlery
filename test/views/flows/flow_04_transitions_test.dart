@@ -5,7 +5,10 @@
 /// and "Lagat N gånger" counts up. The detail view handles the finished exit
 /// (lib/views/recipe_detail_view.dart:326-350) by counting the recipe as
 /// cooked, and the chip shows the new count
-/// (lib/views/recipe_detail/recipe_detail_metadata.dart:212-235).
+/// (lib/views/recipe_detail/recipe_detail_metadata.dart:212-235). The chip's
+/// wording is a known gap (census PARTIAL, BUT-2164): it says
+/// "Lagat idag (1)", not the drawn "Lagat N gånger" (Butlery Skarmar v12
+/// del 1 :316/:375/:437, content-style-guide.md:54).
 ///
 /// cooking_mode_flow04_test.dart proves that Klart returns
 /// CookingModeExit.finished; this proves what the recipe does with it. The
@@ -187,10 +190,10 @@ void main() {
   }
 
   group('TR::FLOW::04::avslutat::klart', () {
-    testWidgets('Klart returns to the recipe, counts it as cooked once, and '
-        'the chip shows the new count', (tester) async {
+    testWidgets('Klart returns to the recipe and counts it as cooked once', (
+      tester,
+    ) async {
       await pumpDetail(tester);
-      expect(find.text('Lagat idag'), findsOneWidget);
 
       await cookAndLeaveWith(tester, 'stub Klart');
 
@@ -201,7 +204,23 @@ void main() {
           attendeeMemberIds: const <String>[],
         ),
       ).called(1);
+    });
+
+    // Known gap, shrink-only (census PARTIAL, BUT-2164): the count goes up,
+    // but in the words "Lagat idag (1)". flows-roles-budget.md:72 and the
+    // drawn screens say "Lagat N gånger". This pins today's wording; when
+    // the chip says "Lagat N gånger", assert that instead, drop the
+    // known_gap in test/fixtures/design/transition_census.json and set the
+    // entry TESTED.
+    testWidgets('known gap: the chip says Lagat idag (1), not the drawn '
+        'Lagat N gånger', (tester) async {
+      await pumpDetail(tester);
+      expect(find.text('Lagat idag'), findsOneWidget);
+
+      await cookAndLeaveWith(tester, 'stub Klart');
+
       expect(find.text('Lagat idag (1)'), findsOneWidget);
+      expect(find.textContaining('gånger'), findsNothing);
     });
 
     testWidgets('leaving cooking mode without Klart counts nothing', (

@@ -1,16 +1,6 @@
 {
-  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. Every entry that is not TESTED, and every known_gap, names a Linear ticket, or a proposed one (NY-*) until it is filed. Checked by test/views/flows/flow_transition_coverage_test.dart.",
+  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges, and the transition's canonical outcome is met. PARTIAL means the transition is built and reachable and its tests drive it, but its defining canonical outcome is not met today; known_gap names what fails, the Linear ticket and, where there is one, the test that pins today's behaviour. PARTIAL does not count as done. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. Every entry that is not TESTED names a BUT-#### Linear ticket and a reason (for PARTIAL, in known_gap). Checked by test/views/flows/flow_transition_coverage_test.dart.",
   "TRANSITION_SET_HASH": "51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e",
-  "proposed_tickets": {
-    "NY-A": "Importen skiljer inte på trasig länk, betalvägg och sida utan recept: alla blir \"Receptet kunde inte importeras.\"",
-    "NY-B": "Blockering: visa att den blockerade inte längre ser mina delningar och att historiken behålls (åt båda håll)",
-    "NY-C": "Sätt nytt lösenord i appen: återställningslänken öppnar Firebases egen sida",
-    "NY-D": "Byt e-post: bekräfta både gamla och nya adressen, inte bara den nya",
-    "NY-E": "E-postverifiering: \"Skicka igen\" kommer inte tillbaka efter 60 s (vyn byggs inte om)",
-    "NY-F": "Placeringskvittot står kvar tills man trycker, i stället för 7 s (D-04)",
-    "NY-G": "Data ur cachen märks inte med tidsstämpel (flöde 08, stale data)",
-    "NY-H": "Receptformulärets utkastfråga saknar Släng, och \"Börja om\" behåller utkastet"
-  },
   "entries": [
     {
       "id": "TR::FLOW::01::genererar::0-recept-placerade",
@@ -31,7 +21,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: the view part and the viewmodel outcome."
     },
     {
@@ -51,7 +40,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: \"Vi hittade n av m rätter\" in both modes, counted in recipes."
     },
     {
@@ -67,7 +55,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test, fake time: nothing at 5.9 s, the text at 6.1 s, same panel (D-03 keeps this)."
     },
     {
@@ -88,7 +75,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "The complete result is its own outcome (no partial line) and is shown as the result in the view."
     },
     {
@@ -110,13 +96,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test for the connection going away during the planning; the existing test covers Generera while offline."
     },
     {
       "id": "TR::FLOW::01::placering::kvitto-7-s-andra",
       "flow": "01",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/views/flows/flow_01_transitions_test.dart",
       "test_name": "the automatic placement shows a receipt with Ändra, and Ändra opens the manual placement on an empty week",
       "tests": [
@@ -127,15 +112,14 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test: the receipt with Ändra, and Ändra opens manual placement with an empty working week.",
       "known_gap": {
-        "proposed_ticket": "NY-F",
         "reason": "D-04 gives the receipt 7 s. The view asks for 7 s (lib/views/veckomeny_view.dart:291), but SnackBarUtils keeps every snackbar with an action until the user acts (lib/core/utils/snackbar_utils.dart:424-428), so the receipt never leaves by itself.",
         "test": {
           "file": "test/views/flows/flow_01_transitions_test.dart",
           "name": "known gap: the receipt asks for 7 s but stays until the user acts"
-        }
+        },
+        "ticket": "BUT-2173"
       }
     },
     {
@@ -152,7 +136,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test (D-04): nothing is written until the user places; both ways are offered; no undo on the result."
     },
     {
@@ -169,7 +152,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test on the real VeckomenyView."
     },
     {
@@ -186,7 +168,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test: the overwrite question comes before the generator is called."
     },
     {
@@ -206,7 +187,6 @@
         }
       ],
       "ticket": "BUT-2151",
-      "proposed_ticket": null,
       "reason": "The snackbar is built and tested, but the week plan (weekly_menu_plans) has no rev check and no realtime resource, and realtime_resources has no Firestore rules, so no conflict event is ever raised for the week in production."
     },
     {
@@ -223,7 +203,6 @@
         }
       ],
       "ticket": "BUT-2140",
-      "proposed_ticket": null,
       "reason": "The merge builds on the list the service holds at the write, so nothing it knows of is overwritten (tested). But the generated list is owner-only (lib/services/shopping/menu_shopping_list_generator.dart:260-264), so another person cannot change it; the same account on a second device is not merged, and the user is never told a conflict happened. Merging per operation is BUT-2140; realtime is BUT-2151."
     },
     {
@@ -240,7 +219,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -257,7 +235,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -278,7 +255,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test for the tap on the real view; the existing test pins the sheet."
     },
     {
@@ -294,13 +270,12 @@
         }
       ],
       "ticket": "BUT-2158",
-      "proposed_ticket": null,
       "reason": "The review can show a failed line empty and marked (tested), but the photo/OCR path never feeds it: OCR gives one confidence per page, and photo, text and voice imports are filtered out of the review (recipe_form_viewmodel.dart)."
     },
     {
       "id": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
       "flow": "03",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
       "test_name": "each low or failed row waits until it is confirmed",
       "tests": [
@@ -315,7 +290,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer.",
       "known_gap": {
         "ticket": "BUT-2158",
@@ -339,7 +313,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: the duplicate sheet opens and Spara som nytt continues. Interpretation: the drawn \"Öppna befintligt\" is the sheet's \"Behåll befintligt\", which opens the existing recipe (lib/views/smart_import/import_result_handler.dart:132-139); that branch has no test of its own."
     },
     {
@@ -355,8 +328,7 @@
           "group": "startImport — error localization"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": "NY-A",
+      "ticket": "BUT-2168",
       "reason": "The line \"Sidan kräver inloggning\" and the paste route are built and mapped from a \"login required\" cause (smart_import_viewmodel.dart:555-556, tested), but no import strategy reports a login wall (no such text in lib/services/import), so the user reads \"Receptet kunde inte importeras.\""
     },
     {
@@ -372,13 +344,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing journey: the fetched recipe opens for review before it is saved."
     },
     {
       "id": "TR::FLOW::03::hämtar::privat-trasig-länk",
       "flow": "03",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
       "test_name": "a link that failed keeps the link and offers photo, paste and manual",
       "tests": [
@@ -388,11 +359,10 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test: a failed link keeps the link and offers \"Klistra in texten\".",
       "known_gap": {
-        "proposed_ticket": "NY-A",
-        "reason": "A private or broken link (non-200) ends in the URL strategy's generic failure (url_import_strategy.dart:484-494), which is shown as \"Receptet kunde inte importeras.\" and not as \"Länken kunde inte läsas\"."
+        "reason": "A private or broken link (non-200) ends in the URL strategy's generic failure (url_import_strategy.dart:484-494), which is shown as \"Receptet kunde inte importeras.\" and not as \"Länken kunde inte läsas\".",
+        "ticket": "BUT-2168"
       }
     },
     {
@@ -408,8 +378,7 @@
           "group": "startImport — error localization"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": "NY-A",
+      "ticket": "BUT-2168",
       "reason": "\"Inget recept hittades\" is mapped from a \"no recipe found\" cause, which no strategy emits. A page without a recipe ends either in the assisted import (when HTML was fetched, url_import_strategy.dart:219-227) or in the generic \"Receptet kunde inte importeras.\" The drawn \"Vi hittade inget recept på sidan\" + Skriv själv is not reached."
     },
     {
@@ -429,19 +398,18 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: Importera starts the fetch phase."
     },
     {
       "id": "TR::FLOW::04::avslutat::klart",
       "flow": "04",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/views/flows/flow_04_transitions_test.dart",
-      "test_name": "Klart returns to the recipe, counts it as cooked once, and the chip shows the new count",
+      "test_name": "Klart returns to the recipe and counts it as cooked once",
       "tests": [
         {
           "file": "test/views/flows/flow_04_transitions_test.dart",
-          "name": "Klart returns to the recipe, counts it as cooked once, and the chip shows the new count",
+          "name": "Klart returns to the recipe and counts it as cooked once",
           "group": "TR::FLOW::04::avslutat::klart"
         },
         {
@@ -450,8 +418,15 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
-      "reason": "New test for what the recipe does with Klart; the existing test proves Klart returns finished."
+      "reason": "New test for what the recipe does with Klart; the existing test proves Klart returns finished.",
+      "known_gap": {
+        "ticket": "BUT-2164",
+        "reason": "flows-roles-budget.md:72 counts up \"Lagat N gånger\", as drawn in Butlery Skarmar v12 del 1 recept och veckomeny.dc.html:316/:375/:437 and written in content-style-guide.md:54. The chip says \"Lagat idag\" and \"Lagat idag (1)\" (lib/views/recipe_detail/recipe_detail_metadata.dart:212-235). The count is proven; the wording is not the drawn one.",
+        "test": {
+          "file": "test/views/flows/flow_04_transitions_test.dart",
+          "name": "known gap: the chip says Lagat idag (1), not the drawn Lagat N gånger"
+        }
+      }
     },
     {
       "id": "TR::FLOW::04::receptdetalj::börja-laga",
@@ -470,7 +445,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: the session keeps the screen awake (\"awake\") and opens on step 1."
     },
     {
@@ -490,7 +464,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: timers keep running, and a missing notification permission is said before the timer starts."
     },
     {
@@ -510,7 +483,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
@@ -526,7 +498,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test. The design marks this UNVERIFIABLE in drawings; the rule is still REQUIRED."
     },
     {
@@ -546,7 +517,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: a notification named after the step, several timers at once."
     },
     {
@@ -567,7 +537,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests. PQ-13 = A: the notice says who to ask and carries Stäng; the \"Begär ny\" button is BUT-2143."
     },
     {
@@ -584,7 +553,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test on the real DeepLinkHandler."
     },
     {
@@ -601,7 +569,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test: the link is kept while signed out and opened once after the sign-in."
     },
     {
@@ -618,7 +585,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test: the owner of a group with members must hand over ownership first (group_detail_view.dart:362-381)."
     },
     {
@@ -638,13 +604,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
       "id": "TR::FLOW::05::person::blockerad",
       "flow": "05",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/unit/viewmodels/shared_content/shared_recipe_viewmodel_test.dart",
       "test_name": "excludes content from blocked users (read at load time)",
       "tests": [
@@ -662,11 +627,10 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: what a blocked person shared is hidden from me.",
       "known_gap": {
-        "proposed_ticket": "NY-B",
-        "reason": "Only my side is filtered (base_shared_content_viewmodel.dart:99-100 reads the users I blocked). I found no code or test that hides my earlier shares from the person I blocked, or that proves the history is kept."
+        "reason": "Only my side is filtered (base_shared_content_viewmodel.dart:99-100 reads the users I blocked). I found no code or test that hides my earlier shares from the person I blocked, or that proves the history is kept.",
+        "ticket": "BUT-2169"
       }
     },
     {
@@ -676,8 +640,7 @@
       "test_file": null,
       "test_name": null,
       "tests": [],
-      "ticket": null,
-      "proposed_ticket": "NY-C",
+      "ticket": "BUT-2170",
       "reason": "The reset link opens Firebase's own page. The app has no view for setting the new password: no confirmPasswordReset or verifyPasswordResetCode in lib/."
     },
     {
@@ -698,7 +661,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: the change goes through verifyBeforeUpdateEmail, so the new address applies only once the link to it is opened (Firebase applies it; the app never writes the address)."
     },
     {
@@ -708,8 +670,7 @@
       "test_file": null,
       "test_name": null,
       "tests": [],
-      "ticket": null,
-      "proposed_ticket": "NY-D",
+      "ticket": "BUT-2171",
       "reason": "Only the new address is confirmed (verifyBeforeUpdateEmail, lib/services/auth_service.dart:483). The old address gets Firebase's notice, not a confirmation step."
     },
     {
@@ -730,7 +691,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
@@ -747,7 +707,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -764,7 +723,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test: the address gets a reset link."
     },
     {
@@ -784,7 +742,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
@@ -800,7 +757,6 @@
         }
       ],
       "ticket": "BUT-2142",
-      "proposed_ticket": null,
       "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
     },
     {
@@ -816,7 +772,6 @@
         }
       ],
       "ticket": "BUT-2142",
-      "proposed_ticket": null,
       "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
     },
     {
@@ -827,7 +782,6 @@
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2142",
-      "proposed_ticket": null,
       "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this. The re-login is in lib/views/settings/mfa_settings_view.dart:91-97 and :220-227; no test drives it."
     },
     {
@@ -843,7 +797,6 @@
         }
       ],
       "ticket": "BUT-2142",
-      "proposed_ticket": null,
       "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
     },
     {
@@ -859,7 +812,6 @@
         }
       ],
       "ticket": "BUT-2142",
-      "proposed_ticket": null,
       "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
     },
     {
@@ -875,7 +827,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -891,7 +842,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -912,7 +862,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: a complete deletion ends signed out on the sign-in screen."
     },
     {
@@ -928,7 +877,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -945,7 +893,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test: the reason is asked in the first dialog, before the password step."
     },
     {
@@ -965,7 +912,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
@@ -982,7 +928,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -1003,7 +948,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: registering sends the verification mail, and the view asks the user to open it. The routing in AuthWrapper (lib/app/auth/auth_wrapper.dart:147-163) is not driven by a test."
     },
     {
@@ -1020,13 +964,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test, fake time, light and dark."
     },
     {
       "id": "TR::FLOW::06::verifieringslank::utgangen",
       "flow": "06",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/views/flows/flow_06_transitions_test.dart",
       "test_name": "Skicka igen sends a new link, and no second one is sent inside the 60 s wait",
       "tests": [
@@ -1037,15 +980,14 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test: a new link can be asked for.",
       "known_gap": {
-        "proposed_ticket": "NY-E",
-        "reason": "The 60 s wait is only read when something else rebuilds the view; the 5 s poll does not call setState, so the label never counts down and \"Skicka igen\" stays off after the wait (lib/views/auth/email_verification_view.dart:62-94).",
+        "reason": "Two things fail. The 60 s wait is only read when something else rebuilds the view; the 5 s poll does not call setState, so \"Skicka igen\" stays off after the wait (lib/views/auth/email_verification_view.dart:62-94). And the countdown is built into the button's name, \"Skicka igen (60s)\" (email_verification_view.dart:170-172), where produktregler.md:676 puts it outside the name.",
         "test": {
           "file": "test/views/flows/flow_06_transitions_test.dart",
-          "name": "known gap: after the 60 s the button is not given back until something else rebuilds the view"
-        }
+          "name": "known gap: the wait is counted in the button name, and the button is not given back after the 60 s"
+        },
+        "ticket": "BUT-2172"
       }
     },
     {
@@ -1065,13 +1007,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
       "id": "TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv",
       "flow": "07",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/views/permission_flow07_test.dart",
       "test_name": "library permanent no: Öppna inställningar, and write it yourself",
       "tests": [
@@ -1082,7 +1023,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test (photo import).",
       "known_gap": {
         "ticket": "BUT-2160",
@@ -1107,13 +1047,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
       "id": "TR::FLOW::07::nekad::funktionen-kvar",
       "flow": "07",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/views/permission_flow07_test.dart",
       "test_name": "camera no: Fråga igen, and the library as the way on",
       "tests": [
@@ -1128,7 +1067,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests (photo import).",
       "known_gap": {
         "ticket": "BUT-2160",
@@ -1148,7 +1086,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -1165,7 +1102,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -1186,7 +1122,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
@@ -1203,7 +1138,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test."
     },
     {
@@ -1219,7 +1153,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
     },
     {
@@ -1235,7 +1168,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
     },
     {
@@ -1255,7 +1187,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
     },
     {
@@ -1271,7 +1202,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
     },
     {
@@ -1287,7 +1217,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user. Realtime conflicts do not reach production either (BUT-2151)."
     },
     {
@@ -1303,7 +1232,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user. The view opens from Mer, but it always says nothing is waiting."
     },
     {
@@ -1314,7 +1242,6 @@
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2163",
-      "proposed_ticket": null,
       "reason": "Not built: the app cannot read free disk space, and it has no download the user starts."
     },
     {
@@ -1335,7 +1262,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: the banner (never a dialog) with the wifi-off glyph, in both modes."
     },
     {
@@ -1346,7 +1272,6 @@
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
     },
     {
@@ -1356,14 +1281,13 @@
       "test_file": null,
       "test_name": null,
       "tests": [],
-      "ticket": null,
-      "proposed_ticket": "NY-G",
+      "ticket": "BUT-2174",
       "reason": "No view marks data read from the cache with a timestamp; I found no such label or widget in lib/ (searched the Swedish strings and the offline widgets)."
     },
     {
       "id": "TR::FLOW::08::utkast::aterupptagning",
       "flow": "08",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/widget/import/photo_import_draft_restore_test.dart",
       "test_name": "accept → restoreDraft() called, discard NOT called",
       "tests": [
@@ -1377,11 +1301,10 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests: the next opening asks, and Fortsätt restores.",
       "known_gap": {
-        "proposed_ticket": "NY-H",
-        "reason": "The recipe form asks with \"Återställ\" and \"Börja om\" (draft_recovery_dialog.dart), not Fortsätt and Släng, and its handler (lib/widgets/recipe/recipe_draft_recovery_handler.dart) has no test."
+        "reason": "The recipe form asks with \"Återställ\" and \"Börja om\" (draft_recovery_dialog.dart), not Fortsätt and Släng, and its handler (lib/widgets/recipe/recipe_draft_recovery_handler.dart) has no test.",
+        "ticket": "BUT-2175"
       }
     },
     {
@@ -1398,7 +1321,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "New test on the real auto-save manager."
     },
     {
@@ -1418,7 +1340,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests (D-01: 30 days since the last change)."
     },
     {
@@ -1434,13 +1355,12 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing test (D-02)."
     },
     {
       "id": "TR::FLOW::08::utkast::slang-raderar",
       "flow": "08",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "test_file": "test/widget/import/photo_import_draft_restore_test.dart",
       "test_name": "decline (\"Börja om\") → discardPersistedDraft() called, restore NOT called",
       "tests": [
@@ -1454,11 +1374,10 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests (photo import).",
       "known_gap": {
-        "proposed_ticket": "NY-H",
-        "reason": "The recipe form offers no Släng: \"Börja om\" only closes the question and the draft stays (recipe_draft_recovery_handler.dart:48-51)."
+        "reason": "The recipe form offers no Släng: \"Börja om\" only closes the question and the draft stays (recipe_draft_recovery_handler.dart:48-51).",
+        "ticket": "BUT-2175"
       }
     },
     {
@@ -1478,7 +1397,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "reason": "Existing tests."
     },
     {
@@ -1494,7 +1412,6 @@
         }
       ],
       "ticket": "BUT-2162",
-      "proposed_ticket": null,
       "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
     }
   ]

@@ -9,8 +9,11 @@
 ///   verification is seen at the first poll after the link was opened.
 /// - TR::FLOW::06::verifieringslank::utgangen: an expired link means asking
 ///   for a new one. The view offers "Skicka igen", sends a new link, and
-///   holds the next one for 60 s (:34, :84-118). A known gap is pinned
-///   below: the button is not given back after the 60 s.
+///   holds the next one for 60 s (:34, :84-118). Two known gaps are pinned
+///   below (BUT-2172): the button is not given back after the 60 s, and the
+///   countdown is part of the button's name, where produktregler.md:676
+///   puts it outside the name. The tests find the button as the resend
+///   action, not by the text that carries the countdown.
 ///
 /// The real EmailVerificationView runs under fake time. The fake is the
 /// AuthService edge only: whether the address is verified, the reload, and
@@ -116,48 +119,69 @@ void main() {
     }
   });
 
+  // The resend action: the one ElevatedButton on the screen (the other way
+  // on, "Fortsätt utan att verifiera", is a TextButton).
+  final resend = find.byType(ElevatedButton);
+  bool resendEnabled(WidgetTester tester) =>
+      tester.widget<ElevatedButton>(resend).onPressed != null;
+
   group('TR::FLOW::06::verifieringslank::utgangen', () {
     testWidgets('Skicka igen sends a new link, and no second one is sent '
         'inside the 60 s wait', (tester) async {
       await tester.pumpWidget(view());
       await tester.pump();
 
-      await tester.tap(find.text(_sv.emailVerificationResend));
+      expect(resend, findsOneWidget);
+      expect(resendEnabled(tester), isTrue);
+      await tester.tap(resend);
       await tester.pump();
       expect(sends, 1);
 
-      // The wait is shown in the label, and the button is off.
-      final waiting = find.text('${_sv.emailVerificationResend} (60s)');
-      expect(waiting, findsOneWidget);
-      await tester.tap(waiting, warnIfMissed: false);
+      // Inside the wait the action is off.
+      expect(resendEnabled(tester), isFalse);
+      await tester.tap(resend, warnIfMissed: false);
       await tester.pump();
       await tester.pump(const Duration(seconds: 30));
-      await tester.tap(waiting, warnIfMissed: false);
+      await tester.tap(resend, warnIfMissed: false);
       await tester.pump();
       expect(sends, 1, reason: 'no second link inside the 60 s');
     });
 
-    // Known gap, shrink-only (census known_gap, proposed ticket): the wait is
-    // only read when something else rebuilds the view. The 5 s poll does
-    // not call setState, so the label never counts down and "Skicka igen"
-    // stays off after the 60 s. This test fails once that is fixed; then
-    // drop it and the known_gap in test/fixtures/design/
-    // transition_census.json.
-    testWidgets('known gap: after the 60 s the button is not given back until '
-        'something else rebuilds the view', (tester) async {
+    // Known gaps, shrink-only (census PARTIAL, BUT-2172). This pins today's
+    // behaviour, which is wrong on two counts:
+    // - the countdown is built into the button's name,
+    //   "Skicka igen (60s)" (email_verification_view.dart:170-172), where
+    //   produktregler.md:676 puts it outside the name, since a name that
+    //   changes every second is never read out;
+    // - the wait is only read when something else rebuilds the view. The
+    //   5 s poll does not call setState, so the button stays off after the
+    //   60 s.
+    // This test fails once either is fixed; then assert the canonical
+    // behaviour instead, drop the known_gap in
+    // test/fixtures/design/transition_census.json and set the entry TESTED.
+    testWidgets('known gap: the wait is counted in the button name, and the '
+        'button is not given back after the 60 s', (tester) async {
       await tester.pumpWidget(view());
       await tester.pump();
-      await tester.tap(find.text(_sv.emailVerificationResend));
+      await tester.tap(resend);
       await tester.pump();
+
+      expect(
+        find.descendant(
+          of: resend,
+          matching: find.text('${_sv.emailVerificationResend} (60s)'),
+        ),
+        findsOneWidget,
+        reason: 'known gap: the countdown is in the name (produktregler:676)',
+      );
 
       await tester.pump(const Duration(seconds: 90));
       await tester.pump();
 
-      expect(find.text(_sv.emailVerificationResend), findsNothing);
       expect(
-        find.text('${_sv.emailVerificationResend} (60s)'),
-        findsOneWidget,
-        reason: 'the label still shows the wait it had at the send',
+        resendEnabled(tester),
+        isFalse,
+        reason: 'known gap: the action is not given back after the 60 s',
       );
     });
   });

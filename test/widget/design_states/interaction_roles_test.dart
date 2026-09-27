@@ -262,7 +262,7 @@ final _controls = <String, _Control>{
     target: () => find.byType(HeroButton),
     label: 'Spara',
   ),
-  // A filter chip: a button that can be selected (Komponentark v1:110-166).
+  // A filter chip: a button that can be selected (Komponentark v1:139-146).
   'button.selected': _Control(
     build: ({required enabled}) => _stateful<Set<String>>(
       const {},
@@ -601,7 +601,6 @@ void main() {
   ];
   final census = _json('test/widget/design_states/interaction_census.json');
   final entries = (census['entries'] as List).cast<Map<String, dynamic>>();
-  final proposed = (census['proposed_tickets'] as Map).cast<String, String>();
 
   test('the vendored rows still hash to INTERACTION_SET_HASH', () {
     // As tools/block288/uxfrysning.mjs:153 computes it in the design repo.
@@ -618,12 +617,15 @@ void main() {
     expect(ids.toSet(), {for (final r in rows) r.$1});
     expect(ids, hasLength(33));
     final ticket = RegExp(r'^BUT-\d+$');
-    bool named(String? t) =>
-        t != null && (ticket.hasMatch(t) || proposed.containsKey(t));
+    bool named(String? t) => t != null && ticket.hasMatch(t);
 
     for (final e in entries) {
       final id = e['row_id'] as String;
-      expect({'TESTED', 'MISSING'}, contains(e['status']), reason: id);
+      expect(
+        {'TESTED', 'PARTIAL', 'MISSING'},
+        contains(e['status']),
+        reason: id,
+      );
       expect((e['control'] as String?)?.trim(), isNotEmpty, reason: id);
       expect(
         e['test_file'],
@@ -633,8 +635,7 @@ void main() {
       expect(e['test_name'], '$id (light)');
       if (e['status'] == 'MISSING') {
         expect(
-          named(e['ticket'] as String?) ||
-              named(e['proposed_ticket'] as String?),
+          named(e['ticket'] as String?),
           isTrue,
           reason: '$id is MISSING without a ticket',
         );
@@ -645,14 +646,23 @@ void main() {
         for (final mode in ['light', 'dark'])
           ?knownInteractionFindings['$id ($mode)']?.ticket,
       };
-      final said = e['known_finding'] ?? e['proposed_ticket'] ?? e['ticket'];
+      final said = e['known_finding'] ?? e['ticket'];
       expect(
         listed.isEmpty ? null : listed.single,
         said,
         reason: '$id: census and known_interaction_findings.dart disagree',
       );
       for (final t in listed) {
-        expect(named(t), isTrue, reason: '$id: $t is not a ticket');
+        expect(named(t), isTrue, reason: '$id: $t is not a BUT ticket');
+      }
+      // A row that fails a check today is PARTIAL, never TESTED: TESTED
+      // means every check passes.
+      if (e['status'] != 'MISSING') {
+        expect(
+          e['status'],
+          listed.isEmpty ? 'TESTED' : 'PARTIAL',
+          reason: '$id: a row with a known finding is PARTIAL',
+        );
       }
       for (final ref in (e['also'] as List).cast<Map<String, dynamic>>()) {
         final path = ref['file'] as String;

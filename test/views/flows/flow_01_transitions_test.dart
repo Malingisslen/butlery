@@ -197,14 +197,14 @@ void main() {
       });
     });
 
-    // Known gap, shrink-only (census known_gap, proposed ticket): D-04 gives
+    // Known gap, shrink-only (census PARTIAL, BUT-2173): D-04 gives
     // the receipt 7 s, and the view asks for 7 s (veckomeny_view.dart:291),
     // but SnackBarUtils keeps every snackbar that has an action until the
     // user acts (snackbar_utils.dart:424-428, `persist ?? action != null`),
     // so the receipt never leaves by itself. The undo snackbar solves the
     // same thing with UndoWindowTimer. This test fails once the receipt
-    // leaves at 7 s; then assert that instead and drop the known_gap in
-    // test/fixtures/design/transition_census.json.
+    // leaves at 7 s; then assert that instead, drop the known_gap in
+    // test/fixtures/design/transition_census.json and set the entry TESTED.
     testWidgets('known gap: the receipt asks for 7 s but stays until the '
         'user acts', (tester) async {
       await runOnMonday(() async {

@@ -1,11 +1,6 @@
 {
-  "$om": "P8-U06: the 33 REQUIRED control states of fas2/block288-uxfrysning.json interaktion (vendored in test/fixtures/design/block288-interaktion.json). TESTED: the state is reached through real input in light and dark, and every check passes or fails only as listed in known_interaction_findings.dart. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
+  "$om": "P8-U06: the 33 REQUIRED control states of fas2/block288-uxfrysning.json interaktion (vendored in test/fixtures/design/block288-interaktion.json). TESTED: the state is reached through real input in light and dark, and every check passes. PARTIAL: the state is reached and tested, but a check fails today, as listed with its BUT-#### ticket in known_interaction_findings.dart (known_finding); it does not count as meeting the spec. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
   "INTERACTION_SET_HASH": "34ed0d011c8552877f4f823d8bf0092e5107583b944b0740b7c5403562fa59fd",
-  "proposed_tickets": {
-    "NY-I": "Kombinationsrutan säger inte till skärmläsaren att listan är öppen (DropdownButton uppdaterar inte expanded)",
-    "NY-J": "Länkar: 48 dp träffyta och tangentbordsfokus med fokusring (HA285-A)",
-    "NY-K": "Sökfältets avstängda text når inte 3:1 mot den upphöjda ytan, i ljust och mörkt läge"
-  },
   "entries": [
     {
       "row_id": "CSR::ROLE::button::COLLAPSED",
@@ -19,8 +14,7 @@
           "name": "CSR::ROLE::button::COLLAPSED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::button::DEFAULT",
@@ -34,8 +28,7 @@
           "name": "CSR::ROLE::button::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::button::DISABLED",
@@ -53,8 +46,7 @@
           "name": "no disabled colour is carried by opacity"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::button::EXPANDED",
@@ -68,8 +60,7 @@
           "name": "CSR::ROLE::button::EXPANDED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::button::FOCUSED",
@@ -83,8 +74,7 @@
           "name": "CSR::ROLE::button::FOCUSED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::button::PRESSED",
@@ -98,13 +88,12 @@
           "name": "CSR::ROLE::button::PRESSED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::button::SELECTED",
       "status": "TESTED",
-      "control": "a filter chip (FilterChipsWidget), a button that can be selected (Komponentark v1:110-166)",
+      "control": "a filter chip (FilterChipsWidget), a button that can be selected (Komponentark v1:139-146)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::SELECTED (light)",
       "also": [
@@ -113,8 +102,7 @@
           "name": "CSR::ROLE::button::SELECTED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::checkbox::DEFAULT",
@@ -128,8 +116,7 @@
           "name": "CSR::ROLE::checkbox::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::checkbox::FOCUSED",
@@ -147,8 +134,7 @@
           "name": "$name: keyboard focus draws the $mode ring outside a 48 dp box"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::checkbox::SELECTED",
@@ -162,8 +148,7 @@
           "name": "CSR::ROLE::checkbox::SELECTED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::combobox::DEFAULT",
@@ -177,12 +162,11 @@
           "name": "CSR::ROLE::combobox::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::combobox::EXPANDED",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "control": "DropdownButtonFormField through the theme, as in the recipe form and settings",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::combobox::EXPANDED (light)",
@@ -193,12 +177,11 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
-      "known_finding": "NY-I"
+      "known_finding": "BUT-2176"
     },
     {
       "row_id": "CSR::ROLE::link::DEFAULT",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), the same GestureDetector-in-Semantics(link) pattern as the recipe source link and the terms links",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::link::DEFAULT (light)",
@@ -209,8 +192,7 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
-      "known_finding": "NY-J"
+      "known_finding": "BUT-2177"
     },
     {
       "row_id": "CSR::ROLE::link::FOCUSED",
@@ -224,8 +206,7 @@
           "name": "CSR::ROLE::link::FOCUSED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": "NY-J",
+      "ticket": "BUT-2177",
       "reason": "A link cannot take keyboard focus at all, so the state does not exist in the app."
     },
     {
@@ -240,8 +221,7 @@
           "name": "CSR::ROLE::menuitem::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::menuitem::FOCUSED",
@@ -259,8 +239,7 @@
           "name": "menu item: keyboard focus draws the ring around the row"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::radio::DEFAULT",
@@ -274,8 +253,7 @@
           "name": "CSR::ROLE::radio::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::radio::DISABLED",
@@ -293,12 +271,11 @@
           "name": "no disabled colour is carried by opacity"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::radio::FOCUSED",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "control": "RadioListTile in a RadioGroup through the theme, as in the settings and tag dialogs",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::radio::FOCUSED (light)",
@@ -317,7 +294,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "known_finding": "BUT-2148"
     },
     {
@@ -332,8 +308,7 @@
           "name": "CSR::ROLE::radio::SELECTED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::searchbox::DEFAULT",
@@ -347,12 +322,11 @@
           "name": "CSR::ROLE::searchbox::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::searchbox::DISABLED",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "control": "ButlerySearchBox (lib/widgets/common/butlery_search_box.dart)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::searchbox::DISABLED (light)",
@@ -367,8 +341,7 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
-      "known_finding": "NY-K"
+      "known_finding": "BUT-2178"
     },
     {
       "row_id": "CSR::ROLE::searchbox::FOCUSED",
@@ -382,8 +355,7 @@
           "name": "CSR::ROLE::searchbox::FOCUSED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::switch::DEFAULT",
@@ -397,8 +369,7 @@
           "name": "CSR::ROLE::switch::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::switch::DISABLED",
@@ -416,12 +387,11 @@
           "name": "no disabled colour is carried by opacity"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::switch::FOCUSED",
-      "status": "TESTED",
+      "status": "PARTIAL",
       "control": "SwitchListTile through the theme, the settings pattern (19 uses in lib/)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::switch::FOCUSED (light)",
@@ -436,7 +406,6 @@
         }
       ],
       "ticket": null,
-      "proposed_ticket": null,
       "known_finding": "BUT-2148"
     },
     {
@@ -451,8 +420,7 @@
           "name": "CSR::ROLE::switch::SELECTED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::tab::DEFAULT",
@@ -466,8 +434,7 @@
           "name": "CSR::ROLE::tab::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::tab::FOCUSED",
@@ -489,8 +456,7 @@
           "name": "each of the six tabs rings when it has keyboard focus"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::tab::SELECTED",
@@ -504,8 +470,7 @@
           "name": "CSR::ROLE::tab::SELECTED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::textbox::DEFAULT",
@@ -519,8 +484,7 @@
           "name": "CSR::ROLE::textbox::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::textbox::DISABLED",
@@ -538,8 +502,7 @@
           "name": "no disabled colour is carried by opacity"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::textbox::FOCUSED",
@@ -553,8 +516,7 @@
           "name": "CSR::ROLE::textbox::FOCUSED (dark)"
         }
       ],
-      "ticket": null,
-      "proposed_ticket": null
+      "ticket": null
     }
   ],
   "unspecified": [
