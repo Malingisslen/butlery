@@ -9,6 +9,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/group_draft_codec.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -178,19 +179,17 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       } else {
         if (mounted) {
           setState(() {
-            _error = context.l10n.errorCouldNotCreate(
-              context.l10n.socialGroupName.toLowerCase(),
-            );
+            _error = context.l10n.errorCouldNotCreateGroup;
           });
         }
       }
     } catch (e) {
+      AppLogger.error('Error creating group', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.errorWithContext(
-            context.l10n.statusCreating.toLowerCase(),
-            e.toString(),
-          );
+          // What did not happen, never the exception's text
+          // (content-style-guide.md:95).
+          _error = context.l10n.errorCouldNotCreateGroup;
         });
       }
     } finally {
@@ -252,7 +251,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         controller: _nameController,
                         labelText: context.l10n.socialGroupName,
                         hintText: context.l10n.groupNameHint,
-                        prefixIcon: Icons.group,
+                        prefixIcon: ButleryIcons.users,
                         maxLength: 50,
                       ),
 
@@ -280,7 +279,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                           ),
                           style: AppTextStyles.titleMedium,
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           context.l10n.groupInvitationNote,
                           style: AppTextStyles.bodySmall.copyWith(
@@ -338,7 +337,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 context.l10n.groupSelectMembers,
                 style: AppTextStyles.titleMedium,
               ),
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 context.l10n.groupNoFriendsToAdd,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -366,7 +365,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               context.l10n.groupSelectMembers,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.groupSelectFriendsToInvite,
               style: AppTextStyles.bodySmall.copyWith(

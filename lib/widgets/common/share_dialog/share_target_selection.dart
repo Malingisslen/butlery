@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 class ShareTargetSelection {
@@ -33,8 +35,8 @@ class ShareTargetSelection {
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            prefixIcon: Icon(
-              Icons.search,
+            prefixIcon: ButleryIcon(
+              ButleryIcons.search,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -49,7 +51,7 @@ class ShareTargetSelection {
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: _buildFriendsList(
             context,
@@ -85,8 +87,8 @@ class ShareTargetSelection {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              searchQuery.isEmpty ? Icons.people_outline : Icons.search_off,
+            ButleryIcon(
+              searchQuery.isEmpty ? ButleryIcons.users : Icons.search_off,
               size: 48,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_factory.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/recipe_image_widget.dart';
@@ -116,8 +117,8 @@ void main() {
           ),
         );
 
-        // Empty state uses buildPlaceholder which defaults to Icons.restaurant_menu
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        // Empty state uses buildPlaceholder which defaults to ButleryIcons.utensils
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       });
 
       testWidgets('accepts onTap callback', (tester) async {
@@ -210,7 +211,7 @@ void main() {
 
         // Single image uses carousel with EditActionsPanel showing add_photo_alternate_outlined
         expect(
-          find.byIcon(Icons.add_photo_alternate_outlined),
+          find.byIcon(ButleryIcons.camera),
           findsOneWidget,
         );
       });
@@ -227,7 +228,7 @@ void main() {
 
         // Empty state shows add_photo_alternate_outlined icon
         expect(
-          find.byIcon(Icons.add_photo_alternate_outlined),
+          find.byIcon(ButleryIcons.camera),
           findsOneWidget,
         );
       });
@@ -262,7 +263,7 @@ void main() {
         );
 
         // Empty gallery shows photo_library_outlined icon
-        expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.image), findsOneWidget);
       });
     });
 
@@ -278,7 +279,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       });
     });
 

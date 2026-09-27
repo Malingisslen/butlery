@@ -11,9 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/responsive/responsive_builder.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Plain MaterialApp wrapper for widgets that don't touch `context.l10n`.
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -389,9 +391,10 @@ void main() {
   });
 
   // ---------------------------------------------------------------------
-  // adaptiveNavigation — facade returns AdaptiveNavigationScaffold.
+  // AdaptiveNavigationScaffold — the shell's scaffold (the LayoutComponents
+  // wrappers had no app callers and were removed in package 7).
   // ---------------------------------------------------------------------
-  group('LayoutComponents.adaptiveNavigation', () {
+  group('AdaptiveNavigationScaffold', () {
     final navItems = [
       const AdaptiveNavigationItem(
         label: 'Home',
@@ -401,8 +404,8 @@ void main() {
       ),
       const AdaptiveNavigationItem(
         label: 'Profile',
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
+        icon: ButleryIcons.user,
+        activeIcon: ButleryIcons.user,
         route: '/profile',
       ),
     ];
@@ -411,7 +414,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const Text('body-content'),
@@ -426,7 +429,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
@@ -443,7 +446,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         800,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
@@ -462,7 +465,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
@@ -483,14 +486,14 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
           floatingActionButton: FloatingActionButton(
             key: fabKey,
             onPressed: () {},
-            child: const Icon(Icons.add),
+            child: const ButleryIcon(ButleryIcons.plus),
           ),
         ),
         withL10n: true,
@@ -498,32 +501,31 @@ void main() {
       expect(find.byKey(fabKey), findsOneWidget);
     });
 
-    testWidgets('title renders an AppBar with the title text', (tester) async {
+    testWidgets('no appBar draws no bar (the bare title AppBar is gone)', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
-          title: 'Min titel',
         ),
         withL10n: true,
       );
-      expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('Min titel'), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
     });
 
-    testWidgets('custom appBar wins over title', (tester) async {
+    testWidgets('a custom appBar is drawn', (tester) async {
       const customKey = Key('custom-appbar');
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
-          title: 'should-not-render',
           appBar: AppBar(
             key: customKey,
             title: const Text('custom-title'),
@@ -533,7 +535,6 @@ void main() {
       );
       expect(find.byKey(customKey), findsOneWidget);
       expect(find.text('custom-title'), findsOneWidget);
-      expect(find.text('should-not-render'), findsNothing);
     });
 
     testWidgets('desktop width keeps the same rail (produktregler.md:1054)', (
@@ -542,7 +543,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         1400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
@@ -555,14 +556,14 @@ void main() {
   });
 
   // ---------------------------------------------------------------------
-  // butleryAdaptiveNavigation — convenience wrapper with predefined nav items.
+  // ButleryAdaptiveNavigation — the predefined nav items.
   // ---------------------------------------------------------------------
-  group('LayoutComponents.butleryAdaptiveNavigation', () {
+  group('ButleryAdaptiveNavigation', () {
     testWidgets('renders the ButleryAdaptiveNavigation widget', (tester) async {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.butleryAdaptiveNavigation(
+        ButleryAdaptiveNavigation(
           currentIndex: 0,
           body: const Text('butlery-body'),
         ),
@@ -578,7 +579,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.butleryAdaptiveNavigation(
+        ButleryAdaptiveNavigation(
           currentIndex: 0,
           body: const SizedBox.shrink(),
         ),
@@ -596,20 +597,6 @@ void main() {
       // PQ-17: "Lägg till" is no longer a destination.
       expect(find.byKey(const ValueKey('test-nav-/laggTill')), findsNothing);
     });
-
-    testWidgets('forwards title to underlying scaffold AppBar', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        400,
-        LayoutComponents.butleryAdaptiveNavigation(
-          currentIndex: 0,
-          body: const SizedBox.shrink(),
-          title: 'Mina recept',
-        ),
-        withL10n: true,
-      );
-      expect(find.text('Mina recept'), findsOneWidget);
-    });
   });
 
   // ---------------------------------------------------------------------
@@ -623,7 +610,7 @@ void main() {
       return List.generate(n, (i) {
         return {
           'label': 'btn-$i',
-          'icon': Icons.add,
+          'icon': ButleryIcons.plus,
           'onPressed': (i == 0 && onPressedAt0 != null) ? onPressedAt0 : () {},
         };
       });
@@ -632,7 +619,7 @@ void main() {
     Map<String, dynamic> archive({VoidCallback? onPressed}) {
       return {
         'label': 'arkiv',
-        'icon': Icons.archive,
+        'icon': ButleryIcons.archive,
         'onPressed': onPressed ?? () {},
       };
     }
@@ -827,8 +814,7 @@ void main() {
     }, skip: true);
 
     testWidgets('simpleLayout — covered by view-level tests', (tester) async {
-      // SKIP: ButleryHeader requires localizations + ServiceLocator-backed
-      // ButleryColors theme extension.
+      // SKIP: requires localizations and ServiceLocator-backed services.
     }, skip: true);
 
     testWidgets('profileMenu — covered by profile widget tests', (

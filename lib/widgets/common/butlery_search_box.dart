@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Custom search box with Butlery styling.
 ///
@@ -150,8 +152,8 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
             ),
             prefixIcon:
                 widget.prefixIcon ??
-                Icon(
-                  Icons.search,
+                ButleryIcon(
+                  ButleryIcons.search,
                   color: _isFocused ? cs.onSurface : cs.outline,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -159,8 +161,8 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
                 widget.suffixIcon ??
                 (_hasText
                     ? IconButton(
-                        icon: Icon(
-                          Icons.close,
+                        icon: ButleryIcon(
+                          ButleryIcons.x,
                           color: cs.outline,
                           size: AppDimensions.iconSizeM,
                         ),
@@ -181,100 +183,6 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
           textInputAction: TextInputAction.search,
         ),
       ),
-    );
-  }
-}
-
-/// A search box variant that appears in the header.
-///
-/// Use this when you want the search box to be part of the header area.
-class ButleryHeaderSearchBox extends StatelessWidget {
-  /// Creates a header search box.
-  const ButleryHeaderSearchBox({
-    this.controller,
-    this.hintText,
-    this.onChanged,
-    this.onSubmitted,
-    this.onClear,
-    this.onTap,
-    this.readOnly = false,
-    super.key,
-  });
-
-  /// Controller for the text field.
-  final TextEditingController? controller;
-
-  /// Hint text displayed when the field is empty.
-  final String? hintText;
-
-  /// Callback when the text changes.
-  final ValueChanged<String>? onChanged;
-
-  /// Callback when the user submits.
-  final ValueChanged<String>? onSubmitted;
-
-  /// Callback when the clear button is pressed.
-  final VoidCallback? onClear;
-
-  /// Callback when the field is tapped (useful for read-only mode).
-  final VoidCallback? onTap;
-
-  /// Whether the field is read-only (tapping triggers [onTap]).
-  final bool readOnly;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
-      ),
-      child: readOnly
-          ? Semantics(
-              label: 'Sök recept',
-              button: true,
-              child: GestureDetector(
-                onTap: onTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingMd,
-                    vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadius8,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.search,
-                        color: cs.outline,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingSm),
-                      Expanded(
-                        child: Text(
-                          hintText ?? context.l10n.searchHint,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: cs.outline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          : ButlerySearchBox(
-              controller: controller,
-              hintText: hintText ?? context.l10n.searchHint,
-              onChanged: onChanged,
-              onSubmitted: onSubmitted,
-              onClear: onClear,
-            ),
     );
   }
 }

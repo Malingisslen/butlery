@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -14,7 +16,7 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -78,7 +80,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                             Theme.of(context).filledButtonTheme.style,
                           )
                         : null,
-                    icon: const Icon(Icons.share),
+                    icon: const ButleryIcon(ButleryIcons.share2),
                     label: Text(
                       viewModel.isSharing
                           ? context.l10n.dialogSharing
@@ -112,7 +114,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
       return StateWidget.empty(
         title: context.l10n.dialogNoRecipes,
         subtitle: context.l10n.dialogNoRecipesToShare,
-        icon: Icons.restaurant_menu,
+        icon: ButleryIcons.utensils,
       );
     }
 
@@ -133,7 +135,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
         // Info bar showing filtered count and selection
         _buildInfo(context, viewModel),
 
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
 
         Divider(
           height: AppDimensions.borderWidthThin,
@@ -240,11 +242,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
       );
       Navigator.pop(context);
     } else if (viewModel.hasError) {
-      SnackBarUtils.showError(
-        context,
-        viewModel.error!,
-        duration: const Duration(seconds: 4),
-      );
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 }
@@ -267,7 +265,7 @@ class GroupRecipeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -279,7 +277,7 @@ class GroupRecipeListItem extends StatelessWidget {
               width: AppDimensions.iconSizeXl,
               height: AppDimensions.iconSizeXl,
               fit: BoxFit.contain,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               errorWidget: _buildPlaceholder(context),
             )
           : _buildPlaceholder(context),
@@ -334,7 +332,7 @@ class GroupRecipeListItem extends StatelessWidget {
 
   Widget _buildSubtitle(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -361,8 +359,8 @@ class GroupRecipeListItem extends StatelessWidget {
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
-              Icon(
-                Icons.access_time,
+              ButleryIcon(
+                ButleryIcons.clock,
                 size: AppDimensions.iconSizeM,
                 color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
@@ -385,8 +383,8 @@ class GroupRecipeListItem extends StatelessWidget {
                 Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.spacingM),
               ],
-              Icon(
-                Icons.people,
+              ButleryIcon(
+                ButleryIcons.users,
                 size: AppDimensions.iconSizeM,
                 color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
@@ -411,7 +409,7 @@ class GroupRecipeListItem extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       width: AppDimensions.iconSizeXl,
       height: AppDimensions.iconSizeXl,
@@ -419,10 +417,10 @@ class GroupRecipeListItem extends StatelessWidget {
         color: isAlreadyShared
             ? successColor.withValues(alpha: AppDimensions.opacityVeryLight)
             : cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         color: isAlreadyShared ? successColor : cs.onSurface,
         size: AppDimensions.iconSizeAction,
       ),

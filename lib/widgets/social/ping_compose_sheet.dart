@@ -3,13 +3,15 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
@@ -133,7 +135,7 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       setState(() {
         _isSending = false;
       });
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorGeneric);
     }
   }
 
@@ -227,7 +229,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-timer'),
             label: l10n.pingTimerAlert,
-            icon: Icons.timer_outlined,
+            icon: ButleryIcons.clock,
             selected: selected == PingType.timerAlert,
             onTap: () => onSelect(PingType.timerAlert),
           ),
@@ -290,7 +292,7 @@ class _TypeChip extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: AppDimensions.iconSizeM, color: fg),
+              ButleryIcon(icon, size: AppDimensions.iconSizeM, color: fg),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 label,
@@ -370,9 +372,7 @@ class _SendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final bg = enabled
-        ? cs.onPrimaryContainer
-        : context.butleryColors.iconMuted;
+    final bg = enabled ? cs.onPrimaryContainer : context.modeColors.iconMuted;
 
     return Semantics(
       label: context.l10n.a11yPingComposeSend,

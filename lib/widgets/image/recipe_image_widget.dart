@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/services/performance/optimized_image_loader.dart';
@@ -319,8 +321,8 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
         child: GestureDetector(
           onTap: widget.onTap,
           child: const Center(
-            child: Icon(
-              Icons.add_photo_alternate_outlined,
+            child: ButleryIcon(
+              ButleryIcons.camera,
               size: AppDimensions.iconSizeXxl,
             ),
           ),

@@ -13,6 +13,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Wraps a child in MaterialApp with the project's l10n delegates so the
 /// dialog can resolve `context.l10n.*` keys.
@@ -95,7 +96,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Dagskvot uppnådd'), findsOneWidget);
-      expect(find.byIcon(Icons.today_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.calendar), findsOneWidget);
     });
 
     testWidgets('llmDaily renders rateLimitAiLimit title with smart_toy icon', (

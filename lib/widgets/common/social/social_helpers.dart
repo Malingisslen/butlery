@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Consolidated social helper functions.
@@ -35,13 +36,13 @@ class SocialHelpers {
   static IconData getInvitationTargetTypeIcon(InvitationTarget target) {
     switch (target.type.toString()) {
       case 'InvitationTargetType.user':
-        return Icons.person;
+        return ButleryIcons.user;
       case 'InvitationTargetType.group':
-        return Icons.group;
+        return ButleryIcons.users;
       case 'InvitationTargetType.email':
-        return Icons.email;
+        return ButleryIcons.mail;
       default:
-        return Icons.account_circle;
+        return ButleryIcons.user;
     }
   }
 

@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog for recovering unsaved recipe drafts.
 /// Shows available drafts with metadata and allows user to:
@@ -56,7 +58,7 @@ class DraftRecoveryDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
+          ButleryIcon(
             Icons.restore,
             color: theme.colorScheme.onSurface,
           ),
@@ -137,7 +139,7 @@ class _DraftListTile extends StatelessWidget {
           padding: AppDimensions.paddingSymmetric4x12,
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 Icons.description_outlined,
                 size: AppDimensions.iconSizeM,
                 color: theme.colorScheme.onSurfaceVariant,
@@ -153,7 +155,7 @@ class _DraftListTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: AppDimensions.spacingXxs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -163,8 +165,8 @@ class _DraftListTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ],

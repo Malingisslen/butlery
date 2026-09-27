@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 enum ShareTargetType { friends, groups }
@@ -54,8 +56,8 @@ class ShareTargetSelectionEnhanced {
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            prefixIcon: Icon(
-              Icons.search,
+            prefixIcon: ButleryIcon(
+              ButleryIcons.search,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -73,7 +75,7 @@ class ShareTargetSelectionEnhanced {
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: selectedTab == ShareTargetType.friends
               ? _buildFriendsList(
@@ -107,7 +109,7 @@ class ShareTargetSelectionEnhanced {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -115,7 +117,7 @@ class ShareTargetSelectionEnhanced {
             child: _buildTabButton(
               context,
               context.l10n.shareTabFriends,
-              Icons.people,
+              ButleryIcons.users,
               ShareTargetType.friends,
               selectedTab,
               onTabChanged,
@@ -125,7 +127,7 @@ class ShareTargetSelectionEnhanced {
             child: _buildTabButton(
               context,
               context.l10n.shareTabGroups,
-              Icons.group,
+              ButleryIcons.users,
               ShareTargetType.groups,
               selectedTab,
               onTabChanged,
@@ -161,19 +163,19 @@ class ShareTargetSelectionEnhanced {
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeM,
                 color: isSelected
                     ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 label,
                 style: isSelected
@@ -211,7 +213,7 @@ class ShareTargetSelectionEnhanced {
     if (filteredFriends.isEmpty) {
       return _buildEmptyState(
         context,
-        searchQuery.isEmpty ? Icons.people_outline : Icons.search_off,
+        searchQuery.isEmpty ? ButleryIcons.users : Icons.search_off,
         searchQuery.isEmpty
             ? context.l10n.shareNoFriendsAvailable
             : context.l10n.shareNoFriendsMatchedSearch,
@@ -313,7 +315,7 @@ class ShareTargetSelectionEnhanced {
     if (filteredGroups.isEmpty) {
       return _buildEmptyState(
         context,
-        searchQuery.isEmpty ? Icons.group_outlined : Icons.search_off,
+        searchQuery.isEmpty ? ButleryIcons.users : Icons.search_off,
         searchQuery.isEmpty
             ? context.l10n.shareNoGroupsAvailable
             : context.l10n.shareNoGroupsMatchedSearch,
@@ -340,7 +342,7 @@ class ShareTargetSelectionEnhanced {
           leading: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: SizedBox(
               width: 40,
@@ -382,7 +384,7 @@ class ShareTargetSelectionEnhanced {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

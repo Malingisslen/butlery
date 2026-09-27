@@ -89,9 +89,8 @@ class _FeedbackFABState extends State<FeedbackFAB> {
                 child: Center(
                   child: Text(
                     '!',
-                    style: AppTextStyles.headlineBold.copyWith(
+                    style: AppTextStyles.headlineSmall.copyWith(
                       color: cs.onSurface,
-                      fontSize: 24,
                     ),
                   ),
                 ),

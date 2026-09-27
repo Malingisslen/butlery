@@ -30,8 +30,10 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../infrastructure/factories/recipe_factory.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 class _MockPersistenceService extends Mock implements PersistenceService {}
 
@@ -68,7 +70,7 @@ class _CookingModeBody extends StatelessWidget {
                   ),
                   IconButton(
                     key: const Key('close'),
-                    icon: Icon(Icons.close, color: cs.onPrimary),
+                    icon: ButleryIcon(ButleryIcons.x, color: cs.onPrimary),
                     onPressed: onClose,
                   ),
                 ],

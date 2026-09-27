@@ -51,7 +51,7 @@ class FriendCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final restDecoration = BoxDecoration(
       color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       border: Border.all(
         color: cs.outline,
         width: AppDimensions.borderWidthThin,
@@ -74,7 +74,7 @@ class FriendCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
                 child: _buildContent(context),
@@ -227,13 +227,13 @@ class FriendCard extends StatelessWidget {
     switch (style) {
       case FriendCardStyle.compact:
         return const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         );
       case FriendCardStyle.list:
         return EdgeInsets.zero;
       case FriendCardStyle.detailed:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
     }
   }
 }
@@ -260,7 +260,7 @@ class FriendRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Material(
         type: MaterialType.transparency,
         child: Semantics(
@@ -268,13 +268,13 @@ class FriendRequestCard extends StatelessWidget {
           button: true,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
-              padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
+              padding: padding ?? const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 border: Border.all(
                   color: Theme.of(context).colorScheme.outline,

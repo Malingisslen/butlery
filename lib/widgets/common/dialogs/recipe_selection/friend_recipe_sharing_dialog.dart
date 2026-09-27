@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -14,7 +16,7 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 
@@ -75,7 +77,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                             Theme.of(context).filledButtonTheme.style,
                           )
                         : null,
-                    icon: const Icon(Icons.share),
+                    icon: const ButleryIcon(ButleryIcons.share2),
                     label: Text(
                       viewModel.isSharing
                           ? context.l10n.dialogSharing
@@ -233,10 +235,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
         duration: const Duration(seconds: 3),
       );
     } else if (!success && context.mounted) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
-        duration: const Duration(seconds: 3),
+        what: viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
       );
     }
   }
@@ -260,7 +261,7 @@ class FriendRecipeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -272,7 +273,7 @@ class FriendRecipeListItem extends StatelessWidget {
               width: AppDimensions.iconSizeXl,
               height: AppDimensions.iconSizeXl,
               fit: BoxFit.contain,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               errorWidget: _buildPlaceholder(context),
             )
           : _buildPlaceholder(context),
@@ -325,7 +326,7 @@ class FriendRecipeListItem extends StatelessWidget {
 
   Widget _buildSubtitle(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -352,8 +353,8 @@ class FriendRecipeListItem extends StatelessWidget {
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
-              Icon(
-                Icons.access_time,
+              ButleryIcon(
+                ButleryIcons.clock,
                 size: AppDimensions.iconSizeM,
                 color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
@@ -376,8 +377,8 @@ class FriendRecipeListItem extends StatelessWidget {
                 Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(height: AppDimensions.spacingM),
               ],
-              Icon(
-                Icons.people,
+              ButleryIcon(
+                ButleryIcons.users,
                 size: AppDimensions.iconSizeM,
                 color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
@@ -402,7 +403,7 @@ class FriendRecipeListItem extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       width: AppDimensions.iconSizeXl,
       height: AppDimensions.iconSizeXl,
@@ -410,10 +411,10 @@ class FriendRecipeListItem extends StatelessWidget {
         color: isAlreadyShared
             ? successColor.withValues(alpha: AppDimensions.opacityVeryLight)
             : cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         color: isAlreadyShared ? successColor : cs.onSurface,
         size: AppDimensions.iconSizeAction,
       ),

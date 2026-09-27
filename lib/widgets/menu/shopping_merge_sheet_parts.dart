@@ -82,7 +82,7 @@ class _Figures extends StatelessWidget {
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingXxs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   label,
                   textAlign: TextAlign.center,
@@ -143,7 +143,7 @@ class _DetailsToggle extends StatelessWidget {
     final l = context.l10n;
     final cs = Theme.of(context).colorScheme;
     // text.link: #8A5212 light, #DCA968 dark.
-    final link = context.butleryColors.info;
+    final link = context.modeColors.info;
     return Semantics(
       button: true,
       expanded: open,
@@ -177,8 +177,8 @@ class _DetailsToggle extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(color: link),
                   ),
                 ),
-                Icon(
-                  open ? Icons.expand_less : Icons.expand_more,
+                ButleryIcon(
+                  open ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                   size: AppDimensions.iconSizeM,
                   color: link,
                 ),
@@ -260,7 +260,7 @@ class _SwitchRow extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingXxs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             body,
                             style: AppTextStyles.captionBase.copyWith(

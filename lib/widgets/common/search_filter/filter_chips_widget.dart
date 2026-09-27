@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
@@ -51,14 +52,14 @@ class FilterChipsWidget extends StatelessWidget {
                 // no saffron focus tint (Grafisk manual v6:209, :381).
                 child: ButleryControlFocus(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.chipRadius,
+                    AppDimensions.radiusPill,
                   ),
                   child: FilterChip(
                     label: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (option.icon != null) ...[
-                          Icon(option.icon),
+                          ButleryIcon(option.icon),
                           const SizedBox(height: AppDimensions.spacingXs),
                         ],
                         Text(option.label),

@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// UI helper class for EditMode enum
 /// Separates UI logic from the model layer to maintain clean architecture
@@ -16,10 +18,10 @@ class EditModeUIHelper {
       case EditMode.edit:
         return cs.onSurface;
       case EditMode.collaborative:
-        return context.butleryColors.success;
+        return context.modeColors.success;
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        return context.butleryColors.warning;
+        return context.modeColors.warning;
       case EditMode.noAccess:
         return cs.error;
     }
@@ -30,20 +32,20 @@ class EditModeUIHelper {
     switch (mode) {
       case EditMode.owner:
       case EditMode.edit:
-        return Icons.edit;
+        return ButleryIcons.pencil;
       case EditMode.collaborative:
-        return Icons.people;
+        return ButleryIcons.users;
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        return Icons.visibility;
+        return ButleryIcons.eye;
       case EditMode.noAccess:
-        return Icons.block;
+        return ButleryIcons.block;
     }
   }
 
   /// Get icon with color for a specific edit mode
   static Icon getIconWithColor(EditMode mode, BuildContext context) {
-    return Icon(
+    return ButleryIcon(
       getIcon(mode),
       color: getColor(mode, context),
     );

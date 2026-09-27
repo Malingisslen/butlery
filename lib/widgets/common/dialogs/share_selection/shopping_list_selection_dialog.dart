@@ -56,7 +56,7 @@ class _ShoppingListSelectionDialogState
     return AlertDialog(
       title: Text(context.l10n.chatSelectShoppingList),
       contentPadding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       content: SizedBox(
         width: double.maxFinite,

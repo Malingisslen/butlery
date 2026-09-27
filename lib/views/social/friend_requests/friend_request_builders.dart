@@ -8,13 +8,15 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 // Local
@@ -56,7 +58,7 @@ class FriendRequestsHeaderBuilder {
               icon: Badge(
                 isLabelVisible: viewModel.incomingRequests.isNotEmpty,
                 label: Text('${viewModel.incomingRequests.length}'),
-                child: const Icon(Icons.inbox),
+                child: const ButleryIcon(Icons.inbox),
               ),
               text: context.l10n.socialIncoming,
             ),
@@ -64,7 +66,7 @@ class FriendRequestsHeaderBuilder {
               icon: Badge(
                 isLabelVisible: viewModel.sentRequests.isNotEmpty,
                 label: Text('${viewModel.sentRequests.length}'),
-                child: const Icon(Icons.outbox),
+                child: const ButleryIcon(Icons.outbox),
               ),
               text: context.l10n.socialSent,
             ),
@@ -77,7 +79,7 @@ class FriendRequestsHeaderBuilder {
           PopupMenuButton<String>(
             enabled: !batchRunning,
             // Paper on the ink bar (the bar's icon theme).
-            icon: const Icon(Icons.checklist),
+            icon: const ButleryIcon(ButleryIcons.listCheck),
             onSelected: (value) {
               if (value == 'accept_all') {
                 onBatchAccept();
@@ -90,9 +92,9 @@ class FriendRequestsHeaderBuilder {
                 value: 'accept_all',
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: context.butleryColors.success,
+                    ButleryIcon(
+                      ButleryIcons.circleCheck,
+                      color: context.modeColors.success,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(
@@ -105,8 +107,8 @@ class FriendRequestsHeaderBuilder {
                 value: 'reject_all',
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.cancel,
+                    ButleryIcon(
+                      ButleryIcons.x,
                       color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -120,7 +122,7 @@ class FriendRequestsHeaderBuilder {
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(
-            icon: const Icon(Icons.cancel),
+            icon: const ButleryIcon(ButleryIcons.x),
             onPressed: batchRunning ? null : onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),
@@ -141,15 +143,15 @@ class FriendRequestsHeaderBuilder {
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               viewModel.error!,
@@ -246,11 +248,11 @@ class IncomingRequestsTabBuilder {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist,
+                  ButleryIcon(
+                    ButleryIcons.listCheck,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.socialRequestsSelected(
                       selectedIncoming.length,
@@ -275,7 +277,7 @@ class IncomingRequestsTabBuilder {
               padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.incomingRequests.length,
               separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
               itemBuilder: (context, index) {
                 final request = viewModel.incomingRequests[index];
                 final isSelected = selectedIncoming.contains(request.id);
@@ -339,11 +341,11 @@ class SentRequestsTabBuilder {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist,
+                  ButleryIcon(
+                    ButleryIcons.listCheck,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.socialRequestsSelected(selectedSent.length),
                     style: AppTextStyles.titleSmall.copyWith(
@@ -366,7 +368,7 @@ class SentRequestsTabBuilder {
               padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.sentRequests.length,
               separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
               itemBuilder: (context, index) {
                 final request = viewModel.sentRequests[index];
                 final isSelected = selectedSent.contains(request.id);

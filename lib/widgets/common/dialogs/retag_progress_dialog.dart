@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Progress dialog for batch retagging all user recipes.
@@ -55,9 +58,11 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
         context.l10n.retagRecipesRetagged(count),
       );
     } catch (e) {
+      // Never the exception's own text (content-style-guide.md:95).
+      AppLogger.error('Re-tagging failed', e);
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = context.l10n.retagFailed;
         _isRunning = false;
       });
     }
@@ -68,8 +73,8 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
-            Icons.sync,
+          ButleryIcon(
+            ButleryIcons.refreshCw,
             color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeL,
           ),

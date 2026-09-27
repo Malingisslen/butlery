@@ -50,14 +50,15 @@ import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
-import 'package:butlery/services/theme/seasonal_accent_service.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -87,18 +88,15 @@ class ErrorApp extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
+                    ButleryIcon(
+                      ButleryIcons.triangleAlert,
                       size: AppDimensions.iconSizeXxl,
                       color: cs.error,
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
-                    const Text(
+                    Text(
                       'Application Error',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyles.headlineSmall,
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     Container(
@@ -106,8 +104,7 @@ class ErrorApp extends StatelessWidget {
                       child: SingleChildScrollView(
                         child: Text(
                           message,
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: AppTextStyles.captionBase.copyWith(
                             fontFamily: 'monospace',
                           ),
                           textAlign: TextAlign.start,
@@ -435,7 +432,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       messenger.showMaterialBanner(
         MaterialBanner(
           content: Text(l10n.importClipboardUrlDetected),
-          leading: const Icon(Icons.link),
+          leading: const ButleryIcon(ButleryIcons.link),
           actions: [
             TextButton(
               onPressed: () {
@@ -729,13 +726,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       ServiceLocator.get<InteractionLogger>(),
     );
 
-    // Seasonal accent: resolved once per rebuild via package:clock so tests
-    // can override it. Service returns the base palette unmodified in summer.
-    final seasonal = ServiceLocator.get<SeasonalAccentService>();
-    final now = clock.now();
-    final lightAccent = seasonal.getAccentsFor(now, base: ButleryColors.light);
-    final darkAccent = seasonal.getAccentsFor(now, base: ButleryColors.dark);
-
     // Build navigator observers list with performance, snackbar, session activity, and optional analytics observers
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
@@ -762,8 +752,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // the background (layout_scaffolds.dart, RestorationMixin).
         restorationScopeId: 'butlery',
         title: 'Butlery',
-        theme: AppTheme.lightThemeWith(lightAccent),
-        darkTheme: AppTheme.darkThemeWith(darkAccent),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
         themeMode: _themeService?.themeMode ?? widget.initialThemeMode,
         debugShowCheckedModeBanner: false,
         // Localization configuration
@@ -859,11 +849,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                     decoration: BoxDecoration(
                       color: cs.primary,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusL,
+                        AppDimensions.radiusCard,
                       ),
                     ),
-                    child: Icon(
-                      Icons.restaurant_menu,
+                    child: ButleryIcon(
+                      ButleryIcons.utensils,
                       size: AppDimensions.iconSizeHero,
                       color: cs.outlineVariant,
                     ),

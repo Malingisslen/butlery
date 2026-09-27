@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -182,7 +183,7 @@ class RecipeShoppingHandler {
                               note.isEmpty
                                   ? item.displayText
                                   : '${item.displayText} · $note',
-                              style: const TextStyle(fontSize: 14),
+                              style: AppTextStyles.bodyMedium,
                             ),
                           ),
                         ],
@@ -198,7 +199,7 @@ class RecipeShoppingHandler {
                     check.coveredAtHome.join(', '),
                   ),
                   key: const ValueKey('recipePantryCovered'),
-                  style: const TextStyle(fontSize: 14),
+                  style: AppTextStyles.bodyMedium,
                 ),
               ],
               if (check != null && check.lessened.isNotEmpty) ...[
@@ -208,7 +209,7 @@ class RecipeShoppingHandler {
                     check.lessened.join(', '),
                   ),
                   key: const ValueKey('recipePantryLessened'),
-                  style: const TextStyle(fontSize: 14),
+                  style: AppTextStyles.bodyMedium,
                 ),
               ],
             ],
@@ -316,9 +317,9 @@ class RecipeShoppingHandler {
 
       if (targetListId == null) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.shoppingCouldNotCreateOrSelectList,
+            what: context.l10n.shoppingCouldNotCreateOrSelectList,
           );
         }
         return;
@@ -333,9 +334,9 @@ class RecipeShoppingHandler {
       final permissionService = ServiceLocator.get<PermissionService>();
       if (!permissionService.canEditShoppingList(targetListId)) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.shoppingNoEditPermission,
+            what: context.l10n.shoppingNoEditPermission,
           );
         }
         return;
@@ -383,9 +384,9 @@ class RecipeShoppingHandler {
           Navigator.pushNamed(context, Routes.shoppingList);
         }
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingCouldNotAddIngredients,
+          what: context.l10n.shoppingCouldNotAddIngredients,
         );
       }
     } catch (e) {
@@ -393,14 +394,14 @@ class RecipeShoppingHandler {
 
       // Handle specific permission errors with clear Swedish messages
       if (e is PermissionDeniedException) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingNoEditPermissionShared,
+          what: context.l10n.shoppingNoEditPermissionShared,
         );
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorOccurredWithDetails(
+          what: context.l10n.errorOccurredWithDetails(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

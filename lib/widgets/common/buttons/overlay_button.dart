@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Reusable overlay button component
 /// Provides consistent styling for buttons overlaid on content.
@@ -26,7 +28,7 @@ class OverlayButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.tooltip,
-  }) : child = const Icon(Icons.clear),
+  }) : child = const ButleryIcon(ButleryIcons.x),
        backgroundColor = null;
 
   @override
@@ -37,7 +39,7 @@ class OverlayButton extends StatelessWidget {
         // Dark scrim behind the light icon — the previous light-surface scrim
         // gave a light-on-light icon with poor contrast over photos.
         color: backgroundColor ?? ThemeConstants.blackOverlay60,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: IconButton(
         onPressed: onPressed,

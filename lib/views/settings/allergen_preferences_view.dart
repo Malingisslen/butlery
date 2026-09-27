@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
@@ -111,7 +113,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.shield_outlined,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
@@ -123,7 +125,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.allergenTrackAllergensSubtitle,
               style: AppTextStyles.bodySmall.copyWith(
@@ -132,8 +134,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Wrap(
-              spacing: AppDimensions.spacingS,
-              runSpacing: AppDimensions.spacingS,
+              spacing: AppDimensions.space4,
+              runSpacing: AppDimensions.space4,
               children: AllergenPreferenceOptions.allergens.entries.map((e) {
                 final isSelected = viewModel.isAllergenTracked(e.key);
                 return FilterChip(
@@ -176,8 +178,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.restaurant_outlined,
+                ButleryIcon(
+                  ButleryIcons.utensils,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -188,7 +190,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.allergenTrackDietarySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
@@ -197,8 +199,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Wrap(
-              spacing: AppDimensions.spacingS,
-              runSpacing: AppDimensions.spacingS,
+              spacing: AppDimensions.space4,
+              runSpacing: AppDimensions.space4,
               children: AllergenPreferenceOptions.dietary.entries.map((e) {
                 final isSelected = viewModel.isDietaryTracked(e.key);
                 return FilterChip(
@@ -241,8 +243,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.visibility_outlined,
+                ButleryIcon(
+                  ButleryIcons.eye,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -346,15 +348,15 @@ class _AllergenPreferencesContent extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               error,
@@ -377,8 +379,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.sync,
+                ButleryIcon(
+                  ButleryIcons.refreshCw,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -389,7 +391,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.allergenAnalyzeAllRecipes,
               style: AppTextStyles.bodySmall.copyWith(
@@ -400,7 +402,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ActionButtons.secondaryButton(
               context,
               label: context.l10n.allergenUpdateAllRecipes,
-              icon: Icons.sync,
+              icon: ButleryIcons.refreshCw,
               onPressed: () => _showRetagDialog(context),
               isExpanded: true,
             ),

@@ -18,6 +18,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
@@ -93,7 +95,7 @@ class MinaReceptSortChip extends StatelessWidget {
     // The shared grip: ring around the chip's 48 dp box, no saffron focus
     // tint (Grafisk manual v6:209, :381).
     return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       child: PopupMenuButton<SortCriteria>(
         onSelected: (criteria) => _onSortChanged(context, criteria),
         itemBuilder: (context) => SortMenuBuilder.buildItems(
@@ -109,7 +111,7 @@ class MinaReceptSortChip extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               border: Border.all(
                 color: cs.outlineVariant,
                 width: 1.5,
@@ -118,8 +120,8 @@ class MinaReceptSortChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.sort,
+                ButleryIcon(
+                  ButleryIcons.arrowUpDown,
                   size: AppDimensions.iconSizeS,
                   color: cs.onSurfaceVariant,
                 ),

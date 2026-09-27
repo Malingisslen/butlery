@@ -12,8 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Captures the theme-resolved badge colors so assertions compare against the
 /// real tokens (not hard-coded literals that would drift from the theme).
@@ -35,8 +37,8 @@ Future<_Tokens> _pump(WidgetTester tester, double confidence) async {
         body: Builder(
           builder: (context) {
             tokens
-              ..success = context.butleryColors.success
-              ..warning = context.butleryColors.warning
+              ..success = context.modeColors.success
+              ..warning = context.modeColors.warning
               ..error = Theme.of(context).colorScheme.error;
             return ConfidenceIndicator(confidence: confidence);
           },
@@ -47,7 +49,8 @@ Future<_Tokens> _pump(WidgetTester tester, double confidence) async {
   return tokens;
 }
 
-Icon _icon(WidgetTester tester) => tester.widget<Icon>(find.byType(Icon));
+Icon _icon(WidgetTester tester) =>
+    tester.widget<Icon>(find.byType(ButleryIcon));
 
 void main() {
   group('ConfidenceIndicator — percent text', () {
@@ -66,21 +69,21 @@ void main() {
     testWidgets('>= 0.8 → success / check_circle', (tester) async {
       final tokens = await _pump(tester, 0.8);
       final icon = _icon(tester);
-      expect(icon.icon, Icons.check_circle);
+      expect(icon.icon, ButleryIcons.circleCheck);
       expect(icon.color, tokens.success);
     });
 
     testWidgets('0.6..0.79 → warning / info', (tester) async {
       final tokens = await _pump(tester, 0.6);
       final icon = _icon(tester);
-      expect(icon.icon, Icons.info);
+      expect(icon.icon, ButleryIcons.info);
       expect(icon.color, tokens.warning);
     });
 
     testWidgets('< 0.6 → error / warning', (tester) async {
       final tokens = await _pump(tester, 0.59);
       final icon = _icon(tester);
-      expect(icon.icon, Icons.warning);
+      expect(icon.icon, ButleryIcons.triangleAlert);
       expect(icon.color, tokens.error);
     });
   });

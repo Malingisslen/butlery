@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SearchResultCard - Enhanced search result card component with explicit action buttons
 /// Displays search result user with clear friendship status and action buttons.
@@ -74,7 +76,7 @@ class SearchResultCard {
     return ActionButtons.outlinedButton(
       context,
       label: context.l10n.socialRequestSent,
-      icon: Icons.schedule,
+      icon: ButleryIcons.clock,
       onPressed: null, // Disabled
     );
   }
@@ -84,7 +86,7 @@ class SearchResultCard {
     return ActionButtons.outlinedButton(
       context,
       label: context.l10n.socialFriends,
-      icon: Icons.check_circle,
+      icon: ButleryIcons.circleCheck,
       onPressed: null, // Disabled
     );
   }
@@ -111,7 +113,7 @@ class SearchResultCard {
     return ActionButtons.outlinedButton(
       context,
       label: context.l10n.blockedUsersUnblock,
-      icon: Icons.block,
+      icon: ButleryIcons.block,
       onPressed: () => _handleUnblockUser(context, user, viewModel),
     );
   }
@@ -154,9 +156,9 @@ class SearchResultCard {
             context.l10n.socialUserUnblocked(user.displayName),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.socialCouldNotUnblockUser,
+            what: context.l10n.socialCouldNotUnblockUser,
           );
         }
       }
@@ -182,17 +184,19 @@ class SearchResultCard {
             context.l10n.socialFriendRequestSent(user.displayName),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.socialCouldNotSendFriendRequest,
+            what:
+                viewModel.error ?? context.l10n.socialCouldNotSendFriendRequest,
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        AppLogger.error('Failed to send friend request', e);
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorOccurredWithDetails('$e'),
+          what: context.l10n.socialCouldNotSendFriendRequest,
         );
       }
     }
@@ -212,9 +216,9 @@ class SearchResultCard {
 
     if (request == null) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.socialCouldNotFindFriendRequest,
+          what: context.l10n.socialCouldNotFindFriendRequest,
         );
       }
       return;
@@ -230,17 +234,20 @@ class SearchResultCard {
             context.l10n.socialFriendRequestAcceptedFrom(user.displayName),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.socialCouldNotAcceptFriendRequest,
+            what:
+                viewModel.error ??
+                context.l10n.socialCouldNotAcceptFriendRequest,
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        AppLogger.error('Failed to accept friend request', e);
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorOccurredWithDetails('$e'),
+          what: context.l10n.socialCouldNotAcceptFriendRequest,
         );
       }
     }

@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_theme.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import 'fake_personal_tag_viewmodel.dart';
@@ -146,7 +147,7 @@ void main() {
     );
     await pumpView(tester, tag.id);
 
-    await tester.tap(find.byIcon(Icons.edit));
+    await tester.tap(find.byIcon(ButleryIcons.pencil));
     await tester.pumpAndSettle();
 
     expect(find.text('Redigera tagg'), findsOneWidget); // tagDetailEditTitle
@@ -172,11 +173,11 @@ void main() {
     );
     await pumpView(tester, tag.id);
 
-    await tester.tap(find.byIcon(Icons.edit));
+    await tester.tap(find.byIcon(ButleryIcons.pencil));
     await tester.pumpAndSettle();
     expect(find.text('Spara'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byIcon(ButleryIcons.x));
     await tester.pumpAndSettle();
 
     expect(find.text('Spara'), findsNothing);

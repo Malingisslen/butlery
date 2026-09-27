@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -131,7 +132,7 @@ class _HeroBanner extends StatelessWidget {
     Widget card(IconData icon, int value, String label) => Expanded(
       child: Column(
         children: [
-          Icon(icon, color: cs.onPrimary, size: AppDimensions.iconSizeM),
+          ButleryIcon(icon, color: cs.onPrimary, size: AppDimensions.iconSizeM),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '$value',
@@ -158,7 +159,7 @@ class _HeroBanner extends StatelessWidget {
               card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
               const SizedBox(width: AppDimensions.spacingMd),
               card(
-                AdaptiveIcons.favouriteFilled,
+                ButleryIcons.favourite,
                 favorites,
                 l10n.statsFavorites,
               ),
@@ -173,7 +174,7 @@ class _HeroBanner extends StatelessWidget {
                 l10n.statsRecentlyCooked,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
-              card(Icons.camera_alt, withImages, l10n.statsWithImages),
+              card(ButleryIcons.camera, withImages, l10n.statsWithImages),
             ],
           ),
         ],
@@ -387,7 +388,7 @@ class _CompletenessSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final l10n = context.l10n;
     final segmentColors = <Color>[
       cs.error,

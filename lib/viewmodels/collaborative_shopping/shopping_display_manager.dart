@@ -4,7 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart'; // ShoppingCategory + UnifiedShoppingItem
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages UI display helpers including colors, status text, and item formatting.
@@ -46,25 +46,25 @@ class ShoppingDisplayManager {
 
   Color getStatusColor(
     ColorScheme cs,
-    ButleryColors butleryColors,
+    ModeColors modeColors,
     bool hasData,
     String statusText,
   ) {
     if (!hasData) return cs.onSurfaceVariant;
 
     final l = AppLocale.current;
-    if (statusText == l.statusCompleted) return butleryColors.success;
-    if (statusText == l.statusInProgress) return butleryColors.warning;
+    if (statusText == l.statusCompleted) return modeColors.success;
+    if (statusText == l.statusInProgress) return modeColors.warning;
     return cs.onSurfaceVariant;
   }
 
   Color getProgressColor(
     ColorScheme cs,
-    ButleryColors butleryColors,
+    ModeColors modeColors,
     double completionPercentage,
   ) {
-    if (completionPercentage == 100) return butleryColors.success;
-    if (completionPercentage > 50) return butleryColors.warning;
+    if (completionPercentage == 100) return modeColors.success;
+    if (completionPercentage > 50) return modeColors.warning;
     return cs.primary;
   }
 

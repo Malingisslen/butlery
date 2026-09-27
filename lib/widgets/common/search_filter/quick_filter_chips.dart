@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -81,7 +83,7 @@ class QuickFilterChips extends StatelessWidget {
     QuickFilterOption(
       id: RecipeFilters.filterIngredientSearch,
       label: context.l10n.ingredientSearchChip,
-      icon: Icons.search_outlined,
+      icon: ButleryIcons.search,
     ),
   ];
 
@@ -98,7 +100,7 @@ class QuickFilterChips extends StatelessWidget {
       return QuickFilterOption(
         id: mapping[key]!,
         label: label,
-        icon: Icons.check_circle_outline,
+        icon: ButleryIcons.circleCheck,
       );
     }).toList();
   }
@@ -112,7 +114,7 @@ class QuickFilterChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingXxs,
+        vertical: AppDimensions.space4,
       ),
       child: Row(
         children: [
@@ -180,7 +182,7 @@ class _QuickChip extends StatelessWidget {
     // The shared grip (Grafisk manual v6:381): the InkWell fills a 48 dp box
     // around the visible chip, and the focus ring goes around that box.
     return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       child: Material(
         color: Colors.transparent,
         child: Semantics(
@@ -191,7 +193,7 @@ class _QuickChip extends StatelessWidget {
           selected: isSelected,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             child: ButleryControlFocus.box(
               child: AnimatedContainer(
                 duration: AnimationUtils.getDuration(
@@ -205,7 +207,7 @@ class _QuickChip extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected ? cs.primary : cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius20,
+                    AppDimensions.radiusPill,
                   ),
                   border: Border.all(
                     color: isSelected ? cs.onSurface : cs.outlineVariant,
@@ -216,7 +218,7 @@ class _QuickChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      Icon(
+                      ButleryIcon(
                         icon,
                         size: AppDimensions.iconSizeS,
                         color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,

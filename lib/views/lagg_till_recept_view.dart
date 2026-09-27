@@ -9,6 +9,8 @@
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -78,7 +80,7 @@ class LaggTillReceptView extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.flash_on),
+                          const ButleryIcon(ButleryIcons.zap),
                           const SizedBox(width: AppDimensions.spacingSm),
                           Flexible(
                             child: Column(
@@ -148,7 +150,7 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-import-url'),
                     semanticIdentifier: 'btn-import-url',
                     label: context.l10n.recipeImportLink,
-                    icon: Icons.link,
+                    icon: ButleryIcons.link,
                     color: Theme.of(context).colorScheme.secondary,
                     size: size,
                     onTap: () => _navigate(context, '/smartImport'),
@@ -158,7 +160,7 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-write-manually'),
                     semanticIdentifier: 'btn-write-manually',
                     label: context.l10n.recipeWriteManually,
-                    icon: Icons.edit,
+                    icon: ButleryIcons.pencil,
                     color: Theme.of(context).colorScheme.primary,
                     size: size,
                     onTap: () => _navigate(context, '/skrivSjalv'),
@@ -174,7 +176,7 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-photo-import'),
                     semanticIdentifier: 'btn-photo-import',
                     label: context.l10n.recipeFromImage,
-                    icon: Icons.image,
+                    icon: ButleryIcons.image,
                     color: Theme.of(context).colorScheme.primary,
                     size: size,
                     onTap: () => _navigate(context, '/photoImport'),
@@ -184,7 +186,7 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-archive-import'),
                     semanticIdentifier: 'btn-archive-import',
                     label: context.l10n.recipeFromArchive,
-                    icon: Icons.archive,
+                    icon: ButleryIcons.archive,
                     color: Theme.of(context).colorScheme.secondary,
                     size: size,
                     onTap: () => _navigate(context, '/importFranArkiv'),
@@ -198,7 +200,7 @@ class LaggTillReceptView extends StatelessWidget {
                 key: const ValueKey('test-lagg-till-voice-import'),
                 semanticIdentifier: 'btn-voice-import',
                 label: context.l10n.recipeVoiceImport,
-                icon: Icons.mic_none,
+                icon: ButleryIcons.mic,
                 color: Theme.of(context).colorScheme.primary,
                 size: size,
                 onTap: () => _navigate(context, '/voiceImport'),
@@ -239,16 +241,16 @@ class _AddRecipeButton extends StatelessWidget {
       height: size,
       child: Material(
         color: color,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                ButleryIcon(
                   icon,
                   size: AppDimensions.iconSizeXl,
                   color: Theme.of(context).colorScheme.onPrimary,

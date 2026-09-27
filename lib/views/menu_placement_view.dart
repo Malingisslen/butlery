@@ -23,6 +23,8 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/views/menu_placement/placement_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -117,7 +119,7 @@ class _MenuPlacementViewContent extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingSm,
-                vertical: AppDimensions.spacingS,
+                vertical: AppDimensions.space4,
               ),
               // The pill on the ink bar: the bar's own paper foreground for
               // both the border and the text, never a faded copy
@@ -236,9 +238,9 @@ class _MenuPlacementViewContent extends StatelessWidget {
     final result = await vm.confirm();
     if (!context.mounted) return;
     if (result == null) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        vm.error ?? context.l10n.errorUnexpected,
+        what: vm.error ?? context.l10n.errorUnexpected,
       );
       return;
     }
@@ -262,7 +264,7 @@ class _WeekNavRow extends StatelessWidget {
           // navigating would duplicate the menu across two weeks.
           if (vm.canNavigateWeeks)
             IconButton(
-              icon: const Icon(Icons.chevron_left),
+              icon: const ButleryIcon(ButleryIcons.chevronLeft),
               tooltip: context.l10n.slotPickerPreviousWeek,
               onPressed: vm.isLoading ? null : vm.previousWeek,
             ),
@@ -272,7 +274,7 @@ class _WeekNavRow extends StatelessWidget {
           ),
           if (vm.canNavigateWeeks)
             IconButton(
-              icon: const Icon(Icons.chevron_right),
+              icon: const ButleryIcon(ButleryIcons.chevronRight),
               tooltip: context.l10n.slotPickerNextWeek,
               onPressed: vm.isLoading ? null : vm.nextWeek,
             ),
@@ -387,7 +389,7 @@ class PlacementTray extends StatelessWidget {
                   child: ActionButtons.outlinedButton(
                     context,
                     label: context.l10n.menuPlacementAutoRest,
-                    icon: Icons.shuffle,
+                    icon: ButleryIcons.shuffle,
                     onPressed: vm.allPlaced || vm.isLoading ? null : onAutoRest,
                   ),
                 ),

@@ -101,7 +101,7 @@ void main() {
     });
 
     testWidgets(
-      'default padding is EdgeInsets.all(spacingS) when not supplied',
+      'default padding is EdgeInsets.all(space4) when not supplied',
       (tester) async {
         await tester.pumpWidget(
           _wrap(
@@ -122,7 +122,7 @@ void main() {
         );
         expect(
           container.padding,
-          const EdgeInsets.all(AppDimensions.spacingS),
+          const EdgeInsets.all(AppDimensions.space4),
         );
       },
     );

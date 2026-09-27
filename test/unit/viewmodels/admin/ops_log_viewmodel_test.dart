@@ -13,6 +13,7 @@ import 'package:butlery/repositories/ops_log_repository.dart';
 import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
 
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class _FakeOpsLogRepository extends OpsLogRepository {
   _FakeOpsLogRepository(this._events)
@@ -108,7 +109,7 @@ void main() {
       final repo = _FakeOpsLogRepository(const [])..throwOnLoad = true;
       final vm = OpsLogViewModel(repository: repo);
       await vm.load();
-      expect(vm.error, isNotNull);
+      expect(vm.error, AppLocale.current.adminOpsLogLoadFailed);
       expect(vm.events, isEmpty);
       vm.dispose();
     });

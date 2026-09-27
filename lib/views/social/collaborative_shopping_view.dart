@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
@@ -198,7 +200,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   void _showFailureReason() {
     final reason = _vm.consumeItemOperationError() ?? _vm.error;
     if (reason == null || reason.isEmpty) return;
-    SnackBarUtils.showError(context, reason);
+    SnackBarUtils.showFailure(context, what: reason);
   }
 
   void _shareList() {
@@ -284,8 +286,8 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.shopping_cart_outlined,
+            ButleryIcon(
+              ButleryIcons.shoppingCart,
               size: AppDimensions.iconSizeXl,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -303,7 +305,7 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXl),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back),
+              icon: const ButleryIcon(ButleryIcons.arrowLeft),
               label: Text(context.l10n.commonBack),
             ),
           ],
@@ -383,7 +385,7 @@ class _UnaddedTextNotice extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppDimensions.spacingModerate,
+            AppDimensions.space12,
             AppDimensions.paddingS,
             AppDimensions.spacingXs,
             AppDimensions.spacingXs,

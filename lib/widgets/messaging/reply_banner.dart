@@ -5,7 +5,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Banner shown above chat input when replying to a message.
 /// Displays the original message content and sender, with a close button
@@ -40,7 +42,7 @@ class ReplyBanner extends StatelessWidget {
         color: cs.surface,
         border: Border(
           left: BorderSide(
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
             width: 4,
           ),
         ),
@@ -48,12 +50,12 @@ class ReplyBanner extends StatelessWidget {
       child: Row(
         children: [
           // Reply icon
-          Icon(
+          ButleryIcon(
             Icons.reply,
             size: AppDimensions.iconSizeM,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
 
           // Message preview content
           Expanded(
@@ -65,12 +67,12 @@ class ReplyBanner extends StatelessWidget {
                 Text(
                   context.l10n.messagingReplyingTo(message.senderDisplayName),
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: context.butleryColors.success,
+                    color: context.modeColors.success,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AppDimensions.spacingXxs),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Original message content
                 Text(
@@ -88,7 +90,7 @@ class ReplyBanner extends StatelessWidget {
           // Cancel button
           IconButton(
             onPressed: onCancelReply,
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
             iconSize: 20,
             color: cs.onSurfaceVariant,
             constraints: const BoxConstraints(

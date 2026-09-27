@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_specific_colors.dart';
 
 /// Picks the light or dark generated member for a brightness.
 abstract final class AppModeColors {
@@ -103,4 +104,200 @@ abstract final class AppModeColors {
   /// both modes: the accent text on ink (Komponentark v1:747; Skarmar v12
   /// del 1 #hemrecept :134, the card's eyebrow). 5.43:1 on #24382C.
   static Color textAccentOnInk() => AppColors.textAccentOnInk;
+}
+
+/// The mode-aware colour set for members that have no ColorScheme slot.
+///
+/// It replaced the retired compatibility theme extension in package 7
+/// (NULAGE.md:71-74). It carries only a [Brightness] and no colour values of
+/// its own (tokens.json:522): every member picks the generated AppColors or
+/// AppColorsDark member for that brightness, and the four decorative
+/// category colours the app owns come from AppSpecificColors. It is not a
+/// ThemeExtension, so there is no override path; a theme's brightness is the
+/// only input.
+///
+/// The name avoids the classes the design-system generator emits
+/// (tokens.json:519).
+final class ModeColors {
+  const ModeColors._(this.brightness);
+
+  /// The set for [brightness].
+  factory ModeColors.of(Brightness brightness) =>
+      brightness == Brightness.dark ? dark : light;
+
+  /// Light mode.
+  static const light = ModeColors._(Brightness.light);
+
+  /// Dark mode.
+  static const dark = ModeColors._(Brightness.dark);
+
+  /// The mode this set reads.
+  final Brightness brightness;
+
+  bool get _isDark => brightness == Brightness.dark;
+
+  /// AppColors.chatBubbleOutgoing light, AppColorsDark.chatBubbleOutgoing dark.
+  Color get chatBubbleOutgoing =>
+      _isDark ? AppColorsDark.chatBubbleOutgoing : AppColors.chatBubbleOutgoing;
+
+  /// AppColors.chatBubbleIncoming light, AppColorsDark.chatBubbleIncoming dark.
+  Color get chatBubbleIncoming =>
+      _isDark ? AppColorsDark.chatBubbleIncoming : AppColors.chatBubbleIncoming;
+
+  /// AppColors.chatTextOutgoing light, AppColorsDark.chatTextOutgoing dark.
+  Color get chatTextOutgoing =>
+      _isDark ? AppColorsDark.chatTextOutgoing : AppColors.chatTextOutgoing;
+
+  /// AppColors.chatTextIncoming light, AppColorsDark.chatTextIncoming dark.
+  Color get chatTextIncoming =>
+      _isDark ? AppColorsDark.chatTextIncoming : AppColors.chatTextIncoming;
+
+  /// AppColors.success light, AppColorsDark.success dark.
+  Color get success => _isDark ? AppColorsDark.success : AppColors.success;
+
+  /// AppColors.onSuccess light, AppColorsDark.onSuccess dark.
+  Color get onSuccess =>
+      _isDark ? AppColorsDark.onSuccess : AppColors.onSuccess;
+
+  /// AppColors.successContainer light, AppColorsDark.successContainer dark.
+  Color get successContainer =>
+      _isDark ? AppColorsDark.successContainer : AppColors.successContainer;
+
+  /// AppColors.onSuccessContainer light, AppColorsDark.onSuccessContainer dark.
+  Color get onSuccessContainer =>
+      _isDark ? AppColorsDark.onSuccessContainer : AppColors.onSuccessContainer;
+
+  /// AppColors.warning light, AppColorsDark.warning dark.
+  Color get warning => _isDark ? AppColorsDark.warning : AppColors.warning;
+
+  /// AppColors.onWarning light, AppColorsDark.onWarning dark.
+  Color get onWarning =>
+      _isDark ? AppColorsDark.onWarning : AppColors.onWarning;
+
+  /// AppColors.warningContainer light, AppColorsDark.warningContainer dark.
+  Color get warningContainer =>
+      _isDark ? AppColorsDark.warningContainer : AppColors.warningContainer;
+
+  /// AppColors.onWarningContainer light, AppColorsDark.onWarningContainer dark.
+  Color get onWarningContainer =>
+      _isDark ? AppColorsDark.onWarningContainer : AppColors.onWarningContainer;
+
+  /// AppColors.info light, AppColorsDark.info dark.
+  Color get info => _isDark ? AppColorsDark.info : AppColors.info;
+
+  /// AppColors.onInfo light, AppColorsDark.onInfo dark.
+  Color get onInfo => _isDark ? AppColorsDark.onInfo : AppColors.onInfo;
+
+  /// AppColors.infoContainer light, AppColorsDark.infoContainer dark.
+  Color get infoContainer =>
+      _isDark ? AppColorsDark.infoContainer : AppColors.infoContainer;
+
+  /// AppColors.onInfoContainer light, AppColorsDark.onInfoContainer dark.
+  Color get onInfoContainer =>
+      _isDark ? AppColorsDark.onInfoContainer : AppColors.onInfoContainer;
+
+  /// AppColors.neutralMedium in both modes.
+  Color get neutral => AppColors.neutralMedium;
+
+  /// AppColors.starGold in both modes.
+  Color get starGold => AppColors.starGold;
+
+  /// AppColors.recipeCardLeftBorder light, AppColorsDark.recipeCardLeftBorder dark.
+  Color get recipeCardLeftBorder => _isDark
+      ? AppColorsDark.recipeCardLeftBorder
+      : AppColors.recipeCardLeftBorder;
+
+  /// AppColors.recipeCardBottomBorder light, AppColorsDark.recipeCardBottomBorder dark.
+  Color get recipeCardBottomBorder => _isDark
+      ? AppColorsDark.recipeCardBottomBorder
+      : AppColors.recipeCardBottomBorder;
+
+  /// AppColors.navSelectedIndicator in both modes.
+  Color get navAccent => AppColors.navSelectedIndicator;
+
+  /// AppColors.greenMuted light, AppColorsDark.greenMuted dark.
+  Color get iconMuted =>
+      _isDark ? AppColorsDark.greenMuted : AppColors.greenMuted;
+
+  /// AppColors.greenPale light, AppColorsDark.greenPale dark.
+  Color get heroPaleGreen =>
+      _isDark ? AppColorsDark.greenPale : AppColors.greenPale;
+
+  /// AppColors.categoryMeatFish in both modes.
+  Color get categoryMeatFish => AppColors.categoryMeatFish;
+
+  /// AppColors.categoryDairy in both modes.
+  Color get categoryDairy => AppColors.categoryDairy;
+
+  /// AppColors.categoryVegetables in both modes.
+  Color get categoryVegetables => AppColors.categoryVegetables;
+
+  /// AppColors.categoryFruit in both modes.
+  Color get categoryFruit => AppColors.categoryFruit;
+
+  /// AppColors.categoryBreadGrains in both modes.
+  Color get categoryBreadGrains => AppColors.categoryBreadGrains;
+
+  /// AppColors.categoryFrozen in both modes.
+  Color get categoryFrozen => AppColors.categoryFrozen;
+
+  /// AppColors.categoryDryGoods in both modes.
+  Color get categoryDryGoods => AppColors.categoryDryGoods;
+
+  /// AppColors.categoryOther in both modes.
+  Color get categoryOther => AppColors.categoryOther;
+
+  /// AppSpecificColors.categoryDrinks light, AppSpecificColors.categoryDrinksDark dark.
+  Color get categoryDrinks => _isDark
+      ? AppSpecificColors.categoryDrinksDark
+      : AppSpecificColors.categoryDrinks;
+
+  /// AppSpecificColors.categoryCleaning light, AppSpecificColors.categoryCleaningDark dark.
+  Color get categoryCleaning => _isDark
+      ? AppSpecificColors.categoryCleaningDark
+      : AppSpecificColors.categoryCleaning;
+
+  /// AppSpecificColors.categorySnacks light, AppSpecificColors.categorySnacksDark dark.
+  Color get categorySnacks => _isDark
+      ? AppSpecificColors.categorySnacksDark
+      : AppSpecificColors.categorySnacks;
+
+  /// AppSpecificColors.categoryCanned light, AppSpecificColors.categoryCannedDark dark.
+  Color get categoryCanned => _isDark
+      ? AppSpecificColors.categoryCannedDark
+      : AppSpecificColors.categoryCanned;
+
+  /// AppColors.sharedRecipeText light, AppColorsDark.sharedRecipeText dark.
+  Color get sharedRecipeText =>
+      _isDark ? AppColorsDark.sharedRecipeText : AppColors.sharedRecipeText;
+
+  /// AppColors.sharedRecipeIcon in both modes.
+  Color get sharedRecipeIcon => AppColors.sharedRecipeIcon;
+
+  /// AppColors.sharedRecipeBackground light, AppColorsDark.sharedRecipeBackground dark.
+  Color get sharedRecipeBackground => _isDark
+      ? AppColorsDark.sharedRecipeBackground
+      : AppColors.sharedRecipeBackground;
+
+  /// AppColors.focusRing light, AppColorsDark.focusRing dark.
+  Color get focusRing =>
+      _isDark ? AppColorsDark.focusRing : AppColors.focusRing;
+
+  /// AppColors.progressTrack light, AppColorsDark.progressTrack dark.
+  Color get progressTrack =>
+      _isDark ? AppColorsDark.progressTrack : AppColors.progressTrack;
+
+  /// AppColors.progressIndicator light, AppColorsDark.progressIndicator dark.
+  Color get progressIndicator =>
+      _isDark ? AppColorsDark.progressIndicator : AppColors.progressIndicator;
+
+  /// AppColors.surfaceDisabled light, AppColorsDark.surfaceDisabled dark.
+  Color get surfaceDisabled =>
+      _isDark ? AppColorsDark.surfaceDisabled : AppColors.surfaceDisabled;
+}
+
+/// `context.modeColors`: the [ModeColors] for the current theme's brightness.
+extension ModeColorsAccess on BuildContext {
+  /// Reads Theme.of(this).brightness, so dark mode never gets light values.
+  ModeColors get modeColors => ModeColors.of(Theme.of(this).brightness);
 }

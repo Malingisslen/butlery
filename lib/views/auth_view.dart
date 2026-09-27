@@ -7,6 +7,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -18,7 +20,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/component_themes.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
@@ -143,7 +144,7 @@ class _AuthViewState extends State<AuthView> {
               ),
               const SizedBox(width: AppDimensions.spacingL),
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.paddingMs),
+                padding: const EdgeInsets.only(top: AppDimensions.space8),
                 child: Text(
                   'butlery',
                   style: AppTextStyles.headlineBold.copyWith(
@@ -174,7 +175,7 @@ class _AuthViewState extends State<AuthView> {
   /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
   /// skälet och antalet väntande ändringar. Aldrig som fel"
   /// (produktregler.md:834). `surface.raised` is `surfaceContainerHighest`
-  /// and `text.success` is `butleryColors.success`, in both modes
+  /// and `text.success` is `modeColors.success`, in both modes
   /// (app_colors.dart / app_colors_dark.dart).
   Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
     final l10n = context.l10n;
@@ -189,14 +190,14 @@ class _AuthViewState extends State<AuthView> {
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.check_circle_outline,
-            color: context.butleryColors.success,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
+            color: context.modeColors.success,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -223,7 +224,7 @@ class _AuthViewState extends State<AuthView> {
           ),
           IconButton(
             tooltip: l10n.commonClose,
-            icon: Icon(Icons.close, color: cs.onSurfaceVariant),
+            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurfaceVariant),
             onPressed: () => setState(SessionEndNotice.clear),
           ),
         ],
@@ -326,10 +327,10 @@ class _AuthViewState extends State<AuthView> {
                       button: true,
                       enabled: !viewModel.isLoading,
                       child: IconButton(
-                        icon: Icon(
-                          viewModel.isPasswordVisible
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                        icon: const ButleryIcon(
+                          // One glyph for both states until design draws the second one
+                          // (P7-U08 open question); the tooltip/label carries the state.
+                          ButleryIcons.eye,
                           size: AppDimensions.iconSizeAction,
                         ),
                         onPressed: viewModel.togglePasswordVisibility,
@@ -596,7 +597,7 @@ class _AuthViewState extends State<AuthView> {
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
@@ -612,7 +613,7 @@ class _AuthViewState extends State<AuthView> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
         borderSide: BorderSide(
-          color: context.butleryColors.focusRing,
+          color: context.modeColors.focusRing,
           width: AppDimensions.focusRingWidth,
         ),
       ),
@@ -898,9 +899,9 @@ class _AuthViewState extends State<AuthView> {
       if (success) {
         SnackBarUtils.showSuccess(this.context, l10n.authResetEmailSent);
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           this.context,
-          viewModel.errorMessage ?? l10n.authResetEmailFailed,
+          what: viewModel.errorMessage ?? l10n.authResetEmailFailed,
         );
       }
     });

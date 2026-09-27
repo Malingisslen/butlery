@@ -15,12 +15,13 @@ import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 
@@ -184,7 +185,7 @@ class _PantrySections extends StatelessWidget {
         if (expiring.isNotEmpty)
           _PantrySection(
             title: l10n.pantrySectionExpiring,
-            icon: Icons.schedule,
+            icon: ButleryIcons.clock,
             items: expiring,
             initiallyExpanded: true,
           ),
@@ -244,7 +245,7 @@ class _PantrySection extends StatelessWidget {
         border: Border(
           left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),
@@ -258,7 +259,7 @@ class _PantrySection extends StatelessWidget {
             vertical: AppDimensions.spacingXs,
           ),
           childrenPadding: EdgeInsets.zero,
-          leading: Icon(
+          leading: ButleryIcon(
             icon,
             color: cs.onSurface,
             size: AppDimensions.iconSizeM,
@@ -311,8 +312,8 @@ class _PantryFab extends StatelessWidget {
           child: SizedBox(
             width: 56,
             height: 56,
-            child: Icon(
-              Icons.add,
+            child: ButleryIcon(
+              ButleryIcons.plus,
               color: cs.onPrimary,
               size: AppDimensions.iconSizeL,
             ),
@@ -356,7 +357,7 @@ class _PantryBulkBar extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const ButleryIcon(ButleryIcons.x),
                 tooltip: context.l10n.commonCancel,
                 color: cs.onPrimaryContainer,
                 onPressed: onClose,
@@ -380,7 +381,7 @@ class _PantryBulkBar extends StatelessWidget {
                     cs.brightness,
                   ),
                 ),
-                icon: const Icon(Icons.delete_outline),
+                icon: const ButleryIcon(ButleryIcons.trash2),
                 label: Text(context.l10n.commonDelete),
               ),
             ],
@@ -402,7 +403,10 @@ class _PantryEmptyState extends StatelessWidget {
     final l10n = context.l10n;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -16,6 +16,8 @@ import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
@@ -280,7 +282,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       child: Padding(
         padding: const EdgeInsets.only(
           top: AppDimensions.paddingM,
-          bottom: AppDimensions.spacingTight,
+          bottom: AppDimensions.space4,
         ),
         child: Container(
           padding: const EdgeInsetsDirectional.only(
@@ -328,7 +330,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             onTap: () => _showSubstitutionSheet(context, parsed.name),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingModerate,
+                vertical: AppDimensions.space12,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,8 +359,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                             padding: const EdgeInsetsDirectional.only(
                               end: AppDimensions.spacingXs,
                             ),
-                            child: Icon(
-                              Icons.warning_amber,
+                            child: ButleryIcon(
+                              ButleryIcons.triangleAlert,
                               size: AppDimensions.iconSizeS,
                               color: cs.error,
                             ),
@@ -374,8 +376,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.swap_horiz,
+                  ButleryIcon(
+                    ButleryIcons.swapHorizontal,
                     size: AppDimensions.iconSizeS,
                     color: cs.onSurfaceVariant.withValues(
                       alpha: AppDimensions.opacityMediumLight,
@@ -536,8 +538,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       ),
       child: Center(
         child: isCompleted
-            ? Icon(
-                Icons.check,
+            ? ButleryIcon(
+                ButleryIcons.check,
                 size: 16,
                 color: cs.onPrimary,
               )
@@ -644,8 +646,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.local_offer_outlined,
+              ButleryIcon(
+                ButleryIcons.tag,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -658,14 +660,14 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: _topEffectiveTags.map((tag) {
               final isUserAdded = userAddedTags.contains(tag);
               final displayName = TagDisplayUtils.getDisplayName(tag);
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(
@@ -718,8 +720,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
-                Icon(
-                  Icons.photo_library_outlined,
+                ButleryIcon(
+                  ButleryIcons.image,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -831,8 +833,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           // Header with expand/collapse
           Row(
             children: [
-              Icon(
-                Icons.label_outline,
+              ButleryIcon(
+                ButleryIcons.tag,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -846,8 +848,10 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               if (hasOverflow)
                 TextButton.icon(
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                  icon: Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  icon: ButleryIcon(
+                    _isExpanded
+                        ? ButleryIcons.chevronUp
+                        : ButleryIcons.chevronDown,
                     size: AppDimensions.iconSizeM,
                   ),
                   label: Text(
@@ -866,8 +870,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           const SizedBox(height: AppDimensions.spacingM),
           // Tags
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: [
               ...displayNames.map((name) => _buildPersonalTag(context, name)),
               if (!_isExpanded && hasOverflow)
@@ -887,7 +891,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
@@ -917,7 +921,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         onTap: () => setState(() => _isExpanded = true),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
+            horizontal: AppDimensions.space4,
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(

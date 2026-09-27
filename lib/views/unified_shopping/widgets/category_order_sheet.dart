@@ -4,6 +4,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Bottom sheet for reordering shopping list categories via drag handles.
 class CategoryOrderSheet extends StatefulWidget {
@@ -145,11 +147,11 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
       key: ValueKey(category),
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.spacingXxs,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: ListTile(
@@ -158,7 +160,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
           height: 24,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
         title: Text(
@@ -167,8 +169,8 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
         ),
         trailing: ReorderableDragStartListener(
           index: index,
-          child: Icon(
-            Icons.drag_handle,
+          child: ButleryIcon(
+            ButleryIcons.drag,
             color: cs.onSurfaceVariant,
           ),
         ),

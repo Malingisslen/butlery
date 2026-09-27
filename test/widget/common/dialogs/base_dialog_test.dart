@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -131,7 +133,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
   String? get cancelButtonText => cancelLabel;
 
   @override
-  Widget get actionButtonIcon => icon ?? const Icon(Icons.check);
+  Widget get actionButtonIcon => icon ?? const ButleryIcon(ButleryIcons.check);
 
   @override
   bool validateBeforeAction() => validateOk;
@@ -155,7 +157,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
 
 void main() {
   group('BaseDialog — render', () {
-    testWidgets('renders title, body, default cancel and OK buttons', (
+    testWidgets('renders title, body, default cancel and Stäng buttons', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
@@ -170,7 +172,10 @@ void main() {
       expect(find.text('Hej'), findsOneWidget);
       expect(find.text('body'), findsOneWidget);
       expect(find.text('Avbryt'), findsOneWidget); // sv default
-      expect(find.text('OK'), findsOneWidget);
+      // No action named: the button only closes, so it says Stäng, never OK
+      // (content-style-guide.md:77; P7-B4).
+      expect(find.text('Stäng'), findsOneWidget);
+      expect(find.text('OK'), findsNothing);
     });
 
     testWidgets('renders titleIcon when provided', (tester) async {
@@ -179,10 +184,10 @@ void main() {
       showDialog<void>(
         context: ctx,
         builder: (_) =>
-            const _TestBaseDialog(title: 't', titleIcon: Icons.info),
+            const _TestBaseDialog(title: 't', titleIcon: ButleryIcons.info),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.info), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.info), findsOneWidget);
     });
 
     testWidgets('renders subtitle above content', (tester) async {
@@ -244,7 +249,7 @@ void main() {
       // Default primary label for isDangerous + no override = commonDelete = "Ta bort"
       expect(find.text('Ta bort'), findsOneWidget);
       // Default delete icon on the primary button
-      expect(find.byIcon(Icons.delete), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
     });
   });
 
@@ -260,7 +265,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
 
       expect(await future, 'success');
@@ -280,7 +285,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
 
       // P5-U04: the dialog stays open with the three-part inline error:
@@ -313,7 +318,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
       final l10n = AppLocalizations.of(
         tester.element(find.byType(InlineError)),
@@ -358,11 +363,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
 
       // No error, no progress spinner
-      expect(find.byIcon(Icons.error_outline), findsNothing);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       expect(find.byType(PlateLine), findsNothing);
     });
   });
@@ -408,7 +413,7 @@ void main() {
                     ctx,
                     title: 't',
                     message: 'm',
-                    primaryActionText: 'OK',
+                    primaryActionText: 'Bekräfta',
                   );
                 },
                 child: const Text('Open'),
@@ -419,7 +424,7 @@ void main() {
       );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Bekräfta'));
       await tester.pumpAndSettle();
 
       expect(result, isTrue);
@@ -438,6 +443,7 @@ void main() {
                   title: 't',
                   message: 'should-not-render',
                   customContent: const Text('totally-custom'),
+                  primaryActionText: 'Ja',
                 ),
                 child: const Text('Open'),
               );
@@ -485,7 +491,7 @@ void main() {
         findsOneWidget,
       );
       // Warning icon
-      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
       // Danger label = commonDelete = "Ta bort"
       expect(find.text('Ta bort'), findsAtLeastNWidgets(1));
     });
@@ -527,9 +533,8 @@ void main() {
       expect(await future, 42);
     });
 
-    testWidgets('failing action shows error_outline and stays open', (
-      tester,
-    ) async {
+    testWidgets('a failing action shows the inline error, never the '
+        'exception text, and stays open', (tester) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<int>(
@@ -539,8 +544,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Go'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
-      expect(find.textContaining('action failure'), findsOneWidget);
+      // P7-B2: the same three-part inline error as BaseDialog
+      // (content-style-guide.md:87-97, :95). This is the path the delete
+      // group and remove member dialogs take.
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.textContaining('action failure'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.text('Åtgärden kunde inte slutföras.'), findsOneWidget);
+      expect(find.text('Försök igen'), findsOneWidget);
+      expect(find.byType(_TestActionDialog), findsOneWidget);
     });
 
     testWidgets(
@@ -576,7 +588,7 @@ void main() {
       await tester.tap(find.text('Go'));
       await tester.pumpAndSettle();
       // No error displayed, no spinner
-      expect(find.byIcon(Icons.error_outline), findsNothing);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       expect(find.byType(PlateLine), findsNothing);
     });
   });

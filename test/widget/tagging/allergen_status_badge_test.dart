@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -21,9 +22,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
-        expect(find.byIcon(Icons.warning_amber), findsNothing);
-        expect(find.byIcon(Icons.help_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
+        expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
 
       testWidgets('should show warning_amber icon for CONTAINS status', (
@@ -39,12 +40,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.warning_amber), findsOneWidget);
-        expect(find.byIcon(Icons.check_circle_outline), findsNothing);
-        expect(find.byIcon(Icons.help_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
+        expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
 
-      testWidgets('should show help_outline icon for UNKNOWN status', (
+      testWidgets('should show the info glyph for UNKNOWN status', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -57,9 +58,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.help_outline), findsOneWidget);
-        expect(find.byIcon(Icons.check_circle_outline), findsNothing);
-        expect(find.byIcon(Icons.warning_amber), findsNothing);
+        expect(find.byIcon(ButleryIcons.info), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
+        expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       });
     });
 
@@ -79,7 +80,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final icon = tester.widget<Icon>(
-          find.byIcon(Icons.check_circle_outline),
+          find.byIcon(ButleryIcons.circleCheck),
         );
         expect(icon.size, 14.0);
       });
@@ -99,7 +100,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final icon = tester.widget<Icon>(
-          find.byIcon(Icons.check_circle_outline),
+          find.byIcon(ButleryIcons.circleCheck),
         );
         expect(icon.size, 18.0);
       });
@@ -121,7 +122,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // The icon should still render
-        expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
         // No Text widget inside the badge row — find text descendants of the badge
         final badgeFinder = find.byType(AllergenStatusBadge);
         final textInBadge = find.descendant(

@@ -28,6 +28,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -140,9 +141,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Record → stop (the mic toggles like the other voice surfaces).
-        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.tap(find.byIcon(ButleryIcons.mic));
         await tester.pumpAndSettle();
-        await tester.tap(find.byIcon(Icons.stop));
+        await tester.tap(find.byIcon(ButleryIcons.stop));
         await tester.pumpAndSettle();
 
         const combined = 'Provade igår. gott men lite salt';
@@ -201,11 +202,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Start dictation, then hit send while transcription is pending.
-        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.tap(find.byIcon(ButleryIcons.mic));
         await tester.pumpAndSettle();
-        await tester.tap(find.byIcon(Icons.stop));
+        await tester.tap(find.byIcon(ButleryIcons.stop));
         await tester.pump();
-        await tester.tap(find.byIcon(Icons.send));
+        await tester.tap(find.byIcon(ButleryIcons.send));
         await tester.pump();
 
         // Transcript lands while the post is in flight...
@@ -247,7 +248,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Skrivet för hand');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.mic_none));
+      await tester.tap(find.byIcon(ButleryIcons.mic));
       await tester.pumpAndSettle();
 
       expect(
@@ -307,7 +308,7 @@ void main() {
     await tester.pumpWidget(_wrap(buildWidget('r1')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.send));
+    await tester.tap(find.byIcon(ButleryIcons.send));
     await tester.pumpAndSettle();
 
     verify(
@@ -408,10 +409,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.camera));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.send));
+        await tester.tap(find.byIcon(ButleryIcons.send));
         await tester.pumpAndSettle();
 
         expect(
@@ -448,18 +449,18 @@ void main() {
         // Attach is available below the cap; add one image per tap.
         for (var i = 0; i < RecipeComment.maxImageUrls; i++) {
           expect(
-            find.byIcon(Icons.add_photo_alternate_outlined),
+            find.byIcon(ButleryIcons.camera),
             findsOneWidget,
             reason: 'attach must stay available while below the cap (i=$i)',
           );
-          await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.camera));
           await tester.pumpAndSettle();
         }
 
         // At the cap the composer must stop offering the attach affordance so a
         // 4th image can't be selected (RecipeComment asserts the cap at build).
         expect(
-          find.byIcon(Icons.add_photo_alternate_outlined),
+          find.byIcon(ButleryIcons.camera),
           findsNothing,
           reason: 'attach must disappear at maxImageUrls selected images',
         );
@@ -491,10 +492,10 @@ void main() {
       await tester.pumpWidget(_wrap(buildWidget('r1')));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
+      await tester.tap(find.byIcon(ButleryIcons.camera));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.send));
+      await tester.tap(find.byIcon(ButleryIcons.send));
       await tester.pumpAndSettle();
 
       verify(

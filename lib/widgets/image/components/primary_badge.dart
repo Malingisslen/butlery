@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Badge indicating primary image status
 class PrimaryBadge extends StatelessWidget {
@@ -25,8 +26,8 @@ class PrimaryBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              AdaptiveIcons.primaryFilled,
+            ButleryIcon(
+              ButleryIcons.primary,
               size: AppDimensions.iconSizeS,
               color: cs.onPrimary,
             ),

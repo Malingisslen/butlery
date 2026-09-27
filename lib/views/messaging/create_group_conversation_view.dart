@@ -7,6 +7,8 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -200,14 +202,14 @@ class _CreateGroupConversationViewState
           context.l10n.messagingGroupName,
           style: AppTextStyles.titleMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         StyledInput.text(
           controller: _groupNameController,
           hint: context.l10n.messagingGroupNameHint,
           onChanged: (value) => viewModel.updateGroupName(value),
           errorText: viewModel.validationError,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           context.l10n.messagingSelectAtLeastTwoMembers,
           style: AppTextStyles.bodySmall.copyWith(
@@ -226,12 +228,12 @@ class _CreateGroupConversationViewState
       children: [
         Row(
           children: [
-            Icon(
-              Icons.people,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.messagingSelectedMembers(
                 viewModel.selectedMemberCount,
@@ -244,8 +246,8 @@ class _CreateGroupConversationViewState
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Wrap(
-          spacing: AppDimensions.spacingS,
-          runSpacing: AppDimensions.spacingS,
+          spacing: AppDimensions.space4,
+          runSpacing: AppDimensions.space4,
           children: viewModel.selectedMembers.map((member) {
             return Chip(
               avatar: UserDisplayWidgets.avatar(
@@ -254,8 +256,8 @@ class _CreateGroupConversationViewState
                 size: ImageSize.small,
               ),
               label: Text(member.displayName),
-              deleteIcon: const Icon(
-                Icons.close,
+              deleteIcon: const ButleryIcon(
+                ButleryIcons.x,
                 size: AppDimensions.iconSizeS,
               ),
               onDeleted: () => viewModel.toggleMemberSelection(member.uid),
@@ -338,8 +340,8 @@ class _CreateGroupConversationViewState
             ),
           ),
           if (isSelected)
-            Icon(
-              Icons.check_circle,
+            ButleryIcon(
+              ButleryIcons.circleCheck,
               color: Theme.of(context).colorScheme.onSurface,
             ),
         ],
@@ -407,7 +409,7 @@ class _CreateGroupConversationViewState
         ),
       );
     } else if (viewModel.error != null) {
-      SnackBarUtils.showError(this.context, viewModel.error!);
+      SnackBarUtils.showFailure(this.context, what: viewModel.error!);
     }
   }
 }

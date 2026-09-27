@@ -5,6 +5,8 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Displays an interactive poll within a chat message.
@@ -57,7 +59,10 @@ class PollMessageWidget extends StatelessWidget {
           // Poll icon + question
           Row(
             children: [
-              const Text('📊', style: TextStyle(fontSize: 16)),
+              const Text(
+                '📊',
+                style: TextStyle(fontSize: AppDimensions.emojiGlyphBody),
+              ),
               const SizedBox(width: AppDimensions.spacingXs),
               Expanded(
                 child: Text(
@@ -205,7 +210,7 @@ class PollMessageWidget extends StatelessWidget {
                         : cs.surface.withValues(
                             alpha: AppDimensions.opacityHalf,
                           )),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: hasVoted
                     ? (isFromCurrentUser
@@ -273,7 +278,7 @@ class PollMessageWidget extends StatelessWidget {
                               ))
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -287,8 +292,8 @@ class PollMessageWidget extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(
                   end: AppDimensions.spacingXs,
                 ),
-                child: Icon(
-                  Icons.check_circle,
+                child: ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: 16,
                   color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                 ),
@@ -370,8 +375,8 @@ class PollMessageWidget extends StatelessWidget {
                           padding: const EdgeInsetsDirectional.only(
                             end: AppDimensions.spacingXs,
                           ),
-                          child: Icon(
-                            Icons.check_circle,
+                          child: ButleryIcon(
+                            ButleryIcons.circleCheck,
                             size: 16,
                             color: isFromCurrentUser
                                 ? cs.onPrimary
@@ -423,7 +428,7 @@ class PollMessageWidget extends StatelessWidget {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                 ),
@@ -447,7 +452,7 @@ class PollMessageWidget extends StatelessWidget {
                                 alpha: AppDimensions.opacityExtraVeryLight,
                               ),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                     ),
@@ -487,8 +492,8 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
             ? cs.onPrimary.withValues(alpha: AppDimensions.opacityVeryLight)
             : cs.surfaceContainerHighest,
       ),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         size: 20,
         color: isFromCurrent
             ? cs.onPrimary.withValues(alpha: AppDimensions.opacityMedium)

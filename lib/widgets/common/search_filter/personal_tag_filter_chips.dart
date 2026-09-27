@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Filter chips for personal tags with include/exclude support.
@@ -75,8 +77,8 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(
-                    Icons.settings,
+                  icon: const ButleryIcon(
+                    ButleryIcons.settings,
                     size: AppDimensions.iconSize18,
                   ),
                   onPressed: onManageTags,
@@ -151,7 +153,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           // way forward.
           StateWidget.empty(
             title: context.l10n.taggingNoPersonalTags,
-            icon: Icons.label_outline,
+            icon: ButleryIcons.tag,
             actionLabel: context.l10n.filterCreatePersonalTags,
             onAction: onManageTags,
           ),
@@ -187,7 +189,7 @@ class _PersonalTagFilterChip extends StatelessWidget {
       // The shared grip: ring around the chip's 48 dp target and no saffron
       // focus tint (Grafisk manual v6:209, :381).
       child: ButleryControlFocus(
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         child: FilterChip(
           label: Text(tag.name),
           avatar: isSelected
@@ -245,33 +247,34 @@ class _PersonalTagExcludeChip extends StatelessWidget {
       // The shared grip: ring around the chip's 48 dp target and no saffron
       // focus tint (Grafisk manual v6:209, :381).
       child: ButleryControlFocus(
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         child: FilterChip(
           label: Text(tag.name),
-          avatar: isExcluded
-              ? null
-              : Icon(
-                  Icons.remove_circle_outline,
-                  size: AppDimensions.iconSizeS,
-                  color: colorScheme.error.withValues(
-                    alpha: AppDimensions.opacityMediumDark,
-                  ),
-                ),
+          // The drawn "utan" chip: no glyph, the tag name struck through,
+          // a 1.5 px text.danger edge and w600 text.danger label on a paper
+          // plate; the "av" chip is a 1 px border.subtle outline, no glyph
+          // (Skarmar v12 etapp 9, #sokpanel "Dina taggar - tryck igen for
+          // utan"; --r04slot-749/842 = #9C3B23 light, #DE9078 dark, line 59,
+          // = colorScheme.error; border.subtle = tokens.json:124-127 =
+          // colorScheme.outlineVariant). State is never opacity
+          // (tokens.json:40-53).
           selected: isExcluded,
           onSelected: (_) => onSelected(),
           backgroundColor: colorScheme.surface,
-          selectedColor: colorScheme.error.withValues(
-            alpha: AppDimensions.opacityLightSubtle,
-          ),
-          checkmarkColor: colorScheme.error,
+          selectedColor: colorScheme.surface,
           side: BorderSide(
-            color: isExcluded ? colorScheme.error : colorScheme.outline,
-            width: isExcluded ? 2 : 1,
+            color: isExcluded ? colorScheme.error : colorScheme.outlineVariant,
+            width: isExcluded ? 1.5 : 1,
           ),
           labelStyle: isExcluded
-              ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
+              ? AppTextStyles.bodyMedium.copyWith(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.lineThrough,
+                  decorationColor: colorScheme.error,
+                )
               : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-          showCheckmark: isExcluded,
+          showCheckmark: false,
         ),
       ),
     );

@@ -96,7 +96,10 @@ abstract final class ConflictSnackBar {
     } catch (e) {
       AppLogger.error('Failed to re-apply local week after conflict', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.conflictDiffKeepFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.conflictDiffKeepFailed,
+      );
     }
   }
 }

@@ -35,6 +35,7 @@ import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
@@ -274,7 +275,7 @@ void main() {
         previous?.call(details);
       };
       addTearDown(() => FlutterError.onError = previous);
-      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.tap(find.byIcon(ButleryIcons.moreVertical));
       await tester.pumpAndSettle();
     }
 

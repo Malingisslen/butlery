@@ -17,7 +17,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
@@ -386,16 +389,50 @@ void main() {
 
       test('should provide status color', () {
         const cs = ColorScheme.light();
-        const butlery = ButleryColors.light;
+        const butlery = ModeColors.light;
         final statusColor = viewModel.getStatusColor(cs, butlery);
         expect(statusColor, isA<Color>());
       });
 
       test('should provide progress color', () {
         const cs = ColorScheme.light();
-        const butlery = ButleryColors.light;
+        const butlery = ModeColors.light;
         final progressColor = viewModel.getProgressColor(cs, butlery);
         expect(progressColor, isA<Color>());
+      });
+
+      // P7-C4: the progress colour reads the generated member for the
+      // mode (tokens.json:522; NULAGE.md:71-74), the same member the
+      // retired ButleryColors extension read, in both modes.
+      test('progress colour follows the mode: success, warning, primary', () {
+        final manager = ShoppingDisplayManager();
+        const light = ColorScheme.light();
+        const dark = ColorScheme.dark();
+
+        expect(
+          manager.getProgressColor(light, ModeColors.light, 100),
+          AppColors.success,
+        );
+        expect(
+          manager.getProgressColor(dark, ModeColors.dark, 100),
+          AppColorsDark.success,
+        );
+        expect(
+          manager.getProgressColor(light, ModeColors.light, 75),
+          AppColors.warning,
+        );
+        expect(
+          manager.getProgressColor(dark, ModeColors.dark, 75),
+          AppColorsDark.warning,
+        );
+        expect(
+          manager.getProgressColor(light, ModeColors.light, 10),
+          light.primary,
+        );
+        expect(
+          manager.getProgressColor(dark, ModeColors.dark, 10),
+          dark.primary,
+        );
       });
 
       test('should handle fully completed list', () async {

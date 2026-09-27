@@ -18,7 +18,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -160,7 +161,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -173,7 +174,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),
@@ -199,7 +200,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.calendar_today_outlined),
+          const ButleryIcon(ButleryIcons.calendar),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -208,13 +209,13 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.chevron_left),
+            icon: const ButleryIcon(ButleryIcons.chevronLeft),
             tooltip: context.l10n.slotPickerPreviousWeek,
             onPressed: _isLoading ? null : _goToPreviousWeek,
           ),
           Text(weekLabel, style: AppTextStyles.bodyMedium),
           IconButton(
-            icon: const Icon(Icons.chevron_right),
+            icon: const ButleryIcon(ButleryIcons.chevronRight),
             tooltip: context.l10n.slotPickerNextWeek,
             onPressed: _isLoading ? null : _goToNextWeek,
           ),
@@ -229,7 +230,9 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
 
   Widget _buildBody(ScrollController scrollController) {
     if (_isLoading) {
-      return const Center(child: LoadingIndicator());
+      // The plate line with what is being fetched, never a spinner
+      // (produktregler.md:163, B-18; beslutslogg.md:25).
+      return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
     if (_loadFailed) {
       return StateWidget.error(
@@ -330,7 +333,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                     ),
                   ),
                   if (widget.multiSelect)
-                    Icon(
+                    ButleryIcon(
                       isSelected
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
@@ -350,8 +353,8 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                       )
                     : widget.multiSelect
                     ? const SizedBox.shrink()
-                    : Icon(
-                        Icons.add,
+                    : ButleryIcon(
+                        ButleryIcons.plus,
                         size: AppDimensions.iconSize18,
                         color: cs.onSurfaceVariant,
                       ),

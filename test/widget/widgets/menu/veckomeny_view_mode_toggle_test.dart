@@ -9,7 +9,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -80,7 +80,7 @@ void main() {
         createLocalizedTestApp(
           child: Builder(
             builder: (context) {
-              indicator = context.butleryColors.progressIndicator;
+              indicator = context.modeColors.progressIndicator;
               return VeckomenyViewModeToggle(
                 mode: VeckomenyViewMode.kalender,
                 onSelect: (_) {},

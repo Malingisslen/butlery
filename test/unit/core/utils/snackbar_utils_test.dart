@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -106,6 +107,69 @@ void main() {
       );
       expect(message, isNot(contains('NullPointerException')));
       expect(message, isNot(contains('firebase.internal')));
+    });
+  });
+
+  // P7-C1: showUserFriendlyError goes through showFailure: the alert role,
+  // the sanitized cause (never the exception text) and "Stäng", or
+  // "Försök igen" when a retry is given (content-style-guide.md:87-97).
+  group('SnackBarUtils.showUserFriendlyError', () {
+    Finder alertRole() => find.byWidgetPredicate(
+      (w) => w is Semantics && w.properties.role == SemanticsRole.alert,
+    );
+
+    Future<BuildContext> pump(WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const Scaffold(body: _ContextCapture()),
+        ),
+      );
+      return _ContextCapture.capturedContext!;
+    }
+
+    testWidgets('shows the alert, the sanitized cause and Stäng', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final context = await pump(tester);
+      const raw = 'Permission denied at firestore.internal/RAW';
+
+      SnackBarUtils.showUserFriendlyError(context, Exception(raw));
+      await tester.pumpAndSettle();
+
+      expect(alertRole(), findsOneWidget);
+      expect(
+        find.text(SnackBarUtils.userFriendlyMessage(context, Exception(raw))),
+        findsOneWidget,
+      );
+      expect(find.text('Stäng'), findsOneWidget);
+      expect(find.textContaining('firestore.internal'), findsNothing);
+      handle.dispose();
+    });
+
+    testWidgets('with a retry, the action is Försök igen', (tester) async {
+      final context = await pump(tester);
+      var retried = 0;
+
+      SnackBarUtils.showUserFriendlyError(
+        context,
+        Exception('timeout'),
+        onRetry: () => retried++,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Stäng'), findsNothing);
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
+      expect(retried, 1);
     });
   });
 }

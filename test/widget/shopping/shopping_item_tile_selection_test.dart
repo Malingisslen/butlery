@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -56,10 +57,10 @@ void main() {
 
     expect(selection.isSelectionMode, isTrue);
     expect(selection.isSelected('s_1'), isTrue);
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     // Per-item actions are hidden while selecting.
-    expect(find.byIcon(Icons.delete), findsNothing);
-    expect(find.byIcon(Icons.drag_handle), findsNothing);
+    expect(find.byIcon(ButleryIcons.trash2), findsNothing);
+    expect(find.byIcon(ButleryIcons.drag), findsNothing);
   });
 
   testWidgets('tapping the only selected row exits selection mode', (

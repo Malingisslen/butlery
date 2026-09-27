@@ -13,6 +13,7 @@ import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
@@ -69,7 +70,7 @@ void main() {
     expect(selection.isSelectionMode, isTrue);
     expect(selection.isSelected('p_1'), isTrue);
     expect(
-      find.byIcon(Icons.check_circle),
+      find.byIcon(ButleryIcons.circleCheck),
       findsOneWidget,
       reason: 'the long-pressed row is selected, so it shows the filled mark',
     );

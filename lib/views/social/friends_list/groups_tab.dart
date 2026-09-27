@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -122,8 +124,8 @@ class GroupsTab {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.mail_outline,
+              ButleryIcon(
+                ButleryIcons.mail,
                 color: Theme.of(context).colorScheme.tertiary,
                 size: AppDimensions.iconSizeM,
               ),
@@ -156,8 +158,8 @@ class GroupsTab {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Row(
         children: [
-          Icon(
-            Icons.groups,
+          ButleryIcon(
+            ButleryIcons.users,
             color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeM,
           ),

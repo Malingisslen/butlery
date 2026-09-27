@@ -10,6 +10,8 @@ import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -41,10 +43,13 @@ class PlatformBadgeWidget extends StatelessWidget {
       ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        padding: AppDimensions.paddingSymmetric12x6,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space12,
+          vertical: AppDimensions.space4,
+        ),
         decoration: BoxDecoration(
           color: _getBackgroundColor(detection!.platform, colorScheme),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           border: Border.all(
             color: _getBorderColor(detection!.platform, colorScheme),
             width: 1,
@@ -53,12 +58,12 @@ class PlatformBadgeWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               _getIconForPlatform(detection!.platform),
               size: AppDimensions.iconSizeS,
               color: _getIconColor(detection!.platform, colorScheme),
             ),
-            const SizedBox(width: AppDimensions.spacing6),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               detection!.platformLabel,
               style: AppTextStyles.labelMedium.copyWith(
@@ -78,7 +83,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.tiktok:
         return Icons.music_note;
       case Platform.instagram:
-        return Icons.camera_alt_outlined;
+        return ButleryIcons.camera;
       case Platform.website:
         return Icons.language;
       case Platform.unknown:
@@ -171,7 +176,7 @@ class PlatformIconWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
+    return ButleryIcon(
       _getIconForPlatform(platform),
       size: size,
       color: _getIconColor(platform, Theme.of(context).colorScheme),
@@ -185,7 +190,7 @@ class PlatformIconWidget extends StatelessWidget {
       case Platform.tiktok:
         return Icons.music_note;
       case Platform.instagram:
-        return Icons.camera_alt_outlined;
+        return ButleryIcons.camera;
       case Platform.website:
         return Icons.language;
       case Platform.unknown:

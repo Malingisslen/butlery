@@ -27,6 +27,18 @@ class AppDimensions {
   static const double layoutMarginNarrow = 20.0; // 320dp
   static const double layoutMargin = 24.0; // 360-430dp
 
+  /// The width where the layout margin goes from 20 to 24 (tokens.json
+  /// space.layoutMargin, "320" and "360-430").
+  static const double layoutMarginWideFrom = 360.0;
+
+  /// The page's side margin for [context]: 20 below 360 dp, 24 from there
+  /// (tokens.json:464-467, space.layoutMargin). This is the only place 20
+  /// survives: it is a margin, never a step on the spacing scale.
+  static double layoutMarginOf(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < layoutMarginWideFrom
+      ? layoutMarginNarrow
+      : layoutMargin;
+
   /// The canonical radius scale.
   /// sharp 0 — editorial surfaces (tables, calendar, step cards)
   /// knob 2 — the wordmark's saffron knob and thin bars/indicators
@@ -71,41 +83,16 @@ class AppDimensions {
   /// Extra extra large spacing (48px) - matches original spacingXxl
   static const double spacingXxl = 48.0;
 
-  /// Huge spacing (80px) - for large gaps like avatar widths, empty states
-  static const double spacingHuge = 80.0;
-
-  /// Tight spacing (6px) - between scale points, for compact layouts
-  static const double spacingTight = 6.0;
-
-  /// Moderate spacing (14px) - between scale points, for input padding
-  static const double spacingModerate = 14.0;
-
-  /// **Spacing Scale Guide:**
-  /// Use semantic names instead of numeric constants
-  /// Scale: Xs(4) → Sm(8) → Md(16) → Lg(24) → Xl(32) → Xxl(48)
-  /// For values between scale points, combine semantically:
-  /// - 12px = spacingSm + spacingXs (8 + 4)
-  /// - 20px = spacingMd + spacingXs (16 + 4)
-  /// - 28px = spacingLg + spacingXs (24 + 4)
-  /// ❌ Don't: padding: spacing12
-  /// ✅ Do: padding: spacingMd or combine: spacingSm + spacingXs
-
-  // Minimal aliases for backward compatibility with existing code
-  static const double spacingXxs = 2.0; // Extra extra small (2px)
-  static const double spacingS = 3.0; // 3px - use sparingly
-  static const double spacing6 = 6.0; // 6px - for compact layouts
+  /// Spacing is the six steps of tokens.json space.scale (4/8/12/16/24/32,
+  /// tokens.json:468-475) and nothing between them. Package 7 retired the
+  /// off-scale spacings (2, 3, 6, 10, 14, 20 and 80); the guard in
+  /// test/architecture/p7_type_and_space_scale_test.dart keeps them out.
   static const double spacingM = spacingSm; // Alias for 8px
   static const double spacingL = (spacingSm + spacingXs); // 12px (8+4)
   static const double spacingXxxl = spacingLg; // Alias for 24px
 
-  /// Extra extra small padding (2px)
-  static const double paddingXxs = 2.0;
-
   /// Small padding (8px)
   static const double paddingS = 8.0;
-
-  /// Medium-small padding (10px)
-  static const double paddingMs = 10.0;
 
   /// Medium padding (12px)
   static const double paddingM = 12.0;
@@ -113,59 +100,8 @@ class AppDimensions {
   /// Large padding (16px)
   static const double paddingL = 16.0;
 
-  /// Extra large padding (20px)
-  static const double paddingXl = 20.0;
-
   /// Medium margin (8px)
   static const double marginM = 8.0;
-
-  /// Small border radius - UI Redesign: sharp corners
-  static const double borderRadiusS = 0.0;
-
-  /// Medium border radius - UI Redesign: sharp corners
-  static const double borderRadiusM = 0.0;
-
-  /// Large border radius - UI Redesign: sharp corners
-  static const double borderRadiusL = 0.0;
-
-  /// Round border radius (50px) for fully rounded elements (avatars, pills)
-  static const double borderRadiusRound = 50.0;
-
-  // BUT-695 / SQUARE design language (memory note 2026-02-17): all named
-  // `borderRadiusN` constants below are intentionally `0.0` regardless of
-  // the `N` in the identifier. The `N` is the radius the call site asked
-  // for, NOT the value it gets — the design language collapses every
-  // requested radius onto sharp corners. Two named exceptions remain:
-  //   - `borderRadiusRound` (50.0) — pills / avatars
-  //   - `borderRadius100` (100.0) — full-circle clip (search box pill)
-  // A wholesale rename to `borderRadiusSquare` was deferred because the
-  // 122 call sites across 39 files want to keep their semantic intent
-  // ("this corner WAS 8px") for the day the design loosens. Until that
-  // day, the 0.0 value is load-bearing — do not change without a
-  // design-system review.
-  //
-  // That review has now happened. The frozen design system defines five
-  // radii (see `radiusSharp`…`radiusPill` above), not one. These
-  // `borderRadiusN` constants are therefore LEGACY: they stay at 0.0 so
-  // this foundation package changes no geometry, and the call sites move to
-  // the canonical scale in the component-geometry package. Do not add new
-  // `borderRadiusN` members, and do not change these values here.
-  //
-  // The move has started in the theme layer (lib/theme/components): buttons,
-  // fields, cards, chips, sheets and the checkbox now read the canonical
-  // scale. Widgets and views still use these constants.
-  static const double borderRadius0 = 0.0;
-  static const double borderRadius2 = 0.0;
-  static const double borderRadius4 = 0.0;
-  static const double borderRadius6 = 0.0;
-  static const double borderRadius7 = 0.0;
-  static const double borderRadius8 = 0.0;
-  static const double borderRadius10 = 0.0;
-  static const double borderRadius12 = 0.0;
-  static const double borderRadius16 = 0.0;
-  static const double borderRadius20 = 0.0;
-  static const double borderRadius25 = 0.0;
-  static const double borderRadius100 = 100.0;
 
   /// Low elevation (matching original AppTheme)
   static const double elevationLow = 2.0;
@@ -413,8 +349,7 @@ class AppDimensions {
   static const EdgeInsets sectionPadding = EdgeInsets.all(paddingL);
 
   /// All-around padding variants (used)
-  static const EdgeInsets paddingAll2 = EdgeInsets.all(2.0);
-  static const EdgeInsets paddingAll3 = EdgeInsets.all(spacingS);
+  static const EdgeInsets paddingAll4 = EdgeInsets.all(space4);
   static const EdgeInsets paddingAll8 = EdgeInsets.all(spacingSm);
   static const EdgeInsets paddingAll12 = EdgeInsets.all(paddingM);
   static const EdgeInsets paddingAll16 = EdgeInsets.all(spacingMd);
@@ -457,38 +392,56 @@ class AppDimensions {
     horizontal: spacingMd,
     vertical: spacingXs,
   );
-  static const EdgeInsets paddingSymmetric20x12 = EdgeInsets.symmetric(
-    horizontal: paddingXl,
-    vertical: paddingM,
-  );
-  static const EdgeInsets paddingSymmetric12x6 = EdgeInsets.symmetric(
-    horizontal: paddingM,
-    vertical: spacing6,
-  );
-  static const EdgeInsets paddingSymmetric4x3 = EdgeInsets.symmetric(
-    horizontal: spacingS,
-    vertical: spacingXs,
-  );
-  static const EdgeInsets paddingSymmetric4x2 = EdgeInsets.symmetric(
-    horizontal: spacingXs,
-    vertical: 2.0,
-  );
-  static const EdgeInsets paddingSymmetric6x2 = EdgeInsets.symmetric(
-    horizontal: spacing6,
-    vertical: 2.0,
-  );
-  static const EdgeInsets paddingSymmetric8x2 = EdgeInsets.symmetric(
-    horizontal: spacingSm,
-    vertical: 2.0,
-  );
   static const EdgeInsets paddingSymmetric4x12 = EdgeInsets.symmetric(
     horizontal: spacingXs,
     vertical: paddingM,
   );
-  static const EdgeInsets paddingSymmetric20x16 = EdgeInsets.symmetric(
-    horizontal: paddingXl,
-    vertical: spacingMd,
+
+  /// A badge's padding: 2 px down and 7 px across (tokens.json
+  /// controls.badge paddingY 2 / paddingX 7; Komponentark v1:34 "badge
+  /// 2 × 7"). Locked control geometry, not a step on the spacing scale.
+  static const double badgePaddingY = 2.0;
+  static const double badgePaddingX = 7.0;
+  static const EdgeInsets badgePadding = EdgeInsets.symmetric(
+    horizontal: badgePaddingX,
+    vertical: badgePaddingY,
   );
+
+  /// A compact chip inside a field: 6 px down and 11 px across (tokens.json
+  /// controls.chipCompactInField, "Enda undantaget från chip-padding";
+  /// Komponentark v1:34 "kompakt chip i fält 6 × 11"). Locked control
+  /// geometry, not a step on the spacing scale.
+  static const EdgeInsets chipCompactInFieldPadding = EdgeInsets.symmetric(
+    horizontal: 11,
+    vertical: 6,
+  );
+
+  /// Bottom navigation geometry, drawn in Komponentark v1:663: the icon,
+  /// the label and the marker slot stack with `gap:2px`, and the saffron
+  /// marker under the chosen label is `height:3px;border-radius:2px`.
+  /// A drawn line thickness and a drawn component gap, not spacing steps.
+  static const double bottomNavStackGap = 2.0;
+  static const double bottomNavMarkerThickness = 3.0;
+
+  /// The root top bar's secondary line sits 2 px under the title
+  /// (Komponentark v1:64 `margin-top:2px`). Drawn component geometry.
+  static const double topBarSecondaryGap = 2.0;
+
+  /// A status pill's padding: 3 px down and 9 px across (tokens.json
+  /// controls.statusPill paddingY 3 / paddingX 9; Komponentark v1:34
+  /// "statuspill 10,5/700 · 3 × 9").
+  static const EdgeInsets statusPillPadding = EdgeInsets.symmetric(
+    horizontal: 9,
+    vertical: 3,
+  );
+
+  /// Emoji glyph sizes. An emoji is a picture, not text, so it takes no
+  /// type role; each size is named here instead of written at the call
+  /// site (package 7 test plan for P7-U02). Inline matches body medium (14),
+  /// the poll mark body (16), and the picker's tap targets title (22).
+  static const double emojiGlyphInline = 14.0;
+  static const double emojiGlyphBody = 16.0;
+  static const double emojiGlyphPicker = 22.0;
 
   /// Only-directional padding (used)
   static const EdgeInsets paddingOnlyTop4 = EdgeInsets.only(top: spacingXs);
@@ -496,9 +449,6 @@ class AppDimensions {
   static const EdgeInsets paddingOnlyTop12 = EdgeInsets.only(top: paddingM);
   static const EdgeInsets paddingOnlyTop16 = EdgeInsets.only(top: spacingMd);
   static const EdgeInsets paddingOnlyTop24 = EdgeInsets.only(top: spacingLg);
-  static const EdgeInsets paddingOnlyBottom3 = EdgeInsets.only(
-    bottom: spacingS,
-  );
   static const EdgeInsets paddingOnlyBottom4 = EdgeInsets.only(
     bottom: spacingXs,
   );
@@ -532,24 +482,11 @@ class AppDimensions {
   /// Width 12px (3 usages)
   static const double width12 = 12.0;
 
-  // Component-specific radius aliases (semantic value)
-  /// Card border radius (8px)
-  static const double cardBorderRadius = borderRadiusM;
-
-  /// Chip radius (4px)
-  static const double chipRadius = borderRadiusS;
-
-  /// Bottom sheet border radius (12px)
-  static const double bottomSheetBorderRadius = borderRadiusL;
-
   /// Divider height
   static const double dividerHeight = 1.0;
 
   /// Button width (standard)
   static const double buttonWidth = 120.0;
-
-  /// Extra small border radius - UI Redesign: sharp corners
-  static const double borderRadiusXs = 0.0;
 
   /// Extra large buttons width
   static const double buttonWidthXLarge = 280.0;
@@ -579,22 +516,6 @@ class AppDimensions {
       mobile: base,
       tablet: base * 1.25,
       desktop: base * 1.5,
-    );
-  }
-
-  /// Get responsive padding based on screen size
-  /// Automatically scales padding values for different screen sizes.
-  /// Example:
-  /// ```dart
-  /// final padding = AppDimensions.responsivePadding(context);
-  /// // Mobile: 16px, Tablet: 20px, Desktop: 24px
-  /// ```
-  static double responsivePadding(BuildContext context) {
-    return Breakpoints.valueFor(
-      context: context,
-      mobile: paddingL,
-      tablet: paddingXl,
-      desktop: spacingLg,
     );
   }
 

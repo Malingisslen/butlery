@@ -58,6 +58,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// One thing that did not go through, with its reason and its way on.
 @immutable
@@ -147,21 +149,21 @@ class PartialOutcome extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingModerate),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ExcludeSemantics(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 1),
-                  child: Icon(
-                    Icons.info_outline,
+                  child: ButleryIcon(
+                    ButleryIcons.info,
                     size: 20,
                     color: cs.onSecondaryContainer,
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.paddingMs),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +186,7 @@ class PartialOutcome extends StatelessWidget {
                       ),
                     ],
                     if (child != null) ...[
-                      const SizedBox(height: AppDimensions.paddingMs),
+                      const SizedBox(height: AppDimensions.space8),
                       child!,
                     ],
                     for (final item in items)

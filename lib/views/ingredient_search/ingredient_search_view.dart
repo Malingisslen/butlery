@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart';
 import 'package:butlery/views/ingredient_search/ingredient_chip_input.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -136,7 +137,7 @@ class _IngredientSearchContent extends StatelessWidget {
     if (!vm.hasSearched) {
       return StateWidget.empty(
         title: l10n.ingredientSearchEmpty,
-        icon: Icons.search,
+        icon: ButleryIcons.search,
       );
     }
 

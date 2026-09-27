@@ -11,6 +11,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -320,9 +321,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       // — "the group needs one more member", "some people could not be
       // added" — and showing the generic line instead threw all of that
       // away.
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
+        what: _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
       );
     }
   }
@@ -373,9 +374,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       // Transfer ownership via ViewModel
       final transferSuccess = await _viewModel.transferGroupOwnership(newOwner);
       if (!transferSuccess && mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.groupCouldNotTransferOwnership,
+          what: context.l10n.groupCouldNotTransferOwnership,
         );
         return;
       }
@@ -425,7 +426,10 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // For group sharing, we'll share with all members at once
     // Use the first member's profile as representative for the dialog UI
     if (_viewModel.members.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.groupCouldNotLoadMembers);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.groupCouldNotLoadMembers,
+      );
       return;
     }
 
@@ -547,7 +551,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         body: StateWidget.empty(
           title: context.l10n.groupNotFound,
           subtitle: context.l10n.groupNotFoundDescription,
-          icon: Icons.error_outline,
+          icon: ButleryIcons.triangleAlert,
         ),
       );
     }

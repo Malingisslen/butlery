@@ -17,6 +17,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/fran_sociala_medier_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -133,7 +134,7 @@ void main() {
               of: find.text('Tips för bästa resultat'),
               matching: find.byType(Row),
             ),
-            matching: find.byIcon(Icons.info_outline),
+            matching: find.byIcon(ButleryIcons.info),
           )
           .first,
     );

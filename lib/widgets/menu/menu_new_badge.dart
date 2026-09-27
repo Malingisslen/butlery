@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 class MenuNewBadge extends StatelessWidget {
@@ -16,17 +17,13 @@ class MenuNewBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+      padding: AppDimensions.badgePadding,
       color: cs.secondary,
       child: Text(
         context.l10n.weeklyMenuNewBadge,
-        style: AppTextStyles.labelSmall.copyWith(
-          // 7px: fits inside the 8-9px slot-label rows of the dense grids.
-          fontSize: 7,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-          color: cs.onSecondary,
-        ),
+        // A system label: overline, 10,5/700, the floor for a calendar
+        // cell (tokens.json typography.rules, B-41).
+        style: AppTextStyles.overline.copyWith(color: cs.onSecondary),
       ),
     );
   }

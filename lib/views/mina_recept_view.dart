@@ -41,6 +41,7 @@ import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/views/hem/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart'
     show LayoutScaffolds;
 
@@ -68,7 +69,6 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
@@ -376,14 +376,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           } else if (result.success && result.isRetry) {
             SnackBarUtils.showInfo(context, result.message);
           } else {
-            SnackBarUtils.showError(context, result.message);
+            SnackBarUtils.showFailure(context, what: result.message);
           }
         }
       } catch (e) {
         if (mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.syncFailed(
+            what: context.l10n.syncFailed(
               SnackBarUtils.userFriendlyMessage(context, e),
             ),
           );
@@ -426,11 +426,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           bottom: false,
           child: Column(
             children: [
+              // The offline banner, with its count of waiting changes, is the
+              // one offline signal on Hem (Skarmar v12 del 4 #hemoffline;
+              // package-3 answers A-03 and A-09). The separate sync icon went
+              // in package 7.
               LayoutComponents.offlineIndicator(),
-              SyncIndicator(
-                hasPendingWrites: viewModel.hasPendingWrites,
-                isFromCache: viewModel.isFromCache,
-              ),
               Expanded(
                 // HEM-HERO: the greeting and tonight scroll away above the
                 // library, so a large text size never squeezes the list out.
@@ -844,12 +844,12 @@ List<Widget> minaReceptRootActions(
     // feature (previously only reachable via Cmd+K). Distinct
     // kitchen icon so it doesn't read as the in-list text filter.
     IconButton(
-      icon: const Icon(Icons.kitchen_outlined),
+      icon: const ButleryIcon(Icons.kitchen_outlined),
       tooltip: context.l10n.ingredientSearchTitle,
       onPressed: () => Navigator.of(context).pushNamed(Routes.ingredientSearch),
     ),
     IconButton(
-      icon: Icon(
+      icon: ButleryIcon(
         viewModel.isGridView ? Icons.view_list : Icons.grid_view,
       ),
       tooltip: viewModel.isGridView

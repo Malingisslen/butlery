@@ -7,6 +7,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
@@ -143,8 +145,8 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
                         style: AppTextStyles.titleSmall,
                       ),
                       secondary: target.type == InvitationTargetType.group
-                          ? const Icon(Icons.group)
-                          : const Icon(Icons.person),
+                          ? const ButleryIcon(ButleryIcons.users)
+                          : const ButleryIcon(ButleryIcons.user),
                     );
                   },
                 ),

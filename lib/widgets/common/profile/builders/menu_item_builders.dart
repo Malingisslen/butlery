@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Builders for profile menu item widgets.
 class MenuItemBuilders {
@@ -24,14 +26,14 @@ class MenuItemBuilders {
                 onTap();
               }
             : null,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeAction,
                 color: Theme.of(context).colorScheme.onSurface,
@@ -53,8 +55,8 @@ class MenuItemBuilders {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -84,16 +86,16 @@ class MenuItemBuilders {
                 onTap();
               }
             : null,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
               Stack(
                 children: [
-                  Icon(
+                  ButleryIcon(
                     icon,
                     size: AppDimensions.iconSizeAction,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -142,8 +144,8 @@ class MenuItemBuilders {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -168,20 +170,20 @@ class MenuItemBuilders {
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           decoration: BoxDecoration(
             color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: color.withValues(alpha: AppDimensions.opacityMediumLight),
             ),
           ),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeAction,
                 color: color,

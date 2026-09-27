@@ -44,38 +44,42 @@ void main() {
         expect(find.text('Card Content'), findsOneWidget);
       });
 
-      test('rejects a non-zero borderRadius (square-by-design guard)', () {
-        // The design system forbids rounded corners; a non-zero radius must
-        // be caught at construction, not silently rendered.
-        expect(
-          () => StyledCard(borderRadius: 8, child: const Text('x')),
-          throwsAssertionError,
-        );
-        // Zero and null are allowed.
-        expect(
-          () => StyledCard(borderRadius: 0, child: const Text('x')),
-          returnsNormally,
-        );
+      test('accepts only radii on the scale (P7-U04)', () {
+        // A card corner comes from tokens.json space.radius: card 12 by
+        // default, control 8, or sharp 0 for an editorial surface.
+        for (final radius in [
+          AppDimensions.radiusSharp,
+          AppDimensions.radiusControl,
+          AppDimensions.radiusCard,
+        ]) {
+          expect(
+            () => StyledCard(borderRadius: radius, child: const Text('x')),
+            returnsNormally,
+          );
+        }
         expect(
           () => const StyledCard(child: Text('x')),
           returnsNormally,
         );
+        expect(
+          () => StyledCard(borderRadius: 5, child: const Text('x')),
+          throwsAssertionError,
+        );
       });
 
-      test(
-        'AppDimensions border-radius tokens stay 0.0 (square design root)',
-        () {
-          // The named StyledCard constructors hardcode these tokens, so the
-          // main-constructor assert can't see them — pinning the tokens here
-          // guards squareness at its source for every constructor at once.
-          expect(AppDimensions.borderRadiusS, 0.0);
-          expect(AppDimensions.borderRadiusM, 0.0);
-          expect(AppDimensions.borderRadiusL, 0.0);
-          expect(AppDimensions.borderRadius8, 0.0);
-          expect(AppDimensions.borderRadius12, 0.0);
-          expect(AppDimensions.borderRadius16, 0.0);
-        },
-      );
+      testWidgets('a plain card takes the card radius, 12', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(const StyledCard(child: Text('x'))),
+        );
+        final card = tester.widget<Card>(find.byType(Card));
+        final shape = card.shape! as RoundedRectangleBorder;
+        expect(
+          shape.borderRadius,
+          BorderRadius.circular(AppDimensions.radiusCard),
+        );
+      });
 
       testWidgets('should apply custom padding', (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(32);
@@ -253,7 +257,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius8)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
 
@@ -303,7 +307,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
     });
@@ -376,7 +380,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
     });
@@ -432,7 +436,7 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationHigh));
       });
 
-      testWidgets('should have larger border radius', (
+      testWidgets('takes the dialog radius, 8 (Komponentark v1:336)', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -447,7 +451,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius16)),
+          equals(BorderRadius.circular(AppDimensions.radiusControl)),
         );
       });
 

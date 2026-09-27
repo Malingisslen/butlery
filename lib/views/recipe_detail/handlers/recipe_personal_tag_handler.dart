@@ -13,6 +13,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -108,7 +110,10 @@ class RecipePersonalTagHandler {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.taggingCouldNotSaveTags);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.taggingCouldNotSaveTags,
+        );
       }
     }
   }
@@ -217,7 +222,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -230,7 +235,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),
@@ -239,7 +244,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 child: Row(
                   children: [
-                    const Icon(Icons.label),
+                    const ButleryIcon(ButleryIcons.tag),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
@@ -300,12 +305,12 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             ),
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.check_circle,
+                const ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: AppDimensions.iconSize18,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -358,7 +363,10 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
-            icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.settings,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.taggingManageTags),
           ),
         ),
@@ -376,8 +384,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.label_outline,
+            const ButleryIcon(
+              ButleryIcons.tag,
               size: 64,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
@@ -398,7 +406,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             const SizedBox(height: AppDimensions.spacingLg),
             FilledButton.icon(
               onPressed: _navigateToManageTags,
-              icon: const Icon(Icons.add),
+              icon: const ButleryIcon(ButleryIcons.plus),
               label: Text(context.l10n.taggingCreateTag),
             ),
           ],
@@ -441,9 +449,10 @@ class _QuickTagChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: cs.surface,
-        selectedColor: cs.onSurface.withValues(
-          alpha: AppDimensions.opacityLightMedium,
-        ),
+        // surface.selected (surfaceContainerHighest in both schemes) with the
+        // real 2 px border below, never a tint (tokens.json:41, :116-119;
+        // Grafisk manual v6:209).
+        selectedColor: cs.surfaceContainerHighest,
         checkmarkColor: cs.onSurface,
         side: BorderSide(
           color: isSelected ? cs.onSurface : cs.outlineVariant,

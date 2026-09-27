@@ -16,9 +16,12 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_roles_pending.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
 
@@ -44,11 +47,7 @@ Border _accentedBorder(BuildContext context, Color left) {
 /// Small-caps slot label used at the top of every cell.
 Text _slotLabel(String text, Color color) => Text(
   text.toUpperCase(),
-  style: AppTextStyles.labelSmall.copyWith(
-    fontSize: 8,
-    letterSpacing: 1,
-    color: color,
-  ),
+  style: AppTextStyles.overline.copyWith(color: color),
 );
 
 /// Callback fired when an empty slot is tapped — orchestrator owns the
@@ -320,6 +319,13 @@ class _SlotPresenceRow extends StatelessWidget {
 
   static const int _maxFaces = 4;
 
+  /// The presence row's label: 10.5/700 with no tracking (tokens.json
+  /// controls.calendarPresenceRow labelSize 10.5, labelWeight 700). Built
+  /// from overline for the size and weight, without overline's category
+  /// tracking, which widened the texts past the 52 dp cell.
+  static TextStyle _label(Color color) =>
+      AppTextStyles.overline.copyWith(letterSpacing: 0, color: color);
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -349,12 +355,12 @@ class _SlotPresenceRow extends StatelessWidget {
           child: Row(
             children: [
               if (present.isEmpty)
-                Text(
-                  context.l10n.menuPresenceNobody,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    color: cs.outline,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    context.l10n.menuPresenceNobody,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _label(cs.outline),
                   ),
                 )
               else
@@ -372,24 +378,24 @@ class _SlotPresenceRow extends StatelessWidget {
                   padding: const EdgeInsetsDirectional.only(start: 3),
                   child: Text(
                     '+$overflow',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontSize: 9,
-                      color: cs.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: _label(cs.onSurfaceVariant),
                   ),
                 ),
-              const Spacer(),
               if (present.isNotEmpty)
-                Text(
-                  context.l10n.menuPresencePortions(present.length),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    color: cs.secondary,
-                    fontWeight: FontWeight.w700,
+                Expanded(
+                  child: Text(
+                    context.l10n.menuPresencePortions(present.length),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: _label(cs.secondary),
                   ),
                 ),
-              Icon(Icons.expand_more, size: 12, color: cs.outline),
+              ButleryIcon(
+                ButleryIcons.chevronDown,
+                size: 12,
+                color: cs.outline,
+              ),
             ],
           ),
         ),
@@ -423,7 +429,7 @@ class _EmptySlot extends StatelessWidget {
         onTap: () => onTap(day, slot),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: const EdgeInsets.all(AppDimensions.spacing6),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             border: Border.all(color: Theme.of(context).dividerColor),
@@ -443,10 +449,8 @@ class _EmptySlot extends StatelessWidget {
               Center(
                 child: Text(
                   '+',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: AppTextStyles.headlineSmall.copyWith(
                     color: Theme.of(context).colorScheme.outlineVariant,
-                    fontWeight: FontWeight.w300,
                   ),
                 ),
               ),
@@ -521,7 +525,7 @@ class _AssignedSlot extends StatelessWidget {
               Row(
                 children: [
                   if (selectionMode)
-                    Icon(
+                    ButleryIcon(
                       isSelected
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
@@ -543,8 +547,8 @@ class _AssignedSlot extends StatelessWidget {
                 height: 28,
                 color: cs.surface,
                 alignment: Alignment.center,
-                child: Icon(
-                  Icons.restaurant_outlined,
+                child: ButleryIcon(
+                  ButleryIcons.utensils,
                   size: 18,
                   color: _slotIconColor(context),
                 ),
@@ -553,9 +557,7 @@ class _AssignedSlot extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextRolesPending.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.15,
                   ),
@@ -643,10 +645,8 @@ class _OvrigtCell extends StatelessWidget {
                       child: Text(
                         context.l10n.weeklyMenuOvrigtAddMore,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 9,
+                        style: AppTextStyles.overline.copyWith(
                           color: cs.secondary,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -718,7 +718,7 @@ class _OvrigtEntry extends StatelessWidget {
               if (selectionMode)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 3),
-                  child: Icon(
+                  child: ButleryIcon(
                     isSelected
                         ? Icons.check_box
                         : Icons.check_box_outline_blank,
@@ -732,7 +732,7 @@ class _OvrigtEntry extends StatelessWidget {
                   height: 16,
                   color: cs.surfaceContainerHighest,
                   alignment: Alignment.center,
-                  child: Icon(
+                  child: ButleryIcon(
                     Icons.cake_outlined,
                     size: 11,
                     color: _slotIconColor(context),
@@ -744,9 +744,7 @@ class _OvrigtEntry extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextRolesPending.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.1,
                   ),

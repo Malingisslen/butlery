@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -130,8 +132,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               if (widget.showManageButton)
                 TextButton.icon(
                   onPressed: _openTagManager,
-                  icon: const Icon(
-                    Icons.settings,
+                  icon: const ButleryIcon(
+                    ButleryIcons.settings,
                     size: AppDimensions.iconSize18,
                   ),
                   label: Text(context.l10n.personalTagManage),
@@ -144,16 +146,18 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Tags
           Consumer<PersonalTagViewModel>(
             builder: (context, viewModel, _) {
               if (!_initialized || viewModel.isLoading) {
-                return const Padding(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  child: Center(
-                    child: LoadingIndicator(size: 24, strokeWidth: 2),
+                // The plate line with what is being fetched, never a
+                // spinner (produktregler.md:163, B-18).
+                return Padding(
+                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  child: PlateLineMessage(
+                    message: context.l10n.loadingPersonalTags,
                   ),
                 );
               }
@@ -181,13 +185,13 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.label_outline,
+          ButleryIcon(
+            ButleryIcons.tag,
             color: cs.onSurfaceVariant.withValues(
               alpha: AppDimensions.opacityHalf,
             ),
@@ -217,15 +221,15 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
@@ -249,8 +253,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   Widget _buildTagChips(List<PersonalTag> tags) {
     return Wrap(
-      spacing: AppDimensions.spacingS,
-      runSpacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: tags.map((tag) {
         final isSelected = _isTagSelected(tag);
         return _PersonalTagChip(
@@ -305,8 +309,8 @@ class _PersonalTagChip extends StatelessWidget {
         ),
         avatar: isSelected
             ? null
-            : Icon(
-                Icons.label_outline,
+            : ButleryIcon(
+                ButleryIcons.tag,
                 size: AppDimensions.iconSize14,
                 color: cs.onPrimaryContainer,
               ),
@@ -366,7 +370,7 @@ class PersonalTagDisplay extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
             child: Text(
               '+$remainingCount',
@@ -396,19 +400,19 @@ class _MiniTagChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: cs.primaryContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           // border.control (outline), never a faded ink (tokens.json:40-53).
           border: Border.all(color: cs.outline),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.label,
+            ButleryIcon(
+              ButleryIcons.tag,
               size: AppDimensions.iconSizeXs,
               color: cs.onPrimaryContainer,
             ),
-            const SizedBox(width: AppDimensions.spacingXxs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               tag.name,
               style: AppTextStyles.metadataEmphasized.copyWith(
@@ -435,7 +439,7 @@ class _PlaceholderTagChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
           color: cs.outline,
         ),
@@ -443,8 +447,8 @@ class _PlaceholderTagChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.label_outline,
+          ButleryIcon(
+            ButleryIcons.tag,
             size: AppDimensions.iconSizeXs,
             color: cs.onPrimaryContainer,
           ),
@@ -452,7 +456,7 @@ class _PlaceholderTagChip extends StatelessWidget {
           SkeletonComponents.skeletonBox(
             width: 48,
             height: 12,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ],
       ),
@@ -674,7 +678,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
             ),
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
             child: Text(
               '+$remainingCount',

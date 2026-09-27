@@ -4,6 +4,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 
@@ -12,7 +14,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
@@ -51,108 +53,112 @@ class PersonalTagTile extends StatelessWidget {
       ),
       button: true,
       selected: inSelectionMode ? isSelected : null,
-      child: Opacity(
-        opacity: isUnused ? 0.6 : 1.0,
-        child: ListTile(
-          selected: isSelected,
-          // surface.selected itself, never a faded copy (enhet-3 valda
-          // tonplattor; tokens.json:40-53, surface.selected =
-          // primaryContainer in both schemes).
-          selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-          leading: inSelectionMode
-              ? Icon(
-                  isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                  color: isSelected
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurfaceVariant,
-                  size: AppDimensions.iconSizeL,
-                )
-              : Stack(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: hasActiveRules
-                          ? context.butleryColors.success.withValues(
-                              alpha: AppDimensions.opacityLight,
-                            )
-                          : colorScheme.onSurface.withValues(
-                              alpha: AppDimensions.opacityLight,
-                            ),
-                      child: Icon(
-                        Icons.label,
-                        color: hasActiveRules
-                            ? context.butleryColors.success
-                            : colorScheme.onSurface,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                    ),
-                    if (hasActiveRules)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          padding: AppDimensions.paddingAll2,
-                          decoration: BoxDecoration(
-                            color: context.butleryColors.success,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorScheme.surface,
-                              width: 1.5,
-                            ),
+      // An unused tag is quiet in text.secondary, never faded (tokens.json:41,
+      // "Opacitet är aldrig ett tillstånd").
+      child: ListTile(
+        selected: isSelected,
+        // surface.selected itself, never a faded copy (enhet-3 valda
+        // tonplattor; tokens.json:40-53, surface.selected =
+        // primaryContainer in both schemes).
+        selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+        // Chosen also carries the real text.primary border (Grafisk manual
+        // v6:209, "Vald = riktig border"), and its title stays text.primary:
+        // ListTile would paint it colorScheme.primary, which is ink in dark
+        // mode too and vanishes on surface.selected.
+        selectedColor: colorScheme.onSurface,
+        shape: isSelected
+            ? Border.all(color: colorScheme.onSurface, width: 1.5)
+            : null,
+        textColor: isUnused ? colorScheme.onSurfaceVariant : null,
+        leading: inSelectionMode
+            ? ButleryIcon(
+                isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                color: isSelected
+                    ? colorScheme.onSurface
+                    : colorScheme.onSurfaceVariant,
+                size: AppDimensions.iconSizeL,
+              )
+            : Stack(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: hasActiveRules
+                        ? context.modeColors.success.withValues(
+                            alpha: AppDimensions.opacityLight,
+                          )
+                        : colorScheme.onSurface.withValues(
+                            alpha: AppDimensions.opacityLight,
                           ),
-                          child: Icon(
-                            Icons.auto_awesome,
-                            size: 10,
-                            color: colorScheme.surfaceContainerHighest,
+                    child: ButleryIcon(
+                      ButleryIcons.tag,
+                      color: hasActiveRules
+                          ? context.modeColors.success
+                          : colorScheme.onSurface,
+                      size: AppDimensions.iconSizeM,
+                    ),
+                  ),
+                  if (hasActiveRules)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: AppDimensions.paddingAll4,
+                        decoration: BoxDecoration(
+                          color: context.modeColors.success,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: colorScheme.surface,
+                            width: 1.5,
                           ),
                         ),
+                        child: ButleryIcon(
+                          Icons.auto_awesome,
+                          size: 10,
+                          color: colorScheme.surfaceContainerHighest,
+                        ),
                       ),
-                  ],
-                ),
-          title: Text(tag.name),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _buildSubtitle(
-                  context,
-                  usageCount,
-                  ruleCount,
-                  enabledRuleCount,
-                ),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: isUnused
-                      ? colorScheme.onSurfaceVariant.withValues(
-                          alpha: AppDimensions.opacityDark,
-                        )
-                      : colorScheme.onSurfaceVariant,
+                    ),
+                ],
+              ),
+        title: Text(tag.name),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _buildSubtitle(
+                context,
+                usageCount,
+                ruleCount,
+                enabledRuleCount,
+              ),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (usageCount > 0 && viewModel.maxUsageCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: TagUsageBar(
+                  usageCount: usageCount,
+                  maxCount: viewModel.maxUsageCount,
                 ),
               ),
-              if (usageCount > 0 && viewModel.maxUsageCount > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: TagUsageBar(
-                    usageCount: usageCount,
-                    maxCount: viewModel.maxUsageCount,
-                  ),
-                ),
-            ],
-          ),
-          trailing: inSelectionMode
-              ? null
-              : IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  tooltip: context.l10n.personalTagOptions,
-                  onPressed: () =>
-                      PersonalTagDialogs.showTagOptionsSheet(context, tag),
-                ),
-          onTap: inSelectionMode
-              ? () => selection.toggle(tag.id)
-              : () => _navigateToTagDetail(context),
-          // BUT-948: long-press = multi-select (convention).
-          onLongPress: inSelectionMode
-              ? null
-              : () => selection.enterSelection(tag.id),
+          ],
         ),
+        trailing: inSelectionMode
+            ? null
+            : IconButton(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
+                tooltip: context.l10n.personalTagOptions,
+                onPressed: () =>
+                    PersonalTagDialogs.showTagOptionsSheet(context, tag),
+              ),
+        onTap: inSelectionMode
+            ? () => selection.toggle(tag.id)
+            : () => _navigateToTagDetail(context),
+        // BUT-948: long-press = multi-select (convention).
+        onLongPress: inSelectionMode
+            ? null
+            : () => selection.enterSelection(tag.id),
       ),
     );
   }
@@ -315,7 +321,7 @@ class UnusedTagsSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ExpansionTile(
-      leading: Icon(
+      leading: ButleryIcon(
         Icons.label_off,
         color: colorScheme.onSurfaceVariant,
         size: AppDimensions.iconSizeM,
@@ -343,7 +349,7 @@ class UnusedTagsSection extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: onDeleteAll,
-              icon: Icon(Icons.delete_sweep, color: colorScheme.error),
+              icon: ButleryIcon(ButleryIcons.trash2, color: colorScheme.error),
               label: Text(
                 context.l10n.personalTagDeleteAllUnused,
                 style: TextStyle(color: colorScheme.error),
@@ -376,7 +382,10 @@ class PersonalTagGroupSection extends StatelessWidget {
       tags: tags,
       viewModel: viewModel,
       trailing: PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
+        icon: const ButleryIcon(
+          ButleryIcons.moreVertical,
+          size: AppDimensions.iconSizeM,
+        ),
         onSelected: (value) {
           // Defer to next frame so PopupMenu fully dismisses before dialog opens
           // Fixes BUG-033 (RenderBox assertion during popup dismiss animation)
@@ -389,7 +398,7 @@ class PersonalTagGroupSection extends StatelessWidget {
           PopupMenuItem(
             value: 'rename',
             child: ListTile(
-              leading: const Icon(Icons.edit),
+              leading: const ButleryIcon(ButleryIcons.pencil),
               title: Text(context.l10n.commonRename),
               contentPadding: EdgeInsets.zero,
             ),
@@ -397,8 +406,8 @@ class PersonalTagGroupSection extends StatelessWidget {
           PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(
-                Icons.delete,
+              leading: ButleryIcon(
+                ButleryIcons.trash2,
                 color: Theme.of(context).colorScheme.error,
               ),
               title: Text(

@@ -5,9 +5,11 @@ import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Participant list widget showing active participants
 class ParticipantListWidget extends StatelessWidget {
@@ -35,7 +37,7 @@ class ParticipantListWidget extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         boxShadow: AppShadows.subtle,
       ),
       child: Padding(
@@ -45,8 +47,8 @@ class ParticipantListWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.people,
+                ButleryIcon(
+                  ButleryIcons.users,
                   color: cs.primary,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -61,8 +63,8 @@ class ParticipantListWidget extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingXl),
             Wrap(
-              spacing: AppDimensions.spacingS,
-              runSpacing: AppDimensions.spacingS,
+              spacing: AppDimensions.space4,
+              runSpacing: AppDimensions.space4,
               children: activities.map((activity) {
                 return _buildParticipantChip(context, activity);
               }).toList(),
@@ -75,15 +77,15 @@ class ParticipantListWidget extends StatelessWidget {
 
   Widget _buildOnlineIndicator(BuildContext context) {
     final onlineCount = activities.where((a) => a.isOnline).length;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
         color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         border: Border.all(
           color: successColor.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -94,8 +96,8 @@ class ParticipantListWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: AppDimensions.spacingS,
-            height: AppDimensions.spacingS,
+            width: AppDimensions.space4,
+            height: AppDimensions.space4,
             decoration: BoxDecoration(
               color: successColor,
               borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
@@ -120,7 +122,7 @@ class ParticipantListWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: isCurrentUser
@@ -143,11 +145,11 @@ class ParticipantListWidget extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  width: AppDimensions.spacingS,
-                  height: AppDimensions.spacingS,
+                  width: AppDimensions.space4,
+                  height: AppDimensions.space4,
                   decoration: BoxDecoration(
                     color: activity.isOnline
-                        ? context.butleryColors.success
+                        ? context.modeColors.success
                         : cs.outline,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.spacingXs,

@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -251,7 +252,7 @@ void main() {
         _wrap(
           const CategoryHeader(
             title: 'x',
-            icon: Icons.list,
+            icon: ButleryIcons.list,
             count: 0,
           ),
         ),
@@ -272,7 +273,7 @@ void main() {
         _wrap(
           const CategoryHeader(
             title: 'x',
-            icon: Icons.list,
+            icon: ButleryIcons.list,
             count: 0,
             backgroundColor: Colors.amber,
             textColor: Colors.indigo,
@@ -288,14 +289,14 @@ void main() {
             .first,
       );
       expect((container.decoration! as BoxDecoration).color, Colors.amber);
-      final icon = tester.widget<Icon>(find.byIcon(Icons.list));
+      final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.list));
       expect(icon.color, Colors.indigo);
     });
 
     testWidgets('zero count still renders the "0" badge', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const CategoryHeader(title: 'x', icon: Icons.list, count: 0),
+          const CategoryHeader(title: 'x', icon: ButleryIcons.list, count: 0),
         ),
       );
       expect(find.text('0'), findsOneWidget);
@@ -304,7 +305,11 @@ void main() {
     testWidgets('large count renders the exact integer', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const CategoryHeader(title: 'x', icon: Icons.list, count: 1234),
+          const CategoryHeader(
+            title: 'x',
+            icon: ButleryIcons.list,
+            count: 1234,
+          ),
         ),
       );
       expect(find.text('1234'), findsOneWidget);

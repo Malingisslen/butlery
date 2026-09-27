@@ -9,6 +9,8 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('AppLogo Widget Tests', () {
@@ -47,13 +49,13 @@ void main() {
         expect(decoration.color, equals(AppColors.forestGreen));
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
         expect(decoration.boxShadow, isNull); // No shadow by default
 
         // Verify Icon — widget uses cs.outlineVariant for default icon color
-        final icon = tester.widget<Icon>(find.byType(Icon));
-        expect(icon.icon, equals(Icons.restaurant_menu));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
+        expect(icon.icon, equals(ButleryIcons.utensils));
         expect(icon.color, equals(AppColors.lightColorScheme.outlineVariant));
         expect(icon.size, equals(AppDimensions.imageSizeLarge * 0.4));
       });
@@ -68,7 +70,7 @@ void main() {
         expect(container.constraints?.maxWidth, equals(customSize));
         expect(container.constraints?.maxHeight, equals(customSize));
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.size, equals(customSize * 0.4)); // Icon is 40% of container
       });
 
@@ -90,7 +92,7 @@ void main() {
                 as BoxDecoration;
         expect(decoration.color, equals(customBgColor));
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.color, equals(customIconColor));
       });
 
@@ -103,7 +105,7 @@ void main() {
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.icon, equals(customIcon));
       });
 
@@ -144,7 +146,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.boxShadow, isNotNull); // Large has shadow
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.size, equals(AppDimensions.imageSizeLarge * 0.4));
       });
 
@@ -159,7 +161,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.boxShadow, isNull); // Medium has no shadow
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.size, equals(120.0 * 0.4));
       });
 
@@ -177,7 +179,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.boxShadow, isNull); // Small has no shadow
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.size, equals(AppDimensions.iconSizeXxl * 0.4));
       });
 
@@ -201,7 +203,7 @@ void main() {
                 as BoxDecoration;
         expect(decoration.color, equals(customBg));
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.color, equals(customIcon));
       });
     });
@@ -215,7 +217,7 @@ void main() {
         for (final size in sizes) {
           await tester.pumpWidget(createTestWidget(AppLogo(size: size)));
 
-          final icon = tester.widget<Icon>(find.byType(Icon));
+          final icon = tester.widget<Icon>(find.byType(ButleryIcon));
           expect(
             icon.size,
             equals(size * 0.4),
@@ -234,7 +236,7 @@ void main() {
                 as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
     });

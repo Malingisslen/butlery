@@ -6,6 +6,8 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Builds a dynamic list of text fields with add/remove/reorder functionality.
 /// Used for ingredients, instructions, and tags in recipe forms.
@@ -62,14 +64,14 @@ class DynamicListBuilder extends StatelessWidget {
               return Material(
                 elevation: 4,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
                 child: child,
               );
             }
             return Material(
               elevation: animation.value * 4,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: child,
             );
           },
@@ -85,14 +87,17 @@ class DynamicListBuilder extends StatelessWidget {
   Widget _buildReorderableRow(BuildContext context, int index) {
     return Padding(
       key: ValueKey('${label}_$index'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           ReorderableDragStartListener(
             index: index,
             child: const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
-              child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.space4),
+              child: ButleryIcon(
+                ButleryIcons.drag,
+                size: AppDimensions.iconSizeM,
+              ),
             ),
           ),
           Expanded(
@@ -117,7 +122,7 @@ class DynamicListBuilder extends StatelessWidget {
           ),
           if (controllers.length > 1)
             IconButton(
-              icon: const Icon(Icons.delete),
+              icon: const ButleryIcon(ButleryIcons.trash2),
               onPressed: () => onRemove(index),
             ),
         ],
@@ -152,12 +157,12 @@ class DynamicListBuilder extends StatelessWidget {
             ),
             if (controllers.length > 1)
               IconButton(
-                icon: const Icon(Icons.delete),
+                icon: const ButleryIcon(ButleryIcons.trash2),
                 onPressed: () => onRemove(index),
               ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
       ],
     );
   }
@@ -174,7 +179,7 @@ class DynamicListBuilder extends StatelessWidget {
 
   Widget _buildAddButton(BuildContext context) {
     return TextButton.icon(
-      icon: const Icon(Icons.add),
+      icon: const ButleryIcon(ButleryIcons.plus),
       label: Text(context.l10n.commonAddWithLabel(label)),
       onPressed: onAdd,
     );

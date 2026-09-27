@@ -32,6 +32,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 
 /// Vilket av Komponentarkets toppfältsmönster ett [ButleryTopBar] ritar.
@@ -205,15 +207,10 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double _padTop = AppDimensions.spacingMd;
   static const double _padBottom = AppDimensions.spacingL;
 
-  /// Bredden där sidmarginalen går från 20 till 24 (tokens.json
-  /// space.layoutMargin: "320" och "360-430").
-  static const double _wideFrom = 360;
-
-  /// Sidmarginalen för [context]: tokens.json space.layoutMargin.
+  /// Sidmarginalen för [context]: tokens.json space.layoutMargin, 20 under
+  /// 360 dp och 24 därifrån (AppDimensions.layoutMarginOf).
   static double sideMargin(BuildContext context) =>
-      MediaQuery.sizeOf(context).width < _wideFrom
-      ? AppDimensions.layoutMarginNarrow
-      : AppDimensions.layoutMargin;
+      AppDimensions.layoutMarginOf(context);
 
   /// Undersidans luft ovan och under bakåtpilens hitbox. Se
   /// [subpageMinHeight] för hur 6/4 px ur ritningen blir 4/4.
@@ -232,7 +229,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double _leadingGap = actionGap;
 
   /// Komponentark rad 64: sekundärraden står 2 px under titeln.
-  static const double _secondaryGap = AppDimensions.spacingXxs;
+  static const double _secondaryGap = AppDimensions.topBarSecondaryGap;
 
   bool get _isRoot => pattern == ButleryTopBarPattern.rot;
 
@@ -506,7 +503,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
       // Tolkning: ritningen visar glyfen i 17 px. Här gäller appens
       // ikonknappstema (AppDimensions.iconSizeL), som alla ikonknappar
       // har; arket anger ingen egen storlek för toppfältet.
-      icon: const Icon(Icons.chevron_left),
+      icon: const ButleryIcon(ButleryIcons.chevronLeft),
       tooltip: name,
       onPressed: onBack ?? () => Navigator.maybePop(context),
     );

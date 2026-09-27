@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/legal/legal_contact_footer.dart';
@@ -113,7 +115,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         title: context.l10n.privacyTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             onPressed: _isLoading ? null : _loadPrivacyPolicy,
             tooltip: context.l10n.privacyReload,
           ),
@@ -197,7 +199,10 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         _buildInfoBanner(),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             // Offline, web links cannot open, so they turn inactive and
             // say why (Grafisk manual v6:665 'åtgärder som kräver nät blir
             // inaktiva med förklarande text').
@@ -217,12 +222,12 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: context.butleryColors.info.withValues(
+        color: context.modeColors.info.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         border: Border(
           bottom: BorderSide(
-            color: context.butleryColors.info.withValues(
+            color: context.modeColors.info.withValues(
               alpha: AppDimensions.opacityMediumLight,
             ),
             width: 1,
@@ -231,9 +236,9 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
-            color: context.butleryColors.info,
+          ButleryIcon(
+            ButleryIcons.info,
+            color: context.modeColors.info,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingL),
@@ -241,7 +246,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             child: Text(
               context.l10n.privacyGdprCompliant,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: context.butleryColors.info,
+                color: context.modeColors.info,
               ),
             ),
           ),

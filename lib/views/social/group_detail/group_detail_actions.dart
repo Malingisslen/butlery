@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -12,6 +13,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/events/group_events.dart';
@@ -82,7 +84,7 @@ class GroupDetailActions {
         group.name,
       ),
       confirmText: context.l10n.commonRemove,
-      icon: Icons.person_remove,
+      icon: ButleryIcons.userMinus,
       isDangerous: true,
     );
     if (shouldRemove != true) return null;
@@ -138,7 +140,7 @@ class GroupDetailActions {
         group.name,
       ),
       confirmText: context.l10n.commonRemove,
-      icon: Icons.person_remove,
+      icon: ButleryIcons.userMinus,
       isDangerous: true,
     );
 
@@ -161,9 +163,10 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to remove group member', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotRemoveMember('$e'),
+            what: context.l10n.groupRemoveMemberFailed,
           );
         }
       }
@@ -240,9 +243,10 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to update group', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotUpdate('$e'),
+            what: context.l10n.groupUpdateFailed,
           );
         }
       }
@@ -261,7 +265,7 @@ class GroupDetailActions {
       itemName: group.name,
       itemType: context.l10n.groupItemType,
       warningMessage: context.l10n.commonActionCannotBeUndone,
-      icon: Icons.group,
+      icon: ButleryIcons.users,
     );
 
     if (shouldDelete == true) {
@@ -283,9 +287,10 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to delete group', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotDelete('$e'),
+            what: context.l10n.groupDeleteFailed,
           );
         }
       }
@@ -331,9 +336,10 @@ class GroupDetailActions {
         } else {}
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to leave group', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotLeave('$e'),
+            what: context.l10n.groupLeaveFailed,
           );
         }
       }

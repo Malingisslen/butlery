@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/related_recipes_picker_dialog.dart';
 
 /// Edit-form section for managing related-recipe links.
@@ -58,8 +60,8 @@ class RelatedRecipesEditor extends StatelessWidget {
         // Chips for currently linked recipes
         if (relatedRecipes.isNotEmpty) ...[
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: relatedRecipes.map((r) {
               return _RelatedChip(
                 key: ValueKey(r.id),
@@ -68,14 +70,14 @@ class RelatedRecipesEditor extends StatelessWidget {
               );
             }).toList(),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
         ],
 
         // Link button — OutlinedButton is a Material primitive that already
         // carries its own Semantics; no extra wrapper needed per ui-conventions.
         OutlinedButton.icon(
           onPressed: () => _openPicker(context),
-          icon: const Icon(Icons.link),
+          icon: const ButleryIcon(ButleryIcons.link),
           label: Text(
             context.l10n.recipeRelatedLinkButton,
             style: AppTextStyles.bodyMedium,
@@ -166,7 +168,7 @@ class _RelatedChip extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingS,
+                start: AppDimensions.space4,
                 end: AppDimensions.spacingXs,
                 top: AppDimensions.spacingXs,
                 bottom: AppDimensions.spacingXs,
@@ -186,12 +188,12 @@ class _RelatedChip extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(
                     start: AppDimensions.spacingXs,
-                    end: AppDimensions.spacingS,
+                    end: AppDimensions.space4,
                     top: AppDimensions.spacingXs,
                     bottom: AppDimensions.spacingXs,
                   ),
-                  child: Icon(
-                    Icons.close,
+                  child: ButleryIcon(
+                    ButleryIcons.x,
                     size: AppDimensions.iconSizeS,
                     color: cs.onSurface,
                   ),

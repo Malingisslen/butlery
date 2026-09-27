@@ -154,7 +154,10 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+        vertical: AppDimensions.space16,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -174,12 +177,11 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                   ),
                   width: isActive ? 24 : 8,
                   height: 8,
+                  // The current page is text.primary and wider; the others
+                  // take border.control (colorScheme.outline), a token of its
+                  // own, never a faded copy (tokens.json:41, :128-131).
                   decoration: BoxDecoration(
-                    color: isActive
-                        ? cs.onSurface
-                        : cs.onSurface.withValues(
-                            alpha: AppDimensions.opacityLight,
-                          ),
+                    color: isActive ? cs.onSurface : cs.outline,
                   ),
                 ),
               );
@@ -273,7 +275,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
           return;
         case AgeGateAdvanceResult.error:
           // Infrastructure failure — keep the user on the gate so they retry.
-          SnackBarUtils.showError(context, context.l10n.errorGeneric);
+          SnackBarUtils.showFailure(context, what: context.l10n.errorGeneric);
           return;
         case AgeGateAdvanceResult.compliant:
           break; // fall through to advance
@@ -336,7 +338,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
       // return the user to the start screen.
       await _handleAgeRejection(context);
     } else {
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorGeneric);
     }
   }
 
@@ -350,7 +352,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.l10n.commonOk),
+            child: Text(ctx.l10n.commonClose),
           ),
         ],
       ),

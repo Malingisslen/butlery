@@ -1,6 +1,7 @@
 // lib/widgets/universal_share_dialog.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -21,6 +22,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_states.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
 /// Type of content that can be shared
 enum ShareContentType {
@@ -173,6 +175,10 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   String _searchQuery = '';
   bool allowCollaboration = false;
 
+  /// What went wrong with the last share, shown in the dialog itself: the
+  /// dialog stays open, so a snackbar would sit under its barrier.
+  String? _failure;
+
   @override
   void initState() {
     super.initState();
@@ -208,10 +214,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // No hand-written shape: the dialog theme's radius 8 (Komponentark
+    // v1:336) applies, as for every other dialog (BUT-1237).
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: AppDimensions.buttonWidthXLarge + 170,
@@ -220,7 +225,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             boxShadow: AppShadows.floating,
           ),
           child: Column(
@@ -351,6 +356,20 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   Widget _buildActionButtons() {
     return Column(
       children: [
+        // content-style-guide.md:87-97: what happened, and that the message
+        // and the chosen recipients are still here (:92). The share button
+        // below is how to try again, so the error carries no button of its
+        // own (Q-P7-09).
+        if (_failure != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+            ),
+            child: InlineError(
+              what: _failure!,
+              preserved: context.l10n.errorPreservedForm,
+            ),
+          ),
         ShareDialogActions.buildSelectionSummary(
           context,
           _selectedFriendIds.length + _selectedGroupIds.length,
@@ -376,6 +395,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     if (_selectedFriendIds.isEmpty && _selectedGroupIds.isEmpty) {
       return;
     }
+    if (_failure != null) setState(() => _failure = null);
 
     try {
       bool shareResult = false;
@@ -438,26 +458,14 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
         SnackBarUtils.showSuccess(context, successMessage);
       } else if (widget.viewModel.hasError && mounted) {
-        // PHASE 2: Show specific validation error from ViewModel.
-        // The dialog stays open, so the snackbar sits under its barrier and
-        // a "Stäng" there could not be tapped: no action, and it closes by
-        // itself after 4 s as it did before.
-        SnackBarUtils.showError(
-          context,
-          widget.viewModel.errorMessage!,
-          duration: const Duration(seconds: 4),
-          showCloseButton: false,
-        );
+        // PHASE 2: the specific validation error from the ViewModel.
+        setState(() => _failure = widget.viewModel.errorMessage);
       }
     } catch (e) {
+      // Never the exception's own text (content-style-guide.md:95).
+      AppLogger.error('Share failed', e);
       if (mounted) {
-        // Same as above: the dialog is still open.
-        SnackBarUtils.showError(
-          context,
-          context.l10n.shareFailed(e.toString()),
-          duration: const Duration(seconds: 4),
-          showCloseButton: false,
-        );
+        setState(() => _failure = context.l10n.shareCouldNotComplete);
       }
     }
   }

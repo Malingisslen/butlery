@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -16,7 +17,7 @@ void main() {
       'empty state matches golden',
       file: 'goldens/state_widget_empty.png',
       build: () => StateWidget.empty(
-        icon: Icons.restaurant,
+        icon: ButleryIcons.utensils,
         title: 'Inga recept',
         subtitle: 'Lägg till ditt första recept',
       ),

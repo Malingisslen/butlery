@@ -15,6 +15,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 /// Renders one recipe card with selection / swipe behavior intact.
@@ -92,8 +94,8 @@ class MinaReceptRecipeCard extends StatelessWidget {
               label: isSelected
                   ? context.l10n.a11yRecipeSelected(recipe.title)
                   : context.l10n.a11yRecipeNotSelected(recipe.title),
-              child: Icon(
-                isSelected ? Icons.check_circle : Icons.circle_outlined,
+              child: ButleryIcon(
+                isSelected ? ButleryIcons.circleCheck : Icons.circle_outlined,
                 // text.primary when chosen, border.control when not: ink on
                 // light and paper on dark (#flerbar draws the ink check).
                 color: isSelected ? cs.onSurface : cs.outline,
@@ -156,13 +158,13 @@ class MinaReceptRecipeCard extends StatelessWidget {
           background: _swipeBackground(
             alignment: AlignmentDirectional.centerStart,
             color: cs.primary,
-            icon: Icons.edit,
+            icon: ButleryIcons.pencil,
             iconColor: cs.onPrimary,
           ),
           secondaryBackground: _swipeBackground(
             alignment: AlignmentDirectional.centerEnd,
             color: cs.error,
-            icon: Icons.delete,
+            icon: ButleryIcons.trash2,
             iconColor: cs.onError,
           ),
           child: card,
@@ -197,7 +199,11 @@ class MinaReceptRecipeCard extends StatelessWidget {
           horizontal: AppDimensions.spacingLg,
         ),
         color: color,
-        child: Icon(icon, color: iconColor, size: AppDimensions.iconSize28),
+        child: ButleryIcon(
+          icon,
+          color: iconColor,
+          size: AppDimensions.iconSize28,
+        ),
       ),
     );
   }

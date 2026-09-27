@@ -25,6 +25,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
@@ -114,7 +116,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
-          child: Icon(
+          child: ButleryIcon(
             Icons.arrow_upward,
             size: 32,
             color: Theme.of(context).colorScheme.onSurface,
@@ -123,7 +125,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         StateWidget.empty(
           title: context.l10n.weeklyMenuEmptyTitle,
           subtitle: context.l10n.weeklyMenuEmptyHint,
-          icon: Icons.event_note_outlined,
+          icon: ButleryIcons.calendar,
         ),
       ],
     );
@@ -258,7 +260,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final copied = await vm.copyWeekToNext();
     if (!context.mounted) return;
     if (copied == null) {
-      SnackBarUtils.showError(context, context.l10n.weeklyMenuCopyToNextFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weeklyMenuCopyToNextFailed,
+      );
       return;
     }
     SnackBarUtils.showSuccess(
@@ -322,7 +327,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     );
     if (!context.mounted) return;
     if (moved == null) {
-      SnackBarUtils.showError(context, context.l10n.weeklyMenuMoveFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weeklyMenuMoveFailed,
+      );
       return;
     }
     SnackBarUtils.showSuccess(
@@ -365,10 +373,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                             label: '${day.displayLabel} ${slot.displayLabel}',
                             child: ListTile(
                               dense: true,
-                              leading: Icon(
+                              leading: ButleryIcon(
                                 slot.isMulti
                                     ? Icons.cake_outlined
-                                    : Icons.restaurant_outlined,
+                                    : ButleryIcons.utensils,
                                 color: cs.secondary,
                               ),
                               title: Text(

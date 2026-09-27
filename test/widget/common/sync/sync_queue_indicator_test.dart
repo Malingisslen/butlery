@@ -9,12 +9,14 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../views/sync/fake_sync_queue_source.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 final _sv = AppLocalizationsSv();
 
@@ -137,7 +139,7 @@ void main() {
       _app(
         const ButleryTopBar.rot(
           title: 'Hem',
-          actions: [Icon(Icons.search, key: ValueKey('own'))],
+          actions: [ButleryIcon(ButleryIcons.search, key: ValueKey('own'))],
         ),
       ),
     );

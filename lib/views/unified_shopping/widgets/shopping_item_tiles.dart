@@ -13,6 +13,8 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Static API surface for shopping item tiles.
 ///
@@ -82,7 +84,7 @@ class ShoppingItemTiles {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: 64,
             color: cs.onSurfaceVariant,
@@ -205,7 +207,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
 
     return RepaintBoundary(
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+        margin: const EdgeInsets.only(bottom: AppDimensions.space4),
         // A chosen row is surface.selected with a 1.5 px text.primary
         // border, never a 12 % ink tint (enhet-3 valda tonplattor
         // shopping_item_tiles.dart:211; tokens.json:40-53, surface.selected;
@@ -214,7 +216,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         // both modes and would vanish on dark.
         decoration: BoxDecoration(
           color: selected ? cs.primaryContainer : cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: selected ? cs.onSurface : cs.outlineVariant,
             width: selected ? 1.5 : AppDimensions.borderWidthStandard,
@@ -250,14 +252,16 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
               onLongPress: (selection == null || selectionMode)
                   ? null
                   : () => selection.enterSelectionMode(widget.item.id),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 child: Row(
                   children: [
                     if (selectionMode) ...[
-                      Icon(
-                        selected ? Icons.check_circle : Icons.circle_outlined,
+                      ButleryIcon(
+                        selected
+                            ? ButleryIcons.circleCheck
+                            : Icons.circle_outlined,
                         color: selected ? cs.onSurface : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
@@ -287,7 +291,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         width: _checkboxSize,
         height: _checkboxSize,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           // Ticked: control.checked.background, ink in both modes, edge
           // and fill (tokens.json:145-148). Unticked: a text.primary edge
           // (onSurface), ink on light, paper on dark, where ink vanished.
@@ -302,8 +306,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           switchInCurve: ThemeConstants.standardCurve,
           switchOutCurve: ThemeConstants.standardCurve,
           child: widget.isCompleted
-              ? Icon(
-                  Icons.check,
+              ? ButleryIcon(
+                  ButleryIcons.check,
                   key: const ValueKey('check-icon'),
                   size: _checkIconSize,
                   color: cs.surfaceContainerHighest,
@@ -383,14 +387,14 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
             iconSize: AppDimensions.iconSizeS,
           ),
         AppIconButton(
-          icon: Icons.edit,
+          icon: ButleryIcons.pencil,
           onPressed: () => widget.onEditItem(widget.item),
           semanticLabel: context.l10n.a11yEditItem(widget.item.name),
           color: cs.onSurfaceVariant,
           iconSize: AppDimensions.iconSizeS,
         ),
         AppIconButton(
-          icon: Icons.delete,
+          icon: ButleryIcons.trash2,
           onPressed: () => widget.onDeleteItem(widget.item),
           semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
           color: cs.onSurfaceVariant.withValues(
@@ -410,13 +414,13 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
       data: widget.item,
       feedback: Material(
         elevation: 4,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(color: cs.onSurface, width: 2),
           ),
           child: Text(
@@ -433,8 +437,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         // it doesn't respond to a screen-reader activate/tap (the accessible
         // path is the move-to-category button). `button: true` was misleading.
         label: context.l10n.a11yShoppingReorderHandle(widget.item.name),
-        child: Icon(
-          Icons.drag_handle,
+        child: ButleryIcon(
+          ButleryIcons.drag,
           color: cs.onSurfaceVariant,
           size: AppDimensions.iconSizeS,
         ),

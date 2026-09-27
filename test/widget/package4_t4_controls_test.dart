@@ -27,6 +27,7 @@ import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selection_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 Widget _app(Widget home, {ThemeData? theme}) => MaterialApp(
@@ -219,7 +220,7 @@ void main() {
       final cs = AppTheme.darkTheme.colorScheme;
       expect(cs.onSurface, isNot(cs.primary));
       expect(
-        tester.widget<Icon>(find.byIcon(Icons.check_circle)).color,
+        tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
         cs.onSurface,
       );
       expect(tester.widget<Icon>(find.byIcon(Icons.eco)).color, cs.onSurface);

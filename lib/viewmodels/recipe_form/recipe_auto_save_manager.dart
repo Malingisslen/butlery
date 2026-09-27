@@ -11,7 +11,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Draft metadata for managing saved drafts
@@ -605,7 +605,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
   /// Show user feedback about auto-save status (to be called from UI)
   static void showAutoSaveNotice(BuildContext context) {
-    UtilityComponents.showSuccessSnackbar(
+    SnackBarUtils.showSuccess(
       context,
       AppLocale.current.autoSaveEnabled,
     );

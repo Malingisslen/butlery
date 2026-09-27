@@ -7,6 +7,8 @@ import 'package:butlery/models/admin/anomaly_report.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// A dismissible bar at the top of the admin shell that surfaces the latest
 /// `detectAnomalies` report — metrics whose value is >3σ off their 28-day
@@ -55,7 +57,7 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.warning_amber_outlined, color: cs.onErrorContainer),
+            ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Column(
@@ -79,7 +81,7 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: const ButleryIcon(ButleryIcons.x),
               color: cs.onErrorContainer,
               tooltip: l10n.adminScreenshotClose,
               onPressed: () =>

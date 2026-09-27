@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -313,7 +315,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                         context.l10n.importExtractedText,
                         style: AppTextStyles.headlineSmall,
                       ),
-                      const SizedBox(height: AppDimensions.spacingS),
+                      const SizedBox(height: AppDimensions.space4),
                       Expanded(
                         child: StyledInput(
                           controller: _extractedTextController,
@@ -399,7 +401,7 @@ class _UrlBatchResults extends StatelessWidget {
             style: AppTextStyles.headlineSmall,
           ),
         for (final result in rows) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _UrlResultRow(
             key: ValueKey('url-result-${result.id}'),
             result: result,
@@ -450,7 +452,7 @@ class _UrlResultRow extends StatelessWidget {
     return Row(
       children: [
         _statusIcon(context),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             result.url,
@@ -474,21 +476,21 @@ class _UrlResultRow extends StatelessWidget {
           child: PlateLine(semanticLabel: context.l10n.importFetchingRecipe),
         );
       case UrlFetchStatus.success:
-        return Icon(
-          Icons.check_circle,
-          color: context.butleryColors.success,
+        return ButleryIcon(
+          ButleryIcons.circleCheck,
+          color: context.modeColors.success,
           size: 20,
         );
       case UrlFetchStatus.failure:
-        return Icon(
-          Icons.error,
+        return ButleryIcon(
+          ButleryIcons.triangleAlert,
           color: Theme.of(context).colorScheme.error,
           size: 20,
         );
       case UrlFetchStatus.pending:
         // text.secondary (onSurfaceVariant): #627061 light, #93A48D dark.
-        return Icon(
-          Icons.schedule,
+        return ButleryIcon(
+          ButleryIcons.clock,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: 20,
         );

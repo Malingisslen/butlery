@@ -12,8 +12,9 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 import 'package:butlery/widgets/common/navigation/butlery_navigation_rail.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
@@ -50,12 +51,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
   /// Main content
   final Widget body;
 
-  /// App bar title
-  final String? title;
-
-  /// App bar actions
-  final List<Widget>? actions;
-
   /// Floating action button
   final Widget? floatingActionButton;
 
@@ -73,8 +68,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     required this.currentIndex,
     required this.items,
     required this.body,
-    this.title,
-    this.actions,
     this.floatingActionButton,
     this.onNavigationChanged,
     this.onAdd,
@@ -94,7 +87,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
 
         if (!useNavigationRail(size)) {
           return Scaffold(
-            appBar: _buildAppBar(context),
+            appBar: appBar,
             body: FocusTraversalGroup(child: body),
             floatingActionButton: floatingActionButton,
             bottomNavigationBar: FocusTraversalGroup(
@@ -111,7 +104,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
         // The rail is read after the content, as the bottom row is
         // (tillganglighetshandoff 'Navigation & toppfält').
         return Scaffold(
-          appBar: _buildAppBar(context),
+          appBar: appBar,
           body: Row(
             children: [
               Semantics(
@@ -139,22 +132,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget? _buildAppBar(BuildContext context) {
-    if (appBar != null) return appBar;
-    if (title == null) return null;
-
-    return AppBar(
-      title: Text(
-        title!,
-        style: AppTextStyles.headlineSmall,
-      ),
-      actions: actions,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      automaticallyImplyLeading: false,
-    );
-  }
-
   void _select(BuildContext context, int index) {
     final onChanged = onNavigationChanged;
     if (onChanged != null) {
@@ -175,22 +152,17 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
 /// ButleryAdaptiveNavigation(
 ///   currentIndex: 0,
 ///   body: YourContent(),
-///   title: 'Page Title',
 /// )
 /// ```
 class ButleryAdaptiveNavigation extends StatelessWidget {
   final int currentIndex;
   final Widget body;
-  final String? title;
-  final List<Widget>? actions;
   final Widget? floatingActionButton;
 
   const ButleryAdaptiveNavigation({
     super.key,
     required this.currentIndex,
     required this.body,
-    this.title,
-    this.actions,
     this.floatingActionButton,
   });
 
@@ -204,27 +176,27 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   ) => [
     AdaptiveNavigationItem(
       label: context.l10n.navigationHome,
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_outlined, // Outline for both states
+      icon: ButleryIcons.navHome,
+      activeIcon: ButleryIcons.navHome, // Outline for both states
       route: Routes.home,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMenu,
-      icon: AdaptiveIcons.calendarOutlined,
-      activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
+      icon: ButleryIcons.navWeek,
+      activeIcon: ButleryIcons.navWeek, // Outline for both states
       route: Routes.weeklyMenu,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationShopping,
-      icon: AdaptiveIcons.cartOutlined,
-      activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
+      icon: ButleryIcons.navShopping,
+      activeIcon: ButleryIcons.navShopping, // Outline for both states
       route: Routes.shoppingList,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMore,
       // Three lines, as drawn (Komponentark v1:666).
-      icon: Icons.menu,
-      activeIcon: Icons.menu,
+      icon: ButleryIcons.navMore,
+      activeIcon: ButleryIcons.navMore,
       route: Routes.more,
     ),
   ];
@@ -235,8 +207,6 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
       currentIndex: currentIndex,
       items: getNavigationItems(context),
       body: body,
-      title: title,
-      actions: actions,
       floatingActionButton: floatingActionButton,
     );
   }
@@ -247,9 +217,11 @@ extension AdaptiveNavigationItemExtension on BottomNavigationBarItem {
   AdaptiveNavigationItem toAdaptiveItem({required String route}) {
     return AdaptiveNavigationItem(
       label: label.orEmpty(),
-      icon: (icon as Icon).icon ?? Icons.error,
+      icon: (icon as Icon).icon ?? ButleryIcons.triangleAlert,
       activeIcon:
-          (activeIcon as Icon?)?.icon ?? (icon as Icon).icon ?? Icons.error,
+          (activeIcon as Icon?)?.icon ??
+          (icon as Icon).icon ??
+          ButleryIcons.triangleAlert,
       route: route,
     );
   }
@@ -358,12 +330,12 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
     BuildContext context,
   ) {
     if (badgeCount == null || badgeCount == 0) {
-      return Icon(icon);
+      return ButleryIcon(icon);
     }
 
     return Badge(
       label: Text(badgeCount.toString()),
-      child: Icon(icon),
+      child: ButleryIcon(icon),
     );
   }
 }

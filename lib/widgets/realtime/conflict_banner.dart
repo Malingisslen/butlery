@@ -30,6 +30,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
 
 /// Listens to the realtime sync service's [conflictStream] and renders the
@@ -205,7 +207,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppDimensions.spacingModerate,
+                AppDimensions.space12,
                 AppDimensions.paddingM,
                 AppDimensions.spacingXs,
                 AppDimensions.paddingM,
@@ -215,15 +217,15 @@ class _ConflictBannerState extends State<ConflictBanner> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(
-                      top: AppDimensions.spacingXxs,
+                      top: AppDimensions.space4,
                     ),
-                    child: Icon(
-                      Icons.warning_amber_rounded,
+                    child: ButleryIcon(
+                      ButleryIcons.triangleAlert,
                       color: danger,
                       size: AppDimensions.iconSize18,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.paddingMs),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +237,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                             color: cs.onSurface,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           _body(context, event),
                           style: AppTextStyles.captionBase.copyWith(
@@ -255,7 +257,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                   ),
                   IconButton(
                     tooltip: context.l10n.a11yConflictBannerDismiss,
-                    icon: const Icon(Icons.close),
+                    icon: const ButleryIcon(ButleryIcons.x),
                     onPressed: _dismiss,
                   ),
                 ],

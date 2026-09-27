@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('ActionButtons', () {
@@ -229,7 +231,7 @@ void main() {
                 context,
                 label: 'Primary',
                 onPressed: () {},
-                icon: Icons.add,
+                icon: ButleryIcons.plus,
                 isLoading: false,
                 isExpanded: true,
               ),
@@ -237,7 +239,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
         final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
         expect(sizedBox.width, equals(double.infinity));
       });
@@ -333,7 +335,7 @@ void main() {
               builder: (context) => ActionButtons.largeButton(
                 context,
                 label: 'Archive',
-                icon: Icons.archive,
+                icon: ButleryIcons.archive,
                 onPressed: () {},
               ),
             ),
@@ -349,7 +351,7 @@ void main() {
         expect(sizedBoxes, findsAtLeastNWidgets(1));
 
         // Verify the icon is present
-        expect(find.byIcon(Icons.archive), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.archive), findsOneWidget);
 
         // Verify the button structure has proper height constraint
         // The largeButton wraps the button in a SizedBox with height
@@ -366,14 +368,14 @@ void main() {
               builder: (context) => ActionButtons.largeButton(
                 context,
                 label: 'Archive',
-                icon: Icons.archive,
+                icon: ButleryIcons.archive,
                 onPressed: () {},
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.archive), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.archive), findsOneWidget);
       });
     });
 
@@ -384,13 +386,13 @@ void main() {
             child: const FloatingActionButtonWidget(
               onPressed: null,
               semanticLabel: 'Lagg till',
-              child: Icon(Icons.add),
+              child: ButleryIcon(ButleryIcons.plus),
             ),
           ),
         );
 
         expect(find.byType(FloatingActionButton), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('should render message FAB with default styling', (
@@ -406,7 +408,7 @@ void main() {
         );
 
         expect(find.byType(FloatingActionButton), findsOneWidget);
-        expect(find.byIcon(Icons.message), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.messageSquare), findsOneWidget);
 
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
@@ -429,7 +431,7 @@ void main() {
               semanticLabel: 'Favorit',
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              child: const Icon(Icons.favorite),
+              child: const ButleryIcon(ButleryIcons.heart),
             ),
           ),
         );

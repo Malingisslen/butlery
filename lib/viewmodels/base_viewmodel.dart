@@ -31,7 +31,7 @@
 ///     await executeAsync(() async {
 ///       _products = await _productService.getProducts();
 ///       notifyListeners();
-///     }, errorPrefix: 'Kunde inte ladda produkter');
+///     }, errorPrefix: AppLocale.current.pantryLoadFailed);
 ///   }
 /// }
 /// // ViewModel with validation using ValidationMixin
@@ -50,7 +50,7 @@
 ///     if (!isValid) return;
 ///     await executeAsync(() async {
 ///       await _authService.login(_email, _password);
-///     }, errorPrefix: 'Inloggning misslyckades');
+///     }, errorPrefix: AppLocale.current.adminLoginFailed);
 ///   }
 /// }
 /// // ViewModel with retry capabilities using AsyncOperationMixin
@@ -59,7 +59,7 @@
 ///     await executeWithRetry(
 ///       () => _syncService.synchronizeData(),
 ///       maxRetries: 3,
-///       errorPrefix: 'Synkronisering misslyckades',
+///       errorPrefix: AppLocale.current.weeklyMenuSaveError,
 ///     );
 ///   }
 /// }
@@ -174,7 +174,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// ```dart
   /// final products = await executeAsync(
   ///   () => productService.getProducts(),
-  ///   errorPrefix: 'Kunde inte ladda produkter',
+  ///   errorPrefix: AppLocale.current.pantryLoadFailed,
   /// );
   /// ```
   @protected
@@ -211,7 +211,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// ```dart
   /// final success = await executeAsyncVoid(
   ///   () => productService.deleteProduct(id),
-  ///   errorPrefix: 'Kunde inte ta bort produkten',
+  ///   errorPrefix: AppLocale.current.pantryRemoveItemFailed,
   /// );
   /// if (success) showSuccessMessage();
   /// ```
@@ -321,7 +321,7 @@ mixin AsyncOperationMixin on BaseViewModel {
   ///   () => apiService.fetchCriticalData(),
   ///   maxRetries: 5,
   ///   delay: Duration(seconds: 2),
-  ///   errorPrefix: 'Kunde inte hämta kritisk data',
+  ///   errorPrefix: AppLocale.current.errorUnexpected,
   /// );
   /// ```
   Future<T?> executeWithRetry<T>(

@@ -9,6 +9,8 @@ import 'package:butlery/viewmodels/admin/parsing_details_viewmodel.dart';
 import 'package:butlery/views/admin/widgets/admin_help_text.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only parsing-details tab: per-domain correction counts + the field the
@@ -56,7 +58,7 @@ class _ParsingDetailsContent extends StatelessWidget {
         title: context.l10n.adminParsingTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             tooltip: context.l10n.adminRefresh,
             onPressed: vm.isLoading ? null : vm.refresh,
           ),

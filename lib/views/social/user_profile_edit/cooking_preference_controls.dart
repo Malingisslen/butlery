@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -69,7 +69,7 @@ class CookingPreferenceControls extends StatelessWidget {
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius8,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -83,14 +83,14 @@ class CookingPreferenceControls extends StatelessWidget {
           context.l10n.profileCuisineAffinities,
           style: AppTextStyles.labelMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           atMax
               ? context.l10n.profileCuisineAffinitiesMax
               : context.l10n.profileCuisineAffinitiesHint,
           style: AppTextStyles.bodySmall.copyWith(
             color: atMax
-                ? context.butleryColors.warning
+                ? context.modeColors.warning
                 : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -110,7 +110,7 @@ class CookingPreferenceControls extends StatelessWidget {
               },
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius8,
+                  AppDimensions.radiusControl,
                 ),
               ),
             );

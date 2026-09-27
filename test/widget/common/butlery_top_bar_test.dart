@@ -11,12 +11,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 const _titleKey = ValueKey('butleryTopBar.title');
 const _secondaryKey = ValueKey('butleryTopBar.secondaryLine');
@@ -107,6 +110,10 @@ Color? _barColor(WidgetTester tester) => tester
 String _backName(WidgetTester tester) =>
     tester.getSemantics(find.byKey(_backKey)).getSemanticsData().tooltip;
 
+/// The back arrow is a Butlery glyph painted in the IconTheme colour.
+Color _glyphColor(WidgetTester tester, Finder paint) =>
+    (tester.widget<CustomPaint>(paint).painter! as ButleryGlyphPainter).color;
+
 void main() {
   group('pattern 1 · rot', () {
     testWidgets('has no back arrow even when the route can pop', (
@@ -114,8 +121,8 @@ void main() {
     ) async {
       await _pumpPushed(tester, const ButleryTopBar.rot(title: 'Inköp'));
       expect(find.byKey(_backKey), findsNothing);
-      expect(find.byIcon(Icons.chevron_left), findsNothing);
-      expect(find.byIcon(Icons.arrow_back), findsNothing);
+      expect(find.byIcon(ButleryIcons.chevronLeft), findsNothing);
+      expect(find.byIcon(ButleryIcons.arrowLeft), findsNothing);
     });
 
     testWidgets('title is display.compact 26/700', (tester) async {
@@ -250,7 +257,7 @@ void main() {
             GestureDetector(
               key: ValueKey('action$i'),
               onTap: () {},
-              child: const Icon(Icons.more_vert, size: 17),
+              child: const ButleryIcon(ButleryIcons.moreVertical, size: 17),
             ),
         ];
         await tester.pumpWidget(_app(entry.value(actions)));
@@ -381,7 +388,7 @@ void main() {
           const ButleryTopBar.undersida(title: 'Receptet'),
         );
         expect(find.byType(CupertinoNavigationBar), findsNothing);
-        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.chevronLeft), findsOneWidget);
       } finally {
         debugDefaultTargetPlatformOverride = null;
       }
@@ -433,10 +440,11 @@ void main() {
       );
       final icon = find.descendant(
         of: find.byKey(_backKey),
-        matching: find.byType(RichText),
+        matching: find.byWidgetPredicate(
+          (w) => w is CustomPaint && w.painter is ButleryGlyphPainter,
+        ),
       );
-      final style = tester.widget<RichText>(icon).text.style!;
-      expect(style.color, AppColorsDark.textDark);
+      expect(_glyphColor(tester, icon), AppColorsDark.textDark);
     });
 
     for (final dark in [false, true]) {
@@ -455,10 +463,12 @@ void main() {
           expect(_textColor(tester, _titleKey), const Color(0xFFF5F4ED));
           final icon = find.descendant(
             of: find.byKey(_backKey),
-            matching: find.byType(RichText),
+            matching: find.byWidgetPredicate(
+              (w) => w is CustomPaint && w.painter is ButleryGlyphPainter,
+            ),
           );
           expect(
-            tester.widget<RichText>(icon).text.style!.color,
+            _glyphColor(tester, icon),
             const Color(0xFFF5F4ED),
           );
           expect(
@@ -522,7 +532,7 @@ void main() {
             ),
           );
           Focus.of(
-            tester.element(find.byIcon(Icons.chevron_left)),
+            tester.element(find.byIcon(ButleryIcons.chevronLeft)),
           ).requestFocus();
           await tester.pumpAndSettle();
 
@@ -560,7 +570,12 @@ void main() {
         final bar = ButleryTopBar.rot(
           title: 'Veckans meny',
           secondaryLine: 'Vecka 6 · 5 rätter',
-          actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.add))],
+          actions: [
+            IconButton(
+              onPressed: () {},
+              icon: const ButleryIcon(ButleryIcons.plus),
+            ),
+          ],
         );
         await tester.pumpWidget(_app(bar, theme: theme.value, textScale: 2));
         expect(tester.takeException(), isNull);
@@ -588,7 +603,10 @@ void main() {
               secondaryLine: '4 portioner',
               onBack: () {},
               actions: [
-                IconButton(onPressed: () {}, icon: const Icon(Icons.share)),
+                IconButton(
+                  onPressed: () {},
+                  icon: const ButleryIcon(ButleryIcons.share2),
+                ),
               ],
             ),
             theme: theme.value,

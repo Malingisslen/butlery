@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -36,22 +38,25 @@ class ImagePickerDialogs {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusM),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: AppDimensions.avatarSizeMedium,
               height: 5,
-              margin: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
+              margin: const EdgeInsets.only(bottom: AppDimensions.space16),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius10,
+                  AppDimensions.radiusControl,
                 ),
               ),
             ),
@@ -63,8 +68,8 @@ class ImagePickerDialogs {
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             ListTile(
-              leading: const Icon(
-                Icons.camera_alt,
+              leading: const ButleryIcon(
+                ButleryIcons.camera,
                 size: AppDimensions.iconSizeL,
               ),
               title: Text(context.l10n.commonTakePhoto),
@@ -76,8 +81,8 @@ class ImagePickerDialogs {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(
-                Icons.photo_library,
+              leading: const ButleryIcon(
+                ButleryIcons.image,
                 size: AppDimensions.iconSizeL,
               ),
               title: Text(context.l10n.commonSelectFromGallery),
@@ -134,7 +139,7 @@ class ImagePickerDialogs {
   /// Show error message for image operations
   static void showImageError(BuildContext context, String message) {
     AppLogger.error('🚨 Visar fel till användare: $message');
-    SnackBarUtils.showError(context, message);
+    SnackBarUtils.showFailure(context, what: message);
   }
 
   /// Show detailed upload dialog with progress
@@ -183,7 +188,7 @@ class ImagePickerDialogs {
                     progress.message,
                     style: AppTextStyles.bodyMedium,
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     '$percentage% (${progress.completed}/${progress.total})',
                     style: AppTextStyles.bodySmall,

@@ -4,13 +4,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -60,14 +62,14 @@ class ProfileAvatarSection extends StatelessWidget {
                 label: viewModel.avatarUrl != null
                     ? context.l10n.profileChangeAvatar
                     : context.l10n.profileAddAvatar,
-                icon: Icons.camera_alt,
+                icon: ButleryIcons.camera,
                 onPressed: viewModel.isUploadingAvatar ? null : onUploadAvatar,
               ),
               if (viewModel.avatarUrl != null)
                 ActionButtons.outlinedButton(
                   context,
                   label: context.l10n.commonRemove,
-                  icon: Icons.delete_outline,
+                  icon: ButleryIcons.trash2,
                   onPressed: viewModel.isUploadingAvatar
                       ? null
                       : () {
@@ -115,11 +117,17 @@ class ProfileDisplayNameField extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           hint: context.l10n.profileDisplayNameHint,
-          prefixIcon: const Icon(Icons.person),
+          prefixIcon: const ButleryIcon(ButleryIcons.user),
           suffixIcon: viewModel.displayNameError != null
-              ? Icon(Icons.error, color: Theme.of(context).colorScheme.error)
+              ? ButleryIcon(
+                  ButleryIcons.triangleAlert,
+                  color: Theme.of(context).colorScheme.error,
+                )
               : controller.text.isNotEmpty && viewModel.displayNameError == null
-              ? Icon(Icons.check_circle, color: context.butleryColors.success)
+              ? ButleryIcon(
+                  ButleryIcons.circleCheck,
+                  color: context.modeColors.success,
+                )
               : null,
           // BUT-517: required + content-filter chain on displayName.
           validator: FormValidators.combine([

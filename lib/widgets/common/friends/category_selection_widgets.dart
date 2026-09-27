@@ -6,6 +6,8 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Category Selection Widgets
 /// Handles ONLY category selection UI components and interaction widgets.
@@ -49,7 +51,7 @@ class CategorySelectionWidgets {
                       }
                     }
                   },
-                  icon: const Icon(Icons.select_all),
+                  icon: const ButleryIcon(ButleryIcons.checkSquare),
                   label: Text(context.l10n.commonSelectAll),
                 ),
                 const SizedBox(width: AppDimensions.spacingMd),
@@ -59,7 +61,7 @@ class CategorySelectionWidgets {
                       onCategoryToggled(categoryId);
                     }
                   },
-                  icon: const Icon(Icons.clear_all),
+                  icon: const ButleryIcon(Icons.clear_all),
                   label: Text(context.l10n.commonClearAll),
                 ),
               ],
@@ -67,8 +69,8 @@ class CategorySelectionWidgets {
             const SizedBox(height: AppDimensions.spacingMd),
           ],
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: categories
                 .map(
                   (category) => friendCategoryChip(
@@ -85,7 +87,7 @@ class CategorySelectionWidgets {
             Center(
               child: TextButton.icon(
                 onPressed: onCreateNew,
-                icon: const Icon(Icons.add),
+                icon: const ButleryIcon(ButleryIcons.plus),
                 label: Text(context.l10n.friendCreateNewCategory),
               ),
             ),
@@ -108,8 +110,8 @@ class CategorySelectionWidgets {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            category.emoji != null ? Icons.emoji_emotions : Icons.group,
+          ButleryIcon(
+            category.emoji != null ? Icons.emoji_emotions : ButleryIcons.users,
             size: AppDimensions.iconSizeS,
             color: isSelected
                 ? Theme.of(context).colorScheme.onPrimary
@@ -181,7 +183,7 @@ class CategorySelectionWidgets {
               color: isSelected
                   ? Theme.of(context).colorScheme.surface
                   : Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               '${category.friendCount}',
@@ -223,8 +225,7 @@ class CategorySelectionWidgets {
     return Container(
       height: height,
       padding:
-          padding ??
-          const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+          padding ?? const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
@@ -232,7 +233,7 @@ class CategorySelectionWidgets {
         ),
         itemCount: categories.length,
         separatorBuilder: (context, index) =>
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
         itemBuilder: (context, index) {
           final category = categories[index];
           return compactCategoryChip(
@@ -271,7 +272,7 @@ class CategorySelectionWidgets {
           color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: AppDimensions.opacityVeryLight,
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: Theme.of(context).colorScheme.onSurface.withValues(
               alpha: AppDimensions.opacityMediumLight,
@@ -285,10 +286,10 @@ class CategorySelectionWidgets {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius6,
+                  AppDimensions.radiusControl,
                 ),
               ),
-              child: Icon(
+              child: ButleryIcon(
                 Icons.category,
                 color: Theme.of(context).colorScheme.onPrimary,
                 size: AppDimensions.iconSizeS,
@@ -319,12 +320,15 @@ class CategorySelectionWidgets {
             ),
             TextButton.icon(
               onPressed: onClear,
-              icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
+              icon: const ButleryIcon(
+                ButleryIcons.x,
+                size: AppDimensions.iconSize18,
+              ),
               label: Text(context.l10n.commonClear),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
               ),
@@ -350,7 +354,7 @@ class CategorySelectionWidgets {
           border: Border.all(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: ExpansionTile(
           title: Text(

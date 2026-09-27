@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -68,7 +69,7 @@ void main() {
         home: const Scaffold(body: AdminBadge(label: 'Admin')),
       ),
     );
-    final icon = tester.widget<Icon>(find.byType(Icon));
+    final icon = tester.widget<Icon>(find.byType(ButleryIcon));
     expect(icon.color, Colors.deepPurple);
     final text = tester.widget<Text>(find.text('Admin'));
     expect(text.style!.color, Colors.deepPurple);

@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -106,7 +107,7 @@ void main() {
 
       // Banner is present...
       expect(find.byType(OfflineIndicator), findsOneWidget);
-      expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.wifiOff), findsOneWidget);
       // ...and the split view is untouched.
       expect(find.text('ingredients'), findsOneWidget);
       expect(find.text('instructions'), findsOneWidget);
@@ -123,7 +124,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // OfflineIndicator is mounted but renders SizedBox.shrink — no banner.
-      expect(find.byIcon(Icons.wifi_off), findsNothing);
+      expect(find.byIcon(ButleryIcons.wifiOff), findsNothing);
       expect(find.text('ingredients'), findsOneWidget);
       expect(find.text('instructions'), findsOneWidget);
     });
@@ -135,12 +136,12 @@ void main() {
         createLocalizedTestApp(child: _cookingModeLayout()),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.wifi_off), findsNothing);
+      expect(find.byIcon(ButleryIcons.wifiOff), findsNothing);
 
       mockOffline.setOnline(false);
       await tester.pump();
 
-      expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.wifiOff), findsOneWidget);
     });
   });
 }

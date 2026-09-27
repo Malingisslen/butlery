@@ -6,6 +6,7 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/permissions/edit_mode_ui_helper.dart';
 
 /// Permission-related widgets for collaborative content
@@ -21,10 +22,10 @@ class CollaborativePermissionsWidgets {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      margin: const EdgeInsets.all(AppDimensions.spacingS),
+      margin: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
           color: color.withValues(alpha: AppDimensions.opacityMediumLight),
           width: 1,
@@ -35,15 +36,15 @@ class CollaborativePermissionsWidgets {
         button: onTap != null,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 EditModeUIHelper.getIcon(editMode),
                 color: color,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Expanded(
                 child: Text(
                   editMode.description,

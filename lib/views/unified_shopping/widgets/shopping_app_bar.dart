@@ -6,10 +6,12 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 
 enum _ShoppingRootAction {
   newList,
@@ -43,8 +45,8 @@ class ShoppingAppBar {
             button: true,
             enabled: true,
             child: IconButton(
-              icon: Icon(
-                AdaptiveIcons.add,
+              icon: ButleryIcon(
+                ButleryIcons.plus,
                 color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityDark,
                 ),
@@ -57,7 +59,7 @@ class ShoppingAppBar {
           // Browse templates
           if (onBrowseTemplates != null)
             IconButton(
-              icon: Icon(
+              icon: ButleryIcon(
                 Icons.list_alt_outlined,
                 color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityDark,
@@ -75,8 +77,8 @@ class ShoppingAppBar {
             button: true,
             enabled: canShare,
             child: IconButton(
-              icon: Icon(
-                AdaptiveIcons.peopleOutlined,
+              icon: ButleryIcon(
+                ButleryIcons.users,
                 color: canShare
                     ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
                     : cs.outlineVariant,
@@ -96,8 +98,8 @@ class ShoppingAppBar {
             button: true,
             enabled: canShare,
             child: IconButton(
-              icon: Icon(
-                AdaptiveIcons.share,
+              icon: ButleryIcon(
+                ButleryIcons.share2,
                 color: canShare
                     ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
                     : cs.outlineVariant,
@@ -117,7 +119,7 @@ class ShoppingAppBar {
               button: true,
               enabled: true,
               child: IconButton(
-                icon: Icon(
+                icon: ButleryIcon(
                   _getSharingStatusIcon(viewModel),
                   color: _getSharingStatusColor(context, viewModel),
                 ),
@@ -153,7 +155,7 @@ class ShoppingAppBar {
     return [
       PopupMenuButton<_ShoppingRootAction>(
         key: const ValueKey('shopping-root-more'),
-        icon: const Icon(Icons.more_vert),
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
         tooltip: context.l10n.rootBarMoreActions,
         onSelected: (action) {
           switch (action) {
@@ -172,7 +174,7 @@ class ShoppingAppBar {
         itemBuilder: (menuContext) => [
           _item(
             _ShoppingRootAction.newList,
-            AdaptiveIcons.add,
+            ButleryIcons.plus,
             context.l10n.shoppingNewList,
           ),
           if (onBrowseTemplates != null)
@@ -184,13 +186,13 @@ class ShoppingAppBar {
           if (canShare)
             _item(
               _ShoppingRootAction.shareWithFriends,
-              AdaptiveIcons.peopleOutlined,
+              ButleryIcons.users,
               context.l10n.shoppingShareWithFriends,
             ),
           if (canShare)
             _item(
               _ShoppingRootAction.shareExternally,
-              AdaptiveIcons.share,
+              ButleryIcons.share2,
               context.l10n.shoppingShareExternally,
             ),
           _item(
@@ -215,7 +217,7 @@ class ShoppingAppBar {
       value: value,
       child: Row(
         children: [
-          Icon(icon, size: AppDimensions.iconSizeM),
+          ButleryIcon(icon, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingM),
           Flexible(child: Text(label)),
         ],
@@ -246,7 +248,7 @@ class ShoppingAppBar {
         style: ComponentThemes.heroButtonStyle(
           cs,
         ).merge(ComponentThemes.extendedFabStyle(cs)),
-        icon: Icon(AdaptiveIcons.add),
+        icon: const ButleryIcon(ButleryIcons.plus),
         label: Text(context.l10n.shoppingAddItem),
       ),
     );
@@ -255,22 +257,22 @@ class ShoppingAppBar {
   /// Get the appropriate icon for sharing status based on list type and user permissions
   static IconData _getSharingStatusIcon(UnifiedShoppingViewModel viewModel) {
     final activeList = viewModel.activeList;
-    if (activeList == null) return AdaptiveIcons.person;
+    if (activeList == null) return ButleryIcons.user;
 
     switch (activeList.type) {
       case ListType.personal:
-        return AdaptiveIcons.person;
+        return ButleryIcons.user;
       case ListType.collaborative:
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
-        if (currentUserId == null) return AdaptiveIcons.people;
+        if (currentUserId == null) return ButleryIcons.users;
 
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
           case SharedListPermission.view:
-            return AdaptiveIcons.visibility;
+            return ButleryIcons.eye;
           case SharedListPermission.edit:
-            return AdaptiveIcons.people;
+            return ButleryIcons.users;
           case SharedListPermission.admin:
             return Icons.admin_panel_settings; // No SF Symbol equivalent
           default:
@@ -278,10 +280,10 @@ class ShoppingAppBar {
             return activeList.ownerId == currentUserId
                 ? Icons
                       .admin_panel_settings // No SF Symbol equivalent
-                : AdaptiveIcons.people;
+                : ButleryIcons.users;
         }
       case ListType.template:
-        return AdaptiveIcons.savedTemplate;
+        return PendingGlyphs.savedTemplate;
     }
   }
 

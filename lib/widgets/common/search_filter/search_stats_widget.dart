@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Statistics widget showing search and filter information
 class SearchStatsWidget extends StatelessWidget {
@@ -37,7 +39,7 @@ class SearchStatsWidget extends StatelessWidget {
         color: Theme.of(context).colorScheme.primaryContainer.withValues(
           alpha: AppDimensions.opacityMediumLight,
         ), // ✅ Back to proper AppTheme color
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: Theme.of(
             context,
@@ -46,8 +48,8 @@ class SearchStatsWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurface,
           ),

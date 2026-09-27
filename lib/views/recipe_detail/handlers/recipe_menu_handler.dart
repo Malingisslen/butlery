@@ -42,9 +42,9 @@ class RecipeMenuHandler {
     } catch (e) {
       AppLogger.error('Add-to-menu from recipe detail failed', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        SnackBarUtils.userFriendlyMessage(context, e),
+        what: SnackBarUtils.userFriendlyMessage(context, e),
       );
     }
   }

@@ -4,8 +4,10 @@ import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -55,7 +57,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                  padding: EdgeInsets.all(
+                    AppDimensions.layoutMarginOf(context),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -93,13 +97,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.privacy_tip_rounded,
                   size: 32,
                   color: cs.onSurface,
@@ -126,23 +130,23 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.info.withValues(
+                  color: context.modeColors.info.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                   border: Border.all(
-                    color: context.butleryColors.info.withValues(
+                    color: context.modeColors.info.withValues(
                       alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: context.butleryColors.info,
+                    ButleryIcon(
+                      ButleryIcons.info,
+                      color: context.modeColors.info,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -175,8 +179,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.lock,
+                ButleryIcon(
+                  ButleryIcons.lock,
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -202,7 +206,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             _buildRequiredConsentItem(
               context.l10n.consentDataProcessing,
               context.l10n.consentDataProcessingDescription,
-              Icons.storage,
+              ButleryIcons.server,
             ),
           ],
         ),
@@ -220,10 +224,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
+        ButleryIcon(
           icon,
           size: AppDimensions.iconSizeM,
-          color: context.butleryColors.success,
+          color: context.modeColors.success,
         ),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
@@ -242,9 +246,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ],
           ),
         ),
-        Icon(
-          Icons.check_circle,
-          color: context.butleryColors.success,
+        ButleryIcon(
+          ButleryIcons.circleCheck,
+          color: context.modeColors.success,
           size: AppDimensions.iconSizeM,
         ),
       ],
@@ -268,7 +272,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               onPressed: viewModel.isSaving
                   ? null
                   : () => _handleRevokeAll(viewModel),
-              icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
+              icon: const ButleryIcon(
+                ButleryIcons.block,
+                size: AppDimensions.iconSizeS,
+              ),
               label: Text(context.l10n.consentRejectAll),
               style: TextButton.styleFrom(
                 foregroundColor: cs.error,
@@ -338,7 +345,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Card(
       elevation: value ? 2 : 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: value
               ? cs.onSurface.withValues(alpha: AppDimensions.opacityHalf)
@@ -359,10 +366,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                       )
                     : cs.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
               ),
-              child: Icon(
+              child: ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeL,
                 color: value ? cs.onSurface : cs.onSurfaceVariant,
@@ -377,7 +384,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     title,
                     style: AppTextStyles.titleMedium,
                   ),
-                  const SizedBox(height: AppDimensions.spacingTight),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -456,7 +463,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       // Strip the default ExpansionTile dividers so it sits flush under the card.
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -470,7 +477,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             AppDimensions.spacingMd,
             AppDimensions.spacingMd,
           ),
-          leading: Icon(
+          leading: ButleryIcon(
             Icons.fact_check_outlined,
             size: AppDimensions.iconSizeM,
             color: cs.onSurfaceVariant,
@@ -487,7 +494,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             ...categories.map((c) => _buildLoggedCategoryRow(c.$1, c.$2)),
           ],
         ),
@@ -504,7 +511,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: AppTextStyles.bodyBold),
-          const SizedBox(height: AppDimensions.spacingXxs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             eventNames.join(', '),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -524,15 +531,15 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
@@ -566,7 +573,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color: context.butleryColors.info.withValues(
+      color: context.modeColors.info.withValues(
         alpha: AppDimensions.opacityExtraVeryLight,
       ),
       child: Padding(
@@ -576,9 +583,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.info_outline,
-                  color: context.butleryColors.info,
+                ButleryIcon(
+                  ButleryIcons.info,
+                  color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),

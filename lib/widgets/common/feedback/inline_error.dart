@@ -17,7 +17,7 @@
 ///   (tokens.json:58-60);
 /// - background: colorScheme.surface = surface.base, #F5F4ED / #17251D
 ///   (tokens.json:104-106);
-/// - action: ButleryColors.info = text.link, #8A5212 / #DCA968
+/// - action: ModeColors.info = text.link, #8A5212 / #DCA968
 ///   (tokens.json:228-231). The drawn boundary has no button, so the action
 ///   takes the link colour, which clears 4.5:1 on paper in both modes. The
 ///   theme's text-button colour (colorScheme.primary) is #24382C in dark
@@ -36,7 +36,8 @@ import 'package:flutter/semantics.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// An error line with what happened, what was kept and one action.
 class InlineError extends StatelessWidget {
@@ -77,7 +78,7 @@ class InlineError extends StatelessWidget {
     final cs = theme.colorScheme;
     final danger = cs.error;
     final bodyColor = AppModeColors.textBody(theme.brightness);
-    final actionColor = context.butleryColors.info;
+    final actionColor = context.modeColors.info;
     final preserved = this.preserved;
     final actionLabel = this.actionLabel;
     final onAction = this.onAction;
@@ -98,7 +99,7 @@ class InlineError extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppDimensions.spacingModerate,
+            AppDimensions.space12,
             AppDimensions.paddingM,
             AppDimensions.spacingXs,
             AppDimensions.paddingM,
@@ -107,16 +108,16 @@ class InlineError extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+                padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: ExcludeSemantics(
-                  child: Icon(
-                    Icons.warning_amber_rounded,
+                  child: ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     color: danger,
                     size: AppDimensions.iconSize18,
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.paddingMs),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Semantics(
                   container: true,
@@ -132,7 +133,7 @@ class InlineError extends StatelessWidget {
                         ),
                       ),
                       if (preserved != null) ...[
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           preserved,
                           style: AppTextStyles.captionBase.copyWith(

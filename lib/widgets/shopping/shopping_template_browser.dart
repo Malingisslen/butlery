@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -66,7 +68,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
       context: context,
       itemName: name,
       itemType: context.l10n.shoppingTemplateDelete,
-      icon: Icons.delete_outline,
+      icon: ButleryIcons.trash2,
     );
     if (confirmed != true || !mounted) return;
 
@@ -77,7 +79,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
       _loadTemplates();
     } catch (_) {
       if (!mounted) return;
-      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
     }
   }
 
@@ -89,7 +91,10 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
       // The plate line says what it fetches (produktregler.md:163).
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: PlateLineMessage(
             message: context.l10n.shoppingLoadingTemplates,
           ),
@@ -140,7 +145,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
               horizontal: AppDimensions.paddingM,
               vertical: AppDimensions.paddingS,
             ),
-            leading: Icon(
+            leading: ButleryIcon(
               Icons.list_alt,
               color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
@@ -173,6 +178,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
               ],
             ),
             trailing: PopupMenuButton<String>(
+              icon: const ButleryIcon(ButleryIcons.moreVertical),
               onSelected: (action) {
                 if (action == 'use') {
                   widget.onTemplateSelected(id);
@@ -185,8 +191,8 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                   value: 'use',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.check,
+                      ButleryIcon(
+                        ButleryIcons.check,
                         size: AppDimensions.iconSizeM,
                         color: cs.onSurface,
                       ),
@@ -199,8 +205,8 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.delete_outline,
+                      ButleryIcon(
+                        ButleryIcons.trash2,
                         size: AppDimensions.iconSizeM,
                         color: cs.error,
                       ),

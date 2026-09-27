@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_gallery_widget.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/image_picker_widget.dart';
@@ -143,7 +144,7 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UploadProgressWidgets.buildBulkActionButton(
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               label: 'Försök igen alla',
               onTap: () {},
               color: Colors.blue,
@@ -166,7 +167,7 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UploadProgressWidgets.buildUploadActionButton(
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               label: 'Försök igen',
               onTap: () {},
               color: Colors.blue,

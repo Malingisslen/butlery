@@ -5,11 +5,13 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -48,7 +50,7 @@ class FeedTab {
           : context.l10n.feedEmptyNoFriendsSubtitle,
       emptyActionLabel: hasFriends ? null : context.l10n.feedEmptyNoFriendsCta,
       onEmptyAction: hasFriends ? null : onAddFriendsCta,
-      emptyIcon: Icons.groups_outlined,
+      emptyIcon: ButleryIcons.users,
       builder: (context, events) => Column(
         children: [
           _buildFilterChips(context, viewModel),
@@ -231,7 +233,7 @@ class FeedTab {
             // Decorative card accent: the mode-aware card-bottom member
             // (rustLight, #D8B784 light, #DCA968 dark), as on the family
             // cards. AppColors.rustLight was light only.
-            color: context.butleryColors.recipeCardBottomBorder.withValues(
+            color: context.modeColors.recipeCardBottomBorder.withValues(
               alpha: 0.5,
             ),
             width: 3,
@@ -329,8 +331,8 @@ class FeedTab {
                 alignment: Alignment.center,
                 // text.secondary (onSurfaceVariant), #627061 light, #93A48D
                 // dark (tokens.json:61-64): greenMuted's values, mode-aware.
-                child: Icon(
-                  Icons.restaurant_outlined,
+                child: ButleryIcon(
+                  ButleryIcons.utensils,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -353,8 +355,8 @@ class FeedTab {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
@@ -412,7 +414,10 @@ class FeedTab {
       if (ok) {
         SnackBarUtils.showSuccess(context, context.l10n.feedRecipeRequestSent);
       } else {
-        SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.feedRecipeRequestFailed,
+        );
       }
     }
   }

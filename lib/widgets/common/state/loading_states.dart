@@ -20,11 +20,9 @@ import 'package:butlery/widgets/common/state/skeleton_components.dart';
 class LoadingStates {
   /// Build loading state based on variant.
   ///
-  /// [LoadingVariant.peaAnimation] ritar tallrikslinjen. Ärtbaljan är ingen
-  /// laddningsindikator: produktregler.md:163 och :304 definierar laddning
-  /// uttömmande som tallrikslinje + text, och B-18 stryker rörelse som
-  /// simulerar framsteg som inte mäts. Enumvärdet står kvar tills
-  /// bortstädningen (paket 7).
+  /// produktregler.md:163 och :304 definierar laddning uttömmande som
+  /// tallrikslinje + text, och B-18 stryker rörelse som simulerar framsteg
+  /// som inte mäts.
   static Widget buildLoadingState(
     BuildContext context, {
     required LoadingVariant? variant,
@@ -40,10 +38,9 @@ class LoadingStates {
         return DelayedSkeleton(child: _buildSkeletonRecipeCard());
       case LoadingVariant.skeletonGeneric:
         return DelayedSkeleton(child: _buildGenericSkeleton());
-      case LoadingVariant.shimmerBox:
-        return DelayedSkeleton(child: _buildShimmerBox());
-      case LoadingVariant.peaAnimation:
-      case LoadingVariant.spinner:
+      case LoadingVariant.staticBox:
+        return DelayedSkeleton(child: _buildStaticBox());
+      case LoadingVariant.plateLine:
       case null:
         return _buildPlateLineLoading(context, message);
     }
@@ -90,7 +87,7 @@ class LoadingStates {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       itemCount: itemCount ?? 5,
       itemBuilder: (context, index) => _buildSkeletonRecipeCard(),
     );
@@ -99,16 +96,16 @@ class LoadingStates {
   static Widget _buildSkeletonRecipeCard() {
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       child: Card(
         elevation: AppDimensions.elevationLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           child: Row(
             children: [
               // Bild skeleton
@@ -116,10 +113,10 @@ class LoadingStates {
                 width: 80,
                 height: 80,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               // Text content skeleton
               Expanded(
                 child: Column(
@@ -189,7 +186,7 @@ class LoadingStates {
     );
   }
 
-  static Widget _buildShimmerBox() {
+  static Widget _buildStaticBox() {
     return SkeletonComponents.skeletonBox(
       width: 100,
       height: 100,

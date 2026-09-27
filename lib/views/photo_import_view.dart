@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
@@ -20,7 +22,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -97,7 +99,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
           consequence: l10n.permImportConsequence,
           grantLabel: l10n.permAllow,
           declineLabel: l10n.permNotNow,
-          icon: camera ? Icons.photo_camera_outlined : Icons.image_outlined,
+          icon: camera ? ButleryIcons.camera : ButleryIcons.image,
         );
       },
     );
@@ -130,7 +132,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
       builder: (context) => AlertDialog(
         // text.primary: cs.primary is ink in both modes and would vanish
         // on the dark dialog.
-        icon: Icon(
+        icon: ButleryIcon(
           Icons.restore,
           color: Theme.of(context).colorScheme.onSurface,
           size: AppDimensions.iconSizeL,
@@ -144,7 +146,10 @@ class _PhotoImportViewState extends State<PhotoImportView> {
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.restore, size: AppDimensions.iconSizeS),
+            icon: const ButleryIcon(
+              Icons.restore,
+              size: AppDimensions.iconSizeS,
+            ),
             label: Text(context.l10n.draftRestore),
           ),
         ],
@@ -204,7 +209,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (BuildContext context) {
@@ -222,8 +227,8 @@ class _PhotoImportViewContent extends StatelessWidget {
 
                 // Kamera-alternativ
                 ListTile(
-                  leading: Icon(
-                    Icons.camera_alt,
+                  leading: ButleryIcon(
+                    ButleryIcons.camera,
                     color: Theme.of(context).colorScheme.onSurface,
                     size: AppDimensions.iconSizeL,
                   ),
@@ -237,8 +242,8 @@ class _PhotoImportViewContent extends StatelessWidget {
 
                 // Galleri-alternativ
                 ListTile(
-                  leading: Icon(
-                    Icons.photo_library,
+                  leading: ButleryIcon(
+                    ButleryIcons.image,
                     color: Theme.of(context).colorScheme.onSurface,
                     size: AppDimensions.iconSizeL,
                   ),
@@ -307,7 +312,10 @@ class _PhotoImportViewContent extends StatelessWidget {
         context.l10n.importComplete(saved, failed),
       );
     } else {
-      SnackBarUtils.showError(context, context.l10n.importBatchSaveFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.importBatchSaveFailed,
+      );
     }
     if (ok) {
       // BUT-1200: non-blocking allergen-setup prompt when any saved recipe
@@ -402,18 +410,18 @@ class _PhotoImportViewContent extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.info_outline,
+                        ButleryIcon(
+                          ButleryIcons.info,
                           size: AppDimensions.iconSizeM,
                           color: cs.onSurface,
                         ),
-                        const SizedBox(width: AppDimensions.spacingS),
+                        const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             context.l10n.importPhotoDescription,
@@ -430,7 +438,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                     label: viewModel.hasImage
                         ? context.l10n.importChooseNewImage
                         : context.l10n.importChooseImage,
-                    icon: Icons.add_photo_alternate,
+                    icon: ButleryIcons.camera,
                     onPressed: viewModel.isProcessing
                         ? null
                         : () => _showImageSourceDialog(context),
@@ -446,7 +454,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(color: cs.outlineVariant),
                     ),
@@ -467,7 +475,10 @@ class _PhotoImportViewContent extends StatelessWidget {
                         context.l10n.importHandwrittenToggleSubtitle,
                         style: AppTextStyles.bodySmall,
                       ),
-                      secondary: Icon(Icons.draw_outlined, color: cs.onSurface),
+                      secondary: ButleryIcon(
+                        Icons.draw_outlined,
+                        color: cs.onSurface,
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
                       ),
@@ -544,14 +555,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: context.butleryColors.warning.withValues(
+                        color: context.modeColors.warning.withValues(
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusM,
+                          AppDimensions.radiusControl,
                         ),
                         border: Border.all(
-                          color: context.butleryColors.warning.withValues(
+                          color: context.modeColors.warning.withValues(
                             alpha: AppDimensions.opacityMediumLight,
                           ),
                           width: AppDimensions.borderWidthStandard,
@@ -562,21 +573,20 @@ class _PhotoImportViewContent extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: context.butleryColors.warning,
+                              ButleryIcon(
+                                ButleryIcons.triangleAlert,
+                                color: context.modeColors.warning,
                                 size: AppDimensions.iconSizeM,
                               ),
-                              const SizedBox(width: AppDimensions.spacingS),
+                              const SizedBox(width: AppDimensions.space4),
                               Expanded(
                                 child: Text(
                                   context.l10n.importImageQualityLow(
                                     (viewModel.qualityScore! * 100).toInt(),
                                   ),
                                   style: AppTextStyles.titleSmall.copyWith(
-                                    color: context
-                                        .butleryColors
-                                        .onWarningContainer,
+                                    color:
+                                        context.modeColors.onWarningContainer,
                                   ),
                                 ),
                               ),
@@ -588,14 +598,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                             Text(
                               context.l10n.importImprovementSuggestions,
                               style: AppTextStyles.badgeLarge.copyWith(
-                                color: context.butleryColors.onWarningContainer,
+                                color: context.modeColors.onWarningContainer,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
                             ...viewModel.recommendations!.map(
                               (rec) => Padding(
                                 padding: const EdgeInsets.only(
-                                  bottom: AppDimensions.spacingXxs,
+                                  bottom: AppDimensions.space4,
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,7 +614,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                       '• ',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: context
-                                            .butleryColors
+                                            .modeColors
                                             .onWarningContainer,
                                       ),
                                     ),
@@ -613,7 +623,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                         rec,
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: context
-                                              .butleryColors
+                                              .modeColors
                                               .onWarningContainer,
                                         ),
                                       ),
@@ -627,7 +637,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           Text(
                             context.l10n.importOcrMayFail,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: context.butleryColors.onWarningContainer,
+                              color: context.modeColors.onWarningContainer,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -654,7 +664,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       UtilityComponents.primaryButton(
                         context,
                         label: context.l10n.commonRetry,
-                        icon: Icons.refresh,
+                        icon: ButleryIcons.refreshCw,
                         onPressed: viewModel.isProcessing
                             ? null
                             : () => viewModel.retryOcr(),
@@ -666,7 +676,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       UtilityComponents.secondaryButton(
                         context,
                         label: context.l10n.importContinueWithoutOcr,
-                        icon: Icons.edit,
+                        icon: ButleryIcons.pencil,
                         onPressed: viewModel.isProcessing
                             ? null
                             : () => _navigateToManualEntry(context, viewModel),
@@ -711,7 +721,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       UtilityComponents.primaryButton(
                         context,
                         label: context.l10n.importProceedToEdit,
-                        icon: Icons.arrow_forward,
+                        icon: ButleryIcons.arrowRight,
                         onPressed: () =>
                             _navigateToTextImport(context, viewModel),
                         isExpanded: true,
@@ -801,7 +811,7 @@ class PhotoPermissionNoticeCard extends StatelessWidget {
           key: const ValueKey('permission-choose-more'),
           style: ComponentThemes.outlinedButtonStyle(cs),
           onPressed: onOpenSettings,
-          icon: const Icon(Icons.add),
+          icon: const ButleryIcon(ButleryIcons.plus),
           label: Text(l10n.permPhotosChooseMore),
         ),
       if (!outcome.isUsable)
@@ -832,8 +842,8 @@ class PhotoPermissionNoticeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ExcludeSemantics(
-                child: Icon(
-                  camera ? Icons.no_photography_outlined : Icons.image_outlined,
+                child: ButleryIcon(
+                  camera ? Icons.no_photography_outlined : ButleryIcons.image,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),

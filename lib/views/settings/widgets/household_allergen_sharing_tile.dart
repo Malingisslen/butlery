@@ -25,8 +25,10 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: share your own allergen list with your household.
 ///
@@ -143,8 +145,8 @@ class _HouseholdAllergenSharingTileState
       context,
       title: l10n.householdAllergenShareConfirmTitle,
       message: l10n.householdAllergenShareConfirmBody,
-      titleIcon: Icons.lock_outline,
-      primaryActionIcon: Icons.lock_outline,
+      titleIcon: ButleryIcons.lock,
+      primaryActionIcon: ButleryIcons.lock,
       primaryActionText: l10n.householdAllergenShareConfirmAction,
       secondaryActionText: l10n.commonCancel,
     );
@@ -207,9 +209,9 @@ class _HouseholdAllergenSharingTileState
         // truthful to share. Refuse rather than invent — an empty share would
         // read downstream as "I have no allergies" and take away the floor they
         // have today.
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.householdAllergenShareSettingsUnread,
+          what: context.l10n.householdAllergenShareSettingsUnread,
         );
         return;
       }
@@ -262,9 +264,9 @@ class _HouseholdAllergenSharingTileState
     } catch (e) {
       AppLogger.warning('Could not share the allergen list: $e');
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.householdAllergenShareFailed,
+          what: context.l10n.householdAllergenShareFailed,
         );
       }
     } finally {
@@ -289,9 +291,9 @@ class _HouseholdAllergenSharingTileState
     } catch (e) {
       AppLogger.warning('Could not stop sharing the allergen list: $e');
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.householdAllergenShareFailed,
+          what: context.l10n.householdAllergenShareFailed,
         );
       }
     } finally {
@@ -313,9 +315,9 @@ class _HouseholdAllergenSharingTileState
     final l10n = context.l10n;
 
     return SwitchListTile(
-      secondary: Icon(
-        Icons.lock_outline,
-        color: sharing ? cs.onSurfaceVariant : context.butleryColors.warning,
+      secondary: ButleryIcon(
+        ButleryIcons.lock,
+        color: sharing ? cs.onSurfaceVariant : context.modeColors.warning,
       ),
       title: Text(
         l10n.householdAllergenShareTitle,

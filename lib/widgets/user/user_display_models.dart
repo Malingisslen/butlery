@@ -4,8 +4,10 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Image Size enum
 enum ImageSize {
@@ -82,7 +84,7 @@ class UserDisplayData {
 class UserStatusHelper {
   static Color getStatusColor(BuildContext context, UserStatus status) {
     final cs = Theme.of(context).colorScheme;
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
     return switch (status) {
       UserStatus.online => bc.success,
       UserStatus.offline => cs.outline,
@@ -109,14 +111,22 @@ class UserStatusHelper {
     final color = getStatusColor(context, status);
 
     return switch (status) {
-      UserStatus.online => Icon(Icons.circle, color: color, size: iconSize),
-      UserStatus.offline => Icon(
+      UserStatus.online => ButleryIcon(
+        Icons.circle,
+        color: color,
+        size: iconSize,
+      ),
+      UserStatus.offline => ButleryIcon(
         Icons.circle_outlined,
         color: color,
         size: iconSize,
       ),
-      UserStatus.away => Icon(Icons.schedule, color: color, size: iconSize),
-      UserStatus.busy => Icon(
+      UserStatus.away => ButleryIcon(
+        ButleryIcons.clock,
+        color: color,
+        size: iconSize,
+      ),
+      UserStatus.busy => ButleryIcon(
         Icons.do_not_disturb,
         color: color,
         size: iconSize,

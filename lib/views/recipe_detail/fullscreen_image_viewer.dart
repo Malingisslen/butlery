@@ -10,14 +10,18 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Fullscreen image viewer for recipe images
 /// This widget provides a full-screen image viewing experience with:
 /// - Swipe navigation between images
 /// - Zoom and pan functionality
 /// - Image counter in the app bar
-/// - Dark background for better image viewing
+/// - A dark (surface.ink) frame in both modes
+/// - A close X that is always on screen, also while the bar is hidden
 class FullscreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
@@ -102,28 +106,28 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: cs.onSurface,
+    // The photo is framed on surface.ink in both modes (cs.primary is
+    // #24382C in both schemes, tokens.json:112-115), as the chat photo viewer
+    // (lib/widgets/messaging/fullscreen_image_viewer.dart). onSurface turned
+    // paper in dark mode and framed the photo light (Q7-03 = A).
+    final scaffold = Scaffold(
+      backgroundColor: cs.primary,
       extendBodyBehindAppBar: true,
-      appBar: AdaptiveAppBar(
-        backgroundColor: _showAppBar
-            ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
-            : Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: _showAppBar
-            ? '${_currentIndex + 1} / ${widget.imageUrls.length}'
-            : null,
-        titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: cs.surfaceContainerHighest,
-        ),
-        iconTheme: IconThemeData(color: cs.surfaceContainerHighest),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: cs.surfaceContainerHighest),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: context.l10n.commonBack,
-        ),
-      ),
+      // A modal over the photo: X with Stäng, never a back arrow
+      // (Komponentark v1:57, pattern 4), as the chat photo viewer
+      // (lib/widgets/messaging/fullscreen_image_viewer.dart). ButleryTopBar
+      // draws its own surface; a tap on the photo still hides the bar, and
+      // the X then stays on the photo on its own (Q7-03 = A).
+      appBar: _showAppBar
+          ? ButleryTopBar.undersida(
+              leading: IconButton(
+                icon: const ButleryIcon(ButleryIcons.x),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: context.l10n.commonClose,
+              ),
+              title: '${_currentIndex + 1} / ${widget.imageUrls.length}',
+            )
+          : null,
       body: Builder(
         builder: (context) {
           final cacheWidth =
@@ -156,7 +160,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                     child: Container(
                       width: double.infinity,
                       height: double.infinity,
-                      color: cs.onSurface,
+                      color: cs.primary,
                       child: Center(
                         child: CachedNetworkImage(
                           key: ValueKey(
@@ -189,6 +193,56 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
             },
           );
         },
+      ),
+    );
+
+    // One tree whether the bar shows or not, so the page and the zoom
+    // survive the toggle.
+    return Stack(
+      children: [
+        scaffold,
+        if (!_showAppBar)
+          const Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingSm),
+                child: FullscreenCloseButton(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The close X that stays on the photo while the top bar is hidden
+/// (Q7-03 = A). A paper X (onPrimary, #F5F4ED in both schemes) on an ink
+/// disc (primary, surface.ink #24382C in both schemes; tokens.json:112-115),
+/// so it reads on any photo, light or dark. The button is 48 dp
+/// (tokens.json touchTarget.min), its name is Stäng (commonClose), and its
+/// focus ring is the ring for an ink surface: paper (tokens.json:155-160,
+/// focusRing dark), round like the disc.
+class FullscreenCloseButton extends StatelessWidget {
+  const FullscreenCloseButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return FocusRingSurface(
+      brightness: Brightness.dark,
+      child: IconButton(
+        key: const ValueKey('fullscreenImage.close'),
+        icon: const ButleryIcon(ButleryIcons.x),
+        tooltip: context.l10n.commonClose,
+        onPressed: () => Navigator.of(context).pop(),
+        style: IconButton.styleFrom(
+          backgroundColor: cs.primary,
+          foregroundColor: cs.onPrimary,
+          minimumSize: const Size.square(AppDimensions.minTouchTarget),
+          shape: const CircleBorder(),
+        ),
       ),
     );
   }
@@ -241,8 +295,8 @@ class ImageFailedPlate extends StatelessWidget {
               children: [
                 // Drawn at 26 px (del 4:888); iconSizeL (24) is the nearest
                 // standard step.
-                Icon(
-                  Icons.image_outlined,
+                ButleryIcon(
+                  ButleryIcons.image,
                   size: AppDimensions.iconSizeL,
                   color: secondary,
                 ),

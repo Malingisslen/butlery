@@ -6,7 +6,9 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Review widget that surfaces per-ingredient parse confidence (BUT-925).
 ///
@@ -110,7 +112,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
       children: [
         _buildHeader(context, reviewCount),
         if (_expanded) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           ..._sorted.map(
             (item) => _IngredientConfidenceRow(
               key: ObjectKey(item.ingredient),
@@ -155,14 +157,14 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                           reviewCount,
                         ),
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: context.butleryColors.warning,
+                          color: context.modeColors.warning,
                         ),
                       ),
                   ],
                 ),
               ),
-              Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
+              ButleryIcon(
+                _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -223,7 +225,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     final barColor = confidenceColorFor(widget.ingredient.confidence, colors);
     final a11yLabel = _a11yLabel(context, widget.ingredient);
 
@@ -259,7 +261,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                       width: _barWidth,
                       color: barColor,
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -288,10 +290,10 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppDimensions.spacingXs,
                         ),
-                        child: Icon(
+                        child: ButleryIcon(
                           _showOriginal
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
+                              ? ButleryIcons.chevronUp
+                              : ButleryIcons.chevronDown,
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -305,7 +307,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
         if (widget.onConfirm != null || widget.confirmed)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: _barWidth + AppDimensions.spacingS,
+              start: _barWidth + AppDimensions.space4,
             ),
             child: widget.confirmed
                 ? Semantics(
@@ -314,8 +316,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.check,
+                        ButleryIcon(
+                          ButleryIcons.check,
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
@@ -351,7 +353,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
         if (_showOriginal && _hasOriginal)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: _barWidth + AppDimensions.spacingS,
+              start: _barWidth + AppDimensions.space4,
               bottom: AppDimensions.spacingXs,
             ),
             child: Text(
@@ -394,7 +396,7 @@ const double _barWidth = 4.0;
 /// Exported for widget tests via [confidenceColorFor] so tests can assert the
 /// correct color token without depending on hard-coded hex values.
 @visibleForTesting
-Color confidenceColorFor(ParseConfidence confidence, ButleryColors colors) =>
+Color confidenceColorFor(ParseConfidence confidence, ModeColors colors) =>
     switch (confidence) {
       ParseConfidence.high => colors.success,
       ParseConfidence.medium => colors.warning,

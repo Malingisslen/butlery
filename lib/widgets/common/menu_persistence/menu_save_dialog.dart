@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -119,7 +121,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         color: Theme.of(context).colorScheme.primaryContainer.withValues(
           alpha: AppDimensions.opacityMediumLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +150,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         labelText: context.l10n.menuNameLabel,
         hintText: context.l10n.menuNameHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.restaurant_menu),
+        prefixIcon: const ButleryIcon(ButleryIcons.utensils),
       ),
       validator: FormValidators.required(context.l10n.menuNameRequired),
       maxLength: 50,
@@ -163,7 +165,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         labelText: context.l10n.menuCommentLabel,
         hintText: context.l10n.menuCommentHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.comment),
+        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
       ),
       maxLines: 3,
       maxLength: 200,
@@ -204,7 +206,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           height: 150,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child:
               widget.availableFriends == null ||
@@ -259,7 +261,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         labelText: context.l10n.menuShareMessageLabel,
         hintText: context.l10n.menuShareMessageHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.message),
+        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
       ),
       maxLines: 2,
       maxLength: 100,
@@ -292,9 +294,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           final message = context.l10n.menuSavedSuccess(_nameController.text);
           SnackBarUtils.showSuccess(context, message);
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            widget.viewModel.error ?? context.l10n.menuSaveFailed,
+            what: widget.viewModel.error ?? context.l10n.menuSaveFailed,
           );
         }
       }
@@ -305,9 +307,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             _isLoading = false;
           });
         }
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorSavingWithDetails(
+          what: context.l10n.errorSavingWithDetails(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

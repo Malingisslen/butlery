@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Consolidated messaging UI components.
 
@@ -38,7 +39,7 @@ class ErrorListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.error),
+      leading: ButleryIcon(icon, color: Theme.of(context).colorScheme.error),
       title: ErrorText(title),
       onTap: onTap,
     );
@@ -100,7 +101,7 @@ class StyledModalBottomSheet {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => child,

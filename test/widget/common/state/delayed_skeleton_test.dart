@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state/delayed_skeleton.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
@@ -74,7 +73,7 @@ void main() {
       LoadingVariant.skeletonRecipeList,
       LoadingVariant.skeletonRecipeCard,
       LoadingVariant.skeletonGeneric,
-      LoadingVariant.shimmerBox,
+      LoadingVariant.staticBox,
     ]) {
       testWidgets('$variant waits 300 ms', (tester) async {
         await tester.pumpWidget(_variant(variant));
@@ -88,19 +87,11 @@ void main() {
 
     testWidgets('the plate line and its text show at once', (tester) async {
       await tester.pumpWidget(
-        _variant(LoadingVariant.spinner, message: 'Hämtar recepten …'),
+        _variant(LoadingVariant.plateLine, message: 'Hämtar recepten …'),
       );
       expect(find.byType(PlateLine), findsOneWidget);
       expect(find.text('Hämtar recepten …'), findsOneWidget);
       expect(find.byType(DelayedSkeleton), findsNothing);
-    });
-
-    testWidgets('peaAnimation draws the plate line, not the pea pod', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_variant(LoadingVariant.peaAnimation));
-      expect(find.byType(PlateLine), findsOneWidget);
-      expect(find.byType(PeaLoadingAnimation), findsNothing);
     });
 
     testWidgets('the line carries the text as its name, read once', (
@@ -108,7 +99,7 @@ void main() {
     ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
-        _variant(LoadingVariant.spinner, message: 'Hämtar veckomenyn …'),
+        _variant(LoadingVariant.plateLine, message: 'Hämtar veckomenyn …'),
       );
       expect(find.bySemanticsLabel('Hämtar veckomenyn …'), findsOneWidget);
       final node = tester.getSemantics(
@@ -125,7 +116,6 @@ void main() {
         _wrap(StateWidget.loading(message: 'Hämtar recepten …')),
       );
       expect(find.byType(PlateLine), findsOneWidget);
-      expect(find.byType(PeaLoadingAnimation), findsNothing);
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('Hämtar recepten …'), findsOneWidget);
     });

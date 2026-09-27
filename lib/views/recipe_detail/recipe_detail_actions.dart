@@ -302,11 +302,14 @@ class RecipeDetailActions {
       // second of two guards rather than the only one.
       if (!await openExternalLink(uri)) {
         if (!context.mounted) return;
-        SnackBarUtils.showError(context, context.l10n.errorCouldNotOpenLink);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.errorCouldNotOpenLink,
+        );
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorInvalidLink);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorInvalidLink);
     }
   }
 

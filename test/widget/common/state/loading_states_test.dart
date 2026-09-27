@@ -15,7 +15,7 @@ void main() {
     });
 
     group('Spinner Loading', () {
-      testWidgets('should render spinner with no message', (
+      testWidgets('should render the plate line with no message', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -24,7 +24,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                 ),
               ),
             ),
@@ -36,7 +36,7 @@ void main() {
         expect(find.byType(Center), findsOneWidget);
       });
 
-      testWidgets('should render spinner with message', (
+      testWidgets('should render the plate line with message', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -45,7 +45,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: 'Laddar...',
                 ),
               ),
@@ -58,7 +58,7 @@ void main() {
         expect(find.text('Laddar...'), findsOneWidget);
       });
 
-      testWidgets('should render default spinner when variant is null', (
+      testWidgets('should render the plate line when variant is null', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -87,7 +87,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: 'Loading message',
                 ),
               ),
@@ -110,7 +110,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                 ),
               ),
             ),
@@ -127,7 +127,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                 ),
               ),
             ),
@@ -230,7 +230,7 @@ void main() {
         final listView = tester.widget<ListView>(find.byType(ListView));
         expect(
           listView.padding,
-          equals(const EdgeInsets.symmetric(vertical: AppDimensions.spacingS)),
+          equals(const EdgeInsets.symmetric(vertical: AppDimensions.space4)),
         );
       });
     });
@@ -281,7 +281,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+          equals(BorderRadius.circular(AppDimensions.radiusControl)),
         );
       });
 
@@ -353,14 +353,14 @@ void main() {
     });
 
     group('Shimmer Box', () {
-      testWidgets('should render shimmer box', (WidgetTester tester) async {
+      testWidgets('should render the static box', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.shimmerBox,
+                  variant: LoadingVariant.staticBox,
                 ),
               ),
             ),
@@ -384,7 +384,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: 'Laddar recept...',
                 ),
               ),
@@ -404,7 +404,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: 'Bearbetar data...',
                 ),
               ),
@@ -424,7 +424,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: 'Hämtar information...',
                 ),
               ),
@@ -493,7 +493,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: '',
                 ),
               ),
@@ -517,7 +517,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                   message: longMessage,
                 ),
               ),
@@ -538,7 +538,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                 ),
               ),
             ),
@@ -557,7 +557,7 @@ void main() {
               body: Builder(
                 builder: (context) => LoadingStates.buildLoadingState(
                   context,
-                  variant: LoadingVariant.spinner,
+                  variant: LoadingVariant.plateLine,
                 ),
               ),
             ),

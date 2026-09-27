@@ -1,6 +1,7 @@
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Surfaces the current user's submitted moderation reports so they can see
 /// which content they reported and the moderation status of each. Required
@@ -19,7 +20,7 @@ class MyReportsViewModel extends BaseViewModel {
   Future<bool> load() {
     return executeAsyncVoid(() async {
       _reports = await _reportService.getMyReports();
-    }, errorPrefix: 'my_reports_load');
+    }, errorPrefix: AppLocale.current.myReportsLoadFailed);
   }
 
   Future<bool> refresh() => load();

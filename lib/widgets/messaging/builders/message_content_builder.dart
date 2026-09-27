@@ -8,6 +8,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/messaging/poll_message_widget.dart';
 import 'package:butlery/models/messaging/poll.dart';
@@ -105,7 +107,7 @@ class MessageContentBuilder {
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
-      icon: Icons.restaurant_menu,
+      icon: ButleryIcons.utensils,
       label: context.l10n.messagingRecipeShared,
       title: recipeTitle,
       subtitle:
@@ -143,7 +145,7 @@ class MessageContentBuilder {
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
-      icon: Icons.shopping_cart,
+      icon: ButleryIcons.shoppingCart,
       label: context.l10n.messagingShoppingListShared,
       title: listTitle,
     );
@@ -164,7 +166,7 @@ class MessageContentBuilder {
       decoration: BoxDecoration(
         color: (isFromCurrentUser ? cs.onPrimary : cs.inversePrimary)
             .withValues(alpha: AppDimensions.opacityLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -174,9 +176,9 @@ class MessageContentBuilder {
               color: cs.inversePrimary.withValues(
                 alpha: AppDimensions.opacityMediumLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
               size: AppDimensions.iconSizeM,
@@ -261,7 +263,7 @@ class MessageContentBuilder {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
@@ -320,7 +322,7 @@ class MessageContentBuilder {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  ButleryIcon(
                     Icons.broken_image,
                     size: 48,
                     color: isFromCurrentUser
@@ -329,7 +331,7 @@ class MessageContentBuilder {
                           )
                         : cs.onSurfaceVariant,
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     context.l10n.messagingImageLoadError,
                     style: AppTextStyles.labelSmall.copyWith(
@@ -358,7 +360,7 @@ class MessageContentBuilder {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          ButleryIcon(
             Icons.play_arrow,
             color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           ),

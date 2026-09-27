@@ -65,7 +65,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
       () async {
         _items = await _pantryService.getAll(userId);
       },
-      errorPrefix: 'Kunde inte ladda skafferiet',
+      errorPrefix: AppLocale.current.pantryLoadFailed,
     );
   }
 
@@ -93,7 +93,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         );
         _items = [..._items, added];
       },
-      errorPrefix: 'Kunde inte lägga till i skafferiet',
+      errorPrefix: AppLocale.current.pantryAddFailed,
     );
   }
 
@@ -121,7 +121,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         );
         _items = [..._items, added];
       },
-      errorPrefix: 'Kunde inte lägga till i skafferiet',
+      errorPrefix: AppLocale.current.pantryAddFailed,
     );
   }
 
@@ -134,7 +134,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         await _pantryService.removeItem(userId, itemId);
         _items.removeWhere((i) => i.id == itemId);
       },
-      errorPrefix: 'Kunde inte ta bort objektet',
+      errorPrefix: AppLocale.current.pantryRemoveItemFailed,
     );
   }
 
@@ -151,7 +151,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         final restored = await _pantryService.restoreItem(userId, item);
         _items = [..._items, restored];
       },
-      errorPrefix: 'Kunde inte återställa objektet',
+      errorPrefix: AppLocale.current.pantryRestoreItemFailed,
     );
   }
 
@@ -173,7 +173,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         // caller holding a pre-delete snapshot of `items` is never mutated.
         _items = _items.where((i) => !ids.contains(i.id)).toList();
       },
-      errorPrefix: 'Kunde inte ta bort objekten',
+      errorPrefix: AppLocale.current.pantryRemoveItemsFailed,
     );
   }
 
@@ -191,7 +191,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         }
         _items = [..._items, ...restored];
       },
-      errorPrefix: 'Kunde inte återställa objekten',
+      errorPrefix: AppLocale.current.pantryRestoreItemsFailed,
     );
   }
 

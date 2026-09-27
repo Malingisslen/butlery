@@ -9,6 +9,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Shows a bottom sheet for selecting recipes to suggest as vote alternatives.
@@ -100,11 +102,13 @@ class _SheetContentState extends State<_SheetContent> {
                     ),
                     child: Container(
                       width: AppDimensions.spacingXl * 2,
-                      height: AppDimensions.spacingXxs,
+                      height: AppDimensions.space4,
                       decoration: BoxDecoration(
                         color: cs.onSurfaceVariant,
+                        // Komponentark v1:95, v1:325: height 4, radius 2
+                        // (tokens.json space.radius knob).
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.spacingXxs,
+                          AppDimensions.radiusKnob,
                         ),
                       ),
                     ),
@@ -131,7 +135,7 @@ class _SheetContentState extends State<_SheetContent> {
                       controller: _searchController,
                       decoration: InputDecoration(
                         hintText: context.l10n.commonSearch,
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon: const ButleryIcon(ButleryIcons.search),
                         border: const OutlineInputBorder(),
                       ),
                       onChanged: (query) {
@@ -139,7 +143,7 @@ class _SheetContentState extends State<_SheetContent> {
                       },
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
 
                   // Recipe list
                   Expanded(
@@ -179,8 +183,8 @@ class _SheetContentState extends State<_SheetContent> {
                                         width: AppDimensions.avatarSizeM,
                                         height: AppDimensions.avatarSizeM,
                                         color: cs.surfaceContainer,
-                                        child: Icon(
-                                          Icons.restaurant,
+                                        child: ButleryIcon(
+                                          ButleryIcons.utensils,
                                           color: cs.onSurfaceVariant,
                                         ),
                                       ),

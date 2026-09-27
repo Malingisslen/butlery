@@ -37,11 +37,9 @@ class AppStrings {
   static String updateL10n(BuildContext context) => context.l10n.commonUpdate;
   static String closeL10n(BuildContext context) => context.l10n.commonClose;
   static String shareL10n(BuildContext context) => context.l10n.commonShare;
-  static String okL10n(BuildContext context) => context.l10n.commonOk;
   static String yesL10n(BuildContext context) => context.l10n.commonYes;
   static String noL10n(BuildContext context) => context.l10n.commonNo;
   static String retryL10n(BuildContext context) => context.l10n.commonRetry;
-  static String loadingL10n(BuildContext context) => context.l10n.commonLoading;
   static String sendL10n(BuildContext context) => context.l10n.commonSend;
 
   // Context-aware error messages

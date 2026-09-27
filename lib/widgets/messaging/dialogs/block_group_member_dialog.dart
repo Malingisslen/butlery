@@ -9,6 +9,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 
@@ -129,13 +130,13 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
     if (members.isEmpty) {
       return StateWidget.empty(
         title: context.l10n.chatBlockGroupMemberEmpty,
-        icon: Icons.block,
+        icon: ButleryIcons.block,
       );
     }
 
     return ListView.builder(
       shrinkWrap: true,
-      padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       itemCount: members.length,
       itemBuilder: (context, index) {
         final member = members[index];

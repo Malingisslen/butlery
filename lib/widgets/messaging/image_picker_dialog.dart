@@ -5,7 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Bottom sheet dialog for selecting image source (camera or gallery).
 /// Provides a clean, modern interface for image source selection with:
@@ -31,7 +33,7 @@ class ImagePickerDialog extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: SafeArea(
@@ -55,7 +57,7 @@ class ImagePickerDialog extends StatelessWidget {
 
               // Camera option
               _SourceOption(
-                icon: Icons.camera_alt,
+                icon: ButleryIcons.camera,
                 label: context.l10n.commonTakePhoto,
                 color: cs.onSurface,
                 onTap: () => Navigator.pop(context, ImageSource.camera),
@@ -65,9 +67,9 @@ class ImagePickerDialog extends StatelessWidget {
 
               // Gallery option
               _SourceOption(
-                icon: Icons.photo_library,
+                icon: ButleryIcons.image,
                 label: context.l10n.commonSelectFromGallery,
-                color: context.butleryColors.success,
+                color: context.modeColors.success,
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
 
@@ -109,13 +111,13 @@ class _SourceOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       child: Semantics(
         label: label,
         button: true,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
@@ -126,7 +128,7 @@ class _SourceOption extends StatelessWidget {
                     color: color,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: ButleryIcon(
                     icon,
                     color: Theme.of(
                       context,
@@ -142,8 +144,8 @@ class _SourceOption extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
                   color: color,
                   size: AppDimensions.iconSizeS,
                 ),

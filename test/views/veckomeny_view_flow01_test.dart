@@ -27,6 +27,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 
 /// Connectivity the test can flip.
@@ -83,7 +84,7 @@ void main() {
       );
       expect(find.text('Kraven: Under 30 min, Vegetariskt'), findsOneWidget);
       expect(find.textContaining('Ett fel uppstod'), findsNothing);
-      expect(find.byIcon(Icons.error_outline), findsNothing);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       // The view's one saffron action stays Generera.
       expect(find.byType(HeroButton), findsNothing);
 

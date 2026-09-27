@@ -28,6 +28,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
@@ -111,7 +112,7 @@ void main() {
       await tester.pump();
 
       // Find the close icon inside the chip and tap it.
-      final closeIcon = find.byIcon(Icons.close);
+      final closeIcon = find.byIcon(ButleryIcons.x);
       expect(closeIcon, findsOneWidget);
       await tester.tap(closeIcon);
       await tester.pump();

@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
@@ -11,7 +13,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -34,7 +35,7 @@ import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -166,16 +167,16 @@ class _SkrivSjalvReceptViewContentState
     switch (event.priority) {
       case NotificationPriority.critical:
       case NotificationPriority.high:
-        UtilityComponents.showErrorSnackbar(context, event.message);
+        SnackBarUtils.showFailure(context, what: event.message);
         break;
       case NotificationPriority.medium:
-        UtilityComponents.showSuccessSnackbar(context, event.message);
+        SnackBarUtils.showSuccess(context, event.message);
         break;
       case NotificationPriority.low:
         // For low priority, only show if it's a completion or success event
         if (event.trigger == UploadNotificationTrigger.allCompleted ||
             event.trigger == UploadNotificationTrigger.retrySuccess) {
-          UtilityComponents.showSuccessSnackbar(context, event.message);
+          SnackBarUtils.showSuccess(context, event.message);
         }
         break;
     }
@@ -212,13 +213,13 @@ class _SkrivSjalvReceptViewContentState
             final tagResult = savedRecipe.tagResult;
 
             if (tagResult != null && tagResult.hasFailed) {
-              UtilityComponents.showWarningSnackbar(
+              SnackBarUtils.showWarning(
                 context,
                 context.l10n.recipeSavedTaggingFailed,
               );
             } else if (tagResult != null && tagResult.tags.isNotEmpty) {
               final coverage = (tagResult.coverage * 100).toInt();
-              UtilityComponents.showSuccessSnackbar(
+              SnackBarUtils.showSuccess(
                 context,
                 context.l10n.recipeSavedWithTags(
                   tagResult.tags.length,
@@ -226,10 +227,7 @@ class _SkrivSjalvReceptViewContentState
                 ),
               );
             } else {
-              UtilityComponents.showSuccessSnackbar(
-                context,
-                context.l10n.recipeSaved,
-              );
+              SnackBarUtils.showSuccess(context, context.l10n.recipeSaved);
             }
           }
           if (mounted) {
@@ -242,11 +240,13 @@ class _SkrivSjalvReceptViewContentState
         } else {
           // After in-helper retries are exhausted (`withRetry` in the
           // recipe-save path), surface "Försök igen" so the user can try again
-          // without re-typing the form.
-          UtilityComponents.showErrorSnackbarWithRetry(
+          // without re-typing the form. The form stays on screen with what
+          // the user wrote, so the failure says so (content-style-guide.md:92).
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.recipeCouldNotSave,
-            onRetry: _saveRecipe,
+            what: viewModel.error ?? context.l10n.recipeCouldNotSave,
+            preserved: context.l10n.errorPreservedForm,
+            action: FailureAction.retry(_saveRecipe),
           );
         }
       }
@@ -338,7 +338,7 @@ class _SkrivSjalvReceptViewContentState
           // CRITICAL FIX: Block navigation if save is in progress (check both states)
           if (_isSaving || viewModel.isSaving) {
             if (context.mounted) {
-              UtilityComponents.showWarningSnackbar(
+              SnackBarUtils.showWarning(
                 context,
                 context.l10n.recipeWaitWhileSaving,
               );
@@ -358,7 +358,7 @@ class _SkrivSjalvReceptViewContentState
             } else if (shouldPop && (_isSaving || viewModel.isSaving)) {
               // Show warning if save started during dialog
               if (context.mounted) {
-                UtilityComponents.showWarningSnackbar(
+                SnackBarUtils.showWarning(
                   context,
                   context.l10n.recipeSaveStartedDuringDialog,
                 );
@@ -385,7 +385,7 @@ class _SkrivSjalvReceptViewContentState
                 child: PlateLine(semanticLabel: context.l10n.statusSaving),
               )
             else if (viewModel.hasRecentAutoSave)
-              const Icon(
+              const ButleryIcon(
                 Icons.cloud_done_outlined,
                 size: AppDimensions.iconSizeM,
               ),
@@ -697,8 +697,8 @@ class _SkrivSjalvReceptViewContentState
                                     context.l10n.recipeSharedFromApp
                                 ? context.l10n.recipeImportedFromShare
                                 : context.l10n.recipeSourceUrlHelper,
-                            prefixIcon: const Icon(
-                              Icons.link,
+                            prefixIcon: const ButleryIcon(
+                              ButleryIcons.link,
                               size: AppDimensions.iconSizeAction,
                             ),
                             keyboardType: TextInputType.url,
@@ -823,7 +823,7 @@ class _SkrivSjalvReceptViewContentState
                 builder: (context, child) => Material(
                   elevation: animation.value * 4,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                   child: child,
                 ),
@@ -833,17 +833,17 @@ class _SkrivSjalvReceptViewContentState
             itemBuilder: (context, index) {
               return Padding(
                 key: ValueKey('${label}_$index'),
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space4),
                 child: Row(
                   children: [
                     ReorderableDragStartListener(
                       index: index,
                       child: const Padding(
                         padding: EdgeInsetsDirectional.only(
-                          end: AppDimensions.spacingS,
+                          end: AppDimensions.space4,
                         ),
-                        child: Icon(
-                          Icons.drag_handle,
+                        child: ButleryIcon(
+                          ButleryIcons.drag,
                           size: AppDimensions.iconSizeM,
                         ),
                       ),
@@ -864,7 +864,7 @@ class _SkrivSjalvReceptViewContentState
                     ),
                     if (controllers.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         tooltip: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
@@ -897,7 +897,7 @@ class _SkrivSjalvReceptViewContentState
                     ),
                     if (controllers.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         tooltip: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
@@ -905,13 +905,13 @@ class _SkrivSjalvReceptViewContentState
                       ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
               ],
             ),
         ],
         if (controllers.isEmpty)
           TextButton.icon(
-            icon: const Icon(Icons.add),
+            icon: const ButleryIcon(ButleryIcons.plus),
             label: Text(context.l10n.recipeAddItem(label)),
             onPressed: onAdd,
           ),
@@ -936,7 +936,7 @@ class _SkrivSjalvReceptViewContentState
     final quality = viewModel.parseQuality ?? 0.0;
     final qualityPercent = (quality * 100).toInt();
     final fields = viewModel.fieldsNeedingImprovement;
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingL),
@@ -945,7 +945,7 @@ class _SkrivSjalvReceptViewContentState
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           color: colors.warningContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: colors.warning.withValues(alpha: 0.4),
           ),
@@ -955,12 +955,12 @@ class _SkrivSjalvReceptViewContentState
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.warning_amber_rounded,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   color: colors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.importParseQualityWarning(qualityPercent),
@@ -974,8 +974,8 @@ class _SkrivSjalvReceptViewContentState
                   button: true,
                   child: GestureDetector(
                     onTap: () => setState(() => _showQualityWarning = false),
-                    child: Icon(
-                      Icons.close,
+                    child: ButleryIcon(
+                      ButleryIcons.x,
                       size: AppDimensions.iconSizeS,
                       color: colors.onWarningContainer,
                     ),
@@ -984,7 +984,7 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
             if (fields.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 '${context.l10n.importFieldsNeedReviewPrefix}: ${fields.map((f) => _localizeFieldName(context, f)).join(', ')}',
                 style: AppTextStyles.bodySmall.copyWith(

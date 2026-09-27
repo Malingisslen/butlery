@@ -22,7 +22,7 @@ class GroupInvitationCard {
         alpha: AppDimensions.opacityMediumLight,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: Theme.of(context).colorScheme.tertiary.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -45,7 +45,7 @@ class GroupInvitationCard {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Center(
@@ -94,13 +94,13 @@ class GroupInvitationCard {
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
               ),
               Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.space4),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: AppDimensions.opacityExtraVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(
@@ -191,14 +191,16 @@ class GroupInvitationCard {
         context.l10n.groupInvitationAccepted,
       );
     } else if (context.mounted && service.invitations.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        service.invitations.error ?? context.l10n.errorGeneric,
+        what:
+            service.invitations.error ??
+            context.l10n.groupCouldNotAcceptInvitation,
       );
     } else if (!success && context.mounted) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupCouldNotAcceptInvitation,
+        what: context.l10n.groupCouldNotAcceptInvitation,
       );
     }
   }
@@ -215,9 +217,11 @@ class GroupInvitationCard {
     if (success && context.mounted) {
       SnackBarUtils.showWarning(context, context.l10n.groupInvitationDeclined);
     } else if (context.mounted && service.invitations.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        service.invitations.error ?? context.l10n.errorGeneric,
+        what:
+            service.invitations.error ??
+            context.l10n.groupInvitationDeclineFailed,
       );
     }
   }

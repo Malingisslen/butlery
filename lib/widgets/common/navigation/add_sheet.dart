@@ -18,6 +18,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Opens the add sheet. A choice closes the sheet and opens its view on the
 /// navigator below it, so Back returns to where the plus was.
@@ -88,7 +90,7 @@ class ButleryAddSheet extends StatelessWidget {
               onPressed: () => onChoose(Routes.quickCapture),
               child: Row(
                 children: [
-                  const Icon(Icons.flash_on),
+                  const ButleryIcon(ButleryIcons.zap),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(
                     child: Column(
@@ -115,14 +117,14 @@ class ButleryAddSheet extends StatelessWidget {
               _RouteTile(
                 identifier: 'btn-import-url',
                 label: l10n.recipeImportLink,
-                icon: Icons.link,
+                icon: ButleryIcons.link,
                 onTap: () => onChoose(Routes.smartImport),
               ),
               gap,
               _RouteTile(
                 identifier: 'btn-write-manually',
                 label: l10n.recipeWriteManually,
-                icon: Icons.edit_outlined,
+                icon: ButleryIcons.pencil,
                 onTap: () => onChoose(Routes.manualEntry),
               ),
             ],
@@ -133,14 +135,14 @@ class ButleryAddSheet extends StatelessWidget {
               _RouteTile(
                 identifier: 'btn-photo-import',
                 label: l10n.recipeFromImage,
-                icon: Icons.image_outlined,
+                icon: ButleryIcons.image,
                 onTap: () => onChoose(Routes.photoImport),
               ),
               gap,
               _RouteTile(
                 identifier: 'btn-archive-import',
                 label: l10n.recipeFromArchive,
-                icon: Icons.archive_outlined,
+                icon: ButleryIcons.archive,
                 onTap: () => onChoose(Routes.importFromArchive),
               ),
             ],
@@ -154,7 +156,7 @@ class ButleryAddSheet extends StatelessWidget {
               _RouteTile(
                 identifier: 'btn-voice-import',
                 label: l10n.recipeVoiceImport,
-                icon: Icons.mic_none,
+                icon: ButleryIcons.mic,
                 onTap: () => onChoose(Routes.voiceImport),
               ),
             ],
@@ -213,7 +215,7 @@ class _RouteTile extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, color: cs.onSurface),
+                    ButleryIcon(icon, color: cs.onSurface),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       label,

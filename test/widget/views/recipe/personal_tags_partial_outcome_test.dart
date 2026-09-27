@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import 'fake_personal_tag_viewmodel.dart';
@@ -119,7 +120,7 @@ void main() {
       await tester.pump();
     }
     expect(find.text('3 valda'), findsOneWidget);
-    await tester.tap(find.widgetWithIcon(IconButton, Icons.delete_outline));
+    await tester.tap(find.widgetWithIcon(IconButton, ButleryIcons.trash2));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
     await tester.pumpAndSettle();

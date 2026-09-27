@@ -127,7 +127,7 @@ void main() {
             ),
           ),
         );
-        // Pea animation/spinner — don't pumpAndSettle.
+        // The plate line animates, so no pumpAndSettle.
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -142,7 +142,7 @@ void main() {
           LoadingStateBuilder<String>(
             isLoading: true,
             loadingMessage: 'Genererar menyn …',
-            loadingVariant: LoadingVariant.spinner,
+            loadingVariant: LoadingVariant.plateLine,
             builder: (_, __) => const SizedBox.shrink(),
           ),
         ),
@@ -593,7 +593,7 @@ void main() {
         builder: (_, __) => const Text('hidden'),
       );
       expect(b.emptyState, EmptyStateVariant.noFriends);
-      expect(b.loadingVariant, LoadingVariant.spinner);
+      expect(b.loadingVariant, LoadingVariant.plateLine);
     });
   });
 

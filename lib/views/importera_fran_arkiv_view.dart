@@ -1,10 +1,13 @@
 // lib/views/importera_fran_arkiv_view.dart
 
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -63,13 +66,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (context.mounted) {
       if (viewModel.error == null) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.importRecipesImported,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.importRecipesImported);
         Navigator.pop(context);
       } else {
-        UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+        SnackBarUtils.showFailure(context, what: viewModel.error!);
         viewModel.clearError();
       }
     }
@@ -89,9 +89,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         actions: [
           if (viewModel.hasError)
             IconButton(
-              icon: Icon(Icons.error, color: cs.error),
+              icon: ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
               onPressed: () {
-                UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+                SnackBarUtils.showFailure(context, what: viewModel.error!);
                 viewModel.clearError();
               },
               tooltip: context.l10n.importShowError,
@@ -141,20 +141,29 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                               // Tagg-filter
                               if (allTags.isNotEmpty) ...[
                                 Wrap(
-                                  spacing: AppDimensions.spacingS,
+                                  spacing: AppDimensions.space4,
                                   children: allTags.map((tag) {
+                                    final chosen = viewModel.selectedTags
+                                        .contains(tag);
+                                    // Chosen is surface.selected with a real
+                                    // text.primary border, never a tint
+                                    // (tokens.json:41, :116-119; Grafisk
+                                    // manual v6:209).
                                     return FilterChip(
                                       label: Text(tag),
-                                      selected: viewModel.selectedTags.contains(
-                                        tag,
+                                      selected: chosen,
+                                      side: BorderSide(
+                                        color: chosen
+                                            ? cs.onSurface
+                                            : cs.outlineVariant,
+                                        width: chosen ? 1.5 : 1,
                                       ),
                                       onSelected: (_) =>
                                           viewModel.toggleTag(tag),
-                                      backgroundColor:
-                                          cs.surfaceContainerHighest,
-                                      selectedColor: cs.onSurface.withValues(
-                                        alpha: AppDimensions.opacityLight,
-                                      ),
+                                      // Unchosen stays on paper; only the
+                                      // chosen chip wears the Vald plate.
+                                      backgroundColor: cs.surface,
+                                      selectedColor: cs.surfaceContainerHighest,
                                       checkmarkColor: cs.onSurface,
                                     );
                                   }).toList(),
@@ -179,7 +188,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.spacingS,
+                          vertical: AppDimensions.space4,
                         ),
                         child: _buildAdvancedStats(context, viewModel),
                       ),
@@ -217,7 +226,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Wrap(
-      spacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
       children: [
         ChoiceChip(
           label: Text(context.l10n.importFilterAll),
@@ -367,13 +376,13 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             child: UtilityComponents.outlinedButton(
               context,
               label: context.l10n.commonSelectAll,
-              icon: Icons.select_all,
+              icon: ButleryIcons.checkSquare,
               onPressed: viewModel.isImporting
                   ? null
                   : viewModel.toggleSelectAll,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             flex: 2,
             child: UtilityComponents.primaryButton(

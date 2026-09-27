@@ -4,6 +4,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// One checklist card of the "Tala in recept" wizard (direction B with A's
@@ -91,14 +93,14 @@ class VoiceSectionCard extends StatelessWidget {
               // single section is direction B's core promise ("gör om bara
               // ingredienserna" = one tap), so the mic never disappears
               // (review finding #5).
-              if (isDone) Icon(Icons.check, color: cs.onSurface),
+              if (isDone) ButleryIcon(ButleryIcons.check, color: cs.onSurface),
               if (!recording && !busy)
                 Semantics(
                   identifier: 'btn-voice-record-$index',
                   button: true,
                   label: prompt,
                   child: IconButton(
-                    icon: Icon(Icons.mic_none, color: cs.onSurface),
+                    icon: ButleryIcon(ButleryIcons.mic, color: cs.onSurface),
                     tooltip: prompt,
                     onPressed: enabled ? onMicTap : null,
                   ),
@@ -111,7 +113,7 @@ class VoiceSectionCard extends StatelessWidget {
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           if (recording)
             // Direction A's big central microphone, grafted into the active
             // card: one large stop control, impossible to miss mid-speech.
@@ -130,8 +132,8 @@ class VoiceSectionCard extends StatelessWidget {
                       width: 88,
                       height: 88,
                       color: cs.error,
-                      child: Icon(
-                        Icons.stop,
+                      child: ButleryIcon(
+                        ButleryIcons.stop,
                         size: 40,
                         color: cs.onError,
                       ),

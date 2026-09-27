@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('EmptyStates Widget Tests', () {
@@ -52,7 +54,7 @@ void main() {
         // Title uses l10n.emptyGenericTitle.
         expect(find.text('Inget innehåll finns att visa'), findsOneWidget);
         // Generic variant has no illustration, so shows icon
-        expect(find.byIcon(Icons.info_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.info), findsOneWidget);
       });
 
       testWidgets('renders with custom title and subtitle', (tester) async {
@@ -73,13 +75,13 @@ void main() {
         await tester.pumpWidget(
           buildEmptyState(
             variant: EmptyStateVariant.generic,
-            icon: Icons.warning,
+            icon: ButleryIcons.triangleAlert,
             useIllustration: false,
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.warning), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
       });
     });
 
@@ -315,7 +317,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.info_outline));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.info));
         expect(icon.color, equals(Colors.red));
       });
 
@@ -331,7 +333,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.info_outline));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.info));
         expect(icon.size, equals(customSize));
       });
 
@@ -397,16 +399,16 @@ void main() {
     });
 
     group('Icon Visibility', () {
-      testWidgets('hides icon when Icons.clear is used', (tester) async {
+      testWidgets('hides icon when ButleryIcons.x is used', (tester) async {
         await tester.pumpWidget(
           buildEmptyState(
             variant: EmptyStateVariant.generic,
-            icon: Icons.clear,
+            icon: ButleryIcons.x,
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(Icon), findsNothing);
+        expect(find.byType(ButleryIcon), findsNothing);
         expect(find.byType(VegetableIllustration), findsNothing);
       });
 
@@ -414,13 +416,13 @@ void main() {
         await tester.pumpWidget(
           buildEmptyState(
             variant: EmptyStateVariant.generic,
-            icon: Icons.star,
+            icon: ButleryIcons.star,
             useIllustration: false,
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.star), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.star), findsOneWidget);
       });
     });
 

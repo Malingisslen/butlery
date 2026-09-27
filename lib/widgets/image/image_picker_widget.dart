@@ -13,6 +13,8 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
@@ -167,8 +169,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                       ),
-                      child: Icon(
-                        Icons.add_photo_alternate_outlined,
+                      child: ButleryIcon(
+                        ButleryIcons.camera,
                         size: AppDimensions.iconSizeXl,
                         color: cs.onSurface,
                       ),
@@ -246,7 +248,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         // Image container
         DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: cs.outlineVariant.withValues(
                 alpha: AppDimensions.opacityLight,
@@ -254,7 +256,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: imagePath.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: imagePath,
@@ -267,8 +269,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                         ColoredBox(color: cs.surfaceContainerHighest),
                     errorWidget: (context, url, error) => ColoredBox(
                       color: cs.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.error_outline,
+                      child: ButleryIcon(
+                        ButleryIcons.triangleAlert,
                         color: cs.error,
                       ),
                     ),
@@ -281,8 +283,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     height: double.infinity,
                     errorBuilder: (context, error, stackTrace) => ColoredBox(
                       color: cs.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.error_outline,
+                      child: ButleryIcon(
+                        ButleryIcons.triangleAlert,
                         color: cs.error,
                       ),
                     ),
@@ -309,8 +311,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: 1,
                   ),
                 ),
-                child: Icon(
-                  Icons.close,
+                child: ButleryIcon(
+                  ButleryIcons.x,
                   size: AppDimensions.iconSizeS,
                   color: cs.surfaceContainerHighest,
                 ),
@@ -325,14 +327,14 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           left: AppDimensions.spacingXs,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingTight,
-              vertical: AppDimensions.spacingXxs,
+              horizontal: AppDimensions.space4,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest.withValues(
                 alpha: AppDimensions.opacityExtraDark,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               '${index + 1}',
@@ -397,9 +399,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       AppLogger.error('Failed to pick images: $e');
 
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.imageFailedToSelect(e.toString()),
+          what: context.l10n.imageSelectFailed,
         );
       }
     } finally {

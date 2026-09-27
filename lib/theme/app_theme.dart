@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Central theme orchestrator combining colors, typography, and component themes.
 class AppTheme {
@@ -16,34 +17,25 @@ class AppTheme {
   /// Creates the complete dark theme for the application.
   static ThemeData get darkTheme => createTheme(AppColors.darkColorScheme);
 
-  /// Light theme with an optional seasonal accent override.
-  ///
-  /// When [accent] is null, behaves identically to [lightTheme]. Used by
-  /// `main.dart` to thread `SeasonalAccentService` output into `MaterialApp`.
-  static ThemeData lightThemeWith(ButleryColors? accent) =>
-      createTheme(AppColors.lightColorScheme, butleryColorsOverride: accent);
-
-  /// Dark theme with an optional seasonal accent override. See [lightThemeWith].
-  static ThemeData darkThemeWith(ButleryColors? accent) =>
-      createTheme(AppColors.darkColorScheme, butleryColorsOverride: accent);
-
   /// Creates theme configuration from color scheme.
   ///
-  /// [butleryColorsOverride] replaces the default `ButleryColors` extension
-  /// — used by `SeasonalAccentService` to apply subtle month-based accents
-  /// without duplicating the full theme pipeline.
-  static ThemeData createTheme(
-    ColorScheme colorScheme, {
-    ButleryColors? butleryColorsOverride,
-  }) {
-    final isDark = colorScheme.brightness == Brightness.dark;
-
+  /// The theme is the same every day of the year: no colour is computed at
+  /// runtime (tokens.json:522).
+  static ThemeData createTheme(ColorScheme colorScheme) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: AppTextStyles.createTextTheme(),
 
       visualDensity: VisualDensity.adaptivePlatformDensity,
+
+      // P7-U08: the framework back and close buttons draw the Butlery
+      // glyphs (beslutslogg.md:9, B-02; plattformsmatris.md:75), in the
+      // ambient IconTheme colour of the bar they sit in.
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (_) => const ButleryIcon(ButleryIcons.back),
+        closeButtonIconBuilder: (_) => const ButleryIcon(ButleryIcons.close),
+      ),
 
       // Component themes — all ColorScheme-aware
       elevatedButtonTheme: ComponentThemes.elevatedButtonTheme(colorScheme),
@@ -94,11 +86,6 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-
-      extensions: [
-        butleryColorsOverride ??
-            (isDark ? ButleryColors.dark : ButleryColors.light),
-      ],
     );
   }
 }

@@ -5,12 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
@@ -59,7 +62,7 @@ class RequestsTab extends StatelessWidget {
                     StateWidget.empty(
                       title: context.l10n.socialNoFriendRequests,
                       subtitle: context.l10n.socialNoFriendRequestsDescription,
-                      icon: Icons.search,
+                      icon: ButleryIcons.search,
                     ),
                   ],
                 ],
@@ -81,17 +84,17 @@ class RequestsTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.inbox,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.socialIncomingRequests,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingS,
@@ -100,7 +103,7 @@ class RequestsTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Text(
@@ -115,7 +118,7 @@ class RequestsTab extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingM),
         ...requests.map(
           (request) => Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: FriendRequestCard.build(context, request, viewModel),
           ),
         ),
@@ -134,19 +137,19 @@ class RequestsTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.outbox,
               size: AppDimensions.iconSizeM,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.socialSentRequests,
               style: AppTextStyles.titleMedium.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingS,
@@ -155,7 +158,7 @@ class RequestsTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cs.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Text(
@@ -170,7 +173,7 @@ class RequestsTab extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingM),
         ...requests.map(
           (request) => Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: _buildSentRequestCard(context, request, viewModel),
           ),
         ),
@@ -188,7 +191,7 @@ class RequestsTab extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.outline,
           width: AppDimensions.borderWidthThin,
@@ -197,7 +200,7 @@ class RequestsTab extends StatelessWidget {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius25),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             child: Container(
               width: 40,
               height: 40,
@@ -205,8 +208,8 @@ class RequestsTab extends StatelessWidget {
                 color: cs.surfaceContainerLow,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.person,
+              child: ButleryIcon(
+                ButleryIcons.user,
                 size: AppDimensions.iconSizeL,
                 color: cs.onSurfaceVariant,
               ),
@@ -283,8 +286,12 @@ class RequestsTab extends StatelessWidget {
       );
       await SharePlus.instance.share(ShareParams(text: url, subject: subject));
     } catch (e) {
+      AppLogger.error('Failed to share invitation link', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.socialInviteLinkShareFailed,
+      );
     }
   }
 
@@ -304,8 +311,12 @@ class RequestsTab extends StatelessWidget {
       if (!context.mounted) return;
       SnackBarUtils.showSuccess(context, context.l10n.commonLinkCopied);
     } catch (e) {
+      AppLogger.error('Failed to copy invitation link', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.socialInviteLinkCopyFailed,
+      );
     }
   }
 }
@@ -323,7 +334,7 @@ class _DiscoverySection extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
           color: cs.onSurface.withValues(
             alpha: AppDimensions.opacityMediumLight,
@@ -333,8 +344,8 @@ class _DiscoverySection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.search,
+          ButleryIcon(
+            ButleryIcons.search,
             size: AppDimensions.iconSizeXl,
             color: cs.onSurface,
           ),
@@ -344,7 +355,7 @@ class _DiscoverySection extends StatelessWidget {
             style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             context.l10n.socialFindNewFriendsDescription,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -366,7 +377,10 @@ class _DiscoverySection extends StatelessWidget {
                   final vm = context.read<FriendsViewModel>();
                   RequestsTab.shareInvitationLink(context, vm);
                 },
-                icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
+                icon: const ButleryIcon(
+                  ButleryIcons.share2,
+                  size: AppDimensions.iconSizeM,
+                ),
                 label: Text(context.l10n.socialInviteFriends),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
@@ -375,7 +389,10 @@ class _DiscoverySection extends StatelessWidget {
                   final vm = context.read<FriendsViewModel>();
                   RequestsTab.copyInvitationLink(context, vm);
                 },
-                icon: const Icon(Icons.copy, size: AppDimensions.iconSizeM),
+                icon: const ButleryIcon(
+                  ButleryIcons.link,
+                  size: AppDimensions.iconSizeM,
+                ),
                 tooltip: context.l10n.commonCopyLink,
               ),
             ],

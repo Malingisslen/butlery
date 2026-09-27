@@ -20,6 +20,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
@@ -197,7 +199,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 .startSelection,
           ),
         IconButton(
-          icon: const Icon(Icons.sync),
+          icon: const ButleryIcon(ButleryIcons.refreshCw),
           tooltip: context.l10n.personalTagApplyRulesToAll,
           onPressed: () => PersonalTagDialogs.showRetagDialog(context),
         ),
@@ -238,14 +240,14 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.merge),
+          icon: const ButleryIcon(Icons.merge),
           tooltip: context.l10n.personalTagMergeAction,
           onPressed: count >= 2
               ? () => PersonalTagDialogs.showMergeDialog(context, selectedTags)
               : null,
         ),
         IconButton(
-          icon: const Icon(Icons.delete_outline),
+          icon: const ButleryIcon(ButleryIcons.trash2),
           tooltip: context.l10n.commonDelete,
           onPressed: count >= 1
               ? () => PersonalTagDialogs.showBulkDeleteDialog(
@@ -260,7 +262,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Widget _buildSortMenu(BuildContext context) {
     return PopupMenuButton<TagSortOrder>(
-      icon: const Icon(Icons.sort),
+      icon: const ButleryIcon(ButleryIcons.arrowUpDown),
       tooltip: context.l10n.commonSort,
       onSelected: (order) => setState(() {
         _sortOrder = order;
@@ -277,7 +279,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           child: Row(
             children: [
               if (order == _sortOrder)
-                const Icon(Icons.check, size: AppDimensions.iconSize18)
+                const ButleryIcon(
+                  ButleryIcons.check,
+                  size: AppDimensions.iconSize18,
+                )
               else
                 const SizedBox(width: AppDimensions.iconSize18),
               const SizedBox(width: AppDimensions.spacingSm),
@@ -291,7 +296,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Widget _buildAddMenu(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.add),
+      icon: const ButleryIcon(ButleryIcons.plus),
       tooltip: context.l10n.commonCreate,
       onSelected: (value) {
         // Defer to next frame so PopupMenu fully dismisses before dialog opens
@@ -309,7 +314,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         PopupMenuItem(
           value: 'tag',
           child: ListTile(
-            leading: const Icon(Icons.label_outline),
+            leading: const ButleryIcon(ButleryIcons.tag),
             title: Text(context.l10n.personalTagCreateTag),
             contentPadding: EdgeInsets.zero,
           ),
@@ -317,7 +322,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         PopupMenuItem(
           value: 'group',
           child: ListTile(
-            leading: const Icon(Icons.folder_outlined),
+            leading: const ButleryIcon(ButleryIcons.folder),
             title: Text(context.l10n.personalTagCreateGroup),
             contentPadding: EdgeInsets.zero,
           ),
@@ -328,7 +333,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Widget _buildEmptyState(BuildContext context) {
     return StateWidget.empty(
-      icon: Icons.label_outline,
+      icon: ButleryIcons.tag,
       title: context.l10n.personalTagEmptyTitle,
       subtitle: context.l10n.personalTagEmptySubtitle,
       actionLabel: context.l10n.personalTagCreateTag,

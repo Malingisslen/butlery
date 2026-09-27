@@ -37,7 +37,9 @@ import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// E2E Emulator Application Entry Point
 /// This entry point provides complete Butlery app functionality for E2E testing
@@ -148,9 +150,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
       title: 'E2E Emulator Error',
       home: Builder(
         builder: (context) {
-          final butlery =
-              Theme.of(context).extension<ButleryColors>() ??
-              ButleryColors.light;
+          final butlery = context.modeColors;
           final cs = Theme.of(context).colorScheme;
           return Scaffold(
             backgroundColor: butlery.warningContainer,
@@ -164,8 +164,8 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.warning_outlined,
+                  ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     size: AppDimensions.iconSizeXxl,
                     color: butlery.warning,
                   ),
@@ -189,7 +189,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cs.surface,
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                     child: const Text(
@@ -209,7 +209,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: cs.surface,
                           borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusM,
+                            AppDimensions.radiusControl,
                           ),
                           border: Border.all(color: cs.outlineVariant),
                         ),

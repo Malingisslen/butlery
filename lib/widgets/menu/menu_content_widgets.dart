@@ -10,11 +10,13 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart'
     show MenuPrefSource;
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -47,7 +49,7 @@ class MenuContentWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
@@ -55,12 +57,12 @@ class MenuContentWidgets {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.restaurant_menu,
+              ButleryIcon(
+                ButleryIcons.utensils,
                 size: AppDimensions.iconSizeAction,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.menuPromptQuestion,
                 style: AppTextStyles.labelMedium.copyWith(
@@ -75,15 +77,15 @@ class MenuContentWidgets {
             focusNode: focusNode,
             enabled: !isGenerating,
             hint: context.l10n.menuPromptHint,
-            prefixIcon: const Icon(Icons.edit),
+            prefixIcon: const ButleryIcon(ButleryIcons.pencil),
             suffixIcon: (controller.text.isNotEmpty || voiceButton != null)
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (controller.text.isNotEmpty)
                         IconButton(
-                          icon: Icon(
-                            Icons.clear,
+                          icon: ButleryIcon(
+                            ButleryIcons.x,
                             size: AppDimensions.iconSizeAction,
                             color: cs.onSurface.withValues(
                               alpha: AppDimensions.opacityDark,
@@ -132,7 +134,7 @@ class MenuContentWidgets {
               : (viewModel.hasMenu
                     ? context.l10n.menuGenerateNew
                     : context.l10n.menuGenerate),
-          icon: Icons.restaurant_menu,
+          icon: ButleryIcons.utensils,
           onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
           isLoading: viewModel.isGenerating,
           loadingText: context.l10n.menuGenerating,
@@ -170,14 +172,14 @@ class MenuContentWidgets {
             ActionButtons.primaryButton(
               context,
               label: context.l10n.menuGenerate,
-              icon: Icons.restaurant_menu,
+              icon: ButleryIcons.utensils,
               onPressed: onRetry,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             ActionButtons.outlinedButton(
               context,
               label: context.l10n.menuChooseManually,
-              icon: Icons.list,
+              icon: ButleryIcons.list,
               onPressed: () => Navigator.pushNamed(context, Routes.home),
             ),
           ],
@@ -237,17 +239,17 @@ class MenuContentWidgets {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: cs.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.restaurant,
+              ButleryIcon(
+                ButleryIcons.utensils,
                 color: cs.onPrimaryContainer,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,8 +297,8 @@ class MenuContentWidgets {
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
       child: Row(
         children: [
-          Icon(
-            isFamilyScope ? Icons.family_restroom : Icons.no_meals,
+          ButleryIcon(
+            isFamilyScope ? ButleryIcons.users : Icons.no_meals,
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),
@@ -328,15 +330,15 @@ class MenuContentWidgets {
     // so don't copy it here — and a caution must not read as a failure anyway.
     // The gold is icons-and-containers only (app_colors.dart), so the text
     // takes onWarningContainer, which clears WCAG AA on cream.
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.warning_amber,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             size: AppDimensions.iconSizeS,
             color: colors.warning,
           ),
@@ -383,8 +385,8 @@ class MenuContentWidgets {
             color: cs.onSurface.withValues(alpha: 0.08),
             // Rounded right corners only for left-border effect
             borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(AppDimensions.borderRadiusS),
-              bottomRight: Radius.circular(AppDimensions.borderRadiusS),
+              topRight: Radius.circular(AppDimensions.radiusControl),
+              bottomRight: Radius.circular(AppDimensions.radiusControl),
             ),
             // 4px green left border
             border: Border(
@@ -401,11 +403,7 @@ class MenuContentWidgets {
                   header: true,
                   child: Text(
                     MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.headerFont,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 3,
+                    style: AppTextStyles.overline.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
@@ -415,7 +413,7 @@ class MenuContentWidgets {
               Material(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
+                  AppDimensions.radiusControl,
                 ),
                 child: Semantics(
                   label: context.l10n.a11yMenuSectionRegenerate(
@@ -428,12 +426,12 @@ class MenuContentWidgets {
                         ? null
                         : () => viewModel.regenerateSection(category),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(AppDimensions.spacingSm),
-                      child: Icon(
-                        Icons.refresh,
+                      child: ButleryIcon(
+                        ButleryIcons.refreshCw,
                         size: AppDimensions.iconSizeM,
                         color: viewModel.isGenerating
                             ? cs.onSurfaceVariant
@@ -474,7 +472,7 @@ class MenuContentWidgets {
                     .orEmpty();
                 return Padding(
                   padding: const EdgeInsets.only(
-                    bottom: AppDimensions.spacingS,
+                    bottom: AppDimensions.space4,
                   ),
                   child: MenuVoteCard(
                     vote: vote,
@@ -515,8 +513,8 @@ Widget _buildInlineError(
               color: cs.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.zero,
             ),
-            child: Icon(
-              Icons.error_outline,
+            child: ButleryIcon(
+              ButleryIcons.triangleAlert,
               size: 32,
               color: cs.secondary,
             ),
@@ -548,7 +546,7 @@ Widget _buildInlineError(
             ActionButtons.primaryButton(
               context,
               label: context.l10n.commonRetry,
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               onPressed: () {
                 viewModel.clearError();
                 onRetry();
@@ -648,7 +646,7 @@ class _MenuRecipeCard extends StatelessWidget {
                             ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.spacingXs,
-                              vertical: AppDimensions.spacingXxs,
+                              vertical: AppDimensions.badgePaddingY,
                             ),
                             decoration: BoxDecoration(
                               color: cs.surface,
@@ -719,8 +717,8 @@ class _MenuRecipeCard extends StatelessWidget {
                             padding: const EdgeInsets.all(
                               AppDimensions.spacingXs,
                             ),
-                            child: Icon(
-                              Icons.how_to_vote,
+                            child: ButleryIcon(
+                              ButleryIcons.vote,
                               size: AppDimensions.iconSizeS,
                               color: cs.onSurface,
                             ),
@@ -728,7 +726,7 @@ class _MenuRecipeCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppDimensions.spacingXxs),
+                    const SizedBox(width: AppDimensions.space4),
                   ],
                   // Swap button
                   Material(
@@ -769,8 +767,8 @@ class _MenuRecipeCard extends StatelessWidget {
                           padding: const EdgeInsets.all(
                             AppDimensions.spacingXs,
                           ),
-                          child: Icon(
-                            Icons.swap_horiz,
+                          child: ButleryIcon(
+                            ButleryIcons.swapHorizontal,
                             size: AppDimensions.iconSizeS,
                             color: viewModel.isGenerating
                                 ? cs.onSurfaceVariant

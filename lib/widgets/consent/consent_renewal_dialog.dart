@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
 
 class ConsentRenewalDialog extends StatefulWidget {
@@ -136,7 +137,7 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: AppTextStyles.bodyBold),
-                    const SizedBox(height: AppDimensions.spacingXxs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       body,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -192,7 +193,7 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
   Widget _buildGeneral(BuildContext context) {
     final l10n = context.l10n;
     return AlertDialog(
-      icon: Icon(
+      icon: ButleryIcon(
         Icons.privacy_tip_rounded,
         color: Theme.of(context).colorScheme.onSurface,
       ),

@@ -35,9 +35,10 @@ class SharedContentActions {
         context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle),
       );
     } else if (context.mounted && viewModel.recipeViewModel.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.recipeViewModel.error ?? context.l10n.sharedImportFailed,
+        what:
+            viewModel.recipeViewModel.error ?? context.l10n.sharedImportFailed,
       );
     }
   }
@@ -74,9 +75,9 @@ class SharedContentActions {
         );
       }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed,
+        what: viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed,
       );
     }
   }
@@ -125,9 +126,10 @@ class SharedContentActions {
               viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
         );
       } else if (context.mounted && viewModel.recipeViewModel.hasError) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.recipeViewModel.error ??
+          what:
+              viewModel.recipeViewModel.error ??
               context.l10n.sharedCouldNotHideRecipe,
         );
       }
@@ -177,9 +179,11 @@ class SharedContentActions {
           onUndo: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
         );
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.menuViewModel.error ?? context.l10n.sharedCouldNotHideMenu,
+          what:
+              viewModel.menuViewModel.error ??
+              context.l10n.sharedCouldNotHideMenu,
         );
       }
     }
@@ -253,15 +257,16 @@ class SharedContentActions {
       }
     } else if (collaborativeListId == null && context.mounted) {
       if (viewModel.shoppingViewModel.hasError) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.shoppingViewModel.error ??
+          what:
+              viewModel.shoppingViewModel.error ??
               context.l10n.sharedCouldNotJoinList,
         );
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.sharedCouldNotJoinListTryAgain,
+          what: context.l10n.sharedCouldNotJoinListTryAgain,
         );
       }
     }
@@ -311,9 +316,10 @@ class SharedContentActions {
           ),
         );
       } else if (context.mounted && viewModel.shoppingViewModel.hasError) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.shoppingViewModel.error ??
+          what:
+              viewModel.shoppingViewModel.error ??
               context.l10n.sharedCouldNotHideShoppingList,
         );
       }
@@ -350,12 +356,12 @@ class SharedContentActions {
           context.l10n.unshareSuccess(sharedRecipe.recipeTitle),
         );
       } else {
-        SnackBarUtils.showError(context, context.l10n.unshareFailed);
+        SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
       }
     } catch (e) {
       AppLogger.error('Failed to unshare recipe', e);
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.unshareFailed);
+        SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
       }
     }
   }
@@ -387,7 +393,7 @@ class SharedContentActions {
         context.l10n.unshareSuccess(sharedMenu.menuTitle),
       );
     } else {
-      SnackBarUtils.showError(context, context.l10n.unshareFailed);
+      SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
     }
   }
 
@@ -422,7 +428,7 @@ class SharedContentActions {
         context.l10n.unshareSuccess(sharedShoppingList.listName),
       );
     } else {
-      SnackBarUtils.showError(context, context.l10n.unshareFailed);
+      SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
     }
   }
 }

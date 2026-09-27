@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -77,11 +79,14 @@ class _NotAuthorized extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_outline, size: 64, color: cs.outline),
+            ButleryIcon(ButleryIcons.lock, size: 64, color: cs.outline),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               context.l10n.moderatorNotAuthorized,
@@ -123,8 +128,7 @@ class _ReportsList extends StatelessWidget {
         horizontal: AppDimensions.paddingM,
       ),
       itemCount: vm.reports.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingS),
+      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space4),
       itemBuilder: (_, i) => _ReportCard(report: vm.reports[i]),
     );
   }
@@ -318,14 +322,16 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
+      padding: AppDimensions.statusPillPadding,
+      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
+      // v1:297 draws the pill text at 0.5 px tracking.
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      color: cs.secondaryContainer,
       child: Text(
         status.wireName,
-        style: AppTextStyles.metadataEmphasized,
+        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
       ),
     );
   }

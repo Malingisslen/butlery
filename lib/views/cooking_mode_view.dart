@@ -28,6 +28,8 @@ import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
@@ -379,8 +381,8 @@ class CookingNoStepsState extends StatelessWidget {
                     child: TappableWrapper(
                       onTap: onClose,
                       semanticLabel: l10n.a11yCookingModeClose,
-                      child: Icon(
-                        Icons.close,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
                         color: cs.primary,
                         size: AppDimensions.iconSizeM,
                       ),
@@ -397,7 +399,7 @@ class CookingNoStepsState extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ExcludeSemantics(
-                          child: Icon(
+                          child: ButleryIcon(
                             Icons.no_meals,
                             color: cs.onPrimary,
                             size: AppDimensions.iconSizeDisplay,
@@ -675,8 +677,8 @@ class _CookingModeContent extends StatelessWidget {
             child: TappableWrapper(
               onTap: () => Navigator.maybePop(context),
               semanticLabel: context.l10n.a11yCookingModeClose,
-              child: Icon(
-                Icons.close,
+              child: ButleryIcon(
+                ButleryIcons.x,
                 color: cs.primary,
                 size: AppDimensions.iconSizeM,
               ),
@@ -701,8 +703,10 @@ class _CookingModeContent extends StatelessWidget {
         if (!voiceController.ttsAvailable) return const SizedBox.shrink();
         final muted = voiceController.muted;
         return IconButton(
-          icon: Icon(
-            muted ? Icons.volume_off : Icons.volume_up,
+          icon: ButleryIcon(
+            // One glyph for both states until design draws the second one
+            // (P7-U08 open question); the tooltip/label carries the state.
+            ButleryIcons.volume,
             color: cs.onPrimary,
           ),
           tooltip: muted
@@ -762,7 +766,7 @@ class _IngredientsPanel extends StatelessWidget {
                   children: [
                     _buildPortionButton(
                       context,
-                      icon: Icons.remove,
+                      icon: ButleryIcons.minus,
                       onPressed:
                           vm.currentPortions > CookingModeViewModel.minPortions
                           ? () => vm.updatePortions(vm.currentPortions - 1)
@@ -782,7 +786,7 @@ class _IngredientsPanel extends StatelessWidget {
                     ),
                     _buildPortionButton(
                       context,
-                      icon: Icons.add,
+                      icon: ButleryIcons.plus,
                       onPressed:
                           vm.currentPortions < CookingModeViewModel.maxPortions
                           ? () => vm.updatePortions(vm.currentPortions + 1)
@@ -811,7 +815,7 @@ class _IngredientsPanel extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(
                         top: AppDimensions.spacingMd,
-                        bottom: AppDimensions.spacingTight,
+                        bottom: AppDimensions.space4,
                       ),
                       child: Text(
                         row.label.toUpperCase(),
@@ -838,7 +842,7 @@ class _IngredientsPanel extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingTight,
+                        vertical: AppDimensions.space4,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -942,7 +946,7 @@ class _IngredientsPanel extends StatelessWidget {
   }) {
     final cs = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null;
-    final label = icon == Icons.remove
+    final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
     return Semantics(
@@ -963,7 +967,7 @@ class _IngredientsPanel extends StatelessWidget {
                 width: 2,
               ),
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeL,
               color: isEnabled ? cs.onPrimary : _disabledOnInk,
@@ -1128,105 +1132,103 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                         padding: const EdgeInsets.only(
                           bottom: AppDimensions.spacingLg,
                         ),
-                        child: Opacity(
-                          // 0.6 (was 0.4): inactive steps stay legible for the
-                          // cook glancing at upcoming steps (WCAG contrast).
-                          opacity: isActive ? 1.0 : 0.6,
-                          child: Container(
-                            decoration: isActive
-                                ? BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: cs.onPrimary,
-                                        width: 3,
-                                      ),
+                        // Every step's text is paper at full strength, as
+                        // drawn in Skarmar v12 del 1 #laga (:277-288): the
+                        // current step is marked by the paper left border
+                        // and the paper plate, the others by the 0.6 plate
+                        // (tokens.json:47-51 onInk). Never a faded step:
+                        // opacity is never a state (tokens.json:41).
+                        child: Container(
+                          decoration: isActive
+                              ? BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: cs.onPrimary,
+                                      width: 3,
                                     ),
-                                  )
-                                : null,
-                            padding: isActive
-                                ? const EdgeInsetsDirectional.only(
-                                    start: AppDimensions.spacingSm,
-                                  )
-                                : null,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: AppDimensions.minTouchTarget,
-                                  height: AppDimensions.minTouchTarget,
-                                  alignment: Alignment.center,
-                                  // As drawn in Skarmar v12 del 1 #laga: the
-                                  // current step is a paper plate, the others
-                                  // paper at 0.6, an allowed on-ink ladder
-                                  // step (tokens.json:40-53 onInk). The digit
-                                  // is the base colour on both, so it reads
-                                  // on the 0.6 plate in dark mode too.
-                                  decoration: BoxDecoration(
-                                    color: isActive
-                                        ? cs.onPrimary
-                                        : cs.onPrimary.withValues(
-                                            alpha: _onInkStepPlate,
-                                          ),
                                   ),
-                                  child: Text(
-                                    '$stepNumber',
-                                    style: AppTextStyles.contentTitle.copyWith(
-                                      color: _cookingBase(cs),
-                                      fontWeight: FontWeight.w700,
-                                      fontSize:
-                                          AppTextStyles.contentTitle.fontSize! *
-                                          vm.fontScale,
-                                    ),
+                                )
+                              : null,
+                          padding: isActive
+                              ? const EdgeInsetsDirectional.only(
+                                  start: AppDimensions.spacingSm,
+                                )
+                              : null,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: AppDimensions.minTouchTarget,
+                                height: AppDimensions.minTouchTarget,
+                                alignment: Alignment.center,
+                                // As drawn in Skarmar v12 del 1 #laga: the
+                                // current step is a paper plate, the others
+                                // paper at 0.6, an allowed on-ink ladder
+                                // step (tokens.json:40-53 onInk). The digit
+                                // is the base colour on both, so it reads
+                                // on the 0.6 plate in dark mode too.
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? cs.onPrimary
+                                      : cs.onPrimary.withValues(
+                                          alpha: _onInkStepPlate,
+                                        ),
+                                ),
+                                child: Text(
+                                  '$stepNumber',
+                                  style: AppTextStyles.contentTitle.copyWith(
+                                    color: _cookingBase(cs),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize:
+                                        AppTextStyles.contentTitle.fontSize! *
+                                        vm.fontScale,
                                   ),
                                 ),
-                                const SizedBox(width: AppDimensions.spacingMd),
-                                Expanded(
-                                  child: Semantics(
-                                    label: context.l10n
-                                        .a11yCookingStepLongPressTimer(
-                                          stepNumber,
-                                        ),
-                                    button: true,
-                                    child: GestureDetector(
-                                      // BUT-406: long-press opens a step timer
-                                      // sheet, pre-filled with the duration
-                                      // parsed from this instruction (5 min
-                                      // default fallback).
-                                      // BUT-948 exception: long-press activates
-                                      // the step timer (feature affordance),
-                                      // not multi-select.
-                                      onLongPress: () => _openStepTimer(
+                              ),
+                              const SizedBox(width: AppDimensions.spacingMd),
+                              Expanded(
+                                child: Semantics(
+                                  label: context.l10n
+                                      .a11yCookingStepLongPressTimer(
+                                        stepNumber,
+                                      ),
+                                  button: true,
+                                  child: GestureDetector(
+                                    // BUT-406: long-press opens a step timer
+                                    // sheet, pre-filled with the duration
+                                    // parsed from this instruction (5 min
+                                    // default fallback).
+                                    // BUT-948 exception: long-press activates
+                                    // the step timer (feature affordance),
+                                    // not multi-select.
+                                    onLongPress: () => _openStepTimer(
+                                      context,
+                                      index,
+                                      instruction,
+                                    ),
+                                    // BUT-604: the duration phrase renders
+                                    // as an inline tappable chip — visible
+                                    // affordance for the same timer sheet.
+                                    child: InlineTimerText(
+                                      text: instruction,
+                                      onTimerTap: (_) => _openStepTimer(
                                         context,
                                         index,
                                         instruction,
                                       ),
-                                      // BUT-604: the duration phrase renders
-                                      // as an inline tappable chip — visible
-                                      // affordance for the same timer sheet.
-                                      child: InlineTimerText(
-                                        text: instruction,
-                                        onTimerTap: (_) => _openStepTimer(
-                                          context,
-                                          index,
-                                          instruction,
-                                        ),
-                                        chipColor: cs.onPrimary,
-                                        style: AppTextStyles.titleLarge
-                                            .copyWith(
-                                              color: cs.onPrimary,
-                                              height: 1.7,
-                                              fontSize:
-                                                  AppTextStyles
-                                                      .titleLarge
-                                                      .fontSize! *
-                                                  vm.fontScale,
-                                            ),
+                                      chipColor: cs.onPrimary,
+                                      style: AppTextStyles.titleLarge.copyWith(
+                                        color: cs.onPrimary,
+                                        height: 1.7,
+                                        fontSize:
+                                            AppTextStyles.titleLarge.fontSize! *
+                                            vm.fontScale,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -1281,7 +1283,7 @@ class CookingStepNavigation extends StatelessWidget {
       child: Row(
         children: [
           _NavButton(
-            icon: Icons.arrow_back,
+            icon: ButleryIcons.arrowLeft,
             label: context.l10n.cookingModePreviousStep,
             onPressed: vm.hasPreviousStep ? vm.previousStep : null,
           ),
@@ -1309,7 +1311,7 @@ class CookingStepNavigation extends StatelessWidget {
                       HapticFeedback.lightImpact();
                       onFinish!();
                     },
-                    icon: const Icon(Icons.check),
+                    icon: const ButleryIcon(ButleryIcons.check),
                     label: Text(context.l10n.cookingDone),
                   )
                 : FilledButton.icon(
@@ -1322,7 +1324,7 @@ class CookingStepNavigation extends StatelessWidget {
                             vm.nextStep();
                           }
                         : null,
-                    icon: const Icon(Icons.arrow_forward),
+                    icon: const ButleryIcon(ButleryIcons.arrowRight),
                     label: Text(context.l10n.cookingModeNextStep),
                   ),
           ),
@@ -1357,7 +1359,7 @@ class _NavButton extends StatelessWidget {
           : null,
       enabled: enabled,
       semanticLabel: label,
-      child: Icon(
+      child: ButleryIcon(
         icon,
         color: enabled ? cs.onPrimary : _disabledOnInk,
         size: AppDimensions.iconSizeL,

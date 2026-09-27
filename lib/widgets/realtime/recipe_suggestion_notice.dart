@@ -175,7 +175,7 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppDimensions.spacingModerate,
+            AppDimensions.space12,
             AppDimensions.paddingS,
             AppDimensions.spacingXs,
             AppDimensions.paddingS,

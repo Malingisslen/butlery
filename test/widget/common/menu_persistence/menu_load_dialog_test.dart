@@ -23,6 +23,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -67,7 +68,8 @@ void main() {
       // Swedish locale: "Sparade menyer" + "Stäng"
       expect(find.text('Sparade menyer'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Stäng'), findsOneWidget);
-      expect(find.byIcon(Icons.folder_open), findsOneWidget);
+      // Header and empty state both show the folder glyph (P7-U08).
+      expect(find.byIcon(ButleryIcons.folder), findsNWidgets(2));
     });
 
     testWidgets(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -180,13 +182,13 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.spacingXs,
-        AppDimensions.spacingXxs,
-        AppDimensions.spacingS,
-        AppDimensions.spacingXxs,
+        AppDimensions.space4,
+        AppDimensions.space4,
+        AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
@@ -216,7 +218,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           const Spacer(),
           TextButton.icon(
             onPressed: count > 0 ? _unblockSelected : null,
-            icon: const Icon(Icons.lock_open),
+            icon: const ButleryIcon(ButleryIcons.unlock),
             label: Text(context.l10n.blockedUsersUnblockSelectedCount(count)),
             style: TextButton.styleFrom(
               foregroundColor: cs.onSurface,
@@ -307,8 +309,8 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Row(
             children: [
-              Icon(
-                Icons.block,
+              ButleryIcon(
+                ButleryIcons.block,
                 color: cs.onSurfaceVariant,
                 size: AppDimensions.iconSizeM,
               ),
@@ -329,8 +331,8 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
                   ],
                 ),
               ),
-              Icon(
-                _isExpanded ? Icons.expand_less : Icons.expand_more,
+              ButleryIcon(
+                _isExpanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 color: cs.onSurfaceVariant,
               ),
             ],
@@ -354,7 +356,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       child: Row(
         children: [
           if (_selectionMode) ...[
-            Icon(
+            ButleryIcon(
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
               color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
             ),

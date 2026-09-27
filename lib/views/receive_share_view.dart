@@ -18,7 +18,9 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/widgets/common/indicators/status_indicator.dart';
@@ -317,14 +319,14 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
     switch (_detectionResult.type) {
       case content_detector.ContentType.socialMediaUrl:
-        icon = Icons.link;
+        icon = ButleryIcons.link;
         title = context.l10n.importUrlFromPlatform(_getPlatformName());
         color = Theme.of(context).colorScheme.onSurface;
         break;
       case content_detector.ContentType.recipeText:
-        icon = Icons.restaurant_menu;
+        icon = ButleryIcons.utensils;
         title = context.l10n.importRecipeTextDetected;
-        color = context.butleryColors.success;
+        color = context.modeColors.success;
         break;
       case content_detector.ContentType.recipeUrl:
         icon = Icons.public;
@@ -401,14 +403,17 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                         alpha: AppDimensions.opacityVeryLight,
                       ),
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                       border: Border.all(color: cs.error),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: cs.error),
-                        const SizedBox(width: AppDimensions.spacingS),
+                        ButleryIcon(
+                          ButleryIcons.triangleAlert,
+                          color: cs.error,
+                        ),
+                        const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             _extractionError!,
@@ -426,7 +431,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             ],
             ElevatedButton.icon(
               onPressed: _extractFromSocialMedia,
-              icon: const Icon(Icons.download),
+              icon: const ButleryIcon(ButleryIcons.download),
               label: Text(
                 _extractionError != null
                     ? context.l10n.commonRetry
@@ -438,10 +443,10 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(context.l10n.commonOr, style: AppTextStyles.bodySmall),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
-              icon: const Icon(Icons.content_paste),
+              icon: const ButleryIcon(Icons.content_paste),
               label: Text(context.l10n.importCopyManually),
               style: ComponentThemes.outlinedButtonStyle(
                 Theme.of(context).colorScheme,
@@ -462,7 +467,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToUrlImport,
-              icon: const Icon(Icons.download),
+              icon: const ButleryIcon(ButleryIcons.download),
               label: Text(context.l10n.importFetchFromWebsite),
               style: ComponentThemes.primaryButtonStyle(
                 Theme.of(context).colorScheme,
@@ -482,26 +487,26 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: context.butleryColors.success.withValues(
+                    color: context.modeColors.success.withValues(
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     border: Border.all(color: cs.outlineVariant),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: context.butleryColors.success,
+                      ButleryIcon(
+                        ButleryIcons.circleCheck,
+                        color: context.modeColors.success,
                       ),
-                      const SizedBox(width: AppDimensions.spacingS),
+                      const SizedBox(width: AppDimensions.space4),
                       Expanded(
                         child: Text(
                           context.l10n.importRecipeTextCanImport,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: context.butleryColors.success,
+                            color: context.modeColors.success,
                           ),
                         ),
                       ),
@@ -513,7 +518,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToTextImport,
-              icon: const Icon(Icons.arrow_forward),
+              icon: const ButleryIcon(ButleryIcons.arrowRight),
               label: Text(context.l10n.importContinueWithImport),
               style: ComponentThemes.primaryButtonStyle(
                 Theme.of(context).colorScheme,
@@ -534,7 +539,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             const SizedBox(height: AppDimensions.spacingL),
             OutlinedButton.icon(
               onPressed: _navigateToTextImport,
-              icon: const Icon(Icons.edit),
+              icon: const ButleryIcon(ButleryIcons.pencil),
               label: Text(context.l10n.importTryAnyway),
               style: ComponentThemes.outlinedButtonStyle(
                 Theme.of(context).colorScheme,

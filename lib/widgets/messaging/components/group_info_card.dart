@@ -3,6 +3,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 
@@ -44,8 +46,8 @@ class GroupInfoCard extends StatelessWidget {
               ),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.group,
+            child: ButleryIcon(
+              ButleryIcons.users,
               size: 40,
               color: cs.onSurface,
             ),
@@ -60,7 +62,7 @@ class GroupInfoCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
 
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Member count
           Text(
@@ -70,7 +72,7 @@ class GroupInfoCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Created date
           Text(

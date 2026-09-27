@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-982 / BUT-1199: first-use, dismissible hint teaching an otherwise-
 /// invisible gesture (swipe-to-edit/delete on recipe cards, long-press a
@@ -93,7 +95,11 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
       ),
       child: Row(
         children: [
-          Icon(widget.icon, size: AppDimensions.iconSizeM, color: cs.onSurface),
+          ButleryIcon(
+            widget.icon,
+            size: AppDimensions.iconSizeM,
+            color: cs.onSurface,
+          ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -104,7 +110,10 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: AppDimensions.iconSizeS),
+            icon: const ButleryIcon(
+              ButleryIcons.x,
+              size: AppDimensions.iconSizeS,
+            ),
             tooltip: context.l10n.commonDismiss,
             color: cs.onPrimaryContainer,
             visualDensity: VisualDensity.compact,

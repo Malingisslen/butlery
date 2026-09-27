@@ -30,6 +30,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -298,7 +300,10 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
         final cs = Theme.of(ctx).colorScheme;
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(ctx),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,12 +365,15 @@ class _ProfileLoadErrorView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.error_outline,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   size: AppDimensions.iconSizeXxl,
                   color: cs.error,
                 ),

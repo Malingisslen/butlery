@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Widgets for displaying collaborative participants
@@ -46,8 +48,8 @@ class CollaborativeParticipantsWidgets {
 
         if (snapshot.hasError) {
           // Error state - show placeholder
-          return Icon(
-            Icons.people_outline,
+          return ButleryIcon(
+            ButleryIcons.users,
             size: avatarSize,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           );
@@ -56,8 +58,8 @@ class CollaborativeParticipantsWidgets {
         final participants = snapshot.data ?? [];
         if (participants.isEmpty) {
           // No participants - show placeholder
-          return Icon(
-            Icons.person_outline,
+          return ButleryIcon(
+            ButleryIcons.user,
             size: avatarSize,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           );

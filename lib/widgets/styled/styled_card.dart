@@ -12,7 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/theme_constants.dart';
 
 class StyledCard extends StatelessWidget {
@@ -42,10 +42,13 @@ class StyledCard extends StatelessWidget {
     this.borderColor,
     this.semanticLabel,
   }) : assert(
-         borderRadius == null || borderRadius == 0,
-         'StyledCard is square by design — pass null or 0 (all '
-         'AppDimensions.borderRadius* constants are 0.0). A non-zero radius '
-         'would reintroduce rounded corners the design system forbids.',
+         borderRadius == null ||
+             borderRadius == AppDimensions.radiusSharp ||
+             borderRadius == AppDimensions.radiusControl ||
+             borderRadius == AppDimensions.radiusCard,
+         'A StyledCard corner comes from the radius scale (tokens.json '
+         'space.radius): card 12 by default, control 8, or sharp 0 for an '
+         'editorial surface. Any other radius is off the scale.',
        );
 
   /// Standard card with default Material Design styling
@@ -58,7 +61,7 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
     this.semanticLabel,
   }) : elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -72,7 +75,7 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
     this.semanticLabel,
   }) : elevation = AppDimensions.elevationMedium,
-       borderRadius = AppDimensions.borderRadius12,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -87,7 +90,7 @@ class StyledCard extends StatelessWidget {
     this.borderColor,
     this.semanticLabel,
   }) : elevation = 0,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = true;
 
   /// Recipe card styling
@@ -100,7 +103,7 @@ class StyledCard extends StatelessWidget {
   }) : padding = null,
        margin = null,
        elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius12,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -114,7 +117,7 @@ class StyledCard extends StatelessWidget {
   }) : padding = null,
        margin = null,
        elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -127,7 +130,7 @@ class StyledCard extends StatelessWidget {
        onTap = null,
        backgroundColor = null,
        elevation = AppDimensions.elevationHigh,
-       borderRadius = AppDimensions.borderRadius16,
+       borderRadius = AppDimensions.radiusControl,
        showBorder = false,
        borderColor = null,
        semanticLabel = null;
@@ -146,7 +149,7 @@ class StyledCard extends StatelessWidget {
        elevation = isSelected
            ? AppDimensions.elevationMedium
            : AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = isSelected,
        borderColor = null;
 
@@ -187,7 +190,7 @@ class StyledCard extends StatelessWidget {
       margin: effectiveMargin ?? EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-          borderRadius ?? AppDimensions.borderRadius8,
+          borderRadius ?? AppDimensions.radiusCard,
         ),
         side: showBorder
             ? BorderSide(
@@ -211,7 +214,7 @@ class StyledCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(
-            borderRadius ?? AppDimensions.borderRadius8,
+            borderRadius ?? AppDimensions.radiusCard,
           ),
           child: card,
         ),
@@ -261,7 +264,7 @@ class StyledCards {
   }) {
     return Builder(
       builder: (context) {
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         return StyledCard.outlined(
           backgroundColor: bc.infoContainer,
           borderColor: bc.info,
@@ -278,7 +281,7 @@ class StyledCards {
   }) {
     return Builder(
       builder: (context) {
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         return StyledCard.outlined(
           backgroundColor: bc.successContainer,
           borderColor: bc.success,
@@ -295,7 +298,7 @@ class StyledCards {
   }) {
     return Builder(
       builder: (context) {
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         return StyledCard.outlined(
           backgroundColor: bc.warningContainer,
           borderColor: bc.warning,
@@ -346,7 +349,7 @@ class StyledCards {
       onTap: onTap,
       padding: EdgeInsets.zero,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         child: Stack(
           children: [
             imageWidget,
@@ -356,7 +359,7 @@ class StyledCards {
                   decoration: BoxDecoration(
                     color: ThemeConstants.blackOverlay20,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadius8,
+                      AppDimensions.radiusCard,
                     ),
                   ),
                   child: overlay,

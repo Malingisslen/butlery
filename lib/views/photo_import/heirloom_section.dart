@@ -6,9 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-410 heirloom toggle + metadata form.
 ///
@@ -76,35 +78,35 @@ class _HeirloomSectionState extends State<HeirloomSection> {
             onChanged: (v) => vm.isHeirloom = v,
           ),
           if (vm.isHeirloom) ...[
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             if (vm.isOfflineQueued)
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.warning.withValues(
+                  color: context.modeColors.warning.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   border: Border.all(
-                    color: context.butleryColors.warning.withValues(
+                    color: context.modeColors.warning.withValues(
                       alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.cloud_off,
-                      color: context.butleryColors.warning,
+                    ButleryIcon(
+                      ButleryIcons.wifiOff,
+                      color: context.modeColors.warning,
                       size: AppDimensions.iconSizeM,
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
                         context.l10n.heirloomUploadOffline,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: context.butleryColors.onWarningContainer,
+                          color: context.modeColors.onWarningContainer,
                         ),
                       ),
                     ),
@@ -119,7 +121,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
               ),
               onChanged: (v) => vm.heirloomWriterName = v,
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             TextField(
               controller: _yearCtrl,
               maxLength: 4,
@@ -138,7 +140,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                     : parsed;
               },
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             TextField(
               controller: _noteCtrl,
               maxLength: 200,

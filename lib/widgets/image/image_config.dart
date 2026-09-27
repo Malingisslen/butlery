@@ -107,7 +107,7 @@ class ImageConfig {
       showImageCounter: false,
       enableHapticFeedback: false,
       maxImages: 1,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius100),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: borderWidth,
@@ -129,7 +129,7 @@ class ImageConfig {
       customWidth: customWidth,
       customHeight: customHeight,
       borderRadius:
-          borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius ?? BorderRadius.circular(AppDimensions.radiusCard),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: showMultipleIndicator,
@@ -152,7 +152,7 @@ class ImageConfig {
       type: ImageType.recipeDetail,
       mode: ImageDisplayMode.carousel,
       size: size,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -176,7 +176,7 @@ class ImageConfig {
       type: ImageType.recipeEdit,
       mode: ImageDisplayMode.editable,
       size: size,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -197,7 +197,7 @@ class ImageConfig {
       type: ImageType.gallery,
       mode: ImageDisplayMode.grid,
       size: size,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -218,7 +218,7 @@ class ImageConfig {
       type: ImageType.picker,
       mode: ImageDisplayMode.picker,
       size: size,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -267,7 +267,7 @@ class ImageConfig {
       mode: ImageDisplayMode.readonly,
       size: size,
       borderRadius:
-          borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),
+          borderRadius ?? BorderRadius.circular(AppDimensions.radiusControl),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -353,20 +353,20 @@ class ImageConfig {
 
     switch (type) {
       case ImageType.avatar:
-        return BorderRadius.circular(AppDimensions.borderRadius100);
+        return BorderRadius.circular(AppDimensions.radiusPill);
       case ImageType.recipeCard:
-        return BorderRadius.circular(AppDimensions.borderRadius12);
+        return BorderRadius.circular(AppDimensions.radiusCard);
       case ImageType.recipeDetail:
       case ImageType.recipeEdit:
-        return BorderRadius.circular(AppDimensions.borderRadius16);
+        return BorderRadius.circular(AppDimensions.radiusCard);
       case ImageType.gallery:
       case ImageType.thumbnail:
-        return BorderRadius.circular(AppDimensions.borderRadius8);
+        return BorderRadius.circular(AppDimensions.radiusControl);
       case ImageType.picker:
-        return BorderRadius.circular(AppDimensions.borderRadius12);
+        return BorderRadius.circular(AppDimensions.radiusCard);
       case ImageType.hero:
       case ImageType.cached:
-        return BorderRadius.circular(AppDimensions.borderRadius0);
+        return BorderRadius.circular(AppDimensions.radiusSharp);
     }
   }
 }

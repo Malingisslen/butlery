@@ -231,12 +231,11 @@ void main() {
 
         final result = await service.exportToFile();
 
-        // We assert structurally — the message is localised and includes the
-        // wrapped exception, so we check the success flag is false and the
-        // failure path is engaged (no filePath populated).
+        // The exception is logged, never put in the message.
         expect(result.success, isFalse);
         expect(result.filePath, isNull);
-        expect(result.message, isNotEmpty);
+        expect(result.unexpected, isTrue);
+        expect(result.message, equals('Backupen kunde inte sparas.'));
       },
     );
   });
@@ -273,15 +272,18 @@ void main() {
     });
 
     /// File-picker itself throws (permission denied, etc.) — outer try/catch
-    /// must wrap it into the localised "Import failed" error, not propagate.
-    test('wraps unexpected file-picker exception in localised error', () async {
+    /// must turn it into an "unexpected" result, not propagate, and the
+    /// exception text must not reach the message the user sees
+    /// (content-style-guide.md:94).
+    test('wraps unexpected file-picker exception without its text', () async {
       fakeFilePicker.respondWithThrow(StateError('disk on fire'));
 
       final result = await service.importFromFile();
 
       expect(result.success, isFalse);
-      expect(result.errorMessage, contains('Import misslyckades'));
-      expect(result.errorMessage, contains('disk on fire'));
+      expect(result.unexpected, isTrue);
+      expect(result.errorMessage, equals('Backupen kunde inte läsas in.'));
+      expect(result.errorMessage, isNot(contains('disk on fire')));
     });
   });
 

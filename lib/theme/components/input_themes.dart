@@ -39,7 +39,7 @@ class InputThemes {
         ),
       ),
       // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
-      // StyledInput, AdaptiveTextField and ButlerySearchBox are): the
+      // StyledInput and ButlerySearchBox are): the
       // canonical ring colour and width, ink on light and paper on dark,
       // never saffron (tokens.json:155-160; Komponentark v1:657). A theme's
       // input border can only draw on the field's own edge, so this is the
@@ -83,7 +83,7 @@ class InputThemes {
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
       hintStyle: TextStyle(color: cs.outline),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
@@ -160,7 +160,7 @@ class InputThemes {
       ),
       minVerticalPadding: AppDimensions.spacingSm,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
     );
   }
@@ -252,7 +252,7 @@ class InputThemes {
     color: AppColors.primaryContainer.withValues(
       alpha: AppDimensions.opacityVeryLight,
     ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     border: Border.all(
       color: AppColors.forestGreen.withValues(
         alpha: AppDimensions.opacityLight,
@@ -265,7 +265,7 @@ class InputThemes {
     color: AppColors.secondaryContainer.withValues(
       alpha: AppDimensions.opacityVeryLight,
     ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     border: Border.all(
       color: AppColors.rust.withValues(alpha: AppDimensions.opacityLight),
     ),
@@ -276,7 +276,7 @@ class InputThemes {
     color: AppColors.primaryContainer.withValues(
       alpha: AppDimensions.opacityVeryLight,
     ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     border: Border.all(
       color: AppColors.forestGreen.withValues(
         alpha: AppDimensions.opacityLight,
@@ -295,9 +295,4 @@ class InputThemes {
     ),
     boxShadow: AppShadows.searchBox,
   );
-
-  /// Search box decoration while focused: the same edge as at rest. The
-  /// edge never thickens at focus (Grafisk manual v6:423; Komponentark
-  /// v1:657); ButlerySearchBox draws the focus ring outside it instead.
-  static BoxDecoration get searchBoxDecorationFocused => searchBoxDecoration;
 }

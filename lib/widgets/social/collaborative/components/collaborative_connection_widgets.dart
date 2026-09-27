@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Connection status widgets for collaborative content
 class CollaborativeConnectionWidgets {
@@ -21,17 +21,17 @@ class CollaborativeConnectionWidgets {
         final cs = Theme.of(context).colorScheme;
 
         if (isOnline) {
-          final successColor = context.butleryColors.success;
+          final successColor = context.modeColors.success;
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
               color: successColor.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -77,7 +77,7 @@ class CollaborativeConnectionWidgets {
                     fontSize: AppDimensions.iconSizeM.toDouble(),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
               ],
               Expanded(
                 child: Column(
@@ -131,7 +131,7 @@ class CollaborativeConnectionWidgets {
           height: size,
           decoration: BoxDecoration(
             color: isOnline
-                ? (onlineColor ?? context.butleryColors.success)
+                ? (onlineColor ?? context.modeColors.success)
                 : (offlineColor ?? cs.error),
             shape: BoxShape.circle,
           ),

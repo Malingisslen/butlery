@@ -23,6 +23,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/button_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 const _darkBase = Color(0xFF17251D);
 const _darkRaised = Color(0xFF2F4437);
@@ -234,18 +236,23 @@ void main() {
         const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: Icon(Icons.edit), title: Text('Redigera')),
+            ListTile(
+              leading: ButleryIcon(ButleryIcons.pencil),
+              title: Text('Redigera'),
+            ),
             ListTile(
               selected: true,
-              leading: Icon(Icons.check),
+              leading: ButleryIcon(ButleryIcons.check),
               title: Text('Efter kategori'),
             ),
           ],
         ),
       );
-      final restIcon = IconTheme.of(tester.element(find.byIcon(Icons.edit)));
+      final restIcon = IconTheme.of(
+        tester.element(find.byIcon(ButleryIcons.pencil)),
+      );
       final chosenIcon = IconTheme.of(
-        tester.element(find.byIcon(Icons.check)),
+        tester.element(find.byIcon(ButleryIcons.check)),
       );
       final chosenText = DefaultTextStyle.of(
         tester.element(find.text('Efter kategori')),

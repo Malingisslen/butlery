@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog shown when user hits a rate limit during import.
 ///
@@ -49,9 +51,9 @@ class RateLimitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: Icon(
+      icon: ButleryIcon(
         _getIconForLimitType(rateLimitResult.limitType),
-        color: context.butleryColors.warning,
+        color: context.modeColors.warning,
         size: AppDimensions.iconSizeXxl,
       ),
       title: Text(_getTitleForLimitType(context, rateLimitResult.limitType)),
@@ -103,19 +105,19 @@ class RateLimitDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: context.butleryColors.warning.withValues(
+        color: context.modeColors.warning.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.timer_outlined,
-            color: context.butleryColors.warning,
+          ButleryIcon(
+            ButleryIcons.clock,
+            color: context.modeColors.warning,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               timeText,
@@ -151,7 +153,7 @@ class RateLimitDialog extends StatelessWidget {
     if (onManualImport != null) {
       actions.add(
         _ActionTile(
-          icon: Icons.edit_outlined,
+          icon: ButleryIcons.pencil,
           title: context.l10n.dialogManualImport,
           subtitle: context.l10n.dialogMarkIngredientsYourself,
           onTap: () {
@@ -175,7 +177,7 @@ class RateLimitDialog extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...actions,
       ],
     );
@@ -194,7 +196,7 @@ class RateLimitDialog extends StatelessWidget {
       case LimitType.perHour:
         return Icons.speed_outlined;
       case LimitType.perDay:
-        return Icons.today_outlined;
+        return ButleryIcons.calendar;
       case LimitType.llmDaily:
       case LimitType.llmMonthly:
         return Icons.smart_toy_outlined;
@@ -243,16 +245,16 @@ class _ActionTile extends StatelessWidget {
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           decoration: BoxDecoration(
             border: Border.all(color: cs.outlineVariant),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeL,
@@ -275,8 +277,8 @@ class _ActionTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 color: cs.onSurfaceVariant,
               ),
             ],

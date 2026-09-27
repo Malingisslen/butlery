@@ -5,6 +5,8 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -19,17 +21,10 @@ class LicensesView extends StatefulWidget {
 
   static const noticesAsset = 'assets/fonts/THIRD_PARTY_NOTICES.txt';
   static const oflAsset = 'assets/fonts/OFL-1.1.txt';
-  // The legacy families are still in pubspec `fonts:`, so they ship until the
-  // legacy-removal package retires them — together with these two entries.
-  static const josefinSansAsset = 'assets/fonts/JosefinSans-OFL.txt';
-  static const spaceGroteskAsset = 'assets/fonts/SpaceGrotesk-OFL.txt';
 
-  static const assets = [
-    noticesAsset,
-    oflAsset,
-    josefinSansAsset,
-    spaceGroteskAsset,
-  ];
+  // ButlerySans is the only bundled family (pubspec.yaml `fonts:`), so its
+  // notices and licence are the whole obligation.
+  static const assets = [noticesAsset, oflAsset];
 
   @override
   State<LicensesView> createState() => _LicensesViewState();
@@ -113,8 +108,8 @@ class _LicensesViewState extends State<LicensesView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              ButleryIcon(
+                ButleryIcons.triangleAlert,
                 size: 64,
                 color: Theme.of(context).colorScheme.error,
               ),
@@ -126,7 +121,7 @@ class _LicensesViewState extends State<LicensesView> {
               const SizedBox(height: AppDimensions.spacingLg),
               ElevatedButton.icon(
                 onPressed: _load,
-                icon: const Icon(Icons.refresh),
+                icon: const ButleryIcon(ButleryIcons.refreshCw),
                 label: Text(context.l10n.commonRetry),
               ),
             ],
@@ -139,12 +134,13 @@ class _LicensesViewState extends State<LicensesView> {
     final headings = [
       context.l10n.licensesNoticesHeading,
       context.l10n.licensesOflHeading,
-      'Josefin Sans',
-      'Space Grotesk',
     ];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+        vertical: AppDimensions.space16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -158,9 +154,9 @@ class _LicensesViewState extends State<LicensesView> {
           // duplicate them.
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.code),
+            leading: const ButleryIcon(Icons.code),
             title: Text(context.l10n.legalOpenSourceLicenses),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const ButleryIcon(ButleryIcons.chevronRight),
             onTap: () =>
                 showLicensePage(context: context, applicationName: 'Butlery'),
           ),

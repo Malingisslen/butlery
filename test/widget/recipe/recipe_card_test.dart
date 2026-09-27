@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -8,7 +9,6 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -136,7 +136,7 @@ void main() {
         expect(find.text('Middag'), findsNothing);
         expect(find.text('45 min \u00B7 4 port'), findsNothing);
         expect(find.text('svensk'), findsNothing);
-        expect(find.byIcon(Icons.favorite_border), findsNothing);
+        expect(find.byIcon(ButleryIcons.heartOutline), findsNothing);
       });
 
       testWidgets('should handle minimal recipe data', (tester) async {
@@ -258,8 +258,8 @@ void main() {
         );
 
         // Recipe card should render without favorite button
-        expect(find.byIcon(Icons.favorite_border), findsNothing);
-        expect(find.byIcon(Icons.favorite), findsNothing);
+        expect(find.byIcon(ButleryIcons.heartOutline), findsNothing);
+        expect(find.byIcon(ButleryIcons.heart), findsNothing);
       });
     });
 
@@ -319,8 +319,8 @@ void main() {
         );
 
         // Verify favorite buttons are not present
-        expect(find.byIcon(Icons.favorite_border), findsNothing);
-        expect(find.byIcon(Icons.favorite), findsNothing);
+        expect(find.byIcon(ButleryIcons.heartOutline), findsNothing);
+        expect(find.byIcon(ButleryIcons.heart), findsNothing);
       });
 
       testWidgets('should not respond to tap when callback is null', (
@@ -478,7 +478,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.more_vert), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.moreVertical), findsOneWidget);
       });
 
       testWidgets('should hide context menu button when disabled', (
@@ -496,7 +496,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.more_vert), findsNothing);
+        expect(find.byIcon(ButleryIcons.moreVertical), findsNothing);
       });
     });
 
@@ -744,10 +744,10 @@ void main() {
           );
 
           // The favourite button renders an Icon with the active colour.
-          // On web/Android the icon is Icons.favorite (heart_fill via AdaptiveIcons).
+          // The favourite state is the filled heart glyph (ButleryIcons.favourite).
           final activeIcon = tester.widget<Icon>(
             find.byWidgetPredicate(
-              (w) => w is Icon && w.icon == AdaptiveIcons.favouriteFilled,
+              (w) => w is Icon && w.icon == ButleryIcons.favourite,
             ),
           );
           expect(
@@ -794,7 +794,7 @@ void main() {
 
         final inactiveIcon = tester.widget<Icon>(
           find.byWidgetPredicate(
-            (w) => w is Icon && w.icon == AdaptiveIcons.favouriteOutline,
+            (w) => w is Icon && w.icon == ButleryIcons.favouriteOutline,
           ),
         );
         expect(
@@ -833,9 +833,9 @@ void main() {
             ),
           );
 
-          expect(find.byIcon(Icons.people_outline), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.users), findsOneWidget);
           expect(find.byIcon(Icons.public), findsNothing);
-          expect(find.byIcon(Icons.lock_outline), findsNothing);
+          expect(find.byIcon(ButleryIcons.lock), findsNothing);
         },
       );
 
@@ -857,8 +857,8 @@ void main() {
         );
 
         expect(find.byIcon(Icons.public), findsOneWidget);
-        expect(find.byIcon(Icons.people_outline), findsNothing);
-        expect(find.byIcon(Icons.lock_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.users), findsNothing);
+        expect(find.byIcon(ButleryIcons.lock), findsNothing);
       });
 
       testWidgets('private personal recipe → lock_outline (default arm)', (
@@ -878,8 +878,8 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.lock_outline), findsOneWidget);
-        expect(find.byIcon(Icons.people_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsNothing);
         expect(find.byIcon(Icons.public), findsNothing);
       });
     });

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 
 class _Host extends StatefulWidget {
@@ -105,8 +106,8 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.add), findsOneWidget);
-      expect(find.byIcon(Icons.remove), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.minus), findsOneWidget);
     });
 
     testWidgets('tap + invokes onUpdatePortions with currentPortions+1', (
@@ -124,7 +125,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(ButleryIcons.plus));
       expect(calls, [5]);
     });
 
@@ -143,7 +144,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.remove));
+      await tester.tap(find.byIcon(ButleryIcons.minus));
       expect(calls, [3]);
     });
 
@@ -164,7 +165,7 @@ void main() {
         ),
       );
       // Tap does nothing because onPressed is null
-      await tester.tap(find.byIcon(Icons.remove));
+      await tester.tap(find.byIcon(ButleryIcons.minus));
       expect(calls, isEmpty);
     });
 
@@ -184,7 +185,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(ButleryIcons.plus));
       expect(calls, isEmpty);
     });
   });
@@ -308,7 +309,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     });
 
     testWidgets('toggle shows language icon when convertToSwedish=false', (

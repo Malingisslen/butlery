@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -52,7 +54,7 @@ class MenuPreviewView extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () => _shareMenu(context),
-            icon: const Icon(Icons.share),
+            icon: const ButleryIcon(ButleryIcons.share2),
             tooltip: context.l10n.menuShareMenu,
           ),
         ],
@@ -96,7 +98,7 @@ class MenuPreviewView extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant,
             ),
@@ -111,7 +113,7 @@ class MenuPreviewView extends StatelessWidget {
                     displayName: sharedMenu.sharedByDisplayName,
                     size: ImageSize.small,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,13 +153,13 @@ class MenuPreviewView extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
 
               // Meny statistik
               Row(
                 children: [
-                  Icon(
-                    Icons.restaurant_menu,
+                  ButleryIcon(
+                    ButleryIcons.utensils,
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
@@ -169,7 +171,7 @@ class MenuPreviewView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingL),
-                  Icon(
+                  ButleryIcon(
                     Icons.category,
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -195,7 +197,7 @@ class MenuPreviewView extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outlineVariant,
@@ -236,7 +238,7 @@ class MenuPreviewView extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: StateWidget.empty(
             title: context.l10n.menuNoRecipesInMenu,
-            icon: Icons.restaurant_outlined,
+            icon: ButleryIcons.utensils,
           ),
         ),
       );
@@ -251,9 +253,9 @@ class MenuPreviewView extends StatelessWidget {
 
           return Padding(
             padding: EdgeInsets.fromLTRB(
-              AppDimensions.spacingS,
-              AppDimensions.spacingS,
-              AppDimensions.spacingS,
+              AppDimensions.space4,
+              AppDimensions.space4,
+              AppDimensions.space4,
               index == categories.length - 1 ? AppDimensions.spacingL : 0,
             ),
             child: Column(
@@ -266,7 +268,7 @@ class MenuPreviewView extends StatelessWidget {
                   count: recipes.length,
                 ),
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Recept i kategorin
                 ...recipes.map(
@@ -316,7 +318,7 @@ class MenuPreviewView extends StatelessWidget {
                   label: isImported
                       ? context.l10n.menuImported
                       : context.l10n.menuImportAll,
-                  icon: isImported ? Icons.check : Icons.download,
+                  icon: isImported ? ButleryIcons.check : ButleryIcons.download,
                   onPressed: isImported
                       ? null
                       : () => _importMenu(context, viewModel),
@@ -325,13 +327,13 @@ class MenuPreviewView extends StatelessWidget {
                   expand: true,
                 ),
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Dismiss knapp
                 ActionButtons.outlinedButton(
                   context,
                   label: context.l10n.sharedHideFromList,
-                  icon: Icons.visibility_off,
+                  icon: ButleryIcons.eye,
                   onPressed: () => _dismissMenu(context, viewModel),
                   isExpanded: true,
                 ),
@@ -363,10 +365,10 @@ class MenuPreviewView extends StatelessWidget {
       return Icons.free_breakfast;
     }
     if (categoryLower.contains('lunch')) {
-      return Icons.lunch_dining;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('middag')) {
-      return Icons.dinner_dining;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('mellanmål') ||
         categoryLower.contains('snack')) {
@@ -379,7 +381,7 @@ class MenuPreviewView extends StatelessWidget {
       return Icons.local_cafe;
     }
 
-    return Icons.restaurant_menu;
+    return ButleryIcons.utensils;
   }
 
   void _navigateToRecipeDetail(BuildContext context, Recipe recipe) {
@@ -421,9 +423,9 @@ class MenuPreviewView extends StatelessWidget {
         Navigator.pop(context);
       }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
+        what: viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
       );
     }
   }
@@ -480,9 +482,9 @@ class MenuPreviewView extends StatelessWidget {
           onUndo: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
         );
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
+          what: viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
         );
       }
     }

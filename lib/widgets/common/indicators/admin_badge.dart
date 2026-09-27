@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Reusable admin badge indicator for groups and collaborative content.
 class AdminBadge extends StatelessWidget {
@@ -24,12 +25,12 @@ class AdminBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeS,
             color: cs.primary,
@@ -37,9 +38,8 @@ class AdminBadge extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label ?? context.l10n.adminYouAreAdmin,
-            style: AppTextStyles.bodyBold.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: cs.primary,
-              fontSize: 12,
             ),
           ),
         ],

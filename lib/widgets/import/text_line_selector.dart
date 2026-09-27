@@ -6,9 +6,11 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -89,9 +91,9 @@ class TextLineSelector extends StatelessWidget {
             padding: AppDimensions.paddingSymmetric16x8,
             child: Row(
               children: [
-                Icon(
+                ButleryIcon(
                   mode == SelectionMode.ingredients
-                      ? Icons.restaurant
+                      ? ButleryIcons.utensils
                       : Icons.format_list_numbered,
                   size: AppDimensions.iconSizeM,
                   color: _getModeColor(context, colorScheme),
@@ -147,7 +149,7 @@ class TextLineSelector extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               Icons.text_fields,
               size: 48,
               color: theme.colorScheme.onSurfaceVariant.withValues(
@@ -181,7 +183,7 @@ class TextLineSelector extends StatelessWidget {
           newSelection.addAll(highlightedIndices);
           onSelectionChanged(newSelection);
         },
-        icon: const Icon(Icons.select_all),
+        icon: const ButleryIcon(ButleryIcons.checkSquare),
         label: Text(
           context.l10n.importSelectAllHighlighted(highlightedIndices.length),
         ),
@@ -205,7 +207,7 @@ class TextLineSelector extends StatelessWidget {
 
   Color _getModeColor(BuildContext context, ColorScheme colorScheme) {
     return mode == SelectionMode.ingredients
-        ? context.butleryColors.success
+        ? context.modeColors.success
         : colorScheme.onSurface;
   }
 }
@@ -239,24 +241,26 @@ class _LineItem extends StatelessWidget {
 
     // Determine colors based on state
     final modeColor = mode == SelectionMode.ingredients
-        ? context.butleryColors.success
+        ? context.modeColors.success
         : colorScheme.onSurface;
 
     Color backgroundColor;
     Color borderColor;
     BorderStyle borderStyle;
 
+    // State is never opacity (tokens.json:40-53). A chosen line is drawn
+    // as "Vald": surface.selected with a 1.5 px text.primary border
+    // (Grafisk manual v6:207, :209 "Vald = riktig border"; tokens.json:
+    // 116-119, the surfaceContainerHighest slot in both schemes; text.primary
+    // is onSurface in both). The mode colour stays on the checkbox and the
+    // label. A suggested line has the thin mode-coloured border only.
     if (isSelected) {
-      backgroundColor = modeColor.withValues(
-        alpha: AppDimensions.opacityLightSubtle,
-      );
-      borderColor = modeColor;
+      backgroundColor = colorScheme.surfaceContainerHighest;
+      borderColor = colorScheme.onSurface;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
-      backgroundColor = modeColor.withValues(
-        alpha: AppDimensions.opacityExtraVeryLight,
-      );
-      borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
+      backgroundColor = Colors.transparent;
+      borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else {
       backgroundColor = Colors.transparent;
@@ -267,11 +271,11 @@ class _LineItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.spacingXxs,
+        vertical: AppDimensions.space4,
       ),
       child: Material(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Semantics(
           label: isAiSuggested
               ? '${text.trim()}, ${context.l10n.importAiSuggestedA11y}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}'
@@ -279,19 +283,19 @@ class _LineItem extends StatelessWidget {
           button: true,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingMs,
+                vertical: AppDimensions.space8,
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 border: Border.all(
                   color: borderColor,
-                  width: isSelected ? 2 : 1,
+                  width: isSelected ? 1.5 : 1,
                   style: borderStyle,
                 ),
               ),
@@ -305,17 +309,13 @@ class _LineItem extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: isSelected ? modeColor : Colors.transparent,
                       border: Border.all(
-                        color: isSelected
-                            ? modeColor
-                            : colorScheme.outline.withValues(
-                                alpha: AppDimensions.opacityHalf,
-                              ),
+                        color: isSelected ? modeColor : colorScheme.outline,
                         width: 2,
                       ),
                     ),
                     child: isSelected
-                        ? Icon(
-                            Icons.check,
+                        ? ButleryIcon(
+                            ButleryIcons.check,
                             size: AppDimensions.iconSizeS,
                             color: colorScheme.onPrimary,
                           )
@@ -352,22 +352,22 @@ class _LineItem extends StatelessWidget {
                   if (isAiSuggested) ...[
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(
-                      padding: AppDimensions.paddingSymmetric6x2,
+                      padding: AppDimensions.badgePadding,
                       decoration: BoxDecoration(
                         color: colorScheme.secondaryContainer,
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          ButleryIcon(
                             Icons.auto_awesome,
                             size: AppDimensions.iconSizeXs,
                             color: colorScheme.onSecondaryContainer,
                           ),
-                          const SizedBox(width: AppDimensions.spacingXxs),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(
                             context.l10n.importAiSuggested,
                             style: AppTextStyles.labelSmall.copyWith(
@@ -382,13 +382,14 @@ class _LineItem extends StatelessWidget {
                   if (isHighlighted && !isSelected) ...[
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(
-                      padding: AppDimensions.paddingSymmetric6x2,
+                      padding: AppDimensions.badgePadding,
+                      // A thin border in the mode's colour, not a tint:
+                      // the line's suggested state is never opacity
+                      // (tokens.json:40-53).
                       decoration: BoxDecoration(
-                        color: modeColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        border: Border.all(color: modeColor),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                       child: Text(

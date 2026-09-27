@@ -11,6 +11,8 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Status indicators for app state display
 /// This module provides widgets for displaying app status like
@@ -144,7 +146,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
         key: const ValueKey('offline'),
         // text.warning (tokens.json:92-95): outline and glyph.
         accent: AppModeColors.textWarning(cs.brightness),
-        icon: Icons.wifi_off,
+        icon: ButleryIcons.wifiOff,
         title: _offlineLabel(context, spoken: false),
         semanticsLabel: _offlineLabel(context, spoken: true),
         onTap: widget.onTap,
@@ -155,7 +157,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
         // text.success (colorScheme.tertiary): circle-check is the "klart"
         // status glyph (Komponentark v1:764).
         accent: cs.tertiary,
-        icon: Icons.check_circle_outline,
+        icon: ButleryIcons.circleCheck,
         title: context.l10n.indicatorBackOnline,
         semanticsLabel: context.l10n.indicatorBackOnline,
       );
@@ -202,9 +204,13 @@ class _BannerFrame extends StatelessWidget {
     Widget content = Row(
       children: [
         ExcludeSemantics(
-          child: Icon(icon, color: accent, size: AppDimensions.iconSize18),
+          child: ButleryIcon(
+            icon,
+            color: accent,
+            size: AppDimensions.iconSize18,
+          ),
         ),
-        const SizedBox(width: AppDimensions.paddingMs),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(
           child: Text(
             title,
@@ -215,10 +221,10 @@ class _BannerFrame extends StatelessWidget {
           ),
         ),
         if (tappable) ...[
-          const SizedBox(width: AppDimensions.paddingMs),
+          const SizedBox(width: AppDimensions.space8),
           ExcludeSemantics(
-            child: Icon(
-              Icons.chevron_right,
+            child: ButleryIcon(
+              ButleryIcons.chevronRight,
               color: accent,
               size: AppDimensions.iconSize18,
             ),
@@ -233,7 +239,7 @@ class _BannerFrame extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingModerate,
+          horizontal: AppDimensions.space12,
           vertical: AppDimensions.paddingM,
         ),
         child: content,
@@ -303,10 +309,10 @@ class OfflineStatusIcon extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsetsDirectional.only(
-            end: AppDimensions.spacingS,
+            end: AppDimensions.space4,
           ),
-          child: Icon(
-            Icons.wifi_off,
+          child: ButleryIcon(
+            ButleryIcons.wifiOff,
             color: AppModeColors.textWarning(Theme.of(context).brightness),
             size: AppDimensions.iconSizeAction,
           ),

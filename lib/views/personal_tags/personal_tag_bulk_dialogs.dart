@@ -6,6 +6,7 @@
 /// re-exposed via thin delegators on [PersonalTagDialogs].
 library;
 
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,6 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Static helpers for the bulk merge / delete dialogs.
 abstract final class PersonalTagBulkDialogs {
@@ -92,47 +92,57 @@ abstract final class PersonalTagBulkDialogs {
                       : () => Navigator.pop(dialogContext),
                   child: Text(context.l10n.commonCancel),
                 ),
-                FilledButton(
-                  onPressed: isLoading
-                      ? null
-                      : () async {
-                          setState(() => isLoading = true);
-                          // BUT-1188: the N-into-1 merge loop lives in the VM
-                          // (mergeTagsInto) so it's unit-testable; the success
-                          // metric is tags-merged, not a recipe count (the old
-                          // per-merge sum over-reported recipes carrying two
-                          // merged tags).
-                          final sources = selectedTags
-                              .where((t) => t.id != targetId)
-                              .map((t) => t.id)
-                              .toList();
-                          try {
-                            final merged = await viewModel.mergeTagsInto(
-                              targetId,
-                              sources,
-                            );
-                            await viewModel.loadTagStatistics();
+                BusyButtonSemantics(
+                  busy: isLoading,
+                  name: context.l10n.personalTagMergeConfirm,
+                  child: FilledButton(
+                    style: isLoading
+                        ? PlateLineButton.busyStyle(
+                            null,
+                            Theme.of(context).filledButtonTheme.style,
+                          )
+                        : null,
+                    onPressed: isLoading
+                        ? PlateLineButton.ignore
+                        : () async {
+                            setState(() => isLoading = true);
+                            // BUT-1188: the N-into-1 merge loop lives in the VM
+                            // (mergeTagsInto) so it's unit-testable; the success
+                            // metric is tags-merged, not a recipe count (the old
+                            // per-merge sum over-reported recipes carrying two
+                            // merged tags).
+                            final sources = selectedTags
+                                .where((t) => t.id != targetId)
+                                .map((t) => t.id)
+                                .toList();
+                            try {
+                              final merged = await viewModel.mergeTagsInto(
+                                targetId,
+                                sources,
+                              );
+                              await viewModel.loadTagStatistics();
 
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-                            selection.exitSelection();
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
+                              selection.exitSelection();
 
-                            if (!context.mounted) return;
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagMergeSuccessCount(merged),
-                            );
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
+                              if (!context.mounted) return;
+                              SnackBarUtils.showSuccess(
+                                context,
+                                context.l10n.personalTagMergeSuccessCount(
+                                  merged,
+                                ),
+                              );
+                            } catch (e) {
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
 
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: isLoading
-                      ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                      : Text(context.l10n.personalTagMergeConfirm),
+                              if (!context.mounted) return;
+                              SnackBarUtils.showUserFriendlyError(context, e);
+                            }
+                          },
+                    child: Text(context.l10n.personalTagMergeConfirm),
+                  ),
                 ),
               ],
             );
@@ -172,63 +182,75 @@ abstract final class PersonalTagBulkDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                ),
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        setState(() => isLoading = true);
-                        selection.clearPartialDelete();
-                        try {
-                          final result = await viewModel.bulkDeleteTags(ids);
-                          await viewModel.loadTagStatistics();
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          // P5-U33 (produktregler.md:905-909): all went is a
-                          // success; some went is the third outcome, shown
-                          // by the list with the rest still selected; none
-                          // went is a failure that keeps the selection.
-                          if (result.isComplete) {
-                            selection.exitSelection();
-                            if (!context.mounted) return;
-                            SnackBarUtils.showSuccess(
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonDelete,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          FilledButton.styleFrom(
+                            backgroundColor: Theme.of(
                               context,
-                              context.l10n.personalTagBulkDeleted(
-                                result.deletedIds.length,
-                              ),
-                            );
-                          } else if (result.isPartial) {
-                            final deleted = result.deletedIds.toSet();
-                            selection.showPartialDelete(
-                              result,
-                              deletedNames: [
-                                for (final t in selectedTags)
-                                  if (deleted.contains(t.id)) t.name,
-                              ],
-                            );
-                          } else {
-                            if (!hostContext.mounted) return;
-                            SnackBarUtils.showFailure(
-                              hostContext,
-                              what: hostContext.l10n.personalTagBulkDeleteNone,
-                              preserved: hostContext.l10n.selectionFailedKept,
-                            );
-                          }
-                        } catch (e) {
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
+                            ).colorScheme.error,
+                          ),
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : FilledButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          setState(() => isLoading = true);
+                          selection.clearPartialDelete();
+                          try {
+                            final result = await viewModel.bulkDeleteTags(ids);
+                            await viewModel.loadTagStatistics();
 
-                          if (!context.mounted) return;
-                          SnackBarUtils.showUserFriendlyError(context, e);
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonDelete),
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            // P5-U33 (produktregler.md:905-909): all went is a
+                            // success; some went is the third outcome, shown
+                            // by the list with the rest still selected; none
+                            // went is a failure that keeps the selection.
+                            if (result.isComplete) {
+                              selection.exitSelection();
+                              if (!context.mounted) return;
+                              SnackBarUtils.showSuccess(
+                                context,
+                                context.l10n.personalTagBulkDeleted(
+                                  result.deletedIds.length,
+                                ),
+                              );
+                            } else if (result.isPartial) {
+                              final deleted = result.deletedIds.toSet();
+                              selection.showPartialDelete(
+                                result,
+                                deletedNames: [
+                                  for (final t in selectedTags)
+                                    if (deleted.contains(t.id)) t.name,
+                                ],
+                              );
+                            } else {
+                              if (!hostContext.mounted) return;
+                              SnackBarUtils.showFailure(
+                                hostContext,
+                                what:
+                                    hostContext.l10n.personalTagBulkDeleteNone,
+                                preserved: hostContext.l10n.selectionFailedKept,
+                              );
+                            }
+                          } catch (e) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            SnackBarUtils.showUserFriendlyError(context, e);
+                          }
+                        },
+                  child: Text(context.l10n.commonDelete),
+                ),
               ),
             ],
           ),

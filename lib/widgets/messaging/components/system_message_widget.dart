@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Widget for displaying system messages in chat.
 ///
@@ -48,7 +50,7 @@ class SystemMessageWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -65,8 +67,8 @@ class SystemMessageWidget extends StatelessWidget {
           ),
           if (onDismiss != null) ...[
             const SizedBox(width: AppDimensions.paddingS),
-            Icon(
-              Icons.close,
+            ButleryIcon(
+              ButleryIcons.x,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
@@ -147,7 +149,7 @@ class ReplyPreviewWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: (isFromCurrentUser ? cs.surfaceContainerHighest : cs.secondary)
             .withValues(alpha: AppDimensions.opacityLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border(
           left: BorderSide(color: cs.secondary, width: 3),
         ),
@@ -165,7 +167,7 @@ class ReplyPreviewWidget extends StatelessWidget {
                   : cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXxs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             content,
             style: AppTextStyles.labelSmall.copyWith(

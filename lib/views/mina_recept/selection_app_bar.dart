@@ -30,6 +30,8 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 /// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
@@ -101,7 +103,7 @@ List<Widget> buildMinaReceptSelectionActions(
     // distributes day-by-day; multi-slot stacks).
     IconButton(
       key: const ValueKey('mina-recept-bulk-add-to-menu'),
-      icon: const Icon(Icons.calendar_month_outlined),
+      icon: const ButleryIcon(ButleryIcons.calendar),
       tooltip: context.l10n.bulkAddToMenu,
       onPressed: viewModel.selectedCount == 0
           ? null
@@ -110,7 +112,7 @@ List<Widget> buildMinaReceptSelectionActions(
     // BUT-1012: bulk-tag.
     IconButton(
       key: const ValueKey('mina-recept-bulk-tag'),
-      icon: const Icon(Icons.local_offer_outlined),
+      icon: const ButleryIcon(ButleryIcons.tag),
       tooltip: context.l10n.bulkTag,
       onPressed: viewModel.selectedCount == 0
           ? null
@@ -120,7 +122,7 @@ List<Widget> buildMinaReceptSelectionActions(
     if (!narrow)
       IconButton(
         key: const ValueKey('mina-recept-bulk-share'),
-        icon: const Icon(Icons.share_outlined),
+        icon: const ButleryIcon(ButleryIcons.share2),
         tooltip: context.l10n.bulkShare,
         onPressed: viewModel.selectedCount == 0
             ? null
@@ -183,7 +185,7 @@ class _BulkMoreMenu extends StatelessWidget {
     );
     return PopupMenuButton<_BulkMoreAction>(
       key: const ValueKey('mina-recept-bulk-more'),
-      icon: const Icon(Icons.more_vert),
+      icon: const ButleryIcon(ButleryIcons.moreVertical),
       tooltip: context.l10n.bulkMoreActions,
       onSelected: (action) {
         switch (action) {
@@ -269,7 +271,7 @@ Future<void> _confirmBulkDelete(
     itemName: '$count recept',
     itemType: 'recept',
     warningMessage: context.l10n.bulkDeleteConfirmMessage,
-    icon: Icons.delete_sweep,
+    icon: ButleryIcons.trash2,
   );
   if (confirmed == true && context.mounted) {
     final batch = viewModel.deleteSelected();
@@ -422,7 +424,8 @@ Future<void> _runBulkAddToMenu(
   } catch (e) {
     AppLogger.error('Bulk add-to-menu failed', e);
     if (!context.mounted) return;
-    SnackBarUtils.showError(context, e.toString());
+    // What failed, never the exception (content-style-guide.md:95).
+    SnackBarUtils.showFailure(context, what: context.l10n.bulkAddToMenuFailed);
   }
 }
 
@@ -443,13 +446,13 @@ Future<void> _openBulkExport(
       child: Wrap(
         children: [
           ListTile(
-            leading: const Icon(Icons.copy),
+            leading: const ButleryIcon(ButleryIcons.copy),
             title: Text(sheetContext.l10n.bulkExportCopyClipboard),
             onTap: () =>
                 Navigator.of(sheetContext).pop(_ExportChoice.clipboard),
           ),
           ListTile(
-            leading: const Icon(Icons.ios_share),
+            leading: const ButleryIcon(ButleryIcons.share2),
             title: Text(sheetContext.l10n.bulkExportShareFile),
             onTap: () =>
                 Navigator.of(sheetContext).pop(_ExportChoice.shareFile),
@@ -485,7 +488,8 @@ Future<void> _openBulkExport(
   } catch (e) {
     AppLogger.error('Bulk export failed', e);
     if (!context.mounted) return;
-    SnackBarUtils.showError(context, e.toString());
+    // What failed, never the exception (content-style-guide.md:95).
+    SnackBarUtils.showFailure(context, what: context.l10n.bulkExportFailed);
   }
 }
 
@@ -628,7 +632,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -640,7 +644,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),
@@ -648,7 +652,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 child: Row(
                   children: [
-                    const Icon(Icons.local_offer_outlined),
+                    const ButleryIcon(ButleryIcons.tag),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
@@ -681,7 +685,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.label_outline, size: 64),
+              const ButleryIcon(ButleryIcons.tag, size: 64),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 context.l10n.bulkTagNoTagsAvailable,
@@ -690,7 +694,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
               const SizedBox(height: AppDimensions.spacingLg),
               FilledButton.icon(
                 onPressed: _navigateToManageTags,
-                icon: const Icon(Icons.add),
+                icon: const ButleryIcon(ButleryIcons.plus),
                 label: Text(context.l10n.taggingCreateTag),
               ),
             ],
@@ -718,7 +722,10 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
-            icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.settings,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.taggingManageTags),
           ),
         ),

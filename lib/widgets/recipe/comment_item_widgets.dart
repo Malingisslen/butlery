@@ -3,9 +3,10 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_comment.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
@@ -72,7 +73,7 @@ class CommentItemWidgets {
         if (replies.isNotEmpty && depth < maxDepth)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.paddingXl,
+              start: AppDimensions.space16,
             ),
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -285,7 +286,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       alpha: AppDimensions.opacityHalf,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   )
                 : null,
@@ -322,7 +323,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       button: true,
                       child: IconButton(
                         onPressed: widget.onReply,
-                        icon: Icon(
+                        icon: ButleryIcon(
                           Icons.reply,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
@@ -337,10 +338,10 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       button: true,
                       child: IconButton(
                         onPressed: widget.onToggleLike,
-                        icon: Icon(
+                        icon: ButleryIcon(
                           widget.isLiked
-                              ? AdaptiveIcons.favouriteFilled
-                              : AdaptiveIcons.favouriteOutline,
+                              ? ButleryIcons.favourite
+                              : ButleryIcons.favouriteOutline,
                           // Red is deliberate (BUT-1213): red = social like,
                           // green (cs.primary) = personal favourite.
                           color: widget.isLiked
@@ -353,8 +354,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     if (widget.isOwnComment && widget.onEdit != null)
                       IconButton(
                         onPressed: widget.onEdit,
-                        icon: Icon(
-                          Icons.edit_outlined,
+                        icon: ButleryIcon(
+                          ButleryIcons.pencil,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),
@@ -362,8 +363,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     if (widget.isOwnComment && widget.onDelete != null)
                       IconButton(
                         onPressed: widget.onDelete,
-                        icon: Icon(
-                          Icons.delete_outline,
+                        icon: ButleryIcon(
+                          ButleryIcons.trash2,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),
@@ -377,7 +378,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                           contentId: widget.comment.id,
                           contentOwnerId: widget.comment.authorId,
                         ),
-                        icon: Icon(
+                        icon: ButleryIcon(
                           Icons.flag_outlined,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
@@ -386,7 +387,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   ],
                 ),
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Comment content — BUT-962: linkify HTTP/HTTPS URLs.
                 LinkifiedText.from(
@@ -396,7 +397,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
 
                 // BUT-1049: image attachments above the reactions strip.
                 if (comment.imageUrls.isNotEmpty) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   CommentImageAttachments(imageUrls: comment.imageUrls),
                 ],
 
@@ -406,14 +407,14 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   if (comment.reactions.values.any(
                     (list) => list.isNotEmpty,
                   )) ...[
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     EmojiReactionDisplay(
                       reactions: comment.reactions,
                       currentUserId: widget.currentUserId!,
                       onReactionTap: widget.onReactionTap!,
                     ),
                   ] else ...[
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Semantics(
                       label: context.l10n.a11yReactToComment,
                       button: true,
@@ -422,8 +423,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.add_reaction_outlined,
+                            ButleryIcon(
+                              ButleryIcons.reactionAdd,
                               size: AppDimensions.iconSizeS,
                               color: cs.onSurfaceVariant,
                             ),
@@ -443,7 +444,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
 
                 // Like count (tappable to show who liked)
                 if (comment.likeCount > 0) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   Semantics(
                     label: context.l10n.a11yShowCommentLikes(comment.likeCount),
                     button: true,

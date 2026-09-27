@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -16,6 +15,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_leave_list_action.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 
 /// Comprehensive sharing status dialog showing detailed information about list collaboration
 class ShoppingShareStatusDialog extends StatelessWidget {
@@ -38,7 +40,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
+          ButleryIcon(
             _getListTypeIcon(),
             color: _getListTypeColor(cs),
             size: AppDimensions.iconSizeAction,
@@ -182,14 +184,14 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionLabel = context.l10n.shoppingPermissionViewOnly;
           permissionDescription =
               context.l10n.shoppingPermissionViewDescription;
-          permissionIcon = Icons.visibility;
+          permissionIcon = ButleryIcons.eye;
           permissionColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionDescription =
               context.l10n.shoppingPermissionEditDescription;
-          permissionIcon = Icons.edit;
+          permissionIcon = ButleryIcons.pencil;
           permissionColor = cs.secondary;
           break;
         case SharedListPermission.admin:
@@ -203,7 +205,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionLabel = context.l10n.shoppingPermissionUnspecified;
           permissionDescription =
               context.l10n.shoppingPermissionUnspecifiedDescription;
-          permissionIcon = Icons.help;
+          permissionIcon = ButleryIcons.circleHelp;
           permissionColor = cs.onSurfaceVariant;
       }
     }
@@ -217,12 +219,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   permissionIcon,
                   color: permissionColor,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingYourPermission,
                   style: AppTextStyles.titleMedium.copyWith(
@@ -266,12 +268,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.people,
+                ButleryIcon(
+                  ButleryIcons.users,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingMembersCount(allMembers.length),
                   style: AppTextStyles.titleMedium.copyWith(
@@ -317,12 +319,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       switch (permission) {
         case SharedListPermission.view:
           permissionLabel = context.l10n.shoppingPermissionView;
-          permissionIcon = Icons.visibility;
+          permissionIcon = ButleryIcons.eye;
           permissionColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
-          permissionIcon = Icons.edit;
+          permissionIcon = ButleryIcons.pencil;
           permissionColor = cs.secondary;
           break;
         case SharedListPermission.admin:
@@ -334,7 +336,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           CircleAvatar(
@@ -365,7 +367,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Icon(
+                    ButleryIcon(
                       permissionIcon,
                       size: AppDimensions.iconSizeS,
                       color: permissionColor,
@@ -399,12 +401,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.history,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingRecentActivity,
                   style: AppTextStyles.titleMedium.copyWith(
@@ -455,7 +457,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               style: AppTextStyles.labelMedium,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               value,
@@ -470,11 +472,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   IconData _getListTypeIcon() {
     switch (list.type) {
       case ListType.personal:
-        return Icons.person;
+        return ButleryIcons.user;
       case ListType.collaborative:
-        return Icons.people;
+        return ButleryIcons.users;
       case ListType.template:
-        return AdaptiveIcons.savedTemplate;
+        return PendingGlyphs.savedTemplate;
     }
   }
 
@@ -531,9 +533,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       if (context.mounted) {
         // The ink snackbar (PQ-09 = A), and the cause in words, never the
         // raw exception (content-style-guide.md:96).
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingCouldNotLoadFriends(
+          what: context.l10n.shoppingCouldNotLoadFriends(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

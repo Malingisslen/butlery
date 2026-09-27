@@ -18,7 +18,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -346,8 +346,8 @@ void main() {
         },
       );
 
-      test('${t.brightness}: ButleryColors carries the ring colour', () {
-        expect(t.extension<ButleryColors>()!.focusRing, ring);
+      test('${t.brightness}: ModeColors carries the ring colour', () {
+        expect(ModeColors.of(t.brightness).focusRing, ring);
       });
 
       test('${t.brightness}: a focused button still ripples when pressed', () {

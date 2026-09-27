@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
@@ -13,7 +15,7 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         const InlineWarning(
-          icon: Icons.warning,
+          icon: ButleryIcons.triangleAlert,
           color: Colors.amber,
           text: 'Heads up',
         ),
@@ -26,26 +28,26 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         const InlineWarning(
-          icon: Icons.info,
+          icon: ButleryIcons.info,
           color: Colors.blue,
           text: 'fyi',
         ),
       ),
     );
-    expect(find.byIcon(Icons.info), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.info), findsOneWidget);
   });
 
   testWidgets('icon receives the supplied color', (tester) async {
     await tester.pumpWidget(
       _wrap(
         const InlineWarning(
-          icon: Icons.error,
+          icon: ButleryIcons.triangleAlert,
           color: Colors.red,
           text: 'oops',
         ),
       ),
     );
-    final icon = tester.widget<Icon>(find.byType(Icon));
+    final icon = tester.widget<Icon>(find.byType(ButleryIcon));
     expect(icon.color, Colors.red);
   });
 
@@ -55,7 +57,7 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         const InlineWarning(
-          icon: Icons.error,
+          icon: ButleryIcons.triangleAlert,
           color: Colors.red,
           text: 'oops',
         ),
@@ -70,7 +72,7 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         const InlineWarning(
-          icon: Icons.info,
+          icon: ButleryIcons.info,
           color: Colors.blue,
           text: 'styled',
           textStyle: TextStyle(
@@ -91,14 +93,14 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         const InlineWarning(
-          icon: Icons.warning,
+          icon: ButleryIcons.triangleAlert,
           color: Colors.amber,
           text: 'x',
         ),
       ),
     );
     expect(find.byType(Row), findsOneWidget);
-    expect(find.byType(Icon), findsOneWidget);
+    expect(find.byType(ButleryIcon), findsOneWidget);
     expect(find.byType(Expanded), findsOneWidget);
   });
 
@@ -109,13 +111,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         InlineWarning(
-          icon: Icons.warning,
+          icon: ButleryIcons.triangleAlert,
           color: Colors.amber,
           text: longText,
         ),
       ),
     );
     expect(tester.takeException(), isNull);
-    expect(find.byType(Icon), findsOneWidget);
+    expect(find.byType(ButleryIcon), findsOneWidget);
   });
 }

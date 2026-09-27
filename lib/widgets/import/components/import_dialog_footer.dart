@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Footer component for import dialogs with validation and navigation buttons.
 class ImportDialogFooter extends StatelessWidget {
@@ -49,13 +51,13 @@ class ImportDialogFooter extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.errorContainer,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.warning_amber,
+                  ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     size: AppDimensions.iconSize18,
                     color: theme.colorScheme.onErrorContainer,
                   ),
@@ -80,7 +82,7 @@ class ImportDialogFooter extends StatelessWidget {
               if (canGoBack)
                 TextButton.icon(
                   onPressed: onBack,
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const ButleryIcon(ButleryIcons.arrowLeft),
                   label: Text(context.l10n.commonBack),
                 )
               else
@@ -93,13 +95,13 @@ class ImportDialogFooter extends StatelessWidget {
               if (currentStep == AssistedImportStep.reviewEdit)
                 FilledButton.icon(
                   onPressed: canProceed ? onSave : null,
-                  icon: const Icon(Icons.save),
+                  icon: const ButleryIcon(Icons.save),
                   label: Text(context.l10n.importSaveRecipe),
                 )
               else
                 FilledButton.icon(
                   onPressed: canProceed ? onNext : null,
-                  icon: const Icon(Icons.arrow_forward),
+                  icon: const ButleryIcon(ButleryIcons.arrowRight),
                   label: Text(context.l10n.commonNext),
                 ),
             ],

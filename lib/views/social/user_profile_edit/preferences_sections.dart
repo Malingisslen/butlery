@@ -9,10 +9,12 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
@@ -64,9 +66,9 @@ class LanguageSettingsSection extends StatelessWidget {
                       );
                     }
                   },
-                  secondary: Icon(
-                    isSelected ? Icons.check_circle : Icons.language,
-                    color: isSelected ? context.butleryColors.success : null,
+                  secondary: ButleryIcon(
+                    isSelected ? ButleryIcons.circleCheck : Icons.language,
+                    color: isSelected ? context.modeColors.success : null,
                   ),
                 ),
               );
@@ -131,9 +133,9 @@ class ThemeSettingsSection extends StatelessWidget {
                       );
                     }
                   },
-                  secondary: Icon(
-                    isSelected ? Icons.check_circle : mode.$3,
-                    color: isSelected ? context.butleryColors.success : null,
+                  secondary: ButleryIcon(
+                    isSelected ? ButleryIcons.circleCheck : mode.$3,
+                    color: isSelected ? context.modeColors.success : null,
                   ),
                 ),
               );
@@ -180,7 +182,7 @@ class ProfileActionButtons extends StatelessWidget {
         ActionButtons.outlinedButton(
           context,
           label: context.l10n.profileResetChanges,
-          icon: Icons.refresh,
+          icon: ButleryIcons.refreshCw,
           onPressed: viewModel.hasUnsavedChanges ? onReset : null,
           isExpanded: true,
         ),
@@ -192,21 +194,21 @@ class ProfileActionButtons extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              color: context.butleryColors.warning.withValues(
+              color: context.modeColors.warning.withValues(
                 alpha: AppDimensions.opacityVeryLight,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
-                color: context.butleryColors.warning.withValues(
+                color: context.modeColors.warning.withValues(
                   alpha: AppDimensions.opacityMediumLight,
                 ),
               ),
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.warning_amber,
-                  color: context.butleryColors.warning,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
+                  color: context.modeColors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingXs),

@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/theme_constants.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -20,7 +22,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Main content area for shopping list.
 ///
 /// **UI Redesign:** Category headers with collapse/expand, progress indicators,
-/// and category-specific colors from ButleryColors.category* constants.
+/// and category-specific colors from ModeColors.category* constants.
 ///
 /// Kept as static class for backward compatibility. Use [ShoppingListContent.build]
 /// for the static variant, or [ShoppingListContentWidget] for the stateful version
@@ -97,9 +99,9 @@ class ShoppingListContentWidget extends StatefulWidget {
     );
   }
 
-  /// Get category-specific color from ButleryColors (public for reuse).
+  /// Get category-specific color from ModeColors (public for reuse).
   static Color getCategoryColor(BuildContext context, String category) {
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
     switch (category) {
       case ShoppingCategory.meatFish:
         return bc.categoryMeatFish;
@@ -355,7 +357,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         ...completedSections,
       ],
 
-      const SizedBox(height: AppDimensions.spacingHuge),
+      const SizedBox(
+        height: AppDimensions.buttonHeight + AppDimensions.space24,
+      ),
     ];
 
     return ListView.builder(
@@ -432,7 +436,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   decoration: BoxDecoration(
                     color: categoryColor,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                     border: isDragOver
                         ? Border.all(color: cs.onPrimary, width: 2)
@@ -443,8 +447,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                       Row(
                         children: [
                           // Chevron icon
-                          Icon(
-                            isCollapsed ? Icons.expand_more : Icons.expand_less,
+                          ButleryIcon(
+                            isCollapsed
+                                ? ButleryIcons.chevronDown
+                                : ButleryIcons.chevronUp,
                             color: cs.onPrimary,
                             size: AppDimensions.iconSizeM,
                           ),
@@ -472,14 +478,14 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.spacingSm,
-                              vertical: AppDimensions.spacingXxs,
+                              vertical: AppDimensions.badgePaddingY,
                             ),
                             // A real border in the header's own foreground,
                             // never a faded fill (tokens.json:40-53).
                             decoration: BoxDecoration(
                               border: Border.all(color: cs.onPrimary),
                               borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusS,
+                                AppDimensions.radiusControl,
                               ),
                             ),
                             child: Text(
@@ -589,8 +595,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             }),
             child: Row(
               children: [
-                Icon(
-                  _showEmptyCategories ? Icons.expand_less : Icons.expand_more,
+                ButleryIcon(
+                  _showEmptyCategories
+                      ? ButleryIcons.chevronUp
+                      : ButleryIcons.chevronDown,
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -662,7 +670,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             color: isDragOver
                 ? categoryColor.withValues(alpha: 0.3)
                 : cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: isDragOver ? categoryColor : cs.outlineVariant,
               width: isDragOver ? 2 : 1,
@@ -676,7 +684,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                 decoration: BoxDecoration(
                   color: categoryColor,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -702,8 +710,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     return Row(
       children: [
-        Icon(
-          Icons.check_circle,
+        ButleryIcon(
+          ButleryIcons.circleCheck,
           size: AppDimensions.iconSizeM,
           color: cs.onSurface,
         ),

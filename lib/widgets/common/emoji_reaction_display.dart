@@ -33,7 +33,7 @@ class EmojiReactionDisplay extends StatelessWidget {
 
     return Wrap(
       spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXxs,
+      runSpacing: AppDimensions.space4,
       children: activeReactions.map((entry) {
         final emojiKey = entry.key;
         final userIds = entry.value;
@@ -46,7 +46,7 @@ class EmojiReactionDisplay extends StatelessWidget {
           child: GestureDetector(
             onTap: () => onReactionTap(emojiKey),
             child: Container(
-              padding: AppDimensions.paddingSymmetric6x2,
+              padding: AppDimensions.paddingAll4,
               decoration: BoxDecoration(
                 // Your reaction is surface.selected (surfaceContainerHighest carries its
                 // values in both modes) with a real text.primary border, never an ink
@@ -55,7 +55,7 @@ class EmojiReactionDisplay extends StatelessWidget {
                     ? cs.surfaceContainerHighest
                     : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusPill,
                 ),
                 border: Border.all(
                   color: hasReacted ? cs.onSurface : cs.outlineVariant,
@@ -64,8 +64,13 @@ class EmojiReactionDisplay extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(displayEmoji, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(width: AppDimensions.spacingXxs),
+                  Text(
+                    displayEmoji,
+                    style: const TextStyle(
+                      fontSize: AppDimensions.emojiGlyphInline,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     '${userIds.length}',
                     style: AppTextStyles.bodySmall.copyWith(

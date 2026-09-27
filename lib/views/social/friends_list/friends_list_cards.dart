@@ -7,6 +7,8 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -146,8 +148,8 @@ class GroupCard {
             ),
           ],
         ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
+        trailing: ButleryIcon(
+          ButleryIcons.chevronRight,
           size: AppDimensions.iconSizeS,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),

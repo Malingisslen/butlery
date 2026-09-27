@@ -4,10 +4,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_components.dart';
@@ -141,7 +142,7 @@ class ImageGridWidgets {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingXs,
-                    vertical: AppDimensions.spacingXxs,
+                    vertical: AppDimensions.badgePaddingY,
                   ),
                   decoration: BoxDecoration(
                     color: isPrimary
@@ -150,23 +151,23 @@ class ImageGridWidgets {
                             alpha: AppDimensions.opacityMediumDark,
                           ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      ButleryIcon(
                         isPrimary
-                            ? AdaptiveIcons.primaryFilled
-                            : AdaptiveIcons.primaryOutline,
+                            ? ButleryIcons.primary
+                            : ButleryIcons.primaryOutline,
                         size: AppDimensions.iconSizeXs,
                         color: Theme.of(
                           context,
                         ).colorScheme.surfaceContainerHighest,
                       ),
                       if (isPrimary) ...[
-                        const SizedBox(width: AppDimensions.spacingXxs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(
                           context.l10n.imagePrimary,
                           style: AppTextStyles.labelSmall.copyWith(
@@ -197,7 +198,7 @@ class ImageGridWidgets {
                       onRemoveImage(index);
                     },
                     child: buildGridActionButton(
-                      icon: Icons.close,
+                      icon: ButleryIcons.x,
                       tooltip: context.l10n.imageRemoveImage,
                       isDestructive: true,
                     ),
@@ -229,7 +230,7 @@ class ImageGridWidgets {
               shape: BoxShape.circle,
               boxShadow: AppShadows.subtle,
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeS,
               color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
@@ -291,8 +292,8 @@ class ImageGridWidgets {
                       ),
                     ),
                   ] else ...[
-                    Icon(
-                      Icons.add_photo_alternate_outlined,
+                    ButleryIcon(
+                      ButleryIcons.camera,
                       color: cs.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),

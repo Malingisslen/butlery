@@ -34,6 +34,7 @@ import 'package:butlery/services/notifications/notification_permission_service.d
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -145,6 +146,54 @@ void main() {
         expect(tile.activeTrackColor, isNull);
       }
     });
+
+    // P7-A4: with the master toggle off the category rows are disabled, drawn
+    // in text.disabled and never faded (tokens.json:41 "Opacitet är aldrig
+    // ett tillstånd", :198; Butlery tillganglighetshandoff).
+    for (final dark in [false, true]) {
+      testWidgets('${dark ? 'dark' : 'light'}: master off draws the categories '
+          'disabled, with no Opacity', (tester) async {
+        final off = NotificationPreferences.defaults();
+        when(() => notificationService.getPreferences()).thenAnswer(
+          (_) async => NotificationPreferences(
+            enabled: false,
+            categorySettings: off.categorySettings,
+            typeSettings: off.typeSettings,
+            allowBatching: off.allowBatching,
+            digestFrequency: off.digestFrequency,
+            quietHoursStart: off.quietHoursStart,
+            quietHoursEnd: off.quietHoursEnd,
+            lastUpdated: off.lastUpdated,
+          ),
+        );
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Theme(
+              data: theme,
+              child: const NotificationPreferencesView(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final title = find.text(sv.notificationCategoryRecipes);
+        expect(title, findsOneWidget);
+        expect(
+          find.ancestor(of: title, matching: find.byType(Opacity)),
+          findsNothing,
+        );
+        expect(
+          tester.widget<Text>(title).style?.color,
+          AppModeColors.textDisabled(theme.brightness),
+        );
+      });
+    }
 
     testWidgets('renders the toggle sections once preferences load', (
       tester,

@@ -16,7 +16,6 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/core/responsive/responsive_builder.dart';
 import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
-import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 
 /// Facade for layout components. Delegates to specialized layout modules.
 class LayoutComponents {
@@ -182,80 +181,13 @@ class LayoutComponents {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => LoadMenuBottomSheet(
         viewModel: viewModel,
         onTemplateSelected: onTemplateSelected,
       ),
-    );
-  }
-
-  /// Adaptive navigation scaffold that switches between BottomNav (mobile), NavigationRail (tablet/desktop).
-  /// Automatically adapts navigation based on screen width:
-  /// - Below 768 dp wide or 500 dp tall: the bottom row
-  /// - From 768 dp wide and 500 dp tall: the rail (produktregler.md:1054)
-  /// **Usage Example:**
-  /// ```dart
-  /// LayoutComponents.adaptiveNavigation(
-  ///   currentIndex: 0,
-  ///   items: [
-  ///     AdaptiveNavigationItem(
-  ///       label: 'Home',
-  ///       icon: Icons.home_outlined,
-  ///       activeIcon: Icons.home,
-  ///       route: '/',
-  ///     ),
-  ///   ],
-  ///   body: HomeView(),
-  /// );
-  /// ```
-  static Widget adaptiveNavigation({
-    required int currentIndex,
-    required List<AdaptiveNavigationItem> items,
-    required Widget body,
-    String? title,
-    List<Widget>? actions,
-    Widget? floatingActionButton,
-    ValueChanged<int>? onNavigationChanged,
-    PreferredSizeWidget? appBar,
-  }) {
-    return AdaptiveNavigationScaffold(
-      currentIndex: currentIndex,
-      items: items,
-      body: body,
-      title: title,
-      actions: actions,
-      floatingActionButton: floatingActionButton,
-      onNavigationChanged: onNavigationChanged,
-      appBar: appBar,
-    );
-  }
-
-  /// Convenience wrapper for Butlery's standard adaptive navigation
-  /// Uses predefined navigation items (Mina recept, Lägg till, Veckomeny, Inköpslista, Upptäck)
-  /// **Usage Example:**
-  /// ```dart
-  /// LayoutComponents.butleryAdaptiveNavigation(
-  ///   currentIndex: 0,
-  ///   body: RecipeListView(),
-  ///   title: 'Mina Recept',
-  /// );
-  /// ```
-  static Widget butleryAdaptiveNavigation({
-    required int currentIndex,
-    required Widget body,
-    String? title,
-    List<Widget>? actions,
-    Widget? floatingActionButton,
-  }) {
-    return ButleryAdaptiveNavigation(
-      currentIndex: currentIndex,
-      body: body,
-      title: title,
-      actions: actions,
-      floatingActionButton: floatingActionButton,
     );
   }
 
@@ -409,7 +341,7 @@ class LayoutComponents {
   static Widget recipeUploadButtonGrid(
     BuildContext context, {
     required List<Map<String, dynamic>>
-    buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
+    buttons, // [{'label': 'Instagram', 'icon': ButleryIcons.camera, 'onPressed': () => ...}]
     required Map<String, dynamic> archiveButton, // Archive button config
   }) {
     if (buttons.length != 6) {

@@ -13,10 +13,12 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class PantryItemCard extends StatelessWidget {
   const PantryItemCard({super.key, required this.item});
@@ -132,7 +134,7 @@ class PantryItemCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
         ),
-        child: Icon(Icons.delete, color: cs.onError),
+        child: ButleryIcon(ButleryIcons.trash2, color: cs.onError),
       ),
       child: tappable,
     );
@@ -163,8 +165,8 @@ class PantryItemCard extends StatelessWidget {
       child: Row(
         children: [
           if (selectionMode) ...[
-            Icon(
-              selected ? Icons.check_circle : Icons.circle_outlined,
+            ButleryIcon(
+              selected ? ButleryIcons.circleCheck : Icons.circle_outlined,
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
               size: AppDimensions.iconSizeM,
             ),
@@ -231,7 +233,7 @@ class _ExpiryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final status = item.expiryStatus;

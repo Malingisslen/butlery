@@ -81,7 +81,7 @@ void main() {
           ),
         );
 
-        // StyledInput uses OutlineInputBorder with borderRadius8
+        // StyledInput uses OutlineInputBorder with the control radius, 8
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
         expect(inputDecoration.border, isA<OutlineInputBorder>());

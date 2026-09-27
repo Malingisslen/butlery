@@ -5,13 +5,15 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 
 /// Seasonal hero header for BUT-409.
 ///
 /// Compact section-header-styled banner at the top of `mina_recept_view`.
 /// Visual match with the existing shelf section-headers (rust left border,
-/// Josefin Sans title, small trailing chevron) but with a sublabel row of
+/// list-item title (13/600), small trailing chevron) but with a sublabel row of
 /// seasonal ingredients and a 28px illustration to the left.
 ///
 /// Tap invokes [onTap]; the view wires it to
@@ -79,20 +81,18 @@ class SeasonalHeroHeader extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTextStyles.sectionHeader.copyWith(
-                          fontSize: 13,
+                        style: AppTextStyles.bodySmall.copyWith(
                           letterSpacing: 1.5,
                           color: cs.onPrimaryContainer,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXxs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         ingredientsLine,
-                        style: AppTextStyles.bodySmall.copyWith(
+                        style: AppTextStyles.captionBase.copyWith(
                           color: cs.onSurfaceVariant,
-                          fontSize: 12,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -103,13 +103,12 @@ class SeasonalHeroHeader extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   l10n.seasonalHeroRecipeCount(matchCount),
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: cs.onSurfaceVariant,
-                    fontSize: 11,
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
                   color: cs.onSurfaceVariant,
                   size: 18,
                 ),

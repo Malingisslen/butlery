@@ -81,14 +81,6 @@ List<String> _snackBarBackgrounds(String dir) {
   return out;
 }
 
-/// lib/widgets files that still paint their own snackbar colour. They belong
-/// to track T7 (lib/widgets), which moves them to SnackBarUtils. A file not
-/// on it fails, and so does an entry that no longer paints one: the list is
-/// a ratchet and a stale entry has to be removed.
-const _widgetSnackBarsOwnedByT7 = {
-  'lib/widgets/common/feedback/snackbar_widgets.dart',
-};
-
 final _primary = RegExp(
   r'(?:\b(?:cs|colorScheme|menuCs|dialogCs)|\)\.colorScheme)\.primary\b',
 );
@@ -110,6 +102,7 @@ const _foregroundArgs = {
 /// Calls whose `color:` is a foreground: a glyph, a text style, a line.
 const _foregroundCalls = {
   'Icon',
+  'ButleryIcon',
   'IconButton',
   'TextStyle',
   'copyWith',
@@ -179,18 +172,15 @@ void main() {
     expect(_snackBarBackgrounds('lib/views'), isEmpty);
   });
 
-  test('no new SnackBar backgroundColor in lib/widgets (PQ-09 = A)', () {
-    final offenders = _snackBarBackgrounds(
-      'lib/widgets',
-    ).where((p) => !_widgetSnackBarsOwnedByT7.contains(p)).toList();
-    expect(offenders, isEmpty);
-  });
-
-  test('every T7 snackbar entry still paints its own colour (ratchet)', () {
-    final found = _snackBarBackgrounds('lib/widgets').toSet();
-    final stale = _widgetSnackBarsOwnedByT7.difference(found).toList();
-    expect(stale, isEmpty, reason: 'remove these entries from the list');
-  });
+  // Track T7 moved the lib/widgets snackbars to SnackBarUtils and package 7
+  // (P7-Z) deleted the last own-colour one (snackbar_widgets.dart), so the
+  // T7 list is gone and this is a ban.
+  test(
+    'no SnackBar in lib/widgets sets its own backgroundColor (PQ-09 = A)',
+    () {
+      expect(_snackBarBackgrounds('lib/widgets'), isEmpty);
+    },
+  );
 
   test('cs.primary is never a foreground in lib/views (dark mode)', () {
     final offenders = <String>[];
@@ -204,7 +194,7 @@ void main() {
             _foregroundArgs.contains(arg) ||
             (arg == 'color' && _foregroundCalls.contains(call)) ||
             // `Icon(icon, color: …)` style positional first, named after.
-            (call == 'Icon');
+            (call == 'Icon' || call == 'ButleryIcon');
         if (!isForeground) continue;
         // A border that matches its own ink fill (a checked control) is
         // the fill's edge, not a line on the page: the same expression

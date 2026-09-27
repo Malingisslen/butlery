@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -110,8 +112,8 @@ class ImageComponents {
               buildPlaceholder(
                 config: config,
                 child: Builder(
-                  builder: (ctx) => Icon(
-                    Icons.image_outlined,
+                  builder: (ctx) => ButleryIcon(
+                    ButleryIcons.image,
                     size: AppDimensions.iconSizeXl,
                     color: Theme.of(ctx).colorScheme.outline,
                   ),
@@ -205,8 +207,8 @@ class ImageComponents {
           ),
           child:
               child ??
-              Icon(
-                Icons.restaurant_menu,
+              ButleryIcon(
+                ButleryIcons.utensils,
                 size: AppDimensions.iconSizeM,
                 color: cs.outline,
               ),
@@ -243,8 +245,8 @@ class ImageComponents {
       config: config,
       backgroundColor: backgroundColor,
       child: Builder(
-        builder: (context) => Icon(
-          Icons.image_outlined,
+        builder: (context) => ButleryIcon(
+          ButleryIcons.image,
           size: AppDimensions.iconSizeL,
           color: Theme.of(context).colorScheme.outline,
         ),
@@ -267,14 +269,14 @@ class ImageComponents {
           right: AppDimensions.spacingSm,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingTight,
-              vertical: AppDimensions.spacingXxs,
+              horizontal: AppDimensions.space4,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest.withValues(
                 alpha: AppDimensions.opacityExtraDark,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: cs.outlineVariant,
               ),
@@ -282,12 +284,12 @@ class ImageComponents {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.collections_outlined,
+                ButleryIcon(
+                  ButleryIcons.image,
                   size: AppDimensions.iconSizeXs,
                   color: cs.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingXxs),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   '$imageCount',
                   style: AppTextStyles.textXsBold.copyWith(
@@ -325,7 +327,7 @@ class ImageComponents {
               color: cs.surfaceContainerHighest.withValues(
                 alpha: AppDimensions.opacityExtraDark,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(
                 color: cs.outlineVariant,
               ),
@@ -375,11 +377,12 @@ class ImageComponents {
                     ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      // The current dot is ink, the others the solid
+                      // surface.selected plate (tokens.json:116-119), never
+                      // a faded one (tokens.json:40-53).
                       color: index == currentIndex
                           ? cs.onSurface
-                          : cs.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityMediumDark,
-                            ),
+                          : cs.surfaceContainerHighest,
                       border: Border.all(
                         color: cs.outlineVariant,
                         width: AppDimensions.strokeWidth05,
@@ -420,7 +423,7 @@ class ImageComponents {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isOnline
-                  ? context.butleryColors.success
+                  ? context.modeColors.success
                   : cs.onSurfaceVariant,
               border: Border.all(
                 color: cs.surfaceContainerHighest,

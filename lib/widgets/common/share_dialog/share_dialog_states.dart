@@ -2,13 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/social/friends_list/requests_tab.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
@@ -22,8 +24,8 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.people_outline,
+          ButleryIcon(
+            ButleryIcons.users,
             size: 64,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -49,7 +51,7 @@ class ShareDialogStates {
               Navigator.pop(context);
               Navigator.pushNamed(context, Routes.friends);
             },
-            icon: const Icon(Icons.person_add),
+            icon: const ButleryIcon(Icons.person_add),
             label: Text(context.l10n.shareAddFriends),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(
@@ -66,7 +68,7 @@ class ShareDialogStates {
               if (userId == null) return;
               RequestsTab.shareInvitationLinkForUser(context, userId);
             },
-            icon: const Icon(Icons.share),
+            icon: const ButleryIcon(ButleryIcons.share2),
             label: Text(context.l10n.socialInviteFriends),
             style: OutlinedButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.onSurface,
@@ -106,8 +108,8 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             size: 64,
             color: Theme.of(context).colorScheme.error,
           ),
@@ -131,7 +133,7 @@ class ShareDialogStates {
             const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
+              icon: const ButleryIcon(ButleryIcons.refreshCw),
               label: Text(context.l10n.commonRetry),
               // The theme's ink button: danger is a text and icon colour,
               // never a filled surface (Komponentark v1:300).
@@ -158,16 +160,16 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.check_circle,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             size: 64,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
             context.l10n.shareSucceeded,
             style: AppTextStyles.titleMedium.copyWith(
-              color: context.butleryColors.success,
+              color: context.modeColors.success,
             ),
             textAlign: TextAlign.center,
           ),

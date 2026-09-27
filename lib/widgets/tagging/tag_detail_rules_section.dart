@@ -9,6 +9,8 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rule_tile.dart';
 
 /// Displays the automation rules section with header, empty state, and rule list.
@@ -58,7 +60,7 @@ class TagDetailRulesSection extends StatelessWidget {
   Widget _buildSectionHeader(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.auto_awesome, size: AppDimensions.iconSizeM),
+        const ButleryIcon(Icons.auto_awesome, size: AppDimensions.iconSizeM),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
           child: Text(
@@ -71,7 +73,10 @@ class TagDetailRulesSection extends StatelessWidget {
           fit: FlexFit.loose,
           child: FilledButton.tonalIcon(
             onPressed: onAddRule,
-            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.plus,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.commonAdd),
           ),
         ),
@@ -87,7 +92,7 @@ class TagDetailRulesSection extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingXl),
         child: Column(
           children: [
-            const Icon(Icons.rule, size: 48),
+            const ButleryIcon(Icons.rule, size: 48),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               context.l10n.tagDetailRulesEmptyTitle,
@@ -106,7 +111,7 @@ class TagDetailRulesSection extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingMd),
             OutlinedButton.icon(
               onPressed: onAddRule,
-              icon: const Icon(Icons.add),
+              icon: const ButleryIcon(ButleryIcons.plus),
               label: Text(context.l10n.tagDetailRulesCreateFirst),
             ),
           ],

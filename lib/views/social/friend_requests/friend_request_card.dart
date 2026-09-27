@@ -9,13 +9,15 @@ import 'package:butlery/models/friend_request.dart';
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -47,7 +49,7 @@ class FriendRequestCard {
           : null,
       shape: isSelected
           ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface,
                 width: 1.5,
@@ -60,7 +62,7 @@ class FriendRequestCard {
         selected: isSelected,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Column(
@@ -71,7 +73,7 @@ class FriendRequestCard {
                       value: isSelected,
                       onChanged: (value) => onSelectionChanged(value ?? false),
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
 
                     // User avatar with online indicator
                     Stack(
@@ -89,7 +91,7 @@ class FriendRequestCard {
                               width: 12,
                               height: 12,
                               decoration: BoxDecoration(
-                                color: context.butleryColors.success,
+                                color: context.modeColors.success,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.surface,
@@ -125,7 +127,7 @@ class FriendRequestCard {
                             const SizedBox(height: AppDimensions.spacingXs),
                             Container(
                               padding: const EdgeInsets.all(
-                                AppDimensions.spacingS,
+                                AppDimensions.space4,
                               ),
                               decoration: BoxDecoration(
                                 color: Theme.of(context)
@@ -135,7 +137,7 @@ class FriendRequestCard {
                                       alpha: AppDimensions.opacityHalf,
                                     ),
                                 borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadius8,
+                                  AppDimensions.radiusControl,
                                 ),
                               ),
                               child: Text(
@@ -181,7 +183,7 @@ class FriendRequestCard {
                         child: HeroButton(
                           key: ValueKey('friendRequest.accept.${request.id}'),
                           label: context.l10n.commonAccept,
-                          icon: Icons.check,
+                          icon: ButleryIcons.check,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
@@ -194,7 +196,7 @@ class FriendRequestCard {
                         child: ActionButtons.outlinedButton(
                           context,
                           label: context.l10n.socialDecline,
-                          icon: Icons.close,
+                          icon: ButleryIcons.x,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
@@ -233,18 +235,18 @@ class FriendRequestCard {
 
     switch (request.status) {
       case FriendRequestStatus.pending:
-        statusColor = context.butleryColors.warning;
-        statusIcon = Icons.schedule;
+        statusColor = context.modeColors.warning;
+        statusIcon = ButleryIcons.clock;
         statusText = context.l10n.socialPendingResponse;
         break;
       case FriendRequestStatus.accepted:
-        statusColor = context.butleryColors.success;
-        statusIcon = Icons.check_circle;
+        statusColor = context.modeColors.success;
+        statusIcon = ButleryIcons.circleCheck;
         statusText = context.l10n.socialAccepted;
         break;
       case FriendRequestStatus.rejected:
         statusColor = cs.error;
-        statusIcon = Icons.cancel;
+        statusIcon = ButleryIcons.x;
         statusText = context.l10n.socialDeclined;
         break;
       case FriendRequestStatus.expired:
@@ -254,7 +256,7 @@ class FriendRequestCard {
         break;
       default:
         statusColor = cs.onSurfaceVariant;
-        statusIcon = Icons.help;
+        statusIcon = ButleryIcons.circleHelp;
         statusText = context.l10n.socialUnknownStatus;
     }
 
@@ -269,7 +271,7 @@ class FriendRequestCard {
           : null,
       shape: isSelected
           ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface,
                 width: 1.5,
@@ -282,7 +284,7 @@ class FriendRequestCard {
         selected: isSelected,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Row(
@@ -297,7 +299,7 @@ class FriendRequestCard {
                     width: AppDimensions.spacingXxxl,
                   ), // Placeholder for alignment
 
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
 
                 // User avatar with online indicator
                 Stack(
@@ -315,7 +317,7 @@ class FriendRequestCard {
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: context.butleryColors.success,
+                            color: context.modeColors.success,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Theme.of(context).colorScheme.surface,
@@ -351,7 +353,7 @@ class FriendRequestCard {
                       const SizedBox(height: AppDimensions.spacingXs),
                       Row(
                         children: [
-                          Icon(
+                          ButleryIcon(
                             statusIcon,
                             size: AppDimensions.iconSizeS,
                             color: statusColor,
@@ -383,7 +385,7 @@ class FriendRequestCard {
                   IconButton(
                     onPressed: () =>
                         _cancelSentRequest(context, request, viewModel),
-                    icon: Icon(Icons.cancel, color: cs.error),
+                    icon: ButleryIcon(ButleryIcons.x, color: cs.error),
                     tooltip: context.l10n.socialCancelRequest,
                   ),
               ],

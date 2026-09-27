@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Types of vegetable illustrations available.
 enum VegetableType {
@@ -121,7 +123,7 @@ class VegetableIllustration extends StatelessWidget {
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           // Fallback to a simple icon if image fails to load
-          return Icon(
+          return ButleryIcon(
             _getFallbackIcon(type),
             size: size * 0.6,
             color: _getFallbackColor(type),
@@ -138,11 +140,11 @@ class VegetableIllustration extends StatelessWidget {
       case VegetableType.mushroom:
         return Icons.search_off;
       case VegetableType.peaPod:
-        return Icons.calendar_today;
+        return ButleryIcons.calendar;
       case VegetableType.carrot:
-        return Icons.shopping_cart;
+        return ButleryIcons.shoppingCart;
       case VegetableType.redOnion:
-        return Icons.error_outline;
+        return ButleryIcons.triangleAlert;
       case VegetableType.asparagus:
       case VegetableType.rhubarb:
       case VegetableType.cabbage:

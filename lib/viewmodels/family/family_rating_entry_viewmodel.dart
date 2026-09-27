@@ -5,6 +5,7 @@ import 'package:butlery/services/family/family_rating_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Drives the "vad tyckte ni?" family rating-entry screen — one star row per
 /// present diner ("hand the phone around"). Pre-fills each row with that
@@ -84,7 +85,7 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
       for (final r in existing) {
         if (r.hasValidStars) _stars[r.memberId] = r.stars;
       }
-    }, errorPrefix: 'Kunde inte ladda betygssättningen');
+    }, errorPrefix: AppLocale.current.familyRatingEntryLoadFailed);
   }
 
   void setStars(String memberId, int stars) {
@@ -114,6 +115,6 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
           enteredByUid: uid,
         );
       }
-    }, errorPrefix: 'Kunde inte spara betyget');
+    }, errorPrefix: AppLocale.current.familyRatingSaveFailed);
   }
 }

@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -62,11 +63,12 @@ void main() {
       for (final heading in [
         sv.licensesNoticesHeading,
         sv.licensesOflHeading,
-        'Josefin Sans',
-        'Space Grotesk',
       ]) {
         expect(find.text(heading), findsOneWidget);
       }
+      // The retired legacy families are gone from the page.
+      expect(find.text('Josefin Sans'), findsNothing);
+      expect(find.text('Space Grotesk'), findsNothing);
     });
 
     testWidgets('every font family in pubspec has its licence on the page', (
@@ -78,10 +80,11 @@ void main() {
           .allMatches(File('pubspec.yaml').readAsStringSync())
           .map((m) => m.group(1))
           .toList();
-      expect(families, ['ButlerySans', 'JosefinSans', 'SpaceGrotesk']);
-      expect(LicensesView.assets, contains(LicensesView.oflAsset));
-      expect(LicensesView.assets, contains(LicensesView.josefinSansAsset));
-      expect(LicensesView.assets, contains(LicensesView.spaceGroteskAsset));
+      expect(families, ['ButlerySans']);
+      expect(LicensesView.assets, [
+        LicensesView.noticesAsset,
+        LicensesView.oflAsset,
+      ]);
     });
 
     testWidgets('shows the error copy, and retry recovers once the bundle '
@@ -104,7 +107,7 @@ void main() {
       expect(find.byType(SelectableText), findsNothing);
 
       bundleBroken = false;
-      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.tap(find.byIcon(ButleryIcons.refreshCw));
       await tester.pumpAndSettle();
 
       expect(find.text(sv.licensesCouldNotLoad), findsNothing);

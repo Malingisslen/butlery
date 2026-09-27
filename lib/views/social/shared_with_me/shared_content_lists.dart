@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
@@ -26,7 +28,7 @@ class SharedContentLists {
       return StateWidget.empty(
         title: context.l10n.sharedNoRecipes,
         subtitle: context.l10n.sharedNoRecipesDescription,
-        icon: Icons.restaurant_outlined,
+        icon: ButleryIcons.utensils,
         actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
@@ -42,7 +44,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: itemCount,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           // Load more button at the end
           if (index == recipes.length) {
@@ -79,7 +81,7 @@ class SharedContentLists {
       return StateWidget.empty(
         title: context.l10n.sharedNoMenus,
         subtitle: context.l10n.sharedNoMenusDescription,
-        icon: Icons.calendar_month_outlined,
+        icon: ButleryIcons.calendar,
         actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
@@ -95,7 +97,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: itemCount,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           // Load more button at the end
           if (index == menus.length) {
@@ -132,7 +134,7 @@ class SharedContentLists {
       return StateWidget.empty(
         title: context.l10n.sharedNoShoppingLists,
         subtitle: context.l10n.sharedNoShoppingListsDescription,
-        icon: Icons.shopping_cart_outlined,
+        icon: ButleryIcons.shoppingCart,
         actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
@@ -148,7 +150,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: itemCount,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           // Load more button at the end
           if (index == sharedShoppingLists.length) {
@@ -187,7 +189,7 @@ class SharedContentLists {
             ? PlateLineMessage(message: context.l10n.loadingGeneric)
             : ElevatedButton.icon(
                 onPressed: onPressed,
-                icon: const Icon(Icons.expand_more),
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
                 label: Text(context.l10n.commonShowMore),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(

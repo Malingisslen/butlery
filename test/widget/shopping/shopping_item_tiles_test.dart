@@ -5,6 +5,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -81,9 +82,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(basicItem.displayText), findsOneWidget);
-        expect(find.byIcon(Icons.check), findsNothing);
-        expect(find.byIcon(Icons.edit), findsOneWidget);
-        expect(find.byIcon(Icons.delete), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
+        expect(find.byIcon(ButleryIcons.pencil), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
       });
 
       testWidgets('renders completed item with strikethrough', (
@@ -102,7 +103,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsOneWidget);
 
         final textWidget = tester.widget<Text>(
           find.text(completedItem.displayText),
@@ -266,7 +267,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.edit));
+        await tester.tap(find.byIcon(ButleryIcons.pencil));
         await tester.pumpAndSettle();
 
         expect(editedItem, equals(basicItem));
@@ -288,7 +289,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.delete));
+        await tester.tap(find.byIcon(ButleryIcons.trash2));
         await tester.pumpAndSettle();
 
         expect(deletedItem, equals(basicItem));
@@ -311,13 +312,13 @@ void main() {
         await tester.pumpAndSettle();
 
         final editButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, Icons.edit),
+          find.widgetWithIcon(IconButton, ButleryIcons.pencil),
         );
         // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
         expect(editButton.tooltip, 'Redigera Mjölk');
 
         final deleteButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, Icons.delete),
+          find.widgetWithIcon(IconButton, ButleryIcons.trash2),
         );
         expect(deleteButton.tooltip, 'Ta bort Mjölk');
       });
@@ -448,7 +449,7 @@ void main() {
                   context: context,
                   title: 'Inga varor',
                   message: 'Din inköpslista är tom',
-                  icon: Icons.shopping_cart_outlined,
+                  icon: ButleryIcons.shoppingCart,
                 );
               },
             ),
@@ -457,10 +458,10 @@ void main() {
 
         expect(find.text('Inga varor'), findsOneWidget);
         expect(find.text('Din inköpslista är tom'), findsOneWidget);
-        expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.shoppingCart), findsOneWidget);
 
         final icon = tester.widget<Icon>(
-          find.byIcon(Icons.shopping_cart_outlined),
+          find.byIcon(ButleryIcons.shoppingCart),
         );
         expect(icon.size, 64);
       });
@@ -474,7 +475,7 @@ void main() {
                   context: context,
                   title: 'Test Title',
                   message: 'Test Message',
-                  icon: Icons.info,
+                  icon: ButleryIcons.info,
                 );
               },
             ),
@@ -537,8 +538,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final editButton = find.widgetWithIcon(IconButton, Icons.edit);
-        final deleteButton = find.widgetWithIcon(IconButton, Icons.delete);
+        final editButton = find.widgetWithIcon(IconButton, ButleryIcons.pencil);
+        final deleteButton = find.widgetWithIcon(
+          IconButton,
+          ButleryIcons.trash2,
+        );
 
         expect(editButton, findsOneWidget);
         expect(deleteButton, findsOneWidget);
@@ -572,7 +576,7 @@ void main() {
         // minimum. Assert the rendered hit-area instead, which is what
         // actually matters for WCAG 2.5.5.
         final editButtonSize = tester.getSize(
-          find.widgetWithIcon(IconButton, Icons.edit),
+          find.widgetWithIcon(IconButton, ButleryIcons.pencil),
         );
         expect(
           editButtonSize.width,
@@ -817,21 +821,21 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify unchecked state: no check icon
-        expect(find.byIcon(Icons.check), findsNothing);
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
 
         // Toggle to completed
         setOuterState(() => isCompleted = true);
         await tester.pumpAndSettle();
 
         // Verify checked state: check icon present
-        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsOneWidget);
 
         // Toggle back to unchecked
         setOuterState(() => isCompleted = false);
         await tester.pumpAndSettle();
 
         // Verify unchecked again
-        expect(find.byIcon(Icons.check), findsNothing);
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
       });
 
       testWidgets('AnimatedContainer uses theme duration and curve constants', (
@@ -959,7 +963,7 @@ void main() {
             findsOneWidget,
             reason: 'reorder moved onto a per-row drag handle',
           );
-          expect(find.byIcon(Icons.drag_handle), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.drag), findsOneWidget);
         },
       );
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Consolidated layout container widgets.
 
@@ -58,7 +59,7 @@ class BorderedContainer extends StatelessWidget {
         border: Border.all(
           color: borderColor ?? Theme.of(context).colorScheme.outline,
         ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: child,
     );
@@ -148,23 +149,23 @@ class CategoryHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
         color:
             backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeM,
             color:
                 textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               title,
@@ -177,13 +178,11 @@ class CategoryHeader extends StatelessWidget {
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXs,
-              vertical: AppDimensions.spacingXxs,
-            ),
+            // A count badge: tokens.json controls.badge 2 × 7.
+            padding: AppDimensions.badgePadding,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: Text(
               '$count',

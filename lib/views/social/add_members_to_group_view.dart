@@ -20,6 +20,8 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
@@ -27,7 +29,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -155,7 +157,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       return StateWidget.empty(
         title: context.l10n.groupNoFriendsAvailable,
         subtitle: context.l10n.groupAllFriendsAlreadyMembers,
-        icon: Icons.people_outline,
+        icon: ButleryIcons.users,
         actionLabel: context.l10n.commonRefresh,
         onAction: () {
           viewModel.refresh();
@@ -189,17 +191,17 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         },
         decoration: InputDecoration(
           hintText: context.l10n.messagingSearchFriends,
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const ButleryIcon(ButleryIcons.search),
           suffixIcon: viewModel.hasSearchQuery
               ? IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: const ButleryIcon(ButleryIcons.x),
                   onPressed: () {
                     viewModel.clearSearch();
                   },
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
       ),
@@ -211,8 +213,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             size: AppDimensions.iconSizeS,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -297,25 +299,29 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
       switch (invitationStatus) {
         case 'sent':
-          statusColor = context.butleryColors.success;
-          statusIcon = Icons.check_circle;
+          statusColor = context.modeColors.success;
+          statusIcon = ButleryIcons.circleCheck;
           statusText = context.l10n.groupInvitationSent;
           break;
         case 'failed':
           statusColor = Theme.of(context).colorScheme.error;
-          statusIcon = Icons.error;
+          statusIcon = ButleryIcons.triangleAlert;
           statusText = context.l10n.commonFailed;
           break;
         default:
-          statusColor = context.butleryColors.warning;
-          statusIcon = Icons.schedule;
+          statusColor = context.modeColors.warning;
+          statusIcon = ButleryIcons.clock;
           statusText = context.l10n.commonPending;
       }
 
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(statusIcon, color: statusColor, size: AppDimensions.iconSizeM),
+          ButleryIcon(
+            statusIcon,
+            color: statusColor,
+            size: AppDimensions.iconSizeM,
+          ),
           Text(
             statusText,
             style: AppTextStyles.bodySmall.copyWith(color: statusColor),
@@ -355,14 +361,14 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                       alpha: AppDimensions.opacityVeryLight,
                     ),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                     border: Border.all(color: cs.error),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.error_outline,
+                      ButleryIcon(
+                        ButleryIcons.triangleAlert,
                         color: cs.error,
                         size: AppDimensions.iconSizeM,
                       ),

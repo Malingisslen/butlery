@@ -1,4 +1,5 @@
-/// Widget tests for ButlerySearchBox + ButleryHeaderSearchBox.
+/// Widget tests for ButlerySearchBox. (ButleryHeaderSearchBox was retired in
+/// package 7.)
 library;
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -43,7 +46,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(_wrap(const ButlerySearchBox()));
-      expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.search), findsOneWidget);
     });
 
     testWidgets('explicit prefixIcon overrides default search icon', (
@@ -57,12 +60,12 @@ void main() {
         ),
       );
       expect(find.byIcon(Icons.menu), findsOneWidget);
-      expect(find.byIcon(Icons.search), findsNothing);
+      expect(find.byIcon(ButleryIcons.search), findsNothing);
     });
 
     testWidgets('no clear button visible when text is empty', (tester) async {
       await tester.pumpWidget(_wrap(const ButlerySearchBox()));
-      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
     });
 
     testWidgets('clear (close) button appears when text is present', (
@@ -71,7 +74,7 @@ void main() {
       final controller = TextEditingController(text: 'pasta');
       await tester.pumpWidget(_wrap(ButlerySearchBox(controller: controller)));
       await tester.pump(); // listener registers initial state
-      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.x), findsOneWidget);
     });
 
     testWidgets('explicit suffixIcon overrides the clear button', (
@@ -82,13 +85,13 @@ void main() {
         _wrap(
           ButlerySearchBox(
             controller: controller,
-            suffixIcon: const Icon(Icons.tune),
+            suffixIcon: const ButleryIcon(ButleryIcons.filter),
           ),
         ),
       );
       await tester.pump();
-      expect(find.byIcon(Icons.tune), findsOneWidget);
-      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.byIcon(ButleryIcons.filter), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
     });
 
     testWidgets('enabled=false disables the TextField', (tester) async {
@@ -160,7 +163,7 @@ void main() {
           ),
         );
         await tester.pump();
-        await tester.tap(find.byIcon(Icons.close));
+        await tester.tap(find.byIcon(ButleryIcons.x));
         await tester.pump();
         expect(controller.text, '');
         expect(cleared, 1);
@@ -200,83 +203,6 @@ void main() {
       // External controller should still be usable
       expect(controller.text, 'survives');
       controller.dispose();
-    });
-  });
-
-  group('ButleryHeaderSearchBox', () {
-    testWidgets(
-      'readOnly=true renders Semantics(button) with custom Container',
-      (tester) async {
-        var tapped = 0;
-        await tester.pumpWidget(
-          _wrap(
-            ButleryHeaderSearchBox(
-              readOnly: true,
-              onTap: () => tapped++,
-              hintText: 'sök recept...',
-            ),
-          ),
-        );
-        // No TextField in readOnly path
-        expect(find.byType(TextField), findsNothing);
-        // Hint visible as Text
-        expect(find.text('sök recept...'), findsOneWidget);
-        // Search icon visible
-        expect(find.byIcon(Icons.search), findsOneWidget);
-        // Tap fires onTap
-        await tester.tap(find.text('sök recept...'));
-        expect(tapped, 1);
-      },
-    );
-
-    testWidgets('readOnly=false delegates to ButlerySearchBox', (tester) async {
-      await tester.pumpWidget(_wrap(const ButleryHeaderSearchBox()));
-      expect(find.byType(ButlerySearchBox), findsOneWidget);
-      expect(find.byType(TextField), findsOneWidget);
-    });
-
-    testWidgets('forwards controller + callbacks to nested ButlerySearchBox', (
-      tester,
-    ) async {
-      final controller = TextEditingController();
-      final changes = <String>[];
-      await tester.pumpWidget(
-        _wrap(
-          ButleryHeaderSearchBox(
-            controller: controller,
-            onChanged: changes.add,
-          ),
-        ),
-      );
-      await tester.enterText(find.byType(TextField), 'hej');
-      expect(changes, ['hej']);
-      expect(controller.text, 'hej');
-    });
-
-    testWidgets('explicit hintText is used when supplied', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const ButleryHeaderSearchBox(
-            readOnly: true,
-            hintText: 'specifik hint',
-          ),
-        ),
-      );
-      expect(find.text('specifik hint'), findsOneWidget);
-    });
-
-    testWidgets('readOnly with no hintText falls back to localized default', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const ButleryHeaderSearchBox(
-            readOnly: true,
-          ),
-        ),
-      );
-      // Should render *some* text (the l10n default), not throw
-      expect(tester.takeException(), isNull);
     });
   });
 }

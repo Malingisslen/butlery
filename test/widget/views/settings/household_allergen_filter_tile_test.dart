@@ -19,8 +19,9 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -139,16 +140,16 @@ void main() {
         final icon = tester.widget<Icon>(
           find.descendant(
             of: find.byType(SwitchListTile),
-            matching: find.byIcon(Icons.warning_amber),
+            matching: find.byIcon(ButleryIcons.triangleAlert),
           ),
         );
-        expect(icon.color, ButleryColors.light.warning);
+        expect(icon.color, ModeColors.light.warning);
         final subtitle = tester.widget<Text>(
           find.text(sv.householdAllergenFilterSubtitleOff),
         );
         expect(
           subtitle.style?.color,
-          ButleryColors.light.onWarningContainer,
+          ModeColors.light.onWarningContainer,
         );
       },
     );

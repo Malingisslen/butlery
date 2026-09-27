@@ -11,6 +11,7 @@ import 'package:butlery/views/family/family_member_form_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// "Min familj" — manage the household's account holders and the non-account
@@ -84,7 +85,7 @@ class _MinFamiljContent extends StatelessWidget {
                       ActionButtons.secondaryButton(
                         context,
                         label: l10n.familyAddMember,
-                        icon: Icons.add,
+                        icon: ButleryIcons.plus,
                         isExpanded: true,
                         onPressed: () => _openForm(context),
                       ),
@@ -108,7 +109,7 @@ class _MinFamiljContent extends StatelessWidget {
           title: l10n.familyHouseholdSection,
           trailing: '${vm.accounts.length} ${l10n.familyAccountsWord}',
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         for (final account in vm.accounts)
           FamilyAccountRow(
             member: account,
@@ -131,7 +132,7 @@ class _MinFamiljContent extends StatelessWidget {
           title: l10n.familyMembersSection,
           trailing: '${vm.familyMembers.length} ${l10n.familyProfilesWord}',
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         if (vm.familyMembers.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(

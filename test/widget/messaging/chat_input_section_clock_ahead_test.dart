@@ -13,6 +13,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -117,7 +118,7 @@ void main() {
   Future<void> typeAndSend(WidgetTester tester) async {
     await tester.enterText(find.byType(TextField).first, 'hej hej');
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.send));
+    await tester.tap(find.byIcon(ButleryIcons.send));
   }
 
   FirebaseException denied() =>
@@ -278,7 +279,7 @@ void main() {
     //
     // The `attempts` assertion is what stops this test being all-negative. The
     // send IconButton is ALWAYS in the tree — only its `onPressed` is nulled
-    // when `isComposing` is false — so `find.byIcon(Icons.send)` never throws
+    // when `isComposing` is false — so `find.byIcon(ButleryIcons.send)` never throws
     // and a tap on the disabled button is a silent no-op. Every other
     // expectation below is satisfied by a send that never happened.
     var attempts = 0;

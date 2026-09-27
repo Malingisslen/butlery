@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/search_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 
 /// Builds a host that opens a PopupMenu seeded with [criteria]/[ascending].
@@ -199,13 +200,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.title), findsOneWidget);
-      expect(find.byIcon(Icons.access_time), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsOneWidget);
-      expect(find.byIcon(Icons.restaurant), findsOneWidget);
+      // Cooking time and schedule both mean Tid: one clock glyph (P7-U08).
+      expect(find.byIcon(ButleryIcons.clock), findsNWidgets(2));
+      expect(find.byIcon(ButleryIcons.star), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       expect(find.byIcon(Icons.history), findsOneWidget);
       expect(find.byIcon(Icons.repeat), findsOneWidget);
-      expect(find.byIcon(Icons.schedule), findsOneWidget);
-      expect(find.byIcon(Icons.shuffle), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.shuffle), findsOneWidget);
     });
   });
 }

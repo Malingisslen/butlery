@@ -3,9 +3,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('StyledInput Widget Tests', () {
@@ -175,14 +177,14 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(
             const StyledInput(
-              prefixIcon: Icon(Icons.search),
-              suffixIcon: Icon(Icons.clear),
+              prefixIcon: ButleryIcon(ButleryIcons.search),
+              suffixIcon: ButleryIcon(ButleryIcons.x),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.search), findsOneWidget);
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
       testWidgets('should handle max length constraint', (
@@ -304,7 +306,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
         expect(find.text('Password'), findsOneWidget);
       });
 
@@ -358,7 +360,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.email), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.mail), findsOneWidget);
         expect(find.text('Email'), findsOneWidget);
       });
 
@@ -536,7 +538,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.search), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
 
         // Focus to see hint
         await tester.tap(find.byType(TextFormField));

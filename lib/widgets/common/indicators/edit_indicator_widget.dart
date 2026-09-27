@@ -88,7 +88,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
             ),
             decoration: BoxDecoration(
               color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(
                 color: color.withValues(
                   alpha: AppDimensions.opacityMediumLight,
@@ -100,7 +100,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
               mainAxisSize: MainAxisSize.min,
               children: [
                 PulseDot(color: color, size: 8),
-                const SizedBox(width: AppDimensions.spacingTight),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
                   style: AppTextStyles.metadataEmphasized.copyWith(

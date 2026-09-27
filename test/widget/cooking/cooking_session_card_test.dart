@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
@@ -73,7 +74,7 @@ void main() {
       expect(find.text('Erik lagar Kycklinggryta'), findsOneWidget);
       expect(find.text('lagar just nu'), findsOneWidget);
       expect(find.byType(PulseDot), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.chevronRight), findsOneWidget);
     });
 
     testWidgets('two sessions on the same recipe merge with ampersand', (

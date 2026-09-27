@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -399,7 +401,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.close),
+          icon: const ButleryIcon(ButleryIcons.x),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: context.l10n.commonClose,
         ),
@@ -437,8 +439,8 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              Icon(
-                Icons.label,
+              ButleryIcon(
+                ButleryIcons.tag,
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
@@ -472,13 +474,13 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         SegmentedButton<MatchMode>(
           segments: [
             ButtonSegment(
               value: MatchMode.all,
               label: Text(context.l10n.ruleMatchModeAllConditions),
-              icon: const Icon(
+              icon: const ButleryIcon(
                 Icons.all_inclusive,
                 size: AppDimensions.iconSize18,
               ),
@@ -486,7 +488,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ButtonSegment(
               value: MatchMode.any,
               label: Text(context.l10n.ruleMatchModeAnyCondition),
-              icon: const Icon(
+              icon: const ButleryIcon(
                 Icons.call_split,
                 size: AppDimensions.iconSize18,
               ),
@@ -518,15 +520,18 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             const Spacer(),
             TextButton.icon(
               onPressed: _isSaving ? null : _addCondition,
-              icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
+              icon: const ButleryIcon(
+                ButleryIcons.plus,
+                size: AppDimensions.iconSize18,
+              ),
               label: Text(context.l10n.commonAdd),
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...List.generate(_conditions.length, (index) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: _ConditionRow(
               condition: _conditions[index],
               canDelete: _conditions.length > 1,
@@ -589,19 +594,19 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
           color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               _error!,
@@ -622,15 +627,26 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           child: Text(context.l10n.commonCancel),
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        FilledButton(
-          onPressed: _isSaving ? null : _save,
-          child: _isSaving
-              ? const LoadingIndicator(size: 20, strokeWidth: 2)
-              : Text(
-                  _isEditing
-                      ? context.l10n.commonSave
-                      : context.l10n.commonCreate,
-                ),
+        // Busy: the button keeps its name and colours and gets the plate
+        // line along its bottom edge (Komponentark v1:365, :372;
+        // produktregler.md:902), never a spinner (B-18).
+        BusyButtonSemantics(
+          busy: _isSaving,
+          name: _isEditing
+              ? context.l10n.commonSave
+              : context.l10n.commonCreate,
+          child: FilledButton(
+            onPressed: _isSaving ? PlateLineButton.ignore : _save,
+            style: _isSaving
+                ? PlateLineButton.busyStyle(
+                    null,
+                    Theme.of(context).filledButtonTheme.style,
+                  )
+                : null,
+            child: Text(
+              _isEditing ? context.l10n.commonSave : context.l10n.commonCreate,
+            ),
+          ),
         ),
       ],
     );
@@ -664,7 +680,7 @@ class _ConditionRow extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
@@ -704,7 +720,10 @@ class _ConditionRow extends StatelessWidget {
               // Delete button
               if (canDelete)
                 IconButton(
-                  icon: const Icon(Icons.close, size: AppDimensions.iconSizeM),
+                  icon: const ButleryIcon(
+                    ButleryIcons.x,
+                    size: AppDimensions.iconSizeM,
+                  ),
                   onPressed: enabled ? onDelete : null,
                   tooltip: context.l10n.ruleRemoveCondition,
                   constraints: const BoxConstraints(

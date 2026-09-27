@@ -39,6 +39,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -225,7 +226,7 @@ void main() {
         await _pumpGatedAppBar(tester, viewApp);
 
         // Open the overflow menu.
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pumpAndSettle();
 
         // Admin items are present.
@@ -245,7 +246,7 @@ void main() {
 
         await _pumpGatedAppBar(tester, viewApp);
 
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pumpAndSettle();
 
         // Admin affordances are gone for a regular member.

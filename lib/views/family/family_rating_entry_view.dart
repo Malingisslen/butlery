@@ -7,9 +7,11 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_entry_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -162,8 +164,8 @@ class _FamilyRatingEntryContent extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.lock_outline,
+          ButleryIcon(
+            ButleryIcons.lock,
             size: 15,
             color: cs.onSurface,
           ),
@@ -199,7 +201,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 onPressed: (vm.hasAnyRating && !vm.isLoading)
                     ? () => _save(context)
                     : null,
-                icon: const Icon(Icons.check, size: 18),
+                icon: const ButleryIcon(ButleryIcons.check, size: 18),
                 label: Text(l10n.familyRatingSave),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
@@ -270,7 +272,7 @@ class _DinerRatingRow extends StatelessWidget {
         border: Border(
           left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),
@@ -346,7 +348,7 @@ class _YouBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       decoration: BoxDecoration(
-        color: context.butleryColors.heroPaleGreen,
+        color: context.modeColors.heroPaleGreen,
         border: Border.all(color: cs.onSurface),
       ),
       child: Text(

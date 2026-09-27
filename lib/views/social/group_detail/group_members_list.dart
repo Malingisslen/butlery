@@ -7,6 +7,8 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -197,7 +199,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             if (_canAddMembers && !_selectionMode)
               TextButton.icon(
                 onPressed: widget.onAddMembers,
-                icon: const Icon(Icons.person_add),
+                icon: const ButleryIcon(Icons.person_add),
                 label: Text(context.l10n.commonAdd),
               ),
             // P5-U31: the list lives in the group view's scroll, so the
@@ -230,14 +232,14 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           if (_selectionMode) _buildSelectionBar(context),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: members.length,
             separatorBuilder: (context, index) =>
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
             itemBuilder: (context, index) {
               final member = members[index];
               return KeyedSubtree(
@@ -274,13 +276,13 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               color: Theme.of(context).colorScheme.tertiary,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: pendingInvitations.length,
             separatorBuilder: (context, index) =>
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
             itemBuilder: (context, index) {
               final invitation = pendingInvitations[index];
               return KeyedSubtree(
@@ -300,7 +302,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           StateWidget.empty(
             title: context.l10n.groupNoMembersYet,
             subtitle: context.l10n.groupNoMembersDescription,
-            icon: Icons.people_outline,
+            icon: ButleryIcons.users,
           ),
       ],
     );
@@ -363,13 +365,13 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.spacingXs,
-        AppDimensions.spacingXxs,
-        AppDimensions.spacingS,
-        AppDimensions.spacingXxs,
+        AppDimensions.space4,
+        AppDimensions.space4,
+        AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
@@ -398,7 +400,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           const Spacer(),
           TextButton.icon(
             onPressed: count > 0 ? _removeSelected : null,
-            icon: const Icon(Icons.person_remove),
+            icon: const ButleryIcon(ButleryIcons.userMinus),
             label: Text(context.l10n.groupRemoveSelectedCount(count)),
             style: TextButton.styleFrom(
               foregroundColor: cs.error,

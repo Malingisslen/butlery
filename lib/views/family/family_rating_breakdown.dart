@@ -6,10 +6,12 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_breakdown_viewmodel.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 
 /// Collapsible recipe-detail section: the household's family-rating breakdown
@@ -118,8 +120,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               const SizedBox(width: 10),
               _familyPill(context, vm.familyAverageDisplay),
               const Spacer(),
-              Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
+              ButleryIcon(
+                _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 color: cs.outline,
               ),
             ],
@@ -137,7 +139,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.groups_outlined, size: 14, color: cs.onPrimary),
+          ButleryIcon(ButleryIcons.users, size: 14, color: cs.onPrimary),
           const SizedBox(width: 4),
           Text(
             value,
@@ -160,11 +162,11 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.butleryColors.heroPaleGreen,
+        color: context.modeColors.heroPaleGreen,
         border: Border(
           left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),
@@ -329,7 +331,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           if (showPersonal)
             _compareRow(
               context,
-              color: context.butleryColors.warning,
+              color: context.modeColors.warning,
               label: l10n.familyRatingYourOwnLabel,
               trailing: StarRatingRow(rating: personal, size: 16),
             ),
@@ -349,8 +351,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             size: 14,
             color: cs.outline,
           ),

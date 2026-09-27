@@ -25,10 +25,10 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -196,7 +196,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ButleryTopBar),
-        matching: find.byIcon(Icons.checklist),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
     );
     await settle(tester);
@@ -276,7 +276,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(ButleryTopBar),
-        matching: find.byIcon(Icons.checklist),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
       findsNothing,
     );
@@ -297,11 +297,11 @@ void main() {
     expect(menuEnabled(tester), isFalse);
     expect(activeBar(), findsOneWidget);
     // The screen-level count, which `activeBar()` cannot carry: that finder is
-    // scoped to the bar's own subtree, so a spinner put back into a control is
-    // invisible to it. BUT-2041 made the bar the batch's only signal, and a
-    // control that grows its own again puts a second live region on screen for
-    // one batch.
-    expect(find.byType(LoadingIndicator), findsNothing);
+    // scoped to the bar's own subtree, so a loading line put back into a
+    // control is invisible to it. BUT-2041 made the bar the batch's only
+    // signal, and a control that grows its own again puts a second live region
+    // on screen for one batch. The one plate line on screen is the bar's.
+    expect(find.byType(PlateLine), findsOneWidget);
 
     mockManagement.releaseRequests();
     await settle(tester);
@@ -352,7 +352,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ButleryTopBar),
-        matching: find.byIcon(Icons.checklist),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
     );
     await settle(tester);
@@ -573,9 +573,9 @@ void main() {
       // is what says so, and it lives in the screen rather than in a control.
       expect(activeBar(), findsOneWidget);
       // The same screen-level count as on the incoming tab, repeated because
-      // this is the tab where the cancel button renders: a spinner put back
-      // into ITS icon slot is invisible to every other assertion here.
-      expect(find.byType(LoadingIndicator), findsNothing);
+      // this is the tab where the cancel button renders: a loading line put
+      // back into ITS icon slot is invisible to every other assertion here.
+      expect(find.byType(PlateLine), findsOneWidget);
       // The announcement, not only the widget. Scoped to the bar WIDGET: the
       // request cards render an unstubbed display name starting with the same
       // word, so an unscoped finder matches them too.

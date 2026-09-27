@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
@@ -120,13 +122,13 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.comment_outlined,
+              ButleryIcon(
+                ButleryIcons.messageSquare,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -164,10 +166,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   ],
                 ),
               ),
-              Icon(
-                _isExpanded
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
+              ButleryIcon(
+                _isExpanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 color: cs.onSurfaceVariant,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -239,12 +239,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           onTap: () => _showAudienceDialog(context, vm),
           child: Row(
             children: [
-              Icon(
-                Icons.visibility_outlined,
+              ButleryIcon(
+                ButleryIcons.eye,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Flexible(
                 child: Text(
                   context.l10n.recipeCommentVisibleTo(audienceStr),
@@ -280,8 +280,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(
-                Icons.visibility_outlined,
+              ButleryIcon(
+                ButleryIcons.eye,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
@@ -309,8 +309,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.person_outline,
+                              ButleryIcon(
+                                ButleryIcons.user,
                                 size: AppDimensions.iconSizeS,
                                 color: cs.onSurfaceVariant,
                               ),
@@ -327,7 +327,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       if (unresolved > 0)
                         Padding(
                           padding: const EdgeInsets.only(
-                            top: AppDimensions.spacingXxs,
+                            top: AppDimensions.space4,
                           ),
                           child: Text(
                             ctx.l10n.recipeCommentAudienceOthers(unresolved),
@@ -356,7 +356,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
@@ -497,7 +497,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           ? '${comment.text.substring(0, 40)}...'
           : comment.text,
       itemType: 'kommentar',
-      icon: Icons.comment_outlined,
+      icon: ButleryIcons.messageSquare,
     );
     if (confirmed != true || !mounted) return;
 
@@ -638,19 +638,17 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
     // The ink snackbar for both outcomes (PQ-09 = A; Komponentark
-    // v1:745-750): the message says what happened, not a status fill. Only
-    // the colour changes: no action, so it still closes by itself after
-    // Flutter's former default of 4 s, as before.
-    const duration = Duration(seconds: 4);
+    // v1:745-750): the message says what happened, not a status fill. A
+    // failure carries Stäng and the alert role (content-style-guide.md:96;
+    // tillganglighetshandoff:172); a confirmation closes by itself after 4 s.
     if (isError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(context, what: message);
+    } else {
+      SnackBarUtils.showSuccess(
         context,
         message,
-        duration: duration,
-        showCloseButton: false,
+        duration: const Duration(seconds: 4),
       );
-    } else {
-      SnackBarUtils.showSuccess(context, message, duration: duration);
     }
   }
 }

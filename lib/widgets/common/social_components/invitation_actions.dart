@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -114,7 +116,7 @@ class InvitationActions {
           onPressed: onAddTarget,
           tooltip: addTooltip,
           heroTag: 'add_target',
-          child: const Icon(Icons.add),
+          child: const ButleryIcon(ButleryIcons.plus),
         ),
       );
     }
@@ -125,7 +127,7 @@ class InvitationActions {
           onPressed: onCreateGroup,
           tooltip: createTooltip,
           heroTag: 'create_group',
-          child: const Icon(Icons.group_add),
+          child: const ButleryIcon(Icons.group_add),
         ),
       );
     }
@@ -137,8 +139,11 @@ class InvitationActions {
             onPressed: onSendInvitations,
             tooltip: sendTooltip,
             heroTag: 'send_invitations',
-            icon: const Icon(Icons.send),
+            icon: const ButleryIcon(ButleryIcons.send),
             label: Text(sendTooltip ?? context.l10n.commonSend),
+            // A labelled FAB is a pill, not the theme's circle (Komponentark
+            // v1:665, tokens.json space.radius.pill).
+            shape: const StadiumBorder(),
           ),
         ),
       );
@@ -191,8 +196,8 @@ class InvitationActions {
           if (showRemove && onBulkRemove != null)
             TextButton.icon(
               onPressed: onBulkRemove,
-              icon: Icon(
-                Icons.delete,
+              icon: ButleryIcon(
+                ButleryIcons.trash2,
                 color: Theme.of(context).colorScheme.error,
               ),
               label: Text(removeText ?? context.l10n.commonDelete),
@@ -203,13 +208,13 @@ class InvitationActions {
           if (showExport && onBulkExport != null)
             TextButton.icon(
               onPressed: onBulkExport,
-              icon: const Icon(Icons.download),
+              icon: const ButleryIcon(ButleryIcons.download),
               label: Text(exportText ?? context.l10n.commonExport),
             ),
           if (showInvite && onBulkInvite != null)
             ElevatedButton.icon(
               onPressed: onBulkInvite,
-              icon: const Icon(Icons.send),
+              icon: const ButleryIcon(ButleryIcons.send),
               label: Text(inviteText ?? context.l10n.invitationSendInvitations),
             ),
         ],
@@ -252,10 +257,10 @@ class InvitationActions {
                 final target = targets[index];
                 return ListTile(
                   dense: true,
-                  leading: Icon(
+                  leading: ButleryIcon(
                     target.type == InvitationTargetType.group
-                        ? Icons.group
-                        : Icons.person,
+                        ? ButleryIcons.users
+                        : ButleryIcons.user,
                     size: AppDimensions.iconSizeM,
                   ),
                   title: Text(
@@ -308,6 +313,7 @@ class InvitationActions {
     bool showInvite = true,
   }) {
     return PopupMenuButton<String>(
+      icon: const ButleryIcon(ButleryIcons.moreVertical),
       onSelected: (action) {
         switch (action) {
           case 'view':
@@ -329,7 +335,7 @@ class InvitationActions {
           PopupMenuItem(
             value: 'view',
             child: ListTile(
-              leading: const Icon(Icons.visibility),
+              leading: const ButleryIcon(ButleryIcons.eye),
               title: Text(context.l10n.invitationView),
               dense: true,
             ),
@@ -338,7 +344,7 @@ class InvitationActions {
           PopupMenuItem(
             value: 'edit',
             child: ListTile(
-              leading: const Icon(Icons.edit),
+              leading: const ButleryIcon(ButleryIcons.pencil),
               title: Text(context.l10n.commonEdit),
               dense: true,
             ),
@@ -347,7 +353,7 @@ class InvitationActions {
           PopupMenuItem(
             value: 'invite',
             child: ListTile(
-              leading: const Icon(Icons.send),
+              leading: const ButleryIcon(ButleryIcons.send),
               title: Text(context.l10n.invitationSendInvitation),
               dense: true,
             ),
@@ -357,8 +363,8 @@ class InvitationActions {
             value: 'remove',
             child: Builder(
               builder: (context) => ListTile(
-                leading: Icon(
-                  Icons.delete,
+                leading: ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(
@@ -404,7 +410,10 @@ class InvitationActions {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.delete, color: cs.surfaceContainerHighest),
+                ButleryIcon(
+                  ButleryIcons.trash2,
+                  color: cs.surfaceContainerHighest,
+                ),
                 Text(
                   resolvedLeftLabel,
                   style: AppTextStyles.buttonTextLight,
@@ -421,7 +430,10 @@ class InvitationActions {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.send, color: cs.surfaceContainerHighest),
+                ButleryIcon(
+                  ButleryIcons.send,
+                  color: cs.surfaceContainerHighest,
+                ),
                 Text(
                   resolvedRightLabel,
                   style: AppTextStyles.buttonTextLight,

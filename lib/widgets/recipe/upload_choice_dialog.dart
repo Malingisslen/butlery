@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Dialog for handling pending/failed uploads during recipe save.
 /// Provides user choices when saving a recipe with incomplete uploads:
@@ -65,7 +65,7 @@ Future<UploadChoice?> showUploadChoiceDialog({
       onPressed: () =>
           Navigator.of(context).pop(UploadChoice.saveWithoutPending),
       style: TextButton.styleFrom(
-        foregroundColor: context.butleryColors.warning,
+        foregroundColor: context.modeColors.warning,
       ),
       child: Text(
         hasFailedUploads

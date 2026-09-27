@@ -45,6 +45,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -333,7 +334,9 @@ void main() {
       Future<void> startAddSnapFlow(WidgetTester tester) async {
         await pumpDetailView(tester);
 
-        final addButton = find.byIcon(Icons.add_a_photo);
+        final addButton = find.byTooltip(
+          l10nOf(tester).cookSnapAddTooltip,
+        );
         await tester.ensureVisible(addButton);
         await tester.pump();
         await tester.tap(addButton);
@@ -585,7 +588,7 @@ void main() {
 
           final plusButton = find.descendant(
             of: find.byType(PortionScaler),
-            matching: find.byIcon(Icons.add),
+            matching: find.byIcon(ButleryIcons.plus),
           );
           await tester.ensureVisible(plusButton);
           await tester.pump();
@@ -660,7 +663,7 @@ void main() {
         previousOnError?.call(details);
       };
       try {
-        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
       } finally {
@@ -789,7 +792,7 @@ Gör så här:
         previousOnError?.call(details);
       };
       try {
-        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         final l10n = l10nOf(tester);

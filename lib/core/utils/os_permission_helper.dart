@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Injectable wrapper for `permission_handler` static APIs. Lets tests drive
 /// status transitions without touching plugin channels.
@@ -423,7 +424,7 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
               children: [
                 if (icon != null) ...[
                   ExcludeSemantics(
-                    child: Icon(
+                    child: ButleryIcon(
                       icon,
                       color: cs.onSurface,
                       size: AppDimensions.iconSizeM,

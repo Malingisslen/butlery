@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
@@ -49,8 +51,8 @@ class _IngredientSubstitutionSheetState
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
-                Icon(
-                  Icons.swap_horiz,
+                ButleryIcon(
+                  ButleryIcons.swapHorizontal,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeL,
                 ),
@@ -62,7 +64,7 @@ class _IngredientSubstitutionSheetState
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const ButleryIcon(ButleryIcons.x),
                   onPressed: () => Navigator.of(context).pop(),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -161,7 +163,7 @@ class _IngredientSubstitutionSheetState
                 ),
               ),
               Container(
-                padding: AppDimensions.paddingSymmetric4x2,
+                padding: AppDimensions.badgePadding,
                 decoration: BoxDecoration(
                   color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,

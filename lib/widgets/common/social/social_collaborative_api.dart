@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/collaborative/collaborative_indicators.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 
@@ -12,7 +13,7 @@ class SocialCollaborativeApi {
   /// Build collaborative status badge
   static Widget collaborativeStatusBadge({
     String text = 'Delat',
-    IconData icon = Icons.people,
+    IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
   }) {

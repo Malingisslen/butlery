@@ -8,8 +8,6 @@
 ///  * assignFromOverflow prunes the tray
 ///  * previousWeek / nextWeek arithmetic survives ISO year boundaries
 ///  * Service errors surface via BaseViewModel.error + hasError
-///  * generateShoppingList (BUT-1234) delegates to MenuShoppingListGenerator
-///    via executeAsync: loading toggles, three-way result passes through
 ///
 /// Mocks the `WeeklyMenuPlanService` and `UnifiedRecipeService` layers so
 /// the VM's orchestration logic (and only that) is exercised.
@@ -917,21 +915,6 @@ void main() {
       );
 
       test(
-        'generateShoppingList refuses rather than listing the wrong week',
-        () async {
-          when(() => mockService.readWeek(any())).thenAnswer(
-            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
-          );
-          await viewModel.loadWeek(DateTime(2026, 4, 15));
-
-          final result = await viewModel.generateShoppingList();
-
-          expect(result, isNull);
-          verifyNever(() => mockGenerator.generateForWeek(any()));
-        },
-      );
-
-      test(
         'currentWeekStart still names the REQUESTED week after a failed read',
         () async {
           // The getter is public and `veckomeny_view` hands it to the placement
@@ -1809,138 +1792,6 @@ void main() {
 
         expect(result, isNull);
         expect(viewModel.isMergingShoppingList, isFalse);
-      });
-    });
-
-    group('generateShoppingList (BUT-1234)', () {
-      const successResult = MenuShoppingGenerationResult(
-        listId: 'list-1',
-        listName: 'Inköpslista v.16',
-        itemCount: 7,
-        recipeCount: 3,
-        unresolvedRecipes: 0,
-      );
-
-      test('delegates to the generator with the current week anchor, toggles '
-          'isLoading, and passes the success result through', () async {
-        final week = _plan(weekStart: DateTime(2026, 4, 13));
-        when(() => mockService.readWeek(any())).thenAnswer(
-          (_) async => WeeklyMenuPlanRead(plan: week, readFailed: false),
-        );
-        await viewModel.loadWeek(DateTime(2026, 4, 13));
-
-        var sawLoading = false;
-        viewModel.addListener(() {
-          if (viewModel.isLoading) sawLoading = true;
-        });
-        when(
-          () => mockGenerator.generateForWeek(any()),
-        ).thenAnswer((_) async => successResult);
-
-        final result = await viewModel.generateShoppingList();
-
-        expect(
-          result,
-          same(successResult),
-          reason:
-              'the view renders the snackbar from this result — it '
-              'must pass through untouched',
-        );
-        expect(
-          sawLoading,
-          isTrue,
-          reason: 'executeAsync must raise isLoading so the FAB disables',
-        );
-        expect(viewModel.isLoading, isFalse);
-        expect(viewModel.hasError, isFalse);
-        verify(
-          () => mockGenerator.generateForWeek(week.weekStartDate),
-        ).called(1);
-      });
-
-      test(
-        'passes the nothingToGenerate sentinel through (empty plan)',
-        () async {
-          when(() => mockGenerator.generateForWeek(any())).thenAnswer(
-            (_) async => MenuShoppingGenerationResult.nothingToGenerate,
-          );
-
-          final result = await viewModel.generateShoppingList();
-
-          expect(result, isNotNull);
-          expect(
-            result!.isEmptyPlan,
-            isTrue,
-            reason:
-                'the empty-plan sentinel must reach the view distinct '
-                'from the null failure signal',
-          );
-          expect(viewModel.hasError, isFalse);
-        },
-      );
-
-      test('passes the null failure signal through without raising the VM '
-          'error state (the generator already swallowed and logged)', () async {
-        when(
-          () => mockGenerator.generateForWeek(any()),
-        ).thenAnswer((_) async => null);
-
-        final result = await viewModel.generateShoppingList();
-
-        expect(
-          result,
-          isNull,
-          reason: 'null = failure is the view\'s error-snackbar trigger',
-        );
-        expect(
-          viewModel.hasError,
-          isFalse,
-          reason:
-              'a null return is a normal completion of executeAsync — '
-              'no exception, no error state',
-        );
-        expect(viewModel.isLoading, isFalse);
-      });
-
-      test('a throwing generator surfaces the localized error and returns '
-          'null instead of rethrowing to the view', () async {
-        when(
-          () => mockGenerator.generateForWeek(any()),
-        ).thenThrow(StateError('write failed'));
-
-        final result = await viewModel.generateShoppingList();
-
-        expect(result, isNull);
-        expect(viewModel.hasError, isTrue);
-        expect(viewModel.error, 'Kunde inte skapa inköpslistan');
-        expect(viewModel.isLoading, isFalse);
-      });
-
-      test('isLoading re-entrancy backstop: a second call while the first is '
-          'in flight no-ops (one generator invocation)', () async {
-        when(() => mockGenerator.generateForWeek(any())).thenAnswer(
-          (_) async {
-            // Hold the first call across an event-loop turn so the second
-            // call observes isLoading == true.
-            await Future<void>.delayed(Duration.zero);
-            return successResult;
-          },
-        );
-
-        final first = viewModel.generateShoppingList();
-        final second = viewModel.generateShoppingList();
-        final results = await Future.wait([first, second]);
-
-        expect(results[0], same(successResult));
-        expect(
-          results[1],
-          same(MenuShoppingGenerationResult.alreadyRunning),
-          reason:
-              'the guarded second call must not run the generator, and '
-              'must NOT alias the null failure sentinel — the view renders '
-              'alreadyRunning as silence, null as an error snackbar',
-        );
-        verify(() => mockGenerator.generateForWeek(any())).called(1);
       });
     });
 

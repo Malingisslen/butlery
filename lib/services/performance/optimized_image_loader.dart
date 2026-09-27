@@ -12,6 +12,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -475,7 +476,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
     return ColoredBox(
       color: cs.surfaceContainerLow,
       child: Center(
-        child: Icon(
+        child: ButleryIcon(
           Icons.broken_image,
           size: 48,
           color: cs.outline,

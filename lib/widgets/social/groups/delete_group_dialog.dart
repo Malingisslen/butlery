@@ -6,8 +6,10 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
@@ -75,9 +77,9 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
 
   @override
   Widget? get dialogIcon => Builder(
-    builder: (context) => Icon(
-      Icons.warning_amber_rounded,
-      color: context.butleryColors.warning,
+    builder: (context) => ButleryIcon(
+      ButleryIcons.triangleAlert,
+      color: context.modeColors.warning,
       size: AppDimensions.iconSizeXxl,
     ),
   );
@@ -94,7 +96,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
       context.l10n.commonDeleting;
 
   @override
-  Widget get actionButtonIcon => const Icon(Icons.delete_forever);
+  Widget get actionButtonIcon => const ButleryIcon(ButleryIcons.trash2);
 
   @override
   ButtonStyle? actionButtonStyleFor(BuildContext context) {

@@ -30,7 +30,7 @@ void main() {
 
   group('FiltersPanelWidget — manage-food-preferences link (BUT-987)', () {
     // Match on the user-visible label (sv is the harness default locale), not
-    // the Icons.tune icon — that icon is also used by FilterToggleButton, so a
+    // the ButleryIcons.filter icon — that icon is also used by FilterToggleButton, so a
     // label finder pins the feature's contract without sharing-icon brittleness.
     final linkFinder = find.text('Hantera allergener & kost');
 
