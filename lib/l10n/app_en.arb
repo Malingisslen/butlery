@@ -13234,7 +13234,7 @@
   "permAskAgain": "Ask again",
   "permOpenSettings": "Open settings",
   "permImportCameraTitle": "Photograph the recipe",
-  "permImportCameraBody": "I read the text in the photo and fill in the recipe for you.",
+  "permImportCameraBody": "I read the text in the photo and fill in the recipe for you. The photo is sent only to read the text.",
   "permImportPhotosTitle": "Choose photos of the recipe",
   "permImportPhotosBody": "I read the text in the photos you choose and fill in the recipe for you.",
   "permImportConsequence": "If you say no, you can still type the recipe or paste a link.",
@@ -13798,5 +13798,45 @@
         "type": "int"
       }
     }
+  },
+  "recipeSuggestChange": "Suggest a change",
+  "@recipeSuggestChange": {
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:246)."
+  },
+  "recipeSuggestionSend": "Send the suggestion",
+  "@recipeSuggestionSend": {
+    "description": "Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe."
+  },
+  "recipeSuggestionSending": "Sending the suggestion …",
+  "@recipeSuggestionSending": {
+    "description": "Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63)."
+  },
+  "recipeSuggestionSent": "The suggestion is sent to the owner.",
+  "@recipeSuggestionSent": {
+    "description": "Q6-08 = A: confirmation after a member's edit was kept as a suggestion."
+  },
+  "recipeSuggestionSendFailed": "The suggestion could not be sent.",
+  "@recipeSuggestionSendFailed": {
+    "description": "Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93)."
+  },
+  "recipeSuggestionWaitingTitle": "Your last suggestion is waiting for the owner",
+  "@recipeSuggestionWaitingTitle": {
+    "description": "Q6-07 = B: dialog title when the member already has a pending suggestion to this recipe, so no second one is sent."
+  },
+  "recipeSuggestionWaitingBody": "A new suggestion can be sent once the owner has answered. Your changes stay here, and you can save them as your own copy.",
+  "@recipeSuggestionWaitingBody": {
+    "description": "Q6-07 = B: dialog body; nothing is discarded, the edits stay in the editor and can be kept as a copy."
+  },
+  "cookingNoStepsSaveCopy": "Save my copy",
+  "@cookingNoStepsSaveCopy": {
+    "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
+  },
+  "cookingNoStepsBodyOthers": "The ingredients are there – but nobody has written how to make it. Save your own copy and write the steps there, or take the ingredients to the shopping list.",
+  "@cookingNoStepsBodyOthers": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
+  },
+  "cookingNoStepsBodyOthersNoIngredients": "Nobody has written how to make it yet. Save your own copy and write the steps there.",
+  "@cookingNoStepsBodyOthersNoIngredients": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
   }
 }

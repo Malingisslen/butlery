@@ -45,9 +45,11 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// - [finished]: the user tapped "Klart" on the last step. The detail view
 ///   counts the recipe as cooked (flows-roles-budget.md:72).
 /// - [editRecipe]: "Skriv stegen" from a recipe without steps.
+/// - [saveCopy]: "Spara min kopia" from someone else's recipe without steps
+///   (Q6-05 = C): the user's own copy, never an edit of theirs.
 /// - [toShoppingList]: "Till inköpslistan" from a recipe without steps
 ///   (produktregler.md:1227; Skarmar v12 etapp 11 #lgbutan).
-enum CookingModeExit { finished, editRecipe, toShoppingList }
+enum CookingModeExit { finished, editRecipe, saveCopy, toShoppingList }
 
 /// The device effects a cooking session has. Injectable so the session
 /// rules can be proven without platform channels.
@@ -190,10 +192,16 @@ class CookingModeView extends StatefulWidget {
   /// Device effects; production uses [DefaultCookingSessionEffects].
   final CookingSessionEffects effects;
 
+  /// Q6-05 = C (produktbeslut 2026-09-27): the recipe is not the user's to
+  /// edit, so the empty state offers "Spara min kopia" instead of "Skriv
+  /// stegen". Decided by recipe detail, which knows who owns the recipe.
+  final bool copyInsteadOfEdit;
+
   const CookingModeView({
     super.key,
     required this.recipe,
     this.presentServings,
+    this.copyInsteadOfEdit = false,
     this.effects = const DefaultCookingSessionEffects(),
   });
 
@@ -280,8 +288,12 @@ class _CookingModeViewState extends State<CookingModeView> {
         hasIngredients: widget.recipe.ingredients.any(
           (line) => line.trim().isNotEmpty,
         ),
-        onWriteSteps: () =>
-            Navigator.of(context).pop(CookingModeExit.editRecipe),
+        copyInsteadOfEdit: widget.copyInsteadOfEdit,
+        onWriteSteps: () => Navigator.of(context).pop(
+          widget.copyInsteadOfEdit
+              ? CookingModeExit.saveCopy
+              : CookingModeExit.editRecipe,
+        ),
         onToShoppingList: () =>
             Navigator.of(context).pop(CookingModeExit.toShoppingList),
         onClose: () => Navigator.of(context).pop(),
@@ -316,6 +328,11 @@ class CookingTimerGate {
 /// title, a line saying what is missing, "Skriv stegen" and — when there are
 /// ingredients — "Till inköpslistan" (produktregler.md:1227).
 ///
+/// On someone else's recipe the first action is "Spara min kopia" in the
+/// same place and style (Q6-05 = C, produktbeslut 2026-09-27), and the line
+/// says the steps are written in the copy: the recipe itself is never the
+/// user's to edit (produktregler.md:241).
+///
 /// Colours on the cooking base (ink #24382C light / #17251D dark, paper text
 /// on both): "Skriv stegen" is paper filled with ink text (cs.onPrimary /
 /// cs.primary, the same in both modes), "Till inköpslistan" is outlined in
@@ -325,12 +342,18 @@ class CookingNoStepsState extends StatelessWidget {
   const CookingNoStepsState({
     super.key,
     required this.hasIngredients,
+    this.copyInsteadOfEdit = false,
     required this.onWriteSteps,
     required this.onToShoppingList,
     required this.onClose,
   });
 
   final bool hasIngredients;
+
+  /// Q6-05 = C: "Spara min kopia" in place of "Skriv stegen".
+  final bool copyInsteadOfEdit;
+
+  /// Called by the first action, whichever it is named.
   final VoidCallback onWriteSteps;
   final VoidCallback onToShoppingList;
   final VoidCallback onClose;
@@ -393,9 +416,14 @@ class CookingNoStepsState extends StatelessWidget {
                         ),
                         const SizedBox(height: AppDimensions.spacingSm),
                         Text(
-                          hasIngredients
-                              ? l10n.cookingNoStepsBody
-                              : l10n.cookingNoStepsBodyNoIngredients,
+                          switch ((copyInsteadOfEdit, hasIngredients)) {
+                            (true, true) => l10n.cookingNoStepsBodyOthers,
+                            (true, false) =>
+                              l10n.cookingNoStepsBodyOthersNoIngredients,
+                            (false, true) => l10n.cookingNoStepsBody,
+                            (false, false) =>
+                              l10n.cookingNoStepsBodyNoIngredients,
+                          },
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: cs.onPrimary,
@@ -408,7 +436,11 @@ class CookingNoStepsState extends StatelessWidget {
                           runSpacing: AppDimensions.spacingSm,
                           children: [
                             FilledButton(
-                              key: const ValueKey('cooking-no-steps-write'),
+                              key: ValueKey(
+                                copyInsteadOfEdit
+                                    ? 'cooking-no-steps-save-copy'
+                                    : 'cooking-no-steps-write',
+                              ),
                               style: FilledButton.styleFrom(
                                 backgroundColor: cs.onPrimary,
                                 foregroundColor: cs.primary,
@@ -418,7 +450,11 @@ class CookingNoStepsState extends StatelessWidget {
                                 ),
                               ),
                               onPressed: onWriteSteps,
-                              child: Text(l10n.cookingNoStepsWrite),
+                              child: Text(
+                                copyInsteadOfEdit
+                                    ? l10n.cookingNoStepsSaveCopy
+                                    : l10n.cookingNoStepsWrite,
+                              ),
                             ),
                             if (hasIngredients)
                               OutlinedButton(

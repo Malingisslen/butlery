@@ -92,6 +92,9 @@ void main() {
       // Note: Recipe ID contains user ID for ownership checks in FakePermissionService
       testRecipe = RecipeBuilder()
           .withId('recipe-test-user-123-001')
+          // The signed-in user's own recipe: someone else's opens in
+          // suggestion mode (Q6-08 = A).
+          .withCreatedBy('test-user-123')
           .withTitle('Test Recipe')
           .withDescription('Test Description')
           .withMealType('Middag')

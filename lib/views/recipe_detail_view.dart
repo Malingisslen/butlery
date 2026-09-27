@@ -20,6 +20,7 @@ import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/fork_placement.dart';
+import 'package:butlery/views/recipe_detail/recipe_menu_role.dart';
 import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
@@ -76,6 +77,7 @@ import 'package:butlery/services/shopping/recipe_pantry_check.dart';
 /// Menu actions for the recipe detail overflow menu.
 enum _MenuAction {
   edit,
+  suggestChange,
   fork,
   addToMenu,
   generateShoppingList,
@@ -302,6 +304,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
+        // Q6-08 = A: the menu follows who the user is to the recipe
+        // (produktregler.md:243-251).
+        final menuRole = recipeMenuRole(
+          recipe,
+          ServiceLocator.get<PermissionService>().currentUserId,
+        );
+        final ownsMenu = !widget.readOnly && menuRole == RecipeMenuRole.owner;
         // Q4-03: "Lägg {n} varor i inköpslistan", counted against the
         // pantry.
         final addToListLabel = _addToListLabel(context, recipe);
@@ -311,10 +320,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             Routes.cookingMode,
             // BUT-1613: forward the present count (map form) when this detail
             // view was opened from a planned meal, so cooking mode opens
-            // pre-scaled. Bare Recipe otherwise.
-            arguments: widget.presentServings == null
-                ? recipe
-                : {'recipe': recipe, 'presentServings': widget.presentServings},
+            // pre-scaled; without it the key is left out.
+            // Q6-05 = C: on a recipe that is not the user's to edit, the
+            // empty state offers "Spara min kopia" instead of "Skriv
+            // stegen".
+            arguments: {
+              'recipe': recipe,
+              'presentServings': ?widget.presentServings,
+              'copyInsteadOfEdit': widget.readOnly || isOthersRecipe,
+            },
           );
           if (!context.mounted) return;
           switch (exit) {
@@ -326,6 +340,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             // passed (Q-P6-E18).
             case CookingModeExit.finished:
               await viewModel.markAsCooked();
+            // Q6-05 = C: "Spara min kopia" does exactly that, through the
+            // same copy path as "Spara till mitt kök".
+            case CookingModeExit.saveCopy:
+              await _handleMenuAction(
+                context,
+                _MenuAction.fork,
+                viewModel,
+                recipe,
+              );
             // A recipe without steps: "Skriv stegen" opens the editor, or
             // the copy path when the recipe is not the user's to edit.
             case CookingModeExit.editRecipe:
@@ -596,7 +619,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           final menuCs = Theme.of(context).colorScheme;
                           return [
                             // Edit — owner-only (hidden for a friend's recipe)
-                            if (!widget.readOnly)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 key: const ValueKey('test-recipe-detail-edit'),
                                 value: _MenuAction.edit,
@@ -611,6 +634,32 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       width: AppDimensions.spacingM,
                                     ),
                                     Text(context.l10n.recipeEdit),
+                                  ],
+                                ),
+                              ),
+                            // Q6-08 = A: a member of someone else's shared
+                            // recipe sees "Föreslå ändring" where the owner
+                            // sees Redigera (produktregler.md:246). The
+                            // editor then sends a suggestion and never writes
+                            // the recipe (produktregler.md:241).
+                            if (!widget.readOnly &&
+                                menuRole == RecipeMenuRole.member)
+                              ButleryMenuItem(
+                                key: const ValueKey(
+                                  'test-recipe-detail-suggest-change',
+                                ),
+                                value: _MenuAction.suggestChange,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.rate_review_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipeSuggestChange),
                                   ],
                                 ),
                               ),
@@ -671,8 +720,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
-                            // reTag/editTags/delete — owner-only
-                            if (!widget.readOnly)
+                            // reTag/editTags/delete — owner-only: each writes
+                            // the recipe (produktregler.md:241, :251)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 value: _MenuAction.reTag,
                                 child: Row(
@@ -689,7 +739,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
-                            if (!widget.readOnly)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 value: _MenuAction.editTags,
                                 child: Row(
@@ -706,7 +756,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
-                            if (!widget.readOnly)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 key: const ValueKey(
                                   'test-recipe-detail-delete',
@@ -1147,6 +1197,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     switch (action) {
       case _MenuAction.edit:
         assert(!widget.readOnly, 'edit must be unreachable in readOnly mode');
+        _actions.editRecipe(context);
+      // The editor sees from the recipe's owner id that it is someone
+      // else's and opens in suggestion mode (RecipeFormViewModel
+      // .suggestsChange).
+      case _MenuAction.suggestChange:
+        assert(
+          !widget.readOnly,
+          'suggestChange must be unreachable in readOnly mode',
+        );
         _actions.editRecipe(context);
       case _MenuAction.fork:
         Navigator.pushNamed(

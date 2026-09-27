@@ -38,6 +38,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_suggestion_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
@@ -53,6 +54,10 @@ class _MockAuthRepository extends Mock implements auth.AuthRepository {}
 
 class _FailingStore extends Fake implements RecipeSuggestionRepository {
   int calls = 0;
+
+  @override
+  Stream<List<RecipeSuggestion>> watchMine(String recipeId) =>
+      Stream.value(const []);
 
   @override
   Future<RecipeSuggestion> suggest(RecipeSuggestion suggestion) async {
@@ -413,6 +418,215 @@ void main() {
       await withClock(Clock.fixed(DateTime.utc(2026, 4, 8, 12, 1)), () async {
         expect(await service.watchPendingToMe('e1').first, isEmpty);
       });
+    });
+  });
+
+  group('one pending suggestion per member (Q6-07 = B)', () {
+    test('a conflict while my suggestion waits gets the package 5 choice, '
+        'not a second suggestion', () async {
+      final waiting = await store.suggest(
+        RecipeSuggestion.create(
+          recipeId: 'q1',
+          ownerId: _owner,
+          suggesterId: _member,
+          suggestion: const {'title': 'Mias första förslag'},
+          at: DateTime(2026, 4, 1, 11),
+        ),
+      );
+      final sync = buildSync(store);
+      addTearDown(sync.dispose);
+      final events = <ConflictEvent>[];
+      final sub = sync.conflictStream.listen(events.add);
+      addTearDown(sub.cancel);
+
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        await conflict(sync, 'q1');
+      });
+      await pumpEventQueue();
+
+      final kept = await rows();
+      expect(kept.map((s) => s.id), [waiting.id]);
+      expect(events, hasLength(1));
+      expect(
+        events.single.suggestionId,
+        isNull,
+        reason:
+            'the choice (Behåll min version / Använd deras) applies, so '
+            'the edit is not dropped silently',
+      );
+    });
+
+    test('a decided suggestion no longer blocks a new one', () async {
+      final first = await store.suggest(
+        RecipeSuggestion.create(
+          recipeId: 'q2',
+          ownerId: _owner,
+          suggesterId: _member,
+          suggestion: const {'title': 'x'},
+          at: DateTime(2026, 4, 1, 11),
+        ),
+      );
+      signIn(_owner);
+      await store.decide(first.id, RecipeSuggestionStatus.dismissed);
+      signIn(_member);
+      final sync = buildSync(store);
+      addTearDown(sync.dispose);
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        await conflict(sync, 'q2');
+      });
+      expect(await rows(), hasLength(2));
+    });
+  });
+
+  group('a member\'s edit is a suggestion (Q6-08 = A)', () {
+    late RealtimeSyncService sync;
+    late RecipeSuggestionService service;
+    late Map<String, Recipe> library;
+    late List<Recipe> written;
+
+    Recipe ownersRecipe(String id) => RecipeFactory.build(
+      id: id,
+      title: 'Olles pannkakor',
+      ingredients: ['3 dl mjöl'],
+      instructions: ['Vispa'],
+      imageUrls: ['https://example.com/p.jpg'],
+      createdBy: _owner,
+      socialData: const RecipeSocialData(
+        ownerId: _owner,
+        memberPermissions: {_member: ResourcePermission.editor},
+      ),
+    );
+
+    setUp(() {
+      sync = buildSync(store);
+      library = {};
+      written = [];
+      service = RecipeSuggestionService(
+        repository: store,
+        syncService: sync,
+        readOwnRecipe: (id) async => library[id],
+        writeOwnRecipe: (r) async {
+          written.add(r);
+          library[r.id] = r;
+        },
+      );
+    });
+
+    tearDown(() => sync.dispose());
+
+    Recipe edited(String id) => ownersRecipe(
+      id,
+    ).copyWith(title: 'Mias pannkakor', instructions: ['Vispa', 'Stek i smör']);
+
+    test('Spara keeps a pending suggestion and writes nothing', () async {
+      final s = await withClock(
+        Clock.fixed(DateTime.utc(2026, 4, 1, 12)),
+        () => service.suggestEdit(
+          edited: edited('m1'),
+          ownerId: _owner,
+          suggesterId: _member,
+        ),
+      );
+
+      final kept = (await rows()).single;
+      expect(kept.id, s.id);
+      expect(kept.recipeId, 'm1');
+      expect(kept.ownerId, _owner);
+      expect(kept.suggesterId, _member);
+      expect(kept.status, RecipeSuggestionStatus.pending);
+      expect(
+        kept.expiresAt.difference(kept.createdAt),
+        RecipeSuggestion.keptFor,
+      );
+      expect(
+        RealtimeRecipe.fromMap('m1', kept.suggestion).title,
+        'Mias pannkakor',
+      );
+      expect(written, isEmpty, reason: 'a member never writes the recipe');
+      expect(
+        (await fake.collection('realtime_resources').get()).docs,
+        isEmpty,
+      );
+    });
+
+    test('a second edit while one waits is refused, and nothing is '
+        'stored', () async {
+      final first = await service.suggestEdit(
+        edited: edited('m2'),
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      await expectLater(
+        service.suggestEdit(
+          edited: edited('m2').copyWith(title: 'Mias andra'),
+          ownerId: _owner,
+          suggesterId: _member,
+        ),
+        throwsA(
+          isA<RecipeSuggestionAlreadyWaiting>().having(
+            (e) => e.waiting.id,
+            'waiting',
+            first.id,
+          ),
+        ),
+      );
+      expect(await rows(), hasLength(1));
+
+      // Another recipe is not blocked by it.
+      await service.suggestEdit(
+        edited: edited('m3'),
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      expect(await rows(), hasLength(2));
+    });
+
+    test('the owner sees the changed fields and accepts them into their own '
+        'recipe, which keeps its sharing', () async {
+      final s = await service.suggestEdit(
+        edited: edited('m4'),
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      signIn(_owner);
+      library['m4'] = ownersRecipe('m4');
+
+      final diff = await service.diffAgainstLive(s);
+      expect(diff.changedFields.map((f) => f.fieldKey), [
+        'instructions',
+        'title',
+      ]);
+
+      await service.accept(s);
+
+      final after = written.single;
+      expect(after.title, 'Mias pannkakor');
+      expect(after.instructions, ['Vispa', 'Stek i smör']);
+      expect(after.ingredients, ['3 dl mjöl']);
+      expect(after.imageUrls, ['https://example.com/p.jpg']);
+      expect(after.createdBy, _owner);
+      expect(after.socialData?.ownerId, _owner);
+      expect(
+        after.socialData?.memberPermissions,
+        {
+          _member: ResourcePermission.editor,
+        },
+        reason: 'a suggestion never changes access',
+      );
+      expect((await rows()).single.status, RecipeSuggestionStatus.accepted);
+    });
+
+    test('dismissing writes nothing to the owner\'s recipe', () async {
+      final s = await service.suggestEdit(
+        edited: edited('m5'),
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      signIn(_owner);
+      library['m5'] = ownersRecipe('m5');
+      await service.dismiss(s);
+      expect(written, isEmpty);
+      expect((await rows()).single.status, RecipeSuggestionStatus.dismissed);
     });
   });
 }

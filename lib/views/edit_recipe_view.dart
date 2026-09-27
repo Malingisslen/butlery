@@ -223,7 +223,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                       ),
                     ),
                     child: StateWidget.loading(
-                      message: context.l10n.recipeUpdating,
+                      message: viewModel.suggestsChange
+                          ? context.l10n.recipeSuggestionSending
+                          : context.l10n.recipeUpdating,
                     ),
                   ),
                 ),
@@ -249,8 +251,15 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         .select<RecipeFormViewModel, (bool, bool)>(
           (vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
         );
+    // Q6-08 = A: someone else's recipe is not edited, a change is suggested
+    // (produktregler.md:246, the menu item's own words).
+    final suggests = context.select<RecipeFormViewModel, bool>(
+      (vm) => vm.suggestsChange,
+    );
     return ButleryTopBar.undersida(
-      title: context.l10n.recipeEdit,
+      title: suggests
+          ? context.l10n.recipeSuggestChange
+          : context.l10n.recipeEdit,
       backgroundColor: cs.surface,
       foregroundColor: cs.onSurface,
       leading: IconButton(
@@ -343,7 +352,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     width: AppDimensions.iconSizeXl * 2,
                     child: PlateLine(semanticLabel: context.l10n.statusSaving),
                   )
-                : Text(context.l10n.commonSaveChanges),
+                : Text(
+                    viewModel.suggestsChange
+                        ? context.l10n.recipeSuggestionSend
+                        : context.l10n.commonSaveChanges,
+                  ),
           ),
         ),
       );
@@ -659,7 +672,12 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     final savedRecipe = await viewModel.saveRecipe();
 
     if (context.mounted) {
-      if (savedRecipe != null) {
+      if (savedRecipe != null && viewModel.suggestsChange) {
+        // Q6-08 = A: nothing was written to the recipe, so recipe detail has
+        // nothing to refresh; its suggestion line now shows the pending one.
+        SnackBarUtils.showSuccess(context, context.l10n.recipeSuggestionSent);
+        Navigator.pop(context);
+      } else if (savedRecipe != null) {
         final collaborativeViewModel = context
             .read<CollaborativeStatusViewModel>();
         collaborativeViewModel.invalidateRecipeStatus(widget.recipe.id);
@@ -678,11 +696,16 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         // The kind comes from the view model, never from the error text.
         final l10n = context.l10n;
         final failure = viewModel.lastSaveFailure;
+        if (failure == RecipeSaveFailure.suggestionWaiting) {
+          await _onSuggestionWaiting(context);
+          return;
+        }
         SnackBarUtils.showFailure(
           context,
           what: switch (failure) {
             RecipeSaveFailure.incomplete => l10n.recipeSaveIncomplete,
             RecipeSaveFailure.noPermission => l10n.recipeSaveNoPermission,
+            _ when viewModel.suggestsChange => l10n.recipeSuggestionSendFailed,
             _ => l10n.recipeSaveFailed,
           },
           preserved: l10n.errorPreservedRecipeEdits,
@@ -692,6 +715,41 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
       }
     }
+  }
+
+  /// Q6-07 = B (produktbeslut 2026-09-27): the member's earlier suggestion
+  /// to this recipe still waits for the owner, so no second one was sent.
+  /// Nothing is discarded: the dialog says so, Stäng keeps the edits in the
+  /// editor, and "Spara som egen kopia" keeps them as the user's own recipe
+  /// ([_forkRecipe]), the same way a lowered role offers them (P6-U05). The
+  /// recipe itself is never written (Q6-08 = A).
+  Future<void> _onSuggestionWaiting(BuildContext context) async {
+    final keepCopy = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.recipeSuggestionWaitingTitle),
+        content: Text(context.l10n.recipeSuggestionWaitingBody),
+        actions: [
+          KeyedSubtree(
+            key: const ValueKey('suggestion-waiting-close'),
+            child: ActionButtons.secondaryButton(
+              context,
+              label: context.l10n.commonClose,
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+          ),
+          KeyedSubtree(
+            key: const ValueKey('suggestion-waiting-save-copy'),
+            child: ActionButtons.primaryButton(
+              context,
+              label: context.l10n.roleLoweredSaveCopy,
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (keepCopy == true && context.mounted) await _forkRecipe(context);
   }
 
   /// Försök igen only where trying again can help: not for an incomplete

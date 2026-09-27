@@ -359,17 +359,25 @@ class AppRouter {
           final cookingArgs = settings.arguments;
           Recipe? recipe;
           int? presentServings;
+          var copyInsteadOfEdit = false;
           if (cookingArgs is Recipe) {
             recipe = cookingArgs;
           } else if (cookingArgs is Map<String, dynamic>) {
             recipe = cookingArgs['recipe'] as Recipe?;
             presentServings = cookingArgs['presentServings'] as int?;
+            // Q6-05 = C: from recipe detail, someone else's recipe.
+            copyInsteadOfEdit =
+                cookingArgs['copyInsteadOfEdit'] as bool? ?? false;
           }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for cooking mode');
           }
           return _buildRoute(
-            CookingModeView(recipe: recipe, presentServings: presentServings),
+            CookingModeView(
+              recipe: recipe,
+              presentServings: presentServings,
+              copyInsteadOfEdit: copyInsteadOfEdit,
+            ),
             settings,
             Routes.getAnimationType(routeName),
           );

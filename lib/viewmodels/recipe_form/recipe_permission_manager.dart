@@ -104,6 +104,27 @@ class RecipePermissionManager {
         .distinct();
   }
 
+  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :246): the
+  /// owner of [recipe] when it is someone else's, or null when it is the
+  /// signed-in user's own (or has no owner, as a local recipe).
+  ///
+  /// The owner is the recipe's owner id (socialData.ownerId, else
+  /// createdBy), the same id recipe detail and the permission module use,
+  /// never anything the screen shows. Without a signed-in user nothing is
+  /// someone else's here; the save then fails on its own checks.
+  String? someoneElsesOwner(Recipe recipe) {
+    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    if (ownerId == null || ownerId.isEmpty) return null;
+    final uid = currentUserId;
+    if (uid == null || uid.isEmpty || uid == ownerId) return null;
+    return ownerId;
+  }
+
+  /// The signed-in user's id, or null.
+  String? get currentUserId =>
+      _testPermissionService?.currentUserId ??
+      ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+
   /// Edit permission for recipe form modification and content management.
   bool get canEdit {
     if (_editAccessLost) return false;

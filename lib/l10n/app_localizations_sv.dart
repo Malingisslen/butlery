@@ -17865,7 +17865,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get permImportCameraBody =>
-      'Jag läser texten ur bilden och fyller i receptet åt dig.';
+      'Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.';
 
   @override
   String get permImportPhotosTitle => 'Välj bilder av receptet';
@@ -18396,4 +18396,38 @@ class AppLocalizationsSv extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get recipeSuggestChange => 'Föreslå ändring';
+
+  @override
+  String get recipeSuggestionSend => 'Skicka förslaget';
+
+  @override
+  String get recipeSuggestionSending => 'Skickar förslaget …';
+
+  @override
+  String get recipeSuggestionSent => 'Förslaget är skickat till ägaren.';
+
+  @override
+  String get recipeSuggestionSendFailed => 'Förslaget kunde inte skickas.';
+
+  @override
+  String get recipeSuggestionWaitingTitle =>
+      'Ditt förra förslag väntar på ägaren';
+
+  @override
+  String get recipeSuggestionWaitingBody =>
+      'Ett nytt förslag kan skickas när ägaren har svarat. Ändringarna ligger kvar här, och du kan spara dem som en egen kopia.';
+
+  @override
+  String get cookingNoStepsSaveCopy => 'Spara min kopia';
+
+  @override
+  String get cookingNoStepsBodyOthers =>
+      'Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.';
+
+  @override
+  String get cookingNoStepsBodyOthersNoIngredients =>
+      'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.';
 }

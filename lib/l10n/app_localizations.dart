@@ -29468,7 +29468,7 @@ abstract class AppLocalizations {
   /// No description provided for @permImportCameraBody.
   ///
   /// In sv, this message translates to:
-  /// **'Jag läser texten ur bilden och fyller i receptet åt dig.'**
+  /// **'Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.'**
   String get permImportCameraBody;
 
   /// No description provided for @permImportPhotosTitle.
@@ -30274,6 +30274,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}'**
   String syncQueueIndicatorA11y(int count);
+
+  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:246).
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå ändring'**
+  String get recipeSuggestChange;
+
+  /// Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka förslaget'**
+  String get recipeSuggestionSend;
+
+  /// Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar förslaget …'**
+  String get recipeSuggestionSending;
+
+  /// Q6-08 = A: confirmation after a member's edit was kept as a suggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är skickat till ägaren.'**
+  String get recipeSuggestionSent;
+
+  /// Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte skickas.'**
+  String get recipeSuggestionSendFailed;
+
+  /// Q6-07 = B: dialog title when the member already has a pending suggestion to this recipe, so no second one is sent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt förra förslag väntar på ägaren'**
+  String get recipeSuggestionWaitingTitle;
+
+  /// Q6-07 = B: dialog body; nothing is discarded, the edits stay in the editor and can be kept as a copy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett nytt förslag kan skickas när ägaren har svarat. Ändringarna ligger kvar här, och du kan spara dem som en egen kopia.'**
+  String get recipeSuggestionWaitingBody;
+
+  /// Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara min kopia'**
+  String get cookingNoStepsSaveCopy;
+
+  /// Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.'**
+  String get cookingNoStepsBodyOthers;
+
+  /// Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.'**
+  String get cookingNoStepsBodyOthersNoIngredients;
 }
 
 class _AppLocalizationsDelegate

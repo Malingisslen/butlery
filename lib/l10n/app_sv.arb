@@ -13553,7 +13553,7 @@
   "permAskAgain": "Fråga igen",
   "permOpenSettings": "Öppna inställningar",
   "permImportCameraTitle": "Fotografera receptet",
-  "permImportCameraBody": "Jag läser texten ur bilden och fyller i receptet åt dig.",
+  "permImportCameraBody": "Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.",
   "permImportPhotosTitle": "Välj bilder av receptet",
   "permImportPhotosBody": "Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.",
   "permImportConsequence": "Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.",
@@ -14133,5 +14133,45 @@
         "type": "int"
       }
     }
+  },
+  "recipeSuggestChange": "Föreslå ändring",
+  "@recipeSuggestChange": {
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:246)."
+  },
+  "recipeSuggestionSend": "Skicka förslaget",
+  "@recipeSuggestionSend": {
+    "description": "Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe."
+  },
+  "recipeSuggestionSending": "Skickar förslaget …",
+  "@recipeSuggestionSending": {
+    "description": "Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63)."
+  },
+  "recipeSuggestionSent": "Förslaget är skickat till ägaren.",
+  "@recipeSuggestionSent": {
+    "description": "Q6-08 = A: confirmation after a member's edit was kept as a suggestion."
+  },
+  "recipeSuggestionSendFailed": "Förslaget kunde inte skickas.",
+  "@recipeSuggestionSendFailed": {
+    "description": "Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93)."
+  },
+  "recipeSuggestionWaitingTitle": "Ditt förra förslag väntar på ägaren",
+  "@recipeSuggestionWaitingTitle": {
+    "description": "Q6-07 = B: dialog title when the member already has a pending suggestion to this recipe, so no second one is sent."
+  },
+  "recipeSuggestionWaitingBody": "Ett nytt förslag kan skickas när ägaren har svarat. Ändringarna ligger kvar här, och du kan spara dem som en egen kopia.",
+  "@recipeSuggestionWaitingBody": {
+    "description": "Q6-07 = B: dialog body; nothing is discarded, the edits stay in the editor and can be kept as a copy."
+  },
+  "cookingNoStepsSaveCopy": "Spara min kopia",
+  "@cookingNoStepsSaveCopy": {
+    "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
+  },
+  "cookingNoStepsBodyOthers": "Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.",
+  "@cookingNoStepsBodyOthers": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
+  },
+  "cookingNoStepsBodyOthersNoIngredients": "Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.",
+  "@cookingNoStepsBodyOthersNoIngredients": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
   }
 }

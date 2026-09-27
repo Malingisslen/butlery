@@ -394,8 +394,11 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// P5-U27b: keeps [edit], this user's change to someone else's shared
   /// recipe, as a suggestion to its owner and returns its id. Null when there
   /// is no store, when [remote] is this user's own save from another device
-  /// (that is not the owner's version winning), or when storing fails; the
-  /// caller then falls back to the package 5 choice (PQ-02 = A).
+  /// (that is not the owner's version winning), when this user already has a
+  /// suggestion to the recipe waiting for the owner (Q6-07 = B, produktbeslut
+  /// 2026-09-27: one pending suggestion per member and recipe), or when
+  /// storing fails; the caller then falls back to the package 5 choice
+  /// (PQ-02 = A), so the edit is never dropped silently.
   Future<String?> _keepAsSuggestion(
     String userId,
     RealtimeResource edit,
@@ -405,6 +408,16 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     if (store == null) return null;
     if (remote.lastEditedBy == userId) return null;
     try {
+      final waiting = RecipeSuggestion.waitingAmong(
+        await store.watchMine(edit.id).first,
+        clock.now(),
+      );
+      if (waiting != null) {
+        AppLogger.info(
+          'Ett förslag väntar redan för ${edit.id}; valet från paket 5 gäller',
+        );
+        return null;
+      }
       final kept = await store.suggest(
         RecipeSuggestion.create(
           recipeId: edit.id,

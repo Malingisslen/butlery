@@ -66,6 +66,39 @@ test("shared member CANNOT write the recipe", async () => {
     env.authenticatedContext(MEMBER).firestore().doc(DOC).update({ "core.title": "hacked" })
   );
 });
+// Q6-08 = A (produktregler.md:241): a member with edit permission still never
+// writes the owner's recipe; their edit becomes a suggestion instead.
+async function seedRecipeWithEditor(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(DOC).set({
+      core: {
+        id: RECIPE,
+        title: "Pannkakor",
+        ingredients: ["3 dl mjöl"],
+        instructions: ["Vispa"],
+        tagResult: { version: 1 },
+      },
+      // ResourcePermission.editor is index 1.
+      socialData: { ownerId: OWNER, memberPermissions: { [MEMBER]: 1 } },
+      type: "collaborative",
+    });
+  });
+}
+test("Q6-08: an editor member CANNOT write the recipe's content fields", async () => {
+  await seedRecipeWithEditor();
+  const db = env.authenticatedContext(MEMBER).firestore();
+  await assertFails(db.doc(DOC).update({ "core.title": "Mias pannkakor" }));
+  await assertFails(db.doc(DOC).update({ "core.ingredients": ["4 dl mjöl"] }));
+  await assertFails(db.doc(DOC).update({ "core.instructions": ["Stek"] }));
+});
+test("Q6-08: an editor member cannot widen the sharing either", async () => {
+  await seedRecipeWithEditor();
+  await assertFails(
+    env.authenticatedContext(MEMBER).firestore().doc(DOC).update({
+      [`socialData.memberPermissions.${STRANGER}`]: 1,
+    })
+  );
+});
 // SR5: unauthenticated request is always denied — isAuthenticated() guard
 test("unauthenticated user cannot read any recipe", async () => {
   await seedRecipe();
