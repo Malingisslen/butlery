@@ -3206,6 +3206,18 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get profileBackupNotSaved => 'Backupen kunde inte sparas.';
+
+  @override
+  String get profileBackupRecipesKept => 'Dina recept finns kvar i appen.';
+
+  @override
+  String get profileRestoreNotRead => 'Backupen kunde inte läsas in.';
+
+  @override
+  String get profileRestoreNothingRemoved => 'Inga recept har tagits bort.';
+
+  @override
   String get profileRestoreCompleted => 'Återställningen är genomförd.';
 
   @override

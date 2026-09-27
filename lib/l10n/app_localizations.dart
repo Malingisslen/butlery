@@ -5281,6 +5281,30 @@ abstract class AppLocalizations {
   /// **'Backup misslyckades: {error}'**
   String profileBackupFailed(String error);
 
+  /// No description provided for @profileBackupNotSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Backupen kunde inte sparas.'**
+  String get profileBackupNotSaved;
+
+  /// No description provided for @profileBackupRecipesKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept finns kvar i appen.'**
+  String get profileBackupRecipesKept;
+
+  /// No description provided for @profileRestoreNotRead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Backupen kunde inte läsas in.'**
+  String get profileRestoreNotRead;
+
+  /// No description provided for @profileRestoreNothingRemoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept har tagits bort.'**
+  String get profileRestoreNothingRemoved;
+
   /// No description provided for @profileRestoreCompleted.
   ///
   /// In sv, this message translates to:

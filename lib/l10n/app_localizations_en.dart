@@ -3201,6 +3201,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get profileBackupNotSaved => 'The backup could not be saved.';
+
+  @override
+  String get profileBackupRecipesKept => 'Your recipes are still in the app.';
+
+  @override
+  String get profileRestoreNotRead => 'The backup could not be restored.';
+
+  @override
+  String get profileRestoreNothingRemoved => 'No recipes were removed.';
+
+  @override
   String get profileRestoreCompleted => 'Restore completed.';
 
   @override
