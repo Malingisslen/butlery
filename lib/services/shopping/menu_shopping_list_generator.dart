@@ -69,18 +69,6 @@ class MenuShoppingGenerationResult {
     unresolvedRecipes: 0,
   );
 
-  /// Re-entrancy sentinel: a generation is already in flight. Distinct from
-  /// `null` (= FAILED) so a double-tap is rendered as silence, not an error
-  /// snackbar. Compare with [identical] — field-wise it looks like
-  /// [nothingToGenerate].
-  static const alreadyRunning = MenuShoppingGenerationResult(
-    listId: '',
-    listName: '',
-    itemCount: 0,
-    recipeCount: 0,
-    unresolvedRecipes: 0,
-  );
-
   bool get isEmptyPlan => listId.isEmpty;
 }
 

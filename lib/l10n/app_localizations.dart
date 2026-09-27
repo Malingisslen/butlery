@@ -30724,6 +30724,252 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kontot kunde inte raderas.'**
   String get profileAccountDeleteFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda mätvärden'**
+  String get adminMetricsLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda driftloggen'**
+  String get adminOpsLogLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda parsing-statistik'**
+  String get adminParsingStatsLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda betygen'**
+  String get familyRatingsLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda betygssättningen'**
+  String get familyRatingEntryLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara betyget'**
+  String get familyRatingSaveFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda familjen'**
+  String get familyLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara familjemedlemmen'**
+  String get familyMemberSaveFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte återkalla samtycket'**
+  String get familyConsentRevokeFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort familjemedlemmen'**
+  String get familyMemberRemoveFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda hushållet'**
+  String get householdLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara veckomenyn'**
+  String get weeklyMenuSaveError;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara vilka som är hemma'**
+  String get weeklyMenuWhoIsHomeSaveFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga till receptet'**
+  String get weeklyMenuAddRecipeFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte flytta receptet'**
+  String get weeklyMenuMoveRecipeFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort receptet'**
+  String get weeklyMenuRemoveRecipeFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte rensa veckan'**
+  String get weeklyMenuClearFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra rensningen'**
+  String get weeklyMenuUndoClearFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda skafferiet'**
+  String get pantryLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga till i skafferiet'**
+  String get pantryAddFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort objektet'**
+  String get pantryRemoveItemFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte återställa objektet'**
+  String get pantryRestoreItemFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort objekten'**
+  String get pantryRemoveItemsFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte återställa objekten'**
+  String get pantryRestoreItemsFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda delade inköpslistor'**
+  String get sharedShoppingListsLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda flödet'**
+  String get activityFeedLoadFailed;
+
+  /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda fler händelser'**
+  String get activityFeedLoadMoreFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen kunde inte skapas.'**
+  String get groupCreateFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlemmen kunde inte tas bort.'**
+  String get groupRemoveMemberFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen kunde inte uppdateras.'**
+  String get groupUpdateFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen kunde inte raderas.'**
+  String get groupDeleteFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att lämna gruppen.'**
+  String get groupLeaveFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan kunde inte avbrytas.'**
+  String get groupInvitationCancelFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Konversationen kunde inte startas.'**
+  String get conversationStartFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Konversationen kunde inte raderas.'**
+  String get conversationDeleteFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen kunde inte öppnas.'**
+  String get profileOpenFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förfrågan kunde inte skickas.'**
+  String get feedRecipeRequestFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan kunde inte avvisas.'**
+  String get groupInvitationDeclineFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudningslänken kunde inte delas.'**
+  String get socialInviteLinkShareFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudningslänken kunde inte kopieras.'**
+  String get socialInviteLinkCopyFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, instead of the causeless errorGeneric (:95). The retry action is the button beside it.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelandena kunde inte laddas.'**
+  String get chatMessagesLoadFailed;
 }
 
 class _AppLocalizationsDelegate

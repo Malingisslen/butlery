@@ -283,12 +283,9 @@ abstract class BaseActionHandler {
 
   void _showErrorSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    SnackBarUtils.showError(
-      context,
-      message,
-      duration: const Duration(seconds: 4),
-      showCloseButton: false,
-    );
+    // A failure carries its structure and "Stäng" (content-style-guide.md:
+    // 87-97), never a bare line that closes by itself.
+    SnackBarUtils.showFailure(context, what: message);
   }
 
   void _showInfoSnackBar(BuildContext context, String message) {

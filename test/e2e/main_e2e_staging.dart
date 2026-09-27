@@ -34,7 +34,7 @@ import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// E2E Staging Application Entry Point
 /// This entry point provides complete Butlery app functionality for E2E testing
@@ -157,9 +157,7 @@ class _E2EStagingErrorApp extends StatelessWidget {
       home: Builder(
         builder: (context) {
           final cs = Theme.of(context).colorScheme;
-          final butlery =
-              Theme.of(context).extension<ButleryColors>() ??
-              ButleryColors.light;
+          final butlery = context.modeColors;
           return Scaffold(
             backgroundColor: butlery.infoContainer,
             appBar: AppBar(

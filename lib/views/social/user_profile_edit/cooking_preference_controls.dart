@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -90,7 +90,7 @@ class CookingPreferenceControls extends StatelessWidget {
               : context.l10n.profileCuisineAffinitiesHint,
           style: AppTextStyles.bodySmall.copyWith(
             color: atMax
-                ? context.butleryColors.warning
+                ? context.modeColors.warning
                 : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),

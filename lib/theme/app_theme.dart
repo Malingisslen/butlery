@@ -16,26 +16,11 @@ class AppTheme {
   /// Creates the complete dark theme for the application.
   static ThemeData get darkTheme => createTheme(AppColors.darkColorScheme);
 
-  /// Light theme with an optional seasonal accent override.
-  ///
-  /// When [accent] is null, behaves identically to [lightTheme]. Used by
-  /// `main.dart` to thread `SeasonalAccentService` output into `MaterialApp`.
-  static ThemeData lightThemeWith(ButleryColors? accent) =>
-      createTheme(AppColors.lightColorScheme, butleryColorsOverride: accent);
-
-  /// Dark theme with an optional seasonal accent override. See [lightThemeWith].
-  static ThemeData darkThemeWith(ButleryColors? accent) =>
-      createTheme(AppColors.darkColorScheme, butleryColorsOverride: accent);
-
   /// Creates theme configuration from color scheme.
   ///
-  /// [butleryColorsOverride] replaces the default `ButleryColors` extension
-  /// — used by `SeasonalAccentService` to apply subtle month-based accents
-  /// without duplicating the full theme pipeline.
-  static ThemeData createTheme(
-    ColorScheme colorScheme, {
-    ButleryColors? butleryColorsOverride,
-  }) {
+  /// The theme is the same every day of the year: no colour is computed at
+  /// runtime (tokens.json:522).
+  static ThemeData createTheme(ColorScheme colorScheme) {
     final isDark = colorScheme.brightness == Brightness.dark;
 
     return ThemeData(
@@ -95,10 +80,7 @@ class AppTheme {
         },
       ),
 
-      extensions: [
-        butleryColorsOverride ??
-            (isDark ? ButleryColors.dark : ButleryColors.light),
-      ],
+      extensions: [isDark ? ButleryColors.dark : ButleryColors.light],
     );
   }
 }

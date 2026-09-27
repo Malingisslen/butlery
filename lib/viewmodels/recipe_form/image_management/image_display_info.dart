@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Comprehensive image display information for immediate UI feedback
 class ImageDisplayInfo {
@@ -29,24 +28,6 @@ class ImageDisplayInfo {
     required this.progressText,
     required this.canRetry,
   });
-
-  /// Get color indicator for upload state
-  Color getStateColor(ColorScheme cs, ButleryColors butleryColors) {
-    switch (state) {
-      case ImageUploadState.pending:
-        return butleryColors.info;
-      case ImageUploadState.uploading:
-        return butleryColors.warning;
-      case ImageUploadState.retrying:
-        return butleryColors.starGold;
-      case ImageUploadState.completed:
-        return butleryColors.success;
-      case ImageUploadState.failed:
-        return cs.error;
-      case ImageUploadState.cancelled:
-        return cs.onSurfaceVariant;
-    }
-  }
 
   /// Get icon for upload state
   IconData getStateIcon() {

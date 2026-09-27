@@ -187,7 +187,7 @@ class _UserProfileEditViewContentState
         final errorMsg =
             viewModel.error ?? context.l10n.profileCouldNotUploadAvatar;
         AppLogger.error('🎨 VIEW: Upload failed, showing error: $errorMsg');
-        SnackBarUtils.showError(context, errorMsg);
+        SnackBarUtils.showFailure(context, what: errorMsg);
       }
     }
   }
@@ -210,9 +210,9 @@ class _UserProfileEditViewContentState
         SnackBarUtils.showSuccess(context, context.l10n.profileSaved);
         Navigator.pop(context);
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.profileCouldNotSave,
+          what: viewModel.error ?? context.l10n.profileCouldNotSave,
         );
       }
     }

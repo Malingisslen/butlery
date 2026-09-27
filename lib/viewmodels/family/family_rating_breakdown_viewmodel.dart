@@ -9,6 +9,7 @@ import 'package:butlery/services/family/family_rating_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// One resolved per-diner row for the detail-page breakdown — a stored verdict
 /// joined to the roster member it belongs to, plus the "inmatat av {name}"
@@ -112,7 +113,7 @@ class FamilyRatingBreakdownViewModel extends BaseViewModel {
       // resolved (data, empty, or a swallowed read failure). dispose() also
       // completes this, so a fast open/close can't leave it suspended.
       await firstEmission.future;
-    }, errorPrefix: 'Kunde inte ladda betygen');
+    }, errorPrefix: AppLocale.current.familyRatingsLoadFailed);
   }
 
   /// Handle one live emission. The roster is (re)read only when there are

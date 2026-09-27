@@ -258,9 +258,11 @@ class ConversationGroupDetailView extends StatelessWidget {
             context.l10n.messagingGroupNameUpdated,
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotUpdateGroupName,
+            what:
+                viewModel.error ??
+                context.l10n.messagingCouldNotUpdateGroupName,
           );
         }
       }
@@ -304,9 +306,9 @@ class ConversationGroupDetailView extends StatelessWidget {
             context.l10n.chatGroupMembersAddedCount(addedCount),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.chatGroupAddMembersFailed,
+            what: viewModel.error ?? context.l10n.chatGroupAddMembersFailed,
           );
         }
       }
@@ -334,9 +336,9 @@ class ConversationGroupDetailView extends StatelessWidget {
             context.l10n.messagingMemberRemoved(memberName),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
+            what: viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
           );
         }
       }
@@ -377,9 +379,9 @@ class ConversationGroupDetailView extends StatelessWidget {
           SnackBarUtils.showSuccess(context, context.l10n.messagingLeftGroup);
           Navigator.of(context).pop(); // Go back to conversations list
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotLeaveGroup(''),
+            what: viewModel.error ?? context.l10n.groupLeaveFailed,
           );
         }
       }

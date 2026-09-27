@@ -5,7 +5,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -111,7 +111,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
   Widget _buildStatusBadge(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final color = viewModel.getStatusColor(cs, butlery);
 
     return Container(
@@ -149,7 +149,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildProgressSection(BuildContext context) {
     final progress = viewModel.completionPercentage / 100;
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final progressColor = viewModel.getProgressColor(cs, butlery);
 
     return Column(

@@ -20,7 +20,7 @@ import 'package:butlery/core/errors/message_send_error_mapper.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
@@ -397,7 +397,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     IconButton(
                       onPressed: _handleImagePick,
                       icon: const Icon(Icons.image_outlined),
-                      color: context.butleryColors.success,
+                      color: context.modeColors.success,
                       tooltip: context.l10n.tooltipAttachImage,
                     ),
 

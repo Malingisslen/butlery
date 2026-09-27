@@ -14527,5 +14527,169 @@
   "profileAccountDeleteFailed": "Kontot kunde inte raderas.",
   "@profileAccountDeleteFailed": {
     "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "adminMetricsLoadFailed": "Kunde inte ladda mätvärden",
+  "@adminMetricsLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "adminOpsLogLoadFailed": "Kunde inte ladda driftloggen",
+  "@adminOpsLogLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "adminParsingStatsLoadFailed": "Kunde inte ladda parsing-statistik",
+  "@adminParsingStatsLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyRatingsLoadFailed": "Kunde inte ladda betygen",
+  "@familyRatingsLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyRatingEntryLoadFailed": "Kunde inte ladda betygssättningen",
+  "@familyRatingEntryLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyRatingSaveFailed": "Kunde inte spara betyget",
+  "@familyRatingSaveFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyLoadFailed": "Kunde inte ladda familjen",
+  "@familyLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyMemberSaveFailed": "Kunde inte spara familjemedlemmen",
+  "@familyMemberSaveFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyConsentRevokeFailed": "Kunde inte återkalla samtycket",
+  "@familyConsentRevokeFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "familyMemberRemoveFailed": "Kunde inte ta bort familjemedlemmen",
+  "@familyMemberRemoveFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "householdLoadFailed": "Kunde inte ladda hushållet",
+  "@householdLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuSaveError": "Kunde inte spara veckomenyn",
+  "@weeklyMenuSaveError": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuWhoIsHomeSaveFailed": "Kunde inte spara vilka som är hemma",
+  "@weeklyMenuWhoIsHomeSaveFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuAddRecipeFailed": "Kunde inte lägga till receptet",
+  "@weeklyMenuAddRecipeFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuMoveRecipeFailed": "Kunde inte flytta receptet",
+  "@weeklyMenuMoveRecipeFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuRemoveRecipeFailed": "Kunde inte ta bort receptet",
+  "@weeklyMenuRemoveRecipeFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuClearFailed": "Kunde inte rensa veckan",
+  "@weeklyMenuClearFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "weeklyMenuUndoClearFailed": "Kunde inte ångra rensningen",
+  "@weeklyMenuUndoClearFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "pantryLoadFailed": "Kunde inte ladda skafferiet",
+  "@pantryLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "pantryAddFailed": "Kunde inte lägga till i skafferiet",
+  "@pantryAddFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "pantryRemoveItemFailed": "Kunde inte ta bort objektet",
+  "@pantryRemoveItemFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "pantryRestoreItemFailed": "Kunde inte återställa objektet",
+  "@pantryRestoreItemFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "pantryRemoveItemsFailed": "Kunde inte ta bort objekten",
+  "@pantryRemoveItemsFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "pantryRestoreItemsFailed": "Kunde inte återställa objekten",
+  "@pantryRestoreItemsFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "sharedShoppingListsLoadFailed": "Kunde inte ladda delade inköpslistor",
+  "@sharedShoppingListsLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "activityFeedLoadFailed": "Kunde inte ladda flödet",
+  "@activityFeedLoadFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "activityFeedLoadMoreFailed": "Kunde inte ladda fler händelser",
+  "@activityFeedLoadMoreFailed": {
+    "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
+  },
+  "groupCreateFailed": "Gruppen kunde inte skapas.",
+  "@groupCreateFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupRemoveMemberFailed": "Medlemmen kunde inte tas bort.",
+  "@groupRemoveMemberFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupUpdateFailed": "Gruppen kunde inte uppdateras.",
+  "@groupUpdateFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupDeleteFailed": "Gruppen kunde inte raderas.",
+  "@groupDeleteFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupLeaveFailed": "Det gick inte att lämna gruppen.",
+  "@groupLeaveFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupInvitationCancelFailed": "Inbjudan kunde inte avbrytas.",
+  "@groupInvitationCancelFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "conversationStartFailed": "Konversationen kunde inte startas.",
+  "@conversationStartFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "conversationDeleteFailed": "Konversationen kunde inte raderas.",
+  "@conversationDeleteFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileOpenFailed": "Profilen kunde inte öppnas.",
+  "@profileOpenFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "feedRecipeRequestFailed": "Förfrågan kunde inte skickas.",
+  "@feedRecipeRequestFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupInvitationDeclineFailed": "Inbjudan kunde inte avvisas.",
+  "@groupInvitationDeclineFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "socialInviteLinkShareFailed": "Inbjudningslänken kunde inte delas.",
+  "@socialInviteLinkShareFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "socialInviteLinkCopyFailed": "Inbjudningslänken kunde inte kopieras.",
+  "@socialInviteLinkCopyFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "chatMessagesLoadFailed": "Meddelandena kunde inte laddas.",
+  "@chatMessagesLoadFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, instead of the causeless errorGeneric (:95). The retry action is the button beside it."
   }
 }

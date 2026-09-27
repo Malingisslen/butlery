@@ -290,39 +290,6 @@ class SnackBarUtils {
     }
   }
 
-  /// A snackbar with a caller's message and action.
-  ///
-  /// [backgroundColor], [textColor] and [icon] no longer change anything:
-  /// every snackbar is the ink snackbar (PQ-09 = A). They stay in the
-  /// signature so the existing call sites keep compiling; package 7 removes
-  /// them.
-  static void showCustom(
-    BuildContext context, {
-    required String message,
-    required Color backgroundColor,
-    Color? textColor,
-    IconData? icon,
-    Duration? duration,
-    String? actionLabel,
-    VoidCallback? onAction,
-    bool showCloseButton = false,
-  }) {
-    try {
-      _showSnackBar(
-        context,
-        message: message,
-        duration: duration ?? const Duration(seconds: 3),
-        actionLabel:
-            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
-        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
-      );
-
-      AppLogger.debug('Custom snackbar shown: $message');
-    } catch (e) {
-      AppLogger.error('Failed to show custom snackbar: $e');
-    }
-  }
-
   /// BUT-1360: when the device is offline, replace a write's normal success
   /// feedback with a "saved locally, will sync" hint so the user knows the
   /// change is queued (Firestore applied it to the local cache but it hasn't
@@ -368,9 +335,12 @@ class SnackBarUtils {
     }
   }
 
-  /// Show error with a user-friendly message derived from the exception.
+  /// A failure described from the exception's category, never its text.
   ///
-  /// Logs the technical error and shows a categorized Swedish message.
+  /// The technical error goes to the log (content-style-guide.md:95); the
+  /// user sees the sanitized cause through [showFailure], with "Försök igen"
+  /// when [onRetry] is given and "Stäng" otherwise
+  /// (content-style-guide.md:87-97).
   static void showUserFriendlyError(
     BuildContext context,
     dynamic error, {
@@ -378,12 +348,11 @@ class SnackBarUtils {
     VoidCallback? onRetry,
   }) {
     AppLogger.error('${contextAction ?? 'Operation'} failed', error);
-    final message = userFriendlyMessage(context, error);
-    if (onRetry != null) {
-      showErrorWithRetry(context, message, onRetry: onRetry);
-    } else {
-      showError(context, message);
-    }
+    showFailure(
+      context,
+      what: userFriendlyMessage(context, error),
+      action: onRetry == null ? null : FailureAction.retry(onRetry),
+    );
   }
 
   /// Convert a technical error/exception to a user-friendly Swedish message.
@@ -1012,29 +981,6 @@ class _UndoWindowRegionState extends State<UndoWindowRegion> {
         ),
       ),
     );
-  }
-}
-
-/// Extension methods for convenient snackbar usage
-extension SnackBarExtensions on BuildContext {
-  void showSuccess(String message, {Duration? duration}) {
-    SnackBarUtils.showSuccess(this, message, duration: duration);
-  }
-
-  void showError(String message, {Duration? duration}) {
-    SnackBarUtils.showError(this, message, duration: duration);
-  }
-
-  void showWarning(String message, {Duration? duration}) {
-    SnackBarUtils.showWarning(this, message, duration: duration);
-  }
-
-  void showInfo(String message, {Duration? duration}) {
-    SnackBarUtils.showInfo(this, message, duration: duration);
-  }
-
-  void hideSnackBar() {
-    SnackBarUtils.hide(this);
   }
 }
 

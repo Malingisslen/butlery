@@ -198,7 +198,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   void _showFailureReason() {
     final reason = _vm.consumeItemOperationError() ?? _vm.error;
     if (reason == null || reason.isEmpty) return;
-    SnackBarUtils.showError(context, reason);
+    SnackBarUtils.showFailure(context, what: reason);
   }
 
   void _shareList() {

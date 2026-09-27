@@ -23,7 +23,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_permission_ma
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
     show ShoppingItemOperationsManager, ClaimOutcome, ClaimResult;
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Shopping list item grouping mode for the collaborative view (BUT-238).
@@ -356,10 +356,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   }
 
   // UI display helpers - delegate to display manager
-  Color getStatusColor(ColorScheme cs, ButleryColors butleryColors) =>
-      _displayManager.getStatusColor(cs, butleryColors, hasData, statusText);
-  Color getProgressColor(ColorScheme cs, ButleryColors butleryColors) =>
-      _displayManager.getProgressColor(cs, butleryColors, completionPercentage);
+  Color getStatusColor(ColorScheme cs, ModeColors modeColors) =>
+      _displayManager.getStatusColor(cs, modeColors, hasData, statusText);
+  Color getProgressColor(ColorScheme cs, ModeColors modeColors) =>
+      _displayManager.getProgressColor(cs, modeColors, completionPercentage);
   String? getItemSubtitle(UnifiedShoppingItem item) =>
       _displayManager.getItemSubtitle(item);
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) =>

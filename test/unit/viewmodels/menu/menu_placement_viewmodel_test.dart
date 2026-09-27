@@ -35,6 +35,7 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// BUT-1939: the viewmodels read through `readWeek`, which carries the
 /// `readFailed` bit beside the plan. Every stub here answers a SUCCESSFUL
@@ -493,6 +494,7 @@ void main() {
 
       expect(result, isNull);
       expect(vm.hasError, isTrue);
+      expect(vm.error, AppLocale.current.weeklyMenuSaveError);
     });
   });
 

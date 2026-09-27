@@ -429,9 +429,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // The VM maps the stream error to errorCouldNotLoad('konversationer');
-        // the view renders the generic error empty state titled errorGeneric with
-        // that subtitle and a retry CTA. Assert the VM reached the error state and
-        // the error subtitle is visible.
+        // the view renders the error empty state titled with that text (it
+        // names what failed) and a retry CTA. Assert the VM reached the error
+        // state and the error text is visible.
         expect(viewModel.conversationsError, isNotNull);
         expect(find.text(viewModel.conversationsError!), findsOneWidget);
         // No list and no loading copy once the error state is shown.

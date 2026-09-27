@@ -23,6 +23,7 @@ import 'package:mocktail/mocktail.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -148,6 +149,7 @@ void main() {
 
       vm = await buildVm();
 
+      expect(vm.error, AppLocale.current.sharedShoppingListsLoadFailed);
       expect(
         vm.hasError,
         isTrue,

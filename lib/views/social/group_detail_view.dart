@@ -320,9 +320,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       // — "the group needs one more member", "some people could not be
       // added" — and showing the generic line instead threw all of that
       // away.
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
+        what: _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
       );
     }
   }
@@ -373,9 +373,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       // Transfer ownership via ViewModel
       final transferSuccess = await _viewModel.transferGroupOwnership(newOwner);
       if (!transferSuccess && mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.groupCouldNotTransferOwnership,
+          what: context.l10n.groupCouldNotTransferOwnership,
         );
         return;
       }
@@ -425,7 +425,10 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // For group sharing, we'll share with all members at once
     // Use the first member's profile as representative for the dialog UI
     if (_viewModel.members.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.groupCouldNotLoadMembers);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.groupCouldNotLoadMembers,
+      );
       return;
     }
 

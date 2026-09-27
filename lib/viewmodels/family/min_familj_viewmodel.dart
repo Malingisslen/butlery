@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Drives the "Min familj" screen — the household's account holders plus the
 /// non-account family members (children and guests represented as
@@ -70,7 +71,7 @@ class MinFamiljViewModel extends BaseViewModel {
       final household = await _householdRepository.ensureForUser(uid);
       _household = household;
       await _refresh(household.id);
-    }, errorPrefix: 'Kunde inte ladda familjen');
+    }, errorPrefix: AppLocale.current.familyLoadFailed);
   }
 
   Future<void> _refresh(String householdId) async {
@@ -174,7 +175,7 @@ class MinFamiljViewModel extends BaseViewModel {
       }
 
       await _safeRefresh(householdId);
-    }, errorPrefix: 'Kunde inte spara familjemedlemmen');
+    }, errorPrefix: AppLocale.current.familyMemberSaveFailed);
   }
 
   /// One-tap allergen-consent withdrawal: erase the diner's allergen data and
@@ -195,7 +196,7 @@ class MinFamiljViewModel extends BaseViewModel {
         ),
       );
       await _safeRefresh(householdId);
-    }, errorPrefix: 'Kunde inte återkalla samtycket');
+    }, errorPrefix: AppLocale.current.familyConsentRevokeFailed);
   }
 
   /// Permanently remove a family member (and, via the cascade, their ratings).
@@ -207,7 +208,7 @@ class MinFamiljViewModel extends BaseViewModel {
       }
       await _dinerProfileRepository.delete(dinerProfileId);
       await _safeRefresh(householdId);
-    }, errorPrefix: 'Kunde inte ta bort familjemedlemmen');
+    }, errorPrefix: AppLocale.current.familyMemberRemoveFailed);
   }
 
   /// Build the consent record for a save.

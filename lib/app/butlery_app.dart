@@ -50,12 +50,10 @@ import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
-import 'package:butlery/services/theme/seasonal_accent_service.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
@@ -729,13 +727,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       ServiceLocator.get<InteractionLogger>(),
     );
 
-    // Seasonal accent: resolved once per rebuild via package:clock so tests
-    // can override it. Service returns the base palette unmodified in summer.
-    final seasonal = ServiceLocator.get<SeasonalAccentService>();
-    final now = clock.now();
-    final lightAccent = seasonal.getAccentsFor(now, base: ButleryColors.light);
-    final darkAccent = seasonal.getAccentsFor(now, base: ButleryColors.dark);
-
     // Build navigator observers list with performance, snackbar, session activity, and optional analytics observers
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
@@ -762,8 +753,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // the background (layout_scaffolds.dart, RestorationMixin).
         restorationScopeId: 'butlery',
         title: 'Butlery',
-        theme: AppTheme.lightThemeWith(lightAccent),
-        darkTheme: AppTheme.darkThemeWith(darkAccent),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
         themeMode: _themeService?.themeMode ?? widget.initialThemeMode,
         debugShowCheckedModeBanner: false,
         // Localization configuration

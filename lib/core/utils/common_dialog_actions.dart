@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -113,7 +113,7 @@ class CommonDialogActions {
       message: context.l10n.groupLeaveMessage(groupName),
       confirmText: context.l10n.groupLeaveAction,
       icon: AdaptiveIcons.exitToApp,
-      confirmColor: context.butleryColors.warning,
+      confirmColor: context.modeColors.warning,
       isDangerous: true,
     );
   }
@@ -128,7 +128,7 @@ class CommonDialogActions {
       message: context.l10n.unsavedChangesMessage,
       confirmText: context.l10n.cancelWithoutSaving,
       icon: AdaptiveIcons.warning,
-      confirmColor: context.butleryColors.warning,
+      confirmColor: context.modeColors.warning,
       isDangerous: true,
     );
   }
@@ -166,8 +166,8 @@ class CommonDialogActions {
         title: title,
         message: message,
         icon: icon ?? AdaptiveIcons.checkCircle,
-        color: context.butleryColors.success,
-        buttonText: dialogContext.l10n.commonOk,
+        color: context.modeColors.success,
+        buttonText: dialogContext.l10n.commonClose,
       ),
     );
   }
@@ -185,8 +185,8 @@ class CommonDialogActions {
         title: title,
         message: message,
         icon: icon ?? AdaptiveIcons.warning,
-        color: context.butleryColors.warning,
-        buttonText: dialogContext.l10n.commonOk,
+        color: context.modeColors.warning,
+        buttonText: dialogContext.l10n.commonClose,
       ),
     );
   }
@@ -205,7 +205,7 @@ class CommonDialogActions {
         message: message,
         icon: icon ?? AdaptiveIcons.error,
         color: Theme.of(context).colorScheme.error,
-        buttonText: dialogContext.l10n.commonOk,
+        buttonText: dialogContext.l10n.commonClose,
       ),
     );
   }
@@ -258,7 +258,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: context.butleryColors.warning,
+              color: context.modeColors.warning,
             ),
           ),
         ],

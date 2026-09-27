@@ -10,7 +10,7 @@ import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -119,7 +119,7 @@ class ProfileDisplayNameField extends StatelessWidget {
           suffixIcon: viewModel.displayNameError != null
               ? Icon(Icons.error, color: Theme.of(context).colorScheme.error)
               : controller.text.isNotEmpty && viewModel.displayNameError == null
-              ? Icon(Icons.check_circle, color: context.butleryColors.success)
+              ? Icon(Icons.check_circle, color: context.modeColors.success)
               : null,
           // BUT-517: required + content-filter chain on displayName.
           validator: FormValidators.combine([

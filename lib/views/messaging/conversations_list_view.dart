@@ -24,6 +24,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Conversations list view showing all user's messaging conversations.
 /// Delegates all state management to ConversationsViewModel.
@@ -155,8 +156,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             context,
             variant: EmptyStateVariant.generic,
             icon: Icons.error_outline,
-            title: l10n.errorGeneric,
-            subtitle: vm.conversationsError!,
+            // The VM's error names what failed (errorCouldNotLoad), so it is
+            // the title; no causeless errorGeneric (content-style-guide.md:95).
+            title: vm.conversationsError!,
             customAction: ActionButtons.primaryButton(
               context,
               label: l10n.commonRetry,
@@ -458,9 +460,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 if (success) {
                   SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
                 } else {
-                  SnackBarUtils.showError(
+                  SnackBarUtils.showFailure(
                     context,
-                    vm.error ?? l10n.messagingCouldNotLeaveGroup(''),
+                    what: vm.error ?? l10n.groupLeaveFailed,
                   );
                 }
               }
@@ -501,9 +503,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                     ),
                   );
                 } else {
-                  SnackBarUtils.showError(
+                  SnackBarUtils.showFailure(
                     context,
-                    l10n.messagingCouldNotDeleteConversation(''),
+                    what: l10n.conversationDeleteFailed,
                   );
                 }
               }
@@ -565,12 +567,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
-          context,
-          l10n.messagingCouldNotShowProfile(
-            SnackBarUtils.userFriendlyMessage(context, e),
-          ),
-        );
+        AppLogger.error('Failed to open profile', e);
+        SnackBarUtils.showFailure(context, what: l10n.profileOpenFailed);
       }
     }
   }

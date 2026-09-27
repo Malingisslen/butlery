@@ -407,7 +407,7 @@ class _CreateGroupConversationViewState
         ),
       );
     } else if (viewModel.error != null) {
-      SnackBarUtils.showError(this.context, viewModel.error!);
+      SnackBarUtils.showFailure(this.context, what: viewModel.error!);
     }
   }
 }

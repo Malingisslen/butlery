@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Drives the "vem åt?" (who's eating) picker shown when a recipe is marked as
 /// cooked. Loads the household roster and pre-selects attendees using the
@@ -93,7 +94,7 @@ class WhoIsEatingViewModel extends BaseViewModel {
       _selected
         ..clear()
         ..addAll(seed);
-    }, errorPrefix: 'Kunde inte ladda hushållet');
+    }, errorPrefix: AppLocale.current.householdLoadFailed);
   }
 
   void toggle(String memberId) {

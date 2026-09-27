@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
@@ -283,8 +284,12 @@ class RequestsTab extends StatelessWidget {
       );
       await SharePlus.instance.share(ShareParams(text: url, subject: subject));
     } catch (e) {
+      AppLogger.error('Failed to share invitation link', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.socialInviteLinkShareFailed,
+      );
     }
   }
 
@@ -304,8 +309,12 @@ class RequestsTab extends StatelessWidget {
       if (!context.mounted) return;
       SnackBarUtils.showSuccess(context, context.l10n.commonLinkCopied);
     } catch (e) {
+      AppLogger.error('Failed to copy invitation link', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.socialInviteLinkCopyFailed,
+      );
     }
   }
 }

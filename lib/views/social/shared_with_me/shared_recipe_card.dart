@@ -6,6 +6,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -321,9 +322,10 @@ class _ReplyButtonState extends State<_ReplyButton> {
       );
     } catch (e) {
       if (!mounted) return;
-      SnackBarUtils.showError(
+      AppLogger.error('Failed to start conversation', e);
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialCouldNotStartConversation(e.toString()),
+        what: context.l10n.conversationStartFailed,
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

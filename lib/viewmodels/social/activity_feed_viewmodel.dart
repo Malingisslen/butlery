@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class ActivityFeedViewModel extends BaseViewModel {
   static const int _pageSize = 20;
@@ -32,7 +33,7 @@ class ActivityFeedViewModel extends BaseViewModel {
         _events = result;
         _hasMore = result.length >= _pageSize;
       },
-      errorPrefix: 'Kunde inte ladda flödet',
+      errorPrefix: AppLocale.current.activityFeedLoadFailed,
     );
   }
 
@@ -49,7 +50,7 @@ class ActivityFeedViewModel extends BaseViewModel {
         _events.addAll(result);
         _hasMore = result.length >= _pageSize;
       },
-      errorPrefix: 'Kunde inte ladda fler händelser',
+      errorPrefix: AppLocale.current.activityFeedLoadMoreFailed,
     );
   }
 
