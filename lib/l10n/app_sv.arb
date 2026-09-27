@@ -14483,5 +14483,41 @@
   "hemEmptyAllergyLink": "Ställ in allergener",
   "@hemEmptyAllergyLink": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
+  },
+  "profilePrivacyPolicyOpenFailed": "Integritetspolicyn kunde inte öppnas.",
+  "@profilePrivacyPolicyOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileConsentManagementOpenFailed": "Samtyckeshanteringen kunde inte öppnas.",
+  "@profileConsentManagementOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileDataExportOpenFailed": "Dataexporten kunde inte öppnas.",
+  "@profileDataExportOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "shareCouldNotComplete": "Delningen kunde inte genomföras.",
+  "@shareCouldNotComplete": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "imageSelectFailed": "Bilderna kunde inte väljas.",
+  "@imageSelectFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupMenuOpenFailed": "Menyn kunde inte öppnas.",
+  "@groupMenuOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupRecipeOpenFailed": "Receptet kunde inte öppnas.",
+  "@groupRecipeOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "retagFailed": "Omtaggningen kunde inte slutföras.",
+  "@retagFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileAccountDeleteFailed": "Kontot kunde inte raderas.",
+  "@profileAccountDeleteFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
   }
 }

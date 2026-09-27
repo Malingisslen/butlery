@@ -292,9 +292,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           final message = context.l10n.menuSavedSuccess(_nameController.text);
           SnackBarUtils.showSuccess(context, message);
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            widget.viewModel.error ?? context.l10n.menuSaveFailed,
+            what: widget.viewModel.error ?? context.l10n.menuSaveFailed,
           );
         }
       }
@@ -305,9 +305,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             _isLoading = false;
           });
         }
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorSavingWithDetails(
+          what: context.l10n.errorSavingWithDetails(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

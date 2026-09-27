@@ -134,7 +134,7 @@ class ImagePickerDialogs {
   /// Show error message for image operations
   static void showImageError(BuildContext context, String message) {
     AppLogger.error('🚨 Visar fel till användare: $message');
-    SnackBarUtils.showError(context, message);
+    SnackBarUtils.showFailure(context, what: message);
   }
 
   /// Show detailed upload dialog with progress

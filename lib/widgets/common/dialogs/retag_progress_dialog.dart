@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -55,9 +56,11 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
         context.l10n.retagRecipesRetagged(count),
       );
     } catch (e) {
+      // Never the exception's own text (content-style-guide.md:95).
+      AppLogger.error('Re-tagging failed', e);
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = context.l10n.retagFailed;
         _isRunning = false;
       });
     }

@@ -14148,5 +14148,41 @@
   "recipeAllAtHome": "Everything is at home",
   "@recipeAllAtHome": {
     "description": "Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then."
+  },
+  "profilePrivacyPolicyOpenFailed": "The privacy policy could not be opened.",
+  "@profilePrivacyPolicyOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileConsentManagementOpenFailed": "Consent management could not be opened.",
+  "@profileConsentManagementOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileDataExportOpenFailed": "Data export could not be opened.",
+  "@profileDataExportOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "shareCouldNotComplete": "Sharing could not be completed.",
+  "@shareCouldNotComplete": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "imageSelectFailed": "The images could not be selected.",
+  "@imageSelectFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupMenuOpenFailed": "The menu could not be opened.",
+  "@groupMenuOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupRecipeOpenFailed": "The recipe could not be opened.",
+  "@groupRecipeOpenFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "retagFailed": "Re-tagging could not be completed.",
+  "@retagFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "profileAccountDeleteFailed": "The account could not be deleted.",
+  "@profileAccountDeleteFailed": {
+    "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
   }
 }

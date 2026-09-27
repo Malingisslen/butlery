@@ -26,16 +26,18 @@ import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
 class _FakeProfileViewModel implements ProfileViewModel {
-  _FakeProfileViewModel(this.outcomes, {this.gate});
+  _FakeProfileViewModel(this.outcomes, {this.gate, this.failWith});
 
   final List<AccountDeletionOutcome> outcomes;
   final Completer<void>? gate;
+  final Object? failWith;
   final List<String> reasons = [];
 
   @override
   Future<AccountDeletionOutcome> deleteAccount({required String reason}) async {
     reasons.add(reason);
     if (gate != null) await gate!.future;
+    if (failWith != null) throw failWith!;
     return outcomes.removeAt(0);
   }
 
@@ -120,8 +122,9 @@ class _Module implements DIModule {
 Future<(_FakeProfileViewModel, _FakeAuthService)> _setUp(
   List<AccountDeletionOutcome> outcomes, {
   Completer<void>? gate,
+  Object? failWith,
 }) async {
-  final vm = _FakeProfileViewModel(outcomes, gate: gate);
+  final vm = _FakeProfileViewModel(outcomes, gate: gate, failWith: failWith);
   final auth = _FakeAuthService();
   final container = DIContainer();
   await container.reset();
@@ -329,5 +332,26 @@ void main() {
       expect(outcome.isPartial, isFalse);
       expect(outcome.isComplete, isFalse);
     });
+  });
+
+  testWidgets('a deletion that throws says the account was not deleted, '
+      'with Stäng and never the exception (P7-B2/B4)', (tester) async {
+    await _setUp(
+      const [],
+      failWith: Exception('firebase-functions/internal: boom'),
+    );
+    await tester.pumpWidget(_host());
+    await _request(tester, reason: 'x');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kontot kunde inte raderas.'), findsOneWidget);
+    expect(find.textContaining('Exception'), findsNothing);
+    expect(find.textContaining('boom'), findsNothing);
+    // content-style-guide.md:77: the button only closes, so it is Stäng.
+    expect(find.widgetWithText(FilledButton, 'Stäng'), findsOneWidget);
+    expect(find.text('OK'), findsNothing);
+    await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kontot kunde inte raderas.'), findsNothing);
   });
 }

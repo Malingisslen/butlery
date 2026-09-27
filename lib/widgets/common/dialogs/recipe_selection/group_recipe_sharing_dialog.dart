@@ -240,11 +240,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
       );
       Navigator.pop(context);
     } else if (viewModel.hasError) {
-      SnackBarUtils.showError(
-        context,
-        viewModel.error!,
-        duration: const Duration(seconds: 4),
-      );
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 }

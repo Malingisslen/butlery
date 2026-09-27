@@ -527,9 +527,8 @@ void main() {
       expect(await future, 42);
     });
 
-    testWidgets('failing action shows error_outline and stays open', (
-      tester,
-    ) async {
+    testWidgets('a failing action shows the inline error, never the '
+        'exception text, and stays open', (tester) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<int>(
@@ -539,8 +538,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Go'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
-      expect(find.textContaining('action failure'), findsOneWidget);
+      // P7-B2: the same three-part inline error as BaseDialog
+      // (content-style-guide.md:87-97, :95). This is the path the delete
+      // group and remove member dialogs take.
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.textContaining('action failure'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.text('Åtgärden kunde inte slutföras.'), findsOneWidget);
+      expect(find.text('Försök igen'), findsOneWidget);
+      expect(find.byType(_TestActionDialog), findsOneWidget);
     });
 
     testWidgets(

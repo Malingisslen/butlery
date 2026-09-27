@@ -77,7 +77,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
           onRetry: () => unawaited(vm.undoLastRemoval()),
         );
       } else {
-        SnackBarUtils.showError(context, text);
+        SnackBarUtils.showFailure(context, what: text);
       }
       vm.clearEditNotice();
     });

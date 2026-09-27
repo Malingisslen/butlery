@@ -87,9 +87,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       } else {
         if (mounted) {
           setState(() {
-            _error = context.l10n.errorCouldNotUpdate(
-              context.l10n.socialGroupName.toLowerCase(),
-            );
+            _error = context.l10n.errorCouldNotUpdateGroup;
           });
         }
       }
@@ -97,10 +95,9 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       AppLogger.error('Error updating group', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.errorWithContext(
-            context.l10n.statusUpdating.toLowerCase(),
-            e.toString(),
-          );
+          // What did not happen, never the exception's text
+          // (content-style-guide.md:95); the exception is logged above.
+          _error = context.l10n.errorCouldNotUpdateGroup;
         });
       }
     } finally {

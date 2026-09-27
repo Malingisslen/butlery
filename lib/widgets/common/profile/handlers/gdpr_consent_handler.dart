@@ -28,9 +28,9 @@ class GdprConsentHandler {
     } catch (e) {
       AppLogger.error('Failed to open privacy policy', e);
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.profileCouldNotOpenPrivacyPolicy('$e'),
+          what: context.l10n.profilePrivacyPolicyOpenFailed,
         );
       }
     }
@@ -61,9 +61,9 @@ class GdprConsentHandler {
     } catch (e) {
       AppLogger.error('Failed to open consent management', e);
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.profileCouldNotOpenConsentManagement('$e'),
+          what: context.l10n.profileConsentManagementOpenFailed,
         );
       }
     }
@@ -94,9 +94,9 @@ class GdprConsentHandler {
     } catch (e) {
       AppLogger.error('Failed to open data export', e);
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.profileCouldNotOpenDataExport('$e'),
+          what: context.l10n.profileDataExportOpenFailed,
         );
       }
     }

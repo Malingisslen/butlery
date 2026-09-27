@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -286,6 +288,50 @@ void main() {
           message: any(named: 'message'),
         ),
       ).thenAnswer((_) async => true);
+    });
+
+    testWidgets('a share that throws stays in the dialog as an inline error: '
+        'what, what is kept, no exception text (P7-B2)', (tester) async {
+      when(
+        () => mockViewModel.shareRecipe(
+          recipe: any(named: 'recipe'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenThrow(Exception('permission-denied: raw backend text'));
+      tester.view.physicalSize = const Size(900, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: UniversalShareDialog.recipe(
+            recipe: testRecipe,
+            viewModel: mockViewModel,
+            availableFriends: testFriends,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(UniversalShareDialog)),
+      );
+
+      await tester.ensureVisible(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.shareRecipeTitle).last);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.text(l10n.shareCouldNotComplete), findsOneWidget);
+      expect(find.text(l10n.errorPreservedForm), findsOneWidget);
+      expect(find.textContaining('raw backend'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
     });
 
     group('Essential Structure Tests - Gold Standard', () {

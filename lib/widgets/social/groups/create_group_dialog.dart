@@ -178,19 +178,17 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       } else {
         if (mounted) {
           setState(() {
-            _error = context.l10n.errorCouldNotCreate(
-              context.l10n.socialGroupName.toLowerCase(),
-            );
+            _error = context.l10n.errorCouldNotCreateGroup;
           });
         }
       }
     } catch (e) {
+      AppLogger.error('Error creating group', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.errorWithContext(
-            context.l10n.statusCreating.toLowerCase(),
-            e.toString(),
-          );
+          // What did not happen, never the exception's text
+          // (content-style-guide.md:95).
+          _error = context.l10n.errorCouldNotCreateGroup;
         });
       }
     } finally {

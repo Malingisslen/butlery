@@ -178,4 +178,26 @@ void main() {
     );
     expect(jsonDecode(raw!)['name'], 'Löparklubben');
   });
+
+  testWidgets('a create that throws says the group was not created, never '
+      'the exception text (P7-B2)', (tester) async {
+    // The mock's unstubbed `categories` throws a TypeError when read, so
+    // the create itself fails with an error whose text must not show.
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(_wrap(const CreateGroupDialog()));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, 'Löparklubben');
+    await tester.pump();
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CreateGroupDialog)),
+    );
+    await tester.tap(find.text(l10n.socialCreateGroup).last);
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.errorCouldNotCreateGroup), findsOneWidget);
+    expect(find.textContaining('Null'), findsNothing);
+    expect(find.textContaining('subtype'), findsNothing);
+    expect(find.textContaining('Exception'), findsNothing);
+  });
 }

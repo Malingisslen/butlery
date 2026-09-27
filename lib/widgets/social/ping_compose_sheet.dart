@@ -133,7 +133,7 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       setState(() {
         _isSending = false;
       });
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorGeneric);
     }
   }
 

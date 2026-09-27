@@ -233,10 +233,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
         duration: const Duration(seconds: 3),
       );
     } else if (!success && context.mounted) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
-        duration: const Duration(seconds: 3),
+        what: viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
       );
     }
   }

@@ -134,8 +134,11 @@ void main() {
       await tester.pumpAndSettle();
       // Dialog still visible
       expect(find.byType(AlertDialog), findsOneWidget);
-      // Error message
-      expect(find.textContaining('retag failed'), findsOneWidget);
+      // What did not happen, never the exception's text (P7-B2,
+      // content-style-guide.md:95).
+      expect(find.text('Omtaggningen kunde inte slutföras.'), findsOneWidget);
+      expect(find.textContaining('retag failed'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
       // No plate line (error path replaces it)
       expect(find.byType(PlateLine), findsNothing);
     });

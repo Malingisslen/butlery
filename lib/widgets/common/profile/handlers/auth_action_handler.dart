@@ -103,9 +103,9 @@ class AuthActionHandler {
     } catch (e) {
       AppLogger.error('Logout failed', e);
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.profileLogoutFailed('$e'),
+          what: context.l10n.errorCouldNotLogOut,
         );
       }
     }
@@ -140,7 +140,7 @@ class AuthActionHandler {
     );
     if (!reauthSuccess) {
       if (reauthError != null && context.mounted) {
-        ProfileDialogs.showErrorDialog(context, reauthError!);
+        _showDeletionFailed(context, cause: reauthError);
       }
       return;
     }
@@ -169,7 +169,7 @@ class AuthActionHandler {
         );
         if (!reauthed || !context.mounted) {
           if (reauthError != null && context.mounted) {
-            ProfileDialogs.showErrorDialog(context, reauthError!);
+            _showDeletionFailed(context, cause: reauthError);
           }
           return;
         }
@@ -310,7 +310,7 @@ class AuthActionHandler {
           // what was kept.
           ProfileDialogs.showErrorDialog(
             context,
-            context.l10n.profileAccountCouldNotBeFullyDeleted,
+            message: context.l10n.profileAccountCouldNotBeFullyDeleted,
           );
         }
       }
@@ -318,9 +318,21 @@ class AuthActionHandler {
       AppLogger.error('Account deletion failed', e);
       if (context.mounted) {
         Navigator.pop(context); // Close loading indicator
-        ProfileDialogs.showErrorDialog(context, e.toString());
+        ProfileDialogs.showErrorDialog(context);
       }
     }
+  }
+
+  /// The account was not deleted because of a known [cause] (a failed
+  /// sign-in): what did not happen, then why (content-style-guide.md:90).
+  static void _showDeletionFailed(BuildContext context, {String? cause}) {
+    ProfileDialogs.showErrorDialog(
+      context,
+      message: SnackBarUtils.failureMessage(
+        context.l10n.profileAccountDeleteFailed,
+        cause,
+      ),
+    );
   }
 
   /// Opens a mail to the privacy address with the audit id in the subject.

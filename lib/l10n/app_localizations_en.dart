@@ -18608,4 +18608,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hemEmptyAllergyLink => 'Set allergens';
+
+  @override
+  String get profilePrivacyPolicyOpenFailed =>
+      'The privacy policy could not be opened.';
+
+  @override
+  String get profileConsentManagementOpenFailed =>
+      'Consent management could not be opened.';
+
+  @override
+  String get profileDataExportOpenFailed => 'Data export could not be opened.';
+
+  @override
+  String get shareCouldNotComplete => 'Sharing could not be completed.';
+
+  @override
+  String get imageSelectFailed => 'The images could not be selected.';
+
+  @override
+  String get groupMenuOpenFailed => 'The menu could not be opened.';
+
+  @override
+  String get groupRecipeOpenFailed => 'The recipe could not be opened.';
+
+  @override
+  String get retagFailed => 'Re-tagging could not be completed.';
+
+  @override
+  String get profileAccountDeleteFailed => 'The account could not be deleted.';
 }

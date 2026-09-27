@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Section widget displaying shared content (recipes, menus, shopping lists) for a group
@@ -134,7 +135,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedMenu == null) {
         if (!mounted) return;
-        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchMenu);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupCouldNotFetchMenu,
+        );
         return;
       }
 
@@ -146,10 +150,11 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ),
       );
     } catch (e) {
+      AppLogger.error('Could not open the shared menu', e);
       if (!mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupErrorOpeningMenu(e.toString()),
+        what: context.l10n.groupMenuOpenFailed,
       );
     }
   }
@@ -163,7 +168,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedRecipe == null) {
         if (!mounted) return;
-        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchRecipe);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupCouldNotFetchRecipe,
+        );
         return;
       }
 
@@ -175,10 +183,11 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ),
       );
     } catch (e) {
+      AppLogger.error('Could not open the shared recipe', e);
       if (!mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupErrorOpeningRecipe(e.toString()),
+        what: context.l10n.groupRecipeOpenFailed,
       );
     }
   }
@@ -208,7 +217,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedRecipe == null) {
         if (!mounted) return;
-        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchRecipe);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupCouldNotFetchRecipe,
+        );
         return;
       }
 
@@ -220,10 +232,11 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         context.l10n.groupRecipeImportedSuccess(item.title),
       );
     } catch (e) {
+      AppLogger.error('Could not import the shared recipe', e);
       if (!mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupRecipeImportFailed(e.toString()),
+        what: context.l10n.errorCouldNotImportRecipes,
       );
     }
   }

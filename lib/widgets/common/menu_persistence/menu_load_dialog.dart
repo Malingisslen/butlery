@@ -253,17 +253,17 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             context.l10n.menuLoadedSuccess((menu.name as String?).orEmpty()),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            widget.viewModel.error ?? context.l10n.menuLoadFailed,
+            what: widget.viewModel.error ?? context.l10n.menuLoadFailed,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorLoadingWithDetails(
+          what: context.l10n.errorLoadingWithDetails(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
@@ -309,17 +309,17 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               context.l10n.menuDeletedSuccess((menu.name as String?).orEmpty()),
             );
           } else {
-            SnackBarUtils.showError(
+            SnackBarUtils.showFailure(
               context,
-              widget.viewModel.error ?? context.l10n.menuDeleteFailed,
+              what: widget.viewModel.error ?? context.l10n.menuDeleteFailed,
             );
           }
         }
       } catch (e) {
         if (mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.errorDeletingWithDetails(
+            what: context.l10n.errorDeletingWithDetails(
               SnackBarUtils.userFriendlyMessage(context, e),
             ),
           );

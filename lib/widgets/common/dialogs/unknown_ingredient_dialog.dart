@@ -276,9 +276,9 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       if (mounted) {
         // The ink snackbar (PQ-09 = A), with the cause in words, never the
         // raw exception (content-style-guide.md:96).
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.dialogCouldNotSave(
+          what: context.l10n.dialogCouldNotSave(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
