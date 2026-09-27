@@ -30964,6 +30964,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inbjudningslänken kunde inte kopieras.'**
   String get socialInviteLinkCopyFailed;
+
+  /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, instead of the causeless errorGeneric (:95). The retry action is the button beside it.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelandena kunde inte laddas.'**
+  String get chatMessagesLoadFailed;
 }
 
 class _AppLocalizationsDelegate

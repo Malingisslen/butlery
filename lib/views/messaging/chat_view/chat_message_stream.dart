@@ -171,7 +171,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
             AppLogger.error('Message stream error', error);
             if (mounted) {
               setState(() {
-                _error = context.l10n.errorGeneric;
+                _error = context.l10n.chatMessagesLoadFailed;
               });
             }
           },
@@ -187,7 +187,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = context.l10n.errorGeneric;
+          _error = context.l10n.chatMessagesLoadFailed;
         });
       }
     }
@@ -273,7 +273,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       AppLogger.error('Failed to refresh messages', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.errorGeneric;
+          _error = context.l10n.chatMessagesLoadFailed;
         });
       }
     }

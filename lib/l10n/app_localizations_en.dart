@@ -18772,4 +18772,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get socialInviteLinkCopyFailed =>
       'The invitation link could not be copied.';
+
+  @override
+  String get chatMessagesLoadFailed => 'The messages could not be loaded.';
 }

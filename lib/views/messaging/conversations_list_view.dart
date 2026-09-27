@@ -156,8 +156,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             context,
             variant: EmptyStateVariant.generic,
             icon: Icons.error_outline,
-            title: l10n.errorGeneric,
-            subtitle: vm.conversationsError!,
+            // The VM's error names what failed (errorCouldNotLoad), so it is
+            // the title; no causeless errorGeneric (content-style-guide.md:95).
+            title: vm.conversationsError!,
             customAction: ActionButtons.primaryButton(
               context,
               label: l10n.commonRetry,

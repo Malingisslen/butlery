@@ -18800,4 +18800,7 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get socialInviteLinkCopyFailed =>
       'Inbjudningslänken kunde inte kopieras.';
+
+  @override
+  String get chatMessagesLoadFailed => 'Meddelandena kunde inte laddas.';
 }

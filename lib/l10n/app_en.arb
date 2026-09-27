@@ -14352,5 +14352,9 @@
   "socialInviteLinkCopyFailed": "The invitation link could not be copied.",
   "@socialInviteLinkCopyFailed": {
     "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "chatMessagesLoadFailed": "The messages could not be loaded.",
+  "@chatMessagesLoadFailed": {
+    "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, instead of the causeless errorGeneric (:95). The retry action is the button beside it."
   }
 }
