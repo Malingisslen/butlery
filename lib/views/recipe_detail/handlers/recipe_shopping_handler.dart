@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -143,7 +144,7 @@ class RecipeShoppingHandler {
                   itemCount: shoppingItems.length,
                   itemBuilder: (context, index) {
                     final item = shoppingItems[index];
-                    final note = item.note ?? '';
+                    final note = item.note.orEmpty();
                     return Padding(
                       padding: AppDimensions.paddingVertical4,
                       child: Row(

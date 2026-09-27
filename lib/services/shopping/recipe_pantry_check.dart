@@ -9,6 +9,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -100,11 +101,11 @@ class RecipePantryCheck {
         MenuShoppingPantryMark.checkDate => l.shoppingMergeMarkCheckDate,
       };
       final note = [
-        if ((item.note ?? '').isNotEmpty) item.note!,
+        if (item.note.orEmpty().isNotEmpty) item.note!,
         ?label,
       ].join(' · ');
       toBuy.add(
-        amount == item.amount && note == (item.note ?? '')
+        amount == item.amount && note == item.note.orEmpty()
             ? item
             : item.copyWith(amount: amount, note: note),
       );
