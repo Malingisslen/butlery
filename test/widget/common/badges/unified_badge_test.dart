@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -299,12 +299,12 @@ void main() {
     });
 
     testWidgets('uses warning color from theme extension', (tester) async {
-      late ButleryColors bc;
+      late ModeColors bc;
       await tester.pumpWidget(
         _wrap(
           Builder(
             builder: (ctx) {
-              bc = ctx.butleryColors;
+              bc = ctx.modeColors;
               return const AllergenBadge(allergen: 'Mjölk');
             },
           ),
@@ -382,12 +382,12 @@ void main() {
     testWidgets(
       'Swedish category prefixes resolve to category palette colors',
       (tester) async {
-        late ButleryColors bc;
+        late ModeColors bc;
         await tester.pumpWidget(
           _wrap(
             Builder(
               builder: (ctx) {
-                bc = ctx.butleryColors;
+                bc = ctx.modeColors;
                 return const CategoryBadge(category: 'Kött och fisk');
               },
             ),

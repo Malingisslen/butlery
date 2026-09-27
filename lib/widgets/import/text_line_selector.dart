@@ -6,7 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -205,7 +205,7 @@ class TextLineSelector extends StatelessWidget {
 
   Color _getModeColor(BuildContext context, ColorScheme colorScheme) {
     return mode == SelectionMode.ingredients
-        ? context.butleryColors.success
+        ? context.modeColors.success
         : colorScheme.onSurface;
   }
 }
@@ -239,7 +239,7 @@ class _LineItem extends StatelessWidget {
 
     // Determine colors based on state
     final modeColor = mode == SelectionMode.ingredients
-        ? context.butleryColors.success
+        ? context.modeColors.success
         : colorScheme.onSurface;
 
     Color backgroundColor;

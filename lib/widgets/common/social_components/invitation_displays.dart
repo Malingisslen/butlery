@@ -3,7 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Invitation target display widgets.
 class InvitationDisplays {
@@ -248,11 +248,11 @@ class InvitationDisplays {
     final cs = Theme.of(context).colorScheme;
     switch (status.toLowerCase()) {
       case 'accepted':
-        return context.butleryColors.success;
+        return context.modeColors.success;
       case 'declined':
         return cs.error;
       case 'expired':
-        return context.butleryColors.warning;
+        return context.modeColors.warning;
       default:
         return cs.onSurface;
     }

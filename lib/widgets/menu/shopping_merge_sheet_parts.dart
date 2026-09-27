@@ -143,7 +143,7 @@ class _DetailsToggle extends StatelessWidget {
     final l = context.l10n;
     final cs = Theme.of(context).colorScheme;
     // text.link: #8A5212 light, #DCA968 dark.
-    final link = context.butleryColors.info;
+    final link = context.modeColors.info;
     return Semantics(
       button: true,
       expanded: open,

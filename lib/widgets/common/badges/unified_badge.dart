@@ -11,7 +11,7 @@ import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/hoverable_tap.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Type of badge to display.
 enum BadgeType {
@@ -100,7 +100,7 @@ class UnifiedBadge extends StatelessWidget {
       case BadgeType.tag:
         return cs.onSurface;
       case BadgeType.allergen:
-        return context.butleryColors.warning;
+        return context.modeColors.warning;
       case BadgeType.category:
         return cs.secondary;
       case BadgeType.custom:
@@ -398,7 +398,7 @@ class CategoryBadge extends StatelessWidget {
   }
 
   Color _getCategoryColor(BuildContext context, String category) {
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
     final cs = Theme.of(context).colorScheme;
     final normalized = category.toLowerCase();
 

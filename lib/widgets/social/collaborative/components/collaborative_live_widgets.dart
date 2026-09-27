@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Live editing indicators and animations for collaborative content
 class CollaborativeLiveWidgets {
@@ -24,7 +24,7 @@ class CollaborativeLiveWidgets {
           duration: AnimationUtils.getDuration(context, animationDuration),
           tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
           builder: (context, opacity, child) {
-            final indicatorColor = color ?? context.butleryColors.warning;
+            final indicatorColor = color ?? context.modeColors.warning;
             return Opacity(
               opacity: opacity,
               child: Container(

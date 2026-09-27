@@ -3,7 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Swedish one-decimal rating with a decimal comma (4.2 -> "4,2"). Shared by
 /// all three rating pills (community/pooled, family, household) so the format
@@ -48,7 +48,7 @@ class ButleryBetygPill extends StatelessWidget {
           children: [
             // Decorative star uses the app-wide starGold token (as every other
             // star pill does) — NOT the warning/status colour.
-            Icon(Icons.star, size: 12, color: context.butleryColors.starGold),
+            Icon(Icons.star, size: 12, color: context.modeColors.starGold),
             const SizedBox(width: 3),
             Text(
               '$avg · ${context.l10n.butleryBetygCount(stats.count)}',

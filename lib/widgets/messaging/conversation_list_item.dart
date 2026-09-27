@@ -7,7 +7,7 @@ import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// List item widget for displaying conversation in conversations list.
 /// Supports swipe gestures for pin/archive and long-press context menu.
@@ -57,10 +57,10 @@ class ConversationListItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
           ),
-          color: context.butleryColors.info,
+          color: context.modeColors.info,
           child: Icon(
             conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-            color: context.butleryColors.onInfo,
+            color: context.modeColors.onInfo,
           ),
         ),
         secondaryBackground: Container(
@@ -68,10 +68,10 @@ class ConversationListItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
           ),
-          color: context.butleryColors.warning,
+          color: context.modeColors.warning,
           child: Icon(
             conversation.isArchived ? Icons.unarchive : Icons.archive,
-            color: context.butleryColors.onWarning,
+            color: context.modeColors.onWarning,
           ),
         ),
         child: Semantics(
@@ -201,7 +201,7 @@ class ConversationListItem extends StatelessWidget {
               width: 16,
               height: 16,
               decoration: BoxDecoration(
-                color: context.butleryColors.success,
+                color: context.modeColors.success,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Theme.of(context).colorScheme.surface,

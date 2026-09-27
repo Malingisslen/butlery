@@ -13,7 +13,7 @@
 // säger vad som hämtas, linjen säger bara att något pågår.
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
@@ -143,7 +143,7 @@ class _PlateLineState extends State<PlateLine>
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     // Rännan: token progressTrack. Ljust #E6EAD9, mörkt
     // rgba(245,244,237,0.18) (tokens.json semantic progressTrack).
     final ranna = colors.progressTrack;
@@ -321,7 +321,7 @@ class _ButtonPlateLineState extends State<ButtonPlateLine>
           key: ButtonPlateLine.trackKey,
           color: widget.onFill
               ? color.withValues(alpha: ButtonPlateLine.trackAlpha)
-              : context.butleryColors.progressTrack,
+              : context.modeColors.progressTrack,
           child: Align(
             alignment: AlignmentDirectional.centerStart,
             child: FractionallySizedBox(

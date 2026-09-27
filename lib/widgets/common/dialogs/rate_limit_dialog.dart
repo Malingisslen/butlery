@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 
 /// Dialog shown when user hits a rate limit during import.
@@ -51,7 +51,7 @@ class RateLimitDialog extends StatelessWidget {
     return AlertDialog(
       icon: Icon(
         _getIconForLimitType(rateLimitResult.limitType),
-        color: context.butleryColors.warning,
+        color: context.modeColors.warning,
         size: AppDimensions.iconSizeXxl,
       ),
       title: Text(_getTitleForLimitType(context, rateLimitResult.limitType)),
@@ -103,7 +103,7 @@ class RateLimitDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: context.butleryColors.warning.withValues(
+        color: context.modeColors.warning.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -112,7 +112,7 @@ class RateLimitDialog extends StatelessWidget {
         children: [
           Icon(
             Icons.timer_outlined,
-            color: context.butleryColors.warning,
+            color: context.modeColors.warning,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingS),

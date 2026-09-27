@@ -5,7 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Shared components for group dialogs
 /// Contains reusable UI components that are used across multiple group dialog types
@@ -178,7 +178,7 @@ class WarningDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final warningColor = context.butleryColors.warning;
+    final warningColor = context.modeColors.warning;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(

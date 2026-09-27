@@ -5,7 +5,7 @@ import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
@@ -997,8 +997,9 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: (hasFailed ? cs.error : context.butleryColors.warning)
-              .withValues(alpha: AppDimensions.opacityVeryLight),
+          color: (hasFailed ? cs.error : context.modeColors.warning).withValues(
+            alpha: AppDimensions.opacityVeryLight,
+          ),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: Row(
@@ -1008,7 +1009,7 @@ class RecipeCard extends StatelessWidget {
             Icon(
               hasFailed ? Icons.error_outline : Icons.pending_outlined,
               size: 14,
-              color: hasFailed ? cs.error : context.butleryColors.warning,
+              color: hasFailed ? cs.error : context.modeColors.warning,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible for the reason on the unassessed marker above.
@@ -1018,7 +1019,7 @@ class RecipeCard extends StatelessWidget {
                     ? context.l10n.recipeAnalysisFailed
                     : context.l10n.recipeAnalyzing,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: hasFailed ? cs.error : context.butleryColors.warning,
+                  color: hasFailed ? cs.error : context.modeColors.warning,
                 ),
               ),
             ),

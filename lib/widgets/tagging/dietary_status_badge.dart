@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 
 /// Badge displaying dietary status with tri-state coloring and shape distinction.
@@ -88,7 +88,7 @@ class DietaryStatusBadge extends StatelessWidget {
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
-        return (context.butleryColors.success, Icons.eco_outlined);
+        return (context.modeColors.success, Icons.eco_outlined);
       case TriState.contains:
         // Dietary "contains" = factual ("not vegetarian"), not an allergen
         // health risk. Using the same red as allergen warnings made "Ej

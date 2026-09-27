@@ -6,7 +6,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
@@ -77,7 +77,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
   Widget? get dialogIcon => Builder(
     builder: (context) => Icon(
       Icons.warning_amber_rounded,
-      color: context.butleryColors.warning,
+      color: context.modeColors.warning,
       size: AppDimensions.iconSizeXxl,
     ),
   );

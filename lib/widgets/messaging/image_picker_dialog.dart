@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Bottom sheet dialog for selecting image source (camera or gallery).
 /// Provides a clean, modern interface for image source selection with:
@@ -67,7 +67,7 @@ class ImagePickerDialog extends StatelessWidget {
               _SourceOption(
                 icon: Icons.photo_library,
                 label: context.l10n.commonSelectFromGallery,
-                color: context.butleryColors.success,
+                color: context.modeColors.success,
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
 

@@ -6,7 +6,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Review widget that surfaces per-ingredient parse confidence (BUT-925).
 ///
@@ -155,7 +155,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                           reviewCount,
                         ),
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: context.butleryColors.warning,
+                          color: context.modeColors.warning,
                         ),
                       ),
                   ],
@@ -223,7 +223,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     final barColor = confidenceColorFor(widget.ingredient.confidence, colors);
     final a11yLabel = _a11yLabel(context, widget.ingredient);
 
@@ -394,7 +394,7 @@ const double _barWidth = 4.0;
 /// Exported for widget tests via [confidenceColorFor] so tests can assert the
 /// correct color token without depending on hard-coded hex values.
 @visibleForTesting
-Color confidenceColorFor(ParseConfidence confidence, ButleryColors colors) =>
+Color confidenceColorFor(ParseConfidence confidence, ModeColors colors) =>
     switch (confidence) {
       ParseConfidence.high => colors.success,
       ParseConfidence.medium => colors.warning,

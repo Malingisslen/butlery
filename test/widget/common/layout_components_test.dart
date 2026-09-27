@@ -812,8 +812,7 @@ void main() {
     }, skip: true);
 
     testWidgets('simpleLayout — covered by view-level tests', (tester) async {
-      // SKIP: ButleryHeader requires localizations + ServiceLocator-backed
-      // ButleryColors theme extension.
+      // SKIP: requires localizations and ServiceLocator-backed services.
     }, skip: true);
 
     testWidgets('profileMenu — covered by profile widget tests', (

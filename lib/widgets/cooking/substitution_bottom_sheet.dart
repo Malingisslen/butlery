@@ -4,7 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// BUT-202: Bottom sheet shown on long-press of an ingredient row in cooking
 /// mode. Square corners, cream bg, greenDark text per design system.
@@ -140,7 +140,7 @@ class _SuggestionRow extends StatelessWidget {
             Text(
               suggestion.context!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: context.butleryColors.iconMuted,
+                color: context.modeColors.iconMuted,
               ),
             ),
           ],
@@ -228,7 +228,7 @@ class _EmptyState extends StatelessWidget {
                 : context.l10n.noSubstitutionSuggestions,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: context.butleryColors.iconMuted,
+              color: context.modeColors.iconMuted,
             ),
           ),
         ),
@@ -281,7 +281,7 @@ class _CancelButton extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 border: Border.fromBorderSide(
-                  BorderSide(color: context.butleryColors.iconMuted, width: 1),
+                  BorderSide(color: context.modeColors.iconMuted, width: 1),
                 ),
               ),
               child: Text(
