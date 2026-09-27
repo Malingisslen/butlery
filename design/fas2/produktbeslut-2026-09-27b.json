@@ -1,0 +1,42 @@
+{
+ "$om": "Malins beslut runda 4, fattade 2026-09-27 på 2026-09-27-beslut-4.html.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-27",
+ "rader": [
+  {
+   "id": "Q6-12",
+   "beslut": "B",
+   "innebord": "När en medlem ändrar igen medan ett förslag väntar ersätter det nya förslaget det väntande, med besked till båda."
+  },
+  {
+   "id": "Q6-11",
+   "beslut": "B",
+   "innebord": "Ett köat nytt recept som bara finns på telefonen kan slängas efter en bekräftelse som säger just det."
+  },
+  {
+   "id": "Q6-14",
+   "beslut": "C",
+   "innebord": "Spara som kopia tar med kategorier och delad beskrivning, och titeln får (kopia)."
+  },
+  {
+   "id": "Q6-09",
+   "beslut": "C",
+   "innebord": "När skafferiet täcker allt visar receptet texten Allt finns hemma i stället för knappen."
+  },
+  {
+   "id": "Q6-10",
+   "beslut": "A",
+   "innebord": "Bekräftelser med egen följdhandling står kvar tills man agerar."
+  },
+  {
+   "id": "Q6-15",
+   "beslut": "A",
+   "innebord": "Hem = hälsning, Ikväll-bandet och biblioteket (#hemrecept)."
+  },
+  {
+   "id": "Q6-16",
+   "beslut": "A",
+   "innebord": "Hem behåller toppfältet Mina recept; skillnaden visas som prototyp."
+  }
+ ]
+}
