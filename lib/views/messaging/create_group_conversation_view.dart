@@ -200,14 +200,14 @@ class _CreateGroupConversationViewState
           context.l10n.messagingGroupName,
           style: AppTextStyles.titleMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         StyledInput.text(
           controller: _groupNameController,
           hint: context.l10n.messagingGroupNameHint,
           onChanged: (value) => viewModel.updateGroupName(value),
           errorText: viewModel.validationError,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           context.l10n.messagingSelectAtLeastTwoMembers,
           style: AppTextStyles.bodySmall.copyWith(
@@ -231,7 +231,7 @@ class _CreateGroupConversationViewState
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.messagingSelectedMembers(
                 viewModel.selectedMemberCount,
@@ -244,8 +244,8 @@ class _CreateGroupConversationViewState
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Wrap(
-          spacing: AppDimensions.spacingS,
-          runSpacing: AppDimensions.spacingS,
+          spacing: AppDimensions.space4,
+          runSpacing: AppDimensions.space4,
           children: viewModel.selectedMembers.map((member) {
             return Chip(
               avatar: UserDisplayWidgets.avatar(

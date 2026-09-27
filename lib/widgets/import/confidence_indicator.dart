@@ -65,7 +65,7 @@ class ConfidenceIndicator extends StatelessWidget {
       message: context.l10n.importConfidenceTooltip(label, percentage),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
@@ -80,12 +80,11 @@ class ConfidenceIndicator extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: AppDimensions.iconSizeS, color: badgeIconColor),
-            const SizedBox(width: AppDimensions.spacingXxs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               '$percentage%',
-              style: AppTextStyles.badgeLarge.copyWith(
+              style: AppTextStyles.labelSmall.copyWith(
                 color: badgeTextColor,
-                fontSize: 11,
               ),
             ),
           ],

@@ -205,15 +205,10 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double _padTop = AppDimensions.spacingMd;
   static const double _padBottom = AppDimensions.spacingL;
 
-  /// Bredden där sidmarginalen går från 20 till 24 (tokens.json
-  /// space.layoutMargin: "320" och "360-430").
-  static const double _wideFrom = 360;
-
-  /// Sidmarginalen för [context]: tokens.json space.layoutMargin.
+  /// Sidmarginalen för [context]: tokens.json space.layoutMargin, 20 under
+  /// 360 dp och 24 därifrån (AppDimensions.layoutMarginOf).
   static double sideMargin(BuildContext context) =>
-      MediaQuery.sizeOf(context).width < _wideFrom
-      ? AppDimensions.layoutMarginNarrow
-      : AppDimensions.layoutMargin;
+      AppDimensions.layoutMarginOf(context);
 
   /// Undersidans luft ovan och under bakåtpilens hitbox. Se
   /// [subpageMinHeight] för hur 6/4 px ur ritningen blir 4/4.
@@ -232,7 +227,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double _leadingGap = actionGap;
 
   /// Komponentark rad 64: sekundärraden står 2 px under titeln.
-  static const double _secondaryGap = AppDimensions.spacingXxs;
+  static const double _secondaryGap = AppDimensions.topBarSecondaryGap;
 
   bool get _isRoot => pattern == ButleryTopBarPattern.rot;
 

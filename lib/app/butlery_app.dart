@@ -53,6 +53,7 @@ import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
@@ -91,12 +92,9 @@ class ErrorApp extends StatelessWidget {
                       color: cs.error,
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
-                    const Text(
+                    Text(
                       'Application Error',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyles.headlineSmall,
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     Container(
@@ -104,8 +102,7 @@ class ErrorApp extends StatelessWidget {
                       child: SingleChildScrollView(
                         child: Text(
                           message,
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: AppTextStyles.captionBase.copyWith(
                             fontFamily: 'monospace',
                           ),
                           textAlign: TextAlign.start,

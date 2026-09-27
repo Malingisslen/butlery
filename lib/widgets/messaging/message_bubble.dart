@@ -392,7 +392,7 @@ class _MessageBubbleState extends State<MessageBubble>
         // Reaction display below the bubble
         if (widget.message.reactions.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: EmojiReactionDisplay(
               reactions: widget.message.reactions,
               currentUserId: widget.currentUserId,

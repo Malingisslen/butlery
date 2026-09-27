@@ -32,7 +32,7 @@ class EmojiReactionPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: AppDimensions.paddingSymmetric4x3,
+      padding: AppDimensions.paddingAll4,
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -109,7 +109,9 @@ class _EmojiButtonState extends State<_EmojiButton> {
             child: ExcludeSemantics(
               child: Text(
                 widget.emoji,
-                style: const TextStyle(fontSize: 22),
+                style: const TextStyle(
+                  fontSize: AppDimensions.emojiGlyphPicker,
+                ),
               ),
             ),
           ),

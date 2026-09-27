@@ -267,8 +267,8 @@ class ImageComponents {
           right: AppDimensions.spacingSm,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingTight,
-              vertical: AppDimensions.spacingXxs,
+              horizontal: AppDimensions.space4,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest.withValues(
@@ -287,7 +287,7 @@ class ImageComponents {
                   size: AppDimensions.iconSizeXs,
                   color: cs.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingXxs),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   '$imageCount',
                   style: AppTextStyles.textXsBold.copyWith(

@@ -149,7 +149,7 @@ class FriendRequestsHeaderBuilder {
       child: Row(
         children: [
           Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               viewModel.error!,
@@ -250,7 +250,7 @@ class IncomingRequestsTabBuilder {
                     Icons.checklist,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.socialRequestsSelected(
                       selectedIncoming.length,
@@ -275,7 +275,7 @@ class IncomingRequestsTabBuilder {
               padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.incomingRequests.length,
               separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
               itemBuilder: (context, index) {
                 final request = viewModel.incomingRequests[index];
                 final isSelected = selectedIncoming.contains(request.id);
@@ -343,7 +343,7 @@ class SentRequestsTabBuilder {
                     Icons.checklist,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.socialRequestsSelected(selectedSent.length),
                     style: AppTextStyles.titleSmall.copyWith(
@@ -366,7 +366,7 @@ class SentRequestsTabBuilder {
               padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.sentRequests.length,
               separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
               itemBuilder: (context, index) {
                 final request = viewModel.sentRequests[index];
                 final isSelected = selectedSent.contains(request.id);

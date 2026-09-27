@@ -102,7 +102,7 @@ class CollectionInsightsCard extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           for (final cuisine in topCuisines)
             Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+              padding: const EdgeInsets.only(bottom: AppDimensions.space4),
               child: Text(
                 '${cuisine.label} (${cuisine.count})',
                 style: AppTextStyles.bodyMedium.copyWith(

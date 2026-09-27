@@ -417,7 +417,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             cs.outline,
             titleColor: cs.secondary,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             l10n.familyAllergenHealthNote,
             style: AppTextStyles.captionText.copyWith(
@@ -440,7 +440,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             ),
           ),
           if (_allergenConsent) ...[
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -533,14 +533,14 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             cs.outline,
             titleColor: cs.secondary,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             l10n.familyDislikesNote,
             style: AppTextStyles.captionText.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
             spacing: 6,
             runSpacing: 6,

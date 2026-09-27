@@ -91,7 +91,7 @@ class GroupMemberCard {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.spacingXxs,
+                      vertical: AppDimensions.badgePaddingY,
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
@@ -115,7 +115,7 @@ class GroupMemberCard {
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.spacingXxs,
+                      vertical: AppDimensions.badgePaddingY,
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondary,

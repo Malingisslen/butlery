@@ -197,7 +197,10 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         _buildInfoBanner(),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             // Offline, web links cannot open, so they turn inactive and
             // say why (Grafisk manual v6:665 'åtgärder som kräver nät blir
             // inaktiva med förklarande text').

@@ -41,7 +41,10 @@ class PlatformBadgeWidget extends StatelessWidget {
       ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        padding: AppDimensions.paddingSymmetric12x6,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space12,
+          vertical: AppDimensions.space4,
+        ),
         decoration: BoxDecoration(
           color: _getBackgroundColor(detection!.platform, colorScheme),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
@@ -58,7 +61,7 @@ class PlatformBadgeWidget extends StatelessWidget {
               size: AppDimensions.iconSizeS,
               color: _getIconColor(detection!.platform, colorScheme),
             ),
-            const SizedBox(width: AppDimensions.spacing6),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               detection!.platformLabel,
               style: AppTextStyles.labelMedium.copyWith(

@@ -56,7 +56,9 @@ class OnboardingDietaryPage extends StatelessWidget {
     // Scrollable so landscape phones (~360dp height) don't overflow the
     // 7 dietary cards + title block. Portrait already fits — scroll is a no-op.
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

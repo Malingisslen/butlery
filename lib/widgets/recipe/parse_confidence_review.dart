@@ -110,7 +110,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
       children: [
         _buildHeader(context, reviewCount),
         if (_expanded) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           ..._sorted.map(
             (item) => _IngredientConfidenceRow(
               key: ObjectKey(item.ingredient),
@@ -259,7 +259,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                       width: _barWidth,
                       color: barColor,
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -305,7 +305,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
         if (widget.onConfirm != null || widget.confirmed)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: _barWidth + AppDimensions.spacingS,
+              start: _barWidth + AppDimensions.space4,
             ),
             child: widget.confirmed
                 ? Semantics(
@@ -351,7 +351,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
         if (_showOriginal && _hasOriginal)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: _barWidth + AppDimensions.spacingS,
+              start: _barWidth + AppDimensions.space4,
               bottom: AppDimensions.spacingXs,
             ),
             child: Text(

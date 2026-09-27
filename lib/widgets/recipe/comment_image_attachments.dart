@@ -30,7 +30,7 @@ class CommentImageAttachments extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: imageUrls.length,
         separatorBuilder: (_, __) =>
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
         itemBuilder: (context, index) {
           final url = imageUrls[index];
           return Semantics(

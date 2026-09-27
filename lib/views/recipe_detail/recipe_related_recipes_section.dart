@@ -84,7 +84,7 @@ class _RelatedSection extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         SizedBox(
           height: _thumbnailSize + AppDimensions.spacingMd,
           child: ListView.separated(
@@ -164,7 +164,7 @@ class _RelatedThumbnail extends StatelessWidget {
               // Title below
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                  top: AppDimensions.spacingXxs,
+                  top: AppDimensions.space4,
                 ),
                 child: Text(
                   recipe.title,

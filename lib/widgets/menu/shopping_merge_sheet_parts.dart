@@ -82,7 +82,7 @@ class _Figures extends StatelessWidget {
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingXxs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   label,
                   textAlign: TextAlign.center,
@@ -260,7 +260,7 @@ class _SwitchRow extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingXxs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             body,
                             style: AppTextStyles.captionBase.copyWith(

@@ -27,7 +27,7 @@ class MenuItemBuilders {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
@@ -87,7 +87,7 @@ class MenuItemBuilders {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
@@ -171,7 +171,7 @@ class MenuItemBuilders {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           decoration: BoxDecoration(
             color: color.withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

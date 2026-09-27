@@ -72,7 +72,7 @@ class CommentItemWidgets {
         if (replies.isNotEmpty && depth < maxDepth)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.paddingXl,
+              start: AppDimensions.space16,
             ),
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -386,7 +386,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   ],
                 ),
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Comment content — BUT-962: linkify HTTP/HTTPS URLs.
                 LinkifiedText.from(
@@ -396,7 +396,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
 
                 // BUT-1049: image attachments above the reactions strip.
                 if (comment.imageUrls.isNotEmpty) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   CommentImageAttachments(imageUrls: comment.imageUrls),
                 ],
 
@@ -406,14 +406,14 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   if (comment.reactions.values.any(
                     (list) => list.isNotEmpty,
                   )) ...[
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     EmojiReactionDisplay(
                       reactions: comment.reactions,
                       currentUserId: widget.currentUserId!,
                       onReactionTap: widget.onReactionTap!,
                     ),
                   ] else ...[
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Semantics(
                       label: context.l10n.a11yReactToComment,
                       button: true,
@@ -443,7 +443,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
 
                 // Like count (tappable to show who liked)
                 if (comment.likeCount > 0) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   Semantics(
                     label: context.l10n.a11yShowCommentLikes(comment.likeCount),
                     button: true,

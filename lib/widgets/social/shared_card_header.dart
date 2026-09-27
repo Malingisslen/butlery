@@ -33,7 +33,7 @@ class SharedCardHeader extends StatelessWidget {
           size: ImageSize.small,
           displayName: displayName,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +80,7 @@ class SharedCardHeader extends StatelessWidget {
                     size: AppDimensions.iconSizeM,
                     color: cs.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(context.l10n.commonHide),
                 ],
               ),
@@ -94,7 +94,7 @@ class SharedCardHeader extends StatelessWidget {
                     size: AppDimensions.iconSizeM,
                     color: cs.error,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.unshareButton,
                     style: TextStyle(color: cs.error),

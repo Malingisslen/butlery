@@ -162,7 +162,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         title: context.l10n.socialFriendsAndGroups,
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: Text(
               'Sociala funktioner är tillfälligt inaktiverade.',
               style: AppTextStyles.bodyLarge,
@@ -289,7 +292,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                                 Icons.error_outline,
                                 color: Theme.of(context).colorScheme.error,
                               ),
-                              const SizedBox(width: AppDimensions.spacingS),
+                              const SizedBox(width: AppDimensions.space4),
                               Expanded(
                                 child: Text(
                                   viewModel.error!,

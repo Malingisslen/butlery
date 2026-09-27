@@ -10,8 +10,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 /// shared-audience names). Returns the chosen visibility, null on cancel.
 ///
 /// Square design-language restyle approved 2026-06-11 (in-review sign-off):
-/// squared dialog on cream, Josefin lowercase title, boxed option tiles with
-/// square check indicators instead of Material radios.
+/// squared dialog on cream, lowercase title in the dialog title role, boxed
+/// option tiles with square check indicators instead of Material radios.
 Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
   BuildContext context, {
   required String message,
@@ -32,7 +32,7 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
             Expanded(
               child: Text(
                 ctx.l10n.cookSnapVisibilityTitle.toLowerCase(),
-                style: AppTextStyles.headlineSmall.copyWith(fontSize: 18),
+                style: AppTextStyles.dialogTitle,
               ),
             ),
           ],

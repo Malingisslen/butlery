@@ -38,7 +38,7 @@ class ButleryBetygPill extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yButleryBetygPill(avg, stats.count),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
           color: cs.primary,
           borderRadius: BorderRadius.zero,

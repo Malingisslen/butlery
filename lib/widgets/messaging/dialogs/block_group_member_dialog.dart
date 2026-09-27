@@ -135,7 +135,7 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
 
     return ListView.builder(
       shrinkWrap: true,
-      padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       itemCount: members.length,
       itemBuilder: (context, index) {
         final member = members[index];

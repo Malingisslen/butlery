@@ -105,7 +105,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                   size: AppDimensions.iconSizeAction,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.menuSavedMenus,
                   style: AppTextStyles.headlineSmall,

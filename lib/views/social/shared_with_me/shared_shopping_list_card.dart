@@ -76,18 +76,18 @@ class SharedShoppingListCard {
                     sharedShoppingList,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Shopping list content
                 _buildShoppingListContent(context, sharedShoppingList),
 
                 // Message from sharer
                 if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   _buildShareMessage(context, sharedShoppingList.shareMessage!),
                 ],
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Action buttons
                 _buildActionButtons(
@@ -124,7 +124,7 @@ class SharedShoppingListCard {
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +166,7 @@ class SharedShoppingListCard {
                     sharedShoppingList.itemCountText,
                     style: AppTextStyles.bodySmall,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Icon(
                     Icons.person,
                     size: AppDimensions.iconSizeS,
@@ -189,7 +189,7 @@ class SharedShoppingListCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -225,7 +225,7 @@ class SharedShoppingListCard {
             },
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: ActionButtons.primaryButton(
             context,
@@ -294,7 +294,7 @@ class SharedShoppingListCard {
             width: 32,
             height: 4,
             margin: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingS,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -320,7 +320,7 @@ class SharedShoppingListCard {
                   ),
                 ),
                 if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   _buildShareMessage(context, sharedShoppingList.shareMessage!),
                 ],
               ],

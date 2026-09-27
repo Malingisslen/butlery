@@ -71,7 +71,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
     final completedItems = viewModel.completedItemsList;
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       itemCount:
           activeItems.length +
           (completedItems.isNotEmpty ? completedItems.length + 1 : 0),
@@ -97,7 +97,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
     final completed = viewModel.completedItemsList;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       children: [
         if (mine.isNotEmpty) ...[
           _SectionHeader(text: context.l10n.minDel, count: mine.length),
@@ -159,7 +159,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
         .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       children: [
         for (final zone in orderedZones) ...[
           _SectionHeader(
@@ -192,7 +192,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       child: Row(
         children: [
@@ -201,7 +201,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
             ),
             child: Text(
               '${context.l10n.collaborativeCompleted} (${viewModel.completedItemsCount})',
@@ -302,7 +302,7 @@ class _ViewModeToggle extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       child: SegmentedButton<ShoppingViewMode>(
         showSelectedIcon: false,
@@ -519,7 +519,7 @@ class _CollaborativeItemCard extends StatelessWidget {
               borderRadius: BorderRadius.zero,
             ),
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
             ),
           ),
           onPressed: () => _handleClaimAction(context, release: false),

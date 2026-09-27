@@ -37,7 +37,7 @@ class SharedContentAppBar {
                 end: AppDimensions.spacingXs,
                 top: AppDimensions.spacingXs,
                 child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXxs),
+                  padding: const EdgeInsets.all(AppDimensions.space4),
                   decoration: BoxDecoration(
                     color: cs.onPrimary,
                     shape: BoxShape.circle,

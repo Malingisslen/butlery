@@ -22,7 +22,7 @@ class ImportDialogHeader extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.paddingXl,
+        AppDimensions.space16,
         AppDimensions.spacingMd,
         AppDimensions.spacingSm,
         AppDimensions.spacingSm,

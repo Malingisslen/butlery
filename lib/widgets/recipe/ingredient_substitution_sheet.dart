@@ -161,7 +161,7 @@ class _IngredientSubstitutionSheetState
                 ),
               ),
               Container(
-                padding: AppDimensions.paddingSymmetric4x2,
+                padding: AppDimensions.badgePadding,
                 decoration: BoxDecoration(
                   color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,

@@ -118,7 +118,7 @@ class SharedContentTabBar {
 
   static Widget _buildUnreadBadge(BuildContext context, int count) {
     return Container(
-      padding: AppDimensions.paddingSymmetric6x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.error,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),

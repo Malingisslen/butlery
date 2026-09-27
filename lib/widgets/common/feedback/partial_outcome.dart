@@ -147,7 +147,7 @@ class PartialOutcome extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingModerate),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -161,7 +161,7 @@ class PartialOutcome extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.paddingMs),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +184,7 @@ class PartialOutcome extends StatelessWidget {
                       ),
                     ],
                     if (child != null) ...[
-                      const SizedBox(height: AppDimensions.paddingMs),
+                      const SizedBox(height: AppDimensions.space8),
                       child!,
                     ],
                     for (final item in items)

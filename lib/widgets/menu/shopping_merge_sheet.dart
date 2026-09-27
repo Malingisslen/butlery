@@ -164,7 +164,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingTight),
+            const SizedBox(height: AppDimensions.space4),
             _Summary(merge: merge),
             if (widget.source.scaledMeals > 0) ...[
               const SizedBox(height: AppDimensions.spacingSm),
@@ -183,7 +183,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
               ),
             ],
             if (!_detailsOpen) ...[
-              const SizedBox(height: AppDimensions.spacingModerate),
+              const SizedBox(height: AppDimensions.space12),
               _Figures(merge: merge),
             ],
             const SizedBox(height: AppDimensions.spacingL),

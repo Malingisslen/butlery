@@ -149,7 +149,7 @@ class SharedContentCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
                         context.l10n.groupSharedBy(item.sharedByDisplayName),
@@ -183,7 +183,7 @@ class SharedContentCard extends StatelessWidget {
                         ),
                         label: Text(context.l10n.groupImport),
                       ),
-                      const SizedBox(width: AppDimensions.spacingS),
+                      const SizedBox(width: AppDimensions.space4),
                     ],
                     if (onView != null)
                       Flexible(

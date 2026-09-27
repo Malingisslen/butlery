@@ -244,7 +244,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
               ],
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Semantics(
                 identifier: 'btn-voice-import-submit',
                 button: true,
@@ -261,7 +261,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
               ),
               if (!vm.canImport && !vm.isImporting)
                 Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+                  padding: const EdgeInsets.only(top: AppDimensions.space4),
                   child: Text(
                     context.l10n.voiceImportSubmitHint,
                     textAlign: TextAlign.center,

@@ -154,7 +154,10 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+        vertical: AppDimensions.space16,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

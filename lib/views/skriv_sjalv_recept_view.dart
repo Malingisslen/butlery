@@ -831,14 +831,14 @@ class _SkrivSjalvReceptViewContentState
             itemBuilder: (context, index) {
               return Padding(
                 key: ValueKey('${label}_$index'),
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space4),
                 child: Row(
                   children: [
                     ReorderableDragStartListener(
                       index: index,
                       child: const Padding(
                         padding: EdgeInsetsDirectional.only(
-                          end: AppDimensions.spacingS,
+                          end: AppDimensions.space4,
                         ),
                         child: Icon(
                           Icons.drag_handle,
@@ -903,7 +903,7 @@ class _SkrivSjalvReceptViewContentState
                       ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
               ],
             ),
         ],
@@ -958,7 +958,7 @@ class _SkrivSjalvReceptViewContentState
                   color: colors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.importParseQualityWarning(qualityPercent),
@@ -982,7 +982,7 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
             if (fields.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 '${context.l10n.importFieldsNeedReviewPrefix}: ${fields.map((f) => _localizeFieldName(context, f)).join(', ')}',
                 style: AppTextStyles.bodySmall.copyWith(

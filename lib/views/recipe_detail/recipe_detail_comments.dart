@@ -244,7 +244,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Flexible(
                 child: Text(
                   context.l10n.recipeCommentVisibleTo(audienceStr),
@@ -327,7 +327,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       if (unresolved > 0)
                         Padding(
                           padding: const EdgeInsets.only(
-                            top: AppDimensions.spacingXxs,
+                            top: AppDimensions.space4,
                           ),
                           child: Text(
                             ctx.l10n.recipeCommentAudienceOthers(unresolved),

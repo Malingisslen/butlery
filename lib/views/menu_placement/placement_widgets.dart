@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_roles_pending.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
@@ -191,9 +192,7 @@ class _EligibleCell extends StatelessWidget {
           child: Text(
             context.l10n.menuPlacementPlaceHere,
             textAlign: TextAlign.center,
-            style: AppTextStyles.labelSmall.copyWith(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.overline.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
@@ -294,9 +293,7 @@ class _OccupiedCell extends StatelessWidget {
           Expanded(
             child: Text(
               entry.recipeTitle.toLowerCase(),
-              style: AppTextStyles.labelSmall.copyWith(
-                fontSize: 9,
-                fontWeight: FontWeight.w600,
+              style: AppTextRolesPending.calendarCell.copyWith(
                 height: 1.15,
                 color: off ? AppModeColors.textDisabled(cs.brightness) : null,
               ),
@@ -357,9 +354,7 @@ class _OvrigtEntryChip extends StatelessWidget {
           Expanded(
             child: Text(
               entry.recipeTitle.toLowerCase(),
-              style: AppTextStyles.labelSmall.copyWith(
-                fontSize: 8,
-                fontWeight: FontWeight.w600,
+              style: AppTextRolesPending.calendarCell.copyWith(
                 height: 1.1,
                 color: off ? AppModeColors.textDisabled(cs.brightness) : null,
               ),
@@ -441,10 +436,7 @@ class PlacementTrayCard extends StatelessWidget {
             children: [
               Text(
                 item.slot.displayLabel.toUpperCase(),
-                style: AppTextStyles.labelSmall.copyWith(
-                  fontSize: 8,
-                  letterSpacing: 1,
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.overline.copyWith(
                   color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
                 ),
               ),

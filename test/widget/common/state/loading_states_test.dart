@@ -230,7 +230,7 @@ void main() {
         final listView = tester.widget<ListView>(find.byType(ListView));
         expect(
           listView.padding,
-          equals(const EdgeInsets.symmetric(vertical: AppDimensions.spacingS)),
+          equals(const EdgeInsets.symmetric(vertical: AppDimensions.space4)),
         );
       });
     });

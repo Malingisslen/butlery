@@ -81,18 +81,18 @@ class SharedRecipeCard {
                     sharedRecipe,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Recept content - uses denormalized fields for V2 efficiency
                 _buildRecipeContent(context, sharedRecipe),
 
                 // Message from the sharer
                 if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   _buildShareMessage(context, sharedRecipe.shareMessage!),
                 ],
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Action buttons
                 _buildActionButtons(
@@ -155,7 +155,7 @@ class SharedRecipeCard {
               ),
             ),
           ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +188,7 @@ class SharedRecipeCard {
                     ),
                     style: AppTextStyles.bodySmall,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Icon(
                     Icons.access_time,
                     size: AppDimensions.iconSizeS,
@@ -211,7 +211,7 @@ class SharedRecipeCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -252,7 +252,7 @@ class SharedRecipeCard {
             compact: true,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: SocialBuilderComponents.socialActionButton(
             text: isImported
@@ -276,7 +276,7 @@ class SharedRecipeCard {
             compact: true,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: _ReplyButton(sharedRecipe: sharedRecipe),
         ),

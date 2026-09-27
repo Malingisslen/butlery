@@ -82,7 +82,7 @@ class CategoryDisplayWidgets {
                       size: AppDimensions.iconSizeXl,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       category.name,
                       style: AppTextStyles.cardTitleStyle,
@@ -229,7 +229,7 @@ class CategoryDisplayWidgets {
                         color: Theme.of(context).colorScheme.onSurface,
                         size: AppDimensions.iconSizeM,
                       ),
-                      const SizedBox(width: AppDimensions.spacingS),
+                      const SizedBox(width: AppDimensions.space4),
                       Flexible(
                         child: Text(
                           category.name,
@@ -242,7 +242,7 @@ class CategoryDisplayWidgets {
                   if (showDescription &&
                       category.description != null &&
                       category.description!.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       category.description!,
                       style: AppTextStyles.bodySmall,
@@ -252,7 +252,7 @@ class CategoryDisplayWidgets {
                   ],
                   // Removed const Spacer() to fix unbounded height issues in scrollable contexts
                   if (showMemberCount) ...[
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Row(
                       children: [
                         Icon(
@@ -389,7 +389,7 @@ class CategoryDisplayWidgets {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             subtitle ?? context.l10n.friendCreateFirstCategory,
             style: AppTextStyles.bodyMedium.copyWith(

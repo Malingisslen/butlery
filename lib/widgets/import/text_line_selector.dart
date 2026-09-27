@@ -269,7 +269,7 @@ class _LineItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.spacingXxs,
+        vertical: AppDimensions.space4,
       ),
       child: Material(
         color: backgroundColor,
@@ -285,7 +285,7 @@ class _LineItem extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingMs,
+                vertical: AppDimensions.space8,
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(
@@ -350,7 +350,7 @@ class _LineItem extends StatelessWidget {
                   if (isAiSuggested) ...[
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(
-                      padding: AppDimensions.paddingSymmetric6x2,
+                      padding: AppDimensions.badgePadding,
                       decoration: BoxDecoration(
                         color: colorScheme.secondaryContainer,
                         borderRadius: BorderRadius.circular(
@@ -365,7 +365,7 @@ class _LineItem extends StatelessWidget {
                             size: AppDimensions.iconSizeXs,
                             color: colorScheme.onSecondaryContainer,
                           ),
-                          const SizedBox(width: AppDimensions.spacingXxs),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(
                             context.l10n.importAiSuggested,
                             style: AppTextStyles.labelSmall.copyWith(
@@ -380,7 +380,7 @@ class _LineItem extends StatelessWidget {
                   if (isHighlighted && !isSelected) ...[
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(
-                      padding: AppDimensions.paddingSymmetric6x2,
+                      padding: AppDimensions.badgePadding,
                       // A thin border in the mode's colour, not a tint:
                       // the line's suggested state is never opacity
                       // (tokens.json:40-53).

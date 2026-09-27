@@ -205,7 +205,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppDimensions.spacingModerate,
+                AppDimensions.space12,
                 AppDimensions.paddingM,
                 AppDimensions.spacingXs,
                 AppDimensions.paddingM,
@@ -215,7 +215,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(
-                      top: AppDimensions.spacingXxs,
+                      top: AppDimensions.space4,
                     ),
                     child: Icon(
                       Icons.warning_amber_rounded,
@@ -223,7 +223,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                       size: AppDimensions.iconSize18,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.paddingMs),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +235,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                             color: cs.onSurface,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           _body(context, event),
                           style: AppTextStyles.captionBase.copyWith(

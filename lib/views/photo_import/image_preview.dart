@@ -46,8 +46,8 @@ class ImagePreview extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               Positioned(
-                top: AppDimensions.spacingS,
-                right: AppDimensions.spacingS,
+                top: AppDimensions.space4,
+                right: AppDimensions.space4,
                 child: OverlayButton.remove(
                   onPressed: () => _handleRemove(context),
                   tooltip: context.l10n.importRemoveImage,

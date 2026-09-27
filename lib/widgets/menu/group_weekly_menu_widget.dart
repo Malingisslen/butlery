@@ -135,7 +135,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         Padding(
           padding: const EdgeInsetsDirectional.only(
             start: AppDimensions.spacingM,
-            top: AppDimensions.spacingS,
+            top: AppDimensions.space4,
           ),
           child: Text(
             _weekLabel(context, vm.weekStart),
@@ -256,7 +256,7 @@ class _FaceRow extends StatelessWidget {
           if (rest > 0)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingS,
+                end: AppDimensions.space4,
               ),
               child: _Face(initials: '+$rest'),
             ),
@@ -542,7 +542,7 @@ class _WeekArrows extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       // Both halves are Expanded so the labels ellipsize instead of forcing the

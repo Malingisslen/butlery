@@ -37,9 +37,8 @@ class AdminBadge extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label ?? context.l10n.adminYouAreAdmin,
-            style: AppTextStyles.bodyBold.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: cs.primary,
-              fontSize: 12,
             ),
           ),
         ],

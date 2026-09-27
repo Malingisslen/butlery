@@ -42,7 +42,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: itemCount,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           // Load more button at the end
           if (index == recipes.length) {
@@ -95,7 +95,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: itemCount,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           // Load more button at the end
           if (index == menus.length) {
@@ -148,7 +148,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: itemCount,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           // Load more button at the end
           if (index == sharedShoppingLists.length) {

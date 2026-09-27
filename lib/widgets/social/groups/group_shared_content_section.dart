@@ -280,7 +280,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                   // The plate line with what is fetched (B-18).
                   return Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                      padding: EdgeInsets.all(
+                        AppDimensions.layoutMarginOf(context),
+                      ),
                       child: PlateLineMessage(
                         message: context.l10n.sharedLoadingContent,
                       ),
@@ -299,7 +301,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                           style: AppTextStyles.titleBold,
                         ),
                         if (totalItems > 0) ...[
-                          const SizedBox(width: AppDimensions.spacingS),
+                          const SizedBox(width: AppDimensions.space4),
                           Builder(
                             builder: (context) {
                               final cs = Theme.of(context).colorScheme;

@@ -227,13 +227,13 @@ class FriendCard extends StatelessWidget {
     switch (style) {
       case FriendCardStyle.compact:
         return const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         );
       case FriendCardStyle.list:
         return EdgeInsets.zero;
       case FriendCardStyle.detailed:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
     }
   }
 }
@@ -260,7 +260,7 @@ class FriendRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Material(
         type: MaterialType.transparency,
         child: Semantics(
@@ -270,7 +270,7 @@ class FriendRequestCard extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             child: Container(
-              padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
+              padding: padding ?? const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(

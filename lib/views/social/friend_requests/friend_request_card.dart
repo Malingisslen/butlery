@@ -71,7 +71,7 @@ class FriendRequestCard {
                       value: isSelected,
                       onChanged: (value) => onSelectionChanged(value ?? false),
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
 
                     // User avatar with online indicator
                     Stack(
@@ -125,7 +125,7 @@ class FriendRequestCard {
                             const SizedBox(height: AppDimensions.spacingXs),
                             Container(
                               padding: const EdgeInsets.all(
-                                AppDimensions.spacingS,
+                                AppDimensions.space4,
                               ),
                               decoration: BoxDecoration(
                                 color: Theme.of(context)
@@ -297,7 +297,7 @@ class FriendRequestCard {
                     width: AppDimensions.spacingXxxl,
                   ), // Placeholder for alignment
 
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
 
                 // User avatar with online indicator
                 Stack(

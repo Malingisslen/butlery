@@ -111,7 +111,7 @@ class VoiceSectionCard extends StatelessWidget {
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           if (recording)
             // Direction A's big central microphone, grafted into the active
             // card: one large stop control, impossible to miss mid-speech.

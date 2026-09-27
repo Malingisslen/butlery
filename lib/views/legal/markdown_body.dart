@@ -196,7 +196,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     for (final block in _blocks) {
       switch (block.type) {
         case _BlockType.gap:
-          children.add(const SizedBox(height: AppDimensions.spacingS));
+          children.add(const SizedBox(height: AppDimensions.space4));
         case _BlockType.rule:
           children.add(const Divider(height: AppDimensions.spacingXl));
         case _BlockType.h1:
@@ -223,7 +223,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
               block.tokens,
               tt.titleMedium,
               linkColor,
-              top: AppDimensions.spacingS,
+              top: AppDimensions.space4,
             ),
           );
         case _BlockType.bullet:

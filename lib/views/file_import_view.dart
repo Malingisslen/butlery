@@ -108,7 +108,7 @@ class _FileImportViewState extends State<FileImportView> {
                             context.l10n.importFileColumnsRequired,
                             style: AppTextStyles.bodyMedium,
                           ),
-                          const SizedBox(height: AppDimensions.spacingS),
+                          const SizedBox(height: AppDimensions.space4),
                           _buildRequirement(context.l10n.importColumnTitle),
                           _buildRequirement(
                             context.l10n.importColumnIngredients,
@@ -116,12 +116,12 @@ class _FileImportViewState extends State<FileImportView> {
                           _buildRequirement(
                             context.l10n.importColumnInstructions,
                           ),
-                          const SizedBox(height: AppDimensions.spacingS),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             context.l10n.importFileColumnsOptional,
                             style: AppTextStyles.bodyMedium,
                           ),
-                          const SizedBox(height: AppDimensions.spacingS),
+                          const SizedBox(height: AppDimensions.space4),
                           _buildOptional(context.l10n.importColumnCookingTime),
                           _buildOptional(context.l10n.importColumnServings),
                           _buildOptional(context.l10n.importColumnCategory),
@@ -168,7 +168,7 @@ class _FileImportViewState extends State<FileImportView> {
                                       context,
                                     ).colorScheme.onSurface,
                                   ),
-                                  const SizedBox(width: AppDimensions.spacingS),
+                                  const SizedBox(width: AppDimensions.space4),
                                   Text(
                                     context.l10n.importSucceededCount(
                                       _vm.importedCount,
@@ -183,7 +183,7 @@ class _FileImportViewState extends State<FileImportView> {
                                     Icons.error,
                                     color: Theme.of(context).colorScheme.error,
                                   ),
-                                  const SizedBox(width: AppDimensions.spacingS),
+                                  const SizedBox(width: AppDimensions.space4),
                                   Text(
                                     context.l10n.importFailedCount(
                                       _vm.failedCount,
@@ -238,7 +238,7 @@ class _FileImportViewState extends State<FileImportView> {
             size: AppDimensions.iconSizeS,
             color: context.modeColors.success,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(text, style: AppTextStyles.bodySmall),
         ],
       ),
@@ -258,7 +258,7 @@ class _FileImportViewState extends State<FileImportView> {
             size: AppDimensions.iconSizeS,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(text, style: AppTextStyles.bodySmall),
         ],
       ),

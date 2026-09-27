@@ -94,7 +94,7 @@ class GroupInvitationCard {
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
               ),
               Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.space4),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: AppDimensions.opacityExtraVeryLight,

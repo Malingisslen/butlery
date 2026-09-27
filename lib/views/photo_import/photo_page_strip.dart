@@ -37,7 +37,7 @@ class PhotoPageStrip extends StatelessWidget {
             context.l10n.importPhotoPagesCombined(viewModel.pageCount),
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
         ],
         SizedBox(
           height: _thumbSize + 28,
@@ -53,7 +53,7 @@ class PhotoPageStrip extends StatelessWidget {
                 ? Padding(
                     key: const ValueKey('photo-page-add'),
                     padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.spacingS,
+                      start: AppDimensions.space4,
                     ),
                     child: _AddPageTile(
                       size: _thumbSize,
@@ -67,7 +67,7 @@ class PhotoPageStrip extends StatelessWidget {
               return Padding(
                 key: ValueKey('photo-page-$index'),
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingS,
+                  end: AppDimensions.space4,
                 ),
                 child: _PageThumbnail(
                   bytes: pages[index],
@@ -159,8 +159,8 @@ class _PageThumbnail extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: AppDimensions.spacingXxs,
-              right: AppDimensions.spacingXxs,
+              top: AppDimensions.space4,
+              right: AppDimensions.space4,
               child: Semantics(
                 label: context.l10n.a11yRemovePhotoPage(pageNumber),
                 button: true,
@@ -172,7 +172,7 @@ class _PageThumbnail extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           context.l10n.importPhotoPageLabel(pageNumber),
           style: AppTextStyles.badgeLarge.copyWith(color: cs.onSurfaceVariant),
@@ -215,7 +215,7 @@ class _AddPageTile extends StatelessWidget {
                 color: onPressed == null ? cs.outlineVariant : cs.onSurface,
                 size: AppDimensions.iconSizeM,
               ),
-              const SizedBox(height: AppDimensions.spacingXxs),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 context.l10n.importPhotoAddPage,
                 textAlign: TextAlign.center,

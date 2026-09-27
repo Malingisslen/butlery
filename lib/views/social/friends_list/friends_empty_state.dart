@@ -32,7 +32,10 @@ class FriendsEmptyState extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

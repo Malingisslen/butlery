@@ -98,7 +98,7 @@ class TagResultDisplay extends StatelessWidget {
 
         const SizedBox(height: AppDimensions.spacingL),
         const Padding(
-          padding: EdgeInsets.only(top: AppDimensions.spacingS),
+          padding: EdgeInsets.only(top: AppDimensions.space4),
           child: AllergenDisclaimer(),
         ),
       ],
@@ -122,8 +122,8 @@ class TagResultDisplay extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: AppDimensions.spacingS,
-      runSpacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: [
         // Allergen badges
         ...allergens.map((allergen) {
@@ -234,7 +234,7 @@ class TagResultDisplay extends StatelessWidget {
             color: warningColor,
             size: AppDimensions.iconSize18,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               context.l10n.tagResultOutdated,
@@ -299,7 +299,7 @@ class TagResultDisplay extends StatelessWidget {
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.tagResultCoverage,
               style: compact
@@ -308,7 +308,7 @@ class TagResultDisplay extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             Expanded(
@@ -330,7 +330,7 @@ class TagResultDisplay extends StatelessWidget {
           ],
         ),
         if (hasUnknowns) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Semantics(
             label: context.l10n.tagResultUnknownIngredientsA11y(
               tagResult.unknownIngredients.length,

@@ -112,7 +112,7 @@ class EmptyImageState extends StatelessWidget {
           style: AppTextStyles.contentLabel,
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingXxs),
+      const SizedBox(height: AppDimensions.space4),
       Builder(
         builder: (context) => Text(
           context.l10n.imageTapToAddUpTo(maxImages),

@@ -313,7 +313,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                         context.l10n.importExtractedText,
                         style: AppTextStyles.headlineSmall,
                       ),
-                      const SizedBox(height: AppDimensions.spacingS),
+                      const SizedBox(height: AppDimensions.space4),
                       Expanded(
                         child: StyledInput(
                           controller: _extractedTextController,
@@ -399,7 +399,7 @@ class _UrlBatchResults extends StatelessWidget {
             style: AppTextStyles.headlineSmall,
           ),
         for (final result in rows) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _UrlResultRow(
             key: ValueKey('url-result-${result.id}'),
             result: result,
@@ -450,7 +450,7 @@ class _UrlResultRow extends StatelessWidget {
     return Row(
       children: [
         _statusIcon(context),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             result.url,

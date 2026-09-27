@@ -44,7 +44,7 @@ class ActionButtons {
           if (icon != null && !isLoading)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingS,
+                end: AppDimensions.space4,
               ),
               child: Icon(icon),
             ),
@@ -345,7 +345,7 @@ class ActionButtons {
           if (icon != null && !isLoading)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingS,
+                end: AppDimensions.space4,
               ),
               child: Icon(icon),
             ),

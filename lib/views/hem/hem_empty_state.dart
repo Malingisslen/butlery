@@ -127,7 +127,7 @@ class HemEmptyState extends StatelessWidget {
               letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingTight),
+          const SizedBox(height: AppDimensions.space4),
           for (final shortcut in shortcuts)
             _ShortcutRow(
               route: shortcut.route,
@@ -138,7 +138,7 @@ class HemEmptyState extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingMd + 4),
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingModerate,
+              horizontal: AppDimensions.space12,
               vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(

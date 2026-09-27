@@ -6,6 +6,7 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
@@ -262,7 +263,7 @@ class _GuidelinesNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final base = theme.textTheme.bodySmall ?? const TextStyle(fontSize: 12);
+    final base = theme.textTheme.bodySmall ?? AppTextStyles.bodySmall;
     return Text.rich(
       TextSpan(
         // text.secondary, not the body colour at 75 %: opacity is never a

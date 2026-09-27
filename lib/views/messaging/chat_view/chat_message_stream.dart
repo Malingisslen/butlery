@@ -381,7 +381,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           child: ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingS,
+              vertical: AppDimensions.space4,
             ),
             itemCount: _messages.length + (showJoinedDivider ? 1 : 0),
             itemBuilder: (context, rawIndex) {

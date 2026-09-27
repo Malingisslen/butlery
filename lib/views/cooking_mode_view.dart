@@ -811,7 +811,7 @@ class _IngredientsPanel extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(
                         top: AppDimensions.spacingMd,
-                        bottom: AppDimensions.spacingTight,
+                        bottom: AppDimensions.space4,
                       ),
                       child: Text(
                         row.label.toUpperCase(),
@@ -838,7 +838,7 @@ class _IngredientsPanel extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingTight,
+                        vertical: AppDimensions.space4,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,

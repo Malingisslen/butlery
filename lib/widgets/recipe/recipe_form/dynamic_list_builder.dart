@@ -85,13 +85,13 @@ class DynamicListBuilder extends StatelessWidget {
   Widget _buildReorderableRow(BuildContext context, int index) {
     return Padding(
       key: ValueKey('${label}_$index'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           ReorderableDragStartListener(
             index: index,
             child: const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.space4),
               child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
             ),
           ),
@@ -157,7 +157,7 @@ class DynamicListBuilder extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
       ],
     );
   }

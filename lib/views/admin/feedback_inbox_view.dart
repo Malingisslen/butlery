@@ -449,14 +449,16 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
+      padding: AppDimensions.statusPillPadding,
+      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
+      // v1:297 draws the pill text at 0.5 px tracking.
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      color: cs.secondaryContainer,
       child: Text(
         _statusLabel(context, status),
-        style: AppTextStyles.metadataEmphasized,
+        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
       ),
     );
   }

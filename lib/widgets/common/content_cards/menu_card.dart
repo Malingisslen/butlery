@@ -100,7 +100,7 @@ class MenuCard extends StatelessWidget {
       children: [
         _buildMenuHeader(context),
         if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildMenuMetadata(context),
         ],
         if (showPreview) ...[
@@ -145,7 +145,7 @@ class MenuCard extends StatelessWidget {
           _buildMenuMetadata(context),
         ],
         if (showSharingStatus) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildSharingIndicator(context),
         ],
       ],
@@ -161,7 +161,7 @@ class MenuCard extends StatelessWidget {
           size: AppDimensions.iconSizeM,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             title,
@@ -215,7 +215,7 @@ class MenuCard extends StatelessWidget {
               size: AppDimensions.iconSizeS,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.menuCardNoRecipes,
               style: AppTextStyles.metadataEmphasized,
@@ -234,7 +234,7 @@ class MenuCard extends StatelessWidget {
           context.l10n.menuCardRecipesInMenu,
           style: AppTextStyles.labelMediumMuted,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...recipesToShow.map(
           (recipe) => Padding(
             padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
@@ -248,7 +248,7 @@ class MenuCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     _getRecipeTitle(recipe),
@@ -285,7 +285,7 @@ class MenuCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
@@ -304,7 +304,7 @@ class MenuCard extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             memberCount > 0
                 ? context.l10n.menuCardSharedWithCount(memberCount)
@@ -428,7 +428,7 @@ class MenuCard extends StatelessWidget {
       case MenuCardStyle.compact:
         return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case MenuCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case MenuCardStyle.detailed:
         return EdgeInsets.zero;
     }
@@ -438,13 +438,13 @@ class MenuCard extends StatelessWidget {
     switch (style) {
       case MenuCardStyle.compact:
         return const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         );
       case MenuCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case MenuCardStyle.detailed:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
     }
   }
 }

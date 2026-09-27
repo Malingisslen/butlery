@@ -28,7 +28,7 @@ class RealtimeStatusWidget extends StatelessWidget {
     return Tooltip(
       message: statusDescription,
       child: Container(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -57,9 +57,8 @@ class RealtimeStatusWidget extends StatelessWidget {
                       ? AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         )
-                      : AppTextStyles.bodyBold.copyWith(
+                      : AppTextStyles.labelMedium.copyWith(
                           color: Theme.of(context).colorScheme.error,
-                          fontSize: 12,
                         ),
                 ),
               ),

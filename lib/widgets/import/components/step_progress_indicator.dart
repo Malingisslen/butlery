@@ -20,7 +20,7 @@ class StepProgressIndicator extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: AppDimensions.paddingSymmetric20x12,
+      padding: AppDimensions.paddingSymmetric16x12,
       child: Row(
         children: [
           for (int i = 1; i <= totalSteps; i++) ...[

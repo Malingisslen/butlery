@@ -141,7 +141,7 @@ class ImageGridWidgets {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingXs,
-                    vertical: AppDimensions.spacingXxs,
+                    vertical: AppDimensions.badgePaddingY,
                   ),
                   decoration: BoxDecoration(
                     color: isPrimary
@@ -166,7 +166,7 @@ class ImageGridWidgets {
                         ).colorScheme.surfaceContainerHighest,
                       ),
                       if (isPrimary) ...[
-                        const SizedBox(width: AppDimensions.spacingXxs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(
                           context.l10n.imagePrimary,
                           style: AppTextStyles.labelSmall.copyWith(

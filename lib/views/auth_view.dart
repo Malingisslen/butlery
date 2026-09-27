@@ -142,7 +142,7 @@ class _AuthViewState extends State<AuthView> {
               ),
               const SizedBox(width: AppDimensions.spacingL),
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.paddingMs),
+                padding: const EdgeInsets.only(top: AppDimensions.space8),
                 child: Text(
                   'butlery',
                   style: AppTextStyles.headlineBold.copyWith(
@@ -595,7 +595,7 @@ class _AuthViewState extends State<AuthView> {
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.zero,

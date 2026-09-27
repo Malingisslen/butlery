@@ -117,7 +117,7 @@ class _IngredientChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: AppDimensions.paddingSymmetric6x2,
+      padding: AppDimensions.chipCompactInFieldPadding,
       decoration: BoxDecoration(
         color: cs.primaryContainer,
         border: Border.all(

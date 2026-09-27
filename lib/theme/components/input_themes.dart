@@ -83,7 +83,7 @@ class InputThemes {
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
       hintStyle: TextStyle(color: cs.outline),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),

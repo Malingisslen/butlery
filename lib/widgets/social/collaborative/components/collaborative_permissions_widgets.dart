@@ -21,7 +21,7 @@ class CollaborativePermissionsWidgets {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      margin: const EdgeInsets.all(AppDimensions.spacingS),
+      margin: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
@@ -43,7 +43,7 @@ class CollaborativePermissionsWidgets {
                 color: color,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Expanded(
                 child: Text(
                   editMode.description,

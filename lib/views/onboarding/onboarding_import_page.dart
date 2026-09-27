@@ -69,7 +69,9 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
     final viewModel = context.watch<SmartImportViewModel>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -178,7 +180,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               viewModel.error!,
               style: AppTextStyles.bodySmall.copyWith(color: cs.error),
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: TextButton.icon(

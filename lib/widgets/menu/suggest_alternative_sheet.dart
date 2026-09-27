@@ -100,11 +100,13 @@ class _SheetContentState extends State<_SheetContent> {
                     ),
                     child: Container(
                       width: AppDimensions.spacingXl * 2,
-                      height: AppDimensions.spacingXxs,
+                      height: AppDimensions.space4,
                       decoration: BoxDecoration(
                         color: cs.onSurfaceVariant,
+                        // Komponentark v1:95, v1:325: height 4, radius 2
+                        // (tokens.json space.radius knob).
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.spacingXxs,
+                          AppDimensions.radiusKnob,
                         ),
                       ),
                     ),
@@ -139,7 +141,7 @@ class _SheetContentState extends State<_SheetContent> {
                       },
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
 
                   // Recipe list
                   Expanded(

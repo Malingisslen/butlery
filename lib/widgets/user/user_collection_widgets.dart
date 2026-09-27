@@ -62,8 +62,8 @@ class UserCollectionWidgets {
       padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: AppDimensions.spacingS,
-        mainAxisSpacing: AppDimensions.spacingS,
+        crossAxisSpacing: AppDimensions.space4,
+        mainAxisSpacing: AppDimensions.space4,
         childAspectRatio: aspectRatio,
       ),
       itemCount: users.length,
@@ -143,7 +143,7 @@ class UserCollectionWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Container(
-          padding: padding ?? AppDimensions.paddingSymmetric4x2,
+          padding: padding ?? AppDimensions.badgePadding,
           decoration: BoxDecoration(
             color: backgroundColor ?? cs.primary,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

@@ -83,7 +83,7 @@ abstract final class RecipeDetailSharedWidgets {
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Flexible(
                 child: Text(
                   context.l10n.recipeSourceFrom(Uri.tryParse(url)?.host ?? url),
@@ -132,9 +132,7 @@ abstract final class RecipeDetailSharedWidgets {
             headingLevel: 1,
             child: Text(
               recipe.title,
-              style: AppTextStyles.titleLarge.copyWith(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.headlineSmall.copyWith(
                 color: cs.onSurface,
                 letterSpacing: 1,
               ),

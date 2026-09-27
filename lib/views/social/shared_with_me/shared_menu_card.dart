@@ -81,18 +81,18 @@ class SharedMenuCard {
                     sharedMenu,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Meny content
                 _buildMenuContent(context, sharedMenu),
 
                 // Message from the sharer
                 if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   _buildShareMessage(context, sharedMenu.shareMessage!),
                 ],
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Action buttons
                 _buildActionButtons(
@@ -133,7 +133,7 @@ class SharedMenuCard {
                 : Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,7 +149,7 @@ class SharedMenuCard {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.spacingXxs,
+                      vertical: AppDimensions.badgePaddingY,
                     ),
                     decoration: BoxDecoration(
                       color: isCollaborative
@@ -173,7 +173,7 @@ class SharedMenuCard {
                                 ).colorScheme.onTertiaryContainer
                               : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(width: AppDimensions.spacingXxs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(
                           isCollaborative
                               ? context.l10n.sharedLive
@@ -213,7 +213,7 @@ class SharedMenuCard {
                     context.l10n.menuRecipeCount(sharedMenu.totalRecipeCount),
                     style: AppTextStyles.bodySmall,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Icon(
                     Icons.category,
                     size: AppDimensions.iconSizeS,
@@ -238,7 +238,7 @@ class SharedMenuCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -282,7 +282,7 @@ class SharedMenuCard {
             },
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Builder(
             builder: (context) {

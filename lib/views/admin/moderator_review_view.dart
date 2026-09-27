@@ -77,7 +77,10 @@ class _NotAuthorized extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -123,8 +126,7 @@ class _ReportsList extends StatelessWidget {
         horizontal: AppDimensions.paddingM,
       ),
       itemCount: vm.reports.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingS),
+      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space4),
       itemBuilder: (_, i) => _ReportCard(report: vm.reports[i]),
     );
   }
@@ -318,14 +320,16 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
+      padding: AppDimensions.statusPillPadding,
+      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
+      // v1:297 draws the pill text at 0.5 px tracking.
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      color: cs.secondaryContainer,
       child: Text(
         status.wireName,
-        style: AppTextStyles.metadataEmphasized,
+        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
       ),
     );
   }

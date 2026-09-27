@@ -60,7 +60,7 @@ class ImportProgressWidget extends StatelessWidget {
       ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        padding: AppDimensions.paddingSymmetric20x16,
+        padding: AppDimensions.paddingAll16,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -234,7 +234,7 @@ class _StepConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space16),
       child: AnimatedContainer(
         duration: AnimationUtils.getDuration(
           context,

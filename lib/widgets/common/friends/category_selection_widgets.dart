@@ -67,8 +67,8 @@ class CategorySelectionWidgets {
             const SizedBox(height: AppDimensions.spacingMd),
           ],
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: categories
                 .map(
                   (category) => friendCategoryChip(
@@ -223,8 +223,7 @@ class CategorySelectionWidgets {
     return Container(
       height: height,
       padding:
-          padding ??
-          const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+          padding ?? const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
@@ -232,7 +231,7 @@ class CategorySelectionWidgets {
         ),
         itemCount: categories.length,
         separatorBuilder: (context, index) =>
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
         itemBuilder: (context, index) {
           final category = categories[index];
           return compactCategoryChip(
@@ -324,7 +323,7 @@ class CategorySelectionWidgets {
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
               ),

@@ -472,7 +472,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         SegmentedButton<MatchMode>(
           segments: [
             ButtonSegment(
@@ -523,10 +523,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...List.generate(_conditions.length, (index) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: _ConditionRow(
               condition: _conditions[index],
               canDelete: _conditions.length > 1,
@@ -601,7 +601,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               _error!,

@@ -288,7 +288,7 @@ class ImportActionSection extends StatelessWidget {
             label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingModerate,
+                vertical: AppDimensions.space12,
               ),
             ),
           ),

@@ -395,7 +395,7 @@ class _FranSocialaMedierViewContentState
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.importTipsTitle,
                 style: AppTextStyles.labelLarge.copyWith(

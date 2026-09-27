@@ -111,7 +111,7 @@ class MenuPreviewView extends StatelessWidget {
                     displayName: sharedMenu.sharedByDisplayName,
                     size: ImageSize.small,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +151,7 @@ class MenuPreviewView extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
 
               // Meny statistik
               Row(
@@ -251,9 +251,9 @@ class MenuPreviewView extends StatelessWidget {
 
           return Padding(
             padding: EdgeInsets.fromLTRB(
-              AppDimensions.spacingS,
-              AppDimensions.spacingS,
-              AppDimensions.spacingS,
+              AppDimensions.space4,
+              AppDimensions.space4,
+              AppDimensions.space4,
               index == categories.length - 1 ? AppDimensions.spacingL : 0,
             ),
             child: Column(
@@ -266,7 +266,7 @@ class MenuPreviewView extends StatelessWidget {
                   count: recipes.length,
                 ),
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Recept i kategorin
                 ...recipes.map(
@@ -325,7 +325,7 @@ class MenuPreviewView extends StatelessWidget {
                   expand: true,
                 ),
 
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Dismiss knapp
                 ActionButtons.outlinedButton(

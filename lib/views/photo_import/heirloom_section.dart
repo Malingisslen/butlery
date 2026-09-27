@@ -76,7 +76,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
             onChanged: (v) => vm.isHeirloom = v,
           ),
           if (vm.isHeirloom) ...[
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             if (vm.isOfflineQueued)
               Container(
                 width: double.infinity,
@@ -99,7 +99,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                       color: context.modeColors.warning,
                       size: AppDimensions.iconSizeM,
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
                         context.l10n.heirloomUploadOffline,
@@ -119,7 +119,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
               ),
               onChanged: (v) => vm.heirloomWriterName = v,
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             TextField(
               controller: _yearCtrl,
               maxLength: 4,
@@ -138,7 +138,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                     : parsed;
               },
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             TextField(
               controller: _noteCtrl,
               maxLength: 200,

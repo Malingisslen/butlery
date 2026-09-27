@@ -89,7 +89,10 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
       // The plate line says what it fetches (produktregler.md:163).
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: PlateLineMessage(
             message: context.l10n.shoppingLoadingTemplates,
           ),

@@ -43,34 +43,34 @@ class ParsedExtractionChips extends StatelessWidget {
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXxs),
+            const SizedBox(height: AppDimensions.space4),
             Wrap(
               spacing: AppDimensions.spacingXs,
-              runSpacing: AppDimensions.spacingXxs,
+              runSpacing: AppDimensions.space4,
               children: trace.understood
                   .map((e) => _UnderstoodChip(entry: e))
                   .toList(),
             ),
           ],
           if (trace.notUnderstood.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               l10n.weeklyMenuChipsNotUnderstood,
               style: AppTextStyles.metadataEmphasized.copyWith(
                 color: colors.warning,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXxs),
+            const SizedBox(height: AppDimensions.space4),
             Wrap(
               spacing: AppDimensions.spacingXs,
-              runSpacing: AppDimensions.spacingXxs,
+              runSpacing: AppDimensions.space4,
               children: trace.notUnderstood
                   .map((t) => _NotUnderstoodChip(label: t))
                   .toList(),
             ),
           ],
           if (trace.hasGaps && onRefinePrompt != null) ...[
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Semantics(
               label: l10n.a11yRefineMenuPrompt,
               button: true,
@@ -101,8 +101,8 @@ class _UnderstoodChip extends StatelessWidget {
     final colors = context.modeColors;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
-        vertical: AppDimensions.spacingXxs,
+        horizontal: AppDimensions.space4,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: colors.successContainer,
@@ -128,8 +128,8 @@ class _NotUnderstoodChip extends StatelessWidget {
     final colors = context.modeColors;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
-        vertical: AppDimensions.spacingXxs,
+        horizontal: AppDimensions.space4,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: colors.warningContainer,
@@ -143,7 +143,7 @@ class _NotUnderstoodChip extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: colors.warning,
           ),
-          const SizedBox(width: AppDimensions.spacingXxs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             label,
             style: AppTextStyles.captionText.copyWith(

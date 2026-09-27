@@ -169,7 +169,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
         // reader (produktregler.md:163, B-18).
         suffixIcon: viewModel.isAddingItem
             ? Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.space4),
                 child: SizedBox(
                   width: AppDimensions.iconSizeL,
                   child: PlateLine(semanticLabel: context.l10n.loadingGeneric),

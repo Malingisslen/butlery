@@ -108,7 +108,7 @@ class _MinFamiljContent extends StatelessWidget {
           title: l10n.familyHouseholdSection,
           trailing: '${vm.accounts.length} ${l10n.familyAccountsWord}',
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         for (final account in vm.accounts)
           FamilyAccountRow(
             member: account,
@@ -131,7 +131,7 @@ class _MinFamiljContent extends StatelessWidget {
           title: l10n.familyMembersSection,
           trailing: '${vm.familyMembers.length} ${l10n.familyProfilesWord}',
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         if (vm.familyMembers.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(

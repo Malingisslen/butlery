@@ -271,7 +271,7 @@ class _VeckomenyGeneratingOverlayState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
       // text.primary: ink on light, paper on dark (onSurface).
       decoration: BoxDecoration(border: Border.all(color: cs.onSurface)),

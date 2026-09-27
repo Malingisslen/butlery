@@ -100,7 +100,7 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         _buildListHeader(context),
         if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildListMetadata(context),
         ],
         if (showPreview) ...[
@@ -145,12 +145,12 @@ class ShoppingListCard extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           _buildListMetadata(context),
         ],
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             if (showSharingStatus) ...[
               _buildSharingIndicator(context),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
             ],
             _buildCompletionIndicator(context),
           ],
@@ -169,7 +169,7 @@ class ShoppingListCard extends StatelessWidget {
           size: AppDimensions.iconSizeM,
           color: cs.onSurfaceVariant,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             title,
@@ -228,7 +228,7 @@ class ShoppingListCard extends StatelessWidget {
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.shoppingCardNoItems,
               style: AppTextStyles.metadataEmphasized,
@@ -245,7 +245,7 @@ class ShoppingListCard extends StatelessWidget {
           context.l10n.shoppingCardItemsOnList,
           style: AppTextStyles.labelMediumMuted,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...items
             .take(4)
             .map(
@@ -262,7 +262,7 @@ class ShoppingListCard extends StatelessWidget {
                           ? context.modeColors.success
                           : cs.onSurfaceVariant,
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
                         _getItemTitle(item),
@@ -306,7 +306,7 @@ class ShoppingListCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
@@ -325,7 +325,7 @@ class ShoppingListCard extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             memberCount > 0
                 ? context.l10n.shoppingCardSharedWithCount(memberCount)
@@ -373,7 +373,7 @@ class ShoppingListCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
@@ -464,7 +464,7 @@ class ShoppingListCard extends StatelessWidget {
       case ShoppingListCardStyle.compact:
         return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case ShoppingListCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case ShoppingListCardStyle.detailed:
         return EdgeInsets.zero;
     }
@@ -474,13 +474,13 @@ class ShoppingListCard extends StatelessWidget {
     switch (style) {
       case ShoppingListCardStyle.compact:
         return const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         );
       case ShoppingListCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case ShoppingListCardStyle.detailed:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
     }
   }
 }

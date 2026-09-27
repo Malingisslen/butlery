@@ -99,7 +99,7 @@ class PersonalTagTile extends StatelessWidget {
                       right: 0,
                       bottom: 0,
                       child: Container(
-                        padding: AppDimensions.paddingAll2,
+                        padding: AppDimensions.paddingAll4,
                         decoration: BoxDecoration(
                           color: context.modeColors.success,
                           shape: BoxShape.circle,

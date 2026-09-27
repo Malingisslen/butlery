@@ -277,8 +277,8 @@ class OverflowTray extends StatelessWidget {
             ),
         ],
         child: Wrap(
-          spacing: AppDimensions.spacingTight,
-          runSpacing: AppDimensions.spacingTight,
+          spacing: AppDimensions.space4,
+          runSpacing: AppDimensions.space4,
           children: [
             for (final recipe in overflow)
               _OverflowChip(key: chipKey(recipe.id), recipe: recipe),
@@ -310,7 +310,7 @@ class _OverflowChip extends StatelessWidget {
       constraints: const BoxConstraints(
         minHeight: AppDimensions.minTouchTarget,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingMs),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space8),
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border.all(color: cs.outline),

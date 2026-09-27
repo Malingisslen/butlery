@@ -298,7 +298,10 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
         final cs = Theme.of(ctx).colorScheme;
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(ctx),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +363,10 @@ class _ProfileLoadErrorView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
