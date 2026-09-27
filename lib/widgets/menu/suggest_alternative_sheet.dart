@@ -103,8 +103,10 @@ class _SheetContentState extends State<_SheetContent> {
                       height: AppDimensions.space4,
                       decoration: BoxDecoration(
                         color: cs.onSurfaceVariant,
+                        // Komponentark v1:95, v1:325: height 4, radius 2
+                        // (tokens.json space.radius knob).
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.space4,
+                          AppDimensions.radiusKnob,
                         ),
                       ),
                     ),

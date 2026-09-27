@@ -64,7 +64,7 @@ class InlineTimerText extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingXs,
-                    vertical: AppDimensions.badgePaddingY,
+                    vertical: AppDimensions.space4,
                   ),
                   decoration: BoxDecoration(
                     // Square design language — no border radius.

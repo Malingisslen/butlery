@@ -455,6 +455,26 @@ class AppDimensions {
     vertical: badgePaddingY,
   );
 
+  /// A compact chip inside a field: 6 px down and 11 px across (tokens.json
+  /// controls.chipCompactInField, "Enda undantaget från chip-padding";
+  /// Komponentark v1:34 "kompakt chip i fält 6 × 11"). Locked control
+  /// geometry, not a step on the spacing scale.
+  static const EdgeInsets chipCompactInFieldPadding = EdgeInsets.symmetric(
+    horizontal: 11,
+    vertical: 6,
+  );
+
+  /// Bottom navigation geometry, drawn in Komponentark v1:663: the icon,
+  /// the label and the marker slot stack with `gap:2px`, and the saffron
+  /// marker under the chosen label is `height:3px;border-radius:2px`.
+  /// A drawn line thickness and a drawn component gap, not spacing steps.
+  static const double bottomNavStackGap = 2.0;
+  static const double bottomNavMarkerThickness = 3.0;
+
+  /// The root top bar's secondary line sits 2 px under the title
+  /// (Komponentark v1:64 `margin-top:2px`). Drawn component geometry.
+  static const double topBarSecondaryGap = 2.0;
+
   /// A status pill's padding: 3 px down and 9 px across (tokens.json
   /// controls.statusPill paddingY 3 / paddingX 9; Komponentark v1:34
   /// "statuspill 10,5/700 · 3 × 9").

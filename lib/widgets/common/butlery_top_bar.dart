@@ -227,7 +227,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double _leadingGap = actionGap;
 
   /// Komponentark rad 64: sekundärraden står 2 px under titeln.
-  static const double _secondaryGap = AppDimensions.space4;
+  static const double _secondaryGap = AppDimensions.topBarSecondaryGap;
 
   bool get _isRoot => pattern == ButleryTopBarPattern.rot;
 

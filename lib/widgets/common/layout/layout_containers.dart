@@ -177,10 +177,8 @@ class CategoryHeader extends StatelessWidget {
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXs,
-              vertical: AppDimensions.badgePaddingY,
-            ),
+            // A count badge: tokens.json controls.badge 2 × 7.
+            padding: AppDimensions.badgePadding,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),

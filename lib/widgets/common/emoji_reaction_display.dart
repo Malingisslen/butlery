@@ -46,7 +46,7 @@ class EmojiReactionDisplay extends StatelessWidget {
           child: GestureDetector(
             onTap: () => onReactionTap(emojiKey),
             child: Container(
-              padding: AppDimensions.badgePadding,
+              padding: AppDimensions.paddingAll4,
               decoration: BoxDecoration(
                 // Your reaction is surface.selected (surfaceContainerHighest carries its
                 // values in both modes) with a real text.primary border, never an ink

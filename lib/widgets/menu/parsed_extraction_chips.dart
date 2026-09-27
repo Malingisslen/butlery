@@ -102,7 +102,7 @@ class _UnderstoodChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.badgePaddingY,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: colors.successContainer,
@@ -129,7 +129,7 @@ class _NotUnderstoodChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.badgePaddingY,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: colors.warningContainer,

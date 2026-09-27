@@ -317,6 +317,13 @@ class _SlotPresenceRow extends StatelessWidget {
 
   static const int _maxFaces = 4;
 
+  /// The presence row's label: 10.5/700 with no tracking (tokens.json
+  /// controls.calendarPresenceRow labelSize 10.5, labelWeight 700). Built
+  /// from overline for the size and weight, without overline's category
+  /// tracking, which widened the texts past the 52 dp cell.
+  static TextStyle _label(Color color) =>
+      AppTextStyles.overline.copyWith(letterSpacing: 0, color: color);
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -346,10 +353,12 @@ class _SlotPresenceRow extends StatelessWidget {
           child: Row(
             children: [
               if (present.isEmpty)
-                Text(
-                  context.l10n.menuPresenceNobody,
-                  style: AppTextStyles.overline.copyWith(
-                    color: cs.outline,
+                Expanded(
+                  child: Text(
+                    context.l10n.menuPresenceNobody,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _label(cs.outline),
                   ),
                 )
               else
@@ -367,17 +376,17 @@ class _SlotPresenceRow extends StatelessWidget {
                   padding: const EdgeInsetsDirectional.only(start: 3),
                   child: Text(
                     '+$overflow',
-                    style: AppTextStyles.overline.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                    style: _label(cs.onSurfaceVariant),
                   ),
                 ),
-              const Spacer(),
               if (present.isNotEmpty)
-                Text(
-                  context.l10n.menuPresencePortions(present.length),
-                  style: AppTextStyles.overline.copyWith(
-                    color: cs.secondary,
+                Expanded(
+                  child: Text(
+                    context.l10n.menuPresencePortions(present.length),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: _label(cs.secondary),
                   ),
                 ),
               Icon(Icons.expand_more, size: 12, color: cs.outline),
