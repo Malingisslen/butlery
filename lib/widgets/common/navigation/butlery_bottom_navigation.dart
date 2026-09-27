@@ -13,12 +13,19 @@
 //                             as selected, not only by the saffron line; the
 //                             tablist is read last.
 //   produktregler.md:1052-1058 (§ 21.2): the rail carries the bottom row's
-//                             vocabulary (same surface, lowercase labels, the
-//                             saffron marker as a strip at the selected
-//                             entry's start) and "lägg till" is a round
-//                             saffron button at the top of the rail.
+//                             vocabulary (same surface, the saffron marker as
+//                             a strip at the selected entry's start) and
+//                             "lägg till" is a round saffron button at the
+//                             top of the rail.
 //   Skarmar v12 etapp 10 #bredskal: the rail drawn at 104 dp, the plus on top,
 //                             a divider, the destinations, "mer" at the foot.
+//
+// NAV-INK (package 6, the lead's decision): the bar and the rail stand on
+// surface.ink #24382C in both modes, as Komponentark v1:662 and #bredskal
+// (Skarmar v12 etapp 10 :72) draw them; produktregler.md:1055 names no
+// colour. The labels are capitalised as the Komponentark draws them (Hem,
+// Meny, Inköp, Mer; B-17 "Meny"). produktregler.md:1055 still says "gemena
+// etiketter"; the lead chose the drawing.
 //
 // Identity is the destination's route (`nav-{route}`), never its position.
 library;
@@ -30,8 +37,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
@@ -58,14 +67,59 @@ Widget navigationTabList({required Widget child}) => Semantics(
   child: child,
 );
 
-/// The bottom row: four destinations with the plus in the middle.
+/// The colours of the ink bar and the ink rail, one set for both modes: the
+/// surface is surface.ink in both (tokens.json:112-115), so nothing on it
+/// follows the page's brightness.
 ///
-/// Colours are the bar's existing tokens, kept as they were while the bar's
-/// colour is open (Komponentark v1:662 and #bredskal draw it on surface.ink
-/// #24382c; only #bredlandskap draws it on paper): surface (surfaceContainerLow resolves to
-/// surface.base, #F5F4ED light / #17251D dark), text.primary for the chosen
-/// tab and text.secondary for the others (tokens.json semantic), and
-/// action.primary saffron (colorScheme.secondary) for the chosen line.
+/// * [surface]: surface.ink #24382C, colorScheme.primary in both schemes
+///   (app_colors.dart lightColorScheme and darkColorScheme).
+/// * [selected]: paper #F5F4ED, colorScheme.onPrimary in both schemes; the
+///   chosen tab's glyph and label (Komponentark v1:663, `color:#F5F4ED`).
+/// * [unselected]: #93A48D, text.secondary (dark) (tokens.json:62-65); the
+///   other tabs (Komponentark v1:663-666, `color:#93a48d`), 4.73:1 on ink.
+/// * [marker]: action.primary saffron #CE7C1E, colorScheme.secondary in both
+///   schemes; the plate line under the chosen label (Komponentark v1:663).
+/// * [divider]: paper at the ladder's on-ink 0.18 step (tokens.json:40-53).
+///   Interpretation: #bredskal draws border.onInk #3F5145
+///   (tokens.json:223-227), which is not delivered to the app yet; the
+///   ladder step (#4A5A4F on ink) is the nearest allowed value. Decorative,
+///   no contrast floor.
+@immutable
+class NavInkColors {
+  const NavInkColors._({
+    required this.surface,
+    required this.selected,
+    required this.unselected,
+    required this.marker,
+    required this.divider,
+  });
+
+  factory NavInkColors.of(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return NavInkColors._(
+      surface: cs.primary,
+      selected: cs.onPrimary,
+      unselected: AppModeColors.textSecondaryOnInk(),
+      marker: cs.secondary,
+      divider: cs.onPrimary.withValues(alpha: 0.18),
+    );
+  }
+
+  final Color surface;
+  final Color selected;
+  final Color unselected;
+  final Color marker;
+  final Color divider;
+}
+
+/// Everything on the ink bar or rail: focus rings are paper, as on a dark
+/// surface ("papper på mörkt", Komponentark v1:657; tokens.json:155-160
+/// focusRing dark), in both modes.
+Widget onInkSurface({required Widget child}) =>
+    FocusRingSurface(brightness: Brightness.dark, child: child);
+
+/// The bottom row: four destinations with the plus in the middle, on the
+/// ink bar ([NavInkColors]) in both modes.
 class ButleryBottomNavigation extends StatelessWidget {
   const ButleryBottomNavigation({
     super.key,
@@ -74,10 +128,10 @@ class ButleryBottomNavigation extends StatelessWidget {
     required this.onTap,
     this.onAdd,
     this.showAddAction = true,
-    this.backgroundColor,
-    this.selectedItemColor,
-    this.unselectedItemColor,
   });
+
+  /// The ink surface, for tests.
+  static const Key inkSurfaceKey = ValueKey<String>('test-nav-ink-surface');
 
   /// The chosen destination, or null when the view is none of them.
   final int? currentIndex;
@@ -91,68 +145,59 @@ class ButleryBottomNavigation extends StatelessWidget {
   /// Whether the plus is drawn. The shell always draws it.
   final bool showAddAction;
 
-  /// Override background color (defaults to surfaceContainerLow).
-  final Color? backgroundColor;
-
-  /// Override selected item color (defaults to onSurface).
-  final Color? selectedItemColor;
-
-  /// Override unselected item color (defaults to onSurfaceVariant).
-  final Color? unselectedItemColor;
-
   /// The row's height: the plus's 62 dp outer diameter plus 1 dp above and
   /// below (Komponentark v1:667).
   static const double barHeight = ButleryAddButton.outerDiameter + 2;
 
   @override
   Widget build(BuildContext context) {
+    final ink = NavInkColors.of(context);
     final split = showAddAction ? (items.length + 1) ~/ 2 : items.length;
     Widget tab(int index) => Expanded(
       child: _BottomNavTab(
         item: items[index],
         isSelected: currentIndex != null && index == currentIndex,
         onTap: () => onTap(index),
-        selectedColor: selectedItemColor,
-        unselectedColor: unselectedItemColor,
+        ink: ink,
       ),
     );
 
     return navigationLandmark(
       context: context,
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          color:
-              backgroundColor ??
-              Theme.of(context).colorScheme.surfaceContainerLow,
-        ),
-        child: SafeArea(
-          top: false,
-          child: AccessibilityUtils.clampTextScaling(
-            context: context,
-            child: SizedBox(
-              height: barHeight,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  navigationTabList(
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < split; i++) tab(i),
-                        // The plus's slot. Not a tab, so nothing is here in
-                        // the tab list.
-                        if (showAddAction) const Spacer(),
-                        for (var i = split; i < items.length; i++) tab(i),
-                      ],
-                    ),
-                  ),
-                  if (showAddAction)
-                    Semantics(
-                      sortKey: const OrdinalSortKey(0),
-                      child: ButleryAddButton(
-                        onPressed: onAdd ?? () => showButleryAddSheet(context),
+        key: inkSurfaceKey,
+        decoration: BoxDecoration(color: ink.surface),
+        child: onInkSurface(
+          child: SafeArea(
+            top: false,
+            child: AccessibilityUtils.clampTextScaling(
+              context: context,
+              child: SizedBox(
+                height: barHeight,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    navigationTabList(
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < split; i++) tab(i),
+                          // The plus's slot. Not a tab, so nothing is here in
+                          // the tab list.
+                          if (showAddAction) const Spacer(),
+                          for (var i = split; i < items.length; i++) tab(i),
+                        ],
                       ),
                     ),
-                ],
+                    if (showAddAction)
+                      Semantics(
+                        sortKey: const OrdinalSortKey(0),
+                        child: ButleryAddButton(
+                          onPressed:
+                              onAdd ?? () => showButleryAddSheet(context),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -168,30 +213,23 @@ class _BottomNavTab extends StatelessWidget {
     required this.item,
     required this.isSelected,
     required this.onTap,
-    this.selectedColor,
-    this.unselectedColor,
+    required this.ink,
   });
 
   final AdaptiveNavigationItem item;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color? selectedColor;
-  final Color? unselectedColor;
+  final NavInkColors ink;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final color = isSelected
-        ? (selectedColor ?? cs.onSurface)
-        : (unselectedColor ?? cs.onSurfaceVariant);
-    final label = item.label.toLowerCase();
+    final color = isSelected ? ink.selected : ink.unselected;
+    final label = item.label;
     // navLabel 11/700 for every tab (tokens.json typography.roles.navLabel;
-    // Grafisk manual v6:244 "Aldrig 400 under 12 px"). The chosen tab is told
-    // by colour, the line and the selected state, never by weight alone.
-    final style = AppTextStyles.navLabel.copyWith(
-      color: color,
-      letterSpacing: 1,
-    );
+    // Grafisk manual v6:244 "Aldrig 400 under 12 px"), without tracking, as
+    // drawn (Komponentark v1:663). The chosen tab is told by colour, the line
+    // and the selected state, never by weight alone.
+    final style = AppTextStyles.navLabel.copyWith(color: color);
 
     // BUT-403: identifier `nav-{route}` for browser a11y tree queries.
     return Semantics(
@@ -205,8 +243,9 @@ class _BottomNavTab extends StatelessWidget {
         child: InkWell(
           key: ValueKey('test-nav-${item.route}'),
           onTap: onTap,
-          splashColor: cs.surfaceContainerHighest.withValues(alpha: 0.1),
-          highlightColor: cs.surfaceContainerHighest.withValues(alpha: 0.05),
+          // Paper at the on-ink 0.18 step while pressed (tokens.json:40-53).
+          splashColor: ink.selected.withValues(alpha: 0.18),
+          highlightColor: Colors.transparent,
           child: ExcludeSemantics(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -234,7 +273,7 @@ class _BottomNavTab extends StatelessWidget {
                   ),
                   height: AppDimensions.spacingXxs,
                   width: isSelected ? _textWidth(label, style) : 0,
-                  color: isSelected ? cs.secondary : Colors.transparent,
+                  color: isSelected ? ink.marker : Colors.transparent,
                 ),
               ],
             ),
@@ -298,11 +337,10 @@ class NavBadgedIcon extends StatelessWidget {
 /// (colorScheme.onPrimary, #F5F4ED in both modes), drawn 3 px outside the
 /// 56 px surface; the rail draws it without a ring (#bredskal).
 ///
-/// Interpretation, tied to the open bar colour: the ring is drawn for the ink
-/// bar. On today's paper bar in light mode it is the bar's own colour
-/// (#F5F4ED on #F5F4ED) and cannot be seen, so the plus reads as 56 dp with
-/// a 62 dp hitbox. #bredlandskap draws the plus on a light bar with a 1.5 px
-/// #3F5145 edge instead; which one applies follows the bar decision.
+/// NAV-INK: on the ink bar the paper ring is seen in both modes, as drawn
+/// (Komponentark v1:665; Skarmar v12 del 4 #hem). #hemmorkt draws the ring
+/// in the dark page colour #17251D instead; the lead chose one ink bar for
+/// both modes, so the ring stays paper there too.
 class ButleryAddButton extends StatelessWidget {
   const ButleryAddButton({
     required this.onPressed,

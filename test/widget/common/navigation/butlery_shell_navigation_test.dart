@@ -83,12 +83,13 @@ void main() {
       for (final route in _routes) {
         expect(find.byKey(ValueKey('test-nav-$route')), findsOneWidget);
       }
-      // Lowercase labels (produktregler.md:1055); "meny", not "veckomeny"
-      // (B-17).
-      expect(find.text('hem'), findsOneWidget);
-      expect(find.text('meny'), findsOneWidget);
-      expect(find.text('inköp'), findsOneWidget);
-      expect(find.text('mer'), findsOneWidget);
+      // Capitalised as drawn (Komponentark v1:663-666; NAV-INK); "Meny",
+      // not "Veckomeny" (B-17).
+      expect(find.text('Hem'), findsOneWidget);
+      expect(find.text('Meny'), findsOneWidget);
+      expect(find.text('Inköp'), findsOneWidget);
+      expect(find.text('Mer'), findsOneWidget);
+      expect(find.text('hem'), findsNothing);
       expect(find.text('lägg till'), findsNothing);
       // The order on screen follows the drawing: Hem, Meny, +, Inköp, Mer.
       double x(String route) =>
@@ -190,6 +191,82 @@ void main() {
         expect(icon.color, const Color(0xFF17251D));
       }
     });
+  });
+
+  // NAV-INK: one ink bar in both modes (Komponentark v1:662-666; Skarmar
+  // v12 etapp 10 #bredskal :72): surface.ink #24382C, the chosen tab in
+  // paper #F5F4ED with the saffron plate line, the others #93A48D
+  // (text.secondary dark), and the plus's paper ring seen on ink.
+  group('ink bar', () {
+    const ink = Color(0xFF24382C);
+    const paper = Color(0xFFF5F4ED);
+    const sage = Color(0xFF93A48D);
+    const saffron = Color(0xFFCE7C1E);
+
+    Color? textColor(WidgetTester tester, String label) =>
+        tester.widget<Text>(find.text(label)).style?.color;
+
+    for (final (mode, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('the bar is ink with paper and sage labels ($mode)', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _app(theme: theme, home: (c) => _bar(c, current: 0)),
+        );
+        final surface = tester.widget<DecoratedBox>(
+          find.byKey(ButleryBottomNavigation.inkSurfaceKey),
+        );
+        expect((surface.decoration as BoxDecoration).color, ink);
+        expect(textColor(tester, 'Hem'), paper);
+        for (final label in ['Meny', 'Inköp', 'Mer']) {
+          expect(textColor(tester, label), sage, reason: label);
+        }
+        // The plate line under the chosen label.
+        final line = tester
+            .widgetList<AnimatedContainer>(
+              find.descendant(
+                of: find.byKey(const ValueKey('test-nav-${Routes.home}')),
+                matching: find.byType(AnimatedContainer),
+              ),
+            )
+            .single;
+        expect((line.decoration as BoxDecoration?)?.color, saffron);
+        // The plus keeps its saffron fill; its ring is paper on ink.
+        final plus = tester.widget<Material>(
+          find.byKey(ButleryAddButton.buttonKey),
+        );
+        expect(plus.color, saffron);
+        expect((plus.shape! as CircleBorder).side.color, paper);
+      });
+
+      testWidgets('the rail is the same ink ($mode)', (tester) async {
+        tester.view.physicalSize = const Size(1024, 768);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          _app(
+            theme: theme,
+            home: (c) => AdaptiveNavigationScaffold(
+              currentIndex: 1,
+              items: ButleryAdaptiveNavigation.getNavigationItems(c),
+              onNavigationChanged: (_) {},
+              body: const Text('body'),
+            ),
+          ),
+        );
+        final surface = tester.widget<ColoredBox>(
+          find.byKey(ButleryNavigationRail.inkSurfaceKey),
+        );
+        expect(surface.color, ink);
+        expect(textColor(tester, 'Meny'), paper);
+        for (final label in ['Hem', 'Inköp', 'Mer']) {
+          expect(textColor(tester, label), sage, reason: label);
+        }
+      });
+    }
   });
 
   group('add sheet', () {

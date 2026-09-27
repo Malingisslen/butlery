@@ -6,23 +6,21 @@
 /// - A chosen card is surface.selected with a real border, never a tint
 ///   (tokens.json:116-119, opacityLadder :40-53; #flerbar).
 /// - The empty library has exactly one saffron action (produktregler.md:292;
-///   Grafisk manual v6:219; Skarmar v12 del 1 #tomtrecept).
+///   Grafisk manual v6:219; Skarmar v12 del 4 #hemtom).
 /// - The recipe card follows its own focus node for the ring.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:provider/provider.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
-import 'package:butlery/views/mina_recept/empty_state_widgets.dart';
+import 'package:butlery/views/hem/hem_empty_state.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
@@ -35,8 +33,6 @@ import '../../../test_support/base_unit_test.dart';
 
 class _MockRecipeListViewModel extends Mock implements RecipeListViewModel {}
 
-class _MockUserService extends Mock implements UserService {}
-
 Widget _app(Widget child, {ThemeData? theme}) => MaterialApp(
   theme: theme ?? AppTheme.lightTheme,
   locale: const Locale('sv'),
@@ -47,7 +43,7 @@ Widget _app(Widget child, {ThemeData? theme}) => MaterialApp(
 
 /// Filled buttons on screen whose resting fill is the saffron action colour.
 int _heroCount(WidgetTester tester, Brightness b) => tester
-    .widgetList<FilledButton>(find.byType(FilledButton))
+    .widgetList<FilledButton>(find.byWidgetPredicate((w) => w is FilledButton))
     .where(
       (button) =>
           button.style?.backgroundColor?.resolve(const {}) ==
@@ -306,29 +302,19 @@ void main() {
       ('dark', AppTheme.darkTheme),
     ]) {
       testWidgets('has exactly one saffron action ($mode)', (tester) async {
-        final userService = _MockUserService();
-        when(() => userService.currentUserProfile).thenReturn(null);
+        // HEM-HERO: the empty library is Hem's empty state (Skarmar v12
+        // del 4 #hemtom; produktregler.md:286 "en hjältehandling").
         await tester.pumpWidget(
-          _app(
-            ChangeNotifierProvider<UserService>.value(
-              value: userService,
-              child: const Scaffold(body: MinaReceptEmptyState()),
-            ),
-            theme: theme,
-          ),
+          _app(const Scaffold(body: HemEmptyState()), theme: theme),
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Inga sparade recept än'), findsOneWidget);
+        expect(
+          find.text('Butlery blir användbar med ett recept'),
+          findsOneWidget,
+        );
         expect(_heroCount(tester, theme.brightness), 1);
-        expect(
-          find.widgetWithText(FilledButton, 'Lägg till recept'),
-          findsOneWidget,
-        );
-        expect(
-          find.widgetWithText(OutlinedButton, 'Importera länk'),
-          findsOneWidget,
-        );
+        expect(find.byKey(HemEmptyState.addRecipeKey), findsOneWidget);
       });
     }
   });
