@@ -11,10 +11,12 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image/image.dart' as img;
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
@@ -256,22 +258,63 @@ const int kRecipeImageMaxSide = 1600;
 /// Makes the image at a path smaller, or returns null when it cannot.
 typedef ImageShrinker = Future<Uint8List?> Function(String path);
 
+/// Width and height from an image's header, or null for a format
+/// package:image cannot read (HEIC, a broken file).
+(int, int)? recipeImageSize(Uint8List bytes) {
+  final img.DecodeInfo? info;
+  try {
+    info = img.findDecoderForData(bytes)?.startDecode(bytes);
+  } on Object {
+    // package:image throws RangeError on a truncated header.
+    return null;
+  }
+  if (info == null || info.width <= 0 || info.height <= 0) return null;
+  return (info.width, info.height);
+}
+
+/// Whether [bytes] is an image within the recipe-image budget: at most
+/// 250 kB and a long side of at most 1600 px (flows-roles-budget.md:143).
+bool fitsRecipeImageBudget(Uint8List bytes) {
+  if (bytes.length > kRecipeImageMaxBytes) return false;
+  final size = recipeImageSize(bytes);
+  return size != null && math.max(size.$1, size.$2) <= kRecipeImageMaxSide;
+}
+
+/// The value to pass FlutterImageCompress as both minWidth and minHeight so
+/// the long side of a [width] x [height] image ends at most 1600 px.
+///
+/// The plugin treats both values as a floor: it divides each side by
+/// max(1, min(w / minWidth, h / minHeight))
+/// (flutter_image_compress_common BitmapCompressExt.kt calcScale), so
+/// 1600/1600 would make the SHORT side 1600. With both set to
+/// short * 1600 / long, rounded down, the scale is at least long / 1600
+/// whichever way the photo is turned.
+int recipeImageMinSide(int width, int height) {
+  final long = math.max(width, height);
+  final short = math.min(width, height);
+  return math.max(1, short * kRecipeImageMaxSide ~/ long);
+}
+
 /// Shrinks to the recipe-image budget: long side at most 1600 px, JPEG
-/// quality stepped down until the file is at most 250 kB.
+/// quality stepped down until the file is at most 250 kB. Returns null
+/// when no attempt fits the budget, so a too-large image is never queued
+/// again as it was.
 Future<Uint8List?> shrinkToRecipeImageBudget(String path) async {
-  Uint8List? best;
+  final size = recipeImageSize(await File(path).readAsBytes());
+  final side = size == null
+      ? kRecipeImageMaxSide
+      : recipeImageMinSide(size.$1, size.$2);
   for (final quality in const [85, 75, 65, 55, 45]) {
     final bytes = await FlutterImageCompress.compressWithFile(
       path,
-      minWidth: kRecipeImageMaxSide,
-      minHeight: kRecipeImageMaxSide,
+      minWidth: side,
+      minHeight: side,
       quality: quality,
     );
-    if (bytes == null) return best;
-    best = bytes;
-    if (bytes.length <= kRecipeImageMaxBytes) return bytes;
+    if (bytes == null) return null;
+    if (fitsRecipeImageBudget(bytes)) return bytes;
   }
-  return best;
+  return null;
 }
 
 /// "Försök mindre" (#synkko): the image the server refused as too large is
@@ -279,7 +322,7 @@ Future<Uint8List?> shrinkToRecipeImageBudget(String path) async {
 /// into the queue from the start. The original file is left where it is.
 ///
 /// Throws [StateError] when the upload is gone or the image cannot be made
-/// smaller than it is; the failure then stays.
+/// smaller than it is, or not within the budget; the failure then stays.
 Future<void> retrySmallerQueuedChange(
   AppDatabase db,
   String userId,
@@ -296,7 +339,9 @@ Future<void> retrySmallerQueuedChange(
           .getSingleOrNull();
   if (upload == null) throw StateError('The image is no longer queued');
   final bytes = await shrink(upload.localPath);
-  if (bytes == null || bytes.length >= upload.fileSizeBytes) {
+  if (bytes == null ||
+      bytes.length >= upload.fileSizeBytes ||
+      !fitsRecipeImageBudget(bytes)) {
     throw StateError('The image could not be made smaller');
   }
   final smaller = File(_smallerPath(upload.localPath));

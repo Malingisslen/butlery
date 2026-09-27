@@ -377,8 +377,10 @@ void main() {
 
         final line = find.text(_sv.syncQueueNextAttemptSeconds(8));
         expect(line, findsOneWidget);
-        // text.secondary: #627061 light, #93A48D dark (tokens.json semantic;
-        // the row's second line in #synkko).
+        // text.secondary: #627061 light, #93A48D dark (tokens.json semantic).
+        // Interpretation: #synkko's slot for this line is #627061 light but
+        // #C9D3C4 dark (Skarmar v12 del 4:64); the token decides the dark
+        // value.
         expect(
           tester.widget<Text>(line).style!.color,
           mode.value.colorScheme.onSurfaceVariant,
@@ -420,8 +422,8 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('offline the line is not shown: nothing is sent until the '
-        'network is back', (tester) async {
+    testWidgets('offline the line is still shown, as #synkko draws it under '
+        'the offline banner (Skarmar v12 del 4:245, :271)', (tester) async {
       final now = clock.now();
       source
         ..online = false
@@ -436,7 +438,7 @@ void main() {
         ]);
       await tester.pumpWidget(_app(AppTheme.lightTheme));
       await tester.pump();
-      expect(find.textContaining('nästa försök'), findsNothing);
+      expect(find.text(_sv.syncQueueNextAttemptSeconds(8)), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     });
   });

@@ -5,7 +5,7 @@
 //   produktregler.md:190  "Mer → Väntar på synk: antal poster, vad de rör,
 //                          ålder, och de permanenta felen först. Nås även
 //                          från köindikatorn i toppfältet."
-//   produktregler.md:189  permanent failures go to "Väntar på dig" with the
+//   produktregler.md:188  permanent failures go to "Väntar på dig" with the
 //                          cause in words, and each has an action.
 //   produktregler.md:192  nothing leaves the queue without the server's
 //                          confirmation or being shown here as a failure.
@@ -330,10 +330,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                             color: cs.onSurfaceVariant,
                           ),
                           for (final change in queue.draining)
-                            SyncQueueRow(
-                              change: change,
-                              showNextAttempt: _source.isOnline,
-                            ),
+                            SyncQueueRow(change: change),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(
                             l10n.syncQueueOrderNote,

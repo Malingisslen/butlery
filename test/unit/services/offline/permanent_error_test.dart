@@ -52,6 +52,8 @@ void main() {
         'failed-precondition',
         'out-of-range',
         'already-exists',
+        // 401: "4xx utom 408/429 försöks aldrig igen" (produktregler.md:188).
+        'unauthenticated',
       ]) {
         expect(
           permanentFailureReason(_error(code)),
@@ -70,7 +72,6 @@ void main() {
         'internal',
         'unknown',
         'cancelled',
-        'unauthenticated',
       ]) {
         expect(permanentFailureReason(_error(code)), isNull, reason: code);
       }

@@ -16,6 +16,7 @@ import 'package:butlery/services/offline/sync_queue_reader.dart';
 import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 
 import '../../../infrastructure/factories/recipe_factory.dart';
 
@@ -373,31 +374,33 @@ void main() {
       final change = await tooLarge(original.path, 4000);
       expect(change.canTrySmaller, isTrue);
 
+      final smaller = _jpeg(40, 30);
       await retrySmallerQueuedChange(
         db,
         'u1',
         change,
-        shrink: (path) async => Uint8List.fromList(List.filled(300, 2)),
+        shrink: (path) async => smaller,
       );
 
       final row = (await db.select(db.uploadQueueEntries).get()).single;
       expect(row.localPath, '${dir.path}/foto-mindre.jpg');
-      expect(File(row.localPath).lengthSync(), 300);
-      expect(row.fileSizeBytes, 300);
+      expect(File(row.localPath).lengthSync(), smaller.length);
+      expect(row.fileSizeBytes, smaller.length);
       expect(row.permanentlyFailed, isFalse);
       expect(row.status, 'pending');
       expect(original.existsSync(), isTrue, reason: 'the original is kept');
     });
 
     test('an image that cannot be made smaller stays where it was', () async {
-      final change = await tooLarge('${dir.path}/foto.jpg', 300);
+      final same = _jpeg(40, 30);
+      final change = await tooLarge('${dir.path}/foto.jpg', same.length);
 
       await expectLater(
         retrySmallerQueuedChange(
           db,
           'u1',
           change,
-          shrink: (path) async => Uint8List.fromList(List.filled(300, 2)),
+          shrink: (path) async => same,
         ),
         throwsStateError,
       );
@@ -406,5 +409,87 @@ void main() {
       expect(row.permanentlyFailed, isTrue);
       expect(row.localPath, '${dir.path}/foto.jpg');
     });
+
+    // flows-roles-budget.md:143: "≤ 250 kB, långsida ≤ 1600 px".
+    for (final entry in {
+      'a long side over 1600 px': _jpeg(1700, 10),
+      'a file over 250 kB': Uint8List.fromList([
+        ..._jpeg(40, 30),
+        ...List.filled(kRecipeImageMaxBytes, 0),
+      ]),
+      'bytes that are not an image': Uint8List.fromList(List.filled(300, 2)),
+    }.entries) {
+      test('a result with ${entry.key} is not queued again', () async {
+        final change = await tooLarge('${dir.path}/foto.jpg', 4000000);
+
+        await expectLater(
+          retrySmallerQueuedChange(
+            db,
+            'u1',
+            change,
+            shrink: (path) async => entry.value,
+          ),
+          throwsStateError,
+        );
+
+        final row = (await db.select(db.uploadQueueEntries).get()).single;
+        expect(row.permanentlyFailed, isTrue);
+        expect(row.localPath, '${dir.path}/foto.jpg');
+      });
+    }
+  });
+
+  group('the recipe-image budget (flows-roles-budget.md:143)', () {
+    // What flutter_image_compress does with minWidth/minHeight:
+    // scale = max(1, min(w / minW, h / minH)); out = side / scale
+    // (flutter_image_compress_common-1.1.1 BitmapCompressExt.kt:68-75).
+    (int, int) pluginOutput(int w, int h, int minW, int minH) {
+      final scale = [
+        1.0,
+        [w / minW, h / minH].reduce((a, b) => a < b ? a : b),
+      ].reduce((a, b) => a > b ? a : b);
+      return ((w / scale).floor(), (h / scale).floor());
+    }
+
+    test('the long side ends at most 1600 px, landscape or portrait', () {
+      for (final (w, h) in [
+        (4000, 3000),
+        (3000, 4000),
+        (4032, 3024),
+        (1600, 1601),
+        (9000, 100),
+        (2000, 2000),
+      ]) {
+        final side = recipeImageMinSide(w, h);
+        final (outW, outH) = pluginOutput(w, h, side, side);
+        expect(
+          outW > outH ? outW : outH,
+          lessThanOrEqualTo(kRecipeImageMaxSide),
+          reason: '${w}x$h',
+        );
+        expect(
+          outW > outH ? outW : outH,
+          greaterThanOrEqualTo(1500),
+          reason: '${w}x$h is not made smaller than it must be',
+        );
+      }
+      // The bug this replaces: 1600/1600 turns 4000x3000 into 2133x1600.
+      expect(pluginOutput(4000, 3000, 1600, 1600).$1, 2133);
+    });
+
+    test('an image already within 1600 px is not scaled', () {
+      final side = recipeImageMinSide(1200, 800);
+      expect(pluginOutput(1200, 800, side, side), (1200, 800));
+    });
+
+    test('the size is read from the image header', () {
+      expect(recipeImageSize(_jpeg(40, 30)), (40, 30));
+      expect(recipeImageSize(Uint8List.fromList([1, 2, 3])), isNull);
+      expect(fitsRecipeImageBudget(_jpeg(1600, 20)), isTrue);
+      expect(fitsRecipeImageBudget(_jpeg(20, 1601)), isFalse);
+    });
   });
 }
+
+Uint8List _jpeg(int width, int height) =>
+    img.encodeJpg(img.Image(width: width, height: height), quality: 50);

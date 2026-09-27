@@ -18,7 +18,7 @@ enum QueuedChangeKind {
 /// What a recipe write does, as the queue stores it (SyncOperation).
 enum QueuedOperation { create, update, delete, tag, upload }
 
-/// Why a change waits for the user, in the words produktregler.md:189 names.
+/// Why a change waits for the user, in the words produktregler.md:188 names.
 ///
 /// The queue stores the reason as text in `lastError`. The flow-08 classifier
 /// (P6-U08b) writes these codes; anything else reads as [unknown], which still

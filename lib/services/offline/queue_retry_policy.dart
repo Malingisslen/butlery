@@ -54,7 +54,7 @@ final Random _random = Random();
 /// when it may (a transient failure).
 ///
 /// Read from the error's code, never from its message text
-/// (produktregler.md:189 "4xx utom 408/429"). Firebase reports the HTTP
+/// (produktregler.md:188 "4xx utom 408/429"). Firebase reports the HTTP
 /// class through gRPC-style codes, shared by Firestore, Functions
 /// (FirebaseFunctionsException extends FirebaseException) and Storage:
 ///
@@ -65,15 +65,16 @@ final Random _random = Random();
 /// * invalid-argument, failed-precondition, out-of-range, already-exists
 ///   (400/409) → [QueuedChangeReason.unknown] ("Servern tog inte emot
 ///   ändringen")
+/// * unauthenticated (401) → [QueuedChangeReason.unknown]: permanent, as
+///   "4xx utom 408/429 försöks aldrig igen" says (produktregler.md:188).
+///   Interpretation: its cause reads "Servern tog inte emot ändringen", not
+///   "Du har inte längre behörighet", since a 401 for the signed-in user
+///   is usually a token being renewed. Whether a 401 should instead be
+///   retried within the 24 h is a product-owner question (open, P6-U08b).
 ///
 /// Transient: unavailable, deadline-exceeded (408), resource-exhausted and
 /// quota-exceeded (429), aborted, internal, unknown, cancelled, and every
 /// error that is not a FirebaseException (a socket that closed, a timeout).
-///
-/// Interpretation: unauthenticated (401) is treated as transient. The queue
-/// is sent only for the signed-in user, so a 401 means her token is being
-/// renewed or she is signing in again, not that she lost the right to her
-/// own data; calling it "Du har inte längre behörighet" would be wrong.
 QueuedChangeReason? permanentFailureReason(Object error) {
   if (error is! FirebaseException) return null;
   return switch (error.code) {
@@ -86,7 +87,8 @@ QueuedChangeReason? permanentFailureReason(Object error) {
     'invalid-argument' ||
     'failed-precondition' ||
     'out-of-range' ||
-    'already-exists' => QueuedChangeReason.unknown,
+    'already-exists' ||
+    'unauthenticated' => QueuedChangeReason.unknown,
     _ => null,
   };
 }

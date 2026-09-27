@@ -2,7 +2,7 @@
 //
 // P4-U19: one waiting change in "Väntar på synk", drawn in Skarmar v12 del 4
 // #synkko. A permanent failure is a card with its cause in words and its
-// actions (produktregler.md:189); a queued change is a row with what it
+// actions (produktregler.md:188); a queued change is a row with what it
 // concerns and its age (produktregler.md:190).
 //
 // P6-U08b: a queued change that failed says when it is sent again ("nästa
@@ -38,7 +38,7 @@ String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
   };
 }
 
-/// Why [change] waits for the user, in the words produktregler.md:189 names.
+/// Why [change] waits for the user, in the words produktregler.md:188 names.
 String describeQueuedReason(AppLocalizations l10n, QueuedChange change) =>
     switch (change.reason) {
       QueuedChangeReason.notFound => l10n.syncQueueReasonNotFound,
@@ -237,18 +237,9 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
 /// a second line when it waits on an earlier change, and its age. 56 dp tall
 /// with a border.subtle line under it.
 class SyncQueueRow extends StatelessWidget {
-  const SyncQueueRow({
-    required this.change,
-    this.showNextAttempt = true,
-    super.key,
-  });
+  const SyncQueueRow({required this.change, super.key});
 
   final QueuedChange change;
-
-  /// Whether to say when a failed change is sent again. Off while the device
-  /// is offline: then nothing is sent until it is back, and the offline
-  /// banner above says why.
-  final bool showNextAttempt;
 
   static Key rowKey(QueuedChange c) =>
       ValueKey('sync-row-${c.kind.name}-${c.id}');
@@ -260,10 +251,15 @@ class SyncQueueRow extends StatelessWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     // text.secondary (#627061 light, #93A48D dark; tokens.json semantic).
+    // Interpretation: #synkko's raw slot --r04slot-620 is #627061 light but
+    // #C9D3C4 (text.bodyMuted) dark (Skarmar v12 del 4:64); no token pairs
+    // those two, so the token text.secondary decides the dark value.
     final secondary = AppTextStyles.captionBase.copyWith(
       color: cs.onSurfaceVariant,
     );
-    final next = showNextAttempt ? describeNextAttempt(l10n, change) : null;
+    // Shown offline too: #synkko draws "nästa försök om 8 s" under the
+    // offline banner (Skarmar v12 del 4:245, :271, :275).
+    final next = describeNextAttempt(l10n, change);
     return Container(
       key: rowKey(change),
       constraints: const BoxConstraints(minHeight: _minHeight),
