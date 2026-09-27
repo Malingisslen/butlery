@@ -24,6 +24,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 class _FakeOfflineService extends ChangeNotifier implements OfflineService {
@@ -279,6 +280,111 @@ void main() {
         await tester.tap(find.byType(InteractiveViewer));
         await tester.pump();
         expect(find.byType(ButleryTopBar), findsNothing);
+      });
+
+      // Q7-03 = A: the photo is framed on surface.ink in both modes, and the
+      // X stays on the photo when the bar is hidden: a paper X on an ink
+      // disc, 48 dp, named Stäng, with the paper focus ring of an ink
+      // surface (tokens.json:112-115, :155-160, touchTarget.min).
+      testWidgets('${brightness.name}: the frame is ink and the X stays when '
+          'the bar is hidden', (tester) async {
+        final navigatorKey = GlobalKey<NavigatorState>();
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorKey: navigatorKey,
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            home: const Scaffold(body: Text('recipe')),
+          ),
+        );
+        navigatorKey.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const FullscreenImageViewer(
+              imageUrls: ['https://invalid.invalid/a.jpg'],
+              initialIndex: 0,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final cs = Theme.of(
+          tester.element(find.byType(FullscreenImageViewer)),
+        ).colorScheme;
+        // surface.ink is the same colour in both schemes.
+        expect(cs.primary, AppTheme.lightTheme.colorScheme.primary);
+        expect(cs.primary, AppTheme.darkTheme.colorScheme.primary);
+        final scaffold = tester.widget<Scaffold>(
+          find
+              .descendant(
+                of: find.byType(FullscreenImageViewer),
+                matching: find.byType(Scaffold),
+              )
+              .first,
+        );
+        expect(scaffold.backgroundColor, cs.primary);
+
+        // With the bar showing, its own X is the only one.
+        expect(
+          find.byKey(const ValueKey('fullscreenImage.close')),
+          findsNothing,
+        );
+        expect(find.byIcon(Icons.close), findsOneWidget);
+
+        await tester.tap(find.byType(InteractiveViewer));
+        await tester.pump();
+        expect(find.byType(ButleryTopBar), findsNothing);
+
+        final closeFinder = find.byKey(const ValueKey('fullscreenImage.close'));
+        expect(closeFinder, findsOneWidget);
+        expect(find.byIcon(Icons.close), findsOneWidget);
+        final close = tester.widget<IconButton>(closeFinder);
+        expect(close.tooltip, sv.commonClose);
+        expect(close.style!.backgroundColor!.resolve({}), cs.primary);
+        expect(close.style!.foregroundColor!.resolve({}), cs.onPrimary);
+        expect(cs.onPrimary, AppTheme.lightTheme.colorScheme.onPrimary);
+        expect(cs.onPrimary, AppTheme.darkTheme.colorScheme.onPrimary);
+        final size = tester.getSize(closeFinder);
+        expect(size.width, greaterThanOrEqualTo(48));
+        expect(size.height, greaterThanOrEqualTo(48));
+        expect(
+          tester.getSemantics(closeFinder),
+          matchesSemantics(
+            tooltip: sv.commonClose,
+            isButton: true,
+            hasTapAction: true,
+            hasFocusAction: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            isFocusable: true,
+          ),
+        );
+        final surface = tester.widget<FocusRingSurface>(
+          find.ancestor(
+            of: closeFinder,
+            matching: find.byType(FocusRingSurface),
+          ),
+        );
+        expect(surface.brightness, Brightness.dark);
+
+        // The X closes the viewer.
+        await tester.tap(closeFinder);
+        await tester.pumpAndSettle();
+        expect(find.byType(FullscreenImageViewer), findsNothing);
+        expect(find.text('recipe'), findsOneWidget);
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump(const Duration(minutes: 1));
       });
     }
   });
