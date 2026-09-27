@@ -271,11 +271,13 @@ class _OccupiedCell extends StatelessWidget {
       // #placera draws a placed dish on surface.raised with a 1 px
       // border.control (Skarmar v12 del 2); this session's dish gets the
       // 1.5 px text.primary border. primaryContainer, outline and onSurface
-      // carry those tokens in both schemes.
+      // carry those tokens in both schemes. A cell that cannot take the
+      // chosen dish keeps surface.raised and draws its title in
+      // text.disabled.onRaised, the pair tokens.json:198-201 measures
+      // (3.19 light / 3.96 dark, floor 3 at :543). surface.disabled is a
+      // surface for empty cells only, never under text (tokens.json:557).
       decoration: BoxDecoration(
-        color: off
-            ? AppModeColors.surfaceDisabled(cs.brightness)
-            : cs.primaryContainer,
+        color: cs.primaryContainer,
         border: Border.all(
           color: isSession ? cs.onSurface : cs.outline,
           width: isSession ? 1.5 : 1,
@@ -339,7 +341,10 @@ class _OvrigtEntryChip extends StatelessWidget {
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       decoration: BoxDecoration(
-        color: off ? AppModeColors.surfaceDisabled(cs.brightness) : cs.surface,
+        // Paper under text in both states; an unavailable chip only turns
+        // its title to text.disabled.onRaised (3.55:1 on paper), never
+        // surface.disabled under text (tokens.json:198-201, :557).
+        color: cs.surface,
         border: Border(
           left: BorderSide(
             color: isSession ? cs.onSurface : cs.secondary,

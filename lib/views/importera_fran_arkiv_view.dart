@@ -158,8 +158,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                       ),
                                       onSelected: (_) =>
                                           viewModel.toggleTag(tag),
-                                      backgroundColor:
-                                          cs.surfaceContainerHighest,
+                                      // Unchosen stays on paper; only the
+                                      // chosen chip wears the Vald plate.
+                                      backgroundColor: cs.surface,
                                       selectedColor: cs.surfaceContainerHighest,
                                       checkmarkColor: cs.onSurface,
                                     );

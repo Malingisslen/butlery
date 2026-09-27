@@ -33,6 +33,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_specific_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -436,6 +437,39 @@ void main() {
       final code = _code('lib/views/mina_recept_view.dart');
       expect(RegExp(r'\bSyncIndicator\b').hasMatch(code), isFalse);
       expect(code, contains('LayoutComponents.offlineIndicator()'));
+    });
+  });
+
+  group('A7: an unavailable placement keeps a readable title', () {
+    // tokens.json:198-201 measures text.disabled.onRaised on surface.raised;
+    // the floor for disabled text is 3 (tokens.json:543). surface.disabled
+    // is a surface, never under text (tokens.json:557).
+    double ratio(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
+      final hi = la > lb ? la : lb;
+      final lo = la > lb ? lb : la;
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+      final cs = theme.colorScheme;
+      test('${cs.brightness.name}: disabled title on cell and chip', () {
+        final text = AppModeColors.textDisabled(cs.brightness);
+        expect(ratio(text, cs.primaryContainer), greaterThanOrEqualTo(3.0));
+        expect(ratio(text, cs.surface), greaterThanOrEqualTo(3.0));
+      });
+    }
+
+    test('surface.disabled never sits under a recipe title', () {
+      final code = _code('lib/views/menu_placement/placement_widgets.dart');
+      for (final name in ['_OccupiedCell', '_OvrigtEntryChip']) {
+        final start = code.indexOf('class $name');
+        expect(start, isNot(-1), reason: name);
+        final end = code.indexOf('\nclass ', start + 1);
+        final body = code.substring(start, end == -1 ? code.length : end);
+        expect(body, isNot(contains('surfaceDisabled')), reason: name);
+      }
     });
   });
 }
