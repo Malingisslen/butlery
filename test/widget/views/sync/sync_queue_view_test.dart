@@ -460,8 +460,8 @@ void main() {
       expect(find.byKey(SyncQueueNeedsYouCard.smallerKey(c)), findsNothing);
     });
 
-    testWidgets('a new recipe the server never had: no Släng (interim '
-        'choice)', (tester) async {
+    testWidgets('a new recipe the server never had: Försök igen, Spara som '
+        'kopia and Släng (Q6-11 = B)', (tester) async {
       final c = _change(
         'n',
         op: QueuedOperation.create,
@@ -472,7 +472,72 @@ void main() {
       await pump(tester, AppTheme.lightTheme);
       expect(find.byKey(SyncQueueNeedsYouCard.retryKey(c)), findsOneWidget);
       expect(find.byKey(SyncQueueNeedsYouCard.copyKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsOneWidget);
+    });
+
+    // Q6-11 = B (produktbeslut 2026-09-27b): the recipe exists only on this
+    // phone, so Släng first says so; confirmed, it is class 1 like every
+    // Släng (produktregler.md:132, 7 s Ångra).
+    testWidgets('Släng on a phone-only recipe asks first, and Avbryt keeps '
+        'it', (tester) async {
+      final c = _change(
+        'n',
+        op: QueuedOperation.create,
+        needsUser: true,
+        subject: 'Mormors kålpudding',
+      );
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+
+      await tester.tap(find.byKey(SyncQueueNeedsYouCard.discardKey(c)));
+      await tester.pumpAndSettle();
+      expect(find.text(_sv.syncQueueDiscardPhoneOnlyTitle), findsOneWidget);
+      expect(
+        find.text(_sv.syncQueueDiscardPhoneOnlyBody('Mormors kålpudding')),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text(_sv.commonCancel));
+      await tester.pumpAndSettle();
+      expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsOneWidget);
+      await tester.pump(const Duration(seconds: 8));
+      await tester.pumpAndSettle();
+      expect(source.discarded, isEmpty);
+    });
+
+    testWidgets('confirmed, the phone-only recipe goes with 7 s Ångra', (
+      tester,
+    ) async {
+      final c = _change('n', op: QueuedOperation.create, needsUser: true);
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+
+      await tester.tap(find.byKey(SyncQueueNeedsYouCard.discardKey(c)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_sv.syncQueueDiscardPhoneOnlyConfirm));
+      await tester.pump();
+      await tester.pump();
+
       expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsNothing);
+      expect(find.text(_sv.syncQueueRecipeDiscarded), findsOneWidget);
+      expect(source.discarded, isEmpty, reason: 'Ångra is still open');
+
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 8));
+      await tester.pumpAndSettle();
+      expect(source.discarded, [c]);
+    });
+
+    testWidgets('a changed recipe is discarded without asking', (
+      tester,
+    ) async {
+      final c = _change('u', needsUser: true);
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+      await tester.tap(find.byKey(SyncQueueNeedsYouCard.discardKey(c)));
+      await tester.pump();
+      expect(find.text(_sv.syncQueueDiscardPhoneOnlyTitle), findsNothing);
+      expect(find.text(_sv.syncQueueDiscarded), findsOneWidget);
     });
 
     testWidgets('a too-large image: Försök mindre and Släng, as drawn', (

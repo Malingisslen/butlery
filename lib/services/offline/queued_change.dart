@@ -102,10 +102,9 @@ class QueuedChange {
   /// has not failed (produktregler.md:188; #synkko "nästa försök om 8 s").
   final DateTime? nextAttemptAt;
 
-  /// A recipe the server has never had: the entry creates it. Throwing the
-  /// entry away would lose the recipe itself, so until the product owner
-  /// decides otherwise such an entry offers "Försök igen" and "Spara som
-  /// kopia" but not "Släng" (the lead's interim choice for P6-U08b).
+  /// A recipe the server has never had: the entry creates it, so the recipe
+  /// exists only on this phone. Throwing the entry away throws the recipe
+  /// away, so "Släng" asks first ([discardAsksFirst]).
   bool get isNeverSyncedRecipe =>
       kind == QueuedChangeKind.recipe && operation == QueuedOperation.create;
 
@@ -124,9 +123,14 @@ class QueuedChange {
       kind == QueuedChangeKind.image &&
       reason == QueuedChangeReason.tooLarge;
 
-  /// "Släng ändringen" (produktregler.md:188), except for a recipe the
-  /// server has never had ([isNeverSyncedRecipe]).
-  bool get canDiscard => needsUser && !isNeverSyncedRecipe;
+  /// "Släng ändringen" (produktregler.md:188), on every permanent failure.
+  /// Q6-11 = B (produktbeslut 2026-09-27b): a recipe the server has never had
+  /// can be thrown away too, after a confirmation ([discardAsksFirst]).
+  bool get canDiscard => needsUser;
+
+  /// Q6-11 = B: "Släng" on a new recipe that exists only on this phone first
+  /// asks, in a confirmation that says just that, before the 7 s Ångra.
+  bool get discardAsksFirst => canDiscard && isNeverSyncedRecipe;
 
   @override
   bool operator ==(Object other) =>

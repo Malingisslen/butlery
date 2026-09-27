@@ -152,6 +152,12 @@ Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {
 /// One transaction: either the chain is marked and the entry is gone, or
 /// nothing changed. The chosen entry is removed inside it, so it never stays
 /// behind with its own cause overwritten by "dependency-failed".
+///
+/// Q6-11 = B: an entry that creates a recipe the server has never had
+/// ([QueuedChange.isNeverSyncedRecipe]) takes that recipe with it, since the
+/// device's copy is the only one and the user chose to throw it away after a
+/// confirmation that said so. Otherwise it would stay on the phone and never
+/// be sent.
 Future<void> discardQueuedChange(
   AppDatabase db,
   String userId,
@@ -165,9 +171,17 @@ Future<void> discardQueuedChange(
     );
     switch (change.kind) {
       case QueuedChangeKind.recipe:
+        final entry =
+            await (db.select(db.syncQueueEntries)..where(
+                  (e) => e.userId.equals(userId) & e.opId.equals(change.id),
+                ))
+                .getSingleOrNull();
         await (db.delete(
           db.syncQueueEntries,
         )..where((e) => e.opId.equals(change.id))).go();
+        if (entry != null && change.isNeverSyncedRecipe) {
+          await db.recipeDao.deleteRecipe(entry.recipeId, userId);
+        }
       case QueuedChangeKind.image:
         await db.uploadQueueDao.cancelUpload(change.id);
     }

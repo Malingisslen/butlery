@@ -18298,6 +18298,20 @@ class AppLocalizationsSv extends AppLocalizations {
   String get syncQueueDiscarded => 'Ändringen slängdes.';
 
   @override
+  String get syncQueueRecipeDiscarded => 'Receptet slängdes.';
+
+  @override
+  String get syncQueueDiscardPhoneOnlyTitle => 'Släng receptet?';
+
+  @override
+  String syncQueueDiscardPhoneOnlyBody(String title) {
+    return '$title finns bara på den här telefonen. Det har aldrig nått servern, så om du slänger det finns det inte kvar någonstans.';
+  }
+
+  @override
+  String get syncQueueDiscardPhoneOnlyConfirm => 'Släng receptet';
+
+  @override
   String get syncQueueDiscardFailed => 'Ändringen kunde inte slängas.';
 
   @override

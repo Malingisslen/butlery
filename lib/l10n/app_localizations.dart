@@ -30137,6 +30137,30 @@ abstract class AppLocalizations {
   /// **'Ändringen slängdes.'**
   String get syncQueueDiscarded;
 
+  /// Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet slängdes.'**
+  String get syncQueueRecipeDiscarded;
+
+  /// Q6-11 = B: title of the confirmation before a new recipe that exists only on this phone is discarded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng receptet?'**
+  String get syncQueueDiscardPhoneOnlyTitle;
+
+  /// Q6-11 = B: body of the confirmation; title = the recipe's title, or syncQueueUnnamedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} finns bara på den här telefonen. Det har aldrig nått servern, så om du slänger det finns det inte kvar någonstans.'**
+  String syncQueueDiscardPhoneOnlyBody(String title);
+
+  /// Q6-11 = B: the confirmation's destructive action; Avbryt is the other.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng receptet'**
+  String get syncQueueDiscardPhoneOnlyConfirm;
+
   /// P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93).
   ///
   /// In sv, this message translates to:

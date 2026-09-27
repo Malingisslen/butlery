@@ -88,9 +88,9 @@ String describeQueuedAge(AppLocalizations l10n, QueuedChange change) {
 /// * the first is "Försök mindre" for a too-large image
 ///   ([QueuedChange.canTrySmaller]), else "Försök igen";
 /// * "Spara som kopia" for a recipe write ([QueuedChange.canSaveAsCopy]);
-/// * "Släng ändringen" unless the entry creates a recipe the server has
-///   never had ([QueuedChange.canDiscard]; the lead's interim choice while
-///   the product question is open).
+/// * "Släng ändringen" on every failure ([QueuedChange.canDiscard]); on a new
+///   recipe that exists only on this phone it asks first (Q6-11 = B,
+///   [QueuedChange.discardAsksFirst]).
 ///
 /// Interpretation: the non-destructive actions are outlined buttons
 /// (ram-kontroll-a / text-kontroll-a in #synkko), and Släng is text in

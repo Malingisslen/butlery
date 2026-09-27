@@ -31,6 +31,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/sync/sync_queue_row.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 
 class SyncQueueView extends StatefulWidget {
@@ -199,14 +200,44 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   /// Ångra-snackbar"; :140 "Ångra finns där data försvinner"). The change
   /// leaves the list at once and is thrown away only when the Ångra window
   /// closes without Ångra; until then the queue is untouched.
-  void _discard(QueuedChange change) {
+  ///
+  /// Q6-11 = B (produktbeslut 2026-09-27b): a new recipe that exists only on
+  /// this phone is thrown away only after a confirmation that says so, and
+  /// then with the same 7 s Ångra.
+  Future<void> _discard(QueuedChange change) async {
     final key = _busyKey(change);
+    if (_busy.contains(key) || _discarding.contains(key)) return;
+    final l10n = context.l10n;
+    if (change.discardAsksFirst) {
+      // The body as customContent: the shared destructive body appends an
+      // item name and a question mark after the message (block_user_action
+      // does the same).
+      final confirmed =
+          await DestructiveConfirmationDialog.show(
+            context,
+            title: l10n.syncQueueDiscardPhoneOnlyTitle,
+            message: '',
+            itemName: '',
+            customContent: Text(
+              l10n.syncQueueDiscardPhoneOnlyBody(
+                change.subject ?? l10n.syncQueueUnnamedRecipe,
+              ),
+              style: AppTextStyles.bodyMedium,
+            ),
+            primaryActionText: l10n.syncQueueDiscardPhoneOnlyConfirm,
+            secondaryActionText: l10n.commonCancel,
+          ) ??
+          false;
+      if (!confirmed || !mounted) return;
+    }
     if (_busy.contains(key) || !_discarding.add(key)) return;
     setState(() {});
     final source = _source;
     SnackBarUtils.showUndoDeferred(
       context,
-      context.l10n.syncQueueDiscarded,
+      change.isNeverSyncedRecipe
+          ? l10n.syncQueueRecipeDiscarded
+          : l10n.syncQueueDiscarded,
       onUndo: () {
         if (mounted) setState(() => _discarding.remove(key));
       },
@@ -308,7 +339,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                               change: change,
                               busy: _busy.contains(_busyKey(change)),
                               onRetry: () => _retry(change),
-                              onDiscard: () => _discard(change),
+                              onDiscard: () => unawaited(_discard(change)),
                               onSaveAsCopy: () => _saveAsCopy(change),
                               onTrySmaller: () => _trySmaller(change),
                             ),

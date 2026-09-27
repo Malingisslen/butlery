@@ -13994,6 +13994,27 @@
   "@syncQueueDiscarded": {
     "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1)."
   },
+  "syncQueueRecipeDiscarded": "Receptet slängdes.",
+  "@syncQueueRecipeDiscarded": {
+    "description": "Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132)."
+  },
+  "syncQueueDiscardPhoneOnlyTitle": "Släng receptet?",
+  "@syncQueueDiscardPhoneOnlyTitle": {
+    "description": "Q6-11 = B: title of the confirmation before a new recipe that exists only on this phone is discarded."
+  },
+  "syncQueueDiscardPhoneOnlyBody": "{title} finns bara på den här telefonen. Det har aldrig nått servern, så om du slänger det finns det inte kvar någonstans.",
+  "@syncQueueDiscardPhoneOnlyBody": {
+    "description": "Q6-11 = B: body of the confirmation; title = the recipe's title, or syncQueueUnnamedRecipe.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscardPhoneOnlyConfirm": "Släng receptet",
+  "@syncQueueDiscardPhoneOnlyConfirm": {
+    "description": "Q6-11 = B: the confirmation's destructive action; Avbryt is the other."
+  },
   "syncQueueDiscardFailed": "Ändringen kunde inte slängas.",
   "@syncQueueDiscardFailed": {
     "description": "P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93)."

@@ -167,6 +167,36 @@ void main() {
     expect(queue.draining.map((c) => c.id), ['other']);
   });
 
+  // Q6-11 = B (produktbeslut 2026-09-27b): a new recipe the server never had
+  // exists only on this phone, so Släng (after its confirmation) takes the
+  // device's copy with it rather than leaving it to never be sent.
+  test('Släng on a phone-only new recipe takes the recipe with it', () async {
+    await recipe('r1', 'Kålpudding');
+    await recipe('r2', 'Pannbiffar');
+    await enqueue('new', 'r1', SyncOperation.create);
+    await enqueue('edit', 'r2', SyncOperation.update);
+    await db.syncQueueDao.markPermanentlyFailed('new', reason: 'not-found');
+    await db.syncQueueDao.markPermanentlyFailed('edit', reason: 'not-found');
+    final all = await readQueuedChanges(db, 'u1');
+    final created = all.firstWhere((c) => c.id == 'new');
+    final changed = all.firstWhere((c) => c.id == 'edit');
+    expect(created.isNeverSyncedRecipe, isTrue);
+    expect(created.canDiscard, isTrue);
+    expect(created.discardAsksFirst, isTrue);
+    expect(changed.discardAsksFirst, isFalse);
+
+    await discardQueuedChange(db, 'u1', created);
+    await discardQueuedChange(db, 'u1', changed);
+
+    expect(await db.recipeDao.getRecipe('r1', 'u1'), isNull);
+    expect(
+      await db.recipeDao.getRecipe('r2', 'u1'),
+      isNotNull,
+      reason: 'a change to a recipe the server has keeps the device copy',
+    );
+    expect(await readQueuedChanges(db, 'u1'), isEmpty);
+  });
+
   test('Släng on an image cancels the upload and it stops counting', () async {
     await withClock(
       Clock.fixed(t0),

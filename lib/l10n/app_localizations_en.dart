@@ -18265,6 +18265,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncQueueDiscarded => 'Change discarded.';
 
   @override
+  String get syncQueueRecipeDiscarded => 'The recipe was discarded.';
+
+  @override
+  String get syncQueueDiscardPhoneOnlyTitle => 'Discard the recipe?';
+
+  @override
+  String syncQueueDiscardPhoneOnlyBody(String title) {
+    return '$title exists only on this phone. It never reached the server, so if you discard it, it is gone everywhere.';
+  }
+
+  @override
+  String get syncQueueDiscardPhoneOnlyConfirm => 'Discard the recipe';
+
+  @override
   String get syncQueueDiscardFailed => 'The change could not be discarded.';
 
   @override
