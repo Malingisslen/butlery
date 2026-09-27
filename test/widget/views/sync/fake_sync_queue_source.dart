@@ -25,6 +25,8 @@ class FakeSyncQueueSource extends SyncQueueSource {
   int syncs = 0;
   final List<QueuedChange> retried = [];
   final List<QueuedChange> discarded = [];
+  final List<QueuedChange> copied = [];
+  final List<QueuedChange> shrunk = [];
 
   /// When set, every action throws it.
   Object? failWith;
@@ -80,6 +82,18 @@ class FakeSyncQueueSource extends SyncQueueSource {
   Future<void> discard(QueuedChange change) async {
     _maybeFail();
     discarded.add(change);
+  }
+
+  @override
+  Future<void> saveAsCopy(QueuedChange change) async {
+    _maybeFail();
+    copied.add(change);
+  }
+
+  @override
+  Future<void> trySmaller(QueuedChange change) async {
+    _maybeFail();
+    shrunk.add(change);
   }
 }
 

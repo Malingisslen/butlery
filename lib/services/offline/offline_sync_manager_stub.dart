@@ -17,6 +17,7 @@ class OfflineSyncManager {
     required auth_repo.AuthRepository authRepository,
     VoidCallback? onSyncStateChanged,
     Future<void> Function(String recipeId)? onTagRecipe,
+    bool Function()? isOnlineNow,
   });
 
   bool get isSyncing => false;
@@ -29,7 +30,10 @@ class OfflineSyncManager {
     required String recipeId,
   }) async {}
 
-  Future<void> syncPendingChanges({required bool isOnline}) async {}
+  Future<void> syncPendingChanges({
+    required bool isOnline,
+    bool force = false,
+  }) async {}
 
   Future<SyncResult> syncNow({required bool isOnline}) async {
     return const SyncResult(

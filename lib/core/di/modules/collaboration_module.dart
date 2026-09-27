@@ -20,6 +20,7 @@ import 'package:butlery/repositories/firebase/firebase_cooking_session_repositor
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_overwritten_version_repository.dart';
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
@@ -100,6 +101,9 @@ class CollaborationModule implements DIModule {
         authRepository: app<AuthRepository>(),
         overwrittenVersions: container<OverwrittenVersionRepository>(),
         suggestions: container<RecipeSuggestionRepository>(),
+        // P6-U08b: conflict notices wait for the offline queue to empty
+        // (produktregler.md:189).
+        queueSettled: () => SyncQueueSource.resolve().watchSettled(),
       ),
     );
 

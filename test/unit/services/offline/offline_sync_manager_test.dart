@@ -79,6 +79,10 @@ void main() {
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
       when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
+      // P6-U08b: the pass reads which opIds are still queued (dependsOn).
+      when(
+        () => mockDatabase.queuedOpIds(any()),
+      ).thenAnswer((_) async => (waiting: <String>{}, failed: <String>{}));
 
       // Setup auth state
       mockAuthRepo.setAuthState(userId: 'test_user_123');
@@ -95,6 +99,7 @@ void main() {
     });
 
     tearDown(() async {
+      syncManager.dispose();
       syncStateChanged = false;
       await TestServiceLocator.reset();
       await BaseUnitTest.teardownUnit();

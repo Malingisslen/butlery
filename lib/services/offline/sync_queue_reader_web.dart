@@ -21,3 +21,18 @@ Future<void> discardQueuedChange(
   String userId,
   QueuedChange change,
 ) async {}
+
+/// Nothing to copy on the web.
+Future<String> saveQueuedChangeAsCopy(
+  AppDatabase db,
+  String userId,
+  QueuedChange change, {
+  String? newId,
+}) async => throw UnsupportedError('The web has no offline queue');
+
+/// Nothing to shrink on the web.
+Future<void> retrySmallerQueuedChange(
+  AppDatabase db,
+  String userId,
+  QueuedChange change,
+) async => throw UnsupportedError('The web has no offline queue');

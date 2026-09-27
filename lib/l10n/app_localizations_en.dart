@@ -18326,6 +18326,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncQueueReasonUnknown => 'The server did not accept the change';
 
   @override
+  String get syncQueueReasonExpired => 'Could not be saved for 24 h';
+
+  @override
+  String get syncQueueSaveAsCopy => 'Save as a copy';
+
+  @override
+  String syncQueueSaveAsCopyA11y(String what) {
+    return 'Save as a copy — $what';
+  }
+
+  @override
+  String get syncQueueTrySmaller => 'Try smaller';
+
+  @override
+  String syncQueueTrySmallerA11y(String what) {
+    return 'Try smaller — $what';
+  }
+
+  @override
+  String get syncQueueCopyFailed => 'The copy could not be saved.';
+
+  @override
+  String get syncQueueTrySmallerFailed =>
+      'The image could not be made smaller.';
+
+  @override
+  String syncQueueNextAttemptSeconds(int seconds) {
+    return 'next attempt in $seconds s';
+  }
+
+  @override
+  String syncQueueNextAttemptMinutes(int minutes) {
+    return 'next attempt in $minutes min';
+  }
+
+  @override
   String get syncQueueAgeNow => 'now';
 
   @override

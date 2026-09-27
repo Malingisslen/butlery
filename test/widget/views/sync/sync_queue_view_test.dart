@@ -351,4 +351,241 @@ void main() {
       _sv.syncQueueRecipeCreated(_sv.syncQueueUnnamedRecipe),
     );
   });
+
+  // ── P6-U08b ────────────────────────────────────────────────────────────
+
+  group('nästa försök (#synkko; produktregler.md:188)', () {
+    for (final mode in {
+      'light': AppTheme.lightTheme,
+      'dark': AppTheme.darkTheme,
+    }.entries) {
+      testWidgets('${mode.key}: a failed change says when it is sent again, '
+          'counting down, in text.secondary', (tester) async {
+        final now = clock.now();
+        source.set([
+          QueuedChange(
+            kind: QueuedChangeKind.recipe,
+            id: 'q1',
+            operation: QueuedOperation.update,
+            queuedAt: now.subtract(const Duration(minutes: 2)),
+            subject: 'Citronrisotto',
+            nextAttemptAt: now.add(const Duration(seconds: 8)),
+          ),
+        ]);
+        await tester.pumpWidget(_app(mode.value));
+        await tester.pump();
+
+        final line = find.text(_sv.syncQueueNextAttemptSeconds(8));
+        expect(line, findsOneWidget);
+        // text.secondary: #627061 light, #93A48D dark (tokens.json semantic;
+        // the row's second line in #synkko).
+        expect(
+          tester.widget<Text>(line).style!.color,
+          mode.value.colorScheme.onSurfaceVariant,
+        );
+        expect(
+          mode.value.colorScheme.onSurfaceVariant,
+          mode.key == 'light'
+              ? const Color(0xFF627061)
+              : const Color(0xFF93A48D),
+        );
+
+        await tester.pump(const Duration(seconds: 1));
+        expect(find.text(_sv.syncQueueNextAttemptSeconds(7)), findsOneWidget);
+
+        await tester.pump(const Duration(seconds: 8));
+        expect(
+          find.textContaining('nästa försök'),
+          findsNothing,
+          reason: 'the time has come; the line goes',
+        );
+        await tester.pumpWidget(const SizedBox());
+      });
+    }
+
+    testWidgets('a minute or more is written in minutes', (tester) async {
+      final now = clock.now();
+      source.set([
+        QueuedChange(
+          kind: QueuedChangeKind.recipe,
+          id: 'q1',
+          operation: QueuedOperation.update,
+          queuedAt: now,
+          nextAttemptAt: now.add(const Duration(minutes: 9, seconds: 30)),
+        ),
+      ]);
+      await tester.pumpWidget(_app(AppTheme.lightTheme));
+      await tester.pump();
+      expect(find.text(_sv.syncQueueNextAttemptMinutes(10)), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('offline the line is not shown: nothing is sent until the '
+        'network is back', (tester) async {
+      final now = clock.now();
+      source
+        ..online = false
+        ..set([
+          QueuedChange(
+            kind: QueuedChangeKind.recipe,
+            id: 'q1',
+            operation: QueuedOperation.update,
+            queuedAt: now,
+            nextAttemptAt: now.add(const Duration(seconds: 8)),
+          ),
+        ]);
+      await tester.pumpWidget(_app(AppTheme.lightTheme));
+      await tester.pump();
+      expect(find.textContaining('nästa försök'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    });
+  });
+
+  group('the actions of a failure (produktregler.md:188; #synkko)', () {
+    testWidgets('a changed recipe: Försök igen, Spara som kopia, Släng', (
+      tester,
+    ) async {
+      final c = _change(
+        'u',
+        needsUser: true,
+        reason: QueuedChangeReason.notFound,
+      );
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+      expect(find.byKey(SyncQueueNeedsYouCard.retryKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.copyKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.smallerKey(c)), findsNothing);
+    });
+
+    testWidgets('a new recipe the server never had: no Släng (interim '
+        'choice)', (tester) async {
+      final c = _change(
+        'n',
+        op: QueuedOperation.create,
+        needsUser: true,
+        reason: QueuedChangeReason.permissionDenied,
+      );
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+      expect(find.byKey(SyncQueueNeedsYouCard.retryKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.copyKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsNothing);
+    });
+
+    testWidgets('a too-large image: Försök mindre and Släng, as drawn', (
+      tester,
+    ) async {
+      final c = _change(
+        'i',
+        kind: QueuedChangeKind.image,
+        op: QueuedOperation.upload,
+        needsUser: true,
+        reason: QueuedChangeReason.tooLarge,
+      );
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+      expect(find.byKey(SyncQueueNeedsYouCard.smallerKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.retryKey(c)), findsNothing);
+      expect(find.byKey(SyncQueueNeedsYouCard.copyKey(c)), findsNothing);
+      expect(find.text(_sv.syncQueueTrySmaller), findsOneWidget);
+    });
+
+    testWidgets('a deleted recipe has nothing to copy', (tester) async {
+      final c = _change(
+        'd',
+        op: QueuedOperation.delete,
+        needsUser: true,
+        reason: QueuedChangeReason.permissionDenied,
+      );
+      source.set([c]);
+      await pump(tester, AppTheme.lightTheme);
+      expect(find.byKey(SyncQueueNeedsYouCard.copyKey(c)), findsNothing);
+      expect(find.byKey(SyncQueueNeedsYouCard.discardKey(c)), findsOneWidget);
+    });
+
+    testWidgets('24 h of failures says so in words', (tester) async {
+      source.set([
+        _change(
+          'x',
+          needsUser: true,
+          reason: QueuedChangeReason.retriesExhausted,
+        ),
+      ]);
+      await pump(tester, AppTheme.lightTheme);
+      expect(find.text(_sv.syncQueueReasonExpired), findsOneWidget);
+    });
+
+    testWidgets('Spara som kopia and Försök mindre act on that change, by '
+        'identity', (tester) async {
+      final b = _change('b', needsUser: true, subject: 'Pannbiffar');
+      final img = _change(
+        'i',
+        kind: QueuedChangeKind.image,
+        op: QueuedOperation.upload,
+        needsUser: true,
+        reason: QueuedChangeReason.tooLarge,
+        // Oldest, so its card comes first and is built.
+        age: const Duration(hours: 1),
+      );
+      source.set([b, img]);
+      await pump(tester, AppTheme.lightTheme);
+
+      await tester.tap(find.byKey(SyncQueueNeedsYouCard.copyKey(b)));
+      await tester.pump();
+      await tester.tap(find.byKey(SyncQueueNeedsYouCard.smallerKey(img)));
+      await tester.pump();
+
+      expect(source.copied, [b]);
+      expect(source.shrunk, [img]);
+    });
+
+    testWidgets('a failed copy says so and keeps the change', (tester) async {
+      final a = _change('a', needsUser: true);
+      source
+        ..set([a])
+        ..failWith = StateError('no device copy');
+      await pump(tester, AppTheme.lightTheme);
+
+      await tester.tap(find.byKey(SyncQueueNeedsYouCard.copyKey(a)));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining(_sv.syncQueueCopyFailed), findsOneWidget);
+      expect(find.textContaining(_sv.syncQueueChangeKept), findsOneWidget);
+      expect(find.byKey(SyncQueueNeedsYouCard.copyKey(a)), findsOneWidget);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('the new actions are named after the change', (tester) async {
+      final handle = tester.ensureSemantics();
+      final a = _change('a', needsUser: true, subject: 'Pannbiffar');
+      final img = _change(
+        'i',
+        kind: QueuedChangeKind.image,
+        op: QueuedOperation.upload,
+        subject: 'Sommarens grillmarinad',
+        needsUser: true,
+        reason: QueuedChangeReason.tooLarge,
+      );
+      source.set([a, img]);
+      await pump(tester, AppTheme.lightTheme);
+      expect(
+        find.bySemanticsLabel(
+          _sv.syncQueueSaveAsCopyA11y(_sv.syncQueueRecipeUpdated('Pannbiffar')),
+        ),
+        findsOneWidget,
+      );
+      // #synkko data-a11y-name "Försök mindre — Bild till Sommarens
+      // grillmarinad".
+      expect(
+        find.bySemanticsLabel(
+          'Försök mindre — Bild till Sommarens grillmarinad',
+        ),
+        findsOneWidget,
+      );
+      handle.dispose();
+    });
+  });
 }

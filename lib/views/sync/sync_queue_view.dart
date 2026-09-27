@@ -13,10 +13,14 @@
 //   fas2/block288-uxfrysning.json TR::FLOW::08::kovy::vantar-pa-synk.
 //
 // The data is schema 3 (P5-U35) through SyncQueueSource.
+//
+// P6-U08b: a failed change says when it is sent again, and the line counts
+// down; a failure offers Spara som kopia and Försök mindre where they apply.
 library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -50,6 +54,10 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   QueueSnapshot _queue = QueueSnapshot.empty;
   bool _syncing = false;
 
+  /// Redraws "nästa försök om N s" once a second while a retry time lies
+  /// ahead; stopped when none does.
+  Timer? _countdown;
+
   /// The changes an action runs on, by kind and id (never by position).
   final Set<String> _busy = {};
 
@@ -62,7 +70,9 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     super.initState();
     _subscription = _source.watchChanges().listen(
       (queue) {
-        if (mounted) setState(() => _queue = queue);
+        if (!mounted) return;
+        setState(() => _queue = queue);
+        _updateCountdown();
       },
       onError: (Object _) {},
     );
@@ -71,7 +81,29 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   @override
   void dispose() {
     _subscription?.cancel();
+    _countdown?.cancel();
     super.dispose();
+  }
+
+  bool get _retryAhead {
+    final now = clock.now();
+    return _queue.draining.any((c) => c.nextAttemptAt?.isAfter(now) ?? false);
+  }
+
+  void _updateCountdown() {
+    if (!_retryAhead) {
+      _countdown?.cancel();
+      _countdown = null;
+      return;
+    }
+    _countdown ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {});
+      if (!_retryAhead) {
+        _countdown?.cancel();
+        _countdown = null;
+      }
+    });
   }
 
   static String _busyKey(QueuedChange c) => '${c.kind.name}:${c.id}';
@@ -118,6 +150,50 @@ class _SyncQueueViewState extends State<SyncQueueView> {
       if (mounted) setState(() => _busy.remove(key));
     }
   }
+
+  /// Runs one of a failure's actions, with its failure message. The change
+  /// stays under "Väntar på dig" when the action fails.
+  Future<void> _act(
+    QueuedChange change,
+    Future<void> Function(QueuedChange) action, {
+    required String Function() failed,
+  }) async {
+    final key = _busyKey(change);
+    if (!_busy.add(key)) return;
+    setState(() {});
+    try {
+      await action(change);
+    } catch (e) {
+      AppLogger.warning('SyncQueueView: action failed: $e');
+      if (mounted) {
+        SnackBarUtils.showFailure(
+          context,
+          what: failed(),
+          preserved: context.l10n.syncQueueChangeKept,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy.remove(key));
+    }
+  }
+
+  /// "Spara som kopia" (produktregler.md:188).
+  void _saveAsCopy(QueuedChange change) => unawaited(
+    _act(
+      change,
+      _source.saveAsCopy,
+      failed: () => context.l10n.syncQueueCopyFailed,
+    ),
+  );
+
+  /// "Försök mindre" (#synkko).
+  void _trySmaller(QueuedChange change) => unawaited(
+    _act(
+      change,
+      _source.trySmaller,
+      failed: () => context.l10n.syncQueueTrySmallerFailed,
+    ),
+  );
 
   /// "Släng ändringen" is class 1 (produktregler.md:132, "omedelbar + 7 s
   /// Ångra-snackbar"; :140 "Ångra finns där data försvinner"). The change
@@ -233,6 +309,8 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                               busy: _busy.contains(_busyKey(change)),
                               onRetry: () => _retry(change),
                               onDiscard: () => _discard(change),
+                              onSaveAsCopy: () => _saveAsCopy(change),
+                              onTrySmaller: () => _trySmaller(change),
                             ),
                           const SizedBox(height: AppDimensions.spacingL),
                         ],
@@ -252,7 +330,10 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                             color: cs.onSurfaceVariant,
                           ),
                           for (final change in queue.draining)
-                            SyncQueueRow(change: change),
+                            SyncQueueRow(
+                              change: change,
+                              showNextAttempt: _source.isOnline,
+                            ),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(
                             l10n.syncQueueOrderNote,

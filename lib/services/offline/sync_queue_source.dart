@@ -44,6 +44,14 @@ abstract class SyncQueueSource {
   /// Whether the device is online right now.
   bool get isOnline;
 
+  /// Whether the queue has emptied and the device is online, live: true
+  /// when nothing is left for the queue to send by itself. Permanent
+  /// failures do not count, since they never leave without the user.
+  /// Conflict notices wait for this (produktregler.md:189, "Konfliktbannern
+  /// visas när kön töms, inte medan appen är offline").
+  Stream<bool> watchSettled() =>
+      watchCounts().map((c) => c.draining == 0 && isOnline).distinct();
+
   /// Sends the queue now. Resolves when the attempt is over.
   Future<void> syncNow();
 
@@ -53,6 +61,15 @@ abstract class SyncQueueSource {
   /// "Släng ändringen": only ever called after the user chose it and let the
   /// 7 s Ångra window close (produktregler.md:132).
   Future<void> discard(QueuedChange change);
+
+  /// "Spara som kopia" (produktregler.md:188): the recipe's content on the
+  /// device becomes a new recipe of the user's own, queued to be saved, and
+  /// the failure leaves the queue. Only for [QueuedChange.canSaveAsCopy].
+  Future<void> saveAsCopy(QueuedChange change);
+
+  /// "Försök mindre" (Skarmar v12 del 4 #synkko): a too-large image is sent
+  /// again as a smaller copy. Only for [QueuedChange.canTrySmaller].
+  Future<void> trySmaller(QueuedChange change);
 }
 
 /// The signed-in user's queue in the offline database. Everything fails
@@ -125,6 +142,44 @@ class OfflineSyncQueueSource extends SyncQueueSource {
   @override
   bool get isOnline => _signedIn()?.offline.isOnline ?? true;
 
+  /// As [SyncQueueSource.watchSettled], and also re-read when the device
+  /// goes on- or offline (OfflineService notifies on connectivity changes),
+  /// so an empty queue is released on reconnect.
+  @override
+  Stream<bool> watchSettled() {
+    final signedIn = _signedIn();
+    if (signedIn == null) return Stream.value(true);
+    final offline = signedIn.offline;
+    StreamSubscription<QueueCounts>? counts;
+    int? draining;
+    late final StreamController<bool> controller;
+    void emit() {
+      final n = draining;
+      if (n != null && !controller.isClosed) {
+        controller.add(n == 0 && offline.isOnline);
+      }
+    }
+
+    controller = StreamController<bool>(
+      onListen: () {
+        offline.addListener(emit);
+        counts = watchCounts().listen(
+          (c) {
+            draining = c.draining;
+            emit();
+          },
+          onError: controller.addError,
+          onDone: controller.close,
+        );
+      },
+      onCancel: () async {
+        offline.removeListener(emit);
+        await counts?.cancel();
+      },
+    );
+    return controller.stream.distinct();
+  }
+
   @override
   Future<void> syncNow() async {
     final signedIn = _signedIn();
@@ -138,6 +193,26 @@ class OfflineSyncQueueSource extends SyncQueueSource {
     if (signedIn == null) return;
     final offline = signedIn.offline;
     await retryQueuedChange(offline.database, change);
+    await offline.refreshSyncState();
+    if (offline.isOnline) unawaited(offline.syncNow());
+  }
+
+  @override
+  Future<void> saveAsCopy(QueuedChange change) async {
+    final signedIn = _signedIn();
+    if (signedIn == null) return;
+    final offline = signedIn.offline;
+    await saveQueuedChangeAsCopy(offline.database, signedIn.userId, change);
+    await offline.refreshSyncState();
+    if (offline.isOnline) unawaited(offline.syncNow());
+  }
+
+  @override
+  Future<void> trySmaller(QueuedChange change) async {
+    final signedIn = _signedIn();
+    if (signedIn == null) return;
+    final offline = signedIn.offline;
+    await retrySmallerQueuedChange(offline.database, signedIn.userId, change);
     await offline.refreshSyncState();
     if (offline.isOnline) unawaited(offline.syncNow());
   }

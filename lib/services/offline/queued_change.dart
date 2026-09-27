@@ -28,6 +28,9 @@ enum QueuedChangeReason {
   permissionDenied,
   tooLarge,
   dependencyFailed,
+
+  /// The queue retried for 24 h without success (produktregler.md:188).
+  retriesExhausted,
   unknown
   ;
 
@@ -37,6 +40,7 @@ enum QueuedChangeReason {
     'permission-denied': permissionDenied,
     'too-large': tooLarge,
     'dependency-failed': dependencyFailed,
+    'retries-exhausted': retriesExhausted,
   };
 
   /// The code stored for this reason, or null for [unknown].
@@ -68,6 +72,7 @@ class QueuedChange {
     this.needsUser = false,
     this.reason = QueuedChangeReason.unknown,
     this.waitsOnEarlier = false,
+    this.nextAttemptAt,
   });
 
   final QueuedChangeKind kind;
@@ -93,6 +98,36 @@ class QueuedChange {
   /// produktregler.md:187).
   final bool waitsOnEarlier;
 
+  /// When the queue sends it again after a failed attempt, or null when it
+  /// has not failed (produktregler.md:188; #synkko "nästa försök om 8 s").
+  final DateTime? nextAttemptAt;
+
+  /// A recipe the server has never had: the entry creates it. Throwing the
+  /// entry away would lose the recipe itself, so until the product owner
+  /// decides otherwise such an entry offers "Försök igen" and "Spara som
+  /// kopia" but not "Släng" (the lead's interim choice for P6-U08b).
+  bool get isNeverSyncedRecipe =>
+      kind == QueuedChangeKind.recipe && operation == QueuedOperation.create;
+
+  /// "Spara som kopia" (produktregler.md:188): the device's content is kept
+  /// as a new recipe of the user's own. Only a recipe write carries content.
+  bool get canSaveAsCopy =>
+      needsUser &&
+      kind == QueuedChangeKind.recipe &&
+      (operation == QueuedOperation.create ||
+          operation == QueuedOperation.update);
+
+  /// "Försök mindre" (#synkko): an image the server refused as too large is
+  /// sent again as a smaller copy.
+  bool get canTrySmaller =>
+      needsUser &&
+      kind == QueuedChangeKind.image &&
+      reason == QueuedChangeReason.tooLarge;
+
+  /// "Släng ändringen" (produktregler.md:188), except for a recipe the
+  /// server has never had ([isNeverSyncedRecipe]).
+  bool get canDiscard => needsUser && !isNeverSyncedRecipe;
+
   @override
   bool operator ==(Object other) =>
       other is QueuedChange &&
@@ -103,7 +138,8 @@ class QueuedChange {
       other.subject == subject &&
       other.needsUser == needsUser &&
       other.reason == reason &&
-      other.waitsOnEarlier == waitsOnEarlier;
+      other.waitsOnEarlier == waitsOnEarlier &&
+      other.nextAttemptAt == nextAttemptAt;
 
   @override
   int get hashCode => Object.hash(
@@ -115,6 +151,7 @@ class QueuedChange {
     needsUser,
     reason,
     waitsOnEarlier,
+    nextAttemptAt,
   );
 }
 

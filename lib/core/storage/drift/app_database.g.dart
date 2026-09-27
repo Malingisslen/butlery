@@ -564,6 +564,30 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _nextAttemptAtMeta = const VerificationMeta(
+    'nextAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAt =
+      GeneratedColumn<DateTime>(
+        'next_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _firstFailedAtMeta = const VerificationMeta(
+    'firstFailedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firstFailedAt =
+      GeneratedColumn<DateTime>(
+        'first_failed_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -577,6 +601,8 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
     entityType,
     dependsOn,
     permanentlyFailed,
+    nextAttemptAt,
+    firstFailedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -664,6 +690,24 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
         ),
       );
     }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+        _nextAttemptAtMeta,
+        nextAttemptAt.isAcceptableOrUnknown(
+          data['next_attempt_at']!,
+          _nextAttemptAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('first_failed_at')) {
+      context.handle(
+        _firstFailedAtMeta,
+        firstFailedAt.isAcceptableOrUnknown(
+          data['first_failed_at']!,
+          _firstFailedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -717,6 +761,14 @@ class $SyncQueueEntriesTable extends SyncQueueEntries
         DriftSqlType.bool,
         data['${effectivePrefix}permanently_failed'],
       )!,
+      nextAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_attempt_at'],
+      ),
+      firstFailedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}first_failed_at'],
+      ),
     );
   }
 
@@ -771,6 +823,18 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
   /// on ("Väntar på dig") and is never deleted without her
   /// (produktregler.md:192).
   final bool permanentlyFailed;
+
+  /// When the queue may send this entry again after a failed attempt, or
+  /// null when it has never failed (send at once). "Exponentiell backoff
+  /// 2 s → 4 s → 8 s → 30 s → 2 min → 10 min, med jitter"
+  /// (produktregler.md:188); the view shows it as "nästa försök om N s"
+  /// (Skarmar v12 del 4 #synkko).
+  final DateTime? nextAttemptAt;
+
+  /// When the first attempt failed, or null when none has. "Max 24 h,
+  /// därefter permanent fel" (produktregler.md:188) counts from here: a
+  /// phone that is offline for a weekend has not been retrying.
+  final DateTime? firstFailedAt;
   const SyncQueueEntry({
     required this.id,
     required this.userId,
@@ -783,6 +847,8 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     required this.entityType,
     this.dependsOn,
     required this.permanentlyFailed,
+    this.nextAttemptAt,
+    this.firstFailedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -802,6 +868,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       map['depends_on'] = Variable<String>(dependsOn);
     }
     map['permanently_failed'] = Variable<bool>(permanentlyFailed);
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    if (!nullToAbsent || firstFailedAt != null) {
+      map['first_failed_at'] = Variable<DateTime>(firstFailedAt);
+    }
     return map;
   }
 
@@ -822,6 +894,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
           ? const Value.absent()
           : Value(dependsOn),
       permanentlyFailed: Value(permanentlyFailed),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+      firstFailedAt: firstFailedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstFailedAt),
     );
   }
 
@@ -842,6 +920,8 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       entityType: serializer.fromJson<String>(json['entityType']),
       dependsOn: serializer.fromJson<String?>(json['dependsOn']),
       permanentlyFailed: serializer.fromJson<bool>(json['permanentlyFailed']),
+      nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+      firstFailedAt: serializer.fromJson<DateTime?>(json['firstFailedAt']),
     );
   }
   @override
@@ -859,6 +939,8 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       'entityType': serializer.toJson<String>(entityType),
       'dependsOn': serializer.toJson<String?>(dependsOn),
       'permanentlyFailed': serializer.toJson<bool>(permanentlyFailed),
+      'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+      'firstFailedAt': serializer.toJson<DateTime?>(firstFailedAt),
     };
   }
 
@@ -874,6 +956,8 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     String? entityType,
     Value<String?> dependsOn = const Value.absent(),
     bool? permanentlyFailed,
+    Value<DateTime?> nextAttemptAt = const Value.absent(),
+    Value<DateTime?> firstFailedAt = const Value.absent(),
   }) => SyncQueueEntry(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -886,6 +970,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     entityType: entityType ?? this.entityType,
     dependsOn: dependsOn.present ? dependsOn.value : this.dependsOn,
     permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
+    nextAttemptAt: nextAttemptAt.present
+        ? nextAttemptAt.value
+        : this.nextAttemptAt,
+    firstFailedAt: firstFailedAt.present
+        ? firstFailedAt.value
+        : this.firstFailedAt,
   );
   SyncQueueEntry copyWithCompanion(SyncQueueEntriesCompanion data) {
     return SyncQueueEntry(
@@ -906,6 +996,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
       permanentlyFailed: data.permanentlyFailed.present
           ? data.permanentlyFailed.value
           : this.permanentlyFailed,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+      firstFailedAt: data.firstFailedAt.present
+          ? data.firstFailedAt.value
+          : this.firstFailedAt,
     );
   }
 
@@ -922,7 +1018,9 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
           ..write('opId: $opId, ')
           ..write('entityType: $entityType, ')
           ..write('dependsOn: $dependsOn, ')
-          ..write('permanentlyFailed: $permanentlyFailed')
+          ..write('permanentlyFailed: $permanentlyFailed, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('firstFailedAt: $firstFailedAt')
           ..write(')'))
         .toString();
   }
@@ -940,6 +1038,8 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
     entityType,
     dependsOn,
     permanentlyFailed,
+    nextAttemptAt,
+    firstFailedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -955,7 +1055,9 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
           other.opId == this.opId &&
           other.entityType == this.entityType &&
           other.dependsOn == this.dependsOn &&
-          other.permanentlyFailed == this.permanentlyFailed);
+          other.permanentlyFailed == this.permanentlyFailed &&
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.firstFailedAt == this.firstFailedAt);
 }
 
 class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
@@ -970,6 +1072,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
   final Value<String> entityType;
   final Value<String?> dependsOn;
   final Value<bool> permanentlyFailed;
+  final Value<DateTime?> nextAttemptAt;
+  final Value<DateTime?> firstFailedAt;
   const SyncQueueEntriesCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
@@ -982,6 +1086,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     this.entityType = const Value.absent(),
     this.dependsOn = const Value.absent(),
     this.permanentlyFailed = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.firstFailedAt = const Value.absent(),
   });
   SyncQueueEntriesCompanion.insert({
     this.id = const Value.absent(),
@@ -995,6 +1101,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     this.entityType = const Value.absent(),
     this.dependsOn = const Value.absent(),
     this.permanentlyFailed = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.firstFailedAt = const Value.absent(),
   }) : userId = Value(userId),
        recipeId = Value(recipeId),
        operation = Value(operation),
@@ -1011,6 +1119,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     Expression<String>? entityType,
     Expression<String>? dependsOn,
     Expression<bool>? permanentlyFailed,
+    Expression<DateTime>? nextAttemptAt,
+    Expression<DateTime>? firstFailedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1024,6 +1134,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
       if (entityType != null) 'entity_type': entityType,
       if (dependsOn != null) 'depends_on': dependsOn,
       if (permanentlyFailed != null) 'permanently_failed': permanentlyFailed,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (firstFailedAt != null) 'first_failed_at': firstFailedAt,
     });
   }
 
@@ -1039,6 +1151,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     Value<String>? entityType,
     Value<String?>? dependsOn,
     Value<bool>? permanentlyFailed,
+    Value<DateTime?>? nextAttemptAt,
+    Value<DateTime?>? firstFailedAt,
   }) {
     return SyncQueueEntriesCompanion(
       id: id ?? this.id,
@@ -1052,6 +1166,8 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
       entityType: entityType ?? this.entityType,
       dependsOn: dependsOn ?? this.dependsOn,
       permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      firstFailedAt: firstFailedAt ?? this.firstFailedAt,
     );
   }
 
@@ -1091,6 +1207,12 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
     if (permanentlyFailed.present) {
       map['permanently_failed'] = Variable<bool>(permanentlyFailed.value);
     }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
+    }
+    if (firstFailedAt.present) {
+      map['first_failed_at'] = Variable<DateTime>(firstFailedAt.value);
+    }
     return map;
   }
 
@@ -1107,7 +1229,9 @@ class SyncQueueEntriesCompanion extends UpdateCompanion<SyncQueueEntry> {
           ..write('opId: $opId, ')
           ..write('entityType: $entityType, ')
           ..write('dependsOn: $dependsOn, ')
-          ..write('permanentlyFailed: $permanentlyFailed')
+          ..write('permanentlyFailed: $permanentlyFailed, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('firstFailedAt: $firstFailedAt')
           ..write(')'))
         .toString();
   }
@@ -3144,6 +3268,8 @@ typedef $$SyncQueueEntriesTableCreateCompanionBuilder =
       Value<String> entityType,
       Value<String?> dependsOn,
       Value<bool> permanentlyFailed,
+      Value<DateTime?> nextAttemptAt,
+      Value<DateTime?> firstFailedAt,
     });
 typedef $$SyncQueueEntriesTableUpdateCompanionBuilder =
     SyncQueueEntriesCompanion Function({
@@ -3158,6 +3284,8 @@ typedef $$SyncQueueEntriesTableUpdateCompanionBuilder =
       Value<String> entityType,
       Value<String?> dependsOn,
       Value<bool> permanentlyFailed,
+      Value<DateTime?> nextAttemptAt,
+      Value<DateTime?> firstFailedAt,
     });
 
 class $$SyncQueueEntriesTableFilterComposer
@@ -3221,6 +3349,16 @@ class $$SyncQueueEntriesTableFilterComposer
 
   ColumnFilters<bool> get permanentlyFailed => $composableBuilder(
     column: $table.permanentlyFailed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firstFailedAt => $composableBuilder(
+    column: $table.firstFailedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3288,6 +3426,16 @@ class $$SyncQueueEntriesTableOrderingComposer
     column: $table.permanentlyFailed,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get firstFailedAt => $composableBuilder(
+    column: $table.firstFailedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SyncQueueEntriesTableAnnotationComposer
@@ -3335,6 +3483,16 @@ class $$SyncQueueEntriesTableAnnotationComposer
 
   GeneratedColumn<bool> get permanentlyFailed => $composableBuilder(
     column: $table.permanentlyFailed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get firstFailedAt => $composableBuilder(
+    column: $table.firstFailedAt,
     builder: (column) => column,
   );
 }
@@ -3387,6 +3545,8 @@ class $$SyncQueueEntriesTableTableManager
                 Value<String> entityType = const Value.absent(),
                 Value<String?> dependsOn = const Value.absent(),
                 Value<bool> permanentlyFailed = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<DateTime?> firstFailedAt = const Value.absent(),
               }) => SyncQueueEntriesCompanion(
                 id: id,
                 userId: userId,
@@ -3399,6 +3559,8 @@ class $$SyncQueueEntriesTableTableManager
                 entityType: entityType,
                 dependsOn: dependsOn,
                 permanentlyFailed: permanentlyFailed,
+                nextAttemptAt: nextAttemptAt,
+                firstFailedAt: firstFailedAt,
               ),
           createCompanionCallback:
               ({
@@ -3413,6 +3575,8 @@ class $$SyncQueueEntriesTableTableManager
                 Value<String> entityType = const Value.absent(),
                 Value<String?> dependsOn = const Value.absent(),
                 Value<bool> permanentlyFailed = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<DateTime?> firstFailedAt = const Value.absent(),
               }) => SyncQueueEntriesCompanion.insert(
                 id: id,
                 userId: userId,
@@ -3425,6 +3589,8 @@ class $$SyncQueueEntriesTableTableManager
                 entityType: entityType,
                 dependsOn: dependsOn,
                 permanentlyFailed: permanentlyFailed,
+                nextAttemptAt: nextAttemptAt,
+                firstFailedAt: firstFailedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

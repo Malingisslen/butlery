@@ -22,6 +22,7 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime/connection_state_module.dart';
 import 'package:butlery/services/realtime/resource_parser_module.dart';
 import 'package:butlery/services/realtime/conflict_resolution_module.dart';
+import 'package:butlery/services/realtime/conflict_release_gate.dart';
 
 /// Real-time synchronization service with modular connection, parsing, and conflict resolution.
 class RealtimeSyncService extends BaseService with StreamManagementMixin {
@@ -45,11 +46,17 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   late final ResourceParserModule _parserModule;
   late final ConflictResolutionModule _conflictModule;
 
+  /// P6-U08b: conflict notices wait here until the offline queue has
+  /// emptied and the device is online (produktregler.md:189). Null lets
+  /// every notice through at once.
+  ConflictReleaseGate? _conflictGate;
+
   RealtimeSyncService({
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
     OverwrittenVersionRepository? overwrittenVersions,
     RecipeSuggestionRepository? suggestions,
+    Stream<bool> Function()? queueSettled,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
        _overwrittenVersions = overwrittenVersions,
@@ -64,6 +71,12 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     _conflictController = createBroadcastController<ConflictEvent>(
       name: 'sync_conflicts',
     );
+    if (queueSettled != null) {
+      _conflictGate = ConflictReleaseGate(
+        settled: queueSettled,
+        release: _publishConflict,
+      );
+    }
 
     // Initialize modules
     _initializeModules();
@@ -111,12 +124,23 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       getLatestResource: _parserModule.getLatestResource,
       // BUT-1031: route resolved conflicts onto the broadcast stream so the
       // ConflictBanner widget can surface silent last-write-wins picks.
+      // P6-U08b: through the gate, so the banner shows when the queue has
+      // emptied, not while the app is offline (produktregler.md:189).
       onConflict: (event) {
-        if (!_conflictController.isClosed) {
-          _conflictController.add(event);
+        final gate = _conflictGate;
+        if (gate == null) {
+          _publishConflict(event);
+        } else {
+          gate.offer(event);
         }
       },
     );
+  }
+
+  void _publishConflict(ConflictEvent event) {
+    if (!_conflictController.isClosed) {
+      _conflictController.add(event);
+    }
   }
 
   /// Are we connected to Firebase?
@@ -575,6 +599,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
   @override
   Future<void> onDispose() async {
+    _conflictGate?.dispose();
     await disposeStreamResources(); // StreamManagementMixin handles controllers and subscriptions
     _cachedResources.clear();
     _conflictModule.clearTracking();
