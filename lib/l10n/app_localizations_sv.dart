@@ -18191,4 +18191,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get pantryItemAmountUnknown => 'har hemma';
+
+  @override
+  String recipePantryAllAtHome(String names) {
+    return 'Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: $names';
+  }
+
+  @override
+  String recipePantryLessened(String names) {
+    return 'Mindre än i receptet, eftersom en del finns hemma: $names';
+  }
 }

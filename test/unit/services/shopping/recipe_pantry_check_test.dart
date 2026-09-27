@@ -59,26 +59,94 @@ void main() {
     expect(left, hasLength(4));
   });
 
-  test('har hemma (no amount) subtracts nothing', () {
+  // produktregler.md:230-232: no deduction, and the row is marked as a week
+  // merge row is.
+  test('har hemma (no amount) subtracts nothing and marks Kanske hemma', () {
     final left = RecipePantryCheck.toBuy(items, [_pantry('Salt')]);
 
     expect(left, hasLength(4));
+    final salt = left.singleWhere((i) => i.name == 'Salt');
+    expect(salt.amount, 1);
+    expect(salt.note, 'Kanske hemma');
+    expect(
+      left.singleWhere((i) => i.name == 'Ägg').note,
+      isNot('Kanske hemma'),
+    );
   });
 
-  test('a row past its date subtracts nothing', () {
+  test('a row past its date subtracts nothing and marks Kolla datum', () {
     final left = RecipePantryCheck.toBuy(items, [
       _pantry('Ägg', quantity: 12, expiry: DateTime(2000)),
     ]);
 
     expect(left, hasLength(4));
+    final egg = left.singleWhere((i) => i.name == 'Ägg');
+    expect(egg.amount, 4);
+    expect(egg.note, 'Kolla datum');
   });
 
-  test('another unit family subtracts nothing', () {
+  test('another unit family subtracts nothing and marks Kanske hemma', () {
     final left = RecipePantryCheck.toBuy(items, [
       _pantry('Vetemjöl', quantity: 2, unit: 'kg'),
     ]);
 
     expect(left, hasLength(4));
+    expect(left.singleWhere((i) => i.name == 'Vetemjöl').note, 'Kanske hemma');
+  });
+
+  // produktregler.md:228, 233: what the pantry took is named.
+  test('names what is covered and what is lessened', () {
+    final result = RecipePantryCheck.check(items, [
+      _pantry('ägg', quantity: 6),
+      _pantry('Mjölk', quantity: 2, unit: 'dl'),
+    ]);
+
+    expect(result.coveredAtHome, ['Ägg']);
+    expect(result.lessened, ['Mjölk']);
+    expect(result.toBuy.map((i) => i.name), ['Mjölk', 'Vetemjöl', 'Salt']);
+  });
+
+  // flows-roles-budget.md:51: duplicates are merged before the pantry is
+  // subtracted, so one stock is not counted against two lines.
+  test('one ingredient on two lines is counted against the pantry once', () {
+    final twice = [
+      _item('Mjölk', 2, 'dl'),
+      _item('Ägg', 2, 'st'),
+      _item('mjölk', 1, 'dl'),
+    ];
+
+    final result = RecipePantryCheck.check(twice, [
+      _pantry('Mjölk', quantity: 2, unit: 'dl'),
+    ]);
+
+    expect(result.coveredAtHome, isEmpty);
+    final milk = result.toBuy.singleWhere((i) => i.name == 'Mjölk');
+    expect(milk.amount, closeTo(1, 1e-9));
+    expect(result.toBuy, hasLength(2));
+  });
+
+  test('two lines in one unit family are joined in the first unit', () {
+    final twice = [_item('Mjölk', 2, 'dl'), _item('Mjölk', 100, 'ml')];
+
+    final left = RecipePantryCheck.toBuy(twice, [
+      _pantry('Mjölk', quantity: 1, unit: 'dl'),
+    ]);
+
+    expect(left, hasLength(1));
+    expect(left.single.amount, closeTo(2, 1e-9));
+    expect(left.single.unit, 'dl');
+  });
+
+  test('two lines that do not convert subtract nothing and are marked', () {
+    final twice = [_item('Smör', 1, 'msk'), _item('Smör', 50, 'g')];
+
+    final left = RecipePantryCheck.toBuy(twice, [
+      _pantry('Smör', quantity: 500, unit: 'g'),
+    ]);
+
+    expect(left, hasLength(2));
+    expect(left.map((i) => i.amount), [1, 50]);
+    expect(left.map((i) => i.note), everyElement('Kanske hemma'));
   });
 
   group('the button and what it adds agree', () {
@@ -120,7 +188,9 @@ void main() {
       expect(added.map((i) => i.name.toLowerCase()), isNot(contains('ägg')));
     });
 
-    test('everything at home: no count, and nothing is left off', () {
+    // produktregler.md:228: enough at home keeps an item off the list, so
+    // nothing is added; the button text for zero is open (Q4-03).
+    test('everything at home: no count, and nothing is added', () {
       final pantry = [
         _pantry('ägg', quantity: 10, unit: ''),
         _pantry('mjölk', quantity: 2, unit: 'l'),
@@ -133,6 +203,14 @@ void main() {
       );
       expect(
         RecipeShoppingHandler.itemsToAdd(recipe, portions: 4, pantry: pantry),
+        isEmpty,
+      );
+      expect(
+        RecipeShoppingHandler.pantryCheck(
+          recipe,
+          portions: 4,
+          pantry: pantry,
+        )!.coveredAtHome,
         hasLength(3),
       );
     });

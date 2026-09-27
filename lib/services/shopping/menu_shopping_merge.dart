@@ -268,8 +268,10 @@ class MenuShoppingMergePlanner {
   /// matched by normalised name as in [preview]. Returns the amount still
   /// to buy: null when enough is at home, [amount] unchanged when nothing
   /// can be subtracted (no match, an unknown amount, another unit family,
-  /// past its date), else the difference.
-  static ({bool covered, double? amount}) toBuy({
+  /// past its date), else the difference. [mark] is the row's "Kanske
+  /// hemma" or "Kolla datum" (produktregler.md:230-232), carried as a merge
+  /// line carries it.
+  static ({bool covered, double? amount, MenuShoppingPantryMark mark}) toBuy({
     required String name,
     required double? amount,
     required String unit,
@@ -281,7 +283,13 @@ class MenuShoppingMergePlanner {
         if (SwedishCharacterNormalizer.normalize(item.ingredientName) == key)
           item,
     ];
-    if (matches.isEmpty) return (covered: false, amount: amount);
+    if (matches.isEmpty) {
+      return (
+        covered: false,
+        amount: amount,
+        mark: MenuShoppingPantryMark.none,
+      );
+    }
     final row = AggregatedShoppingItem(
       name: name,
       amount: amount,
@@ -290,9 +298,17 @@ class MenuShoppingMergePlanner {
       sourceCount: 1,
     );
     return switch (_deduct(row, matches)) {
-      _Covered() => (covered: true, amount: null),
-      _Remaining(:final amount) => (covered: false, amount: amount),
-      _Marked() => (covered: false, amount: amount),
+      _Covered() => (
+        covered: true,
+        amount: null,
+        mark: MenuShoppingPantryMark.none,
+      ),
+      _Remaining(:final amount) => (
+        covered: false,
+        amount: amount,
+        mark: MenuShoppingPantryMark.none,
+      ),
+      _Marked(:final mark) => (covered: false, amount: amount, mark: mark),
     };
   }
 

@@ -199,8 +199,13 @@ void main() {
       when(
         () => pantry.updateItem(any(), any(), previous: any(named: 'previous')),
       ).thenAnswer((_) async {});
+      when(
+        () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
+      ).thenAnswer((_) async => true);
     });
 
+    // Sent relatively (produktregler.md:146): two purchases landing on one
+    // "har hemma" row at once add up, none overwrites the other.
     test('takes the bought amount', () async {
       final row = atHome();
       when(() => pantry.getAll('u1')).thenAnswer((_) async => [row]);
@@ -211,14 +216,10 @@ void main() {
         wasBought: false,
       );
 
-      final captured =
-          verify(
-                () => pantry.updateItem('u1', captureAny(), previous: row),
-              ).captured.single
-              as PantryItem;
-      expect(captured.id, 'p_agg');
-      expect(captured.quantity, 12);
-      expect(captured.unit, 'st');
+      verify(() => pantry.fillUnknownQuantity('u1', row, 12, 'st')).called(1);
+      verifyNever(
+        () => pantry.updateItem(any(), any(), previous: any(named: 'previous')),
+      );
       verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
@@ -233,13 +234,7 @@ void main() {
         wasBought: false,
       );
 
-      final captured =
-          verify(
-                () => pantry.updateItem('u1', captureAny(), previous: row),
-              ).captured.single
-              as PantryItem;
-      expect(captured.quantity, 6);
-      expect(captured.unit, 'st');
+      verify(() => pantry.fillUnknownQuantity('u1', row, 6, 'st')).called(1);
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
 
@@ -260,6 +255,9 @@ void main() {
         );
         verifyNever(() => pantry.addFromShoppingItem(any(), any()));
         verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
+        verifyNever(
+          () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
+        );
       },
     );
   });

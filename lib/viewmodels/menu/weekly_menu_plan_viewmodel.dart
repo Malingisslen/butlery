@@ -56,6 +56,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// (produktregler.md:206).
   _OverflowTray _tray = _OverflowTray.empty;
 
+  /// Counts every [_setTray], so [undoDiscardOverflow] can tell that the
+  /// tray it emptied has not been set again since (Q5-01).
+  int _trayRevision = 0;
+
   /// Set once anything has changed the tray in this session, so a slow
   /// restore from the device never overwrites a newer tray.
   bool _trayTouched = false;
@@ -936,17 +940,19 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// [undoDiscardOverflow], or null when there was nothing to discard.
   OverflowTrayDiscard? discardOverflow() {
     if (_overflow.isEmpty && _tray.unresolvedIds.isEmpty) return null;
-    final discarded = OverflowTrayDiscard._(_tray);
+    final tray = _tray;
     _setTray(_OverflowTray.empty);
     notifyListeners();
-    return discarded;
+    return OverflowTrayDiscard._(tray, _trayRevision);
   }
 
   /// Ångra for [discardOverflow]: the tray comes back as it was. A tray that
-  /// has filled again since (a new generation) is newer and is left alone,
-  /// so Ångra never overwrites it. Returns whether the tray came back.
+  /// has been set again since (a new generation or placement, even one that
+  /// left it empty) is newer and is left alone, so Ångra never overwrites
+  /// it. Returns whether the tray came back.
   bool undoDiscardOverflow(OverflowTrayDiscard discarded) {
     if (isDisposed) return false;
+    if (_trayRevision != discarded._revision) return false;
     if (_overflow.isNotEmpty || _tray.unresolvedIds.isNotEmpty) return false;
     _setTray(discarded._tray);
     if (discarded._tray.unresolvedIds.isNotEmpty) {
@@ -1043,6 +1049,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// Sets the tray and keeps it on this device (P5-U24).
   void _setTray(_OverflowTray tray) {
+    _trayRevision++;
     _trayTouched = true;
     _tray = tray;
     _persistTray();
@@ -1190,9 +1197,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 /// the whole tray back in one assignment.
 /// Q5-01: a tray that "Släng resten" took away, held for its Ångra.
 class OverflowTrayDiscard {
-  const OverflowTrayDiscard._(this._tray);
+  const OverflowTrayDiscard._(this._tray, this._revision);
 
   final _OverflowTray _tray;
+
+  /// The tray's revision right after the discard.
+  final int _revision;
 
   /// How many recipes the tray showed ("3 rätter slängdes ur brickan").
   int get count => _tray.recipes.length;

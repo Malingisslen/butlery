@@ -18158,4 +18158,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryItemAmountUnknown => 'at home';
+
+  @override
+  String recipePantryAllAtHome(String names) {
+    return 'Everything is at home in full, so nothing is added to the shopping list: $names';
+  }
+
+  @override
+  String recipePantryLessened(String names) {
+    return 'Less than the recipe, since some is at home: $names';
+  }
 }

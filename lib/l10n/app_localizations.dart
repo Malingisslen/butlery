@@ -29962,6 +29962,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'har hemma'**
   String get pantryItemAmountUnknown;
+
+  /// Q4-03: the pantry covers every ingredient of the recipe; nothing is added (produktregler.md:228, 233).
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}'**
+  String recipePantryAllAtHome(String names);
+
+  /// Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).
+  ///
+  /// In sv, this message translates to:
+  /// **'Mindre än i receptet, eftersom en del finns hemma: {names}'**
+  String recipePantryLessened(String names);
 }
 
 class _AppLocalizationsDelegate

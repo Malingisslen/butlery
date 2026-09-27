@@ -125,6 +125,29 @@ void main() {
     expect(_snackBar(tester).persist, isTrue);
   });
 
+  // A caller that asks for Stäng explicitly wants a notice that stays (the
+  // MFA recovery notice, auth_view.dart; the offline-stopped week notice,
+  // veckomeny_view.dart), as before Q4-01.
+  testWidgets('an explicit Stäng stays until the user closes it', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        (c) => SnackBarUtils.showInfo(
+          c,
+          'Lägg till ett telefonnummer igen.',
+          duration: const Duration(seconds: 10),
+          showCloseButton: true,
+        ),
+      ),
+    );
+    await tester.tap(find.text('Visa'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Stäng'), findsOneWidget);
+    expect(_snackBar(tester).persist, isTrue);
+  });
+
   testWidgets('a failure is not a confirmation: it still stays', (
     tester,
   ) async {

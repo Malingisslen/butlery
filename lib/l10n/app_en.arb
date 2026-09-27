@@ -13523,5 +13523,7 @@
   "pantryItemAmountUnknown": "at home",
   "@pantryItemAmountUnknown": {
     "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
-  }
+  },
+  "recipePantryAllAtHome": "Everything is at home in full, so nothing is added to the shopping list: {names}",
+  "recipePantryLessened": "Less than the recipe, since some is at home: {names}"
 }

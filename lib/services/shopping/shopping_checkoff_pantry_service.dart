@@ -71,12 +71,15 @@ class ShoppingCheckoffPantryService {
     final unknown =
         match ?? sameName.firstWhereOrNull((p) => p.quantity == null);
     if (unknown != null) {
-      // Nothing known was bought: "har hemma" stays as it is.
+      // Nothing known was bought: "har hemma" stays as it is. Otherwise the
+      // amount goes relatively, so a second purchase on another device at
+      // the same time is added, not lost (produktregler.md:146).
       if (item.amount <= 0) return;
-      await _pantryService.updateItem(
+      await _pantryService.fillUnknownQuantity(
         userId,
-        unknown.copyWith(quantity: item.amount, unit: item.unit),
-        previous: unknown,
+        unknown,
+        item.amount,
+        item.unit,
       );
       return;
     }

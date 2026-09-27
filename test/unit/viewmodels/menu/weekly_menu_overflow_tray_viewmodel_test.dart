@@ -592,6 +592,35 @@ void main() {
       expect(vm.overflow.map((r) => r.id), ['o1', 'o2']);
     });
 
+    // A newer generation that overflowed nothing also leaves the tray
+    // empty: Ångra must still not bring the old tray back over it.
+    wedTest('Ångra never overwrites a newer tray that is empty', () async {
+      final vm = await generated();
+      final discarded = vm.discardOverflow()!;
+      when(
+        () => service.distributeFromGeneratedMenu(
+          generated: any(named: 'generated'),
+          weekStart: _monday,
+          existing: any(named: 'existing'),
+          now: any(named: 'now'),
+          dayPins: any(named: 'dayPins'),
+        ),
+      ).thenReturn(
+        WeeklyMenuDistributionResult(
+          plan: _plan(_monday, placed),
+          overflow: const [],
+        ),
+      );
+      await vm.applyGeneratedMenu({
+        'middag': [pannkaka],
+      });
+      await pumpEventQueue();
+
+      expect(vm.hasOverflow, isFalse);
+      expect(vm.undoDiscardOverflow(discarded), isFalse);
+      expect(vm.hasOverflow, isFalse);
+    });
+
     wedTest('an empty tray has nothing to discard', () async {
       final vm = newVm();
       await vm.loadWeek(_monday);

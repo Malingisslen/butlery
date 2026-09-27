@@ -1537,8 +1537,10 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
         .acceptRecipeShareRequest(widget.shareRequest);
     if (!mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeShareRequestShared(name))),
+      // Q4-01: a confirmation carries Stäng (content-style-guide.md:97).
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.recipeShareRequestShared(name),
       );
       setState(() => _dismissed = true);
     } else {

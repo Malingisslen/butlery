@@ -36,14 +36,16 @@ class SnackBarUtils {
   /// Without an action of its own it carries "Stäng" (content-style-guide
   /// .md:97, "En snackbar utan möjlig följdhandling får Stäng") and still
   /// closes by itself after [duration] (Q4-01 = B, produktbeslut
-  /// 2026-09-24): 5 s here, 4 s for [showInfo].
+  /// 2026-09-24): 5 s here, 4 s for [showInfo]. [showCloseButton] left
+  /// out means that default; true asks for a notice that stays until the
+  /// user closes it, as it did before Q4-01; false shows no action.
   static void showSuccess(
     BuildContext context,
     String message, {
     Duration? duration,
     String? actionLabel,
     VoidCallback? onAction,
-    bool showCloseButton = true,
+    bool? showCloseButton,
   }) {
     try {
       _showConfirmation(
@@ -230,7 +232,7 @@ class SnackBarUtils {
     Duration? duration,
     String? actionLabel,
     VoidCallback? onAction,
-    bool showCloseButton = true,
+    bool? showCloseButton,
   }) {
     try {
       _showConfirmation(
@@ -400,16 +402,19 @@ class SnackBarUtils {
   /// every snackbar with an action does then (PQ-21 = A, produktbeslut
   /// 2026-09-23): a screen-reader user is not raced by a timer.
   ///
-  /// Interpretation: only the "Stäng" this adds closes by itself. Q4-01 was
-  /// asked about the confirmations that had no action; a follow-up action
-  /// was not part of it.
+  /// Interpretation: only the "Stäng" this adds by default closes by
+  /// itself. Q4-01 was asked about the confirmations that had no action; a
+  /// follow-up action was not part of it, and neither was a caller that
+  /// asked for "Stäng" explicitly ([showCloseButton] true) to keep a notice
+  /// on screen (the MFA recovery notice, the offline-stopped week notice):
+  /// those still stay until the user acts.
   static void _showConfirmation(
     BuildContext context, {
     required String message,
     required Duration duration,
     required String? actionLabel,
     required VoidCallback? onAction,
-    required bool showCloseButton,
+    required bool? showCloseButton,
   }) {
     if (actionLabel != null && onAction != null) {
       _showSnackBar(
@@ -421,7 +426,7 @@ class SnackBarUtils {
       );
       return;
     }
-    if (!showCloseButton) {
+    if (showCloseButton == false) {
       _showSnackBar(context, message: message, duration: duration);
       return;
     }
@@ -432,7 +437,9 @@ class SnackBarUtils {
       actionLabel: context.l10n.commonClose,
       // "Stäng" only closes: the action itself hides the snackbar.
       onAction: () {},
-      persist: MediaQuery.maybeAccessibleNavigationOf(context) ?? false,
+      persist:
+          showCloseButton == true ||
+          (MediaQuery.maybeAccessibleNavigationOf(context) ?? false),
     );
   }
 

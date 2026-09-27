@@ -13842,5 +13842,23 @@
   "pantryItemAmountUnknown": "har hemma",
   "@pantryItemAmountUnknown": {
     "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
+  },
+  "recipePantryAllAtHome": "Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}",
+  "@recipePantryAllAtHome": {
+    "description": "Q4-03: the pantry covers every ingredient of the recipe; nothing is added (produktregler.md:228, 233).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "recipePantryLessened": "Mindre än i receptet, eftersom en del finns hemma: {names}",
+  "@recipePantryLessened": {
+    "description": "Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }
