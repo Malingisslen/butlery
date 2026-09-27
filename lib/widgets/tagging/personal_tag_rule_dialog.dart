@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -622,15 +622,26 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           child: Text(context.l10n.commonCancel),
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        FilledButton(
-          onPressed: _isSaving ? null : _save,
-          child: _isSaving
-              ? const LoadingIndicator(size: 20, strokeWidth: 2)
-              : Text(
-                  _isEditing
-                      ? context.l10n.commonSave
-                      : context.l10n.commonCreate,
-                ),
+        // Busy: the button keeps its name and colours and gets the plate
+        // line along its bottom edge (Komponentark v1:365, :372;
+        // produktregler.md:902), never a spinner (B-18).
+        BusyButtonSemantics(
+          busy: _isSaving,
+          name: _isEditing
+              ? context.l10n.commonSave
+              : context.l10n.commonCreate,
+          child: FilledButton(
+            onPressed: _isSaving ? PlateLineButton.ignore : _save,
+            style: _isSaving
+                ? PlateLineButton.busyStyle(
+                    null,
+                    Theme.of(context).filledButtonTheme.style,
+                  )
+                : null,
+            child: Text(
+              _isEditing ? context.l10n.commonSave : context.l10n.commonCreate,
+            ),
+          ),
         ),
       ],
     );

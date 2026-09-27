@@ -16,7 +16,7 @@ import 'package:butlery/services/unified/operations/cooking/cooking_session_modu
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -136,7 +136,7 @@ class VeckomenyViewModeToggle extends StatelessWidget
                       key: indicatorKey,
                       height: indicatorHeight,
                       child: ColoredBox(
-                        color: context.butleryColors.progressIndicator,
+                        color: context.modeColors.progressIndicator,
                       ),
                     ),
                   ),

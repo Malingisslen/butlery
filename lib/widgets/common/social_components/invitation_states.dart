@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Invitation target state widgets.
@@ -143,7 +143,7 @@ class InvitationStates {
           Icon(
             Icons.lock,
             size: AppDimensions.iconSizeXXXl,
-            color: context.butleryColors.warning,
+            color: context.modeColors.warning,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -304,7 +304,7 @@ class InvitationStates {
           Icon(
             icon,
             size: AppDimensions.iconSizeXXXl,
-            color: successColor ?? context.butleryColors.success,
+            color: successColor ?? context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -349,7 +349,7 @@ class InvitationStates {
           Icon(
             icon,
             size: AppDimensions.iconSizeXXXl,
-            color: successColor ?? context.butleryColors.success,
+            color: successColor ?? context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(

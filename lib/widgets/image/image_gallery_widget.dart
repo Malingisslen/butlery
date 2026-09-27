@@ -271,11 +271,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           decoration: BoxDecoration(
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(
-              color: isSelected
-                  ? cs.onSurface
-                  : cs.outlineVariant.withValues(
-                      alpha: AppDimensions.opacityLight,
-                    ),
+              // Chosen: the 2 px text.primary border (Grafisk manual v6:209).
+              // Not chosen: border.subtle itself, never faded
+              // (tokens.json:40-53).
+              color: isSelected ? cs.onSurface : cs.outlineVariant,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -322,25 +321,16 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               padding: const EdgeInsets.all(AppDimensions.spacingXxs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected
-                    ? cs.primary
-                    : cs.surfaceContainerHighest.withValues(
-                        alpha: AppDimensions.opacityVeryDark,
-                      ),
-                border: Border.all(
-                  color: cs.outlineVariant.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
-                  ),
-                ),
+                // Solid plates, no opacity as state (tokens.json:40-53):
+                // ink with a paper check when chosen, paper with a hairline
+                // and a secondary-text ring when not.
+                color: isSelected ? cs.primary : cs.surface,
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Icon(
                 isSelected ? Icons.check : Icons.circle_outlined,
                 size: AppDimensions.iconSizeS,
-                color: isSelected
-                    ? cs.onPrimary
-                    : cs.onSurface.withValues(
-                        alpha: AppDimensions.opacityMediumDark,
-                      ),
+                color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
               ),
             ),
           ),

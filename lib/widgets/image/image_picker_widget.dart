@@ -397,9 +397,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       AppLogger.error('Failed to pick images: $e');
 
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.imageFailedToSelect(e.toString()),
+          what: context.l10n.imageSelectFailed,
         );
       }
     } finally {

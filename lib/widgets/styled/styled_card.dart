@@ -12,7 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/theme_constants.dart';
 
 class StyledCard extends StatelessWidget {
@@ -261,7 +261,7 @@ class StyledCards {
   }) {
     return Builder(
       builder: (context) {
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         return StyledCard.outlined(
           backgroundColor: bc.infoContainer,
           borderColor: bc.info,
@@ -278,7 +278,7 @@ class StyledCards {
   }) {
     return Builder(
       builder: (context) {
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         return StyledCard.outlined(
           backgroundColor: bc.successContainer,
           borderColor: bc.success,
@@ -295,7 +295,7 @@ class StyledCards {
   }) {
     return Builder(
       builder: (context) {
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         return StyledCard.outlined(
           backgroundColor: bc.warningContainer,
           borderColor: bc.warning,

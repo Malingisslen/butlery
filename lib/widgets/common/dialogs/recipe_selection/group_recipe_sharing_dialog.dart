@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -240,11 +240,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
       );
       Navigator.pop(context);
     } else if (viewModel.hasError) {
-      SnackBarUtils.showError(
-        context,
-        viewModel.error!,
-        duration: const Duration(seconds: 4),
-      );
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 }
@@ -267,7 +263,7 @@ class GroupRecipeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -334,7 +330,7 @@ class GroupRecipeListItem extends StatelessWidget {
 
   Widget _buildSubtitle(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -411,7 +407,7 @@ class GroupRecipeListItem extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       width: AppDimensions.iconSizeXl,
       height: AppDimensions.iconSizeXl,

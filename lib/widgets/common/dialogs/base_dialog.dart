@@ -104,7 +104,9 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     if (widget.primaryActionText != null) return widget.primaryActionText!;
     if (widget.isDangerous) return context.l10n.commonDelete;
     if (widget is BaseFormDialog) return context.l10n.commonSave;
-    return 'OK';
+    // A dialog that names no action only closes: "Stäng", never "OK"
+    // (content-style-guide.md:77; Q-P7-03).
+    return context.l10n.commonClose;
   }
 
   /// The primary action. While it works it keeps its colours and its name
@@ -168,17 +170,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     }
   }
 
-  /// Part one of the error (content-style-guide.md:90, :95): the cause when
-  /// one is known (network, permission, not found), else what did not
-  /// happen. Never the exception's own text; that goes to the log.
-  String _failureText(Object error) {
-    // The sanitizer speaks AppLocale.current, so its generic text is
-    // compared in the same language.
-    final cause = sanitizeErrorForUser(error);
-    return cause == AppLocale.current.errorGeneric
-        ? context.l10n.dialogActionFailed
-        : cause;
-  }
+  String _failureText(Object error) => _dialogFailureText(context, error);
 
   /// P5-U04: the failed action as the three-part inline error, with
   /// Försök igen, and the dialog stays open (content-style-guide.md:87-97).
@@ -242,7 +234,9 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required this.message,
     this.customContent,
     super.titleIcon,
-    super.primaryActionText = 'OK',
+    // The button says what happens (content-style-guide.md:77), so every
+    // caller names it; there is no "OK" default.
+    required String super.primaryActionText,
     super.secondaryActionText,
     super.isDangerous = false,
     super.primaryActionIcon,
@@ -264,7 +258,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required String message,
     Widget? customContent,
     IconData? titleIcon,
-    String primaryActionText = 'OK',
+    required String primaryActionText,
     String? secondaryActionText,
     bool isDangerous = false,
     IconData? primaryActionIcon,
@@ -349,6 +343,18 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
       ),
     );
   }
+}
+
+/// Part one of a dialog's error (content-style-guide.md:90, :95): the cause
+/// when one is known (network, permission, not found), else what did not
+/// happen. Never the exception's own text; that goes to the log.
+String _dialogFailureText(BuildContext context, Object error) {
+  // The sanitizer speaks AppLocale.current, so its generic text is
+  // compared in the same language.
+  final cause = sanitizeErrorForUser(error);
+  return cause == AppLocale.current.errorGeneric
+      ? context.l10n.dialogActionFailed
+      : cause;
 }
 
 /// Base action dialog class with error handling and loading states for delete/edit operations.
@@ -453,7 +459,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     } catch (e, stackTrace) {
       AppLogger.error('Dialog action failed: $e', stackTrace);
       if (mounted) {
-        setState(() => error = e.toString());
+        // Never the exception's own text (content-style-guide.md:95).
+        setState(() => error = _dialogFailureText(context, e));
       }
     } finally {
       if (mounted) {
@@ -462,29 +469,16 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     }
   }
 
+  /// The failed action as the three-part inline error with Försök igen,
+  /// and the dialog stays open, as in [BaseDialog]
+  /// (content-style-guide.md:87-97).
   Widget _buildErrorDisplay() {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: cs.error),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Text(
-              error!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return InlineError(
+      what: error!,
+      actionLabel: context.l10n.commonRetry,
+      // The error is cleared when the action starts, so this never runs
+      // twice at once.
+      onAction: _performAction,
     );
   }
 }

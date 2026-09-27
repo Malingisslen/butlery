@@ -19,17 +19,10 @@ class LicensesView extends StatefulWidget {
 
   static const noticesAsset = 'assets/fonts/THIRD_PARTY_NOTICES.txt';
   static const oflAsset = 'assets/fonts/OFL-1.1.txt';
-  // The legacy families are still in pubspec `fonts:`, so they ship until the
-  // legacy-removal package retires them — together with these two entries.
-  static const josefinSansAsset = 'assets/fonts/JosefinSans-OFL.txt';
-  static const spaceGroteskAsset = 'assets/fonts/SpaceGrotesk-OFL.txt';
 
-  static const assets = [
-    noticesAsset,
-    oflAsset,
-    josefinSansAsset,
-    spaceGroteskAsset,
-  ];
+  // ButlerySans is the only bundled family (pubspec.yaml `fonts:`), so its
+  // notices and licence are the whole obligation.
+  static const assets = [noticesAsset, oflAsset];
 
   @override
   State<LicensesView> createState() => _LicensesViewState();
@@ -139,8 +132,6 @@ class _LicensesViewState extends State<LicensesView> {
     final headings = [
       context.l10n.licensesNoticesHeading,
       context.l10n.licensesOflHeading,
-      'Josefin Sans',
-      'Space Grotesk',
     ];
 
     return SingleChildScrollView(

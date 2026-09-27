@@ -77,7 +77,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
       _loadTemplates();
     } catch (_) {
       if (!mounted) return;
-      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
     }
   }
 

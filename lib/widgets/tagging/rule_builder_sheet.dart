@@ -100,24 +100,24 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.ruleNameRequired);
+      SnackBarUtils.showFailure(context, what: context.l10n.ruleNameRequired);
       return;
     }
 
     for (final condition in _conditions) {
       if (condition.type.isNumeric) {
         if (condition.numericValue == 0) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.ruleAllConditionsNeedValue,
+            what: context.l10n.ruleAllConditionsNeedValue,
           );
           return;
         }
       } else {
         if (condition.stringValue.trim().isEmpty) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.ruleAllConditionsNeedValue,
+            what: context.l10n.ruleAllConditionsNeedValue,
           );
           return;
         }

@@ -3,7 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class ParsedExtractionChips extends StatelessWidget {
   final ParsedMenuRequest? parsed;
@@ -24,7 +24,7 @@ class ParsedExtractionChips extends StatelessWidget {
     }
 
     final l10n = context.l10n;
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     final scheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -98,7 +98,7 @@ class _UnderstoodChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
@@ -125,7 +125,7 @@ class _NotUnderstoodChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,

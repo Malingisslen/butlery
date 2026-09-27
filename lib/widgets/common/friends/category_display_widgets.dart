@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -155,7 +155,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.people,
                     label: context.l10n.friendTotalMembers,
                     value: totalMembers.toString(),
-                    color: context.butleryColors.success,
+                    color: context.modeColors.success,
                     iconSize: AppDimensions.iconSizeL,
                     valueStyle: AppTextStyles.titleBold,
                     labelStyle: AppTextStyles.bodySmall,
@@ -166,7 +166,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.analytics,
                     label: context.l10n.friendAverage,
                     value: averageSize.toString(),
-                    color: context.butleryColors.warning,
+                    color: context.modeColors.warning,
                     iconSize: AppDimensions.iconSizeL,
                     valueStyle: AppTextStyles.titleBold,
                     labelStyle: AppTextStyles.bodySmall,

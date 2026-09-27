@@ -77,6 +77,6 @@ class LegalContactFooter extends StatelessWidget {
   /// The ink snackbar (Komponentark v1:745-750; PQ-09 = A), never a red
   /// status fill (Komponentark v1:300); the message says what failed.
   void _showError(BuildContext context, String message) {
-    SnackBarUtils.showError(context, message);
+    SnackBarUtils.showFailure(context, what: message);
   }
 }

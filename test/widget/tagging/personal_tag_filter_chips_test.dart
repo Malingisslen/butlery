@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -186,4 +187,53 @@ void main() {
       expect(called, isTrue);
     });
   });
+
+  // P7-B4: the excluded chip as drawn in Skarmar v12 etapp 9 #sokpanel:
+  // no glyph, struck-through w600 text.danger label, 1.5 px text.danger
+  // edge; the off chip is a 1 px border.subtle outline with no glyph.
+  for (final dark in [false, true]) {
+    testWidgets('an excluded tag: struck-through danger label, 1.5 px danger '
+        'border, no glyph, paper plate (${dark ? 'dark' : 'light'})', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: Theme(
+            data: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            child: PersonalTagFilterChipsWidget(
+              tags: testTags,
+              selectedTagIds: const {},
+              onToggle: (_) {},
+              showExcludeSection: true,
+              excludedTagIds: const {'tag-1'},
+              onExcludeToggle: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final cs = (dark ? AppTheme.darkTheme : AppTheme.lightTheme).colorScheme;
+      final chips = tester.widgetList<FilterChip>(find.byType(FilterChip));
+      final excluded = chips.singleWhere((c) => c.selected);
+      expect(excluded.selectedColor, cs.surface);
+      expect(excluded.backgroundColor, cs.surface);
+      expect(excluded.showCheckmark, isFalse);
+      expect(excluded.side!.color, cs.error);
+      expect(excluded.side!.width, 1.5);
+      expect(excluded.avatar, isNull);
+      expect(excluded.labelStyle!.color, cs.error);
+      expect(excluded.labelStyle!.fontWeight, FontWeight.w600);
+      expect(excluded.labelStyle!.decoration, TextDecoration.lineThrough);
+
+      // Not excluded: the last chip belongs to the exclude row (it follows
+      // the include row) and is a plain border.subtle outline, no glyph.
+      final plain = chips.last;
+      expect(plain.selected, isFalse);
+      expect(plain.avatar, isNull);
+      expect(plain.side!.color, cs.outlineVariant);
+      expect(plain.side!.width, 1);
+    });
+  }
 }

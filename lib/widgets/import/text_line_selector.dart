@@ -6,7 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -205,7 +205,7 @@ class TextLineSelector extends StatelessWidget {
 
   Color _getModeColor(BuildContext context, ColorScheme colorScheme) {
     return mode == SelectionMode.ingredients
-        ? context.butleryColors.success
+        ? context.modeColors.success
         : colorScheme.onSurface;
   }
 }
@@ -239,24 +239,26 @@ class _LineItem extends StatelessWidget {
 
     // Determine colors based on state
     final modeColor = mode == SelectionMode.ingredients
-        ? context.butleryColors.success
+        ? context.modeColors.success
         : colorScheme.onSurface;
 
     Color backgroundColor;
     Color borderColor;
     BorderStyle borderStyle;
 
+    // State is never opacity (tokens.json:40-53). A chosen line is drawn
+    // as "Vald": surface.selected with a 1.5 px text.primary border
+    // (Grafisk manual v6:207, :209 "Vald = riktig border"; tokens.json:
+    // 116-119, the surfaceContainerHighest slot in both schemes; text.primary
+    // is onSurface in both). The mode colour stays on the checkbox and the
+    // label. A suggested line has the thin mode-coloured border only.
     if (isSelected) {
-      backgroundColor = modeColor.withValues(
-        alpha: AppDimensions.opacityLightSubtle,
-      );
-      borderColor = modeColor;
+      backgroundColor = colorScheme.surfaceContainerHighest;
+      borderColor = colorScheme.onSurface;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
-      backgroundColor = modeColor.withValues(
-        alpha: AppDimensions.opacityExtraVeryLight,
-      );
-      borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
+      backgroundColor = Colors.transparent;
+      borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else {
       backgroundColor = Colors.transparent;
@@ -291,7 +293,7 @@ class _LineItem extends StatelessWidget {
                 ),
                 border: Border.all(
                   color: borderColor,
-                  width: isSelected ? 2 : 1,
+                  width: isSelected ? 1.5 : 1,
                   style: borderStyle,
                 ),
               ),
@@ -305,11 +307,7 @@ class _LineItem extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: isSelected ? modeColor : Colors.transparent,
                       border: Border.all(
-                        color: isSelected
-                            ? modeColor
-                            : colorScheme.outline.withValues(
-                                alpha: AppDimensions.opacityHalf,
-                              ),
+                        color: isSelected ? modeColor : colorScheme.outline,
                         width: 2,
                       ),
                     ),
@@ -383,10 +381,11 @@ class _LineItem extends StatelessWidget {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(
                       padding: AppDimensions.paddingSymmetric6x2,
+                      // A thin border in the mode's colour, not a tint:
+                      // the line's suggested state is never opacity
+                      // (tokens.json:40-53).
                       decoration: BoxDecoration(
-                        color: modeColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        border: Border.all(color: modeColor),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusS,
                         ),

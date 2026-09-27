@@ -53,9 +53,9 @@ class GroupMenuEntryButton extends StatelessWidget {
       // becomes an unhandled async error and the tap does nothing visible.
       AppLogger.error('Could not list conversations for the group menu', e);
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.groupMenuGroupsLoadFailed,
+          what: context.l10n.groupMenuGroupsLoadFailed,
         );
       }
       return;

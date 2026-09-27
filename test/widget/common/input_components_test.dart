@@ -1,10 +1,9 @@
 /// Widget tests for the InputComponents facade.
 ///
 /// Verifies each factory returns the right concrete widget with the arguments
-/// forwarded correctly. The facade's one remaining modal opener,
-/// `showListSelector`, is deliberately NOT covered — see the SKIP note at the
-/// end of this file. (BUT-1849 removed `showShoppingItemDialog` and the dead
-/// dialog behind it, which was the only opener this suite ever mounted.)
+/// forwarded correctly. The facade opens no modals any more: BUT-1849 removed
+/// `showShoppingItemDialog`, and package 7 removed `showListSelector`, which
+/// had no callers.
 library;
 
 import 'package:flutter/material.dart';
@@ -123,9 +122,4 @@ void main() {
       expect(find.byType(Checkbox), findsOneWidget);
     });
   });
-
-  // SKIP: showListSelector mounts ShoppingListSelector which requires
-  // UnifiedShoppingViewModel via ApplicationProvider and the full ServiceLocator
-  // stack — too much wiring for a facade smoke test. Covered downstream
-  // by ShoppingListSelector's own integration tests.
 }

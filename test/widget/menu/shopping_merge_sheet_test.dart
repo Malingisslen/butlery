@@ -16,7 +16,7 @@ import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
 
 Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
@@ -305,7 +305,7 @@ void main() {
       final label = tester.widget<Text>(find.text('Visa detaljer'));
       expect(label.style!.color, link);
       expect(
-        theme.extension<ButleryColors>()!.info,
+        ModeColors.of(theme.brightness).info,
         link,
         reason: 'text.link is the info member (app_colors.dart)',
       );

@@ -67,7 +67,7 @@ class BlockUserAction {
           l10n.socialUserBlockedCleanupIncomplete(displayName),
         );
       case BlockOutcome.failed:
-        SnackBarUtils.showError(context, l10n.socialCouldNotBlockUser);
+        SnackBarUtils.showFailure(context, what: l10n.socialCouldNotBlockUser);
     }
     return outcome.blockLanded;
   }

@@ -200,7 +200,7 @@ void main() {
                 ctx,
                 title: 'Bekräfta',
                 message: 'Är du säker?',
-                primaryActionText: 'OK',
+                primaryActionText: 'Ja',
               ),
               child: const Text('Open'),
             ),

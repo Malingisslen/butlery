@@ -7,7 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Participant list widget showing active participants
 class ParticipantListWidget extends StatelessWidget {
@@ -75,7 +75,7 @@ class ParticipantListWidget extends StatelessWidget {
 
   Widget _buildOnlineIndicator(BuildContext context) {
     final onlineCount = activities.where((a) => a.isOnline).length;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
@@ -147,7 +147,7 @@ class ParticipantListWidget extends StatelessWidget {
                   height: AppDimensions.spacingS,
                   decoration: BoxDecoration(
                     color: activity.isOnline
-                        ? context.butleryColors.success
+                        ? context.modeColors.success
                         : cs.outline,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.spacingXs,

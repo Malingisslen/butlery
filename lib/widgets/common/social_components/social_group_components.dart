@@ -9,7 +9,7 @@ import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Social group and friend category management components.
 class SocialGroupComponents {
@@ -179,7 +179,7 @@ class SocialGroupComponents {
               : null,
           leading: const Icon(Icons.group),
           trailing: isSelected
-              ? Icon(Icons.check, color: context.butleryColors.success)
+              ? Icon(Icons.check, color: context.modeColors.success)
               : null,
           selected: isSelected,
           onTap: () {

@@ -6,7 +6,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
@@ -286,7 +285,7 @@ class StyledInput extends StatelessWidget {
     final restingBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       borderSide: BorderSide(
-        color: showWarning ? context.butleryColors.warning : cs.outline,
+        color: showWarning ? context.modeColors.warning : cs.outline,
         width: AppDimensions.borderWidthStandard,
       ),
     );

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/profile/builders/menu_item_builders.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
@@ -155,7 +155,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileExportData,
             subtitle: context.l10n.profileExportDataSubtitle,
             onTap: () => GdprConsentHandler.handleExportData(context),
-            color: context.butleryColors.info,
+            color: context.modeColors.info,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 

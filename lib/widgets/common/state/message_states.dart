@@ -8,7 +8,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// MessageStates - Error, Success, Info, and Warning state implementations
 /// Handles different message state variants with appropriate styling.
@@ -126,7 +126,7 @@ class MessageStates {
               Icon(
                 icon ?? Icons.check_circle_outline,
                 size: iconSize ?? AppDimensions.iconSizeXl,
-                color: iconColor ?? context.butleryColors.success,
+                color: iconColor ?? context.modeColors.success,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
 
@@ -134,7 +134,7 @@ class MessageStates {
               Text(
                 title ?? context.l10n.stateSuccessDefault,
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: context.butleryColors.success,
+                  color: context.modeColors.success,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -242,14 +242,14 @@ class MessageStates {
               Icon(
                 icon ?? Icons.warning_outlined,
                 size: iconSize ?? AppDimensions.iconSizeL,
-                color: iconColor ?? context.butleryColors.warning,
+                color: iconColor ?? context.modeColors.warning,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               if (title != null) ...[
                 Text(
                   title,
                   style: AppTextStyles.titleLarge.copyWith(
-                    color: context.butleryColors.warning,
+                    color: context.modeColors.warning,
                   ),
                   textAlign: TextAlign.center,
                 ),

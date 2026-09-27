@@ -9,7 +9,7 @@ import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
@@ -133,7 +133,7 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       setState(() {
         _isSending = false;
       });
-      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorGeneric);
     }
   }
 
@@ -370,9 +370,7 @@ class _SendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final bg = enabled
-        ? cs.onPrimaryContainer
-        : context.butleryColors.iconMuted;
+    final bg = enabled ? cs.onPrimaryContainer : context.modeColors.iconMuted;
 
     return Semantics(
       label: context.l10n.a11yPingComposeSend,

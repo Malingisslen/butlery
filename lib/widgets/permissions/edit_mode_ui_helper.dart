@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 
 /// UI helper class for EditMode enum
@@ -16,10 +16,10 @@ class EditModeUIHelper {
       case EditMode.edit:
         return cs.onSurface;
       case EditMode.collaborative:
-        return context.butleryColors.success;
+        return context.modeColors.success;
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        return context.butleryColors.warning;
+        return context.modeColors.warning;
       case EditMode.noAccess:
         return cs.error;
     }

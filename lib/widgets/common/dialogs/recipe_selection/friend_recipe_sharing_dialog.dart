@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 
@@ -233,10 +233,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
         duration: const Duration(seconds: 3),
       );
     } else if (!success && context.mounted) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
-        duration: const Duration(seconds: 3),
+        what: viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
       );
     }
   }
@@ -260,7 +259,7 @@ class FriendRecipeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -325,7 +324,7 @@ class FriendRecipeListItem extends StatelessWidget {
 
   Widget _buildSubtitle(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -402,7 +401,7 @@ class FriendRecipeListItem extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       width: AppDimensions.iconSizeXl,
       height: AppDimensions.iconSizeXl,

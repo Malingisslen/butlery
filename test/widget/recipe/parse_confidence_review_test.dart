@@ -5,7 +5,7 @@
 // non-whitespace differences exist, and screen-reader semantics include the
 // confidence word in the row label.
 //
-// BUT-1244: updated to assert via l10n keys and ButleryColors tokens.
+// BUT-1244: updated to assert via l10n keys and ModeColors tokens.
 // BUT-1244-redesign: updated for the new left-bar design (no pill labels,
 // whitespace-only suppression, subtitle counts non-high rows).
 
@@ -15,7 +15,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 
 // Test fixture helpers
@@ -37,7 +37,7 @@ ParsedIngredient _ingredient({
 }
 
 /// Wraps [child] with full theme + Swedish l10n so context.l10n and
-/// context.butleryColors both resolve to their light-mode values.
+/// context.modeColors both resolve to their light-mode values.
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -58,7 +58,7 @@ Color _barColor(WidgetTester tester, Finder finder) {
 }
 
 void main() {
-  const colors = ButleryColors.light;
+  const colors = ModeColors.light;
 
   group('Accent bar — colour-per-ParseConfidence', () {
     testWidgets('high confidence → success green bar', (tester) async {

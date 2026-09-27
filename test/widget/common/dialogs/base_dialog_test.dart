@@ -155,7 +155,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
 
 void main() {
   group('BaseDialog — render', () {
-    testWidgets('renders title, body, default cancel and OK buttons', (
+    testWidgets('renders title, body, default cancel and Stäng buttons', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
@@ -170,7 +170,10 @@ void main() {
       expect(find.text('Hej'), findsOneWidget);
       expect(find.text('body'), findsOneWidget);
       expect(find.text('Avbryt'), findsOneWidget); // sv default
-      expect(find.text('OK'), findsOneWidget);
+      // No action named: the button only closes, so it says Stäng, never OK
+      // (content-style-guide.md:77; P7-B4).
+      expect(find.text('Stäng'), findsOneWidget);
+      expect(find.text('OK'), findsNothing);
     });
 
     testWidgets('renders titleIcon when provided', (tester) async {
@@ -260,7 +263,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
 
       expect(await future, 'success');
@@ -280,7 +283,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
 
       // P5-U04: the dialog stays open with the three-part inline error:
@@ -313,7 +316,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
       final l10n = AppLocalizations.of(
         tester.element(find.byType(InlineError)),
@@ -358,7 +361,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Stäng'));
       await tester.pumpAndSettle();
 
       // No error, no progress spinner
@@ -408,7 +411,7 @@ void main() {
                     ctx,
                     title: 't',
                     message: 'm',
-                    primaryActionText: 'OK',
+                    primaryActionText: 'Bekräfta',
                   );
                 },
                 child: const Text('Open'),
@@ -419,7 +422,7 @@ void main() {
       );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.text('Bekräfta'));
       await tester.pumpAndSettle();
 
       expect(result, isTrue);
@@ -438,6 +441,7 @@ void main() {
                   title: 't',
                   message: 'should-not-render',
                   customContent: const Text('totally-custom'),
+                  primaryActionText: 'Ja',
                 ),
                 child: const Text('Open'),
               );
@@ -527,9 +531,8 @@ void main() {
       expect(await future, 42);
     });
 
-    testWidgets('failing action shows error_outline and stays open', (
-      tester,
-    ) async {
+    testWidgets('a failing action shows the inline error, never the '
+        'exception text, and stays open', (tester) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<int>(
@@ -539,8 +542,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Go'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
-      expect(find.textContaining('action failure'), findsOneWidget);
+      // P7-B2: the same three-part inline error as BaseDialog
+      // (content-style-guide.md:87-97, :95). This is the path the delete
+      // group and remove member dialogs take.
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.textContaining('action failure'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.text('Åtgärden kunde inte slutföras.'), findsOneWidget);
+      expect(find.text('Försök igen'), findsOneWidget);
+      expect(find.byType(_TestActionDialog), findsOneWidget);
     });
 
     testWidgets(

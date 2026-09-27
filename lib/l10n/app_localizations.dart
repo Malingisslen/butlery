@@ -30670,6 +30670,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Recepten kunde inte exporteras.'**
   String get bulkExportFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritetspolicyn kunde inte öppnas.'**
+  String get profilePrivacyPolicyOpenFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtyckeshanteringen kunde inte öppnas.'**
+  String get profileConsentManagementOpenFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dataexporten kunde inte öppnas.'**
+  String get profileDataExportOpenFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Delningen kunde inte genomföras.'**
+  String get shareCouldNotComplete;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilderna kunde inte väljas.'**
+  String get imageSelectFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Menyn kunde inte öppnas.'**
+  String get groupMenuOpenFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte öppnas.'**
+  String get groupRecipeOpenFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Omtaggningen kunde inte slutföras.'**
+  String get retagFailed;
+
+  /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot kunde inte raderas.'**
+  String get profileAccountDeleteFailed;
 }
 
 class _AppLocalizationsDelegate

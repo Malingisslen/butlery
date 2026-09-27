@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class InvitationTargetStates {
@@ -150,13 +150,13 @@ class InvitationTargetStates {
           Icon(
             Icons.check_circle,
             size: 48,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             context.l10n.invitationTargetsSelectedCount(count),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: context.butleryColors.success,
+              color: context.modeColors.success,
             ),
           ),
           if (onContinue != null) ...[

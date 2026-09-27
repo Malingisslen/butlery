@@ -1,11 +1,11 @@
 // lib/widgets/recipe/recipe_image_picker.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Handles image picker UI and logic for recipe forms.
@@ -34,9 +34,9 @@ class RecipeImagePicker {
     } catch (e) {
       AppLogger.error('[$_logTag] Error during image selection: $e');
       if (context.mounted) {
-        UtilityComponents.showErrorSnackbar(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorCouldNotLoad(
+          what: context.l10n.errorCouldNotLoad(
             context.l10n.commonImage.toLowerCase(),
           ),
         );

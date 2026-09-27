@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
@@ -32,7 +32,7 @@ class UserAvatarWidgets {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         final avatarSize = explicitSize ?? _getAvatarSize(size);
         // UI Redesign: Avatar uses rust (secondary) color scheme
         final effectiveBackgroundColor = backgroundColor ?? cs.secondary;
@@ -221,7 +221,7 @@ class UserAvatarWidgets {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         final indicatorSize = size ?? AppDimensions.iconSizeM;
         return Semantics(
           label: isOnline

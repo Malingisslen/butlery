@@ -248,30 +248,31 @@ class _PersonalTagExcludeChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         child: FilterChip(
           label: Text(tag.name),
-          avatar: isExcluded
-              ? null
-              : Icon(
-                  Icons.remove_circle_outline,
-                  size: AppDimensions.iconSizeS,
-                  color: colorScheme.error.withValues(
-                    alpha: AppDimensions.opacityMediumDark,
-                  ),
-                ),
+          // The drawn "utan" chip: no glyph, the tag name struck through,
+          // a 1.5 px text.danger edge and w600 text.danger label on a paper
+          // plate; the "av" chip is a 1 px border.subtle outline, no glyph
+          // (Skarmar v12 etapp 9, #sokpanel "Dina taggar - tryck igen for
+          // utan"; --r04slot-749/842 = #9C3B23 light, #DE9078 dark, line 59,
+          // = colorScheme.error; border.subtle = tokens.json:124-127 =
+          // colorScheme.outlineVariant). State is never opacity
+          // (tokens.json:40-53).
           selected: isExcluded,
           onSelected: (_) => onSelected(),
           backgroundColor: colorScheme.surface,
-          selectedColor: colorScheme.error.withValues(
-            alpha: AppDimensions.opacityLightSubtle,
-          ),
-          checkmarkColor: colorScheme.error,
+          selectedColor: colorScheme.surface,
           side: BorderSide(
-            color: isExcluded ? colorScheme.error : colorScheme.outline,
-            width: isExcluded ? 2 : 1,
+            color: isExcluded ? colorScheme.error : colorScheme.outlineVariant,
+            width: isExcluded ? 1.5 : 1,
           ),
           labelStyle: isExcluded
-              ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
+              ? AppTextStyles.bodyMedium.copyWith(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.lineThrough,
+                  decorationColor: colorScheme.error,
+                )
               : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-          showCheckmark: isExcluded,
+          showCheckmark: false,
         ),
       ),
     );

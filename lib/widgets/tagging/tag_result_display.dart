@@ -7,7 +7,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
@@ -215,7 +215,7 @@ class TagResultDisplay extends StatelessWidget {
 
   Widget _buildRetagIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final warningColor = context.butleryColors.warning;
+    final warningColor = context.modeColors.warning;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
@@ -269,7 +269,7 @@ class TagResultDisplay extends StatelessWidget {
   Widget _buildDraftWarning(BuildContext context) {
     return InlineWarning(
       icon: Icons.info_outline,
-      color: context.butleryColors.warning,
+      color: context.modeColors.warning,
       text: context.l10n.ingredientDataUnverified,
     );
   }
@@ -343,7 +343,7 @@ class TagResultDisplay extends StatelessWidget {
                   Icon(
                     Icons.warning_amber_rounded,
                     size: AppDimensions.iconSizeS,
-                    color: context.butleryColors.warning,
+                    color: context.modeColors.warning,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Expanded(
@@ -352,7 +352,7 @@ class TagResultDisplay extends StatelessWidget {
                         tagResult.unknownIngredients.length,
                       ),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: context.butleryColors.warning,
+                        color: context.modeColors.warning,
                       ),
                     ),
                   ),
@@ -360,7 +360,7 @@ class TagResultDisplay extends StatelessWidget {
                     Icon(
                       Icons.chevron_right,
                       size: AppDimensions.iconSize18,
-                      color: context.butleryColors.warning,
+                      color: context.modeColors.warning,
                     ),
                 ],
               ),
@@ -376,8 +376,8 @@ class TagResultDisplay extends StatelessWidget {
     // generously: 80%+ is green, 40%+ amber, rust-red only for genuinely
     // incomplete coverage. Previously 80–99% showed as amber and anything
     // below 80% rendered rust-red — a nearly-full red bar misleads.
-    if (tagResult.coverage >= 0.8) return context.butleryColors.success;
-    if (tagResult.coverage >= 0.4) return context.butleryColors.warning;
+    if (tagResult.coverage >= 0.8) return context.modeColors.success;
+    if (tagResult.coverage >= 0.4) return context.modeColors.warning;
     return Theme.of(context).colorScheme.error;
   }
 

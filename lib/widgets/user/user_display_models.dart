@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Image Size enum
@@ -82,7 +82,7 @@ class UserDisplayData {
 class UserStatusHelper {
   static Color getStatusColor(BuildContext context, UserStatus status) {
     final cs = Theme.of(context).colorScheme;
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
     return switch (status) {
       UserStatus.online => bc.success,
       UserStatus.offline => cs.outline,

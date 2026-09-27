@@ -193,9 +193,9 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
   Future<void> _submit() async {
     final description = _descriptionController.text.trim();
     if (description.isEmpty) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.feedbackDescriptionRequired,
+        what: context.l10n.feedbackDescriptionRequired,
       );
       return;
     }
@@ -219,7 +219,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
         Navigator.pop(context);
         SnackBarUtils.showSuccess(context, context.l10n.feedbackThanks);
       } else {
-        SnackBarUtils.showError(context, context.l10n.feedbackSendFailed);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.feedbackSendFailed,
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

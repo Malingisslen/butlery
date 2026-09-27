@@ -9,7 +9,6 @@ language across views. This README is the canonical guide.
 ```
 lib/widgets/common/buttons/
 ├── action_buttons.dart       — ActionButtons (62 call-sites — DOMINANT)
-├── adaptive_button.dart      — AdaptiveButton (platform-adaptive nav/toolbar)
 ├── overlay_button.dart       — OverlayButton (overlays on cards/images)
 └── animated_pressable.dart   — AnimatedPressable (low-level press animation)
 ```
@@ -19,10 +18,9 @@ lib/widgets/common/buttons/
 | Use case                                         | Use                            |
 | ------------------------------------------------ | ------------------------------ |
 | Primary/secondary action in a form, dialog, card | `ActionButtons.actionButton`   |
-| Navigation bar, toolbar, modal action            | `AdaptiveButton.text` / `.primary` |
 | Overlay on image/card (remove, edit)             | `OverlayButton`                |
 | Custom press animation around any tap target     | `AnimatedPressable`            |
 
-Reach for one of these four — don't hand-roll a button. The retired
+Reach for one of these three — don't hand-roll a button. The retired
 `StyledButton`/`StyledButtons` family (removed BUT-867) is gone precisely so one
 design-system change propagates without parallel implementations to diff.

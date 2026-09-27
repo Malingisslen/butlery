@@ -8,7 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/social/friends_list/requests_tab.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
@@ -161,13 +161,13 @@ class ShareDialogStates {
           Icon(
             Icons.check_circle,
             size: 64,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
             context.l10n.shareSucceeded,
             style: AppTextStyles.titleMedium.copyWith(
-              color: context.butleryColors.success,
+              color: context.modeColors.success,
             ),
             textAlign: TextAlign.center,
           ),

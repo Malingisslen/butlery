@@ -5,7 +5,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -120,11 +120,11 @@ class SocialCollaborativeComponents {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: (activeColor ?? context.butleryColors.success).withValues(
+        color: (activeColor ?? context.modeColors.success).withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: activeColor ?? context.butleryColors.success),
+        border: Border.all(color: activeColor ?? context.modeColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -132,14 +132,14 @@ class SocialCollaborativeComponents {
           Icon(
             Icons.sync,
             size: AppDimensions.iconSizeXs,
-            color: activeColor ?? context.butleryColors.success,
+            color: activeColor ?? context.modeColors.success,
           ),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               context.l10n.socialActive,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: activeColor ?? context.butleryColors.success,
+                color: activeColor ?? context.modeColors.success,
               ),
             ),
           ],
@@ -242,11 +242,11 @@ class SocialCollaborativeComponents {
       decoration: BoxDecoration(
         color:
             color ??
-            context.butleryColors.success.withValues(
+            context.modeColors.success.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: color ?? context.butleryColors.success),
+        border: Border.all(color: color ?? context.modeColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -254,13 +254,13 @@ class SocialCollaborativeComponents {
           Icon(
             icon,
             size: AppDimensions.iconSizeXs,
-            color: color ?? context.butleryColors.success,
+            color: color ?? context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text ?? context.l10n.socialActiveCollaboration,
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: color ?? context.butleryColors.success,
+              color: color ?? context.modeColors.success,
             ),
           ),
         ],

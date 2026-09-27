@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/theme_constants.dart';
 
 /// BUT-406: Square, cream-bg widget shown in the bottom sheet triggered by
@@ -18,7 +17,7 @@ import 'package:butlery/theme/theme_constants.dart';
 /// Visual spec:
 /// - `colorScheme.surface` background, `colorScheme.onPrimaryContainer` numerals.
 /// - Square container (plain `Container`, no `BorderRadius`).
-/// - On expiry: `butleryColors.starGold` pulse via `AnimationController` running
+/// - On expiry: `modeColors.starGold` pulse via `AnimationController` running
 ///   `ThemeConstants.durationMedium` in reverse-repeat until the user
 ///   dismisses the sheet.
 ///
@@ -229,7 +228,7 @@ class _TimerDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
+    final starGold = context.modeColors.starGold;
     return AnimatedBuilder(
       animation: pulseController,
       builder: (context, child) {

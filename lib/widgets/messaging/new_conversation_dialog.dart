@@ -1,6 +1,7 @@
 // lib/widgets/messaging/new_conversation_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -356,10 +357,12 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         }
       }
     } catch (e) {
+      // Never the exception's own text (content-style-guide.md:95).
+      AppLogger.error('Could not create conversation', e);
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.conversationCreateError(e.toString()),
+          what: context.l10n.errorCouldNotStartConversation,
         );
       }
     } finally {

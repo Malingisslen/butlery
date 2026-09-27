@@ -538,18 +538,23 @@ class ProfileDialogs {
     );
   }
 
-  static void showErrorDialog(BuildContext context, String error) {
+  /// A failed account deletion. [message] is the whole, already translated
+  /// text when more is known (a failed sign-in, a partial deletion), never
+  /// an exception's text (content-style-guide.md:95); without it the dialog
+  /// says only that the account could not be deleted. The button only
+  /// closes, so it is "Stäng", never "OK" (content-style-guide.md:77).
+  static void showErrorDialog(BuildContext context, {String? message}) {
     final l10n = context.l10n;
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.profileError),
-        content: Text(l10n.profileCouldNotDeleteAccount(error)),
+        content: Text(message ?? l10n.profileAccountDeleteFailed),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.commonOk),
+            child: Text(l10n.commonClose),
           ),
         ],
       ),

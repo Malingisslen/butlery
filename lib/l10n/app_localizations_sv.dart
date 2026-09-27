@@ -18646,4 +18646,33 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get bulkExportFailed => 'Recepten kunde inte exporteras.';
+
+  @override
+  String get profilePrivacyPolicyOpenFailed =>
+      'Integritetspolicyn kunde inte öppnas.';
+
+  @override
+  String get profileConsentManagementOpenFailed =>
+      'Samtyckeshanteringen kunde inte öppnas.';
+
+  @override
+  String get profileDataExportOpenFailed => 'Dataexporten kunde inte öppnas.';
+
+  @override
+  String get shareCouldNotComplete => 'Delningen kunde inte genomföras.';
+
+  @override
+  String get imageSelectFailed => 'Bilderna kunde inte väljas.';
+
+  @override
+  String get groupMenuOpenFailed => 'Menyn kunde inte öppnas.';
+
+  @override
+  String get groupRecipeOpenFailed => 'Receptet kunde inte öppnas.';
+
+  @override
+  String get retagFailed => 'Omtaggningen kunde inte slutföras.';
+
+  @override
+  String get profileAccountDeleteFailed => 'Kontot kunde inte raderas.';
 }

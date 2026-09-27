@@ -258,7 +258,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final copied = await vm.copyWeekToNext();
     if (!context.mounted) return;
     if (copied == null) {
-      SnackBarUtils.showError(context, context.l10n.weeklyMenuCopyToNextFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weeklyMenuCopyToNextFailed,
+      );
       return;
     }
     SnackBarUtils.showSuccess(
@@ -322,7 +325,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     );
     if (!context.mounted) return;
     if (moved == null) {
-      SnackBarUtils.showError(context, context.l10n.weeklyMenuMoveFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weeklyMenuMoveFailed,
+      );
       return;
     }
     SnackBarUtils.showSuccess(

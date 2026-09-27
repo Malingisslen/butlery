@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 
 /// Captures the theme-resolved badge colors so assertions compare against the
@@ -35,8 +35,8 @@ Future<_Tokens> _pump(WidgetTester tester, double confidence) async {
         body: Builder(
           builder: (context) {
             tokens
-              ..success = context.butleryColors.success
-              ..warning = context.butleryColors.warning
+              ..success = context.modeColors.success
+              ..warning = context.modeColors.warning
               ..error = Theme.of(context).colorScheme.error;
             return ConfidenceIndicator(confidence: confidence);
           },
