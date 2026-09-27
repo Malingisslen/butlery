@@ -1179,7 +1179,7 @@ void main() {
       addTearDown(bertil.dispose);
       // A minute later, so the two drafts get their own ids.
       await withClock(
-        Clock.fixed(DateTime.now().add(const Duration(minutes: 1))),
+        Clock.fixed(clock.now().add(const Duration(minutes: 1))),
         () => bertil.saveNow(_formWith(title: 'Bertils')),
       );
       final bertilId = bertil.currentDraftId!;
@@ -1197,7 +1197,7 @@ void main() {
     test(
       'ownerless legacy drafts go with the account that signs out',
       () async {
-        final ts = DateTime.now();
+        final ts = DateTime(2026, 9, 1, 12);
         final legacy = DraftMetadata(
           draftId: 'legacy',
           createdAt: ts,

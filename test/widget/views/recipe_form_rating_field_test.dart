@@ -101,6 +101,9 @@ void main() {
       ingredients: const ['Mjöl', 'Socker'],
       instructions: const ['Blanda', 'Grädda'],
       rating: rating,
+      // Q6-08: someone else's recipe opens in suggestion mode, which has no
+      // rating field. The signed-in user owns this one.
+      createdBy: 'test-user-123',
     );
 
     Future<void> pumpForm(WidgetTester tester, {Recipe? initialRecipe}) async {
