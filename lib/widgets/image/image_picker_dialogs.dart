@@ -40,14 +40,17 @@ class ImagePickerDialogs {
         ),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: AppDimensions.avatarSizeMedium,
               height: 5,
-              margin: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
+              margin: const EdgeInsets.only(bottom: AppDimensions.space16),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(
@@ -183,7 +186,7 @@ class ImagePickerDialogs {
                     progress.message,
                     style: AppTextStyles.bodyMedium,
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     '$percentage% (${progress.completed}/${progress.total})',
                     style: AppTextStyles.bodySmall,

@@ -67,7 +67,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.paddingMs,
+                        vertical: AppDimensions.space8,
                       ),
                       border: OutlineInputBorder(),
                     ),
@@ -103,7 +103,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.paddingMs,
+                        vertical: AppDimensions.space8,
                       ),
                       border: OutlineInputBorder(),
                     ),

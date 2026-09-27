@@ -222,7 +222,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                   color: permissionColor,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingYourPermission,
                   style: AppTextStyles.titleMedium.copyWith(
@@ -271,7 +271,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingMembersCount(allMembers.length),
                   style: AppTextStyles.titleMedium.copyWith(
@@ -334,7 +334,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           CircleAvatar(
@@ -404,7 +404,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingRecentActivity,
                   style: AppTextStyles.titleMedium.copyWith(
@@ -455,7 +455,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               style: AppTextStyles.labelMedium,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               value,

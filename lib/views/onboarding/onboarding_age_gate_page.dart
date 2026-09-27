@@ -33,7 +33,9 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final selected = viewModel.selectedBirthYear;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,

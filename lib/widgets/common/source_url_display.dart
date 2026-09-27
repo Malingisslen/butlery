@@ -32,7 +32,7 @@ class SourceUrlDisplay extends StatelessWidget {
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               context.l10n.recipeImportedFrom(sourceUrl),

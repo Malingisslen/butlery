@@ -16,6 +16,7 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_roles_pending.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
@@ -44,11 +45,7 @@ Border _accentedBorder(BuildContext context, Color left) {
 /// Small-caps slot label used at the top of every cell.
 Text _slotLabel(String text, Color color) => Text(
   text.toUpperCase(),
-  style: AppTextStyles.labelSmall.copyWith(
-    fontSize: 8,
-    letterSpacing: 1,
-    color: color,
-  ),
+  style: AppTextStyles.overline.copyWith(color: color),
 );
 
 /// Callback fired when an empty slot is tapped — orchestrator owns the
@@ -351,10 +348,8 @@ class _SlotPresenceRow extends StatelessWidget {
               if (present.isEmpty)
                 Text(
                   context.l10n.menuPresenceNobody,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
+                  style: AppTextStyles.overline.copyWith(
                     color: cs.outline,
-                    fontWeight: FontWeight.w600,
                   ),
                 )
               else
@@ -372,10 +367,8 @@ class _SlotPresenceRow extends StatelessWidget {
                   padding: const EdgeInsetsDirectional.only(start: 3),
                   child: Text(
                     '+$overflow',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontSize: 9,
+                    style: AppTextStyles.overline.copyWith(
                       color: cs.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -383,10 +376,8 @@ class _SlotPresenceRow extends StatelessWidget {
               if (present.isNotEmpty)
                 Text(
                   context.l10n.menuPresencePortions(present.length),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
+                  style: AppTextStyles.overline.copyWith(
                     color: cs.secondary,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               Icon(Icons.expand_more, size: 12, color: cs.outline),
@@ -423,7 +414,7 @@ class _EmptySlot extends StatelessWidget {
         onTap: () => onTap(day, slot),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: const EdgeInsets.all(AppDimensions.spacing6),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             border: Border.all(color: Theme.of(context).dividerColor),
@@ -443,10 +434,8 @@ class _EmptySlot extends StatelessWidget {
               Center(
                 child: Text(
                   '+',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: AppTextStyles.headlineSmall.copyWith(
                     color: Theme.of(context).colorScheme.outlineVariant,
-                    fontWeight: FontWeight.w300,
                   ),
                 ),
               ),
@@ -553,9 +542,7 @@ class _AssignedSlot extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextRolesPending.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.15,
                   ),
@@ -643,10 +630,8 @@ class _OvrigtCell extends StatelessWidget {
                       child: Text(
                         context.l10n.weeklyMenuOvrigtAddMore,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 9,
+                        style: AppTextStyles.overline.copyWith(
                           color: cs.secondary,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -744,9 +729,7 @@ class _OvrigtEntry extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextRolesPending.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.1,
                   ),

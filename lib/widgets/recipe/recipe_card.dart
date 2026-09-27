@@ -159,7 +159,7 @@ class RecipeCard extends StatelessWidget {
                   padding:
                       padding ??
                       const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingModerate,
+                        vertical: AppDimensions.space12,
                         horizontal: AppDimensions.spacingMd,
                       ),
                   child: _buildCardContent(context),
@@ -652,7 +652,7 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yFamilyRatingPill(formatRatingComma(avg)),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: demoted
             ? BoxDecoration(border: Border.all(color: cs.outlineVariant))
             : BoxDecoration(color: cs.primary),
@@ -680,7 +680,7 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yAllaRatingPill(formatRatingComma(avg)),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(color: cs.secondary),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -706,7 +706,7 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.recipeCardPantryMatchA11y(pct),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
           color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
           border: Border.all(
@@ -737,7 +737,7 @@ class RecipeCard extends StatelessWidget {
         recipe.rating!.toStringAsFixed(1),
       ),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: demoted
             ? BoxDecoration(
                 border: Border.all(color: cs.outlineVariant),
@@ -785,7 +785,7 @@ class RecipeCard extends StatelessWidget {
     // border.subtle (outlineVariant) on the base surface. Text is text.primary
     // (onSurface) so it reads on dark too; primary is ink in both modes.
     return Container(
-      padding: AppDimensions.paddingSymmetric4x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: isUserAdded ? cs.surfaceContainerHighest : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
@@ -944,7 +944,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: AppDimensions.paddingSymmetric8x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -967,7 +967,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: AppDimensions.paddingSymmetric8x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

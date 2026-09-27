@@ -329,7 +329,7 @@ class MessageContentBuilder {
                           )
                         : cs.onSurfaceVariant,
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     context.l10n.messagingImageLoadError,
                     style: AppTextStyles.labelSmall.copyWith(

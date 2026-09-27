@@ -127,9 +127,7 @@ class PortionScalerUI {
                 ),
                 child: Text(
                   '$currentPortions',
-                  style: AppTextStyles.bodyBold.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.titleLarge.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
@@ -203,7 +201,7 @@ class PortionScalerUI {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
+            horizontal: AppDimensions.space4,
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
@@ -247,7 +245,7 @@ class PortionScalerUI {
     VoidCallback onToggleUnitConversion,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           Expanded(
@@ -278,7 +276,7 @@ class PortionScalerUI {
                       )
                     : null,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
               ),

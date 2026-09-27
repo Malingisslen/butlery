@@ -27,7 +27,7 @@ class CollaborativeStatusWidgets {
           padding:
               padding ??
               const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingS,
+                horizontal: AppDimensions.space4,
                 vertical: AppDimensions.spacingXs,
               ),
           decoration: BoxDecoration(
@@ -107,7 +107,7 @@ class CollaborativeStatusWidgets {
                     color: cs.onSurface,
                     size: AppDimensions.iconSizeAction,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,7 +279,7 @@ class _CollaborativeAppBar extends StatelessWidget
             if (isCollaborative) ...[
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingS,
+                  end: AppDimensions.space4,
                 ),
                 child: Center(
                   child: Tooltip(

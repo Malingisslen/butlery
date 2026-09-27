@@ -332,7 +332,7 @@ class _SimilarityBadge extends StatelessWidget {
     final color = percent >= 80 ? cs.primary : context.modeColors.warning;
     final textColor = percent >= 80 ? cs.onPrimary : cs.onSurface;
     return Container(
-      padding: AppDimensions.paddingSymmetric8x2,
+      padding: AppDimensions.badgePadding,
       color: color,
       child: Text(
         context.l10n.duplicateMergeSimilarity(percent),
@@ -409,7 +409,7 @@ class _FieldRow extends StatelessWidget {
     Color highlightColor,
   ) {
     return Container(
-      padding: AppDimensions.paddingSymmetric4x2,
+      padding: AppDimensions.paddingAll4,
       color: highlight
           ? highlightColor
           : (isDifferent ? cs.surfaceContainerHighest : Colors.transparent),

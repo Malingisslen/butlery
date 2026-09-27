@@ -53,7 +53,7 @@ class ReplyBanner extends StatelessWidget {
             size: AppDimensions.iconSizeM,
             color: context.modeColors.success,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
 
           // Message preview content
           Expanded(
@@ -70,7 +70,7 @@ class ReplyBanner extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AppDimensions.spacingXxs),
+                const SizedBox(height: AppDimensions.space4),
 
                 // Original message content
                 Text(

@@ -64,7 +64,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final shoppers = viewModel.activeShoppers;
     return Wrap(
-      spacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
       runSpacing: AppDimensions.spacingXs,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -116,7 +116,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(

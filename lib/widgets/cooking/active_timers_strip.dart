@@ -149,7 +149,7 @@ class _TimerChip extends StatelessWidget {
                   size: AppDimensions.iconSizeS,
                   color: cs.primary,
                 ),
-                const SizedBox(width: AppDimensions.spacingXxs),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   time,
                   style: AppTextStyles.bodyMedium.copyWith(

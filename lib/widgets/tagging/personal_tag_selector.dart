@@ -144,7 +144,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Tags
           Consumer<PersonalTagViewModel>(
@@ -251,8 +251,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   Widget _buildTagChips(List<PersonalTag> tags) {
     return Wrap(
-      spacing: AppDimensions.spacingS,
-      runSpacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: tags.map((tag) {
         final isSelected = _isTagSelected(tag);
         return _PersonalTagChip(
@@ -410,7 +410,7 @@ class _MiniTagChip extends StatelessWidget {
               size: AppDimensions.iconSizeXs,
               color: cs.onPrimaryContainer,
             ),
-            const SizedBox(width: AppDimensions.spacingXxs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               tag.name,
               style: AppTextStyles.metadataEmphasized.copyWith(

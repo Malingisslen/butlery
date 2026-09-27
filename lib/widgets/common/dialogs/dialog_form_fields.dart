@@ -388,7 +388,7 @@ class DialogFormFields {
     bool enabled = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: CheckboxListTile(
         value: value,
         onChanged: enabled ? onChanged : null,
@@ -409,7 +409,7 @@ class DialogFormFields {
     bool enabled = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: SwitchListTile(
         value: value,
         onChanged: enabled ? onChanged : null,

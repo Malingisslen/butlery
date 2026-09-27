@@ -199,7 +199,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: AppDimensions.spacingXxs,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onSurface.withValues(
@@ -317,7 +317,7 @@ class MenuRecipeListItem extends StatelessWidget {
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '${recipe.timeMinutes} min',
                 style: AppTextStyles.labelSmall,
@@ -325,16 +325,16 @@ class MenuRecipeListItem extends StatelessWidget {
             ],
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text('•', style: AppTextStyles.bodySmall),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
               ],
               Icon(
                 Icons.people,
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '${recipe.portions} port',
                 style: AppTextStyles.labelSmall,

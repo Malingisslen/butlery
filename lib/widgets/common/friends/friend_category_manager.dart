@@ -216,7 +216,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Wrap(
-          spacing: AppDimensions.spacingS,
+          spacing: AppDimensions.space4,
           runSpacing: AppDimensions.spacingXs,
           children: categories.map((category) {
             final isSelected = _selectedCategories.contains(category.id);
@@ -378,7 +378,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                           dense: true,
                           controlAffinity: ListTileControlAffinity.trailing,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.spacingS,
+                            horizontal: AppDimensions.space4,
                             vertical: AppDimensions.spacingXs,
                           ),
                           activeColor: Theme.of(context).colorScheme.primary,
@@ -454,7 +454,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
               ),

@@ -123,7 +123,10 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: SelectableText(
               _content!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(

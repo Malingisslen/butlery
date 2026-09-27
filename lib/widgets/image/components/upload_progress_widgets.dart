@@ -264,7 +264,7 @@ class UploadProgressWidgets {
           children: details
               .map(
                 (detail) => Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+                  padding: const EdgeInsets.only(top: AppDimensions.space4),
                   child: Text(
                     detail,
                     style: AppTextStyles.textSm.copyWith(
@@ -328,7 +328,7 @@ class UploadProgressWidgets {
                       ),
                       if (status.isActive &&
                           status.formattedTimeRemaining != null) ...[
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           context.l10n.uploadTimeRemaining(
                             status.formattedTimeRemaining!,
@@ -341,7 +341,7 @@ class UploadProgressWidgets {
                         ),
                       ],
                       if (status.fileSizeMB != null) ...[
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           '${status.fileSizeMB!.toStringAsFixed(1)} MB',
                           style: AppTextStyles.bodySmall.copyWith(

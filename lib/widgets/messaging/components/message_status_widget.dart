@@ -28,7 +28,7 @@ class MessageStatusWidget extends StatelessWidget {
               alpha: AppDimensions.opacityDark,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingXxs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             _getStatusText(context),
             style: AppTextStyles.textXs.copyWith(

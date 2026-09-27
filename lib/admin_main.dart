@@ -190,7 +190,10 @@ class _AdminLoginScreenState extends State<_AdminLoginScreen> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 360),
             child: Column(
@@ -261,7 +264,10 @@ class _AdminNotAuthorized extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -298,7 +304,12 @@ class _AdminBootError extends StatelessWidget {
       home: Scaffold(
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            // Above MaterialApp there is no MediaQuery yet, so this uses
+            // the 360-430 dp layout margin directly.
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMargin,
+              vertical: AppDimensions.space16,
+            ),
             child: Text('Adminpanelen kunde inte starta:\n$message'),
           ),
         ),

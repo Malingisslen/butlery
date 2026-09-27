@@ -60,7 +60,7 @@ class GroupInfoCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
 
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Member count
           Text(
@@ -70,7 +70,7 @@ class GroupInfoCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Created date
           Text(

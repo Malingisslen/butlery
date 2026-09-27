@@ -177,7 +177,7 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         expect(
           container.padding,
-          equals(EdgeInsets.all(AppDimensions.spacingS)),
+          equals(EdgeInsets.all(AppDimensions.space4)),
         );
       });
     });

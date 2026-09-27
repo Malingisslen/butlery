@@ -287,8 +287,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
   Widget _buildAttachmentsPanel(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space4),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
           Expanded(

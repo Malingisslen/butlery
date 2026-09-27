@@ -280,7 +280,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       child: Padding(
         padding: const EdgeInsets.only(
           top: AppDimensions.paddingM,
-          bottom: AppDimensions.spacingTight,
+          bottom: AppDimensions.space4,
         ),
         child: Container(
           padding: const EdgeInsetsDirectional.only(
@@ -328,7 +328,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             onTap: () => _showSubstitutionSheet(context, parsed.name),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingModerate,
+                vertical: AppDimensions.space12,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -658,14 +658,14 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: _topEffectiveTags.map((tag) {
               final isUserAdded = userAddedTags.contains(tag);
               final displayName = TagDisplayUtils.getDisplayName(tag);
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(
@@ -866,8 +866,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           const SizedBox(height: AppDimensions.spacingM),
           // Tags
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: [
               ...displayNames.map((name) => _buildPersonalTag(context, name)),
               if (!_isExpanded && hasOverflow)
@@ -887,7 +887,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
@@ -917,7 +917,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         onTap: () => setState(() => _isExpanded = true),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
+            horizontal: AppDimensions.space4,
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(

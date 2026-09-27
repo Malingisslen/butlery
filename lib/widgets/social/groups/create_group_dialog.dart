@@ -278,7 +278,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                           ),
                           style: AppTextStyles.titleMedium,
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           context.l10n.groupInvitationNote,
                           style: AppTextStyles.bodySmall.copyWith(
@@ -336,7 +336,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 context.l10n.groupSelectMembers,
                 style: AppTextStyles.titleMedium,
               ),
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 context.l10n.groupNoFriendsToAdd,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -364,7 +364,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               context.l10n.groupSelectMembers,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.groupSelectFriendsToInvite,
               style: AppTextStyles.bodySmall.copyWith(

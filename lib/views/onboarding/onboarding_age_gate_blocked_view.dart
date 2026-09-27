@@ -76,7 +76,10 @@ class _OnboardingAgeGateBlockedViewState
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.layoutMarginOf(context),
+                  vertical: AppDimensions.space16,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -142,7 +142,7 @@ class HemSection extends StatelessWidget {
         if (hero == null) return const [];
         final fetchedAt = viewModel.fetchedAt;
         return [
-          const SizedBox(height: AppDimensions.spacingModerate),
+          const SizedBox(height: AppDimensions.space12),
           HemTonightCard(
             hero: hero,
             onStartCooking: onStartCooking,
@@ -274,9 +274,9 @@ class HemTonightCard extends StatelessWidget {
       color: cs.primary,
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingLg,
-        AppDimensions.spacingModerate,
+        AppDimensions.space12,
         AppDimensions.spacingLg,
-        AppDimensions.spacingModerate,
+        AppDimensions.space12,
       ),
       child: FocusRingSurface(
         brightness: Brightness.dark,

@@ -60,7 +60,7 @@ class MenuVoteCard extends StatelessWidget {
                   size: AppDimensions.iconSizeM,
                   color: cs.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.menuVoteTitle,
@@ -87,7 +87,7 @@ class MenuVoteCard extends StatelessWidget {
                   hasVoted && vote.votes[currentUserId] == option.id;
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space4),
                 child: Semantics(
                   label: isSelected
                       ? context.l10n.a11yMenuVoteOptionSelected(
@@ -132,7 +132,7 @@ class MenuVoteCard extends StatelessWidget {
                           // own). The count below says the number, so the
                           // line is not read out on its own.
                           ExcludeSemantics(child: PlateLine(value: fraction)),
-                          const SizedBox(height: AppDimensions.spacingXxs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             context.l10n.menuVoteCount(count),
                             style: AppTextStyles.labelSmall.copyWith(
@@ -150,7 +150,7 @@ class MenuVoteCard extends StatelessWidget {
             // Resolve button (for vote creator)
             if (onResolve != null && vote.totalVotes > 0)
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(

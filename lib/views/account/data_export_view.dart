@@ -53,7 +53,9 @@ class DataExportView extends StatelessWidget {
               child: Consumer<DataExportViewModel>(
                 builder: (context, viewModel, _) {
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                    padding: EdgeInsets.all(
+                      AppDimensions.layoutMarginOf(context),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -85,7 +87,7 @@ class DataExportView extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -228,7 +230,7 @@ class DataExportView extends StatelessWidget {
       key: ValueKey('dataExport.error.${failure.name}'),
       color: cs.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -282,7 +284,7 @@ class DataExportView extends StatelessWidget {
         alpha: AppDimensions.opacityVeryLight,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           children: [
             Icon(
@@ -309,7 +311,7 @@ class DataExportView extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.paddingXl),
+            const SizedBox(height: AppDimensions.space16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -366,7 +368,7 @@ class DataExportView extends StatelessWidget {
         alpha: AppDimensions.opacityVeryLight,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

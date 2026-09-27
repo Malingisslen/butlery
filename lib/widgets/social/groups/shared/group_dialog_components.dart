@@ -59,7 +59,7 @@ class EmojiSelector extends StatelessWidget {
           title ?? context.l10n.groupSelectIcon,
           style: AppTextStyles.titleMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         // Fixed-size emoji grid (44x44 cells) — clamp text-scaling so the
         // glyph fits inside its cell at 200% system text scale (BUT-547 /
         // WCAG 1.4.4). Without this clamp the emoji clips at large scales.
@@ -68,7 +68,7 @@ class EmojiSelector extends StatelessWidget {
           maxScaleFactor: 1.3,
           child: Container(
             height: 60,
-            padding: const EdgeInsets.all(AppDimensions.spacingS),
+            padding: const EdgeInsets.all(AppDimensions.space4),
             decoration: BoxDecoration(
               border: Border.all(
                 color: Theme.of(context).colorScheme.outline,
@@ -92,7 +92,7 @@ class EmojiSelector extends StatelessWidget {
                       width: 44,
                       height: 44,
                       margin: const EdgeInsetsDirectional.only(
-                        end: AppDimensions.spacingS,
+                        end: AppDimensions.space4,
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
@@ -152,7 +152,7 @@ class ErrorDisplayWidget extends StatelessWidget {
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               errorMessage,
@@ -197,7 +197,7 @@ class WarningDisplayWidget extends StatelessWidget {
             color: warningColor,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               warningMessage,
@@ -241,7 +241,7 @@ class DialogHeader extends StatelessWidget {
             icon,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             title,
             style: AppTextStyles.headlineSmall.copyWith(

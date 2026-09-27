@@ -185,7 +185,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
     };
 
     return Container(
-      padding: AppDimensions.paddingAll3,
+      padding: AppDimensions.paddingAll4,
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),

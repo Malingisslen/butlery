@@ -154,7 +154,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             width: 48,
             height: AppDimensions.spacingXs,
             margin: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingS,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
@@ -297,7 +297,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             color: cs.onPrimary,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           label.toUpperCase(),
           style: AppTextStyles.labelSmall.copyWith(

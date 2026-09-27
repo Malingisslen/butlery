@@ -158,7 +158,7 @@ class _ShoppingListSelectionDialogState
                           key: _formKey,
                           child: Padding(
                             padding: const EdgeInsets.only(
-                              top: AppDimensions.spacingS,
+                              top: AppDimensions.space4,
                             ),
                             child: StyledInput(
                               controller: _newListNameController,
@@ -189,7 +189,7 @@ class _ShoppingListSelectionDialogState
                   context.l10n.dialogOrSelectExistingList,
                   style: AppTextStyles.titleMedium,
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
                 Container(
                   constraints: const BoxConstraints(maxHeight: 200),
                   child: ListView.builder(
@@ -199,7 +199,7 @@ class _ShoppingListSelectionDialogState
                       final list = _availableLists[index];
                       return Card(
                         margin: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingS,
+                          bottom: AppDimensions.space4,
                         ),
                         child: ListTile(
                           leading: Icon(

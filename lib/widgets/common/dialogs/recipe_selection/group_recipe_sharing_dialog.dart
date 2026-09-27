@@ -133,7 +133,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
         // Info bar showing filtered count and selection
         _buildInfo(context, viewModel),
 
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
 
         Divider(
           height: AppDimensions.borderWidthThin,

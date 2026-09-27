@@ -510,7 +510,7 @@ class ButtonThemes {
         elevation: AppDimensions.elevationMedium,
         shadowColor: cs.shadow,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingXl,
+          horizontal: AppDimensions.space16,
           vertical: AppDimensions.paddingM,
         ),
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),

@@ -145,7 +145,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
       key: ValueKey(category),
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.spacingXxs,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,

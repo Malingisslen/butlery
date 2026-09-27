@@ -117,7 +117,7 @@ class _MenuPlacementViewContent extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingSm,
-                vertical: AppDimensions.spacingS,
+                vertical: AppDimensions.space4,
               ),
               // The pill on the ink bar: the bar's own paper foreground for
               // both the border and the text, never a faded copy

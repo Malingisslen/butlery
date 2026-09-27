@@ -122,10 +122,8 @@ class PresenceOverview extends StatelessWidget {
                     child: Text(
                       day.displayLabel,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        fontSize: 9,
+                      style: AppTextStyles.overline.copyWith(
                         color: cs.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -153,7 +151,6 @@ class PresenceOverview extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.labelSmall.copyWith(
-                              fontSize: 10,
                               color: cs.onSurface,
                             ),
                           ),

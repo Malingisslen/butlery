@@ -204,7 +204,7 @@ class _BannerFrame extends StatelessWidget {
         ExcludeSemantics(
           child: Icon(icon, color: accent, size: AppDimensions.iconSize18),
         ),
-        const SizedBox(width: AppDimensions.paddingMs),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(
           child: Text(
             title,
@@ -215,7 +215,7 @@ class _BannerFrame extends StatelessWidget {
           ),
         ),
         if (tappable) ...[
-          const SizedBox(width: AppDimensions.paddingMs),
+          const SizedBox(width: AppDimensions.space8),
           ExcludeSemantics(
             child: Icon(
               Icons.chevron_right,
@@ -233,7 +233,7 @@ class _BannerFrame extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingModerate,
+          horizontal: AppDimensions.space12,
           vertical: AppDimensions.paddingM,
         ),
         child: content,
@@ -303,7 +303,7 @@ class OfflineStatusIcon extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsetsDirectional.only(
-            end: AppDimensions.spacingS,
+            end: AppDimensions.space4,
           ),
           child: Icon(
             Icons.wifi_off,

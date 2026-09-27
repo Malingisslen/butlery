@@ -256,14 +256,14 @@ class _BottomNavTab extends StatelessWidget {
                   badgeCount: item.badgeCount,
                   color: color,
                 ),
-                const SizedBox(height: AppDimensions.spacingXxs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   label,
                   style: style,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AppDimensions.spacingXxs),
+                const SizedBox(height: AppDimensions.space4),
                 // The saffron line under the chosen label, as wide as the
                 // text (Komponentark v1:663; produktregler.md:1055).
                 AnimatedContainer(
@@ -271,7 +271,7 @@ class _BottomNavTab extends StatelessWidget {
                     context,
                     AppDimensions.animationDurationFast,
                   ),
-                  height: AppDimensions.spacingXxs,
+                  height: AppDimensions.space4,
                   width: isSelected ? _textWidth(label, style) : 0,
                   color: isSelected ? ink.marker : Colors.transparent,
                 ),

@@ -83,7 +83,7 @@ class CookingPreferenceControls extends StatelessWidget {
           context.l10n.profileCuisineAffinities,
           style: AppTextStyles.labelMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           atMax
               ? context.l10n.profileCuisineAffinitiesMax

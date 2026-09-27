@@ -84,7 +84,7 @@ class ProfileSectionBuilders {
                   AppDimensions.buttonHeight,
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingXl,
+                  horizontal: AppDimensions.space16,
                   vertical: AppDimensions.paddingM,
                 ),
                 shape: RoundedRectangleBorder(

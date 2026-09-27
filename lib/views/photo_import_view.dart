@@ -416,7 +416,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           size: AppDimensions.iconSizeM,
                           color: cs.onSurface,
                         ),
-                        const SizedBox(width: AppDimensions.spacingS),
+                        const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             context.l10n.importPhotoDescription,
@@ -570,7 +570,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                 color: context.modeColors.warning,
                                 size: AppDimensions.iconSizeM,
                               ),
-                              const SizedBox(width: AppDimensions.spacingS),
+                              const SizedBox(width: AppDimensions.space4),
                               Expanded(
                                 child: Text(
                                   context.l10n.importImageQualityLow(
@@ -597,7 +597,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             ...viewModel.recommendations!.map(
                               (rec) => Padding(
                                 padding: const EdgeInsets.only(
-                                  bottom: AppDimensions.spacingXxs,
+                                  bottom: AppDimensions.space4,
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,

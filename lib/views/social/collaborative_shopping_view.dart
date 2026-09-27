@@ -383,7 +383,7 @@ class _UnaddedTextNotice extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppDimensions.spacingModerate,
+            AppDimensions.space12,
             AppDimensions.paddingS,
             AppDimensions.spacingXs,
             AppDimensions.spacingXs,

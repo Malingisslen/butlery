@@ -180,13 +180,13 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.spacingXs,
-        AppDimensions.spacingXxs,
-        AppDimensions.spacingS,
-        AppDimensions.spacingXxs,
+        AppDimensions.space4,
+        AppDimensions.space4,
+        AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,

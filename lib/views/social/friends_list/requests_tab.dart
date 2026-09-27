@@ -87,12 +87,12 @@ class RequestsTab extends StatelessWidget {
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.socialIncomingRequests,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingS,
@@ -116,7 +116,7 @@ class RequestsTab extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingM),
         ...requests.map(
           (request) => Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: FriendRequestCard.build(context, request, viewModel),
           ),
         ),
@@ -140,14 +140,14 @@ class RequestsTab extends StatelessWidget {
               size: AppDimensions.iconSizeM,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.socialSentRequests,
               style: AppTextStyles.titleMedium.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingS,
@@ -171,7 +171,7 @@ class RequestsTab extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingM),
         ...requests.map(
           (request) => Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: _buildSentRequestCard(context, request, viewModel),
           ),
         ),
@@ -353,7 +353,7 @@ class _DiscoverySection extends StatelessWidget {
             style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             context.l10n.socialFindNewFriendsDescription,
             style: AppTextStyles.bodyMedium.copyWith(

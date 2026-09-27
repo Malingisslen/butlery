@@ -101,7 +101,7 @@ class DraftRecoveryDialog extends StatelessWidget {
         ? context.l10n.draftUnnamedRecipe
         : draft.title;
     return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Semantics(
         label: context.l10n.a11yDraftRecoverTile(draftTitle),
         button: true,
@@ -139,7 +139,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXxs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         // How long the draft is kept, not only when it
                         // was written (Skarmar v12 etapp 4 #editorutkastval;

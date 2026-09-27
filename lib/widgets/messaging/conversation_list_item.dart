@@ -20,6 +20,14 @@ class ConversationListItem extends StatelessWidget {
   final VoidCallback? onArchive;
   final bool showOnlineStatus;
 
+  /// The avatar's diameter.
+  static const double _avatarSize = 56;
+
+  /// Where the row's text starts: the 12 px inset, the avatar and the 12 px
+  /// gap. The divider under a row starts here, so it lines up with the text.
+  static const double textInset =
+      AppDimensions.paddingM + _avatarSize + AppDimensions.paddingM;
+
   const ConversationListItem({
     super.key,
     required this.conversation,
@@ -137,7 +145,7 @@ class ConversationListItem extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         // Last message and unread indicator row
                         Row(
                           children: [
@@ -179,8 +187,8 @@ class ConversationListItem extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          width: 56,
-          height: 56,
+          width: _avatarSize,
+          height: _avatarSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: cs.inversePrimary.withValues(
@@ -195,8 +203,8 @@ class ConversationListItem extends StatelessWidget {
         // Online status indicator (only for direct conversations)
         if (!conversation.isGroup && showOnlineStatus)
           Positioned(
-            bottom: AppDimensions.spacingXxs,
-            right: AppDimensions.spacingXxs,
+            bottom: AppDimensions.space4,
+            right: AppDimensions.space4,
             child: Container(
               width: 16,
               height: 16,

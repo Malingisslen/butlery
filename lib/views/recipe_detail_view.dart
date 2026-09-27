@@ -1556,7 +1556,7 @@ class _RecipeActionBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.spacingModerate,
+          vertical: AppDimensions.space12,
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {

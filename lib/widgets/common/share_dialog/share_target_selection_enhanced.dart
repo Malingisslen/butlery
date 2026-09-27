@@ -173,7 +173,7 @@ class ShareTargetSelectionEnhanced {
                     ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 label,
                 style: isSelected

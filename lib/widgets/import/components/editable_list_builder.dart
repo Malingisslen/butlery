@@ -57,7 +57,7 @@ class EditableListBuilder extends StatelessWidget {
                       border: const OutlineInputBorder(),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.paddingMs,
+                        vertical: AppDimensions.space8,
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(
@@ -129,7 +129,7 @@ class EditableListHeader extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Container(
-          padding: AppDimensions.paddingSymmetric8x2,
+          padding: AppDimensions.badgePadding,
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

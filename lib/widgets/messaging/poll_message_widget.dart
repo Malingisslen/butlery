@@ -57,7 +57,10 @@ class PollMessageWidget extends StatelessWidget {
           // Poll icon + question
           Row(
             children: [
-              const Text('📊', style: TextStyle(fontSize: 16)),
+              const Text(
+                '📊',
+                style: TextStyle(fontSize: AppDimensions.emojiGlyphBody),
+              ),
               const SizedBox(width: AppDimensions.spacingXs),
               Expanded(
                 child: Text(

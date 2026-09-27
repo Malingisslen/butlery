@@ -50,7 +50,7 @@ Widget wrapAsDraggable({
     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
     child: Container(
       width: _kDragFeedbackWidth,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

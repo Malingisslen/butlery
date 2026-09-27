@@ -177,7 +177,7 @@ class _HouseholdAllergenFilterTileState
                   size: AppDimensions.iconSizeS,
                   color: colors.warning,
                 ),
-                const SizedBox(width: AppDimensions.spacingXxs),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.householdAllergenFilterSubtitleOff,

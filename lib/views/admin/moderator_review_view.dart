@@ -77,7 +77,10 @@ class _NotAuthorized extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -123,8 +126,7 @@ class _ReportsList extends StatelessWidget {
         horizontal: AppDimensions.paddingM,
       ),
       itemCount: vm.reports.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingS),
+      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space4),
       itemBuilder: (_, i) => _ReportCard(report: vm.reports[i]),
     );
   }
@@ -318,10 +320,7 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
-      ),
+      padding: AppDimensions.statusPillPadding,
       color: cs.secondaryContainer,
       child: Text(
         status.wireName,

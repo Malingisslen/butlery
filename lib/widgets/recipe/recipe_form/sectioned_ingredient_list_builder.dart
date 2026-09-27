@@ -78,7 +78,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           proxyDecorator: _proxyDecorator,
           itemBuilder: (context, index) => _buildRow(context, index, headings),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: TextButton.icon(
@@ -115,7 +115,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     final labelText = controller.text.trim();
     return Padding(
       key: ValueKey('hdr_$id'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       // header:true flags the row as a heading. It carries NO label — a label
       // here would absorb the delete button's own Semantics; the field name is
       // set on the TextField below instead.
@@ -134,8 +134,8 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 index: rowIndex,
                 child: const Padding(
                   padding: EdgeInsetsDirectional.only(
-                    start: AppDimensions.spacingS,
-                    end: AppDimensions.spacingS,
+                    start: AppDimensions.space4,
+                    end: AppDimensions.space4,
                   ),
                   child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
                 ),
@@ -194,13 +194,13 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     }
     return Padding(
       key: ValueKey('ing_line_$lineIndex'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           ReorderableDragStartListener(
             index: rowIndex,
             child: const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.space4),
               child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
             ),
           ),

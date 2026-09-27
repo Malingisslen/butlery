@@ -60,7 +60,7 @@ class MenuContentWidgets {
                 size: AppDimensions.iconSizeAction,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.menuPromptQuestion,
                 style: AppTextStyles.labelMedium.copyWith(
@@ -247,7 +247,7 @@ class MenuContentWidgets {
                 color: cs.onPrimaryContainer,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,11 +401,7 @@ class MenuContentWidgets {
                   header: true,
                   child: Text(
                     MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.headerFont,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 3,
+                    style: AppTextStyles.overline.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
@@ -474,7 +470,7 @@ class MenuContentWidgets {
                     .orEmpty();
                 return Padding(
                   padding: const EdgeInsets.only(
-                    bottom: AppDimensions.spacingS,
+                    bottom: AppDimensions.space4,
                   ),
                   child: MenuVoteCard(
                     vote: vote,
@@ -648,7 +644,7 @@ class _MenuRecipeCard extends StatelessWidget {
                             ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.spacingXs,
-                              vertical: AppDimensions.spacingXxs,
+                              vertical: AppDimensions.badgePaddingY,
                             ),
                             decoration: BoxDecoration(
                               color: cs.surface,
@@ -728,7 +724,7 @@ class _MenuRecipeCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppDimensions.spacingXxs),
+                    const SizedBox(width: AppDimensions.space4),
                   ],
                   // Swap button
                   Material(

@@ -77,7 +77,7 @@ class SaffronCount extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingSm - 1,
-          vertical: AppDimensions.spacingXxs,
+          vertical: AppDimensions.badgePaddingY,
         ),
         child: Text(
           '$count',

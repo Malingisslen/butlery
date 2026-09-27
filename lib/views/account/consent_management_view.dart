@@ -55,7 +55,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                  padding: EdgeInsets.all(
+                    AppDimensions.layoutMarginOf(context),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -93,7 +95,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -377,7 +379,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     title,
                     style: AppTextStyles.titleMedium,
                   ),
-                  const SizedBox(height: AppDimensions.spacingTight),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -456,7 +458,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       // Strip the default ExpansionTile dividers so it sits flush under the card.
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -487,7 +489,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             ...categories.map((c) => _buildLoggedCategoryRow(c.$1, c.$2)),
           ],
         ),
@@ -504,7 +506,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: AppTextStyles.bodyBold),
-          const SizedBox(height: AppDimensions.spacingXxs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             eventNames.join(', '),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(

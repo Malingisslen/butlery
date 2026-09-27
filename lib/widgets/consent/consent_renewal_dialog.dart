@@ -136,7 +136,7 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: AppTextStyles.bodyBold),
-                    const SizedBox(height: AppDimensions.spacingXxs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       body,
                       style: AppTextStyles.bodySmall.copyWith(

@@ -90,7 +90,7 @@ class LoadingStates {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       itemCount: itemCount ?? 5,
       itemBuilder: (context, index) => _buildSkeletonRecipeCard(),
     );
@@ -99,7 +99,7 @@ class LoadingStates {
   static Widget _buildSkeletonRecipeCard() {
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       child: Card(
@@ -108,7 +108,7 @@ class LoadingStates {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           child: Row(
             children: [
               // Bild skeleton
@@ -119,7 +119,7 @@ class LoadingStates {
                   AppDimensions.borderRadiusS,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               // Text content skeleton
               Expanded(
                 child: Column(

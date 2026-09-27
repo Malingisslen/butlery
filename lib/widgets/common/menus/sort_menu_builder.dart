@@ -98,7 +98,7 @@ class SortMenuBuilder {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.onSurface : null,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Flexible(child: Text(label)),
           const SizedBox(width: AppDimensions.spacingM),
           if (isSelected)

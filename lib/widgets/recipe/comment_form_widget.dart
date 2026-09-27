@@ -243,7 +243,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
       children: [
         if (socialViewModel.isReplying) ...[
           Container(
-            padding: AppDimensions.paddingAll3,
+            padding: AppDimensions.paddingAll4,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -255,7 +255,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                   size: AppDimensions.iconSizeM,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.commentReplyingTo,
@@ -286,7 +286,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               displayName: context.l10n.commentYou,
               size: ImageSize.small,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Expanded(
               child: TextField(
                 controller: _controller,
@@ -300,13 +300,13 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                       AppDimensions.borderRadiusM,
                     ),
                   ),
-                  contentPadding: AppDimensions.paddingAll3,
+                  contentPadding: AppDimensions.paddingAll4,
                 ),
                 maxLines: 3,
                 minLines: 1,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             VoicePromptButton(
               onTranscript: _onVoiceTranscript,
               enabled: !_isBusy,
@@ -345,7 +345,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
           ],
         ),
         if (_selectedImages.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildImagePreviewRow(context),
         ],
       ],
@@ -366,7 +366,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
         scrollDirection: Axis.horizontal,
         itemCount: _selectedImages.length,
         separatorBuilder: (_, __) =>
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
         itemBuilder: (context, index) {
           return Stack(
             children: [

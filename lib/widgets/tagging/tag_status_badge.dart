@@ -29,8 +29,8 @@ class TagStatusBadge extends StatelessWidget {
       label: semanticLabel,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingMs,
-          vertical: AppDimensions.spacing6,
+          horizontal: AppDimensions.space8,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
@@ -49,7 +49,7 @@ class TagStatusBadge extends StatelessWidget {
               semanticLabel: null,
             ),
             if (label != null) ...[
-              const SizedBox(width: AppDimensions.spacing6),
+              const SizedBox(width: AppDimensions.space4),
               ExcludeSemantics(
                 child: Text(
                   label!,
@@ -60,7 +60,7 @@ class TagStatusBadge extends StatelessWidget {
               ),
             ],
             if (onInfoTap != null) ...[
-              const SizedBox(width: AppDimensions.spacing6),
+              const SizedBox(width: AppDimensions.space4),
               TappableWrapper(
                 onTap: onInfoTap,
                 semanticLabel: context.l10n.a11yTagStatusInfo(semanticLabel),
@@ -99,8 +99,8 @@ class TagStatusBadgeCompact extends StatelessWidget {
       label: semanticLabel,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing6,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),

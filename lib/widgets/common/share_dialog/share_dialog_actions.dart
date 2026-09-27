@@ -108,7 +108,7 @@ class ShareDialogActions {
       return Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.spacingS,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
           color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
@@ -144,7 +144,7 @@ class ShareDialogActions {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),

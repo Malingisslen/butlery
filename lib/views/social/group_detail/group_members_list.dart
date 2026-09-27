@@ -230,14 +230,14 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           if (_selectionMode) _buildSelectionBar(context),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: members.length,
             separatorBuilder: (context, index) =>
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
             itemBuilder: (context, index) {
               final member = members[index];
               return KeyedSubtree(
@@ -274,13 +274,13 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               color: Theme.of(context).colorScheme.tertiary,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: pendingInvitations.length,
             separatorBuilder: (context, index) =>
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
             itemBuilder: (context, index) {
               final invitation = pendingInvitations[index];
               return KeyedSubtree(
@@ -363,13 +363,13 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.spacingXs,
-        AppDimensions.spacingXxs,
-        AppDimensions.spacingS,
-        AppDimensions.spacingXxs,
+        AppDimensions.space4,
+        AppDimensions.space4,
+        AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,

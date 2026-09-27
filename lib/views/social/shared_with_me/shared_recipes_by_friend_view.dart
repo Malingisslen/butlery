@@ -140,7 +140,7 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
         padding: AppDimensions.screenPadding,
         itemCount: recipes.length,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           final sharedRecipe = recipes[index];
           return KeyedSubtree(

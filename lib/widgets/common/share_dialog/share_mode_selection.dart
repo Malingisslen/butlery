@@ -30,7 +30,7 @@ class ShareModeSelection {
           children: [
             // Static Copy Option
             Container(
-              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              margin: const EdgeInsets.only(bottom: AppDimensions.space4),
               child: Semantics(
                 label: context.l10n.a11yShareModeStaticCopy,
                 button: true,

@@ -207,7 +207,7 @@ class InvitationTargetWidgets {
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.spacingS,
+          vertical: AppDimensions.space4,
         ),
       ),
     );
@@ -223,7 +223,7 @@ class InvitationTargetWidgets {
     return Padding(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
       child: Wrap(
-        spacing: AppDimensions.spacingS,
+        spacing: AppDimensions.space4,
         children: availableTypes
             .map(
               (type) => FilterChip(

@@ -81,7 +81,9 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
     final allergenEntries = allergens.entries.toList();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

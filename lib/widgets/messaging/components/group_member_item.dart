@@ -44,7 +44,7 @@ class GroupMemberItem extends StatelessWidget {
           children: [
             Text(displayName),
             if (isCurrentUser) ...[
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '(${context.l10n.commonYou})',
                 style: AppTextStyles.bodySmall.copyWith(

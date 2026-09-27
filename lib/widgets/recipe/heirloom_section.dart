@@ -14,6 +14,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
 
@@ -87,17 +88,18 @@ class HeirloomSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         imageBlock,
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
           ),
           child: Text(
             note,
-            style: TextStyle(
+            // Provenance is one of italic's four uses (tokens.json
+            // typography.italic).
+            style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurface,
               fontStyle: FontStyle.italic,
-              fontSize: 14,
             ),
           ),
         ),

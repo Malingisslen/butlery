@@ -332,7 +332,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         Divider(
           height: 1,
           color: Theme.of(context).dividerColor,
-          indent: AppDimensions.spacingHuge,
+          indent: ConversationListItem.textInset,
         ),
       ],
     );

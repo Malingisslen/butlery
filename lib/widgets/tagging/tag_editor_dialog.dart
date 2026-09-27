@@ -182,10 +182,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             style: AppTextStyles.titleSmall,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Wrap(
-                          spacing: AppDimensions.spacingS,
-                          runSpacing: AppDimensions.spacingS,
+                          spacing: AppDimensions.space4,
+                          runSpacing: AppDimensions.space4,
                           children: sortedTags
                               .map((tag) => _buildTagChip(tag))
                               .toList(),
@@ -204,10 +204,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Wrap(
-                          spacing: AppDimensions.spacingS,
-                          runSpacing: AppDimensions.spacingS,
+                          spacing: AppDimensions.space4,
+                          runSpacing: AppDimensions.space4,
                           children: removedTagsList
                               .map((tag) => _buildRemovedTagChip(tag))
                               .toList(),
@@ -223,7 +223,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                           style: AppTextStyles.titleSmall,
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingS),
+                      const SizedBox(height: AppDimensions.space4),
                       Form(
                         key: _formKey,
                         child: Row(
@@ -256,7 +256,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                 onFieldSubmitted: (_) => _addNewTag(),
                               ),
                             ),
-                            const SizedBox(width: AppDimensions.spacingS),
+                            const SizedBox(width: AppDimensions.space4),
                             IconButton.filled(
                               onPressed: _addNewTag,
                               icon: const Icon(Icons.add),

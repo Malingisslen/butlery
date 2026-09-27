@@ -246,7 +246,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXxs,
+              vertical: AppDimensions.badgePaddingY,
             ),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -280,7 +280,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXxs,
+              vertical: AppDimensions.badgePaddingY,
             ),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -376,7 +376,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         pill,
       ],
     );
@@ -391,7 +391,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     return Semantics(
       label: context.l10n.a11yPooledHouseholdPill(formatRatingComma(avg)),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
           border: Border.all(color: cs.outlineVariant),
           borderRadius: BorderRadius.zero,

@@ -205,7 +205,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
 
     return RepaintBoundary(
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+        margin: const EdgeInsets.only(bottom: AppDimensions.space4),
         // A chosen row is surface.selected with a 1.5 px text.primary
         // border, never a 12 % ink tint (enhet-3 valda tonplattor
         // shopping_item_tiles.dart:211; tokens.json:40-53, surface.selected;

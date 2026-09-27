@@ -325,8 +325,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           left: AppDimensions.spacingXs,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingTight,
-              vertical: AppDimensions.spacingXxs,
+              horizontal: AppDimensions.space4,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest.withValues(

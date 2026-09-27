@@ -24,7 +24,7 @@ class CollaborativeConnectionWidgets {
           final successColor = context.modeColors.success;
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
@@ -77,7 +77,7 @@ class CollaborativeConnectionWidgets {
                     fontSize: AppDimensions.iconSizeM.toDouble(),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
               ],
               Expanded(
                 child: Column(

@@ -68,7 +68,7 @@ class SharedContentSearchBar {
             // Visual chip indicator when showing imported content
             if (viewModel.showImported)
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: Chip(
                   label: Text(context.l10n.sharedShowingImported),
                   deleteIcon: const Icon(

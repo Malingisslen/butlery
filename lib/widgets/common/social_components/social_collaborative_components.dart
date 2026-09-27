@@ -411,7 +411,7 @@ class SocialCollaborativeComponents {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           label,
           style: AppTextStyles.metadataEmphasized,
@@ -448,8 +448,8 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingTight,
-        vertical: AppDimensions.spacingXxs,
+        horizontal: AppDimensions.space4,
+        vertical: AppDimensions.badgePaddingY,
       ),
       decoration: BoxDecoration(
         color: (color ?? config.color).withValues(

@@ -251,7 +251,10 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         appBar: ButleryTopBar.undersida(title: l10n.mfaChallengeTitle),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: _backupMode

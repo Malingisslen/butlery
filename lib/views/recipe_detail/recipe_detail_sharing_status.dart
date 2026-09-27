@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Shows sharing status for a recipe the user owns.
 /// Displays shared members/groups with per-item revoke buttons.
@@ -97,7 +98,7 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
                 ),
                 label: Text(
                   context.l10n.recipeSharingStopAll,
-                  style: TextStyle(color: cs.error, fontSize: 12),
+                  style: AppTextStyles.captionBase.copyWith(color: cs.error),
                 ),
               ),
             ],
@@ -288,7 +289,7 @@ class _ShareeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXxs),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
           Icon(icon, size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),

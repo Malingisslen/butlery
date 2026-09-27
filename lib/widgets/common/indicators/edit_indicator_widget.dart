@@ -100,7 +100,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
               mainAxisSize: MainAxisSize.min,
               children: [
                 PulseDot(color: color, size: 8),
-                const SizedBox(width: AppDimensions.spacingTight),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
                   style: AppTextStyles.metadataEmphasized.copyWith(

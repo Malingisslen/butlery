@@ -29,7 +29,7 @@ class CollaborativeLiveWidgets {
               opacity: opacity,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(

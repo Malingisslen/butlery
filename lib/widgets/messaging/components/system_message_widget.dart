@@ -165,7 +165,7 @@ class ReplyPreviewWidget extends StatelessWidget {
                   : cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXxs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             content,
             style: AppTextStyles.labelSmall.copyWith(

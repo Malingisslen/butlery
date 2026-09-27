@@ -104,7 +104,7 @@ class ShoppingListHeader {
 
         // Management buttons (only show if there's an active list)
         if (viewModel.activeList != null) ...[
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
 
           // Rename button
           DecoratedBox(
@@ -343,7 +343,7 @@ class ShoppingListHeader {
           size: AppDimensions.iconSizeM,
           color: sharingColor,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

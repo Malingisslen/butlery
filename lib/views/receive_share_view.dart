@@ -408,7 +408,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                     child: Row(
                       children: [
                         Icon(Icons.error_outline, color: cs.error),
-                        const SizedBox(width: AppDimensions.spacingS),
+                        const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             _extractionError!,
@@ -438,7 +438,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(context.l10n.commonOr, style: AppTextStyles.bodySmall),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
@@ -496,7 +496,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                         Icons.check_circle,
                         color: context.modeColors.success,
                       ),
-                      const SizedBox(width: AppDimensions.spacingS),
+                      const SizedBox(width: AppDimensions.space4),
                       Expanded(
                         child: Text(
                           context.l10n.importRecipeTextCanImport,

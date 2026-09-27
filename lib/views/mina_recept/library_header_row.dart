@@ -118,7 +118,7 @@ class MinaReceptLibraryHeader extends StatelessWidget {
       key: rowKey,
       padding: EdgeInsetsDirectional.fromSTEB(
         side,
-        AppDimensions.spacingModerate,
+        AppDimensions.space12,
         side - AppDimensions.spacingSm,
         0,
       ),

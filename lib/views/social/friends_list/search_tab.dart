@@ -47,7 +47,7 @@ class SearchTab {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       itemCount: viewModel.searchResults.length,
       separatorBuilder: (context, index) =>
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
       itemBuilder: (context, index) {
         final user = viewModel.searchResults[index];
         return AnimatedListItem(

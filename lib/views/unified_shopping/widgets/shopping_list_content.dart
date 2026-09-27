@@ -355,7 +355,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         ...completedSections,
       ],
 
-      const SizedBox(height: AppDimensions.spacingHuge),
+      const SizedBox(
+        height: AppDimensions.buttonHeight + AppDimensions.space24,
+      ),
     ];
 
     return ListView.builder(
@@ -472,7 +474,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.spacingSm,
-                              vertical: AppDimensions.spacingXxs,
+                              vertical: AppDimensions.badgePaddingY,
                             ),
                             // A real border in the header's own foreground,
                             // never a faded fill (tokens.json:40-53).

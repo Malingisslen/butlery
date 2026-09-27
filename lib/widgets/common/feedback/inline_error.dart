@@ -97,7 +97,7 @@ class InlineError extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppDimensions.spacingModerate,
+            AppDimensions.space12,
             AppDimensions.paddingM,
             AppDimensions.spacingXs,
             AppDimensions.paddingM,
@@ -106,7 +106,7 @@ class InlineError extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+                padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: ExcludeSemantics(
                   child: Icon(
                     Icons.warning_amber_rounded,
@@ -115,7 +115,7 @@ class InlineError extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.paddingMs),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Semantics(
                   container: true,
@@ -131,7 +131,7 @@ class InlineError extends StatelessWidget {
                         ),
                       ),
                       if (preserved != null) ...[
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           preserved,
                           style: AppTextStyles.captionBase.copyWith(

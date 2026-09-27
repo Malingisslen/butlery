@@ -148,7 +148,7 @@ class CategoryHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
@@ -164,7 +164,7 @@ class CategoryHeader extends StatelessWidget {
             color:
                 textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               title,
@@ -179,7 +179,7 @@ class CategoryHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: AppDimensions.spacingXxs,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,

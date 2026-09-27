@@ -25,7 +25,7 @@ class CommentItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: Container(
-        margin: AppDimensions.paddingOnlyBottom3,
+        margin: AppDimensions.paddingOnlyBottom4,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -41,7 +41,7 @@ class CommentItemWidget extends StatelessWidget {
                   ),
                   size: ImageSize.small,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +54,7 @@ class CommentItemWidget extends StatelessWidget {
                             ),
                             style: AppTextStyles.labelLarge,
                           ),
-                          const SizedBox(width: AppDimensions.spacingS),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(
                             CommentTimeFormatter.format(comment.createdAt),
                             style: AppTextStyles.bodySmall,
@@ -92,7 +92,7 @@ class CommentItemWidget extends StatelessWidget {
       child: InkWell(
         onTap: () => socialViewModel.toggleCommentLike(comment.id),
         child: Padding(
-          padding: AppDimensions.paddingSymmetric4x3,
+          padding: AppDimensions.paddingAll4,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -128,7 +128,7 @@ class CommentItemWidget extends StatelessWidget {
       child: InkWell(
         onTap: () => socialViewModel.setReplyTo(comment.id),
         child: Padding(
-          padding: AppDimensions.paddingSymmetric4x3,
+          padding: AppDimensions.paddingAll4,
           child: Text(
             context.l10n.commentReply,
             style: AppTextStyles.bodySmall.copyWith(

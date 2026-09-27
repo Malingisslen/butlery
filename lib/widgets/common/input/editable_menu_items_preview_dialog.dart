@@ -62,7 +62,7 @@ class _EditableMenuItemsPreviewDialogState
                       style: AppTextStyles.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       context.l10n.shoppingAllItemsRemovedFromMenu,
                       style: AppTextStyles.bodyMedium,

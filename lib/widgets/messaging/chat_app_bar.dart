@@ -74,7 +74,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.info_outline),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.chatConversationInfo),
                   ),
@@ -87,7 +87,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.notifications_off_outlined),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.chatMute),
                   ),
@@ -104,7 +104,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.calendar_month_outlined),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Flexible(child: Text(context.l10n.groupMenuChatAction)),
                   ],
                 ),
@@ -115,7 +115,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.block, color: cs.error),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.socialBlock),
                   ),
@@ -129,7 +129,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.exit_to_app, color: cs.error),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.chatLeaveConversation),
                   ),

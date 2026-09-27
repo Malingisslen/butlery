@@ -23,7 +23,7 @@ class StatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(padding ?? AppDimensions.spacingS),
+      padding: EdgeInsets.all(padding ?? AppDimensions.space4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

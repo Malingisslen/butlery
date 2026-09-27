@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -182,7 +183,7 @@ class RecipeShoppingHandler {
                               note.isEmpty
                                   ? item.displayText
                                   : '${item.displayText} · $note',
-                              style: const TextStyle(fontSize: 14),
+                              style: AppTextStyles.bodyMedium,
                             ),
                           ),
                         ],
@@ -198,7 +199,7 @@ class RecipeShoppingHandler {
                     check.coveredAtHome.join(', '),
                   ),
                   key: const ValueKey('recipePantryCovered'),
-                  style: const TextStyle(fontSize: 14),
+                  style: AppTextStyles.bodyMedium,
                 ),
               ],
               if (check != null && check.lessened.isNotEmpty) ...[
@@ -208,7 +209,7 @@ class RecipeShoppingHandler {
                     check.lessened.join(', '),
                   ),
                   key: const ValueKey('recipePantryLessened'),
-                  style: const TextStyle(fontSize: 14),
+                  style: AppTextStyles.bodyMedium,
                 ),
               ],
             ],

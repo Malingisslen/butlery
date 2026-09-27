@@ -115,7 +115,7 @@ class RateLimitDialog extends StatelessWidget {
             color: context.modeColors.warning,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               timeText,
@@ -175,7 +175,7 @@ class RateLimitDialog extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...actions,
       ],
     );

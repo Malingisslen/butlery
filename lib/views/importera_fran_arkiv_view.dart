@@ -139,7 +139,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                               // Tagg-filter
                               if (allTags.isNotEmpty) ...[
                                 Wrap(
-                                  spacing: AppDimensions.spacingS,
+                                  spacing: AppDimensions.space4,
                                   children: allTags.map((tag) {
                                     final chosen = viewModel.selectedTags
                                         .contains(tag);
@@ -186,7 +186,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.spacingS,
+                          vertical: AppDimensions.space4,
                         ),
                         child: _buildAdvancedStats(context, viewModel),
                       ),
@@ -224,7 +224,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Wrap(
-      spacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
       children: [
         ChoiceChip(
           label: Text(context.l10n.importFilterAll),
@@ -380,7 +380,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   : viewModel.toggleSelectAll,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             flex: 2,
             child: UtilityComponents.primaryButton(

@@ -41,7 +41,7 @@ class GroupSearchTab {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) =>
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
       itemBuilder: (context, index) {
         final group = filteredGroups[index];
         return AnimatedListItem(

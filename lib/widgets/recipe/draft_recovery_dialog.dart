@@ -153,7 +153,7 @@ class _DraftListTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: AppDimensions.spacingXxs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
                       style: theme.textTheme.bodySmall?.copyWith(

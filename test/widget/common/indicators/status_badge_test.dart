@@ -206,7 +206,7 @@ void main() {
           container.padding,
           equals(
             const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.spacingXs,
             ),
           ),

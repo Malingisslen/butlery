@@ -37,7 +37,7 @@ class FriendsTab {
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           itemCount: friends.length,
           separatorBuilder: (context, index) =>
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
           itemBuilder: (context, index) {
             final friend = friends[index];
             return AnimatedListItem(

@@ -123,7 +123,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.allergenTrackAllergensSubtitle,
               style: AppTextStyles.bodySmall.copyWith(
@@ -132,8 +132,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Wrap(
-              spacing: AppDimensions.spacingS,
-              runSpacing: AppDimensions.spacingS,
+              spacing: AppDimensions.space4,
+              runSpacing: AppDimensions.space4,
               children: AllergenPreferenceOptions.allergens.entries.map((e) {
                 final isSelected = viewModel.isAllergenTracked(e.key);
                 return FilterChip(
@@ -188,7 +188,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.allergenTrackDietarySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
@@ -197,8 +197,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Wrap(
-              spacing: AppDimensions.spacingS,
-              runSpacing: AppDimensions.spacingS,
+              spacing: AppDimensions.space4,
+              runSpacing: AppDimensions.space4,
               children: AllergenPreferenceOptions.dietary.entries.map((e) {
                 final isSelected = viewModel.isDietaryTracked(e.key);
                 return FilterChip(
@@ -354,7 +354,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               error,
@@ -389,7 +389,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.allergenAnalyzeAllRecipes,
               style: AppTextStyles.bodySmall.copyWith(

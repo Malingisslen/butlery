@@ -445,7 +445,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
               );
             }).toList(),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
         ],
       ),
     );

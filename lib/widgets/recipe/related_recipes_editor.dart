@@ -58,8 +58,8 @@ class RelatedRecipesEditor extends StatelessWidget {
         // Chips for currently linked recipes
         if (relatedRecipes.isNotEmpty) ...[
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: relatedRecipes.map((r) {
               return _RelatedChip(
                 key: ValueKey(r.id),
@@ -68,7 +68,7 @@ class RelatedRecipesEditor extends StatelessWidget {
               );
             }).toList(),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
         ],
 
         // Link button — OutlinedButton is a Material primitive that already
@@ -166,7 +166,7 @@ class _RelatedChip extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingS,
+                start: AppDimensions.space4,
                 end: AppDimensions.spacingXs,
                 top: AppDimensions.spacingXs,
                 bottom: AppDimensions.spacingXs,
@@ -186,7 +186,7 @@ class _RelatedChip extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(
                     start: AppDimensions.spacingXs,
-                    end: AppDimensions.spacingS,
+                    end: AppDimensions.space4,
                     top: AppDimensions.spacingXs,
                     bottom: AppDimensions.spacingXs,
                   ),

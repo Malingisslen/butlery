@@ -143,7 +143,10 @@ class ModuleLoadErrorScreen extends StatelessWidget {
       appBar: ButleryTopBar.undersida(title: context.l10n.errorTitle),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

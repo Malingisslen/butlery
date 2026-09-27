@@ -449,10 +449,7 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
-      ),
+      padding: AppDimensions.statusPillPadding,
       color: cs.secondaryContainer,
       child: Text(
         _statusLabel(context, status),

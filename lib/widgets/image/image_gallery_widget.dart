@@ -318,7 +318,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             top: AppDimensions.spacingSm,
             right: AppDimensions.spacingSm,
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingXxs),
+              padding: const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 // Solid plates, no opacity as state (tokens.json:40-53):
