@@ -3,16 +3,15 @@
 // Package 4: the simple layout's top bar is the canonical
 // ButleryTopBar.undersida (Komponentark v1 §01 pattern 2; B-45).
 // BUT-188: IndexedStack for tab state preservation
+// PQ-17: the shell's four tabs Hem · Meny · Inköp · Mer and the separate
+// plus (tillganglighetshandoff 'Navigation & toppfält').
 
 import 'package:flutter/material.dart';
 import 'package:butlery/views/mina_recept_view.dart';
+import 'package:butlery/views/more/more_view.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
-import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
@@ -22,25 +21,42 @@ import 'package:butlery/core/keyboard/app_actions.dart'
 /// This module provides the core layout structures including
 /// main menu with bottom navigation and simple layout for detail views.
 class LayoutScaffolds {
+  /// Hem: the greeting and the recipe library (Skarmar v12 del 1
+  /// #hemrecept). Today the library.
+  static const int homeTab = 0;
+
+  /// Meny (the week menu; the label is "Meny", beslut B-17).
+  static const int menuTab = 1;
+
+  /// Inköp (the shopping list).
+  static const int shoppingTab = 2;
+
+  /// Mer (Skarmar v12 del 2 #mer).
+  static const int moreTab = 3;
+
+  static const int _tabCount = 4;
+
   /// Main layout with bottom navigation and IndexedStack for tab persistence.
   ///
   /// [initialIndex] sets the tab shown on first build (e.g. from deep link).
+  ///
+  /// [tabBuilder] replaces the four tab views, for tests only.
   static Widget mainMenu({
     int? initialIndex,
     PreferredSizeWidget? appBar,
+    Widget Function(int tab)? tabBuilder,
   }) {
     return _MainMenuLayout(
-      initialIndex: initialIndex ?? 0,
+      initialIndex: initialIndex ?? homeTab,
       appBar: appBar,
+      tabBuilder: tabBuilder,
     );
   }
 
   /// BUT-1526: standard bottom navigation for detail/leaf views (settings,
-  /// legal, notifications, FAQ) so the four main destinations stay one tap
-  /// away. Mirrors `recipe_detail_view.dart`: default Butlery styling
-  /// (cream-dark bg, greenDark active, greenMuted inactive, rust underline —
-  /// NO colour override, project memory keeps it identical everywhere) and
-  /// stack-based `pushNamed` so Back returns to the detail view.
+  /// legal, notifications, FAQ) so the four main destinations and the plus
+  /// stay one tap away. Stack-based `pushNamed` so Back returns to the detail
+  /// view.
   ///
   /// `currentIndex` is null on purpose — none of these leaf views is one of the
   /// four main tabs, so nothing should render as selected.
@@ -76,30 +92,48 @@ class LayoutScaffolds {
   }
 }
 
-/// Main menu layout with IndexedStack preserving tab state across switches.
+/// The shell: IndexedStack keeps each tab's scroll position and filters
+/// "tills appen stängs" (Grafisk manual v6:619), and the chosen tab survives
+/// the OS killing the app (state restoration).
 class _MainMenuLayout extends StatefulWidget {
   final int initialIndex;
   final PreferredSizeWidget? appBar;
+  final Widget Function(int tab)? tabBuilder;
 
   const _MainMenuLayout({
     required this.initialIndex,
     this.appBar,
+    this.tabBuilder,
   });
 
   @override
   State<_MainMenuLayout> createState() => _MainMenuLayoutState();
 }
 
-class _MainMenuLayoutState extends State<_MainMenuLayout> {
-  late int _selectedIndex;
+class _MainMenuLayoutState extends State<_MainMenuLayout>
+    with RestorationMixin {
+  late final RestorableInt _selected = RestorableInt(
+    _clamp(widget.initialIndex),
+  );
 
-  /// Lazily built tab views — only created when first selected.
-  final List<Widget?> _tabs = List.filled(3, null);
+  /// The tab views, built once and kept (BUT-188).
+  final List<Widget?> _tabs = List.filled(LayoutScaffolds._tabCount, null);
+
+  static int _clamp(int index) => index.clamp(0, LayoutScaffolds._tabCount - 1);
+
+  int get _selectedIndex => _selected.value;
+
+  @override
+  String? get restorationId => 'main_shell';
+
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_selected, 'selected_tab');
+  }
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex.clamp(0, 2);
     // BUT-521: react to keyboard shortcut (Ctrl/Cmd+1-3) tab switches.
     mainTabSwitchRequest.addListener(_onTabSwitchRequest);
   }
@@ -107,197 +141,44 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
   @override
   void dispose() {
     mainTabSwitchRequest.removeListener(_onTabSwitchRequest);
+    _selected.dispose();
     super.dispose();
+  }
+
+  void _select(int index) {
+    final next = _clamp(index);
+    if (next == _selectedIndex) return;
+    setState(() => _selected.value = next);
   }
 
   void _onTabSwitchRequest() {
     if (!mounted) return;
-    final requested = mainTabSwitchRequest.value.clamp(0, 2);
-    if (requested == _selectedIndex) return;
-    setState(() => _selectedIndex = requested);
+    _select(mainTabSwitchRequest.value);
   }
 
   Widget _buildTab(int index) {
+    final custom = widget.tabBuilder;
+    if (custom != null) return _tabs[index] ??= custom(index);
     _tabs[index] ??= switch (index) {
-      0 => const MinaReceptView(),
-      1 => const VeckomenyView(),
-      2 => const UnifiedShoppingView(),
+      LayoutScaffolds.homeTab => const MinaReceptView(),
+      LayoutScaffolds.menuTab => const VeckomenyView(),
+      LayoutScaffolds.shoppingTab => const UnifiedShoppingView(),
+      LayoutScaffolds.moreTab => const MoreView(),
       _ => const SizedBox.shrink(),
     };
     return _tabs[index]!;
   }
 
-  void _showAddRecipeModal(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (modalContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Material drag handle — rounded exception to square design
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-                decoration: BoxDecoration(
-                  color: cs.onSurfaceVariant.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
-                  ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Text(
-                context.l10n.addRecipeTitle,
-                style: AppTextStyles.titleMedium,
-              ),
-              const SizedBox(height: AppDimensions.spacingL),
-              _buildModalGrid(context, modalContext, cs),
-              const SizedBox(height: AppDimensions.spacingMd),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModalGrid(
-    BuildContext rootContext,
-    BuildContext modalContext,
-    ColorScheme cs,
-  ) {
-    const spacing = AppDimensions.spacingMd;
-
-    void navigate(String route) {
-      Navigator.of(modalContext).pop();
-      Navigator.of(rootContext).pushNamed(route);
-    }
-
-    // Responsive sizing — mirrors LaggTillReceptView pattern
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final buttonSize = ((constraints.maxWidth - spacing) / 2).clamp(
-          120.0,
-          160.0,
-        );
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _modalButton(
-                  cs,
-                  label: rootContext.l10n.recipeImportLink,
-                  icon: Icons.link,
-                  color: cs.secondary,
-                  size: buttonSize,
-                  onTap: () => navigate(Routes.smartImport),
-                ),
-                const SizedBox(width: spacing),
-                _modalButton(
-                  cs,
-                  label: rootContext.l10n.recipeWriteManually,
-                  icon: Icons.edit,
-                  color: cs.onSurface,
-                  size: buttonSize,
-                  onTap: () => navigate(Routes.manualEntry),
-                ),
-              ],
-            ),
-            const SizedBox(height: spacing),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _modalButton(
-                  cs,
-                  label: rootContext.l10n.recipeFromImage,
-                  icon: Icons.image,
-                  color: cs.onSurface,
-                  size: buttonSize,
-                  onTap: () => navigate(Routes.photoImport),
-                ),
-                const SizedBox(width: spacing),
-                _modalButton(
-                  cs,
-                  label: rootContext.l10n.recipeFromArchive,
-                  icon: Icons.archive,
-                  color: cs.secondary,
-                  size: buttonSize,
-                  onTap: () => navigate(Routes.importFromArchive),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _modalButton(
-    ColorScheme cs, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required double size,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Material(
-        color: color,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: Semantics(
-          label: label,
-          button: true,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: AppDimensions.iconSizeXl,
-                    color: cs.onPrimary,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  Text(
-                    label,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: cs.onPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: _selectedIndex == 0,
+      canPop: _selectedIndex == LayoutScaffolds.homeTab,
       onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (!didPop && _selectedIndex != 0) {
-          setState(() => _selectedIndex = 0);
+        if (!didPop && _selectedIndex != LayoutScaffolds.homeTab) {
+          _select(LayoutScaffolds.homeTab);
           // BUT-521: keep notifier in sync with local state so the next
           // shortcut to tab 0 isn't deduped as a no-op.
-          mainTabSwitchRequest.value = 0;
+          mainTabSwitchRequest.value = LayoutScaffolds.homeTab;
         }
       },
       child: AdaptiveNavigationScaffold(
@@ -305,12 +186,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
         items: ButleryAdaptiveNavigation.getNavigationItems(context),
         appBar: widget.appBar,
         onNavigationChanged: (index) {
-          // "+" button opens modal instead of switching tabs
-          if (index == 3) {
-            _showAddRecipeModal(context);
-            return;
-          }
-          setState(() => _selectedIndex = index);
+          _select(index);
           // BUT-521: keep notifier in sync with local state so a subsequent
           // Cmd/Ctrl+1-3 to the same index isn't deduped as a no-op.
           mainTabSwitchRequest.value = index;
@@ -323,7 +199,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: List.generate(3, _buildTab),
+                children: List.generate(LayoutScaffolds._tabCount, _buildTab),
               ),
             ),
           ],

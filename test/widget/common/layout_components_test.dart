@@ -437,7 +437,9 @@ void main() {
       expect(find.byType(NavigationRail), findsNothing);
     });
 
-    testWidgets('tablet width renders NavigationRail', (tester) async {
+    testWidgets('tablet width renders our rail (produktregler.md:1054)', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         800,
@@ -448,7 +450,8 @@ void main() {
         ),
         withL10n: true,
       );
-      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(ButleryNavigationRail), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
       expect(find.byType(ButleryBottomNavigation), findsNothing);
     });
 
@@ -533,7 +536,7 @@ void main() {
       expect(find.text('should-not-render'), findsNothing);
     });
 
-    testWidgets('extendedRailOnDesktop=false keeps rail compact at desktop', (
+    testWidgets('desktop width keeps the same rail (produktregler.md:1054)', (
       tester,
     ) async {
       await _pumpAtWidth(
@@ -543,12 +546,11 @@ void main() {
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
-          extendedRailOnDesktop: false,
         ),
         withL10n: true,
       );
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(rail.extended, isFalse);
+      expect(find.byType(ButleryNavigationRail), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
     });
   });
 
@@ -582,7 +584,7 @@ void main() {
         ),
         withL10n: true,
       );
-      // 4 bottom nav items, each with a `test-nav-<route>` ValueKey on the
+      // 4 bottom nav items (Hem · Meny · Inköp · Mer), each with a `test-nav-<route>` ValueKey on the
       // inner InkWell (mobile path).
       expect(find.byKey(const ValueKey('test-nav-/')), findsOneWidget);
       expect(find.byKey(const ValueKey('test-nav-/veckomeny')), findsOneWidget);
@@ -590,7 +592,9 @@ void main() {
         find.byKey(const ValueKey('test-nav-/inkopslista')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('test-nav-/laggTill')), findsOneWidget);
+      expect(find.byKey(const ValueKey('test-nav-/mer')), findsOneWidget);
+      // PQ-17: "Lägg till" is no longer a destination.
+      expect(find.byKey(const ValueKey('test-nav-/laggTill')), findsNothing);
     });
 
     testWidgets('forwards title to underlying scaffold AppBar', (tester) async {

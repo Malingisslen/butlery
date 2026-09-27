@@ -64,6 +64,9 @@ import 'package:butlery/views/settings/licenses_view.dart';
 // Help
 import 'package:butlery/views/faq_view.dart';
 
+// The offline queue (P4-U19)
+import 'package:butlery/views/sync/sync_queue_view.dart';
+
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/router/recipe_detail_route_args.dart';
@@ -166,7 +169,7 @@ class AppRouter {
       switch (routeName) {
         case Routes.home:
           return _buildRoute(
-            LayoutScaffolds.mainMenu(initialIndex: 0),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.homeTab),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -306,7 +309,7 @@ class AppRouter {
             );
           }
           return _buildRoute(
-            LayoutScaffolds.mainMenu(initialIndex: 1),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.menuTab),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -324,9 +327,29 @@ class AppRouter {
 
         case Routes.shoppingList:
           return _buildRoute(
-            LayoutScaffolds.mainMenu(initialIndex: 2),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.shoppingTab),
             settings,
             Routes.getAnimationType(routeName),
+          );
+
+        case Routes.more:
+          // PQ-17: Mer is the shell's fourth tab.
+          return _buildRoute(
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.moreTab),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
+
+        case Routes.syncQueue:
+          return _buildRoute(
+            // The Mer row names where Back leads ("Tillbaka till Mer").
+            SyncQueueView(
+              backTo: settings.arguments is String
+                  ? settings.arguments as String
+                  : null,
+            ),
+            settings,
+            RouteAnimationType.slideFromRight,
           );
 
         case Routes.cookingMode:

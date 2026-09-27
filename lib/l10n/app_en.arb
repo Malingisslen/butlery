@@ -13525,5 +13525,278 @@
     "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
   },
   "recipePantryAllAtHome": "Everything is at home in full, so nothing is added to the shopping list: {names}",
-  "recipePantryLessened": "Less than the recipe, since some is at home: {names}"
+  "recipePantryLessened": "Less than the recipe, since some is at home: {names}",
+  "navigationHome": "home",
+  "@navigationHome": {
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055)."
+  },
+  "navigationMore": "more",
+  "@navigationMore": {
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer)."
+  },
+  "navigationAddAction": "Add",
+  "@navigationAddAction": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält)."
+  },
+  "moreTitle": "More",
+  "@moreTitle": {
+    "description": "P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer)."
+  },
+  "moreSectionTogether": "Together",
+  "@moreSectionTogether": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreSectionKitchen": "Your kitchen",
+  "@moreSectionKitchen": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreSectionAppAccount": "App & account",
+  "@moreSectionAppAccount": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreFamily": "My family",
+  "@moreFamily": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the family settings."
+  },
+  "morePersonalTags": "Personal tags",
+  "@morePersonalTags": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the personal tags."
+  },
+  "moreCollectionStats": "Collection statistics",
+  "@moreCollectionStats": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics."
+  },
+  "moreNotifications": "Notifications",
+  "@moreNotifications": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the notifications."
+  },
+  "addSheetQuickSaveTitle": "Quick save",
+  "@addSheetQuickSaveTitle": {
+    "description": "P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582)."
+  },
+  "addSheetQuickSaveSubtitle": "Just name and meal — import the details later",
+  "@addSheetQuickSaveSubtitle": {
+    "description": "P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583)."
+  },
+  "syncQueueTitle": "Waiting to sync",
+  "@syncQueueTitle": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190)."
+  },
+  "syncQueueNeedsYouHeader": "Waiting for you · {count}",
+  "@syncQueueNeedsYouHeader": {
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueNeedsYouHint": "These are not retried by themselves. The cause is written out, and each one has an action.",
+  "@syncQueueNeedsYouHint": {
+    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko."
+  },
+  "syncQueueQueuedHeader": "Queued · {count}",
+  "@syncQueueQueuedHeader": {
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the changes the queue sends by itself.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueOrderNote": "Changes to one item go in order, and different items sync side by side.",
+  "@syncQueueOrderNote": {
+    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186."
+  },
+  "syncQueueSyncNow": "Try to sync now",
+  "@syncQueueSyncNow": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view footer button."
+  },
+  "syncQueueSyncing": "Syncing …",
+  "@syncQueueSyncing": {
+    "description": "P6-T6 (PQ-17, P4-U19): the footer button while it syncs (content-style-guide.md:63)."
+  },
+  "syncQueueRetry": "Try again",
+  "@syncQueueRetry": {
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189)."
+  },
+  "syncQueueRetryA11y": "Try again — {what}",
+  "@syncQueueRetryA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of Försök igen, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscard": "Discard the change",
+  "@syncQueueDiscard": {
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko)."
+  },
+  "syncQueueDiscardA11y": "Discard the change {what}",
+  "@syncQueueDiscardA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of Släng ändringen, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscarded": "Change discarded.",
+  "@syncQueueDiscarded": {
+    "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1)."
+  },
+  "syncQueueDiscardFailed": "The change could not be discarded.",
+  "@syncQueueDiscardFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93)."
+  },
+  "syncQueueRetryFailed": "The change could not be put back in the queue.",
+  "@syncQueueRetryFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök igen failed."
+  },
+  "syncQueueSyncFailed": "The queue could not be sent right now.",
+  "@syncQueueSyncFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök synka nu failed."
+  },
+  "syncQueueChangeKept": "It stays under Waiting for you.",
+  "@syncQueueChangeKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed action on one change."
+  },
+  "syncQueueChangesKept": "The changes stay on the phone.",
+  "@syncQueueChangesKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed Försök synka nu."
+  },
+  "syncQueueEmpty": "Everything is saved. Nothing is waiting to sync.",
+  "@syncQueueEmpty": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view when nothing waits."
+  },
+  "syncQueueWaitsOnEarlier": "waiting for an earlier change",
+  "@syncQueueWaitsOnEarlier": {
+    "description": "P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187)."
+  },
+  "syncQueueUnnamedRecipe": "A recipe",
+  "@syncQueueUnnamedRecipe": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a change concerns when the device has no title for the recipe."
+  },
+  "syncQueueRecipeCreated": "{title} · new recipe",
+  "@syncQueueRecipeCreated": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued create concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeUpdated": "{title} · changed",
+  "@syncQueueRecipeUpdated": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued update concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeDeleted": "{title} · deleted",
+  "@syncQueueRecipeDeleted": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued delete concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeTagged": "{title} · being tagged",
+  "@syncQueueRecipeTagged": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued tagging concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueImageFor": "Photo for {title}",
+  "@syncQueueImageFor": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueImage": "A photo",
+  "@syncQueueImage": {
+    "description": "P6-T6 (PQ-17, P4-U19): a queued upload with no known recipe."
+  },
+  "syncQueueReasonNotFound": "The recipe no longer exists",
+  "@syncQueueReasonNotFound": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonPermission": "You no longer have permission",
+  "@syncQueueReasonPermission": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonTooLarge": "The photo is too large",
+  "@syncQueueReasonTooLarge": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonDependency": "It depends on a change that could not be saved",
+  "@syncQueueReasonDependency": {
+    "description": "P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187)."
+  },
+  "syncQueueReasonUnknown": "The server did not accept the change",
+  "@syncQueueReasonUnknown": {
+    "description": "P6-T6 (PQ-17, P4-U19): a permanent failure with no known cause."
+  },
+  "syncQueueAgeNow": "now",
+  "@syncQueueAgeNow": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35)."
+  },
+  "syncQueueAgeMinutes": "{minutes} min",
+  "@syncQueueAgeMinutes": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:31).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeHours": "{hours} h",
+  "@syncQueueAgeHours": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change, whole hours (content-style-guide.md:32).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeHoursMinutes": "{hours} h {minutes} min",
+  "@syncQueueAgeHoursMinutes": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:32).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeDays": "{days, plural, =1{1 day} other{{days} days}}",
+  "@syncQueueAgeDays": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a change queued a day or more ago.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueIndicatorA11y": "{count, plural, =1{1 change is waiting for you. Open Waiting to sync} other{{count} changes are waiting for you. Open Waiting to sync}}",
+  "@syncQueueIndicatorA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
