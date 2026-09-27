@@ -9,7 +9,7 @@ import 'package:butlery/models/friend_request.dart';
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -89,7 +89,7 @@ class FriendRequestCard {
                               width: 12,
                               height: 12,
                               decoration: BoxDecoration(
-                                color: context.butleryColors.success,
+                                color: context.modeColors.success,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.surface,
@@ -233,12 +233,12 @@ class FriendRequestCard {
 
     switch (request.status) {
       case FriendRequestStatus.pending:
-        statusColor = context.butleryColors.warning;
+        statusColor = context.modeColors.warning;
         statusIcon = Icons.schedule;
         statusText = context.l10n.socialPendingResponse;
         break;
       case FriendRequestStatus.accepted:
-        statusColor = context.butleryColors.success;
+        statusColor = context.modeColors.success;
         statusIcon = Icons.check_circle;
         statusText = context.l10n.socialAccepted;
         break;
@@ -315,7 +315,7 @@ class FriendRequestCard {
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: context.butleryColors.success,
+                            color: context.modeColors.success,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Theme.of(context).colorScheme.surface,

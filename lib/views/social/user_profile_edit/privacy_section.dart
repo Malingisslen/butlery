@@ -52,9 +52,10 @@ class PrivacySettingsSection extends StatelessWidget {
                     : (value) async {
                         final ok = await viewModel.setSearchableOptIn(value);
                         if (!ok && context.mounted) {
-                          SnackBarUtils.showError(
+                          SnackBarUtils.showFailure(
                             context,
-                            viewModel.error ??
+                            what:
+                                viewModel.error ??
                                 context.l10n.errorCouldNotUpdateSearchability,
                           );
                         }

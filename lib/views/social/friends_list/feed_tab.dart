@@ -412,7 +412,10 @@ class FeedTab {
       if (ok) {
         SnackBarUtils.showSuccess(context, context.l10n.feedRecipeRequestSent);
       } else {
-        SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.feedRecipeRequestFailed,
+        );
       }
     }
   }

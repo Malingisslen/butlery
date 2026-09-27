@@ -10,7 +10,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -301,12 +301,12 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: context.butleryColors.success.withValues(
+        color: context.modeColors.success.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: context.butleryColors.success.withValues(
+          color: context.modeColors.success.withValues(
             alpha: AppDimensions.opacityMediumLight,
           ),
         ),
@@ -318,14 +318,14 @@ class _CreateSharedShoppingListViewState
             children: [
               Icon(
                 Icons.info_outline,
-                color: context.butleryColors.success,
+                color: context.modeColors.success,
                 size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingWhatHappensWhenSharing,
                 style: AppTextStyles.titleBold.copyWith(
-                  color: context.butleryColors.success,
+                  color: context.modeColors.success,
                 ),
               ),
             ],
@@ -334,7 +334,7 @@ class _CreateSharedShoppingListViewState
           Text(
             context.l10n.shoppingShareInfoBullets,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: context.butleryColors.success,
+              color: context.modeColors.success,
             ),
           ),
         ],

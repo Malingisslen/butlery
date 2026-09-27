@@ -191,14 +191,16 @@ class GroupInvitationCard {
         context.l10n.groupInvitationAccepted,
       );
     } else if (context.mounted && service.invitations.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        service.invitations.error ?? context.l10n.errorGeneric,
+        what:
+            service.invitations.error ??
+            context.l10n.groupCouldNotAcceptInvitation,
       );
     } else if (!success && context.mounted) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupCouldNotAcceptInvitation,
+        what: context.l10n.groupCouldNotAcceptInvitation,
       );
     }
   }
@@ -215,9 +217,11 @@ class GroupInvitationCard {
     if (success && context.mounted) {
       SnackBarUtils.showWarning(context, context.l10n.groupInvitationDeclined);
     } else if (context.mounted && service.invitations.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        service.invitations.error ?? context.l10n.errorGeneric,
+        what:
+            service.invitations.error ??
+            context.l10n.groupInvitationDeclineFailed,
       );
     }
   }

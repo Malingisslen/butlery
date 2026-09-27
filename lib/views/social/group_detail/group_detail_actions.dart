@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -161,9 +162,10 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to remove group member', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotRemoveMember('$e'),
+            what: context.l10n.groupRemoveMemberFailed,
           );
         }
       }
@@ -240,9 +242,10 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to update group', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotUpdate('$e'),
+            what: context.l10n.groupUpdateFailed,
           );
         }
       }
@@ -283,9 +286,10 @@ class GroupDetailActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to delete group', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotDelete('$e'),
+            what: context.l10n.groupDeleteFailed,
           );
         }
       }
@@ -331,9 +335,10 @@ class GroupDetailActions {
         } else {}
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          AppLogger.error('Failed to leave group', e);
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.groupCouldNotLeave('$e'),
+            what: context.l10n.groupLeaveFailed,
           );
         }
       }

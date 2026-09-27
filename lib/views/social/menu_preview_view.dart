@@ -421,9 +421,9 @@ class MenuPreviewView extends StatelessWidget {
         Navigator.pop(context);
       }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
+        what: viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
       );
     }
   }
@@ -480,9 +480,9 @@ class MenuPreviewView extends StatelessWidget {
           onUndo: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
         );
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
+          what: viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
         );
       }
     }

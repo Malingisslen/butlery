@@ -9,8 +9,10 @@ import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class _MockReportService extends Mock implements ReportService {}
 
@@ -77,7 +79,23 @@ void main() {
         reason: 'Failed load should not partially populate.',
       );
       expect(vm.hasError, isTrue);
+      expect(vm.error, AppLocale.current.myReportsLoadFailed);
       expect(vm.isLoading, isFalse);
+    });
+
+    // P7-C2: the failure text is localized, not the old internal tag
+    // 'my_reports_load'; an English user reads English.
+    test('load() failure text follows the app locale', () async {
+      AppLocale.updateLocale(const Locale('en'));
+      addTearDown(() => AppLocale.updateLocale(const Locale('sv')));
+      when(
+        () => service.getMyReports(),
+      ).thenThrow(Exception('firestore offline'));
+
+      await vm.load();
+
+      expect(vm.error, 'Could not load reports');
+      expect(vm.error, isNot(contains('my_reports_load')));
     });
 
     test('refresh() re-invokes the service and replaces report list', () async {

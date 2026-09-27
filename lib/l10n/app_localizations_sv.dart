@@ -18675,4 +18675,129 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileAccountDeleteFailed => 'Kontot kunde inte raderas.';
+
+  @override
+  String get adminMetricsLoadFailed => 'Kunde inte ladda mätvärden';
+
+  @override
+  String get adminOpsLogLoadFailed => 'Kunde inte ladda driftloggen';
+
+  @override
+  String get adminParsingStatsLoadFailed =>
+      'Kunde inte ladda parsing-statistik';
+
+  @override
+  String get familyRatingsLoadFailed => 'Kunde inte ladda betygen';
+
+  @override
+  String get familyRatingEntryLoadFailed => 'Kunde inte ladda betygssättningen';
+
+  @override
+  String get familyRatingSaveFailed => 'Kunde inte spara betyget';
+
+  @override
+  String get familyLoadFailed => 'Kunde inte ladda familjen';
+
+  @override
+  String get familyMemberSaveFailed => 'Kunde inte spara familjemedlemmen';
+
+  @override
+  String get familyConsentRevokeFailed => 'Kunde inte återkalla samtycket';
+
+  @override
+  String get familyMemberRemoveFailed => 'Kunde inte ta bort familjemedlemmen';
+
+  @override
+  String get householdLoadFailed => 'Kunde inte ladda hushållet';
+
+  @override
+  String get weeklyMenuSaveError => 'Kunde inte spara veckomenyn';
+
+  @override
+  String get weeklyMenuWhoIsHomeSaveFailed =>
+      'Kunde inte spara vilka som är hemma';
+
+  @override
+  String get weeklyMenuAddRecipeFailed => 'Kunde inte lägga till receptet';
+
+  @override
+  String get weeklyMenuMoveRecipeFailed => 'Kunde inte flytta receptet';
+
+  @override
+  String get weeklyMenuRemoveRecipeFailed => 'Kunde inte ta bort receptet';
+
+  @override
+  String get weeklyMenuClearFailed => 'Kunde inte rensa veckan';
+
+  @override
+  String get weeklyMenuUndoClearFailed => 'Kunde inte ångra rensningen';
+
+  @override
+  String get pantryLoadFailed => 'Kunde inte ladda skafferiet';
+
+  @override
+  String get pantryAddFailed => 'Kunde inte lägga till i skafferiet';
+
+  @override
+  String get pantryRemoveItemFailed => 'Kunde inte ta bort objektet';
+
+  @override
+  String get pantryRestoreItemFailed => 'Kunde inte återställa objektet';
+
+  @override
+  String get pantryRemoveItemsFailed => 'Kunde inte ta bort objekten';
+
+  @override
+  String get pantryRestoreItemsFailed => 'Kunde inte återställa objekten';
+
+  @override
+  String get sharedShoppingListsLoadFailed =>
+      'Kunde inte ladda delade inköpslistor';
+
+  @override
+  String get activityFeedLoadFailed => 'Kunde inte ladda flödet';
+
+  @override
+  String get activityFeedLoadMoreFailed => 'Kunde inte ladda fler händelser';
+
+  @override
+  String get groupCreateFailed => 'Gruppen kunde inte skapas.';
+
+  @override
+  String get groupRemoveMemberFailed => 'Medlemmen kunde inte tas bort.';
+
+  @override
+  String get groupUpdateFailed => 'Gruppen kunde inte uppdateras.';
+
+  @override
+  String get groupDeleteFailed => 'Gruppen kunde inte raderas.';
+
+  @override
+  String get groupLeaveFailed => 'Det gick inte att lämna gruppen.';
+
+  @override
+  String get groupInvitationCancelFailed => 'Inbjudan kunde inte avbrytas.';
+
+  @override
+  String get conversationStartFailed => 'Konversationen kunde inte startas.';
+
+  @override
+  String get conversationDeleteFailed => 'Konversationen kunde inte raderas.';
+
+  @override
+  String get profileOpenFailed => 'Profilen kunde inte öppnas.';
+
+  @override
+  String get feedRecipeRequestFailed => 'Förfrågan kunde inte skickas.';
+
+  @override
+  String get groupInvitationDeclineFailed => 'Inbjudan kunde inte avvisas.';
+
+  @override
+  String get socialInviteLinkShareFailed =>
+      'Inbjudningslänken kunde inte delas.';
+
+  @override
+  String get socialInviteLinkCopyFailed =>
+      'Inbjudningslänken kunde inte kopieras.';
 }

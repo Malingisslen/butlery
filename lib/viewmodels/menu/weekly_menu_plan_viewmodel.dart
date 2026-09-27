@@ -244,7 +244,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         if (isDisposed) return;
         await _publishThenSave(updated, current);
       },
-      errorPrefix: 'Kunde inte spara vilka som är hemma',
+      errorPrefix: AppLocale.current.weeklyMenuWhoIsHomeSaveFailed,
       guarded: false,
     );
   }
@@ -269,7 +269,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         if (isDisposed) return;
         await _publishThenSave(updated, current);
       },
-      errorPrefix: 'Kunde inte spara vilka som är hemma',
+      errorPrefix: AppLocale.current.weeklyMenuWhoIsHomeSaveFailed,
       guarded: false,
     );
   }
@@ -411,7 +411,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         _selectedEntryIds.clear();
         notifyListeners();
       },
-      errorPrefix: 'Kunde inte ladda veckomenyn',
+      errorPrefix: AppLocale.current.weeklyMenuLoadError,
     );
   }
 
@@ -460,8 +460,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // `onErrorRetry` calls `loadWeek`, which short-circuits when the resident
     // plan already matches that week, so it never reaches `clearError`.
     // Silence is the lesser fault; making the refusal visible needs a channel
-    // the view can tell apart from failure, the way `generateShoppingList`
-    // uses its `alreadyRunning` sentinel. BUT-1987.
+    // the view can tell apart from failure, such as a sentinel result that
+    // is neither success nor null. BUT-1987.
     if (_readFailed) {
       _lastApplyLeftWeekUnchanged = true;
       return null;
@@ -580,7 +580,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         if (isDisposed) return;
         await _publishThenSave(updated, current);
       },
-      errorPrefix: 'Kunde inte lägga till receptet',
+      errorPrefix: AppLocale.current.weeklyMenuAddRecipeFailed,
     );
   }
 
@@ -602,7 +602,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         if (isDisposed || identical(updated, current)) return;
         await _publishThenSave(updated, current);
       },
-      errorPrefix: 'Kunde inte flytta receptet',
+      errorPrefix: AppLocale.current.weeklyMenuMoveRecipeFailed,
     );
   }
 
@@ -615,7 +615,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         if (isDisposed || identical(updated, current)) return;
         await _publishThenSave(updated, current);
       },
-      errorPrefix: 'Kunde inte ta bort receptet',
+      errorPrefix: AppLocale.current.weeklyMenuRemoveRecipeFailed,
     );
   }
 
@@ -665,7 +665,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           rethrow;
         }
       },
-      errorPrefix: 'Kunde inte rensa veckan',
+      errorPrefix: AppLocale.current.weeklyMenuClearFailed,
     );
   }
 
@@ -705,37 +705,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           rethrow;
         }
       },
-      errorPrefix: 'Kunde inte ångra rensningen',
+      errorPrefix: AppLocale.current.weeklyMenuUndoClearFailed,
     );
-  }
-
-  /// BUT-956/BUT-1234: aggregate the visible week's recipes into one
-  /// shopping list ("Generera inköpslista" FAB).
-  ///
-  /// Three-way result contract the view renders snackbars from:
-  /// - non-null with `isEmptyPlan == false` → success
-  /// - non-null `nothingToGenerate` sentinel → week has no resolvable recipes
-  /// - null → generation FAILED
-  ///
-  /// Re-entrancy rides on [isLoading] (set synchronously by executeAsync) —
-  /// the view disables the FAB while loading; a racing second call returns
-  /// the [MenuShoppingGenerationResult.alreadyRunning] sentinel, which the
-  /// view renders as silence (a double-tap is not a failure). The
-  /// generator's own error path swallows
-  /// exceptions into a null return, so the catch below only fires for
-  /// failures outside it; either way the caller sees null = failure.
-  Future<MenuShoppingGenerationResult?> generateShoppingList() async {
-    if (isLoading) return MenuShoppingGenerationResult.alreadyRunning;
-    if (_readFailed) return null;
-    try {
-      return await executeAsync(
-        () => _shoppingListGenerator.generateForWeek(currentWeekStart),
-        errorPrefix: 'Kunde inte skapa inköpslistan',
-      );
-    } catch (_) {
-      // executeAsync already set the error state and logged the details.
-      return null;
-    }
   }
 
   /// P6-U02: the visible week's placements for the merge sheet, or null
@@ -1116,7 +1087,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           toWeekStart: to,
         );
       },
-      errorPrefix: 'Kunde inte kopiera veckan',
+      errorPrefix: AppLocale.current.weeklyMenuCopyToNextFailed,
       guarded: false,
     );
     if (!ok) return null;
@@ -1179,7 +1150,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         // a fetch.
         await _fetchWeek(weekStart);
       },
-      errorPrefix: 'Kunde inte flytta recepten',
+      errorPrefix: AppLocale.current.weeklyMenuMoveFailed,
       guarded: false,
     );
     // Clear selection regardless of outcome — a failed move shouldn't leave

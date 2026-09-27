@@ -27,7 +27,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -297,7 +297,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
       switch (invitationStatus) {
         case 'sent':
-          statusColor = context.butleryColors.success;
+          statusColor = context.modeColors.success;
           statusIcon = Icons.check_circle;
           statusText = context.l10n.groupInvitationSent;
           break;
@@ -307,7 +307,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           statusText = context.l10n.commonFailed;
           break;
         default:
-          statusColor = context.butleryColors.warning;
+          statusColor = context.modeColors.warning;
           statusIcon = Icons.schedule;
           statusText = context.l10n.commonPending;
       }

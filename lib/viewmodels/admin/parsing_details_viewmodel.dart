@@ -4,6 +4,7 @@ import 'package:butlery/models/admin/parsing_domain_stat.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for the admin parsing-details tab. Complements import-health:
 /// import-health says WHICH domains fail, this says WHAT the parser gets wrong
@@ -72,7 +73,7 @@ class ParsingDetailsViewModel extends BaseViewModel {
         _stats = stats;
         _totalCorrections = total;
       },
-      errorPrefix: 'Kunde inte ladda parsing-statistik',
+      errorPrefix: AppLocale.current.adminParsingStatsLoadFailed,
     );
   }
 

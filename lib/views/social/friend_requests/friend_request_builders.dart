@@ -8,7 +8,7 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -92,7 +92,7 @@ class FriendRequestsHeaderBuilder {
                   children: [
                     Icon(
                       Icons.check_circle,
-                      color: context.butleryColors.success,
+                      color: context.modeColors.success,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(

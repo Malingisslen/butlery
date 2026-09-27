@@ -18644,4 +18644,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileAccountDeleteFailed => 'The account could not be deleted.';
+
+  @override
+  String get adminMetricsLoadFailed => 'Couldn\'t load the metrics';
+
+  @override
+  String get adminOpsLogLoadFailed => 'Couldn\'t load the operations log';
+
+  @override
+  String get adminParsingStatsLoadFailed =>
+      'Couldn\'t load the parsing statistics';
+
+  @override
+  String get familyRatingsLoadFailed => 'Couldn\'t load the ratings';
+
+  @override
+  String get familyRatingEntryLoadFailed => 'Couldn\'t load the rating';
+
+  @override
+  String get familyRatingSaveFailed => 'Couldn\'t save the rating';
+
+  @override
+  String get familyLoadFailed => 'Couldn\'t load the family';
+
+  @override
+  String get familyMemberSaveFailed => 'Couldn\'t save the family member';
+
+  @override
+  String get familyConsentRevokeFailed => 'Couldn\'t withdraw the consent';
+
+  @override
+  String get familyMemberRemoveFailed => 'Couldn\'t remove the family member';
+
+  @override
+  String get householdLoadFailed => 'Couldn\'t load the household';
+
+  @override
+  String get weeklyMenuSaveError => 'Couldn\'t save the weekly menu';
+
+  @override
+  String get weeklyMenuWhoIsHomeSaveFailed => 'Couldn\'t save who is home';
+
+  @override
+  String get weeklyMenuAddRecipeFailed => 'Couldn\'t add the recipe';
+
+  @override
+  String get weeklyMenuMoveRecipeFailed => 'Couldn\'t move the recipe';
+
+  @override
+  String get weeklyMenuRemoveRecipeFailed => 'Couldn\'t remove the recipe';
+
+  @override
+  String get weeklyMenuClearFailed => 'Couldn\'t clear the week';
+
+  @override
+  String get weeklyMenuUndoClearFailed => 'Couldn\'t undo the clearing';
+
+  @override
+  String get pantryLoadFailed => 'Couldn\'t load the pantry';
+
+  @override
+  String get pantryAddFailed => 'Couldn\'t add to the pantry';
+
+  @override
+  String get pantryRemoveItemFailed => 'Couldn\'t remove the item';
+
+  @override
+  String get pantryRestoreItemFailed => 'Couldn\'t restore the item';
+
+  @override
+  String get pantryRemoveItemsFailed => 'Couldn\'t remove the items';
+
+  @override
+  String get pantryRestoreItemsFailed => 'Couldn\'t restore the items';
+
+  @override
+  String get sharedShoppingListsLoadFailed =>
+      'Couldn\'t load shared shopping lists';
+
+  @override
+  String get activityFeedLoadFailed => 'Couldn\'t load the feed';
+
+  @override
+  String get activityFeedLoadMoreFailed => 'Couldn\'t load more activity';
+
+  @override
+  String get groupCreateFailed => 'The group could not be created.';
+
+  @override
+  String get groupRemoveMemberFailed => 'The member could not be removed.';
+
+  @override
+  String get groupUpdateFailed => 'The group could not be updated.';
+
+  @override
+  String get groupDeleteFailed => 'The group could not be deleted.';
+
+  @override
+  String get groupLeaveFailed => 'Couldn\'t leave the group.';
+
+  @override
+  String get groupInvitationCancelFailed =>
+      'The invitation could not be cancelled.';
+
+  @override
+  String get conversationStartFailed =>
+      'The conversation could not be started.';
+
+  @override
+  String get conversationDeleteFailed =>
+      'The conversation could not be deleted.';
+
+  @override
+  String get profileOpenFailed => 'The profile could not be opened.';
+
+  @override
+  String get feedRecipeRequestFailed => 'The request could not be sent.';
+
+  @override
+  String get groupInvitationDeclineFailed =>
+      'The invitation could not be declined.';
+
+  @override
+  String get socialInviteLinkShareFailed =>
+      'The invitation link could not be shared.';
+
+  @override
+  String get socialInviteLinkCopyFailed =>
+      'The invitation link could not be copied.';
 }

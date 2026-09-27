@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -173,11 +174,13 @@ class GroupInvitationCard {
         onCancelled();
       } else if (context.mounted &&
           groupInvitationService.invitations.hasError) {
-        SnackBarUtils.showError(
+        AppLogger.error(
+          'Failed to cancel group invitation',
+          groupInvitationService.invitations.error,
+        );
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorOccurredWithDetails(
-            '${groupInvitationService.invitations.error}',
-          ),
+          what: context.l10n.groupInvitationCancelFailed,
         );
       }
     }

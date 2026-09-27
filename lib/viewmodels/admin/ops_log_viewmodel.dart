@@ -2,6 +2,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/admin/ops_event.dart';
 import 'package:butlery/repositories/ops_log_repository.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for the admin ops-log tab: recent scheduled-job run events from
 /// `system_events`. Read-only. Sparse pre-launch — only cleanup jobs log here.
@@ -26,7 +27,7 @@ class OpsLogViewModel extends BaseViewModel {
       () async {
         _events = await _repository.getRecentEvents();
       },
-      errorPrefix: 'Kunde inte ladda driftloggen',
+      errorPrefix: AppLocale.current.adminOpsLogLoadFailed,
     );
   }
 

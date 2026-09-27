@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -463,9 +464,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(
+        AppLogger.error('Failed to create group', e);
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.groupCouldNotCreate('$e'),
+          what: context.l10n.groupCreateFailed,
         );
       }
     }

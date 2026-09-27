@@ -369,11 +369,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     } catch (e) {
       AppLogger.error('Failed to start conversation', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialCouldNotStartConversation(
-          SnackBarUtils.userFriendlyMessage(context, e),
-        ),
+        what: context.l10n.conversationStartFailed,
       );
     } finally {
       if (mounted) {
@@ -411,9 +409,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
       } else {
         // Was silently swallowed: a network/permission failure left the
         // friend in place with no feedback. Surface it.
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.socialCouldNotRemoveFriend,
+          what: context.l10n.socialCouldNotRemoveFriend,
         );
       }
     }
