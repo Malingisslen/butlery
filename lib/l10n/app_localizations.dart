@@ -30005,6 +30005,18 @@ abstract class AppLocalizations {
   /// **'Notiser'**
   String get moreNotifications;
 
+  /// P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582).
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbspara'**
+  String get addSheetQuickSaveTitle;
+
+  /// P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara namn och måltid — importera detaljer senare'**
+  String get addSheetQuickSaveSubtitle;
+
   /// P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190).
   ///
   /// In sv, this message translates to:
@@ -30070,6 +30082,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Släng ändringen {what}'**
   String syncQueueDiscardA11y(String what);
+
+  /// P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen slängdes.'**
+  String get syncQueueDiscarded;
+
+  /// P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte slängas.'**
+  String get syncQueueDiscardFailed;
+
+  /// P6-T6 (P4-U19): what happened when Försök igen failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte läggas tillbaka i kön.'**
+  String get syncQueueRetryFailed;
+
+  /// P6-T6 (P4-U19): what happened when Försök synka nu failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kön kunde inte skickas nu.'**
+  String get syncQueueSyncFailed;
+
+  /// P6-T6 (P4-U19): what was kept after a failed action on one change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den ligger kvar under Väntar på dig.'**
+  String get syncQueueChangeKept;
+
+  /// P6-T6 (P4-U19): what was kept after a failed Försök synka nu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringarna ligger kvar på telefonen.'**
+  String get syncQueueChangesKept;
 
   /// P6-T6 (PQ-17, P4-U19): the queue view when nothing waits.
   ///

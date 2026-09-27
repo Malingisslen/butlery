@@ -116,8 +116,9 @@ class SyncQueueIndicator extends StatelessWidget {
         tooltip: label,
         onPressed: () => Navigator.of(context).pushNamed(Routes.syncQueue),
         icon: Badge(
-          // The badge vocabulary of the rail (Skarmar v12 etapp 10
-          // #bredskal): saffron with the count in ink.
+          // The rail badge's colours (Skarmar v12 etapp 10 #bredskal :75):
+          // saffron with the count in ink. Its square 16 px geometry is not
+          // followed; this is Material's rounded Badge (interpretation).
           backgroundColor: Theme.of(context).colorScheme.secondary,
           textColor: Theme.of(context).colorScheme.onSecondary,
           label: Text(

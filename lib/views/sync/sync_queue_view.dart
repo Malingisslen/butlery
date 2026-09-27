@@ -20,6 +20,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -51,6 +53,10 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   /// The changes an action runs on, by kind and id (never by position).
   final Set<String> _busy = {};
 
+  /// The changes the user chose to throw away, hidden from the list while
+  /// their Ångra window is open, by kind and id.
+  final Set<String> _discarding = {};
+
   @override
   void initState() {
     super.initState();
@@ -75,30 +81,94 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     setState(() => _syncing = true);
     try {
       await _source.syncNow();
+    } catch (e) {
+      AppLogger.warning('SyncQueueView: sync now failed: $e');
+      if (mounted) {
+        final l10n = context.l10n;
+        SnackBarUtils.showFailure(
+          context,
+          what: l10n.syncQueueSyncFailed,
+          preserved: l10n.syncQueueChangesKept,
+          action: FailureAction.retry(_syncNow),
+        );
+      }
     } finally {
       if (mounted) setState(() => _syncing = false);
     }
   }
 
-  Future<void> _act(
-    QueuedChange change,
-    Future<void> Function(QueuedChange) action,
-  ) async {
+  Future<void> _retry(QueuedChange change) async {
     final key = _busyKey(change);
     if (!_busy.add(key)) return;
     setState(() {});
     try {
-      await action(change);
+      await _source.retry(change);
+    } catch (e) {
+      AppLogger.warning('SyncQueueView: retry failed: $e');
+      if (mounted) {
+        final l10n = context.l10n;
+        SnackBarUtils.showFailure(
+          context,
+          what: l10n.syncQueueRetryFailed,
+          preserved: l10n.syncQueueChangeKept,
+          action: FailureAction.retry(() => _retry(change)),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy.remove(key));
     }
+  }
+
+  /// "Släng ändringen" is class 1 (produktregler.md:132, "omedelbar + 7 s
+  /// Ångra-snackbar"; :140 "Ångra finns där data försvinner"). The change
+  /// leaves the list at once and is thrown away only when the Ångra window
+  /// closes without Ångra; until then the queue is untouched.
+  void _discard(QueuedChange change) {
+    final key = _busyKey(change);
+    if (_busy.contains(key) || !_discarding.add(key)) return;
+    setState(() {});
+    final source = _source;
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.syncQueueDiscarded,
+      onUndo: () {
+        if (mounted) setState(() => _discarding.remove(key));
+      },
+      onCommit: () async {
+        try {
+          await source.discard(change);
+          // The key stays hidden: the queue's next read no longer has it.
+        } catch (e) {
+          AppLogger.warning('SyncQueueView: discard failed: $e');
+          if (!mounted) return;
+          setState(() => _discarding.remove(key));
+          final l10n = context.l10n;
+          SnackBarUtils.showFailure(
+            context,
+            what: l10n.syncQueueDiscardFailed,
+            preserved: l10n.syncQueueChangeKept,
+          );
+        }
+      },
+    );
+  }
+
+  /// The queue without the changes whose Ångra window is open.
+  QueueSnapshot get _visibleQueue {
+    if (_discarding.isEmpty) return _queue;
+    return QueueSnapshot(
+      [
+        ..._queue.needsUser,
+        ..._queue.draining,
+      ].where((c) => !_discarding.contains(_busyKey(c))),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    final queue = _queue;
+    final queue = _visibleQueue;
     final side = ButleryTopBar.sideMargin(context);
 
     return Scaffold(
@@ -161,8 +231,8 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                               ),
                               change: change,
                               busy: _busy.contains(_busyKey(change)),
-                              onRetry: () => _act(change, _source.retry),
-                              onDiscard: () => _act(change, _source.discard),
+                              onRetry: () => _retry(change),
+                              onDiscard: () => _discard(change),
                             ),
                           const SizedBox(height: AppDimensions.spacingL),
                         ],

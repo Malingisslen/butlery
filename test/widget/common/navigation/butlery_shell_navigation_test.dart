@@ -200,7 +200,8 @@ void main() {
 
       expect(find.byType(ButleryAddSheet), findsOneWidget);
       expect(find.text(_sv.addRecipeTitle), findsOneWidget);
-      expect(find.text(_sv.quickCaptureTitle), findsOneWidget);
+      expect(find.text(_sv.addSheetQuickSaveTitle), findsOneWidget);
+      expect(find.text(_sv.addSheetQuickSaveSubtitle), findsOneWidget);
       expect(find.text(_sv.recipeImportLink), findsOneWidget);
       expect(find.text(_sv.recipeWriteManually), findsOneWidget);
       expect(find.text(_sv.recipeFromImage), findsOneWidget);

@@ -52,7 +52,11 @@ class ButleryNavigationRail extends StatelessWidget {
     return navigationLandmark(
       context: context,
       child: ColoredBox(
-        // The bottom row's surface (produktregler.md:1055).
+        // The same bottom as the bottom row ("samma botten",
+        // produktregler.md:1055), which is kept on paper here. Unresolved:
+        // #bredskal (Skarmar v12 etapp 10 :72) draws the rail on surface.ink
+        // #24382c, and Komponentark v1:662 draws the bottom row on ink too;
+        // no rule line names surfaceContainerLow. Open for the product owner.
         color: cs.surfaceContainerLow,
         child: SafeArea(
           right: false,
@@ -68,9 +72,9 @@ class ButleryNavigationRail extends StatelessWidget {
                     onPressed: onAdd ?? () => showButleryAddSheet(context),
                   ),
                 ),
-                // border.subtle between the action and the places (#bredskal
-                // draws border.onInk on ink; on the bar's paper the divider
-                // token is border.subtle, colorScheme.outlineVariant).
+                // #bredskal draws border.onInk #3f5145 on ink. While the rail
+                // stays on paper (open, see the surface above) the divider is
+                // border.subtle, colorScheme.outlineVariant.
                 Container(
                   width: AppDimensions.minTouchTarget,
                   height: 1,

@@ -26,6 +26,14 @@ class FakeSyncQueueSource extends SyncQueueSource {
   final List<QueuedChange> retried = [];
   final List<QueuedChange> discarded = [];
 
+  /// When set, every action throws it.
+  Object? failWith;
+
+  void _maybeFail() {
+    final failure = failWith;
+    if (failure != null) throw failure;
+  }
+
   void set(List<QueuedChange> changes) {
     _last = QueueSnapshot(changes);
     for (final c in _changes) {
@@ -57,13 +65,22 @@ class FakeSyncQueueSource extends SyncQueueSource {
   bool get isOnline => online;
 
   @override
-  Future<void> syncNow() async => syncs++;
+  Future<void> syncNow() async {
+    _maybeFail();
+    syncs++;
+  }
 
   @override
-  Future<void> retry(QueuedChange change) async => retried.add(change);
+  Future<void> retry(QueuedChange change) async {
+    _maybeFail();
+    retried.add(change);
+  }
 
   @override
-  Future<void> discard(QueuedChange change) async => discarded.add(change);
+  Future<void> discard(QueuedChange change) async {
+    _maybeFail();
+    discarded.add(change);
+  }
 }
 
 /// Drives the offline banner's ServiceLocator lookup.

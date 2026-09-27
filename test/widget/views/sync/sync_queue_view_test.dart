@@ -176,7 +176,66 @@ void main() {
     await tester.pump();
 
     expect(source.retried, [b]);
+    // Class 1 (produktregler.md:132): gone from the list at once, thrown
+    // away only when the 7 s Ångra window closes.
+    expect(find.byKey(SyncQueueNeedsYouCard.discardKey(a)), findsNothing);
+    expect(find.text(_sv.syncQueueDiscarded), findsOneWidget);
+    expect(source.discarded, isEmpty);
+
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 8));
+    await tester.pumpAndSettle();
     expect(source.discarded, [a]);
+  });
+
+  testWidgets('Ångra within the window keeps the change', (tester) async {
+    final a = _change('a', needsUser: true);
+    source.set([a]);
+    await pump(tester, AppTheme.lightTheme);
+
+    await tester.tap(find.byKey(SyncQueueNeedsYouCard.discardKey(a)));
+    await tester.pump();
+    expect(find.byKey(SyncQueueNeedsYouCard.discardKey(a)), findsNothing);
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(_sv.commonUndo));
+    await tester.pumpAndSettle();
+    expect(find.byKey(SyncQueueNeedsYouCard.discardKey(a)), findsOneWidget);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 8));
+    await tester.pumpAndSettle();
+    expect(source.discarded, isEmpty);
+  });
+
+  testWidgets('a failed action says so and keeps the change', (tester) async {
+    final a = _change('a', needsUser: true);
+    source
+      ..set([a])
+      ..failWith = StateError('database closed');
+    await pump(tester, AppTheme.lightTheme);
+
+    await tester.tap(find.byKey(SyncQueueNeedsYouCard.retryKey(a)));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(
+      find.textContaining(_sv.syncQueueRetryFailed),
+      findsOneWidget,
+    );
+    expect(find.textContaining(_sv.syncQueueChangeKept), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(SyncQueueNeedsYouCard.discardKey(a)));
+    await tester.pump();
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 8));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    // The discard failed: the card is back and the cause is shown.
+    expect(find.byKey(SyncQueueNeedsYouCard.discardKey(a)), findsOneWidget);
+    expect(
+      find.textContaining(_sv.syncQueueDiscardFailed),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the actions are named after the change they act on', (

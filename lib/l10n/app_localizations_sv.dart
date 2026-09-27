@@ -18198,6 +18198,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moreNotifications => 'Notiser';
 
   @override
+  String get addSheetQuickSaveTitle => 'Snabbspara';
+
+  @override
+  String get addSheetQuickSaveSubtitle =>
+      'Bara namn och måltid — importera detaljer senare';
+
+  @override
   String get syncQueueTitle => 'Väntar på synk';
 
   @override
@@ -18239,6 +18246,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String syncQueueDiscardA11y(String what) {
     return 'Släng ändringen $what';
   }
+
+  @override
+  String get syncQueueDiscarded => 'Ändringen slängdes.';
+
+  @override
+  String get syncQueueDiscardFailed => 'Ändringen kunde inte slängas.';
+
+  @override
+  String get syncQueueRetryFailed =>
+      'Ändringen kunde inte läggas tillbaka i kön.';
+
+  @override
+  String get syncQueueSyncFailed => 'Kön kunde inte skickas nu.';
+
+  @override
+  String get syncQueueChangeKept => 'Den ligger kvar under Väntar på dig.';
+
+  @override
+  String get syncQueueChangesKept => 'Ändringarna ligger kvar på telefonen.';
 
   @override
   String get syncQueueEmpty => 'Allt är sparat. Inget väntar på att synkas.';

@@ -60,8 +60,9 @@ Widget navigationTabList({required Widget child}) => Semantics(
 
 /// The bottom row: four destinations with the plus in the middle.
 ///
-/// Colours are the bar's existing tokens, kept as they were (see the
-/// interpretation in PQ-17's commit): surface (surfaceContainerLow resolves to
+/// Colours are the bar's existing tokens, kept as they were while the bar's
+/// colour is open (Komponentark v1:662 and #bredskal draw it on surface.ink
+/// #24382c; only #bredlandskap draws it on paper): surface (surfaceContainerLow resolves to
 /// surface.base, #F5F4ED light / #17251D dark), text.primary for the chosen
 /// tab and text.secondary for the others (tokens.json semantic), and
 /// action.primary saffron (colorScheme.secondary) for the chosen line.
@@ -254,6 +255,11 @@ class _BottomNavTab extends StatelessWidget {
 }
 
 /// A destination icon with its optional count.
+///
+/// Interpretation: the count is Material's rounded Badge with navLabel
+/// 11/700 figures, in the drawn colours (saffron, count in ink). #bredskal
+/// (Skarmar v12 etapp 10 :75) draws a square 16 px box with 10.5/700 tabular
+/// figures; that geometry is not built here.
 class NavBadgedIcon extends StatelessWidget {
   const NavBadgedIcon({
     required this.icon,
@@ -291,6 +297,12 @@ class NavBadgedIcon extends StatelessWidget {
 /// modes), as drawn (Komponentark v1:665). The ring is paper
 /// (colorScheme.onPrimary, #F5F4ED in both modes), drawn 3 px outside the
 /// 56 px surface; the rail draws it without a ring (#bredskal).
+///
+/// Interpretation, tied to the open bar colour: the ring is drawn for the ink
+/// bar. On today's paper bar in light mode it is the bar's own colour
+/// (#F5F4ED on #F5F4ED) and cannot be seen, so the plus reads as 56 dp with
+/// a 62 dp hitbox. #bredlandskap draws the plus on a light bar with a 1.5 px
+/// #3F5145 edge instead; which one applies follows the bar decision.
 class ButleryAddButton extends StatelessWidget {
   const ButleryAddButton({
     required this.onPressed,

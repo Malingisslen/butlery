@@ -126,6 +126,11 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
             spacing: AppDimensions.spacingSm,
             runSpacing: AppDimensions.spacingXs,
             children: [
+              // Interpretation: every failure offers "Försök igen". #synkko
+              // (Skarmar v12 del 4 :257-259) draws "Försök mindre" on a
+              // too-large image; sending a smaller copy is not built
+              // (P6-U08b), and "Spara som kopia" (produktregler.md:188) is
+              // not offered yet either.
               Semantics(
                 label: l10n.syncQueueRetryA11y(what),
                 excludeSemantics: true,

@@ -13542,6 +13542,14 @@
   "@moreNotifications": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the notifications."
   },
+  "addSheetQuickSaveTitle": "Quick save",
+  "@addSheetQuickSaveTitle": {
+    "description": "P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582)."
+  },
+  "addSheetQuickSaveSubtitle": "Just name and meal — import the details later",
+  "@addSheetQuickSaveSubtitle": {
+    "description": "P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583)."
+  },
   "syncQueueTitle": "Waiting to sync",
   "@syncQueueTitle": {
     "description": "P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190)."
@@ -13605,6 +13613,30 @@
         "type": "String"
       }
     }
+  },
+  "syncQueueDiscarded": "Change discarded.",
+  "@syncQueueDiscarded": {
+    "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1)."
+  },
+  "syncQueueDiscardFailed": "The change could not be discarded.",
+  "@syncQueueDiscardFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93)."
+  },
+  "syncQueueRetryFailed": "The change could not be put back in the queue.",
+  "@syncQueueRetryFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök igen failed."
+  },
+  "syncQueueSyncFailed": "The queue could not be sent right now.",
+  "@syncQueueSyncFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök synka nu failed."
+  },
+  "syncQueueChangeKept": "It stays under Waiting for you.",
+  "@syncQueueChangeKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed action on one change."
+  },
+  "syncQueueChangesKept": "The changes stay on the phone.",
+  "@syncQueueChangesKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed Försök synka nu."
   },
   "syncQueueEmpty": "Everything is saved. Nothing is waiting to sync.",
   "@syncQueueEmpty": {

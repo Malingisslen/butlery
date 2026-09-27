@@ -95,11 +95,11 @@ class ButleryAddSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.quickCaptureTitle,
+                          l10n.addSheetQuickSaveTitle,
                           style: AppTextStyles.labelLarge,
                         ),
                         Text(
-                          l10n.quickCaptureSubtitle,
+                          l10n.addSheetQuickSaveSubtitle,
                           style: AppTextStyles.captionBase,
                         ),
                       ],

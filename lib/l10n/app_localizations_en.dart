@@ -18165,6 +18165,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreNotifications => 'Notifications';
 
   @override
+  String get addSheetQuickSaveTitle => 'Quick save';
+
+  @override
+  String get addSheetQuickSaveSubtitle =>
+      'Just name and meal — import the details later';
+
+  @override
   String get syncQueueTitle => 'Waiting to sync';
 
   @override
@@ -18206,6 +18213,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String syncQueueDiscardA11y(String what) {
     return 'Discard the change $what';
   }
+
+  @override
+  String get syncQueueDiscarded => 'Change discarded.';
+
+  @override
+  String get syncQueueDiscardFailed => 'The change could not be discarded.';
+
+  @override
+  String get syncQueueRetryFailed =>
+      'The change could not be put back in the queue.';
+
+  @override
+  String get syncQueueSyncFailed => 'The queue could not be sent right now.';
+
+  @override
+  String get syncQueueChangeKept => 'It stays under Waiting for you.';
+
+  @override
+  String get syncQueueChangesKept => 'The changes stay on the phone.';
 
   @override
   String get syncQueueEmpty =>

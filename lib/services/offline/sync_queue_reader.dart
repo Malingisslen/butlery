@@ -128,28 +128,35 @@ Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {
   }
 }
 
-/// "Släng ändringen", chosen by the user. What depended on the change can
-/// never be sent without it, so the whole chain is marked as failed first and
-/// stays for her to decide on ("aldrig halvvägs", produktregler.md:187). Only
-/// the chosen entry itself goes.
+/// "Släng ändringen", chosen by the user and not undone within the Ångra
+/// window (produktregler.md:132, class 1). What depended on the change can
+/// never be sent without it, so its dependants are marked as failed and stay
+/// for her to decide on ("aldrig halvvägs", produktregler.md:187). Only the
+/// chosen entry itself goes.
+///
+/// One transaction: either the chain is marked and the entry is gone, or
+/// nothing changed. The chosen entry is removed inside it, so it never stays
+/// behind with its own cause overwritten by "dependency-failed".
 Future<void> discardQueuedChange(
   AppDatabase db,
   String userId,
   QueuedChange change,
-) async {
-  await db.markChainPermanentlyFailed(
-    userId,
-    change.id,
-    reason: QueuedChangeReason.dependencyFailed.code,
-  );
-  switch (change.kind) {
-    case QueuedChangeKind.recipe:
-      await (db.delete(
-        db.syncQueueEntries,
-      )..where((e) => e.opId.equals(change.id))).go();
-    case QueuedChangeKind.image:
-      await db.uploadQueueDao.cancelUpload(change.id);
-  }
+) {
+  return db.transaction(() async {
+    await db.markChainPermanentlyFailed(
+      userId,
+      change.id,
+      reason: QueuedChangeReason.dependencyFailed.code,
+    );
+    switch (change.kind) {
+      case QueuedChangeKind.recipe:
+        await (db.delete(
+          db.syncQueueEntries,
+        )..where((e) => e.opId.equals(change.id))).go();
+      case QueuedChangeKind.image:
+        await db.uploadQueueDao.cancelUpload(change.id);
+    }
+  });
 }
 
 QueuedOperation _operation(String stored) => switch (stored) {

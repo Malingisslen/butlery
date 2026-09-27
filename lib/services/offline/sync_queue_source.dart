@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/storage/drift/queue_counts.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/offline/sync_queue_reader.dart'
@@ -49,23 +50,45 @@ abstract class SyncQueueSource {
   /// "Försök igen" on a permanent failure: it goes back into the queue.
   Future<void> retry(QueuedChange change);
 
-  /// "Släng ändringen": only ever called after the user chose it.
+  /// "Släng ändringen": only ever called after the user chose it and let the
+  /// 7 s Ångra window close (produktregler.md:132).
   Future<void> discard(QueuedChange change);
 }
 
 /// The signed-in user's queue in the offline database. Everything fails
-/// closed to "nothing waits" when the offline store is not ready, so the
-/// indicator and the view never invent a number.
+/// closed to "nothing waits" when the offline store is not ready or nobody is
+/// signed in, so the indicator and the view never invent a number.
+///
+/// The user is the one the auth repository has signed in, the same source
+/// the sync manager sends the queue for (OfflineSyncManager reads
+/// `AuthRepository.currentUserId`). OfflineService.currentUserId is not used:
+/// the app never sets it, so reading it would show an empty queue while
+/// changes wait (produktregler.md:191, Töm-kö-garanti).
 class OfflineSyncQueueSource extends SyncQueueSource {
-  const OfflineSyncQueueSource();
+  const OfflineSyncQueueSource({this.offlineService, this.authRepository});
 
-  OfflineService? _offline() {
+  /// The offline store, for tests. The app resolves it from the locator.
+  final OfflineService? offlineService;
+
+  /// Who is signed in, for tests. The app resolves it from the locator.
+  final AuthRepository? authRepository;
+
+  ({OfflineService offline, String userId})? _signedIn() {
     try {
-      if (!ServiceLocator.isRegistered<OfflineService>()) return null;
-      final service = ServiceLocator.get<OfflineService>();
-      return service.isInitialized && service.currentUserId != null
-          ? service
-          : null;
+      final service =
+          offlineService ??
+          (ServiceLocator.isRegistered<OfflineService>()
+              ? ServiceLocator.get<OfflineService>()
+              : null);
+      if (service == null || !service.isInitialized) return null;
+      final auth =
+          authRepository ??
+          (ServiceLocator.isRegistered<AuthRepository>()
+              ? ServiceLocator.get<AuthRepository>()
+              : null);
+      final userId = auth?.currentUserId;
+      if (userId == null || userId.isEmpty) return null;
+      return (offline: service, userId: userId);
     } catch (e) {
       AppLogger.warning('SyncQueueSource: offline service unavailable: $e');
       return null;
@@ -74,10 +97,10 @@ class OfflineSyncQueueSource extends SyncQueueSource {
 
   @override
   Stream<QueueCounts> watchCounts() {
-    final offline = _offline();
-    if (offline == null) return Stream.value(QueueCounts.empty);
+    final signedIn = _signedIn();
+    if (signedIn == null) return Stream.value(QueueCounts.empty);
     try {
-      return offline.database.watchQueueCounts(offline.currentUserId!);
+      return signedIn.offline.database.watchQueueCounts(signedIn.userId);
     } catch (e) {
       AppLogger.warning('SyncQueueSource: counts unavailable: $e');
       return Stream.value(QueueCounts.empty);
@@ -86,12 +109,12 @@ class OfflineSyncQueueSource extends SyncQueueSource {
 
   @override
   Stream<QueueSnapshot> watchChanges() {
-    final offline = _offline();
-    if (offline == null) return Stream.value(QueueSnapshot.empty);
+    final signedIn = _signedIn();
+    if (signedIn == null) return Stream.value(QueueSnapshot.empty);
     try {
       return watchQueuedChanges(
-        offline.database,
-        offline.currentUserId!,
+        signedIn.offline.database,
+        signedIn.userId,
       ).map(QueueSnapshot.new);
     } catch (e) {
       AppLogger.warning('SyncQueueSource: queue unavailable: $e');
@@ -100,19 +123,20 @@ class OfflineSyncQueueSource extends SyncQueueSource {
   }
 
   @override
-  bool get isOnline => _offline()?.isOnline ?? true;
+  bool get isOnline => _signedIn()?.offline.isOnline ?? true;
 
   @override
   Future<void> syncNow() async {
-    final offline = _offline();
-    if (offline == null) return;
-    await offline.syncNow();
+    final signedIn = _signedIn();
+    if (signedIn == null) return;
+    await signedIn.offline.syncNow();
   }
 
   @override
   Future<void> retry(QueuedChange change) async {
-    final offline = _offline();
-    if (offline == null) return;
+    final signedIn = _signedIn();
+    if (signedIn == null) return;
+    final offline = signedIn.offline;
     await retryQueuedChange(offline.database, change);
     await offline.refreshSyncState();
     if (offline.isOnline) unawaited(offline.syncNow());
@@ -120,13 +144,13 @@ class OfflineSyncQueueSource extends SyncQueueSource {
 
   @override
   Future<void> discard(QueuedChange change) async {
-    final offline = _offline();
-    if (offline == null) return;
+    final signedIn = _signedIn();
+    if (signedIn == null) return;
     await discardQueuedChange(
-      offline.database,
-      offline.currentUserId!,
+      signedIn.offline.database,
+      signedIn.userId,
       change,
     );
-    await offline.refreshSyncState();
+    await signedIn.offline.refreshSyncState();
   }
 }
