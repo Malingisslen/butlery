@@ -236,14 +236,17 @@ void main() {
             testWidgets(
               '${row.id} ${_modeName(mode)} ${width.toInt()} dp '
               '×${_scaleName(scale)}',
-              (tester) => check(
+              (tester) => atFixedClock(
                 tester,
-                row,
-                mode,
-                width,
-                scale,
-                layout: true,
-                contrast: width == 360 && scale == 1.0,
+                () => check(
+                  tester,
+                  row,
+                  mode,
+                  width,
+                  scale,
+                  layout: true,
+                  contrast: width == 360 && scale == 1.0,
+                ),
               ),
             );
           }
@@ -259,14 +262,17 @@ void main() {
       for (final mode in _modes) {
         testWidgets(
           '${row.id} ${_modeName(mode)} 360 dp ×1.0',
-          (tester) => check(
+          (tester) => atFixedClock(
             tester,
-            row,
-            mode,
-            360,
-            1.0,
-            layout: false,
-            contrast: false,
+            () => check(
+              tester,
+              row,
+              mode,
+              360,
+              1.0,
+              layout: false,
+              contrast: false,
+            ),
           ),
         );
       }

@@ -21,8 +21,21 @@ import '../../widget/golden/golden_helper.dart'
     show installGoldenImageErrorFilter;
 import '../design_states/state_harness.dart';
 
+/// Where the Linux PNGs live, from the package root.
+const linuxGoldenDir = 'test/views/golden_linux/goldens';
+
+/// No PNGs committed yet, and this is not the run that makes them.
+///
+/// The PNGs can only be made by the goldens-linux-update workflow, and
+/// GitHub runs a workflow_dispatch workflow only once its file is on the
+/// default branch. Until the PNGs are committed (NY-P8-18) the comparison
+/// is skipped rather than failing views (ubuntu) on files that cannot exist
+/// yet. Once goldens/ exists, a missing or changed PNG fails as usual.
+bool get linuxBaselinesMissing =>
+    !autoUpdateGoldenFiles && !Directory(linuxGoldenDir).existsSync();
+
 /// Whether this host compares (and may write) the Linux PNGs.
-bool get linuxGoldensCompareHere => Platform.isLinux;
+bool get linuxGoldensCompareHere => Platform.isLinux && !linuxBaselinesMissing;
 
 /// BUTLERY_GOLDEN_SMOKE=1: pump the key screens off Linux without taking
 /// or comparing a picture, to see locally that every host still builds.

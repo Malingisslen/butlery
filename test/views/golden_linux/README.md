@@ -8,6 +8,19 @@ and macOS the tests report as skipped, and `--update-goldens` refuses to run.
 The ten older Windows-pinned PNGs under `test/widget/` are separate and
 unchanged (`test/widget/golden/golden_helper.dart`).
 
+## First landing (NY-P8-18)
+
+GitHub runs a `workflow_dispatch` workflow only once its file is on the
+default branch, so the PNGs cannot be made before
+`.github/workflows/goldens-linux-update.yml` is on `main`. Until
+`goldens/` exists the comparisons are skipped (`linuxBaselinesMissing`) and
+the test `the Linux baselines are committed` reports as skipped with
+NY-P8-18, so `views (ubuntu)` stays green. Order:
+
+1. Land the workflow file on `main` (with the tests, which skip).
+2. On a new branch, follow "Regenerate" below and commit `goldens/`.
+3. From then on a missing or changed PNG fails `views (ubuntu)`.
+
 ## Regenerate
 
 1. Push the branch.

@@ -138,10 +138,12 @@ parseGeneratedColours(String path) {
 /// Light: every AppColors member, the light ColorScheme and the app's four
 /// light category colours (lib/theme/app_specific_colors.dart).
 /// Dark: every AppColorsDark member, the dark ColorScheme, the four dark
-/// category colours, and the AppColors members that have no mode: the
-/// palette colours (tokens.json palette is one value in both modes, which is
-/// why app_colors_dark.dart does not repeat them) and the external brand
-/// colours (app_colors.dart:13-14, "tokeniseras inte").
+/// category colours, and the external brand colours (app_colors.dart:14-15,
+/// "externa varumärkesidentiteter och tokeniseras inte"), which are quotes
+/// with no mode. A palette primitive is NOT allowed in dark on its own:
+/// tokens.json:7-39 gives the palette no mode, and every dark value comes
+/// from a semantic token's "dark" field (tokens.json:52 on). A palette hex
+/// passes in dark only when some dark member carries it too.
 class AllowedColours {
   AllowedColours._(this.mode, this.bases);
 
@@ -160,11 +162,7 @@ class AllowedColours {
       bases.addAll(specific.dark);
       bases.addAll(
         light.members
-            .where(
-              (m) =>
-                  (m.token?.startsWith('palette.') ?? false) ||
-                  m.name.startsWith('brand'),
-            )
+            .where((m) => m.name.startsWith('brand'))
             .map((m) => m.argb),
       );
     }

@@ -4,8 +4,13 @@
 /// LOADING state is read twice: 299 ms after it began, when no skeleton may
 /// show (DelayedSkeleton.threshold, produktregler.md:304), and just after the
 /// threshold for the rest of the rule.
+///
+/// The clock is fixed too ([atFixedClock]): the week menu reads clock.now()
+/// for its week number and for which day is today, so an unpinned run would
+/// render a different screen on another weekday or week.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -13,6 +18,26 @@ import 'state_harness.dart';
 import 'state_host.dart';
 import 'state_hosts.dart';
 import 'state_rules.dart';
+
+/// The instant every U01 run starts at: Monday 2026-09-28 12:00, week 40,
+/// the day the known-findings lists were recorded.
+final stateNow = DateTime(2026, 9, 28, 12);
+
+/// Runs [body] with clock.now() at [now] (default [stateNow]), moving only
+/// with the test's fake time, so dates, week numbers and "today" read the
+/// same on every run.
+Future<T> atFixedClock<T>(
+  WidgetTester tester,
+  Future<T> Function() body, {
+  DateTime? now,
+}) {
+  final base = now ?? stateNow;
+  final start = tester.binding.clock.now();
+  return withClock(
+    Clock(() => base.add(tester.binding.clock.now().difference(start))),
+    body,
+  );
+}
 
 /// One pumped row.
 class StateRun {

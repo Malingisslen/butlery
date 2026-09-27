@@ -10,6 +10,8 @@
 /// next to this file.
 library;
 
+import 'dart:io';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -89,6 +91,17 @@ void main() {
       }
     }
   });
+
+  test(
+    'the Linux baselines are committed',
+    () => expect(linuxBaselinesMissing, isFalse),
+    skip: !Platform.isLinux
+        ? 'compared on Linux only'
+        : linuxBaselinesMissing
+        ? 'NY-P8-18: no PNGs in $linuxGoldenDir yet; the key-screen '
+              'comparisons are skipped until they are committed (README.md)'
+        : false,
+  );
 
   for (final screen in _screens) {
     for (final mode in [Brightness.light, Brightness.dark]) {

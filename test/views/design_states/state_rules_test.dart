@@ -30,12 +30,18 @@ void main() {
       expect(light.allows(const Color(0xB324382C)), isFalse, reason: '0.7');
     });
 
-    test('dark mode refuses a light-only value and keeps the palette', () {
+    test('dark mode refuses a light-only value, palette included', () {
       // text.body light #37453A is not a dark value.
       expect(dark.allows(const Color(0xFF37453A)), isFalse);
       expect(dark.allows(const Color(0xFFF5F4ED)), isTrue);
-      // palette.saffron is one value in both modes.
+      // palette.saffron passes because a dark semantic token carries it
+      // (tokens.json:137-140 action.primary, dark #CE7C1E).
       expect(dark.allows(const Color(0xFFCE7C1E)), isTrue);
+      // palette.saffronDeep is text.link in light only (#8A5212); no dark
+      // token carries it, so the palette tag alone does not let it pass.
+      expect(dark.allows(const Color(0xFF8A5212)), isFalse);
+      // An external brand colour has no mode (app_colors.dart:14-15).
+      expect(dark.allows(const Color(0xFFFF0000)), isTrue);
     });
   });
 

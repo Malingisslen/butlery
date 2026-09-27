@@ -152,9 +152,12 @@ void main() {
       for (final mode in _modes) {
         final name = '${row.id} (${_modeName(mode)})';
         testWidgets(name, (tester) async {
-          final run = await pumpState(tester, row, mode);
-          final violations = await judgeState(tester, run);
-          await finishState(tester, run);
+          final violations = await atFixedClock(tester, () async {
+            final run = await pumpState(tester, row, mode);
+            final found = await judgeState(tester, run);
+            await finishState(tester, run);
+            return found;
+          });
 
           final prefix = '${row.id}::${_modeName(mode)}::';
           final found = violations.map((v) => v.code).toSet();
