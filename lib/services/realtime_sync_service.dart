@@ -331,24 +331,25 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         // this edit becomes a suggestion (produktregler.md:103, :241), so
         // nothing is written to the shared recipe, whether or not the
         // suggestion could be stored (Q6-08 = A).
-        final suggestionId = isMemberOfShared
+        final kept = isMemberOfShared
             ? await _keepAsSuggestion(userId, resource, remote)
             : null;
-        if (suggestionId != null) {
+        if (kept != null) {
           persisted = remote;
+          // Q6-12 = B: the notice says when it replaced the waiting one.
           _conflictModule.announceSuggestion<T>(
             resource,
             remote,
-            suggestionId: suggestionId,
+            suggestionId: kept.id,
+            replaced: kept.wasReplaced,
           );
         } else if (isMemberOfShared) {
-          // No suggestion was stored (one already waits, Q6-07 = B, or the
-          // store failed). The package 5 choice cannot apply: both "Behåll
-          // min version" and "Använd deras version" write the owner's recipe,
-          // which the server refuses a member. So nothing is written, the
-          // owner's version stays, and the notice says the change was
-          // neither saved nor sent. What the member should get here is an
-          // open question to the product owner (Q6-07 = B against Q6-08 = A).
+          // No suggestion was stored (no store, or storing failed). The
+          // package 5 choice cannot apply: both "Behåll min version" and
+          // "Använd deras version" write the owner's recipe, which the
+          // server refuses a member. So nothing is written, the owner's
+          // version stays, and the notice says the change was neither saved
+          // nor sent.
           persisted = remote;
           _conflictModule.announceMemberNotSent<T>(resource, remote);
         } else {
@@ -442,14 +443,15 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   }
 
   /// P5-U27b: keeps [edit], this user's change to someone else's shared
-  /// recipe, as a suggestion to its owner and returns its id. Null when there
-  /// is no store, when [remote] is this user's own save from another device
-  /// (that is not the owner's version winning), when this user already has a
-  /// suggestion to the recipe waiting for the owner (Q6-07 = B, produktbeslut
-  /// 2026-09-27: one pending suggestion per member and recipe), or when
+  /// recipe, as a suggestion to its owner and returns it. When this user
+  /// already has a suggestion to the recipe waiting for the owner, [edit]
+  /// replaces it (Q6-07 = B, one pending suggestion per member and recipe;
+  /// Q6-12 = B, produktbeslut 2026-09-27b, the new one replaces the waiting
+  /// one). Null when there is no store, when [remote] is this user's own save
+  /// from another device (that is not the owner's version winning), or when
   /// storing fails; the caller then writes nothing and says so, since a
   /// member cannot write the owner's recipe (Q6-08 = A).
-  Future<String?> _keepAsSuggestion(
+  Future<RecipeSuggestion?> _keepAsSuggestion(
     String userId,
     RealtimeResource edit,
     RealtimeResource remote,
@@ -458,26 +460,12 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     if (store == null) return null;
     if (remote.lastEditedBy == userId) return null;
     try {
-      final waiting = RecipeSuggestion.waitingAmong(
-        await store.watchMine(edit.id).first,
-        clock.now(),
+      return await store.keepOrReplace(
+        recipeId: edit.id,
+        ownerId: remote.ownerId,
+        suggesterId: userId,
+        suggestion: edit.toFirestore(),
       );
-      if (waiting != null) {
-        AppLogger.info(
-          'Ett förslag väntar redan för ${edit.id}; inget nytt skickas',
-        );
-        return null;
-      }
-      final kept = await store.suggest(
-        RecipeSuggestion.create(
-          recipeId: edit.id,
-          ownerId: remote.ownerId,
-          suggesterId: userId,
-          suggestion: edit.toFirestore(),
-          at: clock.now(),
-        ),
-      );
-      return kept.id;
     } catch (e) {
       AppLogger.error('❌ Förslaget kunde inte sparas för ${edit.id}', e);
       return null;

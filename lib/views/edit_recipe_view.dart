@@ -694,7 +694,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       if (savedRecipe != null && viewModel.suggestsChange) {
         // Q6-08 = A: nothing was written to the recipe, so recipe detail has
         // nothing to refresh; its suggestion line now shows the pending one.
-        SnackBarUtils.showSuccess(context, context.l10n.recipeSuggestionSent);
+        // Q6-12 = B: when it replaced the waiting one, the member is told.
+        SnackBarUtils.showSuccess(
+          context,
+          viewModel.lastSuggestionReplaced
+              ? context.l10n.recipeSuggestionReplaced
+              : context.l10n.recipeSuggestionSent,
+        );
         Navigator.pop(context);
       } else if (savedRecipe != null) {
         final collaborativeViewModel = context
@@ -720,14 +726,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           what: switch (failure) {
             RecipeSaveFailure.incomplete => l10n.recipeSaveIncomplete,
             RecipeSaveFailure.noPermission => l10n.recipeSaveNoPermission,
-            // Q6-07 = B (produktbeslut 2026-09-27): the member's earlier
-            // suggestion still waits, so no second one was sent. Interim: it
-            // only says so and discards nothing (the edits stay in the form);
-            // what else the member is offered here is an open question to
-            // the product owner, since the package 5 choice Q6-07 names would
-            // write the owner's recipe, which Q6-08 = A rules out.
-            RecipeSaveFailure.suggestionWaiting =>
-              l10n.recipeSuggestionWaitingNotSent,
             _ when viewModel.suggestsChange => l10n.recipeSuggestionSendFailed,
             _ => l10n.recipeSaveFailed,
           },

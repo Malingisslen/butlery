@@ -9,8 +9,9 @@
 /// Where it lives: the top-level `recipe_suggestions/{id}`, because two people
 /// read it: the one who suggested it and the recipe's owner. firestore.rules
 /// lets only those two read it, only the suggester create it (and only for a
-/// recipe the owner has shared with them), and only the owner decide it. It
-/// is never edited otherwise and never deleted by a client: the Firestore TTL
+/// recipe the owner has shared with them), only the owner decide it, and only
+/// the suggester replace a pending one with a newer edit (Q6-12 = B). It is
+/// never edited otherwise and never deleted by a client: the Firestore TTL
 /// policy deletes it at [expiresAt] (firestore.indexes.json), and the account
 /// deletion cascade erases it with either account.
 ///
@@ -35,6 +36,7 @@ class RecipeSuggestion {
     required this.createdAt,
     required this.expiresAt,
     this.decidedAt,
+    this.replacedAt,
   });
 
   /// How long a suggestion is kept (produktregler.md:103, "ja, 7 dagar").
@@ -71,6 +73,18 @@ class RecipeSuggestion {
 
   /// When the owner accepted or dismissed it. Null while pending.
   final DateTime? decidedAt;
+
+  /// Q6-12 = B (produktbeslut 2026-09-27b): when the suggester last replaced
+  /// this pending suggestion with a newer edit of the recipe. Null for one
+  /// never replaced. The owner is told it was updated from this.
+  final DateTime? replacedAt;
+
+  /// Whether the suggester replaced it with a newer edit (Q6-12 = B).
+  bool get wasReplaced => replacedAt != null;
+
+  /// When its content was made: the latest replacement, else its creation.
+  /// Lists are ordered by this, newest first.
+  DateTime get madeAt => replacedAt ?? createdAt;
 
   /// A new pending suggestion made at [at].
   factory RecipeSuggestion.create({
@@ -122,7 +136,31 @@ class RecipeSuggestion {
     createdAt: createdAt,
     expiresAt: expiresAt,
     decidedAt: decidedAt,
+    replacedAt: replacedAt,
   );
+
+  /// Q6-12 = B: this pending suggestion with [newSuggestion] in place of its
+  /// content, replaced at [at]. Same document id, recipe, owner and
+  /// suggester; kept [keptFor] from [at], since it is a new suggestion
+  /// (produktregler.md:103, "ja, 7 dagar").
+  RecipeSuggestion replacedWith(
+    Map<String, dynamic> newSuggestion, {
+    required DateTime at,
+  }) {
+    final replaced = at.toUtc();
+    return RecipeSuggestion(
+      id: id,
+      recipeId: recipeId,
+      ownerId: ownerId,
+      suggesterId: suggesterId,
+      suggestion: newSuggestion,
+      status: status,
+      createdAt: createdAt,
+      expiresAt: replaced.add(keptFor),
+      decidedAt: decidedAt,
+      replacedAt: replaced,
+    );
+  }
 
   /// The stored shape of a new suggestion. The field set matches the create
   /// rule in firestore.rules (`match /recipe_suggestions/{suggestionId}`).
@@ -133,6 +171,16 @@ class RecipeSuggestion {
     'suggestion': suggestion,
     'status': status.name,
     'createdAt': Timestamp.fromDate(createdAt),
+    'expiresAt': Timestamp.fromDate(expiresAt),
+  };
+
+  /// The fields a replacement changes (Q6-12 = B). The set matches the
+  /// suggester's update rule in firestore.rules
+  /// (`match /recipe_suggestions/{suggestionId}`). Only for a copy made by
+  /// [replacedWith].
+  Map<String, dynamic> toReplacementFirestore() => {
+    'suggestion': suggestion,
+    'replacedAt': Timestamp.fromDate(replacedAt!),
     'expiresAt': Timestamp.fromDate(expiresAt),
   };
 
@@ -170,6 +218,7 @@ class RecipeSuggestion {
       createdAt: createdAt,
       expiresAt: expiresAt,
       decidedAt: _date(data['decidedAt']),
+      replacedAt: _date(data['replacedAt']),
     );
   }
 

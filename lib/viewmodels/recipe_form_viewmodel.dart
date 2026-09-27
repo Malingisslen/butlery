@@ -66,10 +66,6 @@ enum RecipeSaveFailure {
 
   /// The save itself did not go through; trying again can help.
   failed,
-
-  /// Q6-07 = B: the member's earlier suggestion to this recipe still waits
-  /// for the owner, so no second one was made. The edits stay in the form.
-  suggestionWaiting,
 }
 
 /// Coordinator for recipe form operations with delegation to specialized managers.
@@ -536,9 +532,15 @@ class RecipeFormViewModel extends BaseViewModel
     return saved;
   }
 
+  /// Q6-12 = B: whether the last suggestion sent replaced the member's
+  /// waiting one, so the view says so when it confirms.
+  bool get lastSuggestionReplaced => _lastSuggestionReplaced;
+  bool _lastSuggestionReplaced = false;
+
   /// Q6-08 = A: sends the form as a suggestion to [ownerId]. Nothing is
   /// written to the recipe, and the draft is cleared only once the
-  /// suggestion is kept. Returns the suggested recipe, or null with
+  /// suggestion is kept. A suggestion that already waits is replaced by this
+  /// one (Q6-12 = B). Returns the suggested recipe, or null with
   /// [lastSaveFailure] saying why.
   Future<Recipe?> _suggestChange(String ownerId) async {
     final original = _state.originalRecipe;
@@ -559,11 +561,12 @@ class RecipeFormViewModel extends BaseViewModel
         recipeId: original.id,
         imageUrls: original.imageUrls,
       );
-      await service.suggestEdit(
+      final kept = await service.suggestEdit(
         edited: edited,
         ownerId: ownerId,
         suggesterId: uid,
       );
+      _lastSuggestionReplaced = kept.wasReplaced;
       try {
         await _state.clearCurrentDraft();
       } catch (e) {
@@ -572,9 +575,6 @@ class RecipeFormViewModel extends BaseViewModel
         AppLogger.warning('Suggestion sent, draft not cleared: $e');
       }
       return edited;
-    } on RecipeSuggestionAlreadyWaiting {
-      _lastSaveFailure = RecipeSaveFailure.suggestionWaiting;
-      return null;
     } catch (e) {
       AppLogger.error('The suggestion could not be kept', e);
       _lastSaveFailure = RecipeSaveFailure.failed;

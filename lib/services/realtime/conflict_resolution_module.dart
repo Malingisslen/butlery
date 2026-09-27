@@ -142,21 +142,24 @@ class ConflictResolutionModule {
   /// P5-U27b: announces a conflict settled outside [resolveConflict]: on
   /// someone else's shared recipe the owner's version wins and the losing edit
   /// is kept as the suggestion [suggestionId] (produktregler.md:103).
+  /// [replaced] when it replaced this user's waiting suggestion (Q6-12 = B).
   void announceSuggestion<T extends RealtimeResource>(
     T local,
     T remote, {
     required String suggestionId,
+    bool replaced = false,
   }) => _emitConflict(
     local,
     remote,
     ConflictResolutionStrategy.remoteWon,
     ConflictEntity.recipeShared,
     suggestionId: suggestionId,
+    suggestionReplaced: replaced,
   );
 
   /// Q6-08 = A: announces a conflict on someone else's shared recipe where
   /// the owner's version stayed and this user's edit was neither written nor
-  /// kept as a suggestion (one already waits, Q6-07 = B, or storing failed).
+  /// kept as a suggestion (no store, or storing failed).
   /// It carries no suggestion id, so no surface offers a write the server
   /// refuses a member.
   void announceMemberNotSent<T extends RealtimeResource>(T local, T remote) =>
@@ -176,6 +179,7 @@ class ConflictResolutionModule {
     ConflictResolutionStrategy strategy,
     ConflictEntity entity, {
     String? suggestionId,
+    bool suggestionReplaced = false,
   }) {
     final sink = onConflict;
     if (sink == null) return;
@@ -190,6 +194,7 @@ class ConflictResolutionModule {
           entity: entity,
           occurredAt: clock.now(),
           suggestionId: suggestionId,
+          suggestionReplaced: suggestionReplaced,
         ),
       );
     } catch (e) {

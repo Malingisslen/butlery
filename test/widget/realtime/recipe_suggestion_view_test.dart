@@ -67,6 +67,7 @@ void main() {
     WidgetTester tester, {
     required bool asOwner,
     ThemeData? theme,
+    RecipeSuggestion? suggestion,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -84,7 +85,7 @@ void main() {
             body: TextButton(
               onPressed: () => RecipeSuggestionView.show(
                 context,
-                _suggestion,
+                suggestion ?? _suggestion,
                 asOwner: asOwner,
               ),
               child: const Text('open'),
@@ -115,6 +116,57 @@ void main() {
     verifyNever(() => service.dismiss(any()));
     expect(find.byType(RecipeSuggestionView), findsNothing);
     expect(find.text(l10n.recipeSuggestionAccepted), findsOneWidget);
+  });
+
+  // Q6-12 = B (produktbeslut 2026-09-27b): a suggestion the member replaced
+  // with a newer edit says so, to the owner and to the member.
+  final replaced = _suggestion.replacedWith(const {
+    'title': 'Pannkakor med sylt och grädde',
+  }, at: DateTime.utc(2026, 9, 27, 9));
+
+  testWidgets('Q6-12: the owner is told the suggestion was updated', (
+    tester,
+  ) async {
+    await open(tester, asOwner: true, suggestion: replaced);
+    expect(
+      find.textContaining(
+        l10n
+            .recipeSuggestionIntroOwnerUpdated(l10n.displayUnknownUser, '')
+            .split('.')
+            .first,
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Q6-12: the member sees that it replaced the earlier one', (
+    tester,
+  ) async {
+    await open(tester, asOwner: false, suggestion: replaced);
+    expect(
+      find.textContaining(
+        l10n.recipeSuggestionIntroMineUpdated('').split('.').first,
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Q6-12: a suggestion replaced while open is not decided, and '
+      'the owner is told to open it again', (tester) async {
+    when(
+      () => service.accept(any()),
+    ).thenThrow(const RecipeSuggestionChanged('s1'));
+    await open(tester, asOwner: true);
+    await tester.tap(find.byKey(RecipeSuggestionView.acceptKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RecipeSuggestionView), findsOneWidget);
+    expect(
+      find.textContaining(l10n.recipeSuggestionChangedSinceOpened),
+      findsOneWidget,
+    );
+    // Deciding again here would decide on content the owner has not seen.
+    expect(find.text(l10n.commonRetry), findsNothing);
   });
 
   testWidgets('the owner dismisses it, and the recipe is left alone', (

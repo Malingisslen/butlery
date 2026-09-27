@@ -13685,7 +13685,7 @@
   },
   "conflictBannerBodyMemberNotSent": "{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.",
   "@conflictBannerBodyMemberNotSent": {
-    "description": "Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (one already waits, Q6-07 = B, or storing failed). Interim until the product owner decides; name = who saved the version that stays.",
+    "description": "Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (no store, or storing failed); name = who saved the version that stays.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -14227,9 +14227,72 @@
   "@recipeSuggestionCoversText": {
     "description": "Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode."
   },
-  "recipeSuggestionWaitingNotSent": "Förslaget skickades inte: ditt förra förslag väntar på ägaren.",
-  "@recipeSuggestionWaitingNotSent": {
-    "description": "Q6-07 = B: the member already has a pending suggestion to this recipe, so no second one was sent; followed by errorPreservedRecipeEdits. Interim: what else the member is offered here is an open question to the product owner (Q6-07 = B against Q6-08 = A)."
+  "recipeSuggestionReplaced": "Förslaget är skickat och ersatte ditt förra förslag.",
+  "@recipeSuggestionReplaced": {
+    "description": "Q6-12 = B (produktbeslut 2026-09-27b): confirmation after a member's edit replaced their suggestion that was still waiting for the owner."
+  },
+  "conflictBannerBodySuggestionReplaced": "{name} ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.",
+  "@conflictBannerBodySuggestionReplaced": {
+    "description": "Q6-12 = B: conflict banner body when the member's losing edit replaced their waiting suggestion; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionReplacedUnnamed": "Någon annan ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.",
+  "@conflictBannerBodySuggestionReplacedUnnamed": {
+    "description": "Q6-12 = B: conflictBannerBodySuggestionReplaced when the other editor's name is unknown."
+  },
+  "recipeSuggestionFromOneUpdated": "{name} har uppdaterat sitt förslag till receptet.",
+  "@recipeSuggestionFromOneUpdated": {
+    "description": "Q6-12 = B: owner's notice in recipe detail when the one waiting suggestion was replaced by a newer edit; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUpdatedUnnamed": "En medlem har uppdaterat sitt förslag till receptet.",
+  "@recipeSuggestionFromOneUpdatedUnnamed": {
+    "description": "Q6-12 = B: recipeSuggestionFromOneUpdated when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromManyUpdated": "{count} förslag på ändringar väntar på dig. {updated, plural, =1{Ett av dem är uppdaterat.} other{{updated} av dem är uppdaterade.}}",
+  "@recipeSuggestionFromManyUpdated": {
+    "description": "Q6-12 = B: owner's notice when more than one suggestion waits and some were replaced by newer edits; count >= 2, updated >= 1.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionIntroOwnerUpdated": "{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroOwnerUpdated": {
+    "description": "Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMineUpdated": "Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroMineUpdated": {
+    "description": "Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionChangedSinceOpened": "Förslaget har ändrats sedan du öppnade det. Öppna det igen för att se det nya.",
+  "@recipeSuggestionChangedSinceOpened": {
+    "description": "Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng."
   },
   "cookingNoStepsSaveCopy": "Spara min kopia",
   "@cookingNoStepsSaveCopy": {

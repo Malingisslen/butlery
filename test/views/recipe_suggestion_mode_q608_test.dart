@@ -1,10 +1,12 @@
-// Q6-08 = A and Q6-07 = B (produktbeslut 2026-09-27): the recipe editor on
-// someone else's shared recipe.
+// Q6-08 = A and Q6-07 = B (produktbeslut 2026-09-27), Q6-12 = B
+// (produktbeslut 2026-09-27b): the recipe editor on someone else's shared
+// recipe.
 //
 // Sources: produktregler.md:241 (a member cannot edit a recipe someone else
 // owns; the change is kept as a suggestion the owner accepts or dismisses),
 // :247 (Redigera shows as "Föreslå ändring" for a member); Q6-07 = B (one
-// pending suggestion per member and recipe; nothing is discarded silently);
+// pending suggestion per member and recipe); Q6-12 = B (a new edit replaces
+// the waiting suggestion, and the member is told);
 // content-style-guide.md:87-97 (a failure says what happened, what is kept
 // and what to do).
 //
@@ -231,36 +233,27 @@ void main() {
     expect(find.text(l10n.recipeSuggestionSent), findsOneWidget);
   });
 
-  testWidgets('Q6-07: while my last suggestion waits, no second one is sent; '
-      'the editor says so, keeps the edits and offers nothing else (interim)', (
-    tester,
-  ) async {
+  testWidgets('Q6-12 = B: an edit while my last suggestion waits replaces '
+      'it, and the editor says so', (tester) async {
     when(
       () => suggestions.suggestEdit(
         edited: any(named: 'edited'),
         ownerId: any(named: 'ownerId'),
         suggesterId: any(named: 'suggesterId'),
       ),
-    ).thenThrow(RecipeSuggestionAlreadyWaiting(_waiting));
+    ).thenAnswer(
+      (_) async =>
+          _waiting.replacedWith(const {}, at: DateTime.utc(2026, 9, 27, 9)),
+    );
     await openEditor(tester, recipeOwnedBy(_owner));
     await retitle(tester, 'Olles pannkakor med sylt');
     await tapSave(tester);
 
-    expect(
-      find.textContaining(l10n.recipeSuggestionWaitingNotSent),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining(l10n.errorPreservedRecipeEdits),
-      findsOneWidget,
-    );
-    // Trying again cannot help while the first one waits, and no copy
-    // action is invented before the product owner decides.
-    expect(find.text(l10n.commonRetry), findsNothing);
-    expect(find.text(l10n.roleLoweredSaveCopy), findsNothing);
+    expect(find.text(l10n.recipeSuggestionReplaced), findsOneWidget);
+    expect(find.text(l10n.recipeSuggestionSent), findsNothing);
+    // Sent: the editor closes, and nothing asks the member to choose.
+    expect(find.byType(EditRecipeView), findsNothing);
     expect(find.byType(AlertDialog), findsNothing);
-    expect(find.byType(EditRecipeView), findsOneWidget);
-    expect(find.text('Olles pannkakor med sylt'), findsOneWidget);
     verifyNever(() => personal.updateUnifiedRecipe(any()));
     verifyNever(() => personal.addUnifiedRecipe(any()));
   });

@@ -18430,8 +18430,51 @@ class AppLocalizationsEn extends AppLocalizations {
       'A suggestion covers the recipe\'s text: title, description, meal, portions, time, ingredients and steps.';
 
   @override
-  String get recipeSuggestionWaitingNotSent =>
-      'The suggestion was not sent: your last suggestion is waiting for the owner.';
+  String get recipeSuggestionReplaced =>
+      'The suggestion is sent and replaced your earlier one.';
+
+  @override
+  String conflictBannerBodySuggestionReplaced(String name) {
+    return '$name changed it at the same time. Your change replaced your earlier suggestion and is kept for 7 days.';
+  }
+
+  @override
+  String get conflictBannerBodySuggestionReplacedUnnamed =>
+      'Someone else changed it at the same time. Your change replaced your earlier suggestion and is kept for 7 days.';
+
+  @override
+  String recipeSuggestionFromOneUpdated(String name) {
+    return '$name has updated their suggestion to the recipe.';
+  }
+
+  @override
+  String get recipeSuggestionFromOneUpdatedUnnamed =>
+      'A member has updated their suggestion to the recipe.';
+
+  @override
+  String recipeSuggestionFromManyUpdated(int count, int updated) {
+    String _temp0 = intl.Intl.pluralLogic(
+      updated,
+      locale: localeName,
+      other: '$updated of them have been updated.',
+      one: 'One of them has been updated.',
+    );
+    return '$count suggested changes are waiting for you. $_temp0';
+  }
+
+  @override
+  String recipeSuggestionIntroOwnerUpdated(String name, String date) {
+    return '$name has updated their suggestion to this. The suggestion is kept until $date.';
+  }
+
+  @override
+  String recipeSuggestionIntroMineUpdated(String date) {
+    return 'You suggested this, and it replaced your earlier suggestion. The suggestion is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionChangedSinceOpened =>
+      'The suggestion has changed since you opened it. Open it again to see the new one.';
 
   @override
   String get cookingNoStepsSaveCopy => 'Save my copy';

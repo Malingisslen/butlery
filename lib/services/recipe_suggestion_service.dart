@@ -10,7 +10,9 @@
 /// never writes someone else's recipe. Every edit a member saves in the
 /// recipe editor becomes a suggestion here ([suggestEdit]), not only the one
 /// that meets the owner's save. Q6-07 = B: a member has at most one pending
-/// suggestion per recipe; while it waits, no second one is made.
+/// suggestion per recipe. Q6-12 = B (produktbeslut 2026-09-27b): a new edit
+/// while one waits replaces the waiting one, under the same id, and both
+/// people are told; nothing else is discarded.
 ///
 /// Which recipe a suggestion is taken into: the owner's own recipe in their
 /// library (users/{owner}/recipes/{id}, the one recipe detail shows and the
@@ -55,16 +57,17 @@ class RecipeSuggestionTargetMissing implements Exception {
   String toString() => 'RecipeSuggestionTargetMissing($recipeId)';
 }
 
-/// Q6-07 = B: the member already has a suggestion to this recipe that waits
-/// for the owner, so no second one is made. Nothing is stored; the edit is
-/// still the member's to keep.
-class RecipeSuggestionAlreadyWaiting implements Exception {
-  const RecipeSuggestionAlreadyWaiting(this.waiting);
+/// Q6-12 = B: the suggester replaced [suggestionId] after the owner opened
+/// it, so the owner's decision would be about content that is no longer the
+/// suggestion. Nothing is written; the owner opens it again to see the new
+/// one.
+class RecipeSuggestionChanged implements Exception {
+  const RecipeSuggestionChanged(this.suggestionId);
 
-  final RecipeSuggestion waiting;
+  final String suggestionId;
 
   @override
-  String toString() => 'RecipeSuggestionAlreadyWaiting(${waiting.id})';
+  String toString() => 'RecipeSuggestionChanged($suggestionId)';
 }
 
 /// Reads the signed-in owner's own recipe [recipeId] from their library, or
@@ -129,32 +132,25 @@ class RecipeSuggestionService {
 
   /// Q6-08 = A: [suggesterId]'s edit of [ownerId]'s recipe, saved from the
   /// recipe editor, becomes a pending suggestion; nothing is written to the
-  /// recipe. Throws [RecipeSuggestionAlreadyWaiting] when the member already
-  /// has one waiting for this recipe (Q6-07 = B), and whatever the store
-  /// throws when it cannot be kept.
+  /// recipe. When the member already has one waiting for this recipe, the
+  /// edit replaces it (Q6-12 = B) and the result says so
+  /// ([RecipeSuggestion.wasReplaced]). Throws whatever the store throws when
+  /// it cannot be kept.
   Future<RecipeSuggestion> suggestEdit({
     required Recipe edited,
     required String ownerId,
     required String suggesterId,
   }) async {
-    final waiting = RecipeSuggestion.waitingAmong(
-      await _repository.watchMine(edited.id).first,
-      clock.now(),
-    );
-    if (waiting != null) throw RecipeSuggestionAlreadyWaiting(waiting);
     final shaped = RealtimeRecipe.fromRecipe(
       recipe: edited,
       ownerId: ownerId,
       ownerDisplayName: '',
     ).copyWithMetadata(lastEditedBy: suggesterId);
-    return _repository.suggest(
-      RecipeSuggestion.create(
-        recipeId: edited.id,
-        ownerId: ownerId,
-        suggesterId: suggesterId,
-        suggestion: shaped.toFirestore(),
-        at: clock.now(),
-      ),
+    return _repository.keepOrReplace(
+      recipeId: edited.id,
+      ownerId: ownerId,
+      suggesterId: suggesterId,
+      suggestion: shaped.toFirestore(),
     );
   }
 
@@ -227,9 +223,22 @@ class RecipeSuggestionService {
     );
   }
 
+  /// Q6-12 = B: refuses a decision on [suggestion] when the suggester has
+  /// replaced it since the owner read it, so the owner never takes in or
+  /// dismisses content they did not see. Throws [RecipeSuggestionChanged].
+  Future<void> _ensureUnchanged(RecipeSuggestion suggestion) async {
+    final rows = await _repository.watchToMe(suggestion.recipeId).first;
+    final now = rows.where((s) => s.id == suggestion.id).firstOrNull;
+    if (now != null && now.replacedAt != suggestion.replacedAt) {
+      throw RecipeSuggestionChanged(suggestion.id);
+    }
+  }
+
   /// The owner accepts [suggestion]: its content becomes the recipe's, with
   /// the sharing the recipe has now, and the row records the decision.
+  /// Throws [RecipeSuggestionChanged] when it was replaced after it was read.
   Future<void> accept(RecipeSuggestion suggestion) async {
+    await _ensureUnchanged(suggestion);
     final target = await _target(suggestion.recipeId);
     final own = target.own;
     if (own != null) {
@@ -277,8 +286,14 @@ class RecipeSuggestionService {
   }
 
   /// The owner dismisses [suggestion]. Nothing is written to the recipe.
-  Future<void> dismiss(RecipeSuggestion suggestion) =>
-      _repository.decide(suggestion.id, RecipeSuggestionStatus.dismissed);
+  /// Throws [RecipeSuggestionChanged] when it was replaced after it was read.
+  Future<void> dismiss(RecipeSuggestion suggestion) async {
+    await _ensureUnchanged(suggestion);
+    await _repository.decide(
+      suggestion.id,
+      RecipeSuggestionStatus.dismissed,
+    );
+  }
 
   static Recipe _suggested(RecipeSuggestion suggestion) =>
       RealtimeRecipe.fromMap(suggestion.recipeId, suggestion.suggestion).recipe;

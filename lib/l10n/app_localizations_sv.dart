@@ -18461,8 +18461,51 @@ class AppLocalizationsSv extends AppLocalizations {
       'Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.';
 
   @override
-  String get recipeSuggestionWaitingNotSent =>
-      'Förslaget skickades inte: ditt förra förslag väntar på ägaren.';
+  String get recipeSuggestionReplaced =>
+      'Förslaget är skickat och ersatte ditt förra förslag.';
+
+  @override
+  String conflictBannerBodySuggestionReplaced(String name) {
+    return '$name ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.';
+  }
+
+  @override
+  String get conflictBannerBodySuggestionReplacedUnnamed =>
+      'Någon annan ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.';
+
+  @override
+  String recipeSuggestionFromOneUpdated(String name) {
+    return '$name har uppdaterat sitt förslag till receptet.';
+  }
+
+  @override
+  String get recipeSuggestionFromOneUpdatedUnnamed =>
+      'En medlem har uppdaterat sitt förslag till receptet.';
+
+  @override
+  String recipeSuggestionFromManyUpdated(int count, int updated) {
+    String _temp0 = intl.Intl.pluralLogic(
+      updated,
+      locale: localeName,
+      other: '$updated av dem är uppdaterade.',
+      one: 'Ett av dem är uppdaterat.',
+    );
+    return '$count förslag på ändringar väntar på dig. $_temp0';
+  }
+
+  @override
+  String recipeSuggestionIntroOwnerUpdated(String name, String date) {
+    return '$name har uppdaterat sitt förslag till det här. Förslaget sparas till $date.';
+  }
+
+  @override
+  String recipeSuggestionIntroMineUpdated(String date) {
+    return 'Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till $date.';
+  }
+
+  @override
+  String get recipeSuggestionChangedSinceOpened =>
+      'Förslaget har ändrats sedan du öppnade det. Öppna det igen för att se det nya.';
 
   @override
   String get cookingNoStepsSaveCopy => 'Spara min kopia';

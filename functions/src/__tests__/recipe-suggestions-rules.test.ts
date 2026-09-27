@@ -14,6 +14,11 @@
  *     (plus one hour of device clock slack) from the server's clock.
  *   - Only the owner decides it, once: pending to accepted or dismissed, with
  *     a server-set decidedAt and nothing else changed.
+ *   - Q6-12 = B: while it is pending and still kept, the suggester replaces
+ *     its content with a newer edit under the same id: only suggestion,
+ *     replacedAt and an expiresAt exactly 7 days after replacedAt, and only
+ *     while the recipe is still shared with them. Nobody else replaces it,
+ *     and a decided or expired one is not replaced.
  *   - Nobody deletes it from a client (TTL and the deletion cascade do).
  *
  * Prerequisite: Firestore emulator running locally
@@ -329,6 +334,94 @@ test("a decision is made once, and changes nothing else", async () => {
     owner
       .doc(doc("seeded-extra"))
       .update({ status: "accepted", decidedAt: new Date(2020, 0, 1) }),
+  );
+});
+
+// ── replace (Q6-12 = B) ──
+
+/** The fields RecipeSuggestion.toReplacementFirestore writes. */
+function replacement(overrides: Record<string, unknown> = {}) {
+  const replacedAt = new Date();
+  return {
+    suggestion: { title: "Pannkakor med ännu mer smör", editCount: 4 },
+    replacedAt,
+    expiresAt: new Date(replacedAt.getTime() + 7 * DAY_MS),
+    ...overrides,
+  };
+}
+
+test("the suggester replaces their pending suggestion", async () => {
+  await seed("seeded-replace");
+  const member = env.authenticatedContext(MEMBER).firestore();
+  await assertSucceeds(member.doc(doc("seeded-replace")).update(replacement()));
+  // And again: a replaced one still waits and can be replaced.
+  await assertSucceeds(member.doc(doc("seeded-replace")).update(replacement()));
+});
+
+test("the owner, another member and a stranger cannot replace it", async () => {
+  await seed("seeded-replace-others");
+  for (const uid of [OWNER, THIRD_MEMBER, STRANGER]) {
+    await assertFails(
+      env
+        .authenticatedContext(uid)
+        .firestore()
+        .doc(doc("seeded-replace-others"))
+        .update(replacement()),
+    );
+  }
+});
+
+test("a decided or expired suggestion is not replaced", async () => {
+  await seed("seeded-replace-decided", { status: "accepted" });
+  const past = new Date(Date.now() - 8 * DAY_MS);
+  await seed("seeded-replace-expired", {
+    createdAt: past,
+    expiresAt: new Date(past.getTime() + 7 * DAY_MS),
+  });
+  const member = env.authenticatedContext(MEMBER).firestore();
+  await assertFails(
+    member.doc(doc("seeded-replace-decided")).update(replacement()),
+  );
+  await assertFails(
+    member.doc(doc("seeded-replace-expired")).update(replacement()),
+  );
+});
+
+test("a replacement changes only the content and its 7 days", async () => {
+  await seed("seeded-replace-extra");
+  const member = env.authenticatedContext(MEMBER).firestore();
+  const ref = member.doc(doc("seeded-replace-extra"));
+  await assertFails(ref.update(replacement({ status: "accepted" })));
+  await assertFails(ref.update(replacement({ ownerId: STRANGER })));
+  await assertFails(ref.update(replacement({ createdAt: new Date() })));
+  await assertFails(ref.update(replacement({ suggesterName: "Olle" })));
+  await assertFails(ref.update(replacement({ suggestion: "text" })));
+  await assertFails(
+    ref.update(
+      replacement({ expiresAt: new Date(Date.now() + 30 * DAY_MS) }),
+    ),
+  );
+  // An expiry that does not follow replacedAt by exactly 7 days.
+  await assertFails(
+    ref.update(
+      replacement({ expiresAt: new Date(Date.now() + 6 * DAY_MS) }),
+    ),
+  );
+});
+
+test("a suggester the recipe is no longer shared with cannot replace", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(doc("seeded-replace-unshared"))
+      .set(suggestion(MEMBER, { recipeId: UNSHARED }));
+  });
+  await assertFails(
+    env
+      .authenticatedContext(MEMBER)
+      .firestore()
+      .doc(doc("seeded-replace-unshared"))
+      .update(replacement()),
   );
 });
 

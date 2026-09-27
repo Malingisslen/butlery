@@ -29795,7 +29795,7 @@ abstract class AppLocalizations {
   /// **'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
   String get conflictBannerBodySuggestionUnnamed;
 
-  /// Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (one already waits, Q6-07 = B, or storing failed). Interim until the product owner decides; name = who saved the version that stays.
+  /// Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (no store, or storing failed); name = who saved the version that stays.
   ///
   /// In sv, this message translates to:
   /// **'{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
@@ -30377,11 +30377,59 @@ abstract class AppLocalizations {
   /// **'Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.'**
   String get recipeSuggestionCoversText;
 
-  /// Q6-07 = B: the member already has a pending suggestion to this recipe, so no second one was sent; followed by errorPreservedRecipeEdits. Interim: what else the member is offered here is an open question to the product owner (Q6-07 = B against Q6-08 = A).
+  /// Q6-12 = B (produktbeslut 2026-09-27b): confirmation after a member's edit replaced their suggestion that was still waiting for the owner.
   ///
   /// In sv, this message translates to:
-  /// **'Förslaget skickades inte: ditt förra förslag väntar på ägaren.'**
-  String get recipeSuggestionWaitingNotSent;
+  /// **'Förslaget är skickat och ersatte ditt förra förslag.'**
+  String get recipeSuggestionReplaced;
+
+  /// Q6-12 = B: conflict banner body when the member's losing edit replaced their waiting suggestion; name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.'**
+  String conflictBannerBodySuggestionReplaced(String name);
+
+  /// Q6-12 = B: conflictBannerBodySuggestionReplaced when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.'**
+  String get conflictBannerBodySuggestionReplacedUnnamed;
+
+  /// Q6-12 = B: owner's notice in recipe detail when the one waiting suggestion was replaced by a newer edit; name = who suggested it.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har uppdaterat sitt förslag till receptet.'**
+  String recipeSuggestionFromOneUpdated(String name);
+
+  /// Q6-12 = B: recipeSuggestionFromOneUpdated when the suggester's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'En medlem har uppdaterat sitt förslag till receptet.'**
+  String get recipeSuggestionFromOneUpdatedUnnamed;
+
+  /// Q6-12 = B: owner's notice when more than one suggestion waits and some were replaced by newer edits; count >= 2, updated >= 1.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} förslag på ändringar väntar på dig. {updated, plural, =1{Ett av dem är uppdaterat.} other{{updated} av dem är uppdaterade.}}'**
+  String recipeSuggestionFromManyUpdated(int count, int updated);
+
+  /// Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroOwnerUpdated(String name, String date);
+
+  /// Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroMineUpdated(String date);
+
+  /// Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget har ändrats sedan du öppnade det. Öppna det igen för att se det nya.'**
+  String get recipeSuggestionChangedSinceOpened;
 
   /// Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy.
   ///

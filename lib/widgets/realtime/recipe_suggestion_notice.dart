@@ -4,7 +4,8 @@
 /// produktregler.md:241 lets the owner accept or dismiss it. The conflict
 /// banner that first says so is dismissable, so this line is how both people
 /// reach the suggestion for the rest of its 7 days:
-/// - the owner sees suggestions waiting for a decision ("Se förslaget");
+/// - the owner sees suggestions waiting for a decision ("Se förslaget"), and
+///   is told when a suggester replaced theirs with a newer edit (Q6-12 = B);
 /// - the suggester sees their newest suggestion and what became of it
 ///   ("Se ditt förslag").
 ///
@@ -109,8 +110,20 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
     final l = context.l10n;
     final newest = rows.first;
     if (widget.isOwner) {
-      if (rows.length > 1) return l.recipeSuggestionFromMany(rows.length);
+      // Q6-12 = B (produktbeslut 2026-09-27b): the owner is told which
+      // suggestions the suggester replaced with a newer edit.
+      final updated = rows.where((s) => s.wasReplaced).length;
+      if (rows.length > 1) {
+        return updated == 0
+            ? l.recipeSuggestionFromMany(rows.length)
+            : l.recipeSuggestionFromManyUpdated(rows.length, updated);
+      }
       final name = RecipeSuggestionService.suggesterNameOf(newest);
+      if (newest.wasReplaced) {
+        return name.isEmpty
+            ? l.recipeSuggestionFromOneUpdatedUnnamed
+            : l.recipeSuggestionFromOneUpdated(name);
+      }
       return name.isEmpty
           ? l.recipeSuggestionFromOneUnnamed
           : l.recipeSuggestionFromOne(name);

@@ -122,6 +122,16 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
       setState(() => _busy = null);
       // Trying again cannot bring the recipe back, so Stäng, not a retry.
       SnackBarUtils.showFailure(context, what: l.recipeSuggestionRecipeGone);
+    } on RecipeSuggestionChanged {
+      // Q6-12 = B: the suggester replaced it while it was open. Nothing was
+      // decided; the owner goes back and opens the new one, so no retry
+      // here decides on content they have not seen.
+      if (!mounted) return;
+      setState(() => _busy = null);
+      SnackBarUtils.showFailure(
+        context,
+        what: l.recipeSuggestionChangedSinceOpened,
+      );
     } catch (e) {
       AppLogger.error('Suggestion decision failed', e);
       if (!mounted) return;
@@ -176,12 +186,16 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
     final l = context.l10n;
     final keptUntil = _keptUntil(context);
     final name = RecipeSuggestionService.suggesterNameOf(widget.suggestion);
+    // Q6-12 = B: both readers are told when it replaced an earlier one.
+    final replaced = widget.suggestion.wasReplaced;
+    final who = name.isEmpty ? l.displayUnknownUser : name;
     final intro = widget.asOwner
-        ? l.recipeSuggestionIntroOwner(
-            name.isEmpty ? l.displayUnknownUser : name,
-            keptUntil,
-          )
-        : l.recipeSuggestionIntroMine(keptUntil);
+        ? (replaced
+              ? l.recipeSuggestionIntroOwnerUpdated(who, keptUntil)
+              : l.recipeSuggestionIntroOwner(who, keptUntil))
+        : (replaced
+              ? l.recipeSuggestionIntroMineUpdated(keptUntil)
+              : l.recipeSuggestionIntroMine(keptUntil));
     return ListView(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       children: [

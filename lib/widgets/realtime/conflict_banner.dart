@@ -140,12 +140,19 @@ class _ConflictBannerState extends State<ConflictBanner> {
   String _body(BuildContext context, ConflictEvent event) {
     final name = event.remoteValue.lastEditedByDisplayName.trim();
     if (_isSuggestion(event)) {
+      // Q6-12 = B: the member is told when the edit replaced the suggestion
+      // that was waiting.
+      if (event.suggestionReplaced) {
+        return name.isEmpty
+            ? context.l10n.conflictBannerBodySuggestionReplacedUnnamed
+            : context.l10n.conflictBannerBodySuggestionReplaced(name);
+      }
       return name.isEmpty
           ? context.l10n.conflictBannerBodySuggestionUnnamed
           : context.l10n.conflictBannerBodySuggestion(name);
     }
-    // Q6-08 = A: someone else's recipe, and no suggestion was stored (one
-    // already waits, Q6-07 = B, or storing failed). Nothing was written.
+    // Q6-08 = A: someone else's recipe, and no suggestion was stored (no
+    // store, or storing failed). Nothing was written.
     if (event.entity == ConflictEntity.recipeShared) {
       return name.isEmpty
           ? context.l10n.conflictBannerBodyMemberNotSentUnnamed

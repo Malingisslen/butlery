@@ -10,9 +10,12 @@
 ///   the owner's version stays, nothing of the edit is written to the shared
 ///   recipe, and the conflict event carries the suggestion's id — even when
 ///   the edit's counter would have won under the old rule;
-/// - without a store, when storing fails or while one waits (Q6-07 = B),
-///   nothing is written either (Q6-08 = A: a member never writes the owner's
-///   recipe) and the notice carries no suggestion id;
+/// - without a store or when storing fails, nothing is written either
+///   (Q6-08 = A: a member never writes the owner's recipe) and the notice
+///   carries no suggestion id;
+/// - while one waits, a new edit replaces it under the same id, and both the
+///   member and the owner can tell (Q6-12 = B); the owner's decision is
+///   refused when it was replaced after the owner read it;
 /// - a member's save outside a conflict is refused before the network;
 /// - the suggester's own view of a suggestion reads the owner's recipe
 ///   through the member's read path when it has no realtime resource;
@@ -69,6 +72,32 @@ class _FailingStore extends Fake implements RecipeSuggestionRepository {
   Future<RecipeSuggestion> suggest(RecipeSuggestion suggestion) async {
     calls++;
     throw StateError('permission-denied');
+  }
+}
+
+/// A store whose read of the member's suggestions is stale: the waiting one
+/// it returns was decided on the server, so replacing it is refused.
+class _RacedStore extends Fake implements RecipeSuggestionRepository {
+  _RacedStore(this.stale);
+
+  final RecipeSuggestion stale;
+  int replaceCalls = 0;
+  final suggested = <RecipeSuggestion>[];
+
+  @override
+  Stream<List<RecipeSuggestion>> watchMine(String recipeId) =>
+      Stream.value([stale]);
+
+  @override
+  Future<RecipeSuggestion> replace(RecipeSuggestion replacement) async {
+    replaceCalls++;
+    throw PermissionDeniedException('decided meanwhile');
+  }
+
+  @override
+  Future<RecipeSuggestion> suggest(RecipeSuggestion suggestion) async {
+    suggested.add(suggestion);
+    return suggestion.withId('new');
   }
 }
 
@@ -474,9 +503,9 @@ void main() {
     });
   });
 
-  group('one pending suggestion per member (Q6-07 = B)', () {
-    test('a conflict while my suggestion waits makes no second suggestion '
-        'and writes nothing', () async {
+  group('one pending suggestion per member (Q6-07 = B, Q6-12 = B)', () {
+    test('a conflict while my suggestion waits replaces it and writes '
+        'nothing to the recipe', () async {
       final waiting = await store.suggest(
         RecipeSuggestion.create(
           recipeId: 'q1',
@@ -498,17 +527,68 @@ void main() {
       await pumpEventQueue();
 
       final kept = await rows();
-      expect(kept.map((s) => s.id), [waiting.id]);
-      expect(events, hasLength(1));
-      expect(await liveTitle('q1'), 'Olles');
+      expect(kept.map((s) => s.id), [waiting.id], reason: 'no second row');
+      final row = kept.single;
       expect(
-        events.single.suggestionId,
-        isNull,
-        reason:
-            'no suggestion was stored, so the notice says the change was '
-            'neither saved nor sent (what else to offer is open, Q6-07 '
-            'against Q6-08)',
+        RealtimeRecipe.fromMap('q1', row.suggestion).title,
+        'Mias förslag',
+        reason: 'the new edit replaced the waiting one',
       );
+      expect(row.isPending, isTrue);
+      expect(row.wasReplaced, isTrue);
+      expect(row.createdAt, waiting.createdAt);
+      expect(
+        row.expiresAt.difference(row.replacedAt!),
+        RecipeSuggestion.keptFor,
+      );
+      expect(await liveTitle('q1'), 'Olles');
+      expect(events, hasLength(1));
+      expect(events.single.suggestionId, waiting.id);
+      expect(
+        events.single.suggestionReplaced,
+        isTrue,
+        reason: 'the notice tells the member it replaced the waiting one',
+      );
+    });
+
+    test('a new conflict with no suggestion waiting is not marked as a '
+        'replacement', () async {
+      final sync = buildSync(store);
+      addTearDown(sync.dispose);
+      final events = <ConflictEvent>[];
+      final sub = sync.conflictStream.listen(events.add);
+      addTearDown(sub.cancel);
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        await conflict(sync, 'q0');
+      });
+      await pumpEventQueue();
+      expect(events.single.suggestionId, isNotNull);
+      expect(events.single.suggestionReplaced, isFalse);
+      expect((await rows()).single.wasReplaced, isFalse);
+    });
+
+    test('when the waiting one was decided meanwhile, the edit is kept as a '
+        'new suggestion', () async {
+      final stale = RecipeSuggestion.create(
+        recipeId: 'q3',
+        ownerId: _owner,
+        suggesterId: _member,
+        suggestion: const {'title': 'x'},
+        at: DateTime.utc(2026, 4, 1, 11),
+      ).withId('stale');
+      final raced = _RacedStore(stale);
+      final kept = await withClock(
+        Clock.fixed(DateTime.utc(2026, 4, 1, 12)),
+        () => raced.keepOrReplace(
+          recipeId: 'q3',
+          ownerId: _owner,
+          suggesterId: _member,
+          suggestion: const {'title': 'y'},
+        ),
+      );
+      expect(raced.replaceCalls, 1);
+      expect(raced.suggested.single.suggestion, {'title': 'y'});
+      expect(kept.wasReplaced, isFalse);
     });
 
     test('a decided suggestion no longer blocks a new one', () async {
@@ -604,28 +684,41 @@ void main() {
       );
     });
 
-    test('a second edit while one waits is refused, and nothing is '
-        'stored', () async {
-      final first = await service.suggestEdit(
-        edited: edited('m2'),
-        ownerId: _owner,
-        suggesterId: _member,
+    test('a second edit while one waits replaces it, and the owner sees it '
+        'updated (Q6-12 = B)', () async {
+      final first = await withClock(
+        Clock.fixed(DateTime.utc(2026, 4, 1, 12)),
+        () => service.suggestEdit(
+          edited: edited('m2'),
+          ownerId: _owner,
+          suggesterId: _member,
+        ),
       );
-      await expectLater(
-        service.suggestEdit(
+      expect(first.wasReplaced, isFalse);
+      final second = await withClock(
+        Clock.fixed(DateTime.utc(2026, 4, 2, 9)),
+        () => service.suggestEdit(
           edited: edited('m2').copyWith(title: 'Mias andra'),
           ownerId: _owner,
           suggesterId: _member,
         ),
-        throwsA(
-          isA<RecipeSuggestionAlreadyWaiting>().having(
-            (e) => e.waiting.id,
-            'waiting',
-            first.id,
-          ),
-        ),
       );
-      expect(await rows(), hasLength(1));
+      expect(second.id, first.id, reason: 'replaced under the same id');
+      expect(second.wasReplaced, isTrue);
+      final row = (await rows()).single;
+      expect(RealtimeRecipe.fromMap('m2', row.suggestion).title, 'Mias andra');
+      expect(row.replacedAt, DateTime.utc(2026, 4, 2, 9));
+      expect(row.expiresAt, DateTime.utc(2026, 4, 9, 9));
+      expect(row.createdAt, DateTime.utc(2026, 4, 1, 12));
+      expect(written, isEmpty, reason: 'a member never writes the recipe');
+
+      signIn(_owner);
+      final toMe = await withClock(
+        Clock.fixed(DateTime.utc(2026, 4, 2, 10)),
+        () => service.watchPendingToMe('m2').first,
+      );
+      expect(toMe.single.wasReplaced, isTrue);
+      signIn(_member);
 
       // Another recipe is not blocked by it.
       await service.suggestEdit(
@@ -749,6 +842,42 @@ void main() {
         isNull,
         reason: 'recomputed from the new lines when the recipe is written',
       );
+    });
+
+    test('a decision on a suggestion replaced after the owner read it is '
+        'refused, and nothing is written (Q6-12 = B)', () async {
+      library['c1'] = ownersRecipe('c1');
+      await service.suggestEdit(
+        edited: edited('c1'),
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      signIn(_owner);
+      final seen = (await service.watchPendingToMe('c1').first).single;
+      signIn(_member);
+      await withClock(
+        Clock.fixed(clock.now().add(const Duration(minutes: 5))),
+        () => service.suggestEdit(
+          edited: edited('c1').copyWith(title: 'Mias nyare'),
+          ownerId: _owner,
+          suggesterId: _member,
+        ),
+      );
+      signIn(_owner);
+      await expectLater(
+        service.accept(seen),
+        throwsA(isA<RecipeSuggestionChanged>()),
+      );
+      await expectLater(
+        service.dismiss(seen),
+        throwsA(isA<RecipeSuggestionChanged>()),
+      );
+      expect(written, isEmpty);
+      expect((await rows()).single.isPending, isTrue);
+
+      final fresh = (await service.watchPendingToMe('c1').first).single;
+      await service.accept(fresh);
+      expect(written.single.title, 'Mias nyare');
     });
 
     test('dismissing writes nothing to the owner\'s recipe', () async {

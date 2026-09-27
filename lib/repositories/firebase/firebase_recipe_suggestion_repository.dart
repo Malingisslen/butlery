@@ -6,9 +6,9 @@
 /// signed-in user's own id in one of those two fields, which is also what the
 /// read rule in firestore.rules requires, so a query can never ask for rows
 /// the rule would refuse. The rule additionally lets only the suggester create
-/// a row, only for a recipe the owner shared with them, and only the owner
-/// change its status; nobody deletes one (TTL and the account deletion
-/// cascade do).
+/// a row, only for a recipe the owner shared with them, only the owner
+/// change its status, and only the suggester replace a pending one's content
+/// (Q6-12 = B); nobody deletes one (TTL and the account deletion cascade do).
 ///
 /// The queries use equality filters only, which Firestore serves from
 /// single-field indexes; the ordering is done here so no composite index is
@@ -71,13 +71,16 @@ class FirebaseRecipeSuggestionRepository
       entity != null &&
       (entity.suggesterId == userId || entity.ownerId == userId);
 
-  /// Only the owner's decision changes a row; see [decide].
+  /// The owner's decision ([decide]) and the suggester's replacement of a
+  /// pending one ([replace], Q6-12 = B) change a row; no one else does.
   @override
   Future<bool> validateUpdatePermission(
     String userId,
     String resourceId,
     RecipeSuggestion entity,
-  ) async => entity.ownerId == userId;
+  ) async =>
+      entity.ownerId == userId ||
+      (entity.suggesterId == userId && entity.isPending);
 
   /// Nobody deletes a suggestion from the app: TTL removes it after 7 days
   /// and the account deletion cascade removes it with either account.
@@ -104,6 +107,44 @@ class FirebaseRecipeSuggestionRepository
   }
 
   @override
+  Future<RecipeSuggestion> replace(RecipeSuggestion replacement) async {
+    final uid = requireCurrentUserId();
+    if (replacement.replacedAt == null || replacement.id.isEmpty) {
+      throw ArgumentError.value(
+        replacement,
+        'replacement',
+        'not made by RecipeSuggestion.replacedWith',
+      );
+    }
+    final ref = _rows.doc(replacement.id);
+    final snap = await ref.get();
+    final row = snap.exists
+        ? RecipeSuggestion.fromFirestore(snap.id, snap.data() ?? {})
+        : null;
+    if (row == null ||
+        row.suggesterId != uid ||
+        !row.isPending ||
+        !await validateUpdatePermission(uid, row.id, row)) {
+      throw PermissionDeniedException(
+        'Only the suggester replaces their own pending suggestion',
+      );
+    }
+    try {
+      await ref.update(replacement.toReplacementFirestore());
+    } on FirebaseException catch (e) {
+      // The owner decided it between the read and the write: the rule
+      // refuses a replacement of a suggestion that no longer waits.
+      if (e.code == 'permission-denied') {
+        throw PermissionDeniedException(
+          'The suggestion no longer waits for the owner',
+        );
+      }
+      rethrow;
+    }
+    return replacement;
+  }
+
+  @override
   Stream<List<RecipeSuggestion>> watchMine(String recipeId) =>
       _watch('suggesterId', recipeId);
 
@@ -121,7 +162,7 @@ class FirebaseRecipeSuggestionRepository
           final rows = [
             for (final doc in snap.docs)
               ?RecipeSuggestion.fromFirestore(doc.id, doc.data()),
-          ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          ]..sort((a, b) => b.madeAt.compareTo(a.madeAt));
           return rows;
         });
   }

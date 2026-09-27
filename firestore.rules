@@ -3110,6 +3110,13 @@ service cloud.firestore {
     // it with either account (deleteRecipeSuggestions). No display name is
     // stored: the owner sees a name the app resolves from suggesterId, which
     // this rule pins to the writer, never text the suggester typed.
+    // Q6-12 = B (produktbeslut 2026-09-27b): while it is pending and still
+    // kept, the suggester may replace its content with a newer edit, under the
+    // same id: only `suggestion`, a client-set `replacedAt` and an `expiresAt`
+    // exactly 7 days after it (the same clock window as create), and only
+    // while the recipe is still shared with them. Who, which recipe, the
+    // status and `createdAt` never change, and the owner's decision stays
+    // the owner's.
     // ========================================
     match /recipe_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
@@ -3143,12 +3150,27 @@ service cloud.firestore {
         && request.auth.uid in get(/databases/$(database)/documents/users/$(request.resource.data.ownerId)/recipes/$(request.resource.data.recipeId)).data.get('socialData', {}).get('memberPermissions', {});
 
       allow update: if isAuthenticated()
-        && resource.data.ownerId == request.auth.uid
         && resource.data.status == 'pending'
-        && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'decidedAt'])
-        && request.resource.data.status in ['accepted', 'dismissed']
-        && request.resource.data.decidedAt == request.time;
+        && (
+          (resource.data.ownerId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'decidedAt'])
+            && request.resource.data.status in ['accepted', 'dismissed']
+            && request.resource.data.decidedAt == request.time)
+          || (resource.data.suggesterId == request.auth.uid
+            && resource.data.expiresAt > request.time
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['suggestion', 'replacedAt', 'expiresAt'])
+            && request.resource.data.suggestion is map
+            && request.resource.data.replacedAt is timestamp
+            && request.resource.data.expiresAt is timestamp
+            && request.resource.data.expiresAt
+              == request.resource.data.replacedAt + duration.value(7, 'd')
+            && request.resource.data.expiresAt > request.time
+            && request.resource.data.expiresAt
+              <= request.time + duration.value(169, 'h')
+            && request.auth.uid in get(/databases/$(database)/documents/users/$(resource.data.ownerId)/recipes/$(resource.data.recipeId)).data.get('socialData', {}).get('memberPermissions', {}))
+        );
 
       allow delete: if false;
     }

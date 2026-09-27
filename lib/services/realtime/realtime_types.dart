@@ -81,6 +81,10 @@ class ConflictEvent {
   /// ConflictDiffView still applies (PQ-02 = A), so nothing is lost.
   final String? suggestionId;
 
+  /// Q6-12 = B: the suggestion [suggestionId] replaced this user's waiting
+  /// suggestion to the recipe, rather than being a new one.
+  final bool suggestionReplaced;
+
   ConflictEvent({
     required this.collectionPath,
     required this.docId,
@@ -90,6 +94,7 @@ class ConflictEvent {
     required this.entity,
     required this.occurredAt,
     this.suggestionId,
+    this.suggestionReplaced = false,
   });
 
   @override

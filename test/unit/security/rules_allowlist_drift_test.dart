@@ -694,6 +694,39 @@ void main() {
     );
   });
 
+  // Q6-12 = B: the suggester's replacement of a pending suggestion is a diff
+  // restriction, `affectedKeys().hasOnly([...])`, not a payload allowlist, so
+  // the payload comparison above does not see it. A field the writer adds
+  // (RecipeSuggestion.toReplacementFirestore) that the rule does not name
+  // would be refused on every replacement, and a field the rule names that
+  // the writer never sends widens what a suggester may change.
+  test('the recipe_suggestions replacement writes exactly what the rule '
+      'admits', () {
+    final block = rulesBlock(rules, 'match /recipe_suggestions/{suggestionId}');
+    expect(block, isNotNull, reason: 'the recipe_suggestions block is gone');
+    final lists = [
+      for (final m in RegExp(
+        r'hasOnly\(\s*\[([^\]]*)\]',
+      ).allMatches(block!))
+        RegExp(
+          "'([^']+)'",
+        ).allMatches(m.group(1)!).map((k) => k.group(1)!).toSet(),
+    ].where((keys) => keys.contains('replacedAt')).toList();
+    expect(
+      lists,
+      hasLength(1),
+      reason: 'exactly one list in the block names replacedAt',
+    );
+    final written = RecipeSuggestion.create(
+      recipeId: 'r',
+      ownerId: 'o',
+      suggesterId: 's',
+      suggestion: const <String, dynamic>{},
+      at: DateTime.utc(2026),
+    ).withId('x').replacedWith(const {}, at: DateTime.utc(2026, 1, 2));
+    expect(lists.single, written.toReplacementFirestore().keys.toSet());
+  });
+
   // BUT-2079 (R8): a key the create limb admits but the Art. 15 section
   // neither exports nor deliberately withholds would be dropped from the
   // person's own bundle with nothing reddening, because the projection fails
@@ -797,9 +830,14 @@ void main() {
     // above in _allowlists, writer RecipeSuggestion.toFirestore) and one
     // affectedKeys().hasOnly(['status', 'decidedAt']) on the owner's decision,
     // a diff restriction and so outside this guard's payload comparison.
+    // Q6-12 = B added one more diff restriction there:
+    // affectedKeys().hasOnly(['suggestion', 'replacedAt', 'expiresAt']) on
+    // the suggester's replacement (writer
+    // RecipeSuggestion.toReplacementFirestore), outside the payload
+    // comparison for the same reason.
     expect(
       'hasOnly('.allMatches(rules).length,
-      43,
+      44,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
