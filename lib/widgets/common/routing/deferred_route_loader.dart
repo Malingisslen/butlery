@@ -138,8 +138,7 @@ class ModuleLoadErrorScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: cs.surface,
-      // The one shared top bar on both platforms (beslutslogg.md:52, B-45),
-      // not the retired AdaptiveAppBar.
+      // The one shared top bar on both platforms (beslutslogg.md:52, B-45).
       appBar: ButleryTopBar.undersida(title: context.l10n.errorTitle),
       body: Center(
         child: Padding(

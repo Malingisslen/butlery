@@ -442,9 +442,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               ),
               // App bar with recipe title and actions
               // UI Redesign: Hero buttons are solid cream squares with green icons
-              // BUT-706: stays a Material SliverAppBar — the Hero-image
-              // flexibleSpace collapsing header has no CupertinoSliverNavigationBar
-              // equivalent.
+              // BUT-706: a SliverAppBar, because the hero image collapses
+              // into the bar. One bar on both platforms (B-45).
               SliverAppBar(
                 expandedHeight: Breakpoints.isMobile(context)
                     ? 200.0

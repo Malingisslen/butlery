@@ -109,7 +109,7 @@ void main() {
     expect(find.text(weeklyPlanReadFailedMessage), findsOneWidget);
     expect(find.text('Ingen meny för den veckan'), findsNothing);
     // BUT-2025: pins that this handler's error bar goes through
-    // `SnackBarUtils.showError` rather than a raw `ScaffoldMessenger` call
+    // `SnackBarUtils.showFailure` rather than a raw `ScaffoldMessenger` call
     // with its own colour. The shared helper leaves the colour to the one
     // ink snackbar theme (Komponentark v1:745-750, PQ-09 = A), so the same
     // sentence never arrives in two different colours.

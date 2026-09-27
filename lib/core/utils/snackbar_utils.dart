@@ -138,37 +138,6 @@ class SnackBarUtils {
     return terminal.contains(text[text.length - 1]) ? text : '$text.';
   }
 
-  /// An error. With [showCloseButton] the action is "Stäng", never "OK"
-  /// (Komponentark v1:750).
-  ///
-  /// The legacy error channel: new code calls [showFailure], and
-  /// test/architecture/error_contract_test.dart freezes the calls that are
-  /// left until package 7 moves them.
-  static void showError(
-    BuildContext context,
-    String message, {
-    Duration? duration,
-    String? actionLabel,
-    VoidCallback? onAction,
-    bool showCloseButton = true,
-  }) {
-    try {
-      _showSnackBar(
-        context,
-        message: message,
-        duration: duration ?? const Duration(seconds: 5),
-        actionLabel:
-            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
-        onAction: onAction ?? (showCloseButton ? () {} : null),
-        alert: true,
-      );
-
-      AppLogger.debug('Error snackbar shown: $message');
-    } catch (e) {
-      AppLogger.error('Failed to show error snackbar: $e');
-    }
-  }
-
   /// [showFailure] with "Försök igen", which runs [onRetry].
   static void showErrorWithRetry(
     BuildContext context,

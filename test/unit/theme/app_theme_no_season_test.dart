@@ -12,20 +12,19 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 
 void main() {
   final october = DateTime(2026, 10, 15);
   final january = DateTime(2027, 1, 15);
   final july = DateTime(2026, 7, 15);
 
-  ButleryColors ext(ThemeData t) => t.extension<ButleryColors>()!;
-
-  for (final (name, theme, base, brightness) in [
-    ('light', () => AppTheme.lightTheme, ButleryColors.light, Brightness.light),
-    ('dark', () => AppTheme.darkTheme, ButleryColors.dark, Brightness.dark),
+  for (final (name, theme, brightness) in [
+    ('light', () => AppTheme.lightTheme, Brightness.light),
+    ('dark', () => AppTheme.darkTheme, Brightness.dark),
   ]) {
     test('$name theme is the same in October, January and July', () {
       final inOctober = withClock(Clock.fixed(october), theme);
@@ -33,19 +32,22 @@ void main() {
       final inJuly = withClock(Clock.fixed(july), theme);
 
       // ThemeData has no value equality for every component theme, so the
-      // parts a season could move are compared: the scheme and the extension.
+      // parts a season could move are compared: the scheme, and the mode
+      // colours the recipe card and the meat/fish category read. The theme
+      // carries no extension, so nothing can override them per season.
       for (final t in [inOctober, inJanuary, inJuly]) {
         expect(t.colorScheme, inJuly.colorScheme);
         expect(t.focusColor, inJuly.focusColor);
-        expect(identical(ext(t), base), isTrue);
+        expect(t.extensions, isEmpty);
+        final mode = ModeColors.of(t.brightness);
+        expect(mode, same(ModeColors.of(brightness)));
         expect(
-          ext(t).recipeCardBottomBorder,
-          ModeColors.of(brightness).recipeCardBottomBorder,
+          mode.recipeCardBottomBorder,
+          brightness == Brightness.dark
+              ? AppColorsDark.recipeCardBottomBorder
+              : AppColors.recipeCardBottomBorder,
         );
-        expect(
-          ext(t).categoryMeatFish,
-          ModeColors.of(brightness).categoryMeatFish,
-        );
+        expect(mode.categoryMeatFish, AppColors.categoryMeatFish);
       }
     });
   }

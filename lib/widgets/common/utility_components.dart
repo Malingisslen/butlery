@@ -8,7 +8,6 @@ import 'package:butlery/widgets/common/service/service_widgets.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
 import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 import 'package:butlery/widgets/common/permissions/permission_widgets.dart';
-import 'package:butlery/widgets/common/feedback/snackbar_widgets.dart';
 
 // Re-export ActionButtonStyle from the focused component
 export 'buttons/action_buttons.dart' show ActionButtonStyle;
@@ -286,42 +285,5 @@ class UtilityComponents {
       saveLabel: saveLabel,
       forkLabel: forkLabel,
     );
-  }
-
-  /// Show success snackbar.
-  static void showSuccessSnackbar(BuildContext context, String message) {
-    SnackbarWidgets.showSuccessSnackbar(context, message);
-  }
-
-  /// Show error snackbar: the ink failure snackbar with "Stäng", never OK
-  /// (content-style-guide.md:96).
-  ///
-  /// A legacy channel: it takes one line. New code calls
-  /// SnackBarUtils.showFailure(what:, preserved:, action:), and
-  /// test/architecture/error_contract_test.dart freezes these calls.
-  static void showErrorSnackbar(BuildContext context, String message) {
-    SnackbarWidgets.showErrorSnackbar(context, message);
-  }
-
-  /// Show error snackbar with "Försök igen" action that re-runs [onRetry].
-  ///
-  /// Use after an operation has already exhausted in-helper retries
-  /// (e.g. `withRetry`) so the user can manually trigger another attempt
-  /// without re-navigating.
-  static void showErrorSnackbarWithRetry(
-    BuildContext context,
-    String message, {
-    required VoidCallback onRetry,
-  }) {
-    SnackbarWidgets.showErrorSnackbarWithRetry(
-      context,
-      message,
-      onRetry: onRetry,
-    );
-  }
-
-  /// Show warning snackbar.
-  static void showWarningSnackbar(BuildContext context, String message) {
-    SnackbarWidgets.showWarningSnackbar(context, message);
   }
 }

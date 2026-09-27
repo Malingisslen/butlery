@@ -59,7 +59,7 @@ class StateWidget extends StatelessWidget {
   /// laddningsindikator.
   factory StateWidget.loading({
     required String message,
-    LoadingVariant variant = LoadingVariant.spinner,
+    LoadingVariant variant = LoadingVariant.plateLine,
     int itemCount = 5,
   }) {
     return StateWidget(

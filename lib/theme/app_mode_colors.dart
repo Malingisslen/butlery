@@ -106,26 +106,18 @@ abstract final class AppModeColors {
   static Color textAccentOnInk() => AppColors.textAccentOnInk;
 }
 
-/// The mode-aware colour set that replaces `context.butleryColors` and the
-/// `ButleryColors` theme extension (butlery_colors_extension.dart:147-148,
-/// "kompatibilitetsyta ... Pensioneras i paket 7"; NULAGE.md:71-74).
+/// The mode-aware colour set for members that have no ColorScheme slot.
 ///
-/// It carries only a [Brightness] and no colour values of its own
-/// (tokens.json:522): every member picks the generated AppColors or
+/// It replaced the retired compatibility theme extension in package 7
+/// (NULAGE.md:71-74). It carries only a [Brightness] and no colour values of
+/// its own (tokens.json:522): every member picks the generated AppColors or
 /// AppColorsDark member for that brightness, and the four decorative
 /// category colours the app owns come from AppSpecificColors. It is not a
 /// ThemeExtension, so there is no override path; a theme's brightness is the
 /// only input.
 ///
 /// The name avoids the classes the design-system generator emits
-/// (ButleryColors, ButleryType, ButlerySpace, ButleryRadius, ButleryMotion,
-/// ButleryTouch, ButleryTheme; tokens.json:519).
-///
-/// Codemod: `context.butleryColors` becomes `context.modeColors`, a
-/// `ButleryColors` parameter becomes [ModeColors], and
-/// `ButleryColors.light` / `.dark` become [ModeColors.light] / [ModeColors.dark].
-/// Each member maps to the same generated member ButleryColors used; the
-/// line numbers below refer to butlery_colors_extension.dart at 3d6e82ea5.
+/// (tokens.json:519).
 final class ModeColors {
   const ModeColors._(this.brightness);
 
@@ -144,204 +136,162 @@ final class ModeColors {
 
   bool get _isDark => brightness == Brightness.dark;
 
-  /// AppColors.chatBubbleOutgoing light, AppColorsDark.chatBubbleOutgoing dark (ButleryColors.light
-  /// :150, .dark :198).
+  /// AppColors.chatBubbleOutgoing light, AppColorsDark.chatBubbleOutgoing dark.
   Color get chatBubbleOutgoing =>
       _isDark ? AppColorsDark.chatBubbleOutgoing : AppColors.chatBubbleOutgoing;
 
-  /// AppColors.chatBubbleIncoming light, AppColorsDark.chatBubbleIncoming dark (ButleryColors.light
-  /// :151, .dark :199).
+  /// AppColors.chatBubbleIncoming light, AppColorsDark.chatBubbleIncoming dark.
   Color get chatBubbleIncoming =>
       _isDark ? AppColorsDark.chatBubbleIncoming : AppColors.chatBubbleIncoming;
 
-  /// AppColors.chatTextOutgoing light, AppColorsDark.chatTextOutgoing dark (ButleryColors.light
-  /// :152, .dark :200).
+  /// AppColors.chatTextOutgoing light, AppColorsDark.chatTextOutgoing dark.
   Color get chatTextOutgoing =>
       _isDark ? AppColorsDark.chatTextOutgoing : AppColors.chatTextOutgoing;
 
-  /// AppColors.chatTextIncoming light, AppColorsDark.chatTextIncoming dark (ButleryColors.light
-  /// :153, .dark :201).
+  /// AppColors.chatTextIncoming light, AppColorsDark.chatTextIncoming dark.
   Color get chatTextIncoming =>
       _isDark ? AppColorsDark.chatTextIncoming : AppColors.chatTextIncoming;
 
-  /// AppColors.success light, AppColorsDark.success dark (ButleryColors.light
-  /// :154, .dark :202).
+  /// AppColors.success light, AppColorsDark.success dark.
   Color get success => _isDark ? AppColorsDark.success : AppColors.success;
 
-  /// AppColors.onSuccess light, AppColorsDark.onSuccess dark (ButleryColors.light
-  /// :155, .dark :203).
+  /// AppColors.onSuccess light, AppColorsDark.onSuccess dark.
   Color get onSuccess =>
       _isDark ? AppColorsDark.onSuccess : AppColors.onSuccess;
 
-  /// AppColors.successContainer light, AppColorsDark.successContainer dark (ButleryColors.light
-  /// :156, .dark :204).
+  /// AppColors.successContainer light, AppColorsDark.successContainer dark.
   Color get successContainer =>
       _isDark ? AppColorsDark.successContainer : AppColors.successContainer;
 
-  /// AppColors.onSuccessContainer light, AppColorsDark.onSuccessContainer dark (ButleryColors.light
-  /// :157, .dark :205).
+  /// AppColors.onSuccessContainer light, AppColorsDark.onSuccessContainer dark.
   Color get onSuccessContainer =>
       _isDark ? AppColorsDark.onSuccessContainer : AppColors.onSuccessContainer;
 
-  /// AppColors.warning light, AppColorsDark.warning dark (ButleryColors.light
-  /// :158, .dark :206).
+  /// AppColors.warning light, AppColorsDark.warning dark.
   Color get warning => _isDark ? AppColorsDark.warning : AppColors.warning;
 
-  /// AppColors.onWarning light, AppColorsDark.onWarning dark (ButleryColors.light
-  /// :159, .dark :207).
+  /// AppColors.onWarning light, AppColorsDark.onWarning dark.
   Color get onWarning =>
       _isDark ? AppColorsDark.onWarning : AppColors.onWarning;
 
-  /// AppColors.warningContainer light, AppColorsDark.warningContainer dark (ButleryColors.light
-  /// :160, .dark :208).
+  /// AppColors.warningContainer light, AppColorsDark.warningContainer dark.
   Color get warningContainer =>
       _isDark ? AppColorsDark.warningContainer : AppColors.warningContainer;
 
-  /// AppColors.onWarningContainer light, AppColorsDark.onWarningContainer dark (ButleryColors.light
-  /// :161, .dark :209).
+  /// AppColors.onWarningContainer light, AppColorsDark.onWarningContainer dark.
   Color get onWarningContainer =>
       _isDark ? AppColorsDark.onWarningContainer : AppColors.onWarningContainer;
 
-  /// AppColors.info light, AppColorsDark.info dark (ButleryColors.light
-  /// :162, .dark :210).
+  /// AppColors.info light, AppColorsDark.info dark.
   Color get info => _isDark ? AppColorsDark.info : AppColors.info;
 
-  /// AppColors.onInfo light, AppColorsDark.onInfo dark (ButleryColors.light
-  /// :163, .dark :211).
+  /// AppColors.onInfo light, AppColorsDark.onInfo dark.
   Color get onInfo => _isDark ? AppColorsDark.onInfo : AppColors.onInfo;
 
-  /// AppColors.infoContainer light, AppColorsDark.infoContainer dark (ButleryColors.light
-  /// :164, .dark :212).
+  /// AppColors.infoContainer light, AppColorsDark.infoContainer dark.
   Color get infoContainer =>
       _isDark ? AppColorsDark.infoContainer : AppColors.infoContainer;
 
-  /// AppColors.onInfoContainer light, AppColorsDark.onInfoContainer dark (ButleryColors.light
-  /// :165, .dark :213).
+  /// AppColors.onInfoContainer light, AppColorsDark.onInfoContainer dark.
   Color get onInfoContainer =>
       _isDark ? AppColorsDark.onInfoContainer : AppColors.onInfoContainer;
 
-  /// AppColors.neutralMedium in both modes (ButleryColors.light :166,
-  /// .dark :214).
+  /// AppColors.neutralMedium in both modes.
   Color get neutral => AppColors.neutralMedium;
 
-  /// AppColors.starGold in both modes (ButleryColors.light :167,
-  /// .dark :215).
+  /// AppColors.starGold in both modes.
   Color get starGold => AppColors.starGold;
 
-  /// AppColors.recipeCardLeftBorder light, AppColorsDark.recipeCardLeftBorder dark (ButleryColors.light
-  /// :168, .dark :216).
+  /// AppColors.recipeCardLeftBorder light, AppColorsDark.recipeCardLeftBorder dark.
   Color get recipeCardLeftBorder => _isDark
       ? AppColorsDark.recipeCardLeftBorder
       : AppColors.recipeCardLeftBorder;
 
-  /// AppColors.recipeCardBottomBorder light, AppColorsDark.recipeCardBottomBorder dark (ButleryColors.light
-  /// :169, .dark :217).
+  /// AppColors.recipeCardBottomBorder light, AppColorsDark.recipeCardBottomBorder dark.
   Color get recipeCardBottomBorder => _isDark
       ? AppColorsDark.recipeCardBottomBorder
       : AppColors.recipeCardBottomBorder;
 
-  /// AppColors.navSelectedIndicator in both modes (ButleryColors.light :170,
-  /// .dark :218).
+  /// AppColors.navSelectedIndicator in both modes.
   Color get navAccent => AppColors.navSelectedIndicator;
 
-  /// AppColors.greenMuted light, AppColorsDark.greenMuted dark (ButleryColors.light
-  /// :171, .dark :219).
+  /// AppColors.greenMuted light, AppColorsDark.greenMuted dark.
   Color get iconMuted =>
       _isDark ? AppColorsDark.greenMuted : AppColors.greenMuted;
 
-  /// AppColors.greenPale light, AppColorsDark.greenPale dark (ButleryColors.light
-  /// :172, .dark :220).
+  /// AppColors.greenPale light, AppColorsDark.greenPale dark.
   Color get heroPaleGreen =>
       _isDark ? AppColorsDark.greenPale : AppColors.greenPale;
 
-  /// AppColors.categoryMeatFish in both modes (ButleryColors.light :173,
-  /// .dark :221).
+  /// AppColors.categoryMeatFish in both modes.
   Color get categoryMeatFish => AppColors.categoryMeatFish;
 
-  /// AppColors.categoryDairy in both modes (ButleryColors.light :174,
-  /// .dark :222).
+  /// AppColors.categoryDairy in both modes.
   Color get categoryDairy => AppColors.categoryDairy;
 
-  /// AppColors.categoryVegetables in both modes (ButleryColors.light :175,
-  /// .dark :223).
+  /// AppColors.categoryVegetables in both modes.
   Color get categoryVegetables => AppColors.categoryVegetables;
 
-  /// AppColors.categoryFruit in both modes (ButleryColors.light :176,
-  /// .dark :224).
+  /// AppColors.categoryFruit in both modes.
   Color get categoryFruit => AppColors.categoryFruit;
 
-  /// AppColors.categoryBreadGrains in both modes (ButleryColors.light :177,
-  /// .dark :225).
+  /// AppColors.categoryBreadGrains in both modes.
   Color get categoryBreadGrains => AppColors.categoryBreadGrains;
 
-  /// AppColors.categoryFrozen in both modes (ButleryColors.light :178,
-  /// .dark :226).
+  /// AppColors.categoryFrozen in both modes.
   Color get categoryFrozen => AppColors.categoryFrozen;
 
-  /// AppColors.categoryDryGoods in both modes (ButleryColors.light :179,
-  /// .dark :227).
+  /// AppColors.categoryDryGoods in both modes.
   Color get categoryDryGoods => AppColors.categoryDryGoods;
 
-  /// AppColors.categoryOther in both modes (ButleryColors.light :180,
-  /// .dark :228).
+  /// AppColors.categoryOther in both modes.
   Color get categoryOther => AppColors.categoryOther;
 
-  /// AppSpecificColors.categoryDrinks light, AppSpecificColors.categoryDrinksDark dark (ButleryColors.light
-  /// :181, .dark :229).
+  /// AppSpecificColors.categoryDrinks light, AppSpecificColors.categoryDrinksDark dark.
   Color get categoryDrinks => _isDark
       ? AppSpecificColors.categoryDrinksDark
       : AppSpecificColors.categoryDrinks;
 
-  /// AppSpecificColors.categoryCleaning light, AppSpecificColors.categoryCleaningDark dark (ButleryColors.light
-  /// :182, .dark :230).
+  /// AppSpecificColors.categoryCleaning light, AppSpecificColors.categoryCleaningDark dark.
   Color get categoryCleaning => _isDark
       ? AppSpecificColors.categoryCleaningDark
       : AppSpecificColors.categoryCleaning;
 
-  /// AppSpecificColors.categorySnacks light, AppSpecificColors.categorySnacksDark dark (ButleryColors.light
-  /// :183, .dark :231).
+  /// AppSpecificColors.categorySnacks light, AppSpecificColors.categorySnacksDark dark.
   Color get categorySnacks => _isDark
       ? AppSpecificColors.categorySnacksDark
       : AppSpecificColors.categorySnacks;
 
-  /// AppSpecificColors.categoryCanned light, AppSpecificColors.categoryCannedDark dark (ButleryColors.light
-  /// :184, .dark :232).
+  /// AppSpecificColors.categoryCanned light, AppSpecificColors.categoryCannedDark dark.
   Color get categoryCanned => _isDark
       ? AppSpecificColors.categoryCannedDark
       : AppSpecificColors.categoryCanned;
 
-  /// AppColors.sharedRecipeText light, AppColorsDark.sharedRecipeText dark (ButleryColors.light
-  /// :185, .dark :233).
+  /// AppColors.sharedRecipeText light, AppColorsDark.sharedRecipeText dark.
   Color get sharedRecipeText =>
       _isDark ? AppColorsDark.sharedRecipeText : AppColors.sharedRecipeText;
 
-  /// AppColors.sharedRecipeIcon in both modes (ButleryColors.light :186,
-  /// .dark :234).
+  /// AppColors.sharedRecipeIcon in both modes.
   Color get sharedRecipeIcon => AppColors.sharedRecipeIcon;
 
-  /// AppColors.sharedRecipeBackground light, AppColorsDark.sharedRecipeBackground dark (ButleryColors.light
-  /// :187, .dark :235).
+  /// AppColors.sharedRecipeBackground light, AppColorsDark.sharedRecipeBackground dark.
   Color get sharedRecipeBackground => _isDark
       ? AppColorsDark.sharedRecipeBackground
       : AppColors.sharedRecipeBackground;
 
-  /// AppColors.focusRing light, AppColorsDark.focusRing dark (ButleryColors.light
-  /// :188, .dark :236).
+  /// AppColors.focusRing light, AppColorsDark.focusRing dark.
   Color get focusRing =>
       _isDark ? AppColorsDark.focusRing : AppColors.focusRing;
 
-  /// AppColors.progressTrack light, AppColorsDark.progressTrack dark (ButleryColors.light
-  /// :189, .dark :237).
+  /// AppColors.progressTrack light, AppColorsDark.progressTrack dark.
   Color get progressTrack =>
       _isDark ? AppColorsDark.progressTrack : AppColors.progressTrack;
 
-  /// AppColors.progressIndicator light, AppColorsDark.progressIndicator dark (ButleryColors.light
-  /// :190, .dark :238).
+  /// AppColors.progressIndicator light, AppColorsDark.progressIndicator dark.
   Color get progressIndicator =>
       _isDark ? AppColorsDark.progressIndicator : AppColors.progressIndicator;
 
-  /// AppColors.surfaceDisabled light, AppColorsDark.surfaceDisabled dark (ButleryColors.light
-  /// :191, .dark :239).
+  /// AppColors.surfaceDisabled light, AppColorsDark.surfaceDisabled dark.
   Color get surfaceDisabled =>
       _isDark ? AppColorsDark.surfaceDisabled : AppColors.surfaceDisabled;
 }

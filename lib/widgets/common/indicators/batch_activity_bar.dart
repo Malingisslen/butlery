@@ -14,8 +14,9 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 /// the screen's own column instead, gated on the job rather than on the
 /// controls.
 ///
-/// It owns its `liveRegion` and its label the way `LoadingIndicator` owns its
-/// own, so a caller cannot mount the bar and forget the announcement.
+/// It owns its `liveRegion` and its label the way `PlateLine` owns its own
+/// (loading_semantics.dart), so a caller cannot mount the bar and forget the
+/// announcement.
 class BatchActivityBar extends StatelessWidget {
   final bool active;
 

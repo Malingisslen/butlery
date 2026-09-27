@@ -335,7 +335,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     if (_isLoading) {
       return LoadingStates.buildLoadingState(
         context,
-        variant: LoadingVariant.spinner,
+        variant: LoadingVariant.plateLine,
         message: context.l10n.chatLoadingMessages,
       );
     }

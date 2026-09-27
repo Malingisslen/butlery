@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/component_themes.dart';
 
 /// Central theme orchestrator combining colors, typography, and component themes.
@@ -21,8 +20,6 @@ class AppTheme {
   /// The theme is the same every day of the year: no colour is computed at
   /// runtime (tokens.json:522).
   static ThemeData createTheme(ColorScheme colorScheme) {
-    final isDark = colorScheme.brightness == Brightness.dark;
-
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
@@ -79,8 +76,6 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-
-      extensions: [isDark ? ButleryColors.dark : ButleryColors.light],
     );
   }
 }

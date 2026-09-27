@@ -9,8 +9,9 @@
 // This test reddens when a spinner or an old bar comes back into one of the
 // files these units cleaned.
 //
-// P4-U18 closes the package with a census over all of lib: the residue lists
-// below name what other units left, and they only shrink.
+// P4-U18 closed the package with a census over all of lib, with residue
+// lists for what other units left. Package 7 (P7-Z) emptied them, so the
+// census is now a ban: nothing may come back.
 
 import 'dart:convert';
 import 'dart:io';
@@ -36,7 +37,6 @@ const _plateLineFiles = [
   'lib/core/router/app_router.dart',
   'lib/widgets/common/butlery_top_bar.dart',
   'lib/widgets/common/indicators/progress_overlay.dart',
-  'lib/widgets/common/indicators/adaptive_activity_indicator.dart',
   'lib/widgets/common/indicators/batch_activity_bar.dart',
   'lib/widgets/common/loading/loading_widgets.dart',
   'lib/widgets/common/dialogs/retag_progress_dialog.dart',
@@ -123,7 +123,7 @@ void main() {
           _libFiles().where((f) => !_package7Components.contains(f)).toList(),
           _spinner,
         ),
-        everyElement(isIn(_spinnerResidue)),
+        isEmpty,
       );
     });
 
@@ -136,7 +136,7 @@ void main() {
             r'(?<![\w.])AppBar\s*\(',
           ),
         ),
-        everyElement(isIn(_barResidue)),
+        isEmpty,
       );
     });
 
@@ -199,7 +199,7 @@ void main() {
             r'SnackBar\s*\((?:(?!SnackBar\s*\()[\s\S]){0,600}?backgroundColor',
           ),
         ),
-        everyElement(isIn(_snackBarResidue)),
+        isEmpty,
       );
     });
 
@@ -230,7 +230,7 @@ void main() {
           'ThemeData.focusColor is still saffron. About 145 lib files have '
           'an InkWell or ListTile whose only keyboard focus cue is that '
           'tint, and D3 forbids removing a cue before the ring is on the '
-          'same control. Open item from P4-U18.',
+          'same control. Tracked in BUT-2148 (Q-P7-02).',
     );
   });
 }
@@ -252,32 +252,8 @@ final _spinner = RegExp(
   r'PeaLoadingOverlay)\s*\(',
 );
 
-/// The component files package 7 deletes, and the plate line itself, which
-/// is drawn on a LinearProgressIndicator.
-const _package7Components = {
-  'lib/widgets/common/indicators/loading_indicator.dart',
-  'lib/widgets/common/indicators/pea_loading_animation.dart',
-  'lib/widgets/common/indicators/plate_line.dart',
-  'lib/widgets/common/adaptive_app_bar.dart',
-  'lib/widgets/common/butlery_header.dart',
-  'lib/widgets/common/main_view_header.dart',
-};
-
-/// Spinners package 4 left behind, each in a file another unit owns. The
-/// list only shrinks: a new file here is a regression.
-const _spinnerResidue = [
-  'lib/views/personal_tags/personal_tag_bulk_dialogs.dart', // P4-U16
-  'lib/views/personal_tags/personal_tag_dialogs.dart', // P4-U16
-  'lib/widgets/tagging/personal_tag_rule_dialog.dart', // P4-U16
-  'lib/widgets/tagging/personal_tag_selector.dart', // P4-U16
-  'lib/widgets/common/dialogs/unknown_ingredient_dialog.dart', // P4-U16
-  'lib/widgets/common/dialogs/slot_picker_dialog.dart', // P4-U09
-];
-
-/// Old bars left in views. Only shrinks.
-const _barResidue = [
-  'lib/views/recipe_detail/fullscreen_image_viewer.dart', // P4-U05
-];
+/// The plate line itself, which is drawn on a LinearProgressIndicator.
+const _package7Components = {'lib/widgets/common/indicators/plate_line.dart'};
 
 /// View files with two hero styles in branches that never show together:
 /// start cooking versus save a copy of someone else's recipe, and two
@@ -285,23 +261,4 @@ const _barResidue = [
 const _exclusiveHeroFiles = [
   'lib/views/recipe_detail_view.dart',
   'lib/views/mina_recept/empty_state_widgets.dart',
-];
-
-/// Snackbars that still set their own colour (tracks T6 and T7). Only
-/// shrinks.
-const _snackBarResidue = [
-  'lib/views/cooking_mode_view.dart',
-  'lib/views/recipe_detail/recipe_detail_comments.dart',
-  'lib/views/recipe_detail/recipe_detail_content.dart',
-  'lib/widgets/common/universal_share_dialog.dart',
-  'lib/widgets/common/dialogs/retag_progress_dialog.dart',
-  'lib/widgets/common/feedback/snackbar_widgets.dart',
-  'lib/widgets/common/input/shopping_list_actions.dart',
-  'lib/widgets/common/input/shopping_list_selector.dart',
-  'lib/widgets/common/profile/handlers/gdpr_consent_handler.dart',
-  'lib/widgets/common/profile/utils/result_displayer.dart',
-  'lib/widgets/image/image_picker_dialogs.dart',
-  'lib/widgets/image/image_picker_widget.dart',
-  'lib/widgets/legal/legal_contact_footer.dart',
-  'lib/widgets/menu/menu_content_widgets.dart',
 ];

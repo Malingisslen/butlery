@@ -1,7 +1,6 @@
 // lib/widgets/common/indicators/loading_semantics.dart
 //
-// Laddningens semantik, utlyft oförändrad ur LoadingIndicator (BUT-895,
-// BUT-1173) så att tallrikslinjen kan bära den.
+// Laddningens semantik (BUT-895, BUT-1173), som tallrikslinjen bär.
 //
 // Butlery tillganglighetshandoff.dc.html:179 — Tallrikslinje-progress:
 // roll progressbar, etikett "= vad som laddas", tillstånd "värde eller
