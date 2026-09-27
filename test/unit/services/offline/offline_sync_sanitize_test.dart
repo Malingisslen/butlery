@@ -68,6 +68,9 @@ void main() {
 
       when(() => db.recipeDao).thenReturn(recipeDao);
       when(() => db.syncQueueDao).thenReturn(queueDao);
+      when(
+        () => db.queuedOpIds(any()),
+      ).thenAnswer((_) async => (waiting: {'op-1'}, failed: <String>{}));
 
       // The recipe as it sits in local storage: a hostile source URL, exactly
       // what an import could have produced before the repository was fixed.
@@ -131,6 +134,7 @@ void main() {
       );
 
       await manager.syncPendingChanges(isOnline: true);
+      manager.dispose();
 
       expect(written, isNotNull, reason: 'the sync must actually have written');
       final core = written!['core'] as Map<String, dynamic>;

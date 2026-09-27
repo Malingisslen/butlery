@@ -13760,6 +13760,62 @@
   "@syncQueueReasonUnknown": {
     "description": "P6-T6 (PQ-17, P4-U19): a permanent failure with no known cause."
   },
+  "syncQueueReasonExpired": "Could not be saved for 24 h",
+  "@syncQueueReasonExpired": {
+    "description": "P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188)."
+  },
+  "syncQueueSaveAsCopy": "Save as a copy",
+  "@syncQueueSaveAsCopy": {
+    "description": "P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188)."
+  },
+  "syncQueueSaveAsCopyA11y": "Save as a copy — {what}",
+  "@syncQueueSaveAsCopyA11y": {
+    "description": "P6-U08b: accessible name of Spara som kopia, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueTrySmaller": "Try smaller",
+  "@syncQueueTrySmaller": {
+    "description": "P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko)."
+  },
+  "syncQueueTrySmallerA11y": "Try smaller — {what}",
+  "@syncQueueTrySmallerA11y": {
+    "description": "P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueCopyFailed": "The copy could not be saved.",
+  "@syncQueueCopyFailed": {
+    "description": "P6-U08b: Spara som kopia failed; followed by syncQueueChangeKept."
+  },
+  "syncQueueTrySmallerFailed": "The image could not be made smaller.",
+  "@syncQueueTrySmallerFailed": {
+    "description": "P6-U08b: Försök mindre failed; followed by syncQueueChangeKept."
+  },
+  "syncQueueNextAttemptSeconds": "next attempt in {seconds} s",
+  "@syncQueueNextAttemptSeconds": {
+    "description": "P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueNextAttemptMinutes": "next attempt in {minutes} min",
+  "@syncQueueNextAttemptMinutes": {
+    "description": "P6-U08b: when a failed change is sent again, a minute or more (content-style-guide.md:31).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "syncQueueAgeNow": "now",
   "@syncQueueAgeNow": {
     "description": "P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35)."

@@ -30251,6 +30251,60 @@ abstract class AppLocalizations {
   /// **'Servern tog inte emot ändringen'**
   String get syncQueueReasonUnknown;
 
+  /// P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gick inte att spara på 24 h'**
+  String get syncQueueReasonExpired;
+
+  /// P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som kopia'**
+  String get syncQueueSaveAsCopy;
+
+  /// P6-U08b: accessible name of Spara som kopia, naming the change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som kopia — {what}'**
+  String syncQueueSaveAsCopyA11y(String what);
+
+  /// P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök mindre'**
+  String get syncQueueTrySmaller;
+
+  /// P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök mindre — {what}'**
+  String syncQueueTrySmallerA11y(String what);
+
+  /// P6-U08b: Spara som kopia failed; followed by syncQueueChangeKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian kunde inte sparas.'**
+  String get syncQueueCopyFailed;
+
+  /// P6-U08b: Försök mindre failed; followed by syncQueueChangeKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte göras mindre.'**
+  String get syncQueueTrySmallerFailed;
+
+  /// P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'nästa försök om {seconds} s'**
+  String syncQueueNextAttemptSeconds(int seconds);
+
+  /// P6-U08b: when a failed change is sent again, a minute or more (content-style-guide.md:31).
+  ///
+  /// In sv, this message translates to:
+  /// **'nästa försök om {minutes} min'**
+  String syncQueueNextAttemptMinutes(int minutes);
+
   /// P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35).
   ///
   /// In sv, this message translates to:

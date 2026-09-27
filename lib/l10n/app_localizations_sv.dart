@@ -18367,6 +18367,41 @@ class AppLocalizationsSv extends AppLocalizations {
   String get syncQueueReasonUnknown => 'Servern tog inte emot ändringen';
 
   @override
+  String get syncQueueReasonExpired => 'Gick inte att spara på 24 h';
+
+  @override
+  String get syncQueueSaveAsCopy => 'Spara som kopia';
+
+  @override
+  String syncQueueSaveAsCopyA11y(String what) {
+    return 'Spara som kopia — $what';
+  }
+
+  @override
+  String get syncQueueTrySmaller => 'Försök mindre';
+
+  @override
+  String syncQueueTrySmallerA11y(String what) {
+    return 'Försök mindre — $what';
+  }
+
+  @override
+  String get syncQueueCopyFailed => 'Kopian kunde inte sparas.';
+
+  @override
+  String get syncQueueTrySmallerFailed => 'Bilden kunde inte göras mindre.';
+
+  @override
+  String syncQueueNextAttemptSeconds(int seconds) {
+    return 'nästa försök om $seconds s';
+  }
+
+  @override
+  String syncQueueNextAttemptMinutes(int minutes) {
+    return 'nästa försök om $minutes min';
+  }
+
+  @override
   String get syncQueueAgeNow => 'nu';
 
   @override

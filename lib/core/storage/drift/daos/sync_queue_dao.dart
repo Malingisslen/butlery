@@ -144,6 +144,26 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
     }
   }
 
+  /// A failed attempt the queue will retry by itself (produktregler.md:188):
+  /// counts it, keeps [errorCode] for diagnostics, and stores when the entry
+  /// may be sent again. [firstFailedAt] is kept from the first failure on.
+  Future<void> scheduleRetry(
+    int id, {
+    required int retryCount,
+    required DateTime nextAttemptAt,
+    required DateTime firstFailedAt,
+    String? errorCode,
+  }) {
+    return (update(syncQueueEntries)..where((e) => e.id.equals(id))).write(
+      SyncQueueEntriesCompanion(
+        retryCount: Value(retryCount),
+        nextAttemptAt: Value(nextAttemptAt),
+        firstFailedAt: Value(firstFailedAt),
+        lastError: Value(errorCode),
+      ),
+    );
+  }
+
   /// Get operations that have failed too many times
   Future<List<SyncQueueEntry>> getFailedOperations(
     String userId,

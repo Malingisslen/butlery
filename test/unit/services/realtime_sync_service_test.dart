@@ -1053,4 +1053,66 @@ void main() {
       );
     });
   });
+
+  group('conflictStream waits for the queue (P6-U08b)', () {
+    /// produktregler.md:189: "Konfliktbannern visas när kön töms, inte
+    /// medan appen är offline." The real resolver path, as above, with the
+    /// queue still holding changes: the notice reaches the banner only when
+    /// the queue reports it has emptied.
+    test('a conflict settled while the queue waits reaches the stream when '
+        'the queue empties', () async {
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        final queue = StreamController<bool>.broadcast();
+        var settled = false;
+        final gated = RealtimeSyncService(
+          firestoreRepository: repo,
+          authRepository: mockAuth,
+          queueSettled: () async* {
+            yield settled;
+            yield* queue.stream;
+          },
+        );
+        final events = <ConflictEvent>[];
+        final sub = gated.conflictStream.listen(events.add);
+
+        final initial = _buildResource(
+          id: 'cq1',
+          ownerId: 'user_owner',
+          editCount: 1,
+          lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+        );
+        await _seed(fake, initial);
+        await gated.updateResource(initial);
+        await _seed(
+          fake,
+          _buildResource(
+            id: 'cq1',
+            ownerId: 'user_owner',
+            editCount: 9,
+            lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+          ),
+        );
+        await gated.updateResource(
+          _buildResource(
+            id: 'cq1',
+            ownerId: 'user_owner',
+            editCount: 2,
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+          ),
+        );
+        await pumpEventQueue();
+        expect(events, isEmpty, reason: 'the queue has not emptied');
+
+        settled = true;
+        queue.add(true);
+        await pumpEventQueue();
+        expect(events, hasLength(1));
+        expect(events.single.docId, 'cq1');
+
+        await sub.cancel();
+        await gated.dispose();
+        await queue.close();
+      });
+    });
+  });
 }
