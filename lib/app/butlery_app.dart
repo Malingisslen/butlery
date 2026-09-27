@@ -25,6 +25,7 @@ import 'package:butlery/core/keyboard/app_shortcuts.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/observers/consent_aware_analytics_observer.dart';
 import 'package:butlery/core/observers/interaction_route_observer.dart';
+import 'package:butlery/core/observers/page_route_stack_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
 import 'package:butlery/core/observers/route_tracker.dart';
 import 'package:butlery/core/observers/session_activity_observer.dart';
@@ -36,6 +37,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/analytics/winback_attribution_service.dart';
@@ -45,6 +47,8 @@ import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/notifications/notification_deep_link_router.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
+import 'package:butlery/services/auth/sign_out_guard.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme/seasonal_accent_service.dart';
 import 'package:butlery/services/theme_service.dart';
@@ -147,6 +151,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   InteractionRouteObserver? _interactionObserver;
   SessionTimeoutService? _sessionTimeoutService;
   SessionActivityObserver? _sessionActivityObserver;
+  final PageRouteStackObserver _returnPathObserver = PageRouteStackObserver();
   DateTime? _sessionStartTime;
   // BUT-786: tracks when we last paused so resume-after-long-background can
   // mint a fresh `session_id` (analytics convention: 30 min idle = new session).
@@ -196,14 +201,27 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       final shouldRenew = await consentService.needsConsentRenewal();
       if (!shouldRenew) return;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      // The renewal says what changed since the accepted version and keeps
+      // the earlier choices as the starting point (#samtyckefornya), so the
+      // consent is loaded before the dialog opens.
+      final viewModel = ConsentViewModel(consentService: consentService);
+      await viewModel.loadConsent();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         // Re-check auth in case the user signed out between
         // needsConsentRenewal() resolving and this callback firing —
         // avoids a renewal-dialog flash for a logged-out user.
-        if (userService.currentUserId == null) return;
+        if (userService.currentUserId == null) {
+          viewModel.dispose();
+          return;
+        }
         final ctx = appNavigatorKey.currentContext;
-        if (ctx == null) return;
-        ConsentRenewalDialog.show(ctx);
+        if (ctx == null) {
+          viewModel.dispose();
+          return;
+        }
+        await ConsentRenewalDialog.show(ctx, viewModel: viewModel);
+        viewModel.dispose();
       });
     } catch (e) {
       AppLogger.warning('Consent renewal check failed: $e');
@@ -281,6 +299,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         _sessionTimeoutService?.registerWarningCallback(() {
           _showSessionTimeoutWarning();
         });
+        _sessionTimeoutService?.registerSessionEndCallback(_onSessionEnded);
 
         // Initialize the service
         await _sessionTimeoutService?.initialize();
@@ -297,23 +316,54 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Show session timeout warning dialog
-  void _showSessionTimeoutWarning() {
+  /// Show session timeout warning dialog.
+  ///
+  /// The queue is read first because the dialog has two modes
+  /// (produktregler.md:832): with changes waiting, Fortsätt is primary, the
+  /// changes are named, and "Logga ut nu" leads to the same confirmation as
+  /// the manual sign-out (#utloggningko).
+  Future<void> _showSessionTimeoutWarning() async {
     if (!mounted || appNavigatorKey.currentContext == null) return;
+
+    final guard = SignOutGuard(authService: ServiceLocator.get<AuthService>());
+    final pending = await guard.pendingForCurrentUser();
+    final context = appNavigatorKey.currentContext;
+    if (!mounted || context == null || !context.mounted) return;
 
     final remainingSeconds =
         (_sessionTimeoutService?.timeRemaining?.inSeconds ?? 300);
 
-    SessionTimeoutWarningDialog.show(
-      context: appNavigatorKey.currentContext!,
+    await SessionTimeoutWarningDialog.show(
+      context: context,
       remainingSeconds: remainingSeconds,
+      pendingChanges: pending,
       onExtendSession: () {
         _sessionTimeoutService?.recordActivity();
       },
       onLogoutNow: () {
         _sessionTimeoutService?.forceLogout();
       },
+      onDiscardAndLogout: () async {
+        await guard.discardForCurrentUser();
+        await _sessionTimeoutService?.forceLogout();
+      },
     );
+  }
+
+  /// A session ended by the timeout service: remember where the user was
+  /// (a timeout only, not her own "Logga ut nu"), then leave the signed-in
+  /// screens for the sign-in screen. Nothing in the queue is touched here.
+  void _onSessionEnded(SessionEnd end) {
+    final navigator = appNavigatorKey.currentState;
+    if (end.userId != null && end.reason != SessionEndReason.userRequested) {
+      final top = _returnPathObserver.topPageRoute;
+      SessionReturnPath.remember(
+        userId: end.userId!,
+        routeName: top?.settings.name,
+        arguments: top?.settings.arguments,
+      );
+    }
+    navigator?.pushNamedAndRemoveUntil(app_routes.Routes.auth, (_) => false);
   }
 
   @override
@@ -694,6 +744,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // BUT-521 follow-up: feeds `appRouteTracker.currentRouteName` so the
       // keyboard layer can dedupe shortcut-driven navigation (e.g. Cmd+K).
       appRouteTracker,
+      _returnPathObserver,
       ?_sessionActivityObserver,
       ?_analyticsObserver,
     ];
@@ -707,6 +758,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       child: MaterialApp(
         navigatorKey: appNavigatorKey,
         navigatorObservers: observers,
+        // PQ-17: the shell's chosen tab survives the OS ending the app in
+        // the background (layout_scaffolds.dart, RestorationMixin).
+        restorationScopeId: 'butlery',
         title: 'Butlery',
         theme: AppTheme.lightThemeWith(lightAccent),
         darkTheme: AppTheme.darkThemeWith(darkAccent),

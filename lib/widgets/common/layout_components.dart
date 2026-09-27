@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -135,10 +137,17 @@ class LayoutComponents {
   }
 
   /// Offline banner; [pendingCount] and [onTap] as on OfflineIndicator.
+  ///
+  /// P4-U19: "Offline är en banner … och den är en kontroll: den leder till
+  /// kövyn" (produktregler.md:300). Without [onTap] the banner opens
+  /// "Väntar på synk", and without [pendingCount] it reads the queue's live
+  /// count (flows-roles-budget.md:111), the same number the queue view shows.
   static Widget offlineIndicator({int? pendingCount, VoidCallback? onTap}) {
-    return StatusIndicators.offlineIndicator(
-      pendingCount: pendingCount,
-      onTap: onTap,
+    return QueueCountsBuilder(
+      builder: (context, counts) => StatusIndicators.offlineIndicator(
+        pendingCount: pendingCount ?? counts.waiting,
+        onTap: onTap ?? () => Navigator.of(context).pushNamed(Routes.syncQueue),
+      ),
     );
   }
 
@@ -185,9 +194,8 @@ class LayoutComponents {
 
   /// Adaptive navigation scaffold that switches between BottomNav (mobile), NavigationRail (tablet/desktop).
   /// Automatically adapts navigation based on screen width:
-  /// - Mobile (< 600px): BottomNavigationBar
-  /// - Tablet (600-1024px): NavigationRail (compact)
-  /// - Desktop (>= 1024px): NavigationRail (extended with labels)
+  /// - Below 768 dp wide or 500 dp tall: the bottom row
+  /// - From 768 dp wide and 500 dp tall: the rail (produktregler.md:1054)
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.adaptiveNavigation(
@@ -211,7 +219,6 @@ class LayoutComponents {
     List<Widget>? actions,
     Widget? floatingActionButton,
     ValueChanged<int>? onNavigationChanged,
-    bool extendedRailOnDesktop = true,
     PreferredSizeWidget? appBar,
   }) {
     return AdaptiveNavigationScaffold(
@@ -222,7 +229,6 @@ class LayoutComponents {
       actions: actions,
       floatingActionButton: floatingActionButton,
       onNavigationChanged: onNavigationChanged,
-      extendedRailOnDesktop: extendedRailOnDesktop,
       appBar: appBar,
     );
   }

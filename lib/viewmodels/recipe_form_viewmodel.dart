@@ -7,6 +7,7 @@
 
 // lib/viewmodels/recipe_form_viewmodel.dart
 
+import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,6 +17,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -156,6 +158,8 @@ class RecipeFormViewModel extends BaseViewModel
 
     // Load permissions and images if editing existing recipe
     if (initialRecipe != null && !isTemplate) {
+      // Q6-08 = A: someone else's recipe opens in suggestion mode.
+      _suggestionOwnerId = _permissionManager.someoneElsesOwner(initialRecipe);
       _coordinator.loadInitialPermissions(initialRecipe);
 
       // CRITICAL FIX: Sync existing image URLs to ImageManager
@@ -171,6 +175,14 @@ class RecipeFormViewModel extends BaseViewModel
 
     // Register lifecycle observer for auto-save on app background/kill
     WidgetsBinding.instance.addObserver(this);
+
+    // P6-U05: a shared recipe's editor follows the live role, so a drop to
+    // read-only is seen while the form is open (flows-roles-budget.md:83).
+    if (initialRecipe != null && !isTemplate) {
+      _editAccessSub = _permissionManager
+          .watchCanEdit(initialRecipe)
+          .listen(_onEditAccess);
+    }
 
     // Feedback loop: Retrieve the pre-edit parse snapshot for imported recipes
     // so saving captures the user's corrections as training data.
@@ -300,12 +312,55 @@ class RecipeFormViewModel extends BaseViewModel
   List<ParsedIngredient>? get parsedIngredients =>
       _state.originalParsedRecipe?.ingredients.value;
 
+  /// P6-U03: rows of the import review the user has confirmed, kept by
+  /// object identity — never by position or text (two identical lines are
+  /// two rows). Reset when another parse arrives.
+  final Set<ParsedIngredient> _confirmedParseRows =
+      Set<ParsedIngredient>.identity();
+  Object? _confirmedParseSource;
+
+  void _syncConfirmedParseRows() {
+    final source = _state.originalParsedRecipe;
+    if (!identical(source, _confirmedParseSource)) {
+      _confirmedParseRows.clear();
+      _confirmedParseSource = source;
+    }
+  }
+
+  /// Whether the user confirmed [row] in the import review.
+  bool isParseRowConfirmed(ParsedIngredient row) {
+    _syncConfirmedParseRows();
+    return _confirmedParseRows.contains(row);
+  }
+
+  /// Confirms a low- or failed-confidence row (flows-roles-budget.md:61).
+  void confirmParseRow(ParsedIngredient row) {
+    _syncConfirmedParseRows();
+    if (_confirmedParseRows.add(row)) notifyListeners();
+  }
+
+  /// Low- and failed-confidence rows still waiting for confirmation. Spara
+  /// stays disabled while this is above zero, and the view says how many
+  /// are left (flows-roles-budget.md:61; Q-P6-E03).
+  int get pendingParseConfirmations {
+    _syncConfirmedParseRows();
+    final rows = parsedIngredients;
+    if (rows == null) return 0;
+    return rows
+        .where(ParseConfidenceReview.needsConfirmation)
+        .where((row) => !_confirmedParseRows.contains(row))
+        .length;
+  }
+
   FormFieldsManager get ingredientsManager => _state.ingredientsManager;
   FormFieldsManager get instructionsManager => _state.instructionsManager;
   FormFieldsManager get tagsManager => _state.tagsManager;
 
   @override
-  bool get isCollaborative => _collaborativeManager.isCollaborative;
+  /// Never in suggestion mode (Q6-08 = A): typing in someone else's recipe
+  /// must not reach its shared document live.
+  bool get isCollaborative =>
+      !suggestsChange && _collaborativeManager.isCollaborative;
   bool get isConnectedToFirebase => _collaborativeManager.isConnectedToFirebase;
   String get connectionStatusText => _collaborativeManager.connectionStatusText;
   List<UserProfile> get collaborativeParticipants =>
@@ -423,8 +478,44 @@ class RecipeFormViewModel extends BaseViewModel
   RecipeSaveFailure? get lastSaveFailure => _lastSaveFailure;
   RecipeSaveFailure? _lastSaveFailure;
 
+  StreamSubscription<bool>? _editAccessSub;
+  bool _editAccessLost = false;
+
+  /// The last live answer to "may I edit this recipe", null until the first.
+  /// A lowered role is a change from true to false seen while the form is
+  /// open, as on the shopping list and the group menu: a first answer of
+  /// false (a live participants map that does not list a legitimate editor)
+  /// is not a change, and never closes the editor.
+  bool? _couldEdit;
+
+  /// P6-U05: the role on this shared recipe dropped to read-only while the
+  /// form was open. From then on no save reaches the recipe; the view closes
+  /// the editor, says why, and offers anything unsaved as the user's own copy
+  /// ([forkRecipe] writes only to the user's own library).
+  bool get editAccessLost => _editAccessLost;
+
+  void _onEditAccess(bool canEdit) {
+    final couldEdit = _couldEdit;
+    _couldEdit = canEdit;
+    if (couldEdit != true || canEdit || _editAccessLost || _disposed) return;
+    _editAccessLost = true;
+    _permissionManager.markEditAccessLost();
+    notifyListeners();
+  }
+
+  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): the
+  /// owner of the recipe being edited when it is someone else's. Set once,
+  /// from the recipe's owner id, when the form opens.
+  String? _suggestionOwnerId;
+
+  /// Whether this form edits someone else's recipe. Then Spara never writes
+  /// the recipe: it sends the edit to the owner as a suggestion
+  /// ([saveRecipe]).
+  bool get suggestsChange => _suggestionOwnerId != null;
+
   Future<Recipe?> saveRecipe() async {
     _lastSaveFailure = null;
+    if (suggestsChange) return _suggestChange(_suggestionOwnerId!);
     final saved = await _persistenceManager.saveRecipe(
       isCollaborative: isCollaborative,
       onNotify: _coordinator.safeNotifyParent,
@@ -439,6 +530,58 @@ class RecipeFormViewModel extends BaseViewModel
           : RecipeSaveFailure.failed;
     }
     return saved;
+  }
+
+  /// Q6-12 = B: whether the last suggestion sent replaced the member's
+  /// waiting one, so the view says so when it confirms.
+  bool get lastSuggestionReplaced => _lastSuggestionReplaced;
+  bool _lastSuggestionReplaced = false;
+
+  /// Q6-08 = A: sends the form as a suggestion to [ownerId]. Nothing is
+  /// written to the recipe, and the draft is cleared only once the
+  /// suggestion is kept. A suggestion that already waits is replaced by this
+  /// one (Q6-12 = B). Returns the suggested recipe, or null with
+  /// [lastSaveFailure] saying why.
+  Future<Recipe?> _suggestChange(String ownerId) async {
+    final original = _state.originalRecipe;
+    final uid = _permissionManager.currentUserId;
+    if (!_state.isValid) {
+      _lastSaveFailure = RecipeSaveFailure.incomplete;
+      return null;
+    }
+    final service = ServiceLocator.tryGet<RecipeSuggestionService>();
+    if (original == null || uid == null || service == null) {
+      _lastSaveFailure = RecipeSaveFailure.failed;
+      return null;
+    }
+    if (_state.isSaving) return null;
+    _state.setSaving(true);
+    try {
+      final edited = _state.createRecipe(
+        recipeId: original.id,
+        imageUrls: original.imageUrls,
+      );
+      final kept = await service.suggestEdit(
+        edited: edited,
+        ownerId: ownerId,
+        suggesterId: uid,
+      );
+      _lastSuggestionReplaced = kept.wasReplaced;
+      try {
+        await _state.clearCurrentDraft();
+      } catch (e) {
+        // The suggestion is kept; a draft left behind expires on its own
+        // (produktregler.md:170).
+        AppLogger.warning('Suggestion sent, draft not cleared: $e');
+      }
+      return edited;
+    } catch (e) {
+      AppLogger.error('The suggestion could not be kept', e);
+      _lastSaveFailure = RecipeSaveFailure.failed;
+      return null;
+    } finally {
+      if (!_disposed) _state.setSaving(false);
+    }
   }
 
   Future<Recipe?> forkRecipe() async {
@@ -778,6 +921,7 @@ class RecipeFormViewModel extends BaseViewModel
   @override
   void dispose() {
     _disposed = true;
+    unawaited(_editAccessSub?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     clearComponentErrors();
 

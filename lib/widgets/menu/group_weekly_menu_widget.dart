@@ -96,6 +96,9 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
       // "Försök igen", so sharing it printed the phrase twice.
       case GroupMenuEditProblem.undoFailed:
         return context.l10n.groupMenuUndoFailed;
+      // P6-U05: why the edit controls just went away.
+      case GroupMenuEditProblem.roleLowered:
+        return context.l10n.roleLoweredGroupMenu;
       case GroupMenuEditProblem.none:
         // Filtered out by the caller; never rendered.
         return '';

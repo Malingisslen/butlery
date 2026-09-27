@@ -3050,7 +3050,7 @@
   "consentGdprDescription": "Enligt GDPR har du full kontroll över hur vi behandlar dina personuppgifter. Du kan när som helst ändra eller återkalla dina samtycken.",
   "consentLastUpdated": "Senast uppdaterad",
   "consentRequiredTitle": "Nödvändiga samtycken",
-  "consentRequiredDescription": "Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.",
+  "consentRequiredDescription": "De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen att radera kontot, inte ett reglage här.",
   "consentBasicServices": "Grundläggande tjänster",
   "consentBasicServicesDescription": "Autentisering, säkerhet och grundläggande funktioner.",
   "consentDataProcessing": "Databehandling",
@@ -4109,7 +4109,7 @@
   "importPasteLinkOrText": "Klistra in länk eller text här...",
   "importPasteText": "Klistra in text",
   "importAddManually": "Lägg till manuellt",
-  "importPhotoDescription": "Ta bild av ett recept eller välj från galleriet för att importera text automatiskt",
+  "importPhotoDescription": "Fota receptet eller välj bilder ur biblioteket, en sida i taget. Texten läses av när du trycker Läs av.",
   "importPhotoImport": "Fotoimport",
   "importProceedToEdit": "Gå vidare till redigera",
   "importMultipleRecipesFound": "Vi hittade {count} recept",
@@ -5918,8 +5918,8 @@
   "messagingCancelReply": "Avbryt svar",
   "messagingImagePreview": "Bild",
   "navigationRecipes": "recept",
-  "navigationMenu": "meny",
-  "navigationShopping": "inköp",
+  "navigationMenu": "Meny",
+  "navigationShopping": "Inköp",
   "navigationAddNew": "lägg till",
   "recipeRecipe": "Recept",
   "recipeSharedFromApp": "Delad från annan app",
@@ -12191,9 +12191,9 @@
       }
     }
   },
-  "deepLinkExpired": "Länken har gått ut och kan inte längre öppnas.",
+  "deepLinkExpired": "Länken gäller inte längre. Be den som delade om en ny.",
   "@deepLinkExpired": {
-    "description": "Butler-voice snackbar shown when a shared recipe/menu/shopping deep link is older than 7 days and is dropped (BUT-1587)"
+    "description": "Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143)."
   },
   "deepLinkUnavailable": "Innehållet är inte längre tillgängligt.",
   "@deepLinkUnavailable": {
@@ -13141,5 +13141,1347 @@
   "reportDialogTitleRecipe": "Anmäl det här receptet",
   "reportDialogGuidelinesNoteSuffix": "— den version du ser nu är den vi dömer efter.",
   "reportDialogIntro": "Berätta vad som är fel. En människa i teamet läser din anmälan.",
-  "reportDescriptionRequiredHelper": "Krävs när du väljer Annat."
+  "reportDescriptionRequiredHelper": "Krävs när du väljer Annat.",
+  "menuNoMatchTitle": "Inga recept matchar",
+  "@menuNoMatchTitle": {
+    "description": "P6-U01: zero matches (Skarmar v12 del 1 #veckoingamatch)."
+  },
+  "menuNoMatchBody": "{count, plural, =1{Beskrivningen ger ingen träff på ditt enda recept.} other{Beskrivningen ger noll träffar bland dina {count} recept.}} Ändra eller släpp ett krav så hittar vi förslag.",
+  "@menuNoMatchBody": {
+    "description": "P6-U01: what stopped it, and the smallest way on (#veckoingamatch).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuNoMatchConstraints": "Kraven: {constraints}",
+  "@menuNoMatchConstraints": {
+    "description": "P6-U01: the requirements the prompt was read as, comma separated.",
+    "placeholders": {
+      "constraints": {
+        "type": "String"
+      }
+    }
+  },
+  "menuNoMatchEditPrompt": "Ändra beskrivningen",
+  "@menuNoMatchEditPrompt": {
+    "description": "P6-U01: moves focus to the prompt so a requirement can be dropped."
+  },
+  "menuNoMatchPlanYourself": "Lägg dagarna själv",
+  "@menuNoMatchPlanYourself": {
+    "description": "P6-U01: opens the calendar to plan by hand (#veckoingamatch)."
+  },
+  "menuGenerateOfflineReason": "Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.",
+  "@menuGenerateOfflineReason": {
+    "description": "P6-U01: why Generera is switched off offline (produktregler.md:1131)."
+  },
+  "menuGenerateOfflineStopped": "Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.",
+  "@menuGenerateOfflineStopped": {
+    "description": "P6-U01: generation finished offline in calendar mode; the saved week is untouched."
+  },
+  "shoppingMergeTitle": "Till inköpslistan",
+  "@shoppingMergeTitle": {
+    "description": "P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge)."
+  },
+  "shoppingMergeItemCount": "{count, plural, =1{1 vara} other{{count} varor}}",
+  "@shoppingMergeItemCount": {
+    "description": "P6-U02: the item count, shown in bold inside shoppingMergeSummary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeSummary": "{recipes, plural, =1{1 rätt ger} other{{recipes} rätter ger}} {rows, plural, =1{1 rad} other{{rows} rader}}. Efter sammanslagning blir det {items}.",
+  "@shoppingMergeSummary": {
+    "description": "P6-U02: the summary line; {items} is shoppingMergeItemCount.",
+    "placeholders": {
+      "recipes": {
+        "type": "int"
+      },
+      "rows": {
+        "type": "int"
+      },
+      "items": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergeStatMerged": "slås samman",
+  "@shoppingMergeStatMerged": {
+    "description": "P6-U02: summary figure label."
+  },
+  "shoppingMergeStatConverted": "konverteras",
+  "@shoppingMergeStatConverted": {
+    "description": "P6-U02: summary figure label."
+  },
+  "shoppingMergeStatAtHome": "finns hemma",
+  "@shoppingMergeStatAtHome": {
+    "description": "P6-U02: summary figure label."
+  },
+  "shoppingMergeShowDetails": "Visa detaljer",
+  "@shoppingMergeShowDetails": {
+    "description": "P6-U02: opens the four switches."
+  },
+  "shoppingMergeHideDetails": "Dölj detaljer",
+  "@shoppingMergeHideDetails": {
+    "description": "P6-U02: closes the four switches."
+  },
+  "shoppingMergeShowDetailsA11y": "Visa detaljer om sammanslagningen",
+  "@shoppingMergeShowDetailsA11y": {
+    "description": "P6-U02: accessible name of Visa detaljer (#inkopmerge data-a11y-name)."
+  },
+  "shoppingMergeHideDetailsA11y": "Dölj detaljer om sammanslagningen",
+  "@shoppingMergeHideDetailsA11y": {
+    "description": "P6-U02: accessible name of Dölj detaljer (#inkopmergeoppen data-a11y-name)."
+  },
+  "shoppingMergeDuplicatesTitle": "Slå samman dubbletter",
+  "@shoppingMergeDuplicatesTitle": {
+    "description": "P6-U02: switch."
+  },
+  "shoppingMergeDuplicatesBody": "Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+  "@shoppingMergeDuplicatesBody": {
+    "description": "P6-U02: switch description (#inkopmergeoppen)."
+  },
+  "shoppingMergeConvertTitle": "Konvertera enheter",
+  "@shoppingMergeConvertTitle": {
+    "description": "P6-U02: switch."
+  },
+  "shoppingMergeConvertBody": "2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.",
+  "@shoppingMergeConvertBody": {
+    "description": "P6-U02: switch description (#inkopmergeoppen)."
+  },
+  "shoppingMergePantryTitle": "Dra bort skafferivaror",
+  "@shoppingMergePantryTitle": {
+    "description": "P6-U02: switch."
+  },
+  "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.",
+  "@shoppingMergePantryBody": {
+    "description": "P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergePantryCovered": "Finns hemma i tillräcklig mängd: {names}",
+  "@shoppingMergePantryCovered": {
+    "description": "P6-U02: rows the pantry left off, named (produktregler.md:234).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergePantryUnavailable": "Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.",
+  "@shoppingMergePantryUnavailable": {
+    "description": "P6-U02: degraded mode (produktregler.md:697)."
+  },
+  "shoppingMergeReplaceTitle": "Ersätt listan i stället för att lägga till",
+  "@shoppingMergeReplaceTitle": {
+    "description": "P6-U02: switch, off by default (#inkopmerge)."
+  },
+  "shoppingMergeReplaceBody": "Dina egna, manuellt tillagda varor behålls alltid.",
+  "@shoppingMergeReplaceBody": {
+    "description": "P6-U02: switch description (#inkopmerge; PQ-10 = A)."
+  },
+  "shoppingMergeReplaceUnavailable": "Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.",
+  "@shoppingMergeReplaceUnavailable": {
+    "description": "P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows."
+  },
+  "shoppingMergeAdd": "{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}",
+  "@shoppingMergeAdd": {
+    "description": "P6-U02: the sheet hero (#inkopmerge).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeReplaceAction": "{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}",
+  "@shoppingMergeReplaceAction": {
+    "description": "P6-U02: the sheet hero while Ersätt listan is on.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeAdded": "{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}",
+  "@shoppingMergeAdded": {
+    "description": "P6-U02: receipt with Ångra after Lägg till.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergeReplaced": "{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.",
+  "@shoppingMergeReplaced": {
+    "description": "P6-U02: receipt with Ångra after a replace.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMergeUndoFailed": "Ångra gick inte att slutföra",
+  "@shoppingMergeUndoFailed": {
+    "description": "P6-U02: failure, what happened."
+  },
+  "shoppingMergeUndoFailedKept": "Varorna finns kvar i listan.",
+  "@shoppingMergeUndoFailedKept": {
+    "description": "P6-U02: failure, what is kept."
+  },
+  "shoppingMergeRowRecipes": "{count} recept",
+  "@shoppingMergeRowRecipes": {
+    "description": "P6-U02: row note, how many recipes a merged row came from.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMergeMarkMaybeHome": "Kanske hemma",
+  "@shoppingMergeMarkMaybeHome": {
+    "description": "P6-U02: row mark (produktregler.md:230)."
+  },
+  "shoppingMergeMarkCheckDate": "Kolla datum",
+  "@shoppingMergeMarkCheckDate": {
+    "description": "P6-U02: row mark (produktregler.md:232)."
+  },
+  "signOutPendingTitle": "{count, plural, =1{1 ändring har inte sparats} other{{count} ändringar har inte sparats}}",
+  "@signOutPendingTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingBody": "Om du loggar ut nu försvinner de. Butlery väntar gärna tills du har nät igen.",
+  "signOutPendingRecipes": "{count, plural, =1{Recept · 1 ändring} other{Recept · {count} ändringar}}",
+  "@signOutPendingRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingImages": "{count, plural, =1{Bilder · 1 väntar på uppladdning} other{Bilder · {count} väntar på uppladdning}}",
+  "@signOutPendingImages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingWait": "Vänta på synk",
+  "signOutPendingDiscard": "Logga ut och släng ändringarna",
+  "sessionPendingChangesIntro": "{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}",
+  "@sessionPendingChangesIntro": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndedBackgroundTitle": "Du loggades ut medan appen låg still.",
+  "sessionEndedBackgroundReason": "Det händer efter 45 minuter utan aktivitet, och det är meningen.",
+  "sessionEndedBackgroundPending": "{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.}}",
+  "@sessionEndedBackgroundPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftDays": "{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}",
+  "@draftTimeLeftDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftHours": "{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}",
+  "@draftTimeLeftHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileDeleteNoRecallWindow": "Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.",
+  "profileDeleteReasonLabel": "Varför raderar du kontot?",
+  "profileDeleteReasonHint": "Till exempel: använder appen inte längre",
+  "profileDeleteReasonHelp": "Skälet följer med till revisionsraden. Det är det enda spåret som finns efteråt, därför frågar vi före.",
+  "accountDeletionWaitNotice": "Detta kan ta upp till nio minuter. Stäng inte appen — raderingen fortsätter på servern, men du får inget kvitto om du går.",
+  "accountDeletionReauthTitle": "Bekräfta att det är du",
+  "accountDeletionReauthBody": "Av säkerhetsskäl krävs en inloggning som är högst fem minuter gammal för att radera ett konto. Logga in igen, så fortsätter raderingen där den var.",
+  "accountDeletionReauthCancel": "Avbryt raderingen",
+  "accountDeletionReauthConfirm": "Logga in igen",
+  "accountDeletionPartialTitle": "Kontot är raderat delvis",
+  "accountDeletionPartialHeading": "{count, plural, =1{Kontot är borta — en del kvarstår} other{Kontot är borta — {count} delar kvarstår}}",
+  "@accountDeletionPartialHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialBody": "{count, plural, =1{Inloggningen är raderad. En samling gick inte att ta bort och ligger kvar hos oss.} other{Inloggningen är raderad. {count} samlingar gick inte att ta bort och ligger kvar hos oss.}}",
+  "@accountDeletionPartialBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialAuditIdLabel": "Revisions-id",
+  "accountDeletionPartialNoAuditId": "Revisions-id saknas. Nämn datum och tid för raderingen när du kontaktar support.",
+  "accountDeletionPartialContact": "Kontakta support med id",
+  "accountDeletionPartialEmailSubject": "Delvis raderat konto {auditId}",
+  "@accountDeletionPartialEmailSubject": {
+    "placeholders": {
+      "auditId": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionPartialNoEmail": "E-postappen gick inte att öppna. Skriv till integritet@butlery.se och ange revisions-id.",
+  "dataExportMemoryNotice": "Spara filen innan du lämnar sidan. Den ligger bara i telefonens minne — går du tillbaka får du göra om exporten.",
+  "dataExportNetworkTitle": "Exporten avbröts",
+  "dataExportNetworkBody": "Anslutningen bröts medan vi samlade ihop uppgifterna. Ingenting är ändrat på ditt konto.",
+  "dataExportNoPartialFile": "Vi erbjuder ingen halv fil. Den som tar emot dina uppgifter kan inte se vad som saknas i den.",
+  "dataExportSignedOutTitle": "Inloggningen har gått ut",
+  "dataExportSignedOutBody": "Logga in igen för att hämta ut dina uppgifter. Ingenting är ändrat på ditt konto.",
+  "dataExportSignIn": "Logga in igen",
+  "dataExportDeniedTitle": "Exporten nekades",
+  "dataExportDeniedBody": "Felet ligger hos oss, inte hos dig, och ett nytt försök hjälper inte just nu. Ingenting är ändrat på ditt konto.",
+  "dataExportNotNow": "Inte nu",
+  "consentAiProcessing": "AI-tolkning",
+  "consentAiProcessingDescription": "Läser recept ur länkar, text och foto. Utan detta blir importen grövre.",
+  "consentRenewalChangedTitle": "{count, plural, =1{Vi har ändrat en sak} other{Vi har ändrat {count} saker}}",
+  "@consentRenewalChangedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalSinceVersion": "Du sa ja till version {version} den {date}. Det här är nytt sedan dess.",
+  "@consentRenewalSinceVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentRenewalUnchanged": "{count, plural, =1{Övriga ändamål är oförändrade och dina val står kvar.} other{Övriga {count} ändamål är oförändrade och dina val står kvar.}}",
+  "@consentRenewalUnchanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalAccept": "Jag godkänner",
+  "consentRenewalChooseMyself": "Låt mig välja själv",
+  "consentRenewalNotNow": "Inte nu",
+  "consentRenewalNotNowNote": "Väljer du Inte nu fortsätter allt som förut. Ingenting slås av för att du inte svarat.",
+  "consentChangeAiProcessingAddedTitle": "AI-tolkning är ett nytt ändamål",
+  "consentChangeAiProcessingAddedBody": "Läser recept ur länkar, text och foto. Den står av tills du själv slår på den under Låt mig välja själv.",
+  "consentRenewalSaveFailed": "Samtycket kunde inte sparas. Dina tidigare val står kvar.",
+  "signOutDiscardFailed": "Ändringarna kunde inte slängas, så du är fortfarande inloggad.",
+  "mfaChallengeTitle": "Tvåstegsverifiering",
+  "mfaChallengeHeading": "Skriv koden",
+  "mfaChallengeSentTo": "Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
+  "@mfaChallengeSentTo": {
+    "placeholders": {
+      "tail": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaChallengeSentUnknown": "Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
+  "mfaChallengeTimeLeft": "Koden gäller i {total} sekunder. {left} s kvar.",
+  "@mfaChallengeTimeLeft": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "mfaChallengeCodeGone": "Koden har gått ut. Skicka en ny kod.",
+  "mfaChallengeResend": "Skicka en ny kod",
+  "mfaChallengeWrongCode": "Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.",
+  "mfaChallengeExpired": "Koden har gått ut. Skicka en ny kod.",
+  "mfaChallengeFailed": "Inloggningen kunde inte slutföras. Skicka en ny kod.",
+  "mfaBackupCodeUse": "Använd en reservkod",
+  "mfaBackupCodeHeading": "Logga in med en reservkod",
+  "mfaBackupCodeExplanation": "En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.",
+  "mfaBackupCodeLabel": "Reservkod",
+  "mfaBackupCodeEnter": "Skriv en av dina tio reservkoder.",
+  "mfaBackupCodeSubmit": "Logga in med reservkoden",
+  "mfaBackupCodeBack": "Tillbaka till SMS-koden",
+  "mfaBackupCodeRejected": "Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.",
+  "mfaBackupCodeLocked": "För många försök med reservkod. Vänta en timme innan du försöker igen.",
+  "mfaBackupCodeUnavailable": "Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.",
+  "mfaBackupCodeRecovered": "Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.",
+  "mfaBackupCodesTitle": "Tio reservkoder",
+  "mfaBackupCodesBody": "Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.",
+  "mfaBackupCodesCopy": "Kopiera koderna",
+  "mfaBackupCodesCopied": "Koderna är kopierade.",
+  "mfaBackupCodesSaved": "Jag har sparat koderna",
+  "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
+  "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.",
+  "permAllow": "Tillåt",
+  "permNotNow": "Inte nu",
+  "permAskAgain": "Fråga igen",
+  "permOpenSettings": "Öppna inställningar",
+  "permImportCameraTitle": "Fotografera receptet",
+  "permImportCameraBody": "Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.",
+  "permImportPhotosTitle": "Välj bilder av receptet",
+  "permImportPhotosBody": "Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.",
+  "permImportConsequence": "Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.",
+  "permCameraTitle": "Ta en bild med kameran",
+  "permCameraBody": "Kameran används bara när du själv tar en bild.",
+  "permPhotosTitle": "Välj bilder ur bildbiblioteket",
+  "permPhotosBody": "Butlery läser bara de bilder du själv väljer.",
+  "permCameraDenied": "Kameran är inte tillåten, så receptet går inte att fotografera.",
+  "permPhotosDenied": "Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.",
+  "permCameraPermanentlyDenied": "Kameran är avstängd för Butlery i telefonens inställningar.",
+  "permPhotosPermanentlyDenied": "Bildbiblioteket är avstängt för Butlery i telefonens inställningar.",
+  "permCameraRestricted": "Enheten har spärrat kameran. Det går inte att ändra här.",
+  "permPhotosRestricted": "Enheten har spärrat bildbiblioteket. Det går inte att ändra här.",
+  "permFallbackGallery": "Välj ur bildbiblioteket",
+  "permFallbackWriteYourself": "Skriv själv",
+  "permPhotosLimited": "Du har delat några bilder med Butlery. Jag ser bara dem.",
+  "permPhotosLimitedHint": "Hittar du inte bilden är det urvalet som saknar den, inte biblioteket. Du kan lägga till fler utan att ge mig hela biblioteket.",
+  "permPhotosChooseMore": "Välj fler bilder",
+  "timerNotifDeniedTitle": "Timern syns bara i appen",
+  "timerNotifDeniedBody": "Notiser är avstängda för Butlery, så timern kan inte säga till när appen ligger i bakgrunden eller telefonen är låst.",
+  "timerNotifDeniedStart": "Starta timern",
+  "timerInAppOnly": "Timern syns bara i appen.",
+  "notifSystemOffRow": "Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.",
+  "a11yOpenSystemSettings": "Öppna systeminställningarna",
+  "cookingExitConfirmTitle": "Avsluta matlagningen?",
+  "cookingExitConfirmBody": "Du är på steg {step} av {total}. Receptet räknas inte som lagat förrän du trycker Klart.",
+  "@cookingExitConfirmBody": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingExitConfirmStay": "Fortsätt laga",
+  "cookingExitConfirmLeave": "Avsluta matlagningen",
+  "cookingDone": "Klart",
+  "cookingNoStepsTitle": "Receptet har inga steg än",
+  "cookingNoStepsBody": "Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.",
+  "cookingNoStepsBodyNoIngredients": "Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.",
+  "cookingNoStepsWrite": "Skriv stegen",
+  "cookingNoStepsShopping": "Till inköpslistan",
+  "parseConfidenceConfirm": "Stämmer",
+  "parseConfidenceConfirmed": "Bekräftad",
+  "a11yParseConfidenceConfirm": "Bekräfta raden {line}",
+  "@a11yParseConfidenceConfirm": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "parseConfidencePendingSave": "{count, plural, =1{Bekräfta 1 rad innan du sparar} other{Bekräfta {count} rader innan du sparar}}",
+  "@parseConfidencePendingSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parseConfidenceUnreadLine": "Raden kunde inte läsas",
+  "a11yParseConfidenceUnreadLine": "Rad som inte kunde läsas",
+  "importReadPages": "{count, plural, =1{Läs av 1 sida} other{Läs av {count} sidor}}",
+  "@importReadPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "roleLoweredRecipeTitle": "Du kan inte längre redigera receptet",
+  "@roleLoweredRecipeTitle": {
+    "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
+  },
+  "roleLoweredRecipeBody": "Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.",
+  "@roleLoweredRecipeBody": {
+    "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
+  },
+  "roleLoweredSaveCopy": "Spara som egen kopia",
+  "@roleLoweredSaveCopy": {
+    "description": "P6-U05: dialog action that saves the unsaved edits as the user's own recipe."
+  },
+  "roleLoweredDiscard": "Släng ändringarna",
+  "@roleLoweredDiscard": {
+    "description": "P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md)."
+  },
+  "roleLoweredRecipeClosed": "Du kan inte längre redigera receptet, bara läsa det.",
+  "@roleLoweredRecipeClosed": {
+    "description": "P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved."
+  },
+  "roleLoweredShoppingList": "Du kan inte längre ändra i listan, bara läsa den.",
+  "@roleLoweredShoppingList": {
+    "description": "P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open."
+  },
+  "roleLoweredShoppingUnsaved": "Det du skrev lades inte till i listan:",
+  "@roleLoweredShoppingUnsaved": {
+    "description": "P6-U05: lead line of the notice that stays in the list view when the role drops while an item was typed but not added; the typed text is shown below it."
+  },
+  "roleLoweredCopyText": "Kopiera texten",
+  "@roleLoweredCopyText": {
+    "description": "P6-U05: notice action that copies the typed, unadded item text."
+  },
+  "roleLoweredTextCopied": "Texten är kopierad.",
+  "@roleLoweredTextCopied": {
+    "description": "P6-U05: confirmation after the typed item text was copied."
+  },
+  "roleLoweredGroupMenu": "Du kan inte längre ändra gruppens meny, bara läsa den.",
+  "@roleLoweredGroupMenu": {
+    "description": "P6-U05: notice when the role on the group week menu drops to read-only while it is open."
+  },
+  "conflictBannerTitleSuggestion": "Ägarens version gäller",
+  "@conflictBannerTitleSuggestion": {
+    "description": "P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103)."
+  },
+  "conflictBannerBodySuggestion": "{name} ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
+  "@conflictBannerBodySuggestion": {
+    "description": "P5-U27b: conflict banner body; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionUnnamed": "Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
+  "@conflictBannerBodySuggestionUnnamed": {
+    "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
+  },
+  "conflictBannerBodyMemberNotSent": "{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.",
+  "@conflictBannerBodyMemberNotSent": {
+    "description": "Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (no store, or storing failed); name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodyMemberNotSentUnnamed": "Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.",
+  "@conflictBannerBodyMemberNotSentUnnamed": {
+    "description": "Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown."
+  },
+  "recipeSuggestionSeeMine": "Se ditt förslag",
+  "@recipeSuggestionSeeMine": {
+    "description": "P5-U27b: banner action, verbatim from produktregler.md:103."
+  },
+  "recipeSuggestionSee": "Se förslaget",
+  "@recipeSuggestionSee": {
+    "description": "P5-U27b: the owner's action that opens a suggestion made to their recipe."
+  },
+  "recipeSuggestionFromOne": "{name} föreslår en ändring i receptet.",
+  "@recipeSuggestionFromOne": {
+    "description": "P5-U27b: owner's notice in recipe detail; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUnnamed": "En medlem föreslår en ändring i receptet.",
+  "@recipeSuggestionFromOneUnnamed": {
+    "description": "P5-U27b: owner's notice when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromMany": "{count} förslag på ändringar väntar på dig.",
+  "@recipeSuggestionFromMany": {
+    "description": "P5-U27b: owner's notice when more than one suggestion waits; count >= 2.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionMinePending": "Ditt förslag väntar på ägaren. Det sparas till {date}.",
+  "@recipeSuggestionMinePending": {
+    "description": "P5-U27b: suggester's notice in recipe detail; date = when the 7 days end, written as content-style-guide.md:25.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionMineAccepted": "Ägaren tog in ditt förslag i receptet.",
+  "@recipeSuggestionMineAccepted": {
+    "description": "P5-U27b: suggester's notice after the owner accepted."
+  },
+  "recipeSuggestionMineDismissed": "Ägaren avvisade ditt förslag. Det sparas till {date}.",
+  "@recipeSuggestionMineDismissed": {
+    "description": "P5-U27b: suggester's notice after the owner dismissed; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionTitle": "Förslag till ändring",
+  "@recipeSuggestionTitle": {
+    "description": "P5-U27b: title of the view that shows one suggestion."
+  },
+  "recipeSuggestionIntroOwner": "{name} föreslår det här. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroOwner": {
+    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMine": "Det här föreslog du. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroMine": {
+    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionSuggestedLabel": "Förslaget",
+  "@recipeSuggestionSuggestedLabel": {
+    "description": "P5-U27b: label over the suggested value of a field."
+  },
+  "recipeSuggestionCurrentLabel": "Receptet nu",
+  "@recipeSuggestionCurrentLabel": {
+    "description": "P5-U27b: label over the recipe's current value of a field."
+  },
+  "recipeSuggestionAccept": "Använd förslaget",
+  "@recipeSuggestionAccept": {
+    "description": "P5-U27b: the owner accepts the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionDismiss": "Avvisa förslaget",
+  "@recipeSuggestionDismiss": {
+    "description": "P5-U27b: the owner dismisses the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionAccepted": "Förslaget är nu en del av receptet.",
+  "@recipeSuggestionAccepted": {
+    "description": "P5-U27b: confirmation after the owner accepted."
+  },
+  "recipeSuggestionDismissed": "Förslaget är avvisat. Receptet är oförändrat.",
+  "@recipeSuggestionDismissed": {
+    "description": "P5-U27b: confirmation after the owner dismissed."
+  },
+  "recipeSuggestionAcceptFailed": "Förslaget kunde inte tas in i receptet.",
+  "@recipeSuggestionAcceptFailed": {
+    "description": "P5-U27b: what did not happen when accepting failed (content-style-guide.md:87-97)."
+  },
+  "recipeSuggestionDismissFailed": "Förslaget kunde inte avvisas.",
+  "@recipeSuggestionDismissFailed": {
+    "description": "P5-U27b: what did not happen when dismissing failed."
+  },
+  "recipeSuggestionKeptUntil": "Förslaget finns kvar till {date}.",
+  "@recipeSuggestionKeptUntil": {
+    "description": "P5-U27b: what was kept, after a failed decision; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionRecipeGone": "Receptet finns inte längre, så förslaget kan inte tas in.",
+  "@recipeSuggestionRecipeGone": {
+    "description": "P5-U27b: the recipe was deleted or unshared; nothing to accept into."
+  },
+  "recipeSuggestionLoadFailed": "Förslaget kunde inte jämföras med receptet. Kontrollera anslutningen.",
+  "@recipeSuggestionLoadFailed": {
+    "description": "P5-U27b: the view could not read the current recipe; offered with Försök igen."
+  },
+  "recipeSuggestionNoChanges": "Förslaget är likadant som receptet nu.",
+  "@recipeSuggestionNoChanges": {
+    "description": "P5-U27b: the suggestion changes nothing against the current recipe."
+  },
+  "recipeSuggestionLoading": "Hämtar förslaget …",
+  "@recipeSuggestionLoading": {
+    "description": "P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63)."
+  },
+  "recipeAddCountToShoppingList": "{count, plural, =1{Lägg 1 vara i inköpslistan} other{Lägg {count} varor i inköpslistan}}",
+  "@recipeAddCountToShoppingList": {
+    "description": "Q4-03 = A: the recipe's add-to-shopping-list button, counting the ingredients the pantry does not already cover (content-style-guide.md:76).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowDiscardAction": "Släng resten",
+  "@weeklyMenuOverflowDiscardAction": {
+    "description": "Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131)."
+  },
+  "weeklyMenuOverflowDiscarded": "{count, plural, =1{1 rätt slängdes ur brickan} other{{count} rätter slängdes ur brickan}}",
+  "@weeklyMenuOverflowDiscarded": {
+    "description": "Q5-01 = A: undo snackbar after Släng resten.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantryItemAmountUnknown": "har hemma",
+  "@pantryItemAmountUnknown": {
+    "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
+  },
+  "recipePantryAllAtHome": "Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}",
+  "@recipePantryAllAtHome": {
+    "description": "Q4-03: the pantry covers every ingredient of the recipe; nothing is added (produktregler.md:228, 233).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeAllAtHome": "Allt finns hemma",
+  "@recipeAllAtHome": {
+    "description": "Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then."
+  },
+  "recipePantryLessened": "Mindre än i receptet, eftersom en del finns hemma: {names}",
+  "@recipePantryLessened": {
+    "description": "Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "navigationHome": "Hem",
+  "@navigationHome": {
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055)."
+  },
+  "navigationMore": "Mer",
+  "@navigationMore": {
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer)."
+  },
+  "navigationAddAction": "Lägg till",
+  "@navigationAddAction": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält)."
+  },
+  "moreTitle": "Mer",
+  "@moreTitle": {
+    "description": "P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer)."
+  },
+  "moreSectionTogether": "Tillsammans",
+  "@moreSectionTogether": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreSectionKitchen": "Ditt kök",
+  "@moreSectionKitchen": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreSectionAppAccount": "App & konto",
+  "@moreSectionAppAccount": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreFamily": "Min familj",
+  "@moreFamily": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the family settings."
+  },
+  "morePersonalTags": "Egna taggar",
+  "@morePersonalTags": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the personal tags."
+  },
+  "moreCollectionStats": "Samlingsstatistik",
+  "@moreCollectionStats": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics."
+  },
+  "moreNotifications": "Notiser",
+  "@moreNotifications": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the notifications."
+  },
+  "addSheetQuickSaveTitle": "Snabbspara",
+  "@addSheetQuickSaveTitle": {
+    "description": "P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582)."
+  },
+  "addSheetQuickSaveSubtitle": "Bara namn och måltid — importera detaljer senare",
+  "@addSheetQuickSaveSubtitle": {
+    "description": "P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583)."
+  },
+  "syncQueueTitle": "Väntar på synk",
+  "@syncQueueTitle": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190)."
+  },
+  "syncQueueNeedsYouHeader": "Väntar på dig · {count}",
+  "@syncQueueNeedsYouHeader": {
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueNeedsYouHint": "Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.",
+  "@syncQueueNeedsYouHint": {
+    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko."
+  },
+  "syncQueueQueuedHeader": "I kö · {count}",
+  "@syncQueueQueuedHeader": {
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the changes the queue sends by itself.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueOrderNote": "Ordningen är först in, först ut per objekt, men parallellt mellan objekt.",
+  "@syncQueueOrderNote": {
+    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186."
+  },
+  "syncQueueSyncNow": "Försök synka nu",
+  "@syncQueueSyncNow": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view footer button."
+  },
+  "syncQueueSyncing": "Synkar …",
+  "@syncQueueSyncing": {
+    "description": "P6-T6 (PQ-17, P4-U19): the footer button while it syncs (content-style-guide.md:63)."
+  },
+  "syncQueueRetry": "Försök igen",
+  "@syncQueueRetry": {
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189)."
+  },
+  "syncQueueRetryA11y": "Försök igen — {what}",
+  "@syncQueueRetryA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of Försök igen, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscard": "Släng ändringen",
+  "@syncQueueDiscard": {
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko)."
+  },
+  "syncQueueDiscardA11y": "Släng ändringen {what}",
+  "@syncQueueDiscardA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of Släng ändringen, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscarded": "Ändringen slängdes.",
+  "@syncQueueDiscarded": {
+    "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1)."
+  },
+  "syncQueueRecipeDiscarded": "Receptet slängdes.",
+  "@syncQueueRecipeDiscarded": {
+    "description": "Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132)."
+  },
+  "syncQueueDiscardPhoneOnlyTitle": "Släng receptet?",
+  "@syncQueueDiscardPhoneOnlyTitle": {
+    "description": "Q6-11 = B: title of the confirmation before a new recipe that exists only on this phone is discarded."
+  },
+  "syncQueueDiscardPhoneOnlyBody": "{title} finns bara på den här telefonen. Det har aldrig nått servern, så om du slänger det finns det inte kvar någonstans.",
+  "@syncQueueDiscardPhoneOnlyBody": {
+    "description": "Q6-11 = B: body of the confirmation; title = the recipe's title, or syncQueueUnnamedRecipe.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscardPhoneOnlyConfirm": "Släng receptet",
+  "@syncQueueDiscardPhoneOnlyConfirm": {
+    "description": "Q6-11 = B: the confirmation's destructive action; Avbryt is the other."
+  },
+  "syncQueueDiscardFailed": "Ändringen kunde inte slängas.",
+  "@syncQueueDiscardFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93)."
+  },
+  "syncQueueRetryFailed": "Ändringen kunde inte läggas tillbaka i kön.",
+  "@syncQueueRetryFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök igen failed."
+  },
+  "syncQueueSyncFailed": "Kön kunde inte skickas nu.",
+  "@syncQueueSyncFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök synka nu failed."
+  },
+  "syncQueueChangeKept": "Den ligger kvar under Väntar på dig.",
+  "@syncQueueChangeKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed action on one change."
+  },
+  "syncQueueChangesKept": "Ändringarna ligger kvar på telefonen.",
+  "@syncQueueChangesKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed Försök synka nu."
+  },
+  "syncQueueEmpty": "Allt är sparat. Inget väntar på att synkas.",
+  "@syncQueueEmpty": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view when nothing waits."
+  },
+  "syncQueueWaitsOnEarlier": "väntar på en tidigare ändring",
+  "@syncQueueWaitsOnEarlier": {
+    "description": "P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187)."
+  },
+  "syncQueueUnnamedRecipe": "Ett recept",
+  "@syncQueueUnnamedRecipe": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a change concerns when the device has no title for the recipe."
+  },
+  "syncQueueRecipeCreated": "{title} · nytt recept",
+  "@syncQueueRecipeCreated": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued create concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeUpdated": "{title} · ändrat",
+  "@syncQueueRecipeUpdated": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued update concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeDeleted": "{title} · borttaget",
+  "@syncQueueRecipeDeleted": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued delete concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeTagged": "{title} · taggas",
+  "@syncQueueRecipeTagged": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued tagging concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueImageFor": "Bild till {title}",
+  "@syncQueueImageFor": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueImage": "En bild",
+  "@syncQueueImage": {
+    "description": "P6-T6 (PQ-17, P4-U19): a queued upload with no known recipe."
+  },
+  "syncQueueReasonNotFound": "Receptet finns inte längre",
+  "@syncQueueReasonNotFound": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonPermission": "Du har inte längre behörighet",
+  "@syncQueueReasonPermission": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonTooLarge": "Bilden är för stor",
+  "@syncQueueReasonTooLarge": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonDependency": "Den hänger på en ändring som inte gick att spara",
+  "@syncQueueReasonDependency": {
+    "description": "P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187)."
+  },
+  "syncQueueReasonUnknown": "Servern tog inte emot ändringen",
+  "@syncQueueReasonUnknown": {
+    "description": "P6-T6 (PQ-17, P4-U19): a permanent failure with no known cause."
+  },
+  "syncQueueReasonExpired": "Gick inte att spara på 24 h",
+  "@syncQueueReasonExpired": {
+    "description": "P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188)."
+  },
+  "syncQueueSaveAsCopy": "Spara som kopia",
+  "@syncQueueSaveAsCopy": {
+    "description": "P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188)."
+  },
+  "syncQueueCopyTitle": "{title} (kopia)",
+  "@syncQueueCopyTitle": {
+    "description": "Q6-14 = C (produktbeslut 2026-09-27b): the title of the recipe Spara som kopia makes from a change that could not be synced; title = the original's.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueSaveAsCopyA11y": "Spara som kopia — {what}",
+  "@syncQueueSaveAsCopyA11y": {
+    "description": "P6-U08b: accessible name of Spara som kopia, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueTrySmaller": "Försök mindre",
+  "@syncQueueTrySmaller": {
+    "description": "P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko)."
+  },
+  "syncQueueTrySmallerA11y": "Försök mindre — {what}",
+  "@syncQueueTrySmallerA11y": {
+    "description": "P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueCopyFailed": "Kopian kunde inte sparas.",
+  "@syncQueueCopyFailed": {
+    "description": "P6-U08b: Spara som kopia failed; followed by syncQueueChangeKept."
+  },
+  "syncQueueTrySmallerFailed": "Bilden kunde inte göras mindre.",
+  "@syncQueueTrySmallerFailed": {
+    "description": "P6-U08b: Försök mindre failed; followed by syncQueueChangeKept."
+  },
+  "syncQueueNextAttemptSeconds": "nästa försök om {seconds} s",
+  "@syncQueueNextAttemptSeconds": {
+    "description": "P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueNextAttemptMinutes": "nästa försök om {minutes} min",
+  "@syncQueueNextAttemptMinutes": {
+    "description": "P6-U08b: when a failed change is sent again, a minute or more (content-style-guide.md:31).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeNow": "nu",
+  "@syncQueueAgeNow": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35)."
+  },
+  "syncQueueAgeMinutes": "{minutes} min",
+  "@syncQueueAgeMinutes": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:31).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeHours": "{hours} h",
+  "@syncQueueAgeHours": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change, whole hours (content-style-guide.md:32).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeHoursMinutes": "{hours} h {minutes} min",
+  "@syncQueueAgeHoursMinutes": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:32).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeDays": "{days, plural, =1{1 dygn} other{{days} dygn}}",
+  "@syncQueueAgeDays": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a change queued a day or more ago.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueIndicatorA11y": "{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}",
+  "@syncQueueIndicatorA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestChange": "Föreslå ändring",
+  "@recipeSuggestChange": {
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247)."
+  },
+  "recipeSuggestionSend": "Skicka förslaget",
+  "@recipeSuggestionSend": {
+    "description": "Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe."
+  },
+  "recipeSuggestionSending": "Skickar förslaget …",
+  "@recipeSuggestionSending": {
+    "description": "Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63)."
+  },
+  "recipeSuggestionSent": "Förslaget är skickat till ägaren.",
+  "@recipeSuggestionSent": {
+    "description": "Q6-08 = A: confirmation after a member's edit was kept as a suggestion."
+  },
+  "recipeSuggestionSendFailed": "Förslaget kunde inte skickas.",
+  "@recipeSuggestionSendFailed": {
+    "description": "Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93)."
+  },
+  "recipeSuggestionCoversText": "Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.",
+  "@recipeSuggestionCoversText": {
+    "description": "Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode."
+  },
+  "recipeSuggestionReplaced": "Förslaget är skickat och ersatte ditt förra förslag.",
+  "@recipeSuggestionReplaced": {
+    "description": "Q6-12 = B (produktbeslut 2026-09-27b): confirmation after a member's edit replaced their suggestion that was still waiting for the owner."
+  },
+  "conflictBannerBodySuggestionReplaced": "{name} ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.",
+  "@conflictBannerBodySuggestionReplaced": {
+    "description": "Q6-12 = B: conflict banner body when the member's losing edit replaced their waiting suggestion; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionReplacedUnnamed": "Någon annan ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.",
+  "@conflictBannerBodySuggestionReplacedUnnamed": {
+    "description": "Q6-12 = B: conflictBannerBodySuggestionReplaced when the other editor's name is unknown."
+  },
+  "recipeSuggestionFromOneUpdated": "{name} har uppdaterat sitt förslag till receptet.",
+  "@recipeSuggestionFromOneUpdated": {
+    "description": "Q6-12 = B: owner's notice in recipe detail when the one waiting suggestion was replaced by a newer edit; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUpdatedUnnamed": "En medlem har uppdaterat sitt förslag till receptet.",
+  "@recipeSuggestionFromOneUpdatedUnnamed": {
+    "description": "Q6-12 = B: recipeSuggestionFromOneUpdated when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromManyUpdated": "{count} förslag på ändringar väntar på dig. {updated, plural, =1{Ett av dem är uppdaterat.} other{{updated} av dem är uppdaterade.}}",
+  "@recipeSuggestionFromManyUpdated": {
+    "description": "Q6-12 = B: owner's notice when more than one suggestion waits and some were replaced by newer edits; count >= 2, updated >= 1.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionIntroOwnerUpdated": "{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroOwnerUpdated": {
+    "description": "Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMineUpdated": "Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.",
+  "@recipeSuggestionIntroMineUpdated": {
+    "description": "Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionChangedSinceOpened": "Förslaget har ändrats sedan du öppnade det. Öppna det igen för att se det nya.",
+  "@recipeSuggestionChangedSinceOpened": {
+    "description": "Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng."
+  },
+  "cookingNoStepsSaveCopy": "Spara min kopia",
+  "@cookingNoStepsSaveCopy": {
+    "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
+  },
+  "cookingNoStepsBodyOthers": "Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.",
+  "@cookingNoStepsBodyOthers": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
+  },
+  "cookingNoStepsBodyOthersNoIngredients": "Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.",
+  "@cookingNoStepsBodyOthersNoIngredients": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
+  },
+  "hemGreetingMorning": "God morgon",
+  "@hemGreetingMorning": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278)."
+  },
+  "hemGreetingDay": "Hej",
+  "@hemGreetingDay": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278)."
+  },
+  "hemGreetingEvening": "God kväll",
+  "@hemGreetingEvening": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278)."
+  },
+  "hemGreetingNight": "God natt",
+  "@hemGreetingNight": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278)."
+  },
+  "hemGreetingWelcome": "Välkommen",
+  "@hemGreetingWelcome": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom)."
+  },
+  "hemGreetingWithName": "{greeting}, {name}",
+  "@hemGreetingWithName": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hemTonight": "Ikväll",
+  "@hemTonight": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268)."
+  },
+  "hemLibraryHeading": "Dina recept · {count}",
+  "@hemLibraryHeading": {
+    "description": "Q6-16 = B (produktbeslut 2026-09-27b): the heading of Hem's library header row under the Ikväll band, with Välj, ingredient search and the grid/list toggle; count = recipes in the library.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hemMetaMinutes": "{minutes} min",
+  "@hemMetaMinutes": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hemMetaPortions": "{count} port.",
+  "@hemMetaPortions": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hemStartCooking": "Börja laga",
+  "@hemStartCooking": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+  },
+  "hemSwapDish": "Byt rätt",
+  "@hemSwapDish": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish."
+  },
+  "hemAllInPantry": "allt i skafferiet",
+  "@hemAllInPantry": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry."
+  },
+  "hemLoadingPlan": "Hämtar veckans plan …",
+  "@hemLoadingPlan": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar)."
+  },
+  "hemPlanErrorWhat": "Veckans plan kunde inte hämtas.",
+  "@hemPlanErrorWhat": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel)."
+  },
+  "hemPlanErrorPreserved": "Din plan är sparad och ligger kvar – det är hämtningen som misslyckades, inte planen.",
+  "@hemPlanErrorPreserved": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293)."
+  },
+  "hemShowSavedPlan": "Öppna veckomenyn",
+  "@hemShowSavedPlan": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel)."
+  },
+  "hemPlanFetchedAt": "Planen hämtades {time} – kan ha ändrats av någon annan sedan dess.",
+  "@hemPlanFetchedAt": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "hemEmptyTitle": "Butlery blir användbar med ett recept",
+  "@hemEmptyTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom)."
+  },
+  "hemEmptyBody": "Lägg in något du redan lagar ofta. Sedan kan Butlery planera veckan, räkna om portioner och skriva inköpslistan åt dig.",
+  "@hemEmptyBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom)."
+  },
+  "hemEmptyShortcuts": "Snabbaste vägarna",
+  "@hemEmptyShortcuts": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom)."
+  },
+  "hemEmptyLinkTitle": "Klistra in en länk",
+  "@hemEmptyLinkTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyLinkBody": "från en receptsida, YouTube eller Instagram",
+  "@hemEmptyLinkBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyPhotoTitle": "Fota en receptsida",
+  "@hemEmptyPhotoTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyPhotoBody": "ur en kokbok eller ett urklipp",
+  "@hemEmptyPhotoBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyWriteTitle": "Skriv själv",
+  "@hemEmptyWriteTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyWriteBody": "för det du lagar utan recept",
+  "@hemEmptyWriteBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyAllergyNote": "Har hushållet allergier? Ställ in dem först – då planerar Butlery aldrig något osäkert.",
+  "@hemEmptyAllergyNote": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288)."
+  },
+  "hemEmptyAllergyLink": "Ställ in allergener",
+  "@hemEmptyAllergyLink": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
+  }
 }

@@ -11,7 +11,10 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
@@ -163,41 +166,109 @@ class DataExportView extends StatelessWidget {
     );
   }
 
+  /// Three causes, three messages (produktregler.md:735; Skarmar v12
+  /// etapp 6 #dataexportfel): an expired sign-in leads to signing in, a
+  /// refusal is our fault and asks for no retry, a dropped connection gets
+  /// "Inte nu" and "Försök igen". Only the general case asks for a retry
+  /// without saying why. No partial file is ever offered.
   Widget _buildErrorState(BuildContext context, DataExportViewModel viewModel) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final failure = viewModel.failure ?? ExportFailure.other;
+
+    final String title;
+    final String body;
+    switch (failure) {
+      case ExportFailure.network:
+        title = l10n.dataExportNetworkTitle;
+        body = l10n.dataExportNetworkBody;
+      case ExportFailure.signedOut:
+        title = l10n.dataExportSignedOutTitle;
+        body = l10n.dataExportSignedOutBody;
+      case ExportFailure.permissionDenied:
+        title = l10n.dataExportDeniedTitle;
+        body = l10n.dataExportDeniedBody;
+      case ExportFailure.other:
+        title = l10n.dataExportFailed;
+        body = viewModel.errorMessage ?? l10n.errorExportFailed;
+    }
+
+    final List<Widget> actions = switch (failure) {
+      ExportFailure.network => [
+        TextButton(
+          key: const ValueKey('dataExport.notNow'),
+          onPressed: viewModel.reset,
+          child: Text(l10n.dataExportNotNow),
+        ),
+        const SizedBox(width: AppDimensions.spacingSm),
+        FilledButton(
+          key: const ValueKey('dataExport.retry'),
+          onPressed: () => viewModel.retryExport(),
+          child: Text(l10n.commonRetry),
+        ),
+      ],
+      ExportFailure.signedOut => [
+        FilledButton(
+          key: const ValueKey('dataExport.signIn'),
+          onPressed: () => _handleSignInAgain(context),
+          child: Text(l10n.dataExportSignIn),
+        ),
+      ],
+      ExportFailure.permissionDenied => const <Widget>[],
+      ExportFailure.other => [
+        FilledButton(
+          key: const ValueKey('dataExport.retry'),
+          onPressed: () => viewModel.retryExport(),
+          child: Text(l10n.commonRetry),
+        ),
+      ],
+    };
 
     return Card(
-      color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+      key: ValueKey('dataExport.error.${failure.name}'),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: cs.error,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              context.l10n.dataExportFailed,
-              style: AppTextStyles.titleBold,
-            ),
+            Text(title, style: AppTextStyles.titleBold),
             const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-              viewModel.errorMessage ?? context.l10n.errorUnexpected,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            ElevatedButton.icon(
-              onPressed: () => viewModel.retryExport(),
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.commonRetry),
-            ),
+            Text(body, style: Theme.of(context).textTheme.bodyMedium),
+            if (failure == ExportFailure.network) ...[
+              const SizedBox(height: AppDimensions.spacingSm),
+              Text(
+                l10n.dataExportNoPartialFile,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingMd),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions,
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  /// "Utgången inloggning leder till inloggningen" (produktregler.md:735).
+  /// The session is no longer usable, so it is ended and the sign-in screen
+  /// shown. It is not the user's own sign-out: nothing in the queue is
+  /// touched.
+  Future<void> _handleSignInAgain(BuildContext context) async {
+    await ServiceLocator.get<AuthService>().forceSignOut();
+    if (context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        Routes.auth,
+        (_) => false,
+      );
+    }
   }
 
   Widget _buildSuccessState(
@@ -262,6 +333,17 @@ class DataExportView extends StatelessWidget {
                   ),
                 ],
               ],
+            ),
+            const SizedBox(height: AppDimensions.spacingMd),
+            // The file lives only in memory and is cleared when the view is
+            // left, and the view says so (produktregler.md:733; Skarmar v12
+            // etapp 6 #kontodataexport).
+            Text(
+              context.l10n.dataExportMemoryNotice,
+              key: const ValueKey('dataExport.memoryNotice'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
             TextButton.icon(

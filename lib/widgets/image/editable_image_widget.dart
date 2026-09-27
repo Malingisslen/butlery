@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -380,7 +381,18 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       }
 
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
-      final result = await imagePickerService.pickMultipleImages();
+      // Flow 07: explanation before the system prompt (produktregler.md:682).
+      final outcome = await imagePickerService.pickMultipleImagesWithOutcome(
+        rationale: mediaRationalePrompt(context),
+      );
+      if (outcome.blockedByPermission && mounted) {
+        explainMediaPermission(
+          context,
+          outcome.permission,
+          ImageSource.gallery,
+        );
+      }
+      final result = outcome.files;
 
       if (result.isNotEmpty) {
         final newUrls = List<String>.from(widget.imageUrls);

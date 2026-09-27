@@ -16,6 +16,18 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
+/// P6-U02: the re-entrancy sentinel of [WeeklyMenuPlanViewModel
+/// .applyShoppingMerge]. Compare with [identical].
+const shoppingMergeAlreadyRunning = MenuShoppingMergeReceipt(
+  listId: '',
+  listName: '',
+  addedItemIds: [],
+  removedItems: [],
+  previousMenuItemIds: null,
+  replaced: false,
+  createdList: false,
+);
+
 class WeeklyMenuPlanViewModel extends BaseViewModel {
   final WeeklyMenuPlanService _service;
   final UnifiedRecipeService _recipeService;
@@ -43,6 +55,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// distribution was given, so the tray can say "2 av 5 rätter placerade"
   /// (produktregler.md:206).
   _OverflowTray _tray = _OverflowTray.empty;
+
+  /// Counts every [_setTray], so [undoDiscardOverflow] can tell that the
+  /// tray it emptied has not been set again since (Q5-01).
+  int _trayRevision = 0;
 
   /// Set once anything has changed the tray in this session, so a slow
   /// restore from the device never overwrites a newer tray.
@@ -722,6 +738,76 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     }
   }
 
+  /// P6-U02: the visible week's placements for the merge sheet, or null
+  /// when the week could not be read (a failure, never "nothing to
+  /// generate"; produktregler.md:705).
+  Future<MenuShoppingSource?> shoppingSource() async {
+    if (_readFailed) return null;
+    return _shoppingListGenerator.sourceForWeek(currentWeekStart);
+  }
+
+  /// P6-U02: the pantry for the merge sheet.
+  Future<MenuShoppingPantry> readPantryForShopping() =>
+      _shoppingListGenerator.readPantry();
+
+  /// P6-U02: whether "Ersätt listan" can take anything off the week's list
+  /// ([MenuShoppingListGenerator.canReplaceWeekList]).
+  bool canReplaceShoppingList(DateTime week) =>
+      _shoppingListGenerator.canReplaceWeekList(week);
+
+  bool _mergeInFlight = false;
+
+  /// Whether a confirmed merge is being written.
+  bool get isMergingShoppingList => _mergeInFlight;
+
+  bool _shoppingFlowRunning = false;
+
+  /// Whether a "Till inköpslistan" flow is running: the week and pantry
+  /// reads, the open sheet and the write. The FAB shows it as busy.
+  bool get isShoppingFlowRunning => _shoppingFlowRunning || _mergeInFlight;
+
+  /// P6-U02: runs [flow] unless one is already running. The guard covers
+  /// the whole flow, not just the write: the reads before the sheet can take
+  /// up to [MenuShoppingListGenerator.pantryReadTimeout], and a second tap
+  /// then must not open a second sheet whose confirm adds the week's rows
+  /// again. A second call is silence, not an error (produktregler.md:705).
+  Future<void> runShoppingFlow(Future<void> Function() flow) async {
+    if (_shoppingFlowRunning) return;
+    _shoppingFlowRunning = true;
+    notifyListeners();
+    try {
+      await flow();
+    } finally {
+      _shoppingFlowRunning = false;
+      if (!isDisposed) notifyListeners();
+    }
+  }
+
+  /// P6-U02: writes the merge the user confirmed in the sheet. Returns the
+  /// receipt, null when nothing could be written, or
+  /// [shoppingMergeAlreadyRunning] when a merge is already being written: a
+  /// double tap renders as silence, not an error (produktregler.md:705).
+  Future<MenuShoppingMergeReceipt?> applyShoppingMerge(
+    MenuShoppingMergePreview merge,
+  ) async {
+    if (_mergeInFlight) return shoppingMergeAlreadyRunning;
+    _mergeInFlight = true;
+    notifyListeners();
+    try {
+      return await _shoppingListGenerator.apply(merge);
+    } catch (e) {
+      AppLogger.error('Could not write the week to the shopping list', e);
+      return null;
+    } finally {
+      _mergeInFlight = false;
+      if (!isDisposed) notifyListeners();
+    }
+  }
+
+  /// P6-U02: Ångra for a merge (produktregler.md:131, § 2.4).
+  Future<bool> undoShoppingMerge(MenuShoppingMergeReceipt receipt) =>
+      _shoppingListGenerator.undo(receipt);
+
   /// Drop a recipe from the overflow tray into a slot.
   Future<void> assignFromOverflow({
     required Recipe recipe,
@@ -844,6 +930,40 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     return ok ? moved : null;
   }
 
+  /// Q5-01 = A (produktbeslut 2026-09-24): the tray's "Släng resten". The
+  /// tray comes back quietly (P5-U24) and this is how it leaves without
+  /// being placed. The recipes themselves stay in Mina recept; only the
+  /// tray, and its copy on this device, goes.
+  ///
+  /// Data disappears, so it is class 1: immediate, with a 7 s Ångra
+  /// (produktregler.md:131-132, § 2.4). Returns the tray as it was, for
+  /// [undoDiscardOverflow], or null when there was nothing to discard.
+  OverflowTrayDiscard? discardOverflow() {
+    if (_overflow.isEmpty && _tray.unresolvedIds.isEmpty) return null;
+    final tray = _tray;
+    _setTray(_OverflowTray.empty);
+    notifyListeners();
+    return OverflowTrayDiscard._(tray, _trayRevision);
+  }
+
+  /// Ångra for [discardOverflow]: the tray comes back as it was. A tray that
+  /// has been set again since (a new generation or placement, even one that
+  /// left it empty) is newer and is left alone, so Ångra never overwrites
+  /// it. Returns whether the tray came back.
+  bool undoDiscardOverflow(OverflowTrayDiscard discarded) {
+    if (isDisposed) return false;
+    if (_trayRevision != discarded._revision) return false;
+    if (_overflow.isNotEmpty || _tray.unresolvedIds.isNotEmpty) return false;
+    _setTray(discarded._tray);
+    if (discarded._tray.unresolvedIds.isNotEmpty) {
+      _pendingTraySub ??= _recipeService.stateStream.listen(
+        (_) => _resolvePendingTray(),
+      );
+    }
+    notifyListeners();
+    return true;
+  }
+
   /// P5-U24: brings back the tray this device kept for the signed-in user
   /// (produktregler.md:1125: the tray "överlever omladdning, ligger kvar
   /// tills den töms"). Does nothing when this session already changed the
@@ -929,6 +1049,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// Sets the tray and keeps it on this device (P5-U24).
   void _setTray(_OverflowTray tray) {
+    _trayRevision++;
     _trayTouched = true;
     _tray = tray;
     _persistTray();
@@ -1074,6 +1195,19 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
 /// P5-U23/U24: the overflow tray's state. Immutable, so a rollback can put
 /// the whole tray back in one assignment.
+/// Q5-01: a tray that "Släng resten" took away, held for its Ångra.
+class OverflowTrayDiscard {
+  const OverflowTrayDiscard._(this._tray, this._revision);
+
+  final _OverflowTray _tray;
+
+  /// The tray's revision right after the discard.
+  final int _revision;
+
+  /// How many recipes the tray showed ("3 rätter slängdes ur brickan").
+  int get count => _tray.recipes.length;
+}
+
 class _OverflowTray {
   const _OverflowTray({
     required this.recipes,

@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -18,6 +19,9 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/session_timeout_service.dart';
+import 'package:butlery/views/auth/mfa_challenge_view.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -91,7 +95,17 @@ class _AuthViewState extends State<AuthView> {
                           padding: const EdgeInsets.only(
                             top: AppDimensions.spacingLg,
                           ),
-                          child: _buildLoginCard(viewModel),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (SessionEndNotice.pending != null)
+                                _buildSessionEndNotice(
+                                  cs,
+                                  SessionEndNotice.pending!,
+                                ),
+                              _buildLoginCard(viewModel),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -148,6 +162,69 @@ class _AuthViewState extends State<AuthView> {
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onPrimary,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Skarmar v12 etapp 9 #globsessiontyst (globala tillstand och flerval:98)
+  /// draws the notice and its words.
+  /// A background timeout could not warn, so it is explained here, calmly:
+  /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
+  /// skälet och antalet väntande ändringar. Aldrig som fel"
+  /// (produktregler.md:834). `surface.raised` is `surfaceContainerHighest`
+  /// and `text.success` is `butleryColors.success`, in both modes
+  /// (app_colors.dart / app_colors_dark.dart).
+  Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
+    final l10n = context.l10n;
+    // The drawn body is secondary ink, bold parts in ink (#globsessiontyst):
+    // semantic text.body, #37453A light / #F5F4ED dark (tokens.json:58-60).
+    // The drawing's dark #C9D3C4 is the palette's bodyOnDark, which the
+    // semantic token does not deliver; the token wins.
+    final bodyColor = AppModeColors.textBody(cs.brightness);
+    return Container(
+      key: const ValueKey('auth.sessionEndNotice'),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.check_circle_outline,
+            color: context.butleryColors.success,
+            size: AppDimensions.iconSizeM,
+          ),
+          const SizedBox(width: AppDimensions.spacingSm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.sessionEndedBackgroundTitle,
+                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  l10n.sessionEndedBackgroundReason,
+                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  l10n.sessionEndedBackgroundPending(end.pendingChanges.total),
+                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: l10n.commonClose,
+            icon: Icon(Icons.close, color: cs.onSurfaceVariant),
+            onPressed: () => setState(SessionEndNotice.clear),
           ),
         ],
       ),
@@ -660,11 +737,29 @@ class _AuthViewState extends State<AuthView> {
 
     bool success;
 
+    var signedInWithBackupCode = false;
     if (wasLoginMode) {
       success = await viewModel.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
+      // Two-step verification: the password was right and the second factor
+      // is asked for (P6-U09; Skarmar v12 etapp 3 #authmfa).
+      final challenge = viewModel.pendingMfaChallenge;
+      if (!success && challenge != null && mounted) {
+        final result = await Navigator.of(context).push<MfaChallengeResult>(
+          MaterialPageRoute(
+            builder: (_) => MfaChallengeView(
+              challenge: challenge,
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          ),
+        );
+        success = result != null;
+        signedInWithBackupCode =
+            result == MfaChallengeResult.signedInWithBackupCode;
+      }
     } else {
       success = await viewModel.register(
         email: _emailController.text,
@@ -687,9 +782,31 @@ class _AuthViewState extends State<AuthView> {
       // Route into the main nav shell (LayoutScaffolds.mainMenu), not the bare
       // MinaReceptView — the bare view has no bottom navigation bar, so logging
       // in used to land on a recipe list with no nav until the user moved tabs.
-      Navigator.of(context).pushReplacement(
+      final navigator = Navigator.of(context);
+      navigator.pushReplacement(
         MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
       );
+      SessionEndNotice.clear();
+      // After a timeout, the same account lands where it was
+      // (TR::FLOW::06::session::utgang; Q-P6-E07). Any other account, or
+      // no remembered place, lands on Hem.
+      final userId = ServiceLocator.get<AuthService>().currentUserId;
+      final returnTo = userId == null
+          ? null
+          : SessionReturnPath.takeFor(userId);
+      if (returnTo != null) {
+        navigator.pushNamed(returnTo.routeName, arguments: returnTo.arguments);
+      }
+      // A backup code switched the phone factor off; say so, and where to
+      // add a phone again (P6-U09, TR::FLOW::06::mfa::aterstallning-engangskoder).
+      if (signedInWithBackupCode) {
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.mfaBackupCodeRecovered,
+          duration: const Duration(seconds: 10),
+          showCloseButton: true,
+        );
+      }
     }
   }
 

@@ -194,7 +194,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `weekly_menu_plan_viewmodel.dart` | 714 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
-| `mina_recept_view.dart` | 697 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 |
+| `mina_recept_view.dart` | 842 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 1183 | Recipe list card widget. |
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |

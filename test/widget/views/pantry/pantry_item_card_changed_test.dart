@@ -112,7 +112,11 @@ void main() {
     expect(find.textContaining('ändrad'), findsNothing);
   });
 
-  testWidgets('a row without an amount shows no lone unit', (tester) async {
+  // Q5-03 = B (produktbeslut 2026-09-24): a row without an amount says
+  // "har hemma", never a lone unit.
+  testWidgets('a row without an amount says har hemma and when it changed', (
+    tester,
+  ) async {
     await withClock(Clock.fixed(now), () async {
       await pumpCard(
         tester,
@@ -120,15 +124,16 @@ void main() {
       );
     });
 
-    expect(find.text('ändrad 3 min sedan'), findsOneWidget);
+    expect(find.text('har hemma · ändrad 3 min sedan'), findsOneWidget);
     expect(find.text('l'), findsNothing);
   });
 
-  testWidgets('a row without an amount or a change time shows no lone unit', (
+  testWidgets('a row without an amount or a change time says har hemma', (
     tester,
   ) async {
     await pumpCard(tester, item());
 
+    expect(find.text('har hemma'), findsOneWidget);
     expect(find.text('l'), findsNothing);
     expect(find.textContaining('ändrad'), findsNothing);
   });

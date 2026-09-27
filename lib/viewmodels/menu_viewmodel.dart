@@ -65,6 +65,26 @@ class MenuPartialOutcome {
   final List<MenuMissingMeal> missing;
 }
 
+/// P6-U01: a generation where nothing matched ("0 recept placerade ->
+/// inga matchningar", flows-roles-budget.md:32).
+///
+/// Skarmar v12 del 1 #veckoingamatch: "Nollresultat säger vad som stoppade
+/// det och erbjuder minsta möjliga eftergift — inte en generisk feltext."
+/// It is its own outcome and never an error; an empty library stays the
+/// error errorNoRecipesAvailable.
+@immutable
+class MenuNoMatchOutcome {
+  const MenuNoMatchOutcome({required this.poolSize, required this.constraints});
+
+  /// How many recipes the generation could choose from.
+  final int poolSize;
+
+  /// The requirements the prompt was read as ("Under 30 min",
+  /// "Vegetariskt"), in the parser's order. Counts, meal types and days are
+  /// left out: they say how many, not what stopped it.
+  final List<String> constraints;
+}
+
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
@@ -84,6 +104,9 @@ class MenuViewModel extends BaseViewModel {
   /// type (lower-cased). Empty for a menu that was not generated here (a
   /// loaded or shared menu), which then never reads as partial.
   Map<String, int> _requestedByMealType = const {};
+
+  /// P6-U01: set when the last generation matched nothing.
+  MenuNoMatchOutcome? _noMatch;
 
   // Modules
   late final MenuStateManager _stateManager;
@@ -218,6 +241,27 @@ class MenuViewModel extends BaseViewModel {
     }
   }
 
+  /// P6-U01: the last generation matched nothing, or null.
+  MenuNoMatchOutcome? get noMatchOutcome => hasMenu ? null : _noMatch;
+
+  /// The requirements the prompt was read as, for the no-match state.
+  Future<List<String>> _constraintLabelsFor(String prompt) async {
+    try {
+      final parsed = await _menuService.parsePrompt(prompt);
+      if (parsed == null) return const [];
+      return [
+        for (final entry in parsed.trace.understood)
+          if (entry.category != TraceCategory.count &&
+              entry.category != TraceCategory.mealType &&
+              entry.category != TraceCategory.day)
+            entry.label,
+      ];
+    } catch (e) {
+      AppLogger.error('Could not read the requirements of the prompt', e);
+      return const [];
+    }
+  }
+
   List<Recipe> get availableRecipes => _generator.availableRecipes;
   bool get hasAvailableRecipes => _generator.hasAvailableRecipes;
 
@@ -269,6 +313,7 @@ class MenuViewModel extends BaseViewModel {
     _stateManager.setGenerating(true);
     _stateManager.setLastPrompt(prompt.trim());
     _requestedByMealType = const {};
+    _noMatch = null;
 
     // Track menu generation started
     await _analyticsService.logMenuGenerationStarted(
@@ -281,6 +326,23 @@ class MenuViewModel extends BaseViewModel {
       final generatedMenu = await _generator.generateMenuFromPrompt(
         prompt.trim(),
       );
+      if (generatedMenu.isEmpty) {
+        // P6-U01: nothing matched. Its own outcome, never an error, and the
+        // earlier suggestion gives way to it like any new generation.
+        _noMatch = MenuNoMatchOutcome(
+          poolSize: _generator.lastPoolSize,
+          constraints: List.unmodifiable(
+            await _constraintLabelsFor(prompt.trim()),
+          ),
+        );
+        _stateManager.setMenu(const {});
+        _stateManager.clearErrorAfterSuccess();
+        await _analyticsService.logMenuGenerationFailed(
+          errorCode: 'menu_generation_no_match',
+          errorMessage: 'menu_generation_no_match',
+        );
+        return;
+      }
       _requestedByMealType = await _requestedCountsFor(prompt.trim());
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
@@ -301,6 +363,14 @@ class MenuViewModel extends BaseViewModel {
           thresholdMs: 10000,
         );
       }
+    } on MenuNoRecipesException {
+      // P6-U01: an empty library keeps its own message. The sanitizer below
+      // would turn it into "Ett fel uppstod".
+      _stateManager.setError(AppLocale.current.errorNoRecipesAvailable);
+      await _analyticsService.logMenuGenerationFailed(
+        errorCode: 'menu_generation_no_recipes',
+        errorMessage: 'menu_generation_no_recipes',
+      );
     } catch (e) {
       _stateManager.handleOperationError(
         AppLocale.current.errorImportFailed,
@@ -401,6 +471,7 @@ class MenuViewModel extends BaseViewModel {
   /// enabling fresh menu generation and state reset functionality.
   void clearMenu() {
     _requestedByMealType = const {};
+    _noMatch = null;
     _stateManager.clearMenu();
   }
 

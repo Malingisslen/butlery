@@ -1391,6 +1391,64 @@ void main() {
         expect(note, contains('notes'));
       });
 
+      test('P5-U27b: recipe suggestions export in both directions, and a '
+          'suggestion between two other people does not', () async {
+        // The cascade erases a suggestion with either account
+        // (`deleteRecipeSuggestions`), so Art. 15 must reach both: the ones
+        // the user made and the ones made to the user's recipes. `createdAt`
+        // is a real Timestamp so a section that stops calling
+        // `sanitizeForJson` makes `jsonEncode` throw and reddens here.
+        final createdAt = DateTime.utc(2026, 9, 20, 8);
+        Map<String, dynamic> row(String suggester, String owner, String t) => {
+          'recipeId': 'recipe-$t',
+          'ownerId': owner,
+          'suggesterId': suggester,
+          'suggestion': {'title': t},
+          'status': 'pending',
+          'createdAt': Timestamp.fromDate(createdAt),
+          'expiresAt': Timestamp.fromDate(
+            createdAt.add(const Duration(days: 7)),
+          ),
+        };
+        final suggestions = fakeFirestore.collection('recipe_suggestions');
+        await suggestions
+            .doc('i-suggested')
+            .set(row(testUserId, 'other-user', 'Mer vitlök'));
+        await suggestions
+            .doc('made-to-me')
+            .set(row('other-user', testUserId, 'Mindre salt'));
+        await suggestions
+            .doc('between-others')
+            .set(row('other-user', 'third-user', 'Inte min'));
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['recipe_suggestions'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse);
+        expect(section['total_count'], 2);
+        expect(section.containsKey('truncated'), isFalse);
+
+        final made =
+            (section['suggestions_made'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        expect(made['suggestion_id'], 'i-suggested');
+        expect(made['data']['suggestion']['title'], 'Mer vitlök');
+        expect(
+          DateTime.parse(made['data']['createdAt'] as String).toUtc(),
+          createdAt,
+        );
+
+        final received =
+            (section['suggestions_received'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        expect(received['suggestion_id'], 'made-to-me');
+        expect(received['data']['suggestion']['title'], 'Mindre salt');
+
+        expect(jsonString, isNot(contains('between-others')));
+        expect(section['data_minimisation'] as String, contains('7 days'));
+      });
+
       test(
         'BUT-1693: the user\'s own shared allergen lists export under '
         'every household, projected, and another member\'s does not',
@@ -1536,6 +1594,8 @@ void main() {
           'ingredient_suggestions',
           // BUT-1693: no share is seeded, so the zero-row case is under test.
           'household_allergen_shares',
+          // P5-U27b: no suggestion is seeded.
+          'recipe_suggestions',
         ]) {
           final section = data[key] as Map<String, dynamic>;
           expect(
@@ -1549,6 +1609,7 @@ void main() {
         expect(data['realtime_recipes']['total_count'], 0);
         expect(data['group_weekly_menu_plans']['total_count'], 0);
         expect(data['ingredient_suggestions']['total_count'], 0);
+        expect(data['recipe_suggestions']['total_count'], 0);
       });
     });
 

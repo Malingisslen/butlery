@@ -171,6 +171,37 @@ class PantryService extends BaseService {
     return written ?? false;
   }
 
+  /// Q5-02 = A (produktbeslut 2026-09-24): a row without an amount ("har
+  /// hemma") takes a bought [amount] in [unit]. The amount is sent as a
+  /// relative change (produktregler.md:146): the store's increment starts a
+  /// missing amount at the delta, so two purchases that land on the same
+  /// row at once add up instead of one overwriting the other. The unit is
+  /// written first; if the amount then fails, the row is still "har hemma".
+  /// Returns whether both were written; false for a zero or negative
+  /// [amount], a row that already has an amount, and a failed write.
+  Future<bool> fillUnknownQuantity(
+    String userId,
+    PantryItem item,
+    double amount,
+    String unit,
+  ) async {
+    if (item.quantity != null || amount <= 0) return false;
+    final written = await executeServiceOperation<bool>(
+      () async {
+        if (item.unit != unit) {
+          await _pantryRepository.updateFields(userId, item.id, {
+            'unit': unit,
+          });
+        }
+        await _pantryRepository.adjustQuantity(userId, item.id, amount);
+        return true;
+      },
+      operationName: 'fillUnknownQuantity',
+      defaultValue: false,
+    );
+    return written ?? false;
+  }
+
   Future<void> removeItem(String userId, String itemId) async {
     await executeServiceOperation<void>(
       () => _pantryRepository.remove(userId, itemId),

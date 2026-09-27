@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -18,6 +19,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
@@ -304,6 +306,105 @@ class _VeckomenyGeneratingOverlayState
           ),
         ],
       ),
+    );
+  }
+}
+
+/// P6-U01: the week menu's Generera, switched off offline with the reason
+/// in text.
+///
+/// produktregler.md:1131 and flows-roles-budget.md:34 ("genererar | offline
+/// | avbrutet + banner, tidigare vecka orörd"; fas2/block288-uxfrysning.json
+/// TR::FLOW::01::genererar::offline REQUIRED): offline does not lock the
+/// calendar, only generation is switched off, and the reason is said in
+/// plain words next to the switched-off button, never by the button's look
+/// alone. The offline banner above the view (LayoutComponents
+/// .offlineIndicator) is the "banner" of the flow.
+///
+/// It is the view's one saffron action (Komponentark v1:843-844; Skarmar v12
+/// del 1 #veckomeny draws "Generera" as the only saffron button). While the
+/// week is planned it keeps its shape and gets the plate line along its
+/// bottom edge (Komponentark v1:372).
+class VeckomenyGenerateButton extends StatelessWidget {
+  const VeckomenyGenerateButton({
+    super.key,
+    required this.label,
+    required this.busy,
+    required this.busyLabel,
+    required this.onGenerate,
+  });
+
+  final String label;
+  final bool busy;
+  final String busyLabel;
+
+  /// Null while there is no prompt to generate from.
+  final VoidCallback? onGenerate;
+
+  /// The reason line under the switched-off button, for tests.
+  static const Key offlineReasonKey = ValueKey<String>(
+    'veckomeny-generate-offline-reason',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return VeckomenyConnectivity(
+      builder: (context, isOnline) {
+        final button = Semantics(
+          identifier: 'btn-generate-menu',
+          child: HeroButton(
+            label: label,
+            busy: busy,
+            busyLabel: busyLabel,
+            onPressed: isOnline ? onGenerate : null,
+          ),
+        );
+        if (isOnline) return button;
+        final cs = Theme.of(context).colorScheme;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            button,
+            const SizedBox(height: AppDimensions.spacingSm),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                context.l10n.menuGenerateOfflineReason,
+                key: offlineReasonKey,
+                textAlign: TextAlign.center,
+                // text.secondary: #627061 light, its dark value in dark
+                // (onSurfaceVariant in both schemes).
+                style: AppTextStyles.captionBase.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// P6-U01: rebuilds with whether the app is online, read from
+/// [OfflineService.isOnline] (lib/services/offline_service.dart). Without a
+/// registered service it reads as online, as the offline banner does.
+class VeckomenyConnectivity extends StatelessWidget {
+  const VeckomenyConnectivity({super.key, required this.builder});
+
+  final Widget Function(BuildContext context, bool isOnline) builder;
+
+  /// Whether the app is online right now.
+  static bool isOnlineNow() =>
+      ServiceLocator.tryGet<OfflineService>()?.isOnline ?? true;
+
+  @override
+  Widget build(BuildContext context) {
+    final service = ServiceLocator.tryGet<OfflineService>();
+    if (service == null) return builder(context, true);
+    return ListenableBuilder(
+      listenable: service,
+      builder: (context, _) => builder(context, service.isOnline),
     );
   }
 }

@@ -1254,6 +1254,71 @@ void main() {
       vm.dispose();
     });
   });
+
+  // P6-U04 (flow 04): leaving asks once more than one step is done
+  // (flows-roles-budget.md:71; Q-P6-E05), and the last step is where
+  // "Klart" goes (flows-roles-budget.md:72).
+  group('CookingModeViewModel - flow 04 steps', () {
+    test('maxVisitedIndex follows the furthest step, not the current', () {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      addTearDown(vm.dispose);
+
+      expect(vm.maxVisitedIndex, 0);
+      expect(vm.needsExitConfirmation, isFalse);
+
+      vm.nextStep();
+      expect(vm.maxVisitedIndex, 1);
+      expect(
+        vm.needsExitConfirmation,
+        isFalse,
+        reason: 'one step done is not "more than one"',
+      );
+
+      vm.nextStep();
+      expect(vm.maxVisitedIndex, 2);
+      expect(vm.needsExitConfirmation, isTrue);
+
+      vm.previousStep();
+      vm.previousStep();
+      expect(vm.currentStepIndex, 0);
+      expect(
+        vm.needsExitConfirmation,
+        isTrue,
+        reason: 'going back does not undo the steps already done',
+      );
+    });
+
+    test('goToStep counts as a visit', () {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      addTearDown(vm.dispose);
+
+      vm.goToStep(2);
+
+      expect(vm.maxVisitedIndex, 2);
+      expect(vm.isOnLastStep, isTrue);
+    });
+
+    test('isOnLastStep only on the last step, never without steps', () {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      addTearDown(vm.dispose);
+      expect(vm.isOnLastStep, isFalse);
+      vm.goToStep(vm.totalSteps - 1);
+      expect(vm.isOnLastStep, isTrue);
+
+      final empty = CookingModeViewModel(
+        recipe: RecipeFactory.build(
+          id: 'empty',
+          title: 'Utan steg',
+          ingredients: ['1 ägg'],
+          instructions: const [],
+        ),
+      );
+      addTearDown(empty.dispose);
+      expect(empty.hasSteps, isFalse);
+      expect(empty.isOnLastStep, isFalse);
+      expect(empty.needsExitConfirmation, isFalse);
+    });
+  });
 }
 
 class _MockUserService extends Mock implements UserService {}

@@ -163,6 +163,14 @@ export { requestAccountDeletion } from "./account/request-account-deletion";
 // of `birthYear` + the `ageCompliant` custom claim that gates the UGC paths.
 export { verifySignupAge } from "./account/verify-signup-age";
 
+// P6-U09: backup codes for two-step verification. Hashes only, server-only
+// collection; recovery proves the password server-side before any code.
+export {
+  generateMfaBackupCodes,
+  recoverWithMfaBackupCode,
+  clearMfaBackupCodes,
+} from "./account/mfa-backup-codes";
+
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 

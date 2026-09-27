@@ -388,6 +388,10 @@ service cloud.firestore {
         //   2. legacy->1: resource.data.core.cookCount was null, new is 1
         //   3. normal bump: new == old + 1, or equal (no-op/other field edit)
         // Arbitrary values (e.g. +5, reset to 0) are rejected.
+        // Owner only, whatever the member's permission (Q6-08 = A,
+        // produktregler.md:241): a member's edit is a suggestion in
+        // recipe_suggestions, and members' ratings, comments and cook marks
+        // live in their own collections, not on this document.
         allow update: if isOwner(userId)
           && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null))
           && (
@@ -1298,8 +1302,18 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
 
+      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a
+      // member never writes someone else's recipe; a member's edit becomes a
+      // suggestion (recipe_suggestions). So only the owner updates this
+      // document: its content (`recipe`) and who takes part
+      // (`participants`, `participantIds`) alike. Participants used to be
+      // able to rewrite both. A member's live presence is the `presence`
+      // subcollection below, which stays theirs to write. The client does
+      // not send a member's write here either: RealtimeSyncService
+      // .updateResource refuses it before the network, and a member's
+      // conflict writes nothing (it becomes a suggestion or a notice).
       allow update: if isAuthenticated()
-        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds)
+        && request.auth.uid == resource.data.ownerId
         && cannotModify(['ownerId', 'createdAt']);
 
       allow delete: if isAuthenticated()
@@ -3079,6 +3093,89 @@ service cloud.firestore {
     }
 
     // ========================================
+    // RECIPE SUGGESTIONS (P5-U27b)
+    // A change to someone else's shared recipe, kept 7 days as a suggestion
+    // the owner accepts or dismisses (produktregler.md:103, :241; PQ-02 = A).
+    // Two people and no one else: the suggester and the recipe's owner read
+    // it. Only the suggester creates it, as themselves, never to their own
+    // recipe, and only for a recipe the owner has shared with them: the
+    // owner's recipe document must exist at users/{ownerId}/recipes/{recipeId}
+    // with the suggester as a key of socialData.memberPermissions, the same
+    // key the recipe's own read rule grants on. Only the owner decides it,
+    // once, by moving `status` from pending to accepted or dismissed with a
+    // server-set `decidedAt`. Nobody deletes it from a client: the TTL policy
+    // in firestore.indexes.json deletes on `expiresAt`, exactly 7 days after
+    // `createdAt` (at most 7 days and one hour from the server's clock, for a
+    // device clock that runs ahead), and the account deletion cascade erases
+    // it with either account (deleteRecipeSuggestions). No display name is
+    // stored: the owner sees a name the app resolves from suggesterId, which
+    // this rule pins to the writer, never text the suggester typed.
+    // Q6-12 = B (produktbeslut 2026-09-27b): while it is pending and still
+    // kept, the suggester may replace its content with a newer edit, under the
+    // same id: only `suggestion`, a client-set `replacedAt` and an `expiresAt`
+    // exactly 7 days after it (the same clock window as create), and only
+    // while the recipe is still shared with them. Who, which recipe, the
+    // status and `createdAt` never change, and the owner's decision stays
+    // the owner's.
+    // ========================================
+    match /recipe_suggestions/{suggestionId} {
+      allow read: if isAuthenticated()
+        && (resource.data.suggesterId == request.auth.uid
+          || resource.data.ownerId == request.auth.uid);
+
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly([
+          'recipeId', 'ownerId', 'suggesterId', 'suggestion', 'status',
+          'createdAt', 'expiresAt'
+        ])
+        && hasRequiredFields([
+          'recipeId', 'ownerId', 'suggesterId', 'suggestion', 'status',
+          'createdAt', 'expiresAt'
+        ])
+        && request.resource.data.suggesterId == request.auth.uid
+        && request.resource.data.ownerId is string
+        && request.resource.data.ownerId.size() > 0
+        && request.resource.data.ownerId != request.auth.uid
+        && request.resource.data.recipeId is string
+        && request.resource.data.recipeId.size() > 0
+        && request.resource.data.suggestion is map
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt
+          == request.resource.data.createdAt + duration.value(7, 'd')
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt
+          <= request.time + duration.value(169, 'h')
+        && request.auth.uid in get(/databases/$(database)/documents/users/$(request.resource.data.ownerId)/recipes/$(request.resource.data.recipeId)).data.get('socialData', {}).get('memberPermissions', {});
+
+      allow update: if isAuthenticated()
+        && resource.data.status == 'pending'
+        && (
+          (resource.data.ownerId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'decidedAt'])
+            && request.resource.data.status in ['accepted', 'dismissed']
+            && request.resource.data.decidedAt == request.time)
+          || (resource.data.suggesterId == request.auth.uid
+            && resource.data.expiresAt > request.time
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['suggestion', 'replacedAt', 'expiresAt'])
+            && request.resource.data.suggestion is map
+            && request.resource.data.replacedAt is timestamp
+            && request.resource.data.expiresAt is timestamp
+            && request.resource.data.expiresAt
+              == request.resource.data.replacedAt + duration.value(7, 'd')
+            && request.resource.data.expiresAt > request.time
+            && request.resource.data.expiresAt
+              <= request.time + duration.value(169, 'h')
+            && request.auth.uid in get(/databases/$(database)/documents/users/$(resource.data.ownerId)/recipes/$(resource.data.recipeId)).data.get('socialData', {}).get('memberPermissions', {}))
+        );
+
+      allow delete: if false;
+    }
+
+    // ========================================
     // ONBOARDING PROGRESS (BUT-675)
     // Resume-onboarding state: which step the user finished, when, and
     // whether onboarding has been completed. Owner-only read/write.
@@ -3835,6 +3932,18 @@ service cloud.firestore {
                           .hasOnly(['totalReports', 'lastReportedAt']));
     }
 
+
+    // P6-U09: MFA backup codes (salted scrypt hashes) and the recovery
+    // attempt counters. Server-only: every reader and writer is the Admin SDK
+    // (functions/src/account/mfa-backup-codes.ts). Stated rather than
+    // inherited from the terminal deny below, so no future wildcard can hand
+    // a client the hashes or let it reset its own lockout.
+    match /mfa_backup_codes/{userId} {
+      allow read, write: if false;
+    }
+    match /mfa_recovery_attempts/{attemptKey} {
+      allow read, write: if false;
+    }
 
     // Deny all other document access by default
     match /{document=**} {

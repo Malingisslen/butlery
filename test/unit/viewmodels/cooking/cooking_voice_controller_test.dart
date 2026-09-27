@@ -588,4 +588,41 @@ void main() {
       expect(tts.spoken.last, contains('Receptet har 3 steg'));
     });
   });
+
+  // P6-U04 / P6-U07: without notification permission the notice comes
+  // BEFORE the voice-started timer, never after (produktregler.md:423;
+  // flows-roles-budget.md:70).
+  group('timer notice before a voice-started timer', () {
+    test(
+      'beforeTimerStart runs, and finishes, before the timer starts',
+      () async {
+        controller.dispose();
+        final runningWhenAsked = <int>[];
+        var calls = 0;
+        controller = CookingVoiceController(
+          voiceCapture: capture,
+          tts: tts,
+          timers: timers,
+          cookingVm: cookingVm,
+          substitutions: substitutions,
+          beforeTimerStart: () async {
+            calls++;
+            runningWhenAsked.add(
+              timers.currentTimers.where((t) => t.isRunning).length,
+            );
+          },
+        );
+
+        await speakCommand('Sätt timer tio minuter.');
+
+        expect(calls, 1);
+        expect(
+          runningWhenAsked.single,
+          0,
+          reason: 'no timer may run before the notice has been shown',
+        );
+        expect(timers.currentTimers.where((t) => t.isRunning), hasLength(1));
+      },
+    );
+  });
 }

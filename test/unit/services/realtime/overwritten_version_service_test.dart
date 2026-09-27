@@ -120,7 +120,7 @@ void main() {
         overwrittenVersions: repo,
       );
 
-  /// Drives one conflict on [id]: a first save by the signed-in user, then a
+  /// Drives one conflict on [id]: a first save by the recipe's owner, then a
   /// remote with [remoteEditCount], then the user's second save with
   /// editCount 2. Remote wins when [remoteEditCount] > 2.
   Future<void> conflict(
@@ -135,7 +135,12 @@ void main() {
       lastEditedAt: DateTime(2026, 4, 1, 11, 59),
     );
     await seed(first);
+    // A member's save outside a conflict is refused (Q6-08 = A), so on
+    // someone else's recipe the window is opened by the owner's save.
+    final me = syncAuth.currentUserId!;
+    signIn(ownerId);
     await service.updateResource(first);
+    signIn(me);
     await seed(
       _recipe(
         id: id,

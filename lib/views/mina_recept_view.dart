@@ -7,6 +7,17 @@
 /// - Offline-first design with sync status
 /// - Multi-provider integration (RecipeListViewModel, FriendsViewModel, SharedContentCoordinatorViewModel)
 ///
+/// HEM-HERO (package 6): this view is the Hem tab. The greeting and the
+/// week's plan for tonight stand above the library (Skarmar v12 del 1
+/// #hemrecept: "hälsning + ikväll överst, receptbiblioteket direkt under"),
+/// in `lib/views/hem/`; an empty library is Hem's empty state (#hemtom).
+///
+/// Q6-16 = B (produktbeslut 2026-09-27b): Hem has no top bar. The greeting
+/// is at the top, under the offline banner, and "Välj", the ingredient
+/// search and the grid/list toggle are in the library's header row
+/// (MinaReceptLibraryHeader), which also carries selection mode (B-46 on
+/// Hem).
+///
 /// BUT-441: facade pattern. Per-recipe rendering, empty/onboarding states,
 /// discovery shelves, selection-mode AppBar, and filter-chip helpers live
 /// in `lib/views/mina_recept/`. It carries a rationale row in
@@ -19,8 +30,19 @@
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:butlery/core/keyboard/app_actions.dart'
+    show mainTabSwitchRequest;
+import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
+import 'package:butlery/views/hem/hem_empty_state.dart';
+import 'package:butlery/views/hem/hem_library_scroll.dart';
+import 'package:butlery/views/hem/hem_section.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart'
+    show LayoutScaffolds;
 
 // ViewModel integration for comprehensive state management
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
@@ -48,8 +70,6 @@ import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
@@ -80,12 +100,12 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/views/mina_recept/discovery_shelves_widget.dart';
 import 'package:butlery/views/mina_recept/empty_state_widgets.dart';
 import 'package:butlery/views/mina_recept/filter_chip_helpers.dart';
+import 'package:butlery/views/mina_recept/library_header_row.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
-///  - `btn-import-recipe`  → empty state "import" CTA
-///  - `btn-add-recipe`     → empty state "add recipe" link
+///  - `btn-add-recipe`     → empty state "Lägg till recept"
 ///  - `recipe-card-{index}` → each recipe card in the list/grid
 ///
 /// Personal recipe management view with multi-provider architecture.
@@ -100,6 +120,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
   late final RecipeListViewModel _recipeListViewModel;
   late final RecipeQueryViewModel _queryViewModel;
   late final FriendsViewModel _friendsViewModel;
+  late final HemViewModel _hemViewModel;
 
   @override
   void initState() {
@@ -107,13 +128,19 @@ class _MinaReceptViewState extends State<MinaReceptView> {
     _recipeListViewModel = ServiceLocator.get<RecipeListViewModel>();
     _queryViewModel = RecipeQueryViewModel();
     _friendsViewModel = ServiceLocator.get<FriendsViewModel>();
+    _hemViewModel = HemViewModel.fromServices();
+    // HEM-HERO: the week is often read before the library has loaded; the
+    // hero picks up its recipe (Börja laga, minutes, pantry) when it lands.
+    _recipeListViewModel.addListener(_hemViewModel.resolveRecipe);
   }
 
   @override
   void dispose() {
+    _recipeListViewModel.removeListener(_hemViewModel.resolveRecipe);
     _recipeListViewModel.dispose();
     _queryViewModel.dispose();
     _friendsViewModel.dispose();
+    _hemViewModel.dispose();
     super.dispose();
   }
 
@@ -146,6 +173,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
         ChangeNotifierProvider<RecipeQueryViewModel>.value(
           value: _queryViewModel,
         ),
+        ChangeNotifierProvider<HemViewModel>.value(value: _hemViewModel),
       ],
       child: const _MinaReceptViewContent(),
     );
@@ -175,12 +203,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   final CookingSessionStreamHolder _sessionsHolder =
       CookingSessionStreamHolder();
 
-  /// BUT-1028: scroll-offset persistence for the recipe list. The controller is
-  /// shared by both view modes via an ambient [PrimaryScrollController] (only
-  /// one of the grid/list is mounted at a time), so a single controller covers
-  /// both without threading one through the shared `responsiveListGrid` helper.
-  final ScrollController _scrollController = ScrollController();
+  /// BUT-1028: scroll-offset persistence for the recipe list. The list and
+  /// the grid attach to the PrimaryScrollController that Hem's
+  /// NestedScrollView provides (only one is mounted at a time), which links
+  /// them to the Hem header. The offset is read from their scroll
+  /// notifications and restored through the NestedScrollView's inner
+  /// controller.
+  final GlobalKey<NestedScrollViewState> _nestedScrollKey =
+      GlobalKey<NestedScrollViewState>();
   late final PersistenceService _persistence;
+
+  /// The library's last scroll offset, for the flush on teardown.
+  double? _lastLibraryOffset;
 
   /// 300ms debounce mirroring BUT-1018's filter-write debounce, so rapid
   /// scrolling doesn't burn a prefs write per frame.
@@ -195,21 +229,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   @override
   void dispose() {
     _scrollPersistTimer?.cancel();
-    _scrollController.removeListener(_onScroll);
-    // Best-effort flush of the final offset on teardown (route change / pop)
-    // before the controller detaches, so we don't lose the last scroll. The
-    // listener is removed first so no later debounce can overwrite this write.
-    if (_scrollController.hasClients) {
-      _persistence.setRecipeListScrollOffset(_scrollController.offset);
-    }
-    _scrollController.dispose();
+    // Best-effort flush of the final offset on teardown (route change / pop),
+    // so we don't lose the last scroll. The timer is cancelled first so no
+    // later debounce can overwrite this write.
+    final last = _lastLibraryOffset;
+    if (last != null) _persistence.setRecipeListScrollOffset(last);
     _sessionsHolder.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final offset = _scrollController.offset;
+  void _onLibraryScrolled(double offset) {
+    _lastLibraryOffset = offset;
     _scrollPersistTimer?.cancel();
     _scrollPersistTimer = Timer(
       const Duration(milliseconds: 300),
@@ -230,15 +260,19 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void _applyPendingRestore() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _pendingRestoreOffset == null) return;
+      final inner = _nestedScrollKey.currentState?.innerController;
       final notReady =
-          !_scrollController.hasClients ||
-          _scrollController.position.maxScrollExtent <= 0;
+          inner == null ||
+          inner.positions.length != 1 ||
+          inner.position.maxScrollExtent <= 0;
       if (notReady) {
         if (_restoreAttempts++ < 30) _applyPendingRestore();
         return;
       }
-      final max = _scrollController.position.maxScrollExtent;
-      _scrollController.jumpTo(_pendingRestoreOffset!.clamp(0.0, max));
+      final max = inner.position.maxScrollExtent;
+      // The inner position's jumpTo goes through the NestedScrollView, which
+      // scrolls the Hem header out first.
+      inner.jumpTo(_pendingRestoreOffset!.clamp(0.0, max));
       _pendingRestoreOffset = null;
     });
   }
@@ -254,7 +288,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     // BUT-1028: scroll-offset persistence.
     _persistence = ServiceLocator.get<PersistenceService>();
-    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -264,6 +297,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         context.read<PersonalTagViewModel>().initialize();
         // Load search history for recent search chips
         context.read<RecipeListViewModel>().loadSearchHistory();
+        // HEM-HERO: the week's plan for the hero card.
+        context.read<HemViewModel>().load();
         // BUT-1028: restore the previous scroll position (best-effort).
         _restoreScrollOffset();
       }
@@ -369,111 +404,165 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
     final personalTags = context.watch<PersonalTagViewModel>().tags;
     final recipeCount = viewModel.recipes.length;
+    // Row 4 of produktregler.md:271: an empty library is Hem's empty state.
+    final libraryEmpty =
+        !viewModel.isLoading &&
+        !viewModel.hasError &&
+        viewModel.recipes.isEmpty &&
+        viewModel.searchQuery.isEmpty &&
+        !viewModel.hasActiveFilters;
+    final firstName = context.select<UserService, String?>(
+      (svc) => hemFirstName(svc.currentUserProfile?.displayName),
+    );
 
-    // Mönster 1 · Rotnivå (Komponentark v1:60-68): no back arrow, the title
-    // in Display compact, the count as the secondary line, and no decorative
-    // illustration (the four patterns are exhaustive, butlery_top_bar.dart).
-    // Selection mode is the same bar with other content (produktregler.md:873).
-    final countLine = context.l10n.recipeCountBadge(recipeCount);
-    final PreferredSizeWidget appBar = viewModel.isSelectionMode
-        ? buildMinaReceptSelectionAppBar(
-            context,
-            viewModel,
-            secondaryLine: countLine,
-          )
-        : ButleryTopBar.rot(
-            title: context.l10n.minaReceptHeaderTitle,
-            secondaryLine: countLine,
-            trailing: const RecipeListAvatarBadge(),
-            actions: minaReceptRootActions(context, viewModel),
-          );
-
+    // Q6-16 = B (produktbeslut 2026-09-27b, after the prototype): no top
+    // bar. The profile avatar it carried stays on Mer (MoreView), and the
+    // offline icon's news is the offline banner, which stays at the top
+    // (P3). Välj, the ingredient search, the toggle and selection mode are
+    // in the library's header row (_buildLibrary).
     return Scaffold(
-      appBar: appBar,
       body: FocusTraversalGroup(
-        child: Column(
-          children: [
-            LayoutComponents.offlineIndicator(),
-            SyncIndicator(
-              hasPendingWrites: viewModel.hasPendingWrites,
-              isFromCache: viewModel.isFromCache,
-            ),
-            // BUT-407: live online-members presence bar (union across groups).
-            const FamilyPresenceBar(),
-            // BUT-408: live cooking session card for the user's friend groups.
-            _buildCookingSessionCard(),
-            if (!viewModel.isSelectionMode) ...[
-              SearchFilterWidget(
-                searchQuery: viewModel.searchQuery,
-                onSearchChanged: viewModel.updateSearch,
-                searchHint: context.l10n.recipeSearchHint,
-                // Spoken search query lands as if typed (voice plan Phase 2a).
-                enableVoiceInput: true,
-                activeTimeFilters: viewModel.activeTimeFilters,
-                activeMealTypeFilters: viewModel.activeMealTypeFilters,
-                activeRatingFilters: viewModel.activeRatingFilters,
-                activeAllergenFilters: viewModel.activeAllergenFilters,
-                activeDietaryFilters: viewModel.activeDietaryFilters,
-                onTimeFilterToggle: viewModel.toggleTimeFilter,
-                onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
-                onRatingFilterToggle: viewModel.toggleRatingFilter,
-                onAllergenFilterToggle: viewModel.toggleAllergenFilter,
-                onDietaryFilterToggle: viewModel.toggleDietaryFilter,
-                personalTagIds: personalTags,
-                activePersonalTagFilters: viewModel.activePersonalTagFilters,
-                excludedPersonalTagFilters:
-                    viewModel.excludedPersonalTagFilters,
-                onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
-                onExcludedPersonalTagFilterToggle:
-                    viewModel.toggleExcludedPersonalTagFilter,
-                onManagePersonalTags: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PersonalTagsView(),
-                    ),
-                  );
-                },
-                // BUT-987: deep-link to allergen/dietary prefs from the filter
-                // panel — the prefs drive the allergen/dietary filters above.
-                onManageFoodPreferences: () =>
-                    Navigator.of(context).pushNamed(Routes.settingsAllergens),
-                searchHistory: viewModel.searchHistory,
-                onHistoryTap: (query) => viewModel.updateSearch(query),
-                onHistoryRemove: viewModel.removeFromSearchHistory,
-                showFilters: _showFilters,
-                onToggleFilters: () =>
-                    setState(() => _showFilters = !_showFilters),
-                hasActiveFilters: viewModel.hasActiveFilters,
-                onClearAllFilters: viewModel.clearAllFilters,
-                resultCount: recipeCount,
-                showStats: false,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              SyncIndicator(
+                hasPendingWrites: viewModel.hasPendingWrites,
+                isFromCache: viewModel.isFromCache,
               ),
-              Selector<UserService, Set<String>>(
-                selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
-                builder: (context, trackedAllergens, _) => QuickFilterChips(
-                  options: [
-                    ...QuickFilterChips.getDefaultRecipeFilters(context),
-                    ...QuickFilterChips.getAllergenFilters(trackedAllergens),
-                  ],
-                  selectedIds: getMinaReceptQuickFilterIds(viewModel),
-                  onFilterToggle: (filterId) =>
-                      handleMinaReceptQuickFilterToggle(
-                        context,
-                        viewModel,
-                        filterId,
-                      ),
-                  trailing: MinaReceptSortChip(viewModel: viewModel),
+              Expanded(
+                // HEM-HERO: the greeting and tonight scroll away above the
+                // library, so a large text size never squeezes the list out.
+                child: HemLibraryScroll(
+                  nestedKey: _nestedScrollKey,
+                  onLibraryScrolled: _onLibraryScrolled,
+                  header: viewModel.isSelectionMode
+                      ? null
+                      : HemSection(
+                          viewModel: context.read<HemViewModel>(),
+                          now: clock.now(),
+                          firstName: firstName,
+                          libraryEmpty: libraryEmpty,
+                          isOnline: isOnline,
+                          onStartCooking: (recipe) => Navigator.of(
+                            context,
+                          ).pushNamed(Routes.cookingMode, arguments: recipe),
+                          onOpenMenu: () => mainTabSwitchRequest.value =
+                              LayoutScaffolds.menuTab,
+                        ),
+                  body: _buildLibrary(
+                    context,
+                    viewModel: viewModel,
+                    isOnline: isOnline,
+                    allergenPrefs: allergenPrefs,
+                    personalTags: personalTags,
+                    recipeCount: recipeCount,
+                    libraryEmpty: libraryEmpty,
+                  ),
                 ),
               ),
-              // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
-              // gesture; self-dismisses once per device.
-              const SwipeHintBanner(),
             ],
-            Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  /// The library under the Hem section: presence, the cooking card, search
+  /// and filters, and the recipes.
+  Widget _buildLibrary(
+    BuildContext context, {
+    required RecipeListViewModel viewModel,
+    required bool isOnline,
+    required UserAllergenPreferences allergenPrefs,
+    required List<PersonalTag> personalTags,
+    required int recipeCount,
+    required bool libraryEmpty,
+  }) {
+    return Column(
+      children: [
+        // Q6-16 = B: the library's own header row under the Ikväll band,
+        // "Dina recept · N" with Välj, the ingredient search and the
+        // toggle; in selection mode the counter and Avbryt (B-46 on Hem).
+        // #hemtom draws no library header over an empty library.
+        if (viewModel.isSelectionMode || !libraryEmpty)
+          MinaReceptLibraryHeader(
+            viewModel: viewModel,
+            actions: minaReceptRootActions(context, viewModel),
+          ),
+        // BUT-407: live online-members presence bar (union across groups).
+        const FamilyPresenceBar(),
+        // BUT-408: live cooking session card for the user's friend groups.
+        _buildCookingSessionCard(),
+        // #hemtom draws no search or filters over an empty library.
+        if (!viewModel.isSelectionMode && !libraryEmpty) ...[
+          SearchFilterWidget(
+            searchQuery: viewModel.searchQuery,
+            onSearchChanged: viewModel.updateSearch,
+            searchHint: context.l10n.recipeSearchHint,
+            // Spoken search query lands as if typed (voice plan Phase 2a).
+            enableVoiceInput: true,
+            activeTimeFilters: viewModel.activeTimeFilters,
+            activeMealTypeFilters: viewModel.activeMealTypeFilters,
+            activeRatingFilters: viewModel.activeRatingFilters,
+            activeAllergenFilters: viewModel.activeAllergenFilters,
+            activeDietaryFilters: viewModel.activeDietaryFilters,
+            onTimeFilterToggle: viewModel.toggleTimeFilter,
+            onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
+            onRatingFilterToggle: viewModel.toggleRatingFilter,
+            onAllergenFilterToggle: viewModel.toggleAllergenFilter,
+            onDietaryFilterToggle: viewModel.toggleDietaryFilter,
+            personalTagIds: personalTags,
+            activePersonalTagFilters: viewModel.activePersonalTagFilters,
+            excludedPersonalTagFilters: viewModel.excludedPersonalTagFilters,
+            onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
+            onExcludedPersonalTagFilterToggle:
+                viewModel.toggleExcludedPersonalTagFilter,
+            onManagePersonalTags: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PersonalTagsView(),
+                ),
+              );
+            },
+            // BUT-987: deep-link to allergen/dietary prefs from the filter
+            // panel — the prefs drive the allergen/dietary filters above.
+            onManageFoodPreferences: () =>
+                Navigator.of(context).pushNamed(Routes.settingsAllergens),
+            searchHistory: viewModel.searchHistory,
+            onHistoryTap: (query) => viewModel.updateSearch(query),
+            onHistoryRemove: viewModel.removeFromSearchHistory,
+            showFilters: _showFilters,
+            onToggleFilters: () => setState(() => _showFilters = !_showFilters),
+            hasActiveFilters: viewModel.hasActiveFilters,
+            onClearAllFilters: viewModel.clearAllFilters,
+            resultCount: recipeCount,
+            showStats: false,
+          ),
+          Selector<UserService, Set<String>>(
+            selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
+            builder: (context, trackedAllergens, _) => QuickFilterChips(
+              options: [
+                ...QuickFilterChips.getDefaultRecipeFilters(context),
+                ...QuickFilterChips.getAllergenFilters(trackedAllergens),
+              ],
+              selectedIds: getMinaReceptQuickFilterIds(viewModel),
+              onFilterToggle: (filterId) => handleMinaReceptQuickFilterToggle(
+                context,
+                viewModel,
+                filterId,
+              ),
+              trailing: MinaReceptSortChip(viewModel: viewModel),
+            ),
+          ),
+          // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
+          // gesture; self-dismisses once per device.
+          const SwipeHintBanner(),
+        ],
+        Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
+      ],
     );
   }
 
@@ -601,7 +690,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     if (recipes.isEmpty) {
       return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-          ? const MinaReceptEmptyState()
+          ? const HemEmptyState()
           : StateWidget.noSearchResults(
               onAction: viewModel.searchQuery.isNotEmpty
                   ? () => viewModel.updateSearch('')
@@ -614,6 +703,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     return RefreshIndicator(
       onRefresh: () async {
+        unawaited(context.read<HemViewModel>().load());
         if (isOnline) {
           await _syncWithOnline();
         } else {
@@ -650,41 +740,41 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
           ],
           Expanded(
-            // BUT-1028: ambient controller so both grid and list modes attach
-            // to the same ScrollController for offset persistence/restore.
-            child: PrimaryScrollController(
-              controller: _scrollController,
-              child: viewModel.isGridView
-                  ? _buildRecipeGrid(
-                      context,
-                      viewModel: viewModel,
-                      recipes: recipes,
-                      allergenPrefs: allergenPrefs,
-                    )
-                  : KeyedSubtree(
-                      key: const ValueKey('recipe-list-scrollable'),
-                      child: LayoutComponents.responsiveListGrid(
-                        items: recipes,
-                        tabletColumns: 2,
-                        desktopColumns: 3,
-                        spacing: AppDimensions.responsiveGridSpacing(context),
-                        padding: AppDimensions.responsiveContentPadding(
-                          context,
-                        ),
-                        shrinkWrap: false,
-                        gridChildAspectRatio:
-                            AppDimensions.recipeGridAspectRatio(context),
-                        animate: true,
-                        itemBuilder: (context, recipe) => MinaReceptRecipeCard(
-                          viewModel: viewModel,
-                          recipe: recipe,
-                          allergenPrefs: allergenPrefs,
-                          onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
-                          index: recipes.indexOf(recipe),
-                        ),
+            // HEM-HERO / BUT-1028: no controller of its own. Both grid and
+            // list attach to the PrimaryScrollController of Hem's
+            // NestedScrollView, which links them to the Hem header; the offset
+            // is persisted from their notifications (HemLibraryScroll).
+            child: viewModel.isGridView
+                ? _buildRecipeGrid(
+                    context,
+                    viewModel: viewModel,
+                    recipes: recipes,
+                    allergenPrefs: allergenPrefs,
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('recipe-list-scrollable'),
+                    child: LayoutComponents.responsiveListGrid(
+                      items: recipes,
+                      tabletColumns: 2,
+                      desktopColumns: 3,
+                      spacing: AppDimensions.responsiveGridSpacing(context),
+                      padding: AppDimensions.responsiveContentPadding(
+                        context,
+                      ),
+                      shrinkWrap: false,
+                      gridChildAspectRatio: AppDimensions.recipeGridAspectRatio(
+                        context,
+                      ),
+                      animate: true,
+                      itemBuilder: (context, recipe) => MinaReceptRecipeCard(
+                        viewModel: viewModel,
+                        recipe: recipe,
+                        allergenPrefs: allergenPrefs,
+                        onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
+                        index: recipes.indexOf(recipe),
                       ),
                     ),
-            ),
+                  ),
           ),
           if (viewModel.canLoadMore)
             Padding(
@@ -729,19 +819,27 @@ class MinaReceptSectionError extends StatelessWidget {
   }
 }
 
-/// The recipe list's top-bar actions outside selection mode.
+/// The library header row's actions outside selection mode (Q6-16 = B:
+/// they were the top bar's, and Hem has none).
 ///
 /// "Välj" comes first, as on the other five surfaces (B-46;
 /// produktregler.md:870-874; Skarmar v12 etapp 9 #flervalingang), and is
-/// left out under two recipes.
+/// left out under two recipes. Then the ingredient search and the grid/list
+/// toggle. The top bar's offline icon is not carried over: the offline
+/// banner at the top of Hem says the same.
 @visibleForTesting
 List<Widget> minaReceptRootActions(
   BuildContext context,
   RecipeListViewModel viewModel,
 ) {
   return [
-    // Long-press stays as a shortcut, never the only way in.
-    ...buildMinaReceptSelectEntry(context, viewModel),
+    // Long-press stays as a shortcut, never the only way in. Outside a bar
+    // the row gives no colour, so Välj takes text.primary itself.
+    ...buildMinaReceptSelectEntry(
+      context,
+      viewModel,
+      foregroundColor: Theme.of(context).colorScheme.onSurface,
+    ),
     // BUT-977: surface the pantry-match IngredientSearchView power
     // feature (previously only reachable via Cmd+K). Distinct
     // kitchen icon so it doesn't read as the in-list text filter.
@@ -759,6 +857,5 @@ List<Widget> minaReceptRootActions(
           : context.l10n.viewModeGrid,
       onPressed: viewModel.toggleViewMode,
     ),
-    LayoutComponents.offlineStatusIcon(),
   ];
 }

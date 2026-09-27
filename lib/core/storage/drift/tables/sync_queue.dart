@@ -62,6 +62,20 @@ class SyncQueueEntries extends Table {
   /// (produktregler.md:192).
   BoolColumn get permanentlyFailed =>
       boolean().withDefault(const Constant(false))();
+
+  // ── Schema 4 (produktregler.md:188, the retry schedule) ─────────────────
+
+  /// When the queue may send this entry again after a failed attempt, or
+  /// null when it has never failed (send at once). "Exponentiell backoff
+  /// 2 s → 4 s → 8 s → 30 s → 2 min → 10 min, med jitter"
+  /// (produktregler.md:188); the view shows it as "nästa försök om N s"
+  /// (Skarmar v12 del 4 #synkko).
+  DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+
+  /// When the first attempt failed, or null when none has. "Max 24 h,
+  /// därefter permanent fel" (produktregler.md:188) counts from here: a
+  /// phone that is offline for a weekend has not been retrying.
+  DateTimeColumn get firstFailedAt => dateTime().nullable()();
 }
 
 /// Entity types a [SyncQueueEntries] row can carry.

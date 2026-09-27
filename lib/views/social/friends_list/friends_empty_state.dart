@@ -10,9 +10,10 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 ///
 /// Replaces the generic icon/title/subtitle state with a branded surface
 /// that explains *why* friends matter in a recipe app and gives two clear
-/// entry points. Mirrors [MinaReceptEmptyState] so the social-onboarding
-/// first impression matches the recipe-onboarding one (same illustration
-/// language, headline/subtitle rhythm, primary + secondary CTA stack).
+/// entry points. Mirrors the recipe library's former empty state so the
+/// social-onboarding first impression matches the recipe-onboarding one
+/// (same illustration language, headline/subtitle rhythm, primary +
+/// secondary CTA stack).
 class FriendsEmptyState extends StatelessWidget {
   const FriendsEmptyState({
     super.key,

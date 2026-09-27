@@ -40,3 +40,35 @@ class MfaError {
 
   const MfaError({required this.code, this.message});
 }
+
+/// The number of one-time backup codes a user gets when two-step
+/// verification is switched on (produktregler.md:748).
+const int mfaBackupCodeCount = 10;
+
+/// How a backup-code recovery ended.
+enum MfaRecoveryOutcome {
+  /// The phone factor is gone; sign in again with the password.
+  recovered,
+
+  /// The password or the code did not match, or the account has no second
+  /// factor, or its code lock is on. Deliberately one outcome: the server
+  /// gives the same answer for all of them, so it confirms no password.
+  rejected,
+
+  /// Too many attempts from this device or network; try again later.
+  locked,
+
+  /// The server could not be reached or is not set up.
+  unavailable,
+}
+
+/// The last two digits of a masked phone hint, for "•• 47"
+/// (Skarmar v12 etapp 3 #authmfa). Null when the hint has fewer than two
+/// digits. Firebase already masks the number in a resolver's hints; the app
+/// never knows the whole number.
+String? maskedPhoneTail(String? hint) {
+  if (hint == null) return null;
+  final digits = hint.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.length < 2) return null;
+  return digits.substring(digits.length - 2);
+}

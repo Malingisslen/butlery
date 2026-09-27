@@ -374,9 +374,18 @@ void main() {
       (tester) async {
         final picker = ServiceLocator.get<ImagePickerService>();
         final storage = ServiceLocator.get<StorageService>();
+        // P6-U07: the composer asks through the typed outcome.
         when(
-          () => picker.pickMultipleImages(maxImages: any(named: 'maxImages')),
-        ).thenAnswer((_) async => [tempImage]);
+          () => picker.pickMultipleImagesWithOutcome(
+            maxImages: any(named: 'maxImages'),
+            rationale: any(named: 'rationale'),
+          ),
+        ).thenAnswer(
+          (_) async => ImagePickOutcome(
+            permission: OsPermissionOutcome.granted,
+            files: [tempImage],
+          ),
+        );
         // Upload returns null → the composer must abort the post.
         when(
           () => storage.uploadCommentImage(
@@ -420,9 +429,18 @@ void main() {
       'cap: attach button disappears once maxImageUrls images are selected',
       (tester) async {
         final picker = ServiceLocator.get<ImagePickerService>();
+        // P6-U07: the composer asks through the typed outcome.
         when(
-          () => picker.pickMultipleImages(maxImages: any(named: 'maxImages')),
-        ).thenAnswer((_) async => [tempImage]);
+          () => picker.pickMultipleImagesWithOutcome(
+            maxImages: any(named: 'maxImages'),
+            rationale: any(named: 'rationale'),
+          ),
+        ).thenAnswer(
+          (_) async => ImagePickOutcome(
+            permission: OsPermissionOutcome.granted,
+            files: [tempImage],
+          ),
+        );
 
         await tester.pumpWidget(_wrap(buildWidget('r1')));
         await tester.pumpAndSettle();
@@ -451,9 +469,18 @@ void main() {
     testWidgets('upload success: posts with the uploaded URLs', (tester) async {
       final picker = ServiceLocator.get<ImagePickerService>();
       final storage = ServiceLocator.get<StorageService>();
+      // P6-U07: the composer asks through the typed outcome.
       when(
-        () => picker.pickMultipleImages(maxImages: any(named: 'maxImages')),
-      ).thenAnswer((_) async => [tempImage]);
+        () => picker.pickMultipleImagesWithOutcome(
+          maxImages: any(named: 'maxImages'),
+          rationale: any(named: 'rationale'),
+        ),
+      ).thenAnswer(
+        (_) async => ImagePickOutcome(
+          permission: OsPermissionOutcome.granted,
+          files: [tempImage],
+        ),
+      );
       when(
         () => storage.uploadCommentImage(
           any(),

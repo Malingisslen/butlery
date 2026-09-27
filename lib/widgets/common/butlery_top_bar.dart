@@ -32,6 +32,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 
 /// Vilket av Komponentarkets toppfältsmönster ett [ButleryTopBar] ritar.
 enum ButleryTopBarPattern {
@@ -367,7 +368,17 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(width: _leadingGap),
         ],
         Expanded(child: titleColumn),
-        if (trailingWidgets.isNotEmpty) ...[
+        // P4-U19, PQ-04 = B: a root bar puts the queue counter in front of
+        // its actions, only while something needs the user
+        // (flows-roles-budget.md:111; produktregler.md:190).
+        if (_isRoot)
+          QueueAwareActions(
+            rowKey: const ValueKey('butleryTopBar.actions'),
+            gap: actionGap,
+            wrap: (action) => _Hitbox(child: action),
+            children: trailingWidgets,
+          )
+        else if (trailingWidgets.isNotEmpty) ...[
           const SizedBox(width: actionGap),
           Row(
             key: const ValueKey('butleryTopBar.actions'),

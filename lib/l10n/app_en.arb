@@ -3044,7 +3044,7 @@
   "consentGdprDescription": "Under GDPR you have full control over how we process your personal data. You can change or revoke your consents at any time.",
   "consentLastUpdated": "Last updated",
   "consentRequiredTitle": "Required consents",
-  "consentRequiredDescription": "These consents are required for the app to function and cannot be disabled.",
+  "consentRequiredDescription": "These cannot be switched off — without them there is no service to say yes or no to. If you want to leave entirely, the way is to delete your account, not a switch here.",
   "consentBasicServices": "Basic services",
   "consentBasicServicesDescription": "Authentication, security and basic functionality.",
   "consentDataProcessing": "Data processing",
@@ -4103,7 +4103,7 @@
   "importPasteLinkOrText": "Paste link or text here...",
   "importPasteText": "Paste text",
   "importAddManually": "Add manually",
-  "importPhotoDescription": "Take a picture of a recipe or choose from gallery to import text automatically",
+  "importPhotoDescription": "Photograph the recipe or choose photos from your library, one page at a time. The text is read when you tap Read.",
   "importPhotoImport": "Photo import",
   "importProceedToEdit": "Proceed to edit",
   "importMultipleRecipesFound": "We found {count} recipes",
@@ -5887,8 +5887,8 @@
   "messagingCancelReply": "Cancel reply",
   "messagingImagePreview": "Image",
   "navigationRecipes": "recipes",
-  "navigationMenu": "menu",
-  "navigationShopping": "shopping",
+  "navigationMenu": "Menu",
+  "navigationShopping": "Shopping",
   "navigationAddNew": "add new",
   "recipeRecipe": "Recipe",
   "recipeSharedFromApp": "Shared from another app",
@@ -12072,7 +12072,7 @@
       }
     }
   },
-  "deepLinkExpired": "This link has expired and can no longer be opened.",
+  "deepLinkExpired": "This link is no longer valid. Ask the person who shared it for a new one.",
   "deepLinkUnavailable": "This content is no longer available.",
   "familyDislikesSectionTitle": "disliked ingredients",
   "familyDislikesNote": "Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies.",
@@ -13000,5 +13000,1153 @@
   "reportDialogTitleRecipe": "Report this recipe",
   "reportDialogGuidelinesNoteSuffix": "— the version you see now is the one we judge by.",
   "reportDialogIntro": "Tell us what is wrong. A person on the team reads your report.",
-  "reportDescriptionRequiredHelper": "Required when you choose Other."
+  "reportDescriptionRequiredHelper": "Required when you choose Other.",
+  "menuNoMatchTitle": "No recipes match",
+  "menuNoMatchBody": "{count, plural, =1{The description gives no match for your only recipe.} other{The description gives no matches among your {count} recipes.}} Change or drop a requirement and we will find suggestions.",
+  "menuNoMatchConstraints": "Requirements: {constraints}",
+  "menuNoMatchEditPrompt": "Change the description",
+  "menuNoMatchPlanYourself": "Plan the days yourself",
+  "menuGenerateOfflineReason": "No connection, so the week cannot be planned now. You can still change the calendar.",
+  "menuGenerateOfflineStopped": "The connection dropped, so the suggestion was not placed. The week is unchanged.",
+  "shoppingMergeTitle": "To the shopping list",
+  "shoppingMergeItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "shoppingMergeSummary": "{recipes, plural, =1{1 dish gives} other{{recipes} dishes give}} {rows, plural, =1{1 line} other{{rows} lines}}. After merging that is {items}.",
+  "shoppingMergeStatMerged": "merged",
+  "shoppingMergeStatConverted": "converted",
+  "shoppingMergeStatAtHome": "at home",
+  "shoppingMergeShowDetails": "Show details",
+  "shoppingMergeHideDetails": "Hide details",
+  "shoppingMergeShowDetailsA11y": "Show details about the merge",
+  "shoppingMergeHideDetailsA11y": "Hide details about the merge",
+  "shoppingMergeDuplicatesTitle": "Merge duplicates",
+  "shoppingMergeDuplicatesBody": "Yellow onion from three recipes becomes one line with the amounts added up. The line says “3 recipes”.",
+  "shoppingMergeConvertTitle": "Convert units",
+  "shoppingMergeConvertBody": "2 dl + 100 ml becomes 3 dl. Volume and weight are never converted into each other — they stay two lines.",
+  "shoppingMergePantryTitle": "Subtract pantry items",
+  "shoppingMergePantryBody": "{count, plural, =0{None of the items are at home.} =1{1 item is at home.} other{{count} items are at home.}} An unknown amount gives no deduction — the item is added marked “Maybe at home”.",
+  "shoppingMergePantryCovered": "At home in full: {names}",
+  "shoppingMergePantryUnavailable": "The pantry could not be read, so the list is made without pantry deduction.",
+  "shoppingMergeReplaceTitle": "Replace the list instead of adding",
+  "shoppingMergeReplaceBody": "Items you added yourself are always kept.",
+  "shoppingMergeReplaceUnavailable": "This list was made before the app kept the week's items apart from your own, so it cannot be replaced. The week's items are added.",
+  "shoppingMergeAdd": "{count, plural, =1{Add 1 item} other{Add {count} items}}",
+  "shoppingMergeReplaceAction": "{count, plural, =1{Replace with 1 item} other{Replace with {count} items}}",
+  "shoppingMergeAdded": "{count, plural, =1{1 item was added to {list}.} other{{count} items were added to {list}.}}",
+  "shoppingMergeReplaced": "{list} now has {count, plural, =1{1 item} other{{count} items}} from the week. Your own items are still there.",
+  "shoppingMergeUndoFailed": "The undo could not be completed",
+  "shoppingMergeUndoFailedKept": "The items are still on the list.",
+  "shoppingMergeRowRecipes": "{count} recipes",
+  "shoppingMergeMarkMaybeHome": "Maybe at home",
+  "shoppingMergeMarkCheckDate": "Check the date",
+  "signOutPendingTitle": "{count, plural, =1{1 change has not been saved} other{{count} changes have not been saved}}",
+  "@signOutPendingTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingBody": "If you sign out now, they are lost. Butlery is happy to wait until you are online again.",
+  "signOutPendingRecipes": "{count, plural, =1{Recipes · 1 change} other{Recipes · {count} changes}}",
+  "@signOutPendingRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingImages": "{count, plural, =1{Images · 1 waiting to upload} other{Images · {count} waiting to upload}}",
+  "@signOutPendingImages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingWait": "Wait for sync",
+  "signOutPendingDiscard": "Sign out and discard the changes",
+  "sessionPendingChangesIntro": "{count, plural, =1{1 change has not been saved yet:} other{{count} changes have not been saved yet:}}",
+  "@sessionPendingChangesIntro": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndedBackgroundTitle": "You were signed out while the app lay still.",
+  "sessionEndedBackgroundReason": "That happens after 45 minutes without activity, and it is meant to.",
+  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is still on the phone and is sent as soon as you are back in — nothing you did is lost.} other{{count} changes are still on the phone and are sent as soon as you are back in — nothing you did is lost.}}",
+  "@sessionEndedBackgroundPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftDays": "{count, plural, =1{kept for 1 more day} other{kept for {count} more days}}",
+  "@draftTimeLeftDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftTimeLeftHours": "{count, plural, =1{kept for 1 more hour} other{kept for {count} more hours}}",
+  "@draftTimeLeftHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileDeleteNoRecallWindow": "There is no grace period. When the deletion is done, the account is gone and cannot be restored.",
+  "profileDeleteReasonLabel": "Why are you deleting your account?",
+  "profileDeleteReasonHint": "For example: no longer using the app",
+  "profileDeleteReasonHelp": "The reason goes into the audit record. It is the only trace left afterwards, which is why we ask before.",
+  "accountDeletionWaitNotice": "This can take up to nine minutes. Do not close the app — the deletion continues on the server, but you get no receipt if you leave.",
+  "accountDeletionReauthTitle": "Confirm it is you",
+  "accountDeletionReauthBody": "For security, deleting an account needs a sign-in that is at most five minutes old. Sign in again and the deletion continues where it was.",
+  "accountDeletionReauthCancel": "Cancel the deletion",
+  "accountDeletionReauthConfirm": "Sign in again",
+  "accountDeletionPartialTitle": "The account is partly deleted",
+  "accountDeletionPartialHeading": "{count, plural, =1{The account is gone — one part remains} other{The account is gone — {count} parts remain}}",
+  "@accountDeletionPartialHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialBody": "{count, plural, =1{Your sign-in is deleted. One collection could not be removed and remains with us.} other{Your sign-in is deleted. {count} collections could not be removed and remain with us.}}",
+  "@accountDeletionPartialBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeletionPartialAuditIdLabel": "Audit id",
+  "accountDeletionPartialNoAuditId": "There is no audit id. Mention the date and time of the deletion when you contact support.",
+  "accountDeletionPartialContact": "Contact support with the id",
+  "accountDeletionPartialEmailSubject": "Partly deleted account {auditId}",
+  "@accountDeletionPartialEmailSubject": {
+    "placeholders": {
+      "auditId": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionPartialNoEmail": "The email app could not be opened. Write to integritet@butlery.se and include the audit id.",
+  "dataExportMemoryNotice": "Save the file before you leave this page. It only lives in the phone's memory — if you go back, you have to export again.",
+  "dataExportNetworkTitle": "The export was interrupted",
+  "dataExportNetworkBody": "The connection dropped while we gathered your data. Nothing on your account has changed.",
+  "dataExportNoPartialFile": "We do not offer a partial file. Whoever receives your data cannot tell what is missing from it.",
+  "dataExportSignedOutTitle": "Your sign-in has expired",
+  "dataExportSignedOutBody": "Sign in again to get your data. Nothing on your account has changed.",
+  "dataExportSignIn": "Sign in again",
+  "dataExportDeniedTitle": "The export was refused",
+  "dataExportDeniedBody": "The fault is ours, not yours, and trying again will not help right now. Nothing on your account has changed.",
+  "dataExportNotNow": "Not now",
+  "consentAiProcessing": "AI interpretation",
+  "consentAiProcessingDescription": "Reads recipes from links, text and photos. Without it, imports are rougher.",
+  "consentRenewalChangedTitle": "{count, plural, =1{We have changed one thing} other{We have changed {count} things}}",
+  "@consentRenewalChangedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalSinceVersion": "You agreed to version {version} on {date}. This is new since then.",
+  "@consentRenewalSinceVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentRenewalUnchanged": "{count, plural, =1{The other purpose is unchanged and your choice stands.} other{The other {count} purposes are unchanged and your choices stand.}}",
+  "@consentRenewalUnchanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "consentRenewalAccept": "I agree",
+  "consentRenewalChooseMyself": "Let me choose",
+  "consentRenewalNotNow": "Not now",
+  "consentRenewalNotNowNote": "If you choose Not now, everything continues as before. Nothing is switched off because you have not answered.",
+  "consentChangeAiProcessingAddedTitle": "AI interpretation is a new purpose",
+  "consentChangeAiProcessingAddedBody": "Reads recipes from links, text and photos. It stays off until you switch it on yourself under Let me choose.",
+  "consentRenewalSaveFailed": "Your consent could not be saved. Your earlier choices stand.",
+  "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in.",
+  "mfaChallengeTitle": "Two-step verification",
+  "mfaChallengeHeading": "Enter the code",
+  "mfaChallengeSentTo": "We sent a six-digit code to the number ending in {tail}. If your phone fills it in by itself, we let you in without you doing anything.",
+  "@mfaChallengeSentTo": {
+    "placeholders": {
+      "tail": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaChallengeSentUnknown": "We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.",
+  "mfaChallengeTimeLeft": "The code is valid for {total} seconds. {left} s left.",
+  "@mfaChallengeTimeLeft": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "mfaChallengeCodeGone": "The code has expired. Send a new code.",
+  "mfaChallengeResend": "Send a new code",
+  "mfaChallengeWrongCode": "The code does not match. Check the digits or send a new code.",
+  "mfaChallengeExpired": "The code has expired. Send a new code.",
+  "mfaChallengeFailed": "The sign-in could not be completed. Send a new code.",
+  "mfaBackupCodeUse": "Use a backup code",
+  "mfaBackupCodeHeading": "Sign in with a backup code",
+  "mfaBackupCodeExplanation": "A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.",
+  "mfaBackupCodeLabel": "Backup code",
+  "mfaBackupCodeEnter": "Enter one of your ten backup codes.",
+  "mfaBackupCodeSubmit": "Sign in with the backup code",
+  "mfaBackupCodeBack": "Back to the text message code",
+  "mfaBackupCodeRejected": "The password or the backup code does not match. A used code cannot be used again.",
+  "mfaBackupCodeLocked": "Too many backup code attempts. Wait an hour before you try again.",
+  "mfaBackupCodeUnavailable": "The backup code could not be checked right now. Nothing on your account has changed.",
+  "mfaBackupCodeRecovered": "Two-step verification is off. Add a phone number again under Account security.",
+  "mfaBackupCodesTitle": "Ten backup codes",
+  "mfaBackupCodesBody": "Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.",
+  "mfaBackupCodesCopy": "Copy the codes",
+  "mfaBackupCodesCopied": "The codes are copied.",
+  "mfaBackupCodesSaved": "I have saved the codes",
+  "mfaBackupCodesContinue": "Continue to the phone number",
+  "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.",
+  "permAllow": "Allow",
+  "permNotNow": "Not now",
+  "permAskAgain": "Ask again",
+  "permOpenSettings": "Open settings",
+  "permImportCameraTitle": "Photograph the recipe",
+  "permImportCameraBody": "I read the text in the photo and fill in the recipe for you. The photo is sent only to read the text.",
+  "permImportPhotosTitle": "Choose photos of the recipe",
+  "permImportPhotosBody": "I read the text in the photos you choose and fill in the recipe for you.",
+  "permImportConsequence": "If you say no, you can still type the recipe or paste a link.",
+  "permCameraTitle": "Take a photo with the camera",
+  "permCameraBody": "The camera is only used when you take a photo yourself.",
+  "permPhotosTitle": "Choose photos from your library",
+  "permPhotosBody": "Butlery only reads the photos you choose.",
+  "permCameraDenied": "The camera is not allowed, so the recipe cannot be photographed.",
+  "permPhotosDenied": "The photo library is not allowed, so the recipe cannot be read from a photo.",
+  "permCameraPermanentlyDenied": "The camera is switched off for Butlery in the phone's settings.",
+  "permPhotosPermanentlyDenied": "The photo library is switched off for Butlery in the phone's settings.",
+  "permCameraRestricted": "This device blocks the camera. It cannot be changed here.",
+  "permPhotosRestricted": "This device blocks the photo library. It cannot be changed here.",
+  "permFallbackGallery": "Choose from the library",
+  "permFallbackWriteYourself": "Write it yourself",
+  "permPhotosLimited": "You have shared some photos with Butlery. I only see those.",
+  "permPhotosLimitedHint": "If you cannot find the photo, it is missing from your selection, not from the library. You can add more without giving me the whole library.",
+  "permPhotosChooseMore": "Choose more photos",
+  "timerNotifDeniedTitle": "The timer only shows in the app",
+  "timerNotifDeniedBody": "Notifications are off for Butlery, so the timer cannot alert you while the app is in the background or the phone is locked.",
+  "timerNotifDeniedStart": "Start the timer",
+  "timerInAppOnly": "The timer only shows in the app.",
+  "notifSystemOffRow": "Notifications are off for Butlery in the system settings. Nothing below can be switched on until you change that there.",
+  "a11yOpenSystemSettings": "Open the system settings",
+  "cookingExitConfirmTitle": "Stop cooking?",
+  "cookingExitConfirmBody": "You are on step {step} of {total}. The recipe does not count as cooked until you tap Done.",
+  "@cookingExitConfirmBody": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingExitConfirmStay": "Keep cooking",
+  "cookingExitConfirmLeave": "Stop cooking",
+  "cookingDone": "Done",
+  "cookingNoStepsTitle": "The recipe has no steps yet",
+  "cookingNoStepsBody": "The ingredients are there, but nobody has written how to make it. Write the steps, or take the ingredients to the shopping list.",
+  "cookingNoStepsBodyNoIngredients": "Nobody has written how to make it yet. Write the steps and you can cook from here.",
+  "cookingNoStepsWrite": "Write the steps",
+  "cookingNoStepsShopping": "To the shopping list",
+  "parseConfidenceConfirm": "Correct",
+  "parseConfidenceConfirmed": "Confirmed",
+  "a11yParseConfidenceConfirm": "Confirm the line {line}",
+  "@a11yParseConfidenceConfirm": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "parseConfidencePendingSave": "{count, plural, =1{Confirm 1 line before you save} other{Confirm {count} lines before you save}}",
+  "@parseConfidencePendingSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parseConfidenceUnreadLine": "The line could not be read",
+  "a11yParseConfidenceUnreadLine": "A line that could not be read",
+  "importReadPages": "{count, plural, =1{Read 1 page} other{Read {count} pages}}",
+  "@importReadPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "roleLoweredRecipeTitle": "You can no longer edit the recipe",
+  "@roleLoweredRecipeTitle": {
+    "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
+  },
+  "roleLoweredRecipeBody": "You can now only read the recipe, so the changes are not saved to it. You can save them as your own copy.",
+  "@roleLoweredRecipeBody": {
+    "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
+  },
+  "roleLoweredSaveCopy": "Save as your own copy",
+  "@roleLoweredSaveCopy": {
+    "description": "P6-U05: dialog action that saves the unsaved edits as the user's own recipe."
+  },
+  "roleLoweredDiscard": "Discard the changes",
+  "@roleLoweredDiscard": {
+    "description": "P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md)."
+  },
+  "roleLoweredRecipeClosed": "You can no longer edit the recipe, only read it.",
+  "@roleLoweredRecipeClosed": {
+    "description": "P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved."
+  },
+  "roleLoweredShoppingList": "You can no longer change the list, only read it.",
+  "@roleLoweredShoppingList": {
+    "description": "P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open."
+  },
+  "roleLoweredShoppingUnsaved": "What you typed was not added to the list:",
+  "@roleLoweredShoppingUnsaved": {
+    "description": "P6-U05: lead line of the notice that stays in the list view when the role drops while an item was typed but not added; the typed text is shown below it."
+  },
+  "roleLoweredCopyText": "Copy the text",
+  "@roleLoweredCopyText": {
+    "description": "P6-U05: notice action that copies the typed, unadded item text."
+  },
+  "roleLoweredTextCopied": "The text is copied.",
+  "@roleLoweredTextCopied": {
+    "description": "P6-U05: confirmation after the typed item text was copied."
+  },
+  "roleLoweredGroupMenu": "You can no longer change the group's menu, only read it.",
+  "@roleLoweredGroupMenu": {
+    "description": "P6-U05: notice when the role on the group week menu drops to read-only while it is open."
+  },
+  "conflictBannerTitleSuggestion": "The owner's version stays",
+  "@conflictBannerTitleSuggestion": {
+    "description": "P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103)."
+  },
+  "conflictBannerBodySuggestion": "{name} changed it at the same time. Your change is kept as a suggestion for 7 days.",
+  "@conflictBannerBodySuggestion": {
+    "description": "P5-U27b: conflict banner body; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionUnnamed": "Someone else changed it at the same time. Your change is kept as a suggestion for 7 days.",
+  "@conflictBannerBodySuggestionUnnamed": {
+    "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
+  },
+  "conflictBannerBodyMemberNotSent": "{name} changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.",
+  "@conflictBannerBodyMemberNotSent": {
+    "description": "Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (no store, or storing failed); name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodyMemberNotSentUnnamed": "Someone else changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.",
+  "@conflictBannerBodyMemberNotSentUnnamed": {
+    "description": "Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown."
+  },
+  "recipeSuggestionSeeMine": "See your suggestion",
+  "@recipeSuggestionSeeMine": {
+    "description": "P5-U27b: banner action, verbatim from produktregler.md:103."
+  },
+  "recipeSuggestionSee": "See the suggestion",
+  "@recipeSuggestionSee": {
+    "description": "P5-U27b: the owner's action that opens a suggestion made to their recipe."
+  },
+  "recipeSuggestionFromOne": "{name} suggests a change to the recipe.",
+  "@recipeSuggestionFromOne": {
+    "description": "P5-U27b: owner's notice in recipe detail; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUnnamed": "A member suggests a change to the recipe.",
+  "@recipeSuggestionFromOneUnnamed": {
+    "description": "P5-U27b: owner's notice when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromMany": "{count} suggested changes are waiting for you.",
+  "@recipeSuggestionFromMany": {
+    "description": "P5-U27b: owner's notice when more than one suggestion waits; count >= 2.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionMinePending": "Your suggestion is waiting for the owner. It is kept until {date}.",
+  "@recipeSuggestionMinePending": {
+    "description": "P5-U27b: suggester's notice in recipe detail; date = when the 7 days end, written as content-style-guide.md:25.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionMineAccepted": "The owner took your suggestion into the recipe.",
+  "@recipeSuggestionMineAccepted": {
+    "description": "P5-U27b: suggester's notice after the owner accepted."
+  },
+  "recipeSuggestionMineDismissed": "The owner dismissed your suggestion. It is kept until {date}.",
+  "@recipeSuggestionMineDismissed": {
+    "description": "P5-U27b: suggester's notice after the owner dismissed; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionTitle": "Suggested change",
+  "@recipeSuggestionTitle": {
+    "description": "P5-U27b: title of the view that shows one suggestion."
+  },
+  "recipeSuggestionIntroOwner": "{name} suggests this. The suggestion is kept until {date}.",
+  "@recipeSuggestionIntroOwner": {
+    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMine": "You suggested this. The suggestion is kept until {date}.",
+  "@recipeSuggestionIntroMine": {
+    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionSuggestedLabel": "Suggestion",
+  "@recipeSuggestionSuggestedLabel": {
+    "description": "P5-U27b: label over the suggested value of a field."
+  },
+  "recipeSuggestionCurrentLabel": "Recipe now",
+  "@recipeSuggestionCurrentLabel": {
+    "description": "P5-U27b: label over the recipe's current value of a field."
+  },
+  "recipeSuggestionAccept": "Use the suggestion",
+  "@recipeSuggestionAccept": {
+    "description": "P5-U27b: the owner accepts the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionDismiss": "Dismiss the suggestion",
+  "@recipeSuggestionDismiss": {
+    "description": "P5-U27b: the owner dismisses the suggestion (produktregler.md:241)."
+  },
+  "recipeSuggestionAccepted": "The suggestion is now part of the recipe.",
+  "@recipeSuggestionAccepted": {
+    "description": "P5-U27b: confirmation after the owner accepted."
+  },
+  "recipeSuggestionDismissed": "The suggestion is dismissed. The recipe is unchanged.",
+  "@recipeSuggestionDismissed": {
+    "description": "P5-U27b: confirmation after the owner dismissed."
+  },
+  "recipeSuggestionAcceptFailed": "The suggestion could not be taken into the recipe.",
+  "@recipeSuggestionAcceptFailed": {
+    "description": "P5-U27b: what did not happen when accepting failed (content-style-guide.md:87-97)."
+  },
+  "recipeSuggestionDismissFailed": "The suggestion could not be dismissed.",
+  "@recipeSuggestionDismissFailed": {
+    "description": "P5-U27b: what did not happen when dismissing failed."
+  },
+  "recipeSuggestionKeptUntil": "The suggestion is kept until {date}.",
+  "@recipeSuggestionKeptUntil": {
+    "description": "P5-U27b: what was kept, after a failed decision; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionRecipeGone": "The recipe no longer exists, so the suggestion cannot be taken in.",
+  "@recipeSuggestionRecipeGone": {
+    "description": "P5-U27b: the recipe was deleted or unshared; nothing to accept into."
+  },
+  "recipeSuggestionLoadFailed": "The suggestion could not be compared with the recipe. Check the connection.",
+  "@recipeSuggestionLoadFailed": {
+    "description": "P5-U27b: the view could not read the current recipe; offered with Försök igen."
+  },
+  "recipeSuggestionNoChanges": "The suggestion is the same as the recipe now.",
+  "@recipeSuggestionNoChanges": {
+    "description": "P5-U27b: the suggestion changes nothing against the current recipe."
+  },
+  "recipeSuggestionLoading": "Loading the suggestion …",
+  "@recipeSuggestionLoading": {
+    "description": "P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63)."
+  },
+  "recipeAddCountToShoppingList": "{count, plural, =1{Add 1 item to the shopping list} other{Add {count} items to the shopping list}}",
+  "@recipeAddCountToShoppingList": {
+    "description": "Q4-03 = A: the recipe's add-to-shopping-list button, counting the ingredients the pantry does not already cover (content-style-guide.md:76).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowDiscardAction": "Discard the rest",
+  "@weeklyMenuOverflowDiscardAction": {
+    "description": "Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131)."
+  },
+  "weeklyMenuOverflowDiscarded": "{count, plural, =1{1 dish discarded from the tray} other{{count} dishes discarded from the tray}}",
+  "@weeklyMenuOverflowDiscarded": {
+    "description": "Q5-01 = A: undo snackbar after Släng resten.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantryItemAmountUnknown": "at home",
+  "@pantryItemAmountUnknown": {
+    "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
+  },
+  "recipePantryAllAtHome": "Everything is at home in full, so nothing is added to the shopping list: {names}",
+  "recipePantryLessened": "Less than the recipe, since some is at home: {names}",
+  "navigationHome": "Home",
+  "@navigationHome": {
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055)."
+  },
+  "navigationMore": "More",
+  "@navigationMore": {
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer)."
+  },
+  "navigationAddAction": "Add",
+  "@navigationAddAction": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält)."
+  },
+  "moreTitle": "More",
+  "@moreTitle": {
+    "description": "P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer)."
+  },
+  "moreSectionTogether": "Together",
+  "@moreSectionTogether": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreSectionKitchen": "Your kitchen",
+  "@moreSectionKitchen": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreSectionAppAccount": "App & account",
+  "@moreSectionAppAccount": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
+  },
+  "moreFamily": "My family",
+  "@moreFamily": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the family settings."
+  },
+  "morePersonalTags": "Personal tags",
+  "@morePersonalTags": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the personal tags."
+  },
+  "moreCollectionStats": "Collection statistics",
+  "@moreCollectionStats": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics."
+  },
+  "moreNotifications": "Notifications",
+  "@moreNotifications": {
+    "description": "P6-T6 (PQ-17, P4-U19): Mer row to the notifications."
+  },
+  "addSheetQuickSaveTitle": "Quick save",
+  "@addSheetQuickSaveTitle": {
+    "description": "P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582)."
+  },
+  "addSheetQuickSaveSubtitle": "Just name and meal — import the details later",
+  "@addSheetQuickSaveSubtitle": {
+    "description": "P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583)."
+  },
+  "syncQueueTitle": "Waiting to sync",
+  "@syncQueueTitle": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190)."
+  },
+  "syncQueueNeedsYouHeader": "Waiting for you · {count}",
+  "@syncQueueNeedsYouHeader": {
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueNeedsYouHint": "These are not retried by themselves. The cause is written out, and each one has an action.",
+  "@syncQueueNeedsYouHint": {
+    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko."
+  },
+  "syncQueueQueuedHeader": "Queued · {count}",
+  "@syncQueueQueuedHeader": {
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the changes the queue sends by itself.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueOrderNote": "Changes to one item go in order, and different items sync side by side.",
+  "@syncQueueOrderNote": {
+    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186."
+  },
+  "syncQueueSyncNow": "Try to sync now",
+  "@syncQueueSyncNow": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view footer button."
+  },
+  "syncQueueSyncing": "Syncing …",
+  "@syncQueueSyncing": {
+    "description": "P6-T6 (PQ-17, P4-U19): the footer button while it syncs (content-style-guide.md:63)."
+  },
+  "syncQueueRetry": "Try again",
+  "@syncQueueRetry": {
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189)."
+  },
+  "syncQueueRetryA11y": "Try again — {what}",
+  "@syncQueueRetryA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of Försök igen, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscard": "Discard the change",
+  "@syncQueueDiscard": {
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko)."
+  },
+  "syncQueueDiscardA11y": "Discard the change {what}",
+  "@syncQueueDiscardA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of Släng ändringen, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscarded": "Change discarded.",
+  "@syncQueueDiscarded": {
+    "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1)."
+  },
+  "syncQueueRecipeDiscarded": "The recipe was discarded.",
+  "@syncQueueRecipeDiscarded": {
+    "description": "Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132)."
+  },
+  "syncQueueDiscardPhoneOnlyTitle": "Discard the recipe?",
+  "@syncQueueDiscardPhoneOnlyTitle": {
+    "description": "Q6-11 = B: title of the confirmation before a new recipe that exists only on this phone is discarded."
+  },
+  "syncQueueDiscardPhoneOnlyBody": "{title} exists only on this phone. It never reached the server, so if you discard it, it is gone everywhere.",
+  "@syncQueueDiscardPhoneOnlyBody": {
+    "description": "Q6-11 = B: body of the confirmation; title = the recipe's title, or syncQueueUnnamedRecipe.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueDiscardPhoneOnlyConfirm": "Discard the recipe",
+  "@syncQueueDiscardPhoneOnlyConfirm": {
+    "description": "Q6-11 = B: the confirmation's destructive action; Avbryt is the other."
+  },
+  "syncQueueDiscardFailed": "The change could not be discarded.",
+  "@syncQueueDiscardFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93)."
+  },
+  "syncQueueRetryFailed": "The change could not be put back in the queue.",
+  "@syncQueueRetryFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök igen failed."
+  },
+  "syncQueueSyncFailed": "The queue could not be sent right now.",
+  "@syncQueueSyncFailed": {
+    "description": "P6-T6 (P4-U19): what happened when Försök synka nu failed."
+  },
+  "syncQueueChangeKept": "It stays under Waiting for you.",
+  "@syncQueueChangeKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed action on one change."
+  },
+  "syncQueueChangesKept": "The changes stay on the phone.",
+  "@syncQueueChangesKept": {
+    "description": "P6-T6 (P4-U19): what was kept after a failed Försök synka nu."
+  },
+  "syncQueueEmpty": "Everything is saved. Nothing is waiting to sync.",
+  "@syncQueueEmpty": {
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view when nothing waits."
+  },
+  "syncQueueWaitsOnEarlier": "waiting for an earlier change",
+  "@syncQueueWaitsOnEarlier": {
+    "description": "P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187)."
+  },
+  "syncQueueUnnamedRecipe": "A recipe",
+  "@syncQueueUnnamedRecipe": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a change concerns when the device has no title for the recipe."
+  },
+  "syncQueueRecipeCreated": "{title} · new recipe",
+  "@syncQueueRecipeCreated": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued create concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeUpdated": "{title} · changed",
+  "@syncQueueRecipeUpdated": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued update concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeDeleted": "{title} · deleted",
+  "@syncQueueRecipeDeleted": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued delete concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueRecipeTagged": "{title} · being tagged",
+  "@syncQueueRecipeTagged": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued tagging concerns.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueImageFor": "Photo for {title}",
+  "@syncQueueImageFor": {
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueImage": "A photo",
+  "@syncQueueImage": {
+    "description": "P6-T6 (PQ-17, P4-U19): a queued upload with no known recipe."
+  },
+  "syncQueueReasonNotFound": "The recipe no longer exists",
+  "@syncQueueReasonNotFound": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonPermission": "You no longer have permission",
+  "@syncQueueReasonPermission": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonTooLarge": "The photo is too large",
+  "@syncQueueReasonTooLarge": {
+    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+  },
+  "syncQueueReasonDependency": "It depends on a change that could not be saved",
+  "@syncQueueReasonDependency": {
+    "description": "P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187)."
+  },
+  "syncQueueReasonUnknown": "The server did not accept the change",
+  "@syncQueueReasonUnknown": {
+    "description": "P6-T6 (PQ-17, P4-U19): a permanent failure with no known cause."
+  },
+  "syncQueueReasonExpired": "Could not be saved for 24 h",
+  "@syncQueueReasonExpired": {
+    "description": "P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188)."
+  },
+  "syncQueueSaveAsCopy": "Save as a copy",
+  "@syncQueueSaveAsCopy": {
+    "description": "P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188)."
+  },
+  "syncQueueCopyTitle": "{title} (copy)",
+  "@syncQueueCopyTitle": {
+    "description": "Q6-14 = C (produktbeslut 2026-09-27b): the title of the recipe Spara som kopia makes from a change that could not be synced; title = the original's.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueSaveAsCopyA11y": "Save as a copy — {what}",
+  "@syncQueueSaveAsCopyA11y": {
+    "description": "P6-U08b: accessible name of Spara som kopia, naming the change.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueTrySmaller": "Try smaller",
+  "@syncQueueTrySmaller": {
+    "description": "P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko)."
+  },
+  "syncQueueTrySmallerA11y": "Try smaller — {what}",
+  "@syncQueueTrySmallerA11y": {
+    "description": "P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "syncQueueCopyFailed": "The copy could not be saved.",
+  "@syncQueueCopyFailed": {
+    "description": "P6-U08b: Spara som kopia failed; followed by syncQueueChangeKept."
+  },
+  "syncQueueTrySmallerFailed": "The image could not be made smaller.",
+  "@syncQueueTrySmallerFailed": {
+    "description": "P6-U08b: Försök mindre failed; followed by syncQueueChangeKept."
+  },
+  "syncQueueNextAttemptSeconds": "next attempt in {seconds} s",
+  "@syncQueueNextAttemptSeconds": {
+    "description": "P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueNextAttemptMinutes": "next attempt in {minutes} min",
+  "@syncQueueNextAttemptMinutes": {
+    "description": "P6-U08b: when a failed change is sent again, a minute or more (content-style-guide.md:31).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeNow": "now",
+  "@syncQueueAgeNow": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35)."
+  },
+  "syncQueueAgeMinutes": "{minutes} min",
+  "@syncQueueAgeMinutes": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:31).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeHours": "{hours} h",
+  "@syncQueueAgeHours": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change, whole hours (content-style-guide.md:32).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeHoursMinutes": "{hours} h {minutes} min",
+  "@syncQueueAgeHoursMinutes": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:32).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueAgeDays": "{days, plural, =1{1 day} other{{days} days}}",
+  "@syncQueueAgeDays": {
+    "description": "P6-T6 (PQ-17, P4-U19): age of a change queued a day or more ago.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQueueIndicatorA11y": "{count, plural, =1{1 change is waiting for you. Open Waiting to sync} other{{count} changes are waiting for you. Open Waiting to sync}}",
+  "@syncQueueIndicatorA11y": {
+    "description": "P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestChange": "Suggest a change",
+  "@recipeSuggestChange": {
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247)."
+  },
+  "recipeSuggestionSend": "Send the suggestion",
+  "@recipeSuggestionSend": {
+    "description": "Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe."
+  },
+  "recipeSuggestionSending": "Sending the suggestion …",
+  "@recipeSuggestionSending": {
+    "description": "Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63)."
+  },
+  "recipeSuggestionSent": "The suggestion is sent to the owner.",
+  "@recipeSuggestionSent": {
+    "description": "Q6-08 = A: confirmation after a member's edit was kept as a suggestion."
+  },
+  "recipeSuggestionSendFailed": "The suggestion could not be sent.",
+  "@recipeSuggestionSendFailed": {
+    "description": "Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93)."
+  },
+  "recipeSuggestionCoversText": "A suggestion covers the recipe's text: title, description, meal, portions, time, ingredients and steps.",
+  "@recipeSuggestionCoversText": {
+    "description": "Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode."
+  },
+  "recipeSuggestionReplaced": "The suggestion is sent and replaced your earlier one.",
+  "@recipeSuggestionReplaced": {
+    "description": "Q6-12 = B (produktbeslut 2026-09-27b): confirmation after a member's edit replaced their suggestion that was still waiting for the owner."
+  },
+  "conflictBannerBodySuggestionReplaced": "{name} changed it at the same time. Your change replaced your earlier suggestion and is kept for 7 days.",
+  "@conflictBannerBodySuggestionReplaced": {
+    "description": "Q6-12 = B: conflict banner body when the member's losing edit replaced their waiting suggestion; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodySuggestionReplacedUnnamed": "Someone else changed it at the same time. Your change replaced your earlier suggestion and is kept for 7 days.",
+  "@conflictBannerBodySuggestionReplacedUnnamed": {
+    "description": "Q6-12 = B: conflictBannerBodySuggestionReplaced when the other editor's name is unknown."
+  },
+  "recipeSuggestionFromOneUpdated": "{name} has updated their suggestion to the recipe.",
+  "@recipeSuggestionFromOneUpdated": {
+    "description": "Q6-12 = B: owner's notice in recipe detail when the one waiting suggestion was replaced by a newer edit; name = who suggested it.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionFromOneUpdatedUnnamed": "A member has updated their suggestion to the recipe.",
+  "@recipeSuggestionFromOneUpdatedUnnamed": {
+    "description": "Q6-12 = B: recipeSuggestionFromOneUpdated when the suggester's name is unknown."
+  },
+  "recipeSuggestionFromManyUpdated": "{count} suggested changes are waiting for you. {updated, plural, =1{One of them has been updated.} other{{updated} of them have been updated.}}",
+  "@recipeSuggestionFromManyUpdated": {
+    "description": "Q6-12 = B: owner's notice when more than one suggestion waits and some were replaced by newer edits; count >= 2, updated >= 1.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeSuggestionIntroOwnerUpdated": "{name} has updated their suggestion to this. The suggestion is kept until {date}.",
+  "@recipeSuggestionIntroOwnerUpdated": {
+    "description": "Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionIntroMineUpdated": "You suggested this, and it replaced your earlier suggestion. The suggestion is kept until {date}.",
+  "@recipeSuggestionIntroMineUpdated": {
+    "description": "Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSuggestionChangedSinceOpened": "The suggestion has changed since you opened it. Open it again to see the new one.",
+  "@recipeSuggestionChangedSinceOpened": {
+    "description": "Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng."
+  },
+  "cookingNoStepsSaveCopy": "Save my copy",
+  "@cookingNoStepsSaveCopy": {
+    "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
+  },
+  "cookingNoStepsBodyOthers": "The ingredients are there, but nobody has written how to make it. Save your own copy and write the steps there, or take the ingredients to the shopping list.",
+  "@cookingNoStepsBodyOthers": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
+  },
+  "cookingNoStepsBodyOthersNoIngredients": "Nobody has written how to make it yet. Save your own copy and write the steps there.",
+  "@cookingNoStepsBodyOthersNoIngredients": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
+  },
+  "hemGreetingMorning": "Good morning",
+  "@hemGreetingMorning": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278)."
+  },
+  "hemGreetingDay": "Hi",
+  "@hemGreetingDay": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278)."
+  },
+  "hemGreetingEvening": "Good evening",
+  "@hemGreetingEvening": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278)."
+  },
+  "hemGreetingNight": "Good night",
+  "@hemGreetingNight": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278)."
+  },
+  "hemGreetingWelcome": "Welcome",
+  "@hemGreetingWelcome": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom)."
+  },
+  "hemGreetingWithName": "{greeting}, {name}",
+  "@hemGreetingWithName": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hemTonight": "Tonight",
+  "@hemTonight": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268)."
+  },
+  "hemLibraryHeading": "Your recipes · {count}",
+  "@hemLibraryHeading": {
+    "description": "Q6-16 = B (produktbeslut 2026-09-27b): the heading of Hem's library header row under the Ikväll band, with Välj, ingredient search and the grid/list toggle; count = recipes in the library.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hemMetaMinutes": "{minutes} min",
+  "@hemMetaMinutes": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hemMetaPortions": "{count} serv.",
+  "@hemMetaPortions": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hemStartCooking": "Start cooking",
+  "@hemStartCooking": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+  },
+  "hemSwapDish": "Change dish",
+  "@hemSwapDish": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish."
+  },
+  "hemAllInPantry": "all in the pantry",
+  "@hemAllInPantry": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry."
+  },
+  "hemLoadingPlan": "Fetching this week's plan …",
+  "@hemLoadingPlan": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar)."
+  },
+  "hemPlanErrorWhat": "This week's plan could not be fetched.",
+  "@hemPlanErrorWhat": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel)."
+  },
+  "hemPlanErrorPreserved": "Your plan is saved and still there – it was the fetch that failed, not the plan.",
+  "@hemPlanErrorPreserved": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293)."
+  },
+  "hemShowSavedPlan": "Open the week menu",
+  "@hemShowSavedPlan": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel)."
+  },
+  "hemPlanFetchedAt": "The plan was fetched at {time} – someone else may have changed it since.",
+  "@hemPlanFetchedAt": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "hemEmptyTitle": "Butlery becomes useful with one recipe",
+  "@hemEmptyTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom)."
+  },
+  "hemEmptyBody": "Add something you already cook often. Then Butlery can plan the week, scale portions and write the shopping list for you.",
+  "@hemEmptyBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom)."
+  },
+  "hemEmptyShortcuts": "Quickest ways",
+  "@hemEmptyShortcuts": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom)."
+  },
+  "hemEmptyLinkTitle": "Paste a link",
+  "@hemEmptyLinkTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyLinkBody": "from a recipe page, YouTube or Instagram",
+  "@hemEmptyLinkBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyPhotoTitle": "Photograph a recipe page",
+  "@hemEmptyPhotoTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyPhotoBody": "from a cookbook or a clipping",
+  "@hemEmptyPhotoBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyWriteTitle": "Write it yourself",
+  "@hemEmptyWriteTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyWriteBody": "for what you cook without a recipe",
+  "@hemEmptyWriteBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyAllergyNote": "Does the household have allergies? Set them first – then Butlery never plans anything unsafe.",
+  "@hemEmptyAllergyNote": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288)."
+  },
+  "hemEmptyAllergyLink": "Set allergens",
+  "@hemEmptyAllergyLink": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
+  },
+  "recipeAllAtHome": "Everything is at home",
+  "@recipeAllAtHome": {
+    "description": "Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then."
+  }
 }

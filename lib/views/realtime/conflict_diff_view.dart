@@ -10,10 +10,13 @@
 ///   ("Använd deras version").
 ///
 /// The choice is the decision (produktregler.md:102, "Recept (eget)": both
-/// versions are shown and the user chooses). PQ-02 = A (2026-09-23): someone
-/// else's shared recipe gets the same choice as the owner's until the
-/// suggestion store exists (package 6), so this view does not branch on
-/// [ConflictEvent.entity].
+/// versions are shown and the user chooses). Someone else's shared recipe
+/// ([ConflictEntity.recipeShared]) gets no choice here: Q6-08 = A
+/// (produktbeslut 2026-09-27; produktregler.md:241) means a member never
+/// writes the owner's recipe, and firestore.rules refuses it, so both
+/// buttons would always fail. The member still sees both versions field by
+/// field. What else a member should be offered when a suggestion already
+/// waits (Q6-07 = B) is an open question to the product owner.
 ///
 /// What is drawn and what is built: Skarmar v12 del 3 #konflikt (:1164,
 /// :1169, :1199) draws only the state where the OTHER version won ("Eriks
@@ -39,6 +42,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -74,11 +78,17 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
   late final ConflictDiff _diff = ConflictDiff.fromEvent(widget.event);
 
+  /// Q6-08 = A: a member cannot write someone else's recipe, so neither
+  /// button is offered on it.
+  bool get _canWrite => widget.event.entity != ConflictEntity.recipeShared;
+
   bool get _localLost =>
+      _canWrite &&
       widget.event.chosenStrategy == ConflictResolutionStrategy.remoteWon;
 
   /// Their version lost and differs from mine: offer to put it back.
   bool get _canUseTheirs =>
+      _canWrite &&
       widget.event.chosenStrategy == ConflictResolutionStrategy.localWon &&
       _diff.isNotEmpty;
 
@@ -204,7 +214,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       separatorBuilder: (_, __) =>
           const SizedBox(height: AppDimensions.spacingL),
       itemBuilder: (context, index) =>
-          _DiffFieldCard(field: _diff.changedFields[index]),
+          ConflictDiffFieldCard(field: _diff.changedFields[index]),
     );
   }
 
@@ -283,10 +293,21 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
 /// A single changed field, showing the local and remote values stacked with
 /// colour-coded accents (success = my version, warning = collaborator's).
-class _DiffFieldCard extends StatelessWidget {
+///
+/// P5-U27b: also the field card of the suggestion view, which names the two
+/// values "Förslaget" and "Receptet nu" through [localLabel] and
+/// [remoteLabel]. Without them the conflict labels are used.
+class ConflictDiffFieldCard extends StatelessWidget {
   final ConflictFieldDiff field;
+  final String? localLabel;
+  final String? remoteLabel;
 
-  const _DiffFieldCard({required this.field});
+  const ConflictDiffFieldCard({
+    super.key,
+    required this.field,
+    this.localLabel,
+    this.remoteLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +332,7 @@ class _DiffFieldCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _ValueRow(
-            label: context.l10n.conflictDiffLocalLabel,
+            label: localLabel ?? context.l10n.conflictDiffLocalLabel,
             text: field.localText,
             accent: butlery.success,
             background: butlery.success.withValues(
@@ -321,7 +342,7 @@ class _DiffFieldCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _ValueRow(
-            label: context.l10n.conflictDiffRemoteLabel,
+            label: remoteLabel ?? context.l10n.conflictDiffRemoteLabel,
             text: field.remoteText,
             accent: butlery.warning,
             background: butlery.warning.withValues(

@@ -295,7 +295,9 @@ void main() {
 
       final actions = await rootActions(tester);
       expect(actions.whereType<ButlerySelectButton>(), isEmpty);
-      expect(actions, hasLength(3));
+      // The ingredient search and the grid/list toggle. Q6-16 = B: the
+      // offline icon went with the top bar; Hem's offline banner says it.
+      expect(actions, hasLength(2));
     });
 
     Future<void> openKebab(WidgetTester tester) async {

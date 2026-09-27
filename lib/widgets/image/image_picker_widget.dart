@@ -360,14 +360,24 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
       List<File> results = [];
 
-      if (widget.allowMultiple) {
-        final multipleResults = await imagePickerService.pickMultipleImages();
-        results = multipleResults;
-      } else {
-        final result = await imagePickerService.pickImage(ImageSource.gallery);
-        if (result != null) {
-          results = [result];
-        }
+      // Flow 07: our explanation before the system prompt, and a word on a
+      // permanent no or a device block (produktregler.md:680-687).
+      final rationale = mediaRationalePrompt(context);
+      final outcome = widget.allowMultiple
+          ? await imagePickerService.pickMultipleImagesWithOutcome(
+              rationale: rationale,
+            )
+          : await imagePickerService.pickImageWithOutcome(
+              ImageSource.gallery,
+              rationale: rationale,
+            );
+      results = outcome.files;
+      if (outcome.blockedByPermission && mounted) {
+        explainMediaPermission(
+          context,
+          outcome.permission,
+          ImageSource.gallery,
+        );
       }
 
       if (results.isNotEmpty) {

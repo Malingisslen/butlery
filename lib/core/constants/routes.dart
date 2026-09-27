@@ -61,6 +61,14 @@ class Routes {
   /// Unified shopping list route. URL value kept (BUT-967).
   static const String shoppingList = '/inkopslista';
 
+  /// The Mer destination, the shell's fourth tab (PQ-17; Skarmar v12 del 2
+  /// #mer).
+  static const String more = '/mer';
+
+  /// "Väntar på synk", the user's view of the offline queue
+  /// (produktregler.md:190; P4-U19).
+  static const String syncQueue = '/vantar-pa-synk';
+
   // Social routes
   static const String profileEdit = '/profile/edit';
   static const String friends = '/friends';
@@ -133,6 +141,8 @@ class Routes {
     weeklyMenu,
     realtimeMenu,
     shoppingList,
+    more,
+    syncQueue,
     ingredientSearch,
     profileEdit,
     friends,
@@ -208,11 +218,13 @@ class Routes {
     settingsAbout,
     settingsLicenses,
     faq,
+    syncQueue,
   };
 
   /// Routes using fade animation
   static const Set<String> fadeRoutes = {
     home,
+    more,
     auth,
     onboarding,
   };
@@ -275,6 +287,10 @@ class Routes {
     weeklyMenu,
     realtimeMenu,
     shoppingList,
+
+    // Mer and the offline queue (PQ-17, P4-U19)
+    more,
+    syncQueue,
 
     // Cooking
     cookingMode,

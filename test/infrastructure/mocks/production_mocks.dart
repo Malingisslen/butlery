@@ -4835,6 +4835,14 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   @override
   bool get canToggleHandwritten => true;
 
+  // P6-U07 / Q4-04: non-nullable reads the photo-import view makes. No
+  // notice and no pages waiting for "Läs av" by default.
+  @override
+  int get unreadPageCount => 0;
+
+  @override
+  bool get canReadPages => false;
+
   // All methods left without implementation to allow stubbing with when()
 }
 

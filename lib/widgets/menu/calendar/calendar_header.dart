@@ -181,7 +181,10 @@ class SelectionActionBar extends StatelessWidget {
 /// - names each recipe as written, never re-cased (produktregler.md:892: "De
 ///   recept som inte får plats namnges");
 /// - offers next week as a choice in the tray (produktregler.md:1127), which
-///   makes a snackbar "next week" action unnecessary. The week menu has none.
+///   makes a snackbar "next week" action unnecessary. The week menu has none;
+/// - comes back quietly after a restart and can be emptied with "Släng
+///   resten" (Q5-01 = A, produktbeslut 2026-09-24), which the caller follows
+///   with a 7 s Ångra (produktregler.md:131).
 ///
 /// The chips stay draggable into the week, as before (OverflowPayload).
 class OverflowTray extends StatelessWidget {
@@ -199,6 +202,9 @@ class OverflowTray extends StatelessWidget {
   /// "Lägg i vecka N". Null hides it (no reason, or the two-week limit).
   final VoidCallback? onPlaceInNextWeek;
 
+  /// "Släng resten" (Q5-01). Null hides it.
+  final VoidCallback? onDiscard;
+
   const OverflowTray({
     super.key,
     required this.overflow,
@@ -206,10 +212,14 @@ class OverflowTray extends StatelessWidget {
     required this.totalCount,
     this.reason,
     this.onPlaceInNextWeek,
+    this.onDiscard,
   });
 
   /// Key of the "Lägg i vecka N" action.
   static const Key nextWeekKey = ValueKey('overflow-tray-next-week');
+
+  /// Key of the "Släng resten" action.
+  static const Key discardKey = ValueKey('overflow-tray-discard');
 
   /// Key of the chip for the recipe with [recipeId].
   static Key chipKey(String recipeId) => ValueKey('overflow-chip-$recipeId');
@@ -255,6 +265,15 @@ class OverflowTray extends StatelessWidget {
                 onPressed: onPlaceInNextWeek,
                 child: Text(l.weeklyMenuOverflowNextWeekAction(nextWeek)),
               ),
+            ),
+          // The quieter of the two: a text button after the way on.
+          // Interpretation: the drawing (#vmbdelvis) has no discard action;
+          // the label is the decided "Släng resten".
+          if (onDiscard != null)
+            TextButton(
+              key: discardKey,
+              onPressed: onDiscard,
+              child: Text(l.weeklyMenuOverflowDiscardAction),
             ),
         ],
         child: Wrap(

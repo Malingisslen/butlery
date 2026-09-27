@@ -542,4 +542,90 @@ void main() {
       expect(vm.placementOrderOf('e-3'), isNull);
     });
   });
+  // Q5-01 = A (produktbeslut 2026-09-24): the tray comes back quietly and
+  // "Släng resten" empties it, with a 7 s Ångra (produktregler.md:131).
+  group('Q5-01: Släng resten', () {
+    wedTest('empties the tray and its copy on this device', () async {
+      final vm = await generated();
+
+      final discarded = vm.discardOverflow();
+      await pumpEventQueue();
+
+      expect(discarded, isNotNull);
+      expect(discarded!.count, 2);
+      expect(vm.hasOverflow, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.containsKey(WeeklyMenuOverflowTrayStore.keyFor('malin')),
+        isFalse,
+      );
+
+      // A new view model has nothing to bring back.
+      final reopened = newVm();
+      await reopened.restoreOverflowTray();
+      expect(reopened.hasOverflow, isFalse);
+    });
+
+    wedTest('Ångra brings the tray back as it was', () async {
+      final vm = await generated();
+      final discarded = vm.discardOverflow()!;
+
+      expect(vm.undoDiscardOverflow(discarded), isTrue);
+      await pumpEventQueue();
+
+      expect(vm.overflow.map((r) => r.id), ['o1', 'o2']);
+      expect(vm.overflowTotal, 5);
+      expect(vm.overflowReason!.weekStart, _monday);
+      final reopened = newVm();
+      await reopened.restoreOverflowTray();
+      expect(reopened.overflow.map((r) => r.id), ['o1', 'o2']);
+    });
+
+    wedTest('Ångra never overwrites a tray that filled again', () async {
+      final vm = await generated();
+      final discarded = vm.discardOverflow()!;
+      await vm.applyGeneratedMenu({
+        'middag': [pannkaka, soppa],
+      });
+
+      expect(vm.undoDiscardOverflow(discarded), isFalse);
+      expect(vm.overflow.map((r) => r.id), ['o1', 'o2']);
+    });
+
+    // A newer generation that overflowed nothing also leaves the tray
+    // empty: Ångra must still not bring the old tray back over it.
+    wedTest('Ångra never overwrites a newer tray that is empty', () async {
+      final vm = await generated();
+      final discarded = vm.discardOverflow()!;
+      when(
+        () => service.distributeFromGeneratedMenu(
+          generated: any(named: 'generated'),
+          weekStart: _monday,
+          existing: any(named: 'existing'),
+          now: any(named: 'now'),
+          dayPins: any(named: 'dayPins'),
+        ),
+      ).thenReturn(
+        WeeklyMenuDistributionResult(
+          plan: _plan(_monday, placed),
+          overflow: const [],
+        ),
+      );
+      await vm.applyGeneratedMenu({
+        'middag': [pannkaka],
+      });
+      await pumpEventQueue();
+
+      expect(vm.hasOverflow, isFalse);
+      expect(vm.undoDiscardOverflow(discarded), isFalse);
+      expect(vm.hasOverflow, isFalse);
+    });
+
+    wedTest('an empty tray has nothing to discard', () async {
+      final vm = newVm();
+      await vm.loadWeek(_monday);
+
+      expect(vm.discardOverflow(), isNull);
+    });
+  });
 }

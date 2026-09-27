@@ -30,6 +30,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
+import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
 
 /// Listens to the realtime sync service's [conflictStream] and renders the
 /// conflict banner for the most recent event until the user dismisses it.
@@ -101,17 +102,35 @@ class _ConflictBannerState extends State<ConflictBanner> {
       override();
       return;
     }
+    // P5-U27b: the edit was kept as a suggestion, so "Se ditt förslag" opens
+    // it (produktregler.md:103). Without one the package 5 choice applies.
+    final suggestionId = event.suggestionId;
+    if (suggestionId != null) {
+      RecipeSuggestionNotice.openMine(
+        context,
+        recipeId: event.docId,
+        suggestionId: suggestionId,
+      );
+      return;
+    }
     ConflictDiffView.show(context, event);
   }
 
+  /// P5-U27b: someone else's shared recipe whose owner's version stayed,
+  /// with this user's edit kept as a suggestion (produktregler.md:103).
+  static bool _isSuggestion(ConflictEvent event) =>
+      event.entity == ConflictEntity.recipeShared && event.suggestionId != null;
+
   /// The drawn title names what has two versions (Komponentark v1:756 draws
-  /// "Två versioner av listan"). A shared recipe uses the own-recipe wording
-  /// until PQ-02 decides what a non-owner's lost edit becomes.
-  String _title(BuildContext context, ConflictEntity entity) {
+  /// "Två versioner av listan"). P5-U27b: on someone else's shared recipe
+  /// there are not two versions to choose between, so the title says the
+  /// owner's version stays. Q6-08 = A: that holds without a stored
+  /// suggestion too, since a member never writes the owner's recipe.
+  String _title(BuildContext context, ConflictEvent event) {
     final l = context.l10n;
-    return switch (entity) {
-      ConflictEntity.recipeOwn ||
-      ConflictEntity.recipeShared => l.conflictBannerTitleRecipe,
+    return switch (event.entity) {
+      ConflictEntity.recipeOwn => l.conflictBannerTitleRecipe,
+      ConflictEntity.recipeShared => l.conflictBannerTitleSuggestion,
       ConflictEntity.weekMenu => l.conflictBannerTitleWeek,
     };
   }
@@ -120,6 +139,25 @@ class _ConflictBannerState extends State<ConflictBanner> {
   /// display name, never from the collection or position.
   String _body(BuildContext context, ConflictEvent event) {
     final name = event.remoteValue.lastEditedByDisplayName.trim();
+    if (_isSuggestion(event)) {
+      // Q6-12 = B: the member is told when the edit replaced the suggestion
+      // that was waiting.
+      if (event.suggestionReplaced) {
+        return name.isEmpty
+            ? context.l10n.conflictBannerBodySuggestionReplacedUnnamed
+            : context.l10n.conflictBannerBodySuggestionReplaced(name);
+      }
+      return name.isEmpty
+          ? context.l10n.conflictBannerBodySuggestionUnnamed
+          : context.l10n.conflictBannerBodySuggestion(name);
+    }
+    // Q6-08 = A: someone else's recipe, and no suggestion was stored (no
+    // store, or storing failed). Nothing was written.
+    if (event.entity == ConflictEntity.recipeShared) {
+      return name.isEmpty
+          ? context.l10n.conflictBannerBodyMemberNotSentUnnamed
+          : context.l10n.conflictBannerBodyMemberNotSent(name);
+    }
     return name.isEmpty
         ? context.l10n.conflictBannerBodyUnnamed
         : context.l10n.conflictBannerBody(name);
@@ -191,7 +229,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _title(context, event.entity),
+                          _title(context, event),
                           style: AppTextStyles.labelMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: cs.onSurface,
@@ -209,7 +247,11 @@ class _ConflictBannerState extends State<ConflictBanner> {
                   ),
                   TextButton(
                     onPressed: () => _onViewChange(event),
-                    child: Text(context.l10n.commonView),
+                    child: Text(
+                      _isSuggestion(event)
+                          ? context.l10n.recipeSuggestionSeeMine
+                          : context.l10n.commonView,
+                    ),
                   ),
                   IconButton(
                     tooltip: context.l10n.a11yConflictBannerDismiss,

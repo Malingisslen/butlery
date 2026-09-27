@@ -20,6 +20,8 @@ import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/fork_placement.dart';
+import 'package:butlery/views/recipe_detail/recipe_menu_role.dart';
+import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
@@ -29,12 +31,14 @@ import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
+import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -60,6 +64,7 @@ import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
+import 'package:butlery/services/shopping/recipe_pantry_check.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -73,6 +78,7 @@ import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 /// Menu actions for the recipe detail overflow menu.
 enum _MenuAction {
   edit,
+  suggestChange,
   fork,
   addToMenu,
   generateShoppingList,
@@ -207,10 +213,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   // by the recipe's id, as the ConflictBanner below is.
   late final RestorableVersionsWatcher _restorable;
 
+  // Q4-03: the pantry the add-to-shopping-list button counts against.
+  late final RecipePantryWatcher _pantry;
+
   @override
   void initState() {
     super.initState();
     _actions = RecipeDetailActions();
+    _pantry = RecipePantryWatcher(
+      onChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
     _restorable = RestorableVersionsWatcher(
       entity: ConflictEntity.recipeOwn,
       resourceId: widget.recipe.id,
@@ -234,6 +248,24 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     _userService!.addListener(_onUserServiceChanged);
   }
 
+  /// Q4-03 = A (produktbeslut 2026-09-24; content-style-guide.md:76,
+  /// "Lägg 2 varor i inköpslistan"): the button names how many items it
+  /// adds, counting only what the pantry does not already cover. While the
+  /// pantry is loading or cannot be read it says "Lägg i inköpslistan".
+  /// Q6-09 = C (produktbeslut 2026-09-27b): when the pantry covers
+  /// everything there is no button; the action bar says "Allt finns
+  /// hemma", and the photo's shopping button (someone else's recipe) is
+  /// left out.
+  String _addToListLabel(BuildContext context, Recipe recipe) {
+    if (_actions.pantryCoversAll(recipe, _pantry.pantry)) {
+      return context.l10n.recipeAllAtHome;
+    }
+    final count = _actions.countToBuy(recipe, _pantry.pantry);
+    return count == null
+        ? context.l10n.recipeAddToShoppingList
+        : context.l10n.recipeAddCountToShoppingList(count);
+  }
+
   void _onUserServiceChanged() {
     if (!mounted) return;
     if (_actions.refreshHouseholdDefault(widget.recipe)) {
@@ -244,6 +276,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   @override
   void dispose() {
     _restorable.dispose();
+    _pantry.dispose();
     _userService?.removeListener(_onUserServiceChanged);
     super.dispose();
   }
@@ -278,16 +311,74 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
-        void startCooking() => Navigator.pushNamed(
-          context,
-          Routes.cookingMode,
-          // BUT-1613: forward the present count (map form) when this detail
-          // view was opened from a planned meal, so cooking mode opens
-          // pre-scaled. Bare Recipe otherwise.
-          arguments: widget.presentServings == null
-              ? recipe
-              : {'recipe': recipe, 'presentServings': widget.presentServings},
+        // Q6-08 = A: the menu follows who the user is to the recipe
+        // (produktregler.md:244-252).
+        final menuRole = recipeMenuRole(
+          recipe,
+          ServiceLocator.get<PermissionService>().currentUserId,
         );
+        final ownsMenu = !widget.readOnly && menuRole == RecipeMenuRole.owner;
+        // Q4-03: "Lägg {n} varor i inköpslistan", counted against the
+        // pantry. Q6-09 = C: "Allt finns hemma" when it covers everything.
+        final addToListLabel = _addToListLabel(context, recipe);
+        final allAtHome = _actions.pantryCoversAll(recipe, _pantry.pantry);
+        Future<void> startCooking() async {
+          final exit = await Navigator.pushNamed<Object?>(
+            context,
+            Routes.cookingMode,
+            // BUT-1613: forward the present count (map form) when this detail
+            // view was opened from a planned meal, so cooking mode opens
+            // pre-scaled; without it the key is left out.
+            // Q6-05 = C: on a recipe that is not the user's to edit, the
+            // empty state offers "Spara min kopia" instead of "Skriv
+            // stegen".
+            arguments: {
+              'recipe': recipe,
+              'presentServings': ?widget.presentServings,
+              'copyInsteadOfEdit': widget.readOnly || isOthersRecipe,
+            },
+          );
+          if (!context.mounted) return;
+          switch (exit) {
+            // "Klart" counts the recipe as cooked and the chip shows the new
+            // count (flows-roles-budget.md:72). The per-day debounce stays:
+            // a second Klart the same day leaves the count, and the chip
+            // already says "Lagat idag". Klart never opens the who's-eating
+            // picker, and cooking mode knows no member ids, so none are
+            // passed (Q-P6-E18).
+            case CookingModeExit.finished:
+              await viewModel.markAsCooked();
+            // Q6-05 = C: "Spara min kopia" does exactly that, through the
+            // same copy path as "Spara till mitt kök".
+            case CookingModeExit.saveCopy:
+              await _handleMenuAction(
+                context,
+                _MenuAction.fork,
+                viewModel,
+                recipe,
+              );
+            // A recipe without steps: "Skriv stegen" opens the editor, or
+            // the copy path when the recipe is not the user's to edit.
+            case CookingModeExit.editRecipe:
+              if (widget.readOnly || isOthersRecipe) {
+                await _handleMenuAction(
+                  context,
+                  _MenuAction.fork,
+                  viewModel,
+                  recipe,
+                );
+              } else {
+                await _actions.editRecipe(context);
+              }
+            case CookingModeExit.toShoppingList:
+              await _actions.showAddToCartConfirmation(
+                context,
+                pantry: _pantry.pantry,
+              );
+            default:
+              break;
+          }
+        }
 
         return Scaffold(
           backgroundColor: cs.surface,
@@ -303,8 +394,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   viewModel,
                   recipe,
                 ),
-                onAddToShoppingList: () =>
-                    _actions.showAddToCartConfirmation(context),
+                onAddToShoppingList: () => _actions.showAddToCartConfirmation(
+                  context,
+                  pantry: _pantry.pantry,
+                ),
+                addToShoppingListLabel: addToListLabel,
+                allAtHome: allAtHome,
               ),
               ButleryBottomNavigation(
                 currentIndex: 0,
@@ -327,10 +422,23 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               // it, the two-column choice (produktregler.md:102: own
               // recipe, both versions shown, the choice is the decision),
               // mounted as edit_recipe_view does. Scoped by the recipe's id,
-              // never by position. A shared recipe gets the same banner until
-              // suggestions exist (PQ-02 = A). Collapses when idle.
+              // never by position. On a shared recipe whose edit was kept as a
+              // suggestion the banner says so and opens it (P5-U27b); without
+              // a stored suggestion it keeps the choice (PQ-02 = A).
               SliverToBoxAdapter(
                 child: ConflictBanner(filterDocId: recipe.id),
+              ),
+              // P5-U27b: suggestions to this recipe, for their 7 days
+              // (produktregler.md:103, :241). The owner is found from the
+              // recipe's owner id, never from what the page shows. Collapses
+              // when nothing is kept.
+              SliverToBoxAdapter(
+                child: RecipeSuggestionNotice(
+                  recipeId: recipe.id,
+                  isOwner:
+                      (recipe.socialData?.ownerId ?? recipe.createdBy) ==
+                      ServiceLocator.get<PermissionService>().currentUserId,
+                ),
               ),
               // App bar with recipe title and actions
               // UI Redesign: Hero buttons are solid cream squares with green icons
@@ -486,15 +594,21 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // "Spara till mitt kök" is the saffron action in the
                   // bar below on someone else's recipe (BUT-972), so the
                   // shopping list moves up here as a paper-ring button.
-                  if (isOthersRecipe)
+                  // Q6-09 = C (produktbeslut 2026-09-27b): when the pantry
+                  // covers everything there is no button to promise an
+                  // add that adds nothing, so it is left out here too.
+                  if (isOthersRecipe &&
+                      !_actions.pantryCoversAll(recipe, _pantry.pantry))
                     Padding(
                       key: const ValueKey('test-recipe-detail-add-to-list'),
                       padding: AppDimensions.paddingVertical8,
                       child: _HeroButton(
                         icon: Icons.shopping_cart_outlined,
-                        onPressed: () =>
-                            _actions.showAddToCartConfirmation(context),
-                        tooltip: context.l10n.recipeAddToShoppingList,
+                        onPressed: () => _actions.showAddToCartConfirmation(
+                          context,
+                          pantry: _pantry.pantry,
+                        ),
+                        tooltip: _addToListLabel(context, recipe),
                       ),
                     ),
                   // More actions menu
@@ -518,7 +632,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           final menuCs = Theme.of(context).colorScheme;
                           return [
                             // Edit — owner-only (hidden for a friend's recipe)
-                            if (!widget.readOnly)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 key: const ValueKey('test-recipe-detail-edit'),
                                 value: _MenuAction.edit,
@@ -533,6 +647,32 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       width: AppDimensions.spacingM,
                                     ),
                                     Text(context.l10n.recipeEdit),
+                                  ],
+                                ),
+                              ),
+                            // Q6-08 = A: a member of someone else's shared
+                            // recipe sees "Föreslå ändring" where the owner
+                            // sees Redigera (produktregler.md:247). The
+                            // editor then sends a suggestion and never writes
+                            // the recipe (produktregler.md:241).
+                            if (!widget.readOnly &&
+                                menuRole == RecipeMenuRole.member)
+                              ButleryMenuItem(
+                                key: const ValueKey(
+                                  'test-recipe-detail-suggest-change',
+                                ),
+                                value: _MenuAction.suggestChange,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.rate_review_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipeSuggestChange),
                                   ],
                                 ),
                               ),
@@ -593,8 +733,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
-                            // reTag/editTags/delete — owner-only
-                            if (!widget.readOnly)
+                            // reTag/editTags/delete — owner-only: each writes
+                            // the recipe (produktregler.md:241, :252)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 value: _MenuAction.reTag,
                                 child: Row(
@@ -611,7 +752,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
-                            if (!widget.readOnly)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 value: _MenuAction.editTags,
                                 child: Row(
@@ -628,7 +769,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
-                            if (!widget.readOnly)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 key: const ValueKey(
                                   'test-recipe-detail-delete',
@@ -1070,6 +1211,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.edit:
         assert(!widget.readOnly, 'edit must be unreachable in readOnly mode');
         _actions.editRecipe(context);
+      // The editor sees from the recipe's owner id that it is someone
+      // else's and opens in suggestion mode (RecipeFormViewModel
+      // .suggestsChange).
+      case _MenuAction.suggestChange:
+        assert(
+          !widget.readOnly,
+          'suggestChange must be unreachable in readOnly mode',
+        );
+        _actions.editRecipe(context);
       case _MenuAction.fork:
         Navigator.pushNamed(
           context,
@@ -1295,12 +1445,23 @@ class _RecipeActionBar extends StatelessWidget {
     required this.onStartCooking,
     required this.onSaveToMyKitchen,
     required this.onAddToShoppingList,
+    required this.addToShoppingListLabel,
+    this.allAtHome = false,
   });
 
   final bool isOthersRecipe;
   final VoidCallback onStartCooking;
   final VoidCallback onSaveToMyKitchen;
   final VoidCallback onAddToShoppingList;
+
+  /// "Lägg {n} varor i inköpslistan" or "Lägg i inköpslistan" (Q4-03).
+  final String addToShoppingListLabel;
+
+  /// Q6-09 = C: the pantry covers every ingredient, so the shopping button
+  /// is replaced by the text "Allt finns hemma".
+  final bool allAtHome;
+
+  static const allAtHomeKey = ValueKey('test-recipe-detail-all-at-home');
 
   static const double _stackBelow = 360;
 
@@ -1309,12 +1470,29 @@ class _RecipeActionBar extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
 
+    // The ink button. Light: the theme's ink fill (Skarmar v12 del 1
+    // 'Receptdetalj', background:#24382c). Dark: no fill, a 1.5 px paper
+    // outline and paper text (Skarmar v12 del 1 'Receptdetalj — mörkt
+    // läge', border:1.5px solid #f5f4ed), since ink on #17251D does not
+    // read as a button. cs.onSurface is paper #F5F4ED in the dark scheme
+    // (app_colors.dart:334). Q4-02: "Börja laga" on someone else's recipe
+    // is this button too (interpretation: etapp 11 draws that bar in light
+    // only; dark follows the own recipe's ink button).
+    final isDark = cs.brightness == Brightness.dark;
+    final ButtonStyle? inkStyle = isDark
+        ? FilledButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: cs.onSurface,
+            side: BorderSide(color: cs.onSurface, width: 1.5),
+          )
+        : null;
+
     final startCooking = Semantics(
       identifier: 'btn-start-cooking',
       button: true,
       child: FilledButton(
         key: const ValueKey('test-recipe-detail-start-cooking'),
-        style: isOthersRecipe ? null : ComponentThemes.heroButtonStyle(cs),
+        style: isOthersRecipe ? inkStyle : ComponentThemes.heroButtonStyle(cs),
         onPressed: onStartCooking,
         child: Text(l10n.recipeStartCookingTooltip),
       ),
@@ -1336,25 +1514,35 @@ class _RecipeActionBar extends StatelessWidget {
       second = startCooking;
     } else {
       first = startCooking;
-      // Light: the theme's ink fill (Skarmar v12 del 1 'Receptdetalj',
-      // background:#24382c). Dark: no fill, a 1.5 px paper outline and
-      // paper text (Skarmar v12 del 1 'Receptdetalj — mörkt läge',
-      // border:1.5px solid #f5f4ed), since ink on #17251D does not read as
-      // a button. cs.onSurface is paper #F5F4ED in the dark scheme
-      // (app_colors.dart:331).
-      final isDark = cs.brightness == Brightness.dark;
-      second = FilledButton(
-        key: const ValueKey('test-recipe-detail-add-to-list'),
-        style: isDark
-            ? FilledButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: cs.onSurface,
-                side: BorderSide(color: cs.onSurface, width: 1.5),
-              )
-            : null,
-        onPressed: onAddToShoppingList,
-        child: Text(l10n.recipeAddToShoppingList),
-      );
+      second = allAtHome
+          // Q6-09 = C (produktbeslut 2026-09-27b): text, not a button, and
+          // not focusable as one: a button here would promise to add
+          // something and add nothing. Not drawn; interpretation: centred
+          // in the button's place at its 48 dp height (the bar does not
+          // jump when the pantry loads), in the button's type and
+          // text.secondary (#627061 light, #93A48D dark; tokens.json:62-65,
+          // colorScheme.onSurfaceVariant).
+          ? ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
+              ),
+              child: Center(
+                child: Text(
+                  l10n.recipeAllAtHome,
+                  key: allAtHomeKey,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.buttonText.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          : FilledButton(
+              key: const ValueKey('test-recipe-detail-add-to-list'),
+              style: inkStyle,
+              onPressed: onAddToShoppingList,
+              child: Text(addToShoppingListLabel),
+            );
     }
 
     return DecoratedBox(
@@ -1451,8 +1639,10 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
         .acceptRecipeShareRequest(widget.shareRequest);
     if (!mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeShareRequestShared(name))),
+      // Q4-01: a confirmation carries Stäng (content-style-guide.md:97).
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.recipeShareRequestShared(name),
       );
       setState(() => _dismissed = true);
     } else {

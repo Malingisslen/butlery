@@ -98,6 +98,16 @@ class MenuPoolStats {
   );
 }
 
+/// P6-U01: the library has no recipe the generation may use. Its own
+/// message (errorNoRecipesAvailable), kept apart from "Inga recept matchar",
+/// which is a library with recipes where none matched.
+class MenuNoRecipesException implements Exception {
+  const MenuNoRecipesException();
+
+  @override
+  String toString() => AppLocale.current.errorNoRecipesAvailable;
+}
+
 /// Focused module for menu generation
 /// This module handles ONLY menu generation:
 /// - AI-powered menu generation from prompts
@@ -179,6 +189,11 @@ class MenuGenerator {
   /// Stats from the most recent [getAvailableRecipesAsync] run, so the UI
   /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
   MenuPoolStats? lastPoolStats;
+
+  /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
+  /// from (the allergen-safe pool), so a result with no matches can say
+  /// "bland dina 84 recept" (Skarmar v12 del 1 #veckoingamatch).
+  int lastPoolSize = 0;
 
   /// Async version of availableRecipes that supports household allergen aggregation.
   Future<List<Recipe>> getAvailableRecipesAsync() async {
@@ -341,6 +356,9 @@ class MenuGenerator {
   /// - "favoriter" / "favourites" -> prefer favorites
   /// - "senaste" / "recent" -> prefer recently cooked (last 30 days)
   /// Falls back to full pool with boost if filtered pool is too small.
+  ///
+  /// Throws when the library is empty (errorNoRecipesAvailable). Returns an
+  /// empty map when the library has recipes but none matched (P6-U01).
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String prompt,
   ) async {
@@ -353,8 +371,9 @@ class MenuGenerator {
     // keyword filter must see the same filtered pool, never the sync
     // single-user one.
     final available = await getAvailableRecipesAsync();
+    lastPoolSize = available.length;
     if (available.isEmpty) {
-      throw Exception(AppLocale.current.errorNoRecipesAvailable);
+      throw const MenuNoRecipesException();
     }
 
     final pool = _applyPromptKeywordFilter(prompt, available);
@@ -369,12 +388,11 @@ class MenuGenerator {
       scoringContext: scoringContext,
     );
 
-    if (generatedMenu.isEmpty) {
-      throw Exception(
-        AppLocale.current.errorGeneric,
-      );
-    }
-
+    // P6-U01: nothing matched is an outcome, not an error. An empty menu
+    // goes back to the caller, which shows "Inga recept matchar"
+    // (flows-roles-budget.md:32, "0 recept placerade -> inga matchningar";
+    // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
+    // REQUIRED). An empty LIBRARY is still the error above.
     _logHiddenByHouseholdEvent();
 
     return generatedMenu;

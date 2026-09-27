@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -16,14 +17,92 @@ class AuthMfaService extends ChangeNotifier
     with StateNotifierMixin, ErrorHandlingMixin {
   final AnalyticsService _analyticsService;
   final AuthRepository _authRepository;
+  final FirebaseFunctions? _functions;
 
   String? get errorMessage => error;
 
+  /// [functions] reaches the backup-code callables
+  /// (functions/src/account/mfa-backup-codes.ts). Without it, backup codes
+  /// cannot be created or used, and enrollment must not be offered.
   AuthMfaService({
     required AnalyticsService analyticsService,
     required AuthRepository authRepository,
+    FirebaseFunctions? functions,
   }) : _analyticsService = analyticsService,
-       _authRepository = authRepository;
+       _authRepository = authRepository,
+       _functions = functions;
+
+  /// Creates ten one-time backup codes and returns them, once. The server
+  /// keeps only salted hashes. Null when they could not be made; enrollment
+  /// must then stop, because the protection may not apply without a way back
+  /// (produktregler.md:749). The codes are never logged.
+  Future<List<String>?> generateBackupCodes() async {
+    final functions = _functions;
+    if (functions == null) return null;
+    try {
+      final result = await functions
+          .httpsCallable('generateMfaBackupCodes')
+          .call<Map<dynamic, dynamic>>();
+      final codes = (result.data['codes'] as List?)?.whereType<String>();
+      if (codes == null || codes.length != mfaBackupCodeCount) return null;
+      return codes.toList();
+    } on FirebaseFunctionsException catch (e) {
+      AppLogger.error('Backup codes could not be created: ${e.code}');
+      final details = e.details;
+      if (details is Map && details['code'] == 'requires-recent-login') {
+        setError(AppLocale.current.errorReauthRequired);
+      } else {
+        setError(AppLocale.current.mfaBackupCodesFailed);
+      }
+      return null;
+    } catch (e) {
+      AppLogger.error('Backup codes could not be created: ${e.runtimeType}');
+      setError(AppLocale.current.mfaBackupCodesFailed);
+      return null;
+    }
+  }
+
+  /// The way in without the phone: the server proves the password, spends
+  /// the code, and removes the phone factor. Neither the password nor the
+  /// code is logged. The caller signs in again with the password afterwards.
+  Future<MfaRecoveryOutcome> recoverWithBackupCode({
+    required String email,
+    required String password,
+    required String code,
+  }) async {
+    final functions = _functions;
+    if (functions == null) return MfaRecoveryOutcome.unavailable;
+    try {
+      // The server spends the App Check token (consumeAppCheckToken), so ask
+      // for a limited-use one: a replayed request is refused.
+      await functions
+          .httpsCallable(
+            'recoverWithMfaBackupCode',
+            options: HttpsCallableOptions(limitedUseAppCheckToken: true),
+          )
+          .call<dynamic>({
+            'email': email,
+            'password': password,
+            'code': code,
+          });
+      await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
+      return MfaRecoveryOutcome.recovered;
+    } on FirebaseFunctionsException catch (e) {
+      AppLogger.warning('MFA recovery refused: ${e.code}');
+      // No "not needed" outcome: the server answers an account without a
+      // second factor exactly like a wrong password, so the endpoint cannot
+      // confirm a password. Recovery is only offered after Firebase demanded
+      // a second factor, so an honest caller never lands there.
+      return switch (e.code) {
+        'permission-denied' => MfaRecoveryOutcome.rejected,
+        'resource-exhausted' => MfaRecoveryOutcome.locked,
+        _ => MfaRecoveryOutcome.unavailable,
+      };
+    } catch (e) {
+      AppLogger.warning('MFA recovery failed: ${e.runtimeType}');
+      return MfaRecoveryOutcome.unavailable;
+    }
+  }
 
   Future<bool> hasMfaEnabled() async {
     final user = _authRepository.currentUser;
@@ -160,6 +239,7 @@ class AuthMfaService extends ChangeNotifier
       AppLogger.info(
         'MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}',
       );
+      await _clearBackupCodes();
       await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
       return true;
     } on FirebaseAuthException catch (e) {
@@ -173,6 +253,23 @@ class AuthMfaService extends ChangeNotifier
     }
   }
 
+  /// Asks the server to delete the backup codes now that two-step
+  /// verification is off, so an old set cannot become valid again with a
+  /// later enrollment. The server checks that no factor is left and refuses
+  /// otherwise. Best effort: the unenrollment itself already succeeded, and
+  /// a new enrollment replaces the set anyway.
+  Future<void> _clearBackupCodes() async {
+    final functions = _functions;
+    if (functions == null) return;
+    try {
+      await functions.httpsCallable('clearMfaBackupCodes').call<dynamic>();
+    } on FirebaseFunctionsException catch (e) {
+      AppLogger.warning('Backup codes were not cleared: ${e.code}');
+    } catch (e) {
+      AppLogger.warning('Backup codes were not cleared: ${e.runtimeType}');
+    }
+  }
+
   MfaResolverInfo createMfaResolver(MultiFactorResolver resolver) {
     final phoneHint = resolver.hints
         .whereType<PhoneMultiFactorInfo>()
@@ -183,10 +280,15 @@ class AuthMfaService extends ChangeNotifier
     );
   }
 
+  /// Sends the sign-in code. [onAutoVerified] runs when the phone read the
+  /// code itself and the sign-in is already complete: the challenge view
+  /// must then move on without the user doing anything
+  /// (produktregler.md:747; Skarmar v12 etapp 3 #authmfa).
   Future<void> startMfaSignIn(
     MfaResolverInfo resolverInfo, {
     required void Function(String verificationId) onCodeSent,
     required void Function(MfaError error) onError,
+    void Function()? onAutoVerified,
   }) async {
     final resolver = resolverInfo.unwrap<MultiFactorResolver>();
     final phoneHint = resolver.hints
@@ -211,6 +313,7 @@ class AuthMfaService extends ChangeNotifier
               PhoneMultiFactorGenerator.getAssertion(credential),
             );
             AppLogger.info('MFA sign-in auto-completed');
+            onAutoVerified?.call();
           } catch (e) {
             if (e is FirebaseAuthException) {
               onError(MfaError(code: e.code, message: e.message));

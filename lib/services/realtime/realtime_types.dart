@@ -75,6 +75,16 @@ class ConflictEvent {
   /// auto-dismiss old banners.
   final DateTime occurredAt;
 
+  /// P5-U27b: the suggestion the losing edit was kept as, when [entity] is
+  /// [ConflictEntity.recipeShared] and the suggestion was stored
+  /// (produktregler.md:103). Null otherwise: then the package 5 choice in
+  /// ConflictDiffView still applies (PQ-02 = A), so nothing is lost.
+  final String? suggestionId;
+
+  /// Q6-12 = B: the suggestion [suggestionId] replaced this user's waiting
+  /// suggestion to the recipe, rather than being a new one.
+  final bool suggestionReplaced;
+
   ConflictEvent({
     required this.collectionPath,
     required this.docId,
@@ -83,6 +93,8 @@ class ConflictEvent {
     required this.chosenStrategy,
     required this.entity,
     required this.occurredAt,
+    this.suggestionId,
+    this.suggestionReplaced = false,
   });
 
   @override

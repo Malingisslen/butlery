@@ -433,5 +433,64 @@ void main() {
         () => mockPantryRepository.adjustQuantity(any(), any(), any()),
       );
     });
+
+    // Q5-02 = A: "har hemma" takes the bought amount, sent relatively
+    // (produktregler.md:146) so two purchases at once add up.
+    test(
+      'fillUnknownQuantity writes the unit, then the amount as a delta',
+      () async {
+        final item = _pantryItem(
+          id: 'p1',
+        ).copyWith(clearQuantity: true, unit: '');
+
+        final written = await service.fillUnknownQuantity(
+          userId,
+          item,
+          6,
+          'st',
+        );
+
+        expect(written, isTrue);
+        verifyInOrder([
+          () => mockPantryRepository.updateFields(userId, 'p1', {'unit': 'st'}),
+          () => mockPantryRepository.adjustQuantity(userId, 'p1', 6),
+        ]);
+      },
+    );
+
+    test(
+      'fillUnknownQuantity with the same unit sends only the delta',
+      () async {
+        final item = _pantryItem(id: 'p1').copyWith(clearQuantity: true);
+
+        await service.fillUnknownQuantity(userId, item, 2, item.unit);
+
+        verify(
+          () => mockPantryRepository.adjustQuantity(userId, 'p1', 2),
+        ).called(1);
+        verifyNever(
+          () => mockPantryRepository.updateFields(any(), any(), any()),
+        );
+      },
+    );
+
+    test(
+      'fillUnknownQuantity leaves a known amount to adjustQuantity',
+      () async {
+        final item = _pantryItem(id: 'p1');
+
+        final written = await service.fillUnknownQuantity(
+          userId,
+          item,
+          2,
+          'st',
+        );
+
+        expect(written, isFalse);
+        verifyNever(
+          () => mockPantryRepository.adjustQuantity(any(), any(), any()),
+        );
+      },
+    );
   });
 }

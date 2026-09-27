@@ -210,14 +210,38 @@ void main() {
       expect(body, startsWith('Per ändrade samtidigt.'));
     });
 
-    testWidgets('a shared recipe uses the own-recipe wording until PQ-02', (
-      tester,
-    ) async {
-      await tester.pumpWidget(harness());
+    // Q6-08 = A: a member never writes someone else's recipe, so without a
+    // stored suggestion the banner says the owner's version stays and that
+    // the change was neither saved nor sent; it offers no choice.
+    testWidgets('a shared recipe without a suggestion says the owner\'s '
+        'version stays and the change was not sent', (tester) async {
+      late String ownersTitle;
+      late String notSent;
+      late String notSentUnnamed;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              message = context.l10n.conflictBannerTitleRecipe;
+              ownersTitle = context.l10n.conflictBannerTitleSuggestion;
+              notSent = context.l10n.conflictBannerBodyMemberNotSent('Per');
+              notSentUnnamed =
+                  context.l10n.conflictBannerBodyMemberNotSentUnnamed;
+              return const ConflictBanner();
+            },
+          ),
+        ),
+      );
       conflicts.add(_event(entity: ConflictEntity.recipeShared));
       await tester.pumpAndSettle();
 
-      expect(find.text(message), findsOneWidget);
+      expect(find.text(ownersTitle), findsOneWidget);
+      expect(find.text(message), findsNothing);
+      expect(find.text(notSent), findsOneWidget);
+
+      conflicts.add(_event(entity: ConflictEntity.recipeShared, editor: ' '));
+      await tester.pumpAndSettle();
+      expect(find.text(notSentUnnamed), findsOneWidget);
     });
 
     testWidgets('a week menu gets the week title', (tester) async {

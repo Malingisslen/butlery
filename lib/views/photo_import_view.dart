@@ -28,6 +28,10 @@ import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/views/photo_import/image_preview.dart';
 import 'package:butlery/views/photo_import/photo_page_strip.dart';
+import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatefulWidget {
@@ -53,6 +57,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<PhotoImportViewModel>();
+    _viewModel.permissionResolver = _resolvePermission;
     _viewModel.addListener(_announceOcrCompletion);
     final shared = widget.initialImagePaths;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -65,6 +70,37 @@ class _PhotoImportViewState extends State<PhotoImportView> {
         _maybeOfferDraftRestore();
       }
     });
+  }
+
+  /// Flow 07 for camera and photos: our explanation, as drawn in Skarmar v12
+  /// etapp 3 #behkamera, before the system prompt; the OS is asked only after
+  /// Tillåt (produktregler.md:682). "Fråga igen" goes straight to the system
+  /// prompt (produktregler.md:683).
+  Future<OsPermissionOutcome> _resolvePermission(
+    ImageSource source,
+    bool askAgain,
+  ) {
+    final service = ServiceLocator.get<ImagePickerService>();
+    return service.resolvePermission(
+      source,
+      skipRationale: askAgain,
+      rationale: (src) async {
+        if (!mounted) return false;
+        final l10n = context.l10n;
+        final camera = src == ImageSource.camera;
+        return OsPermissionHelper.presentExplanation(
+          context,
+          title: camera
+              ? l10n.permImportCameraTitle
+              : l10n.permImportPhotosTitle,
+          body: camera ? l10n.permImportCameraBody : l10n.permImportPhotosBody,
+          consequence: l10n.permImportConsequence,
+          grantLabel: l10n.permAllow,
+          declineLabel: l10n.permNotNow,
+          icon: camera ? Icons.photo_camera_outlined : Icons.image_outlined,
+        );
+      },
+    );
   }
 
   /// BUT-941: load OS-shared photos into the import pipeline, then surface the
@@ -416,11 +452,10 @@ class _PhotoImportViewContent extends StatelessWidget {
                     ),
                     child: SwitchListTile(
                       value: viewModel.isHandwritten,
-                      // BUT-1460: freely switchable except while an import is
-                      // processing (canToggleHandwritten == !isProcessing).
-                      // Handwritten is a single-image replace flow, so there are
-                      // no captured pages to strand — the old capture-lock is
-                      // gone. Only blocked mid-pipeline to avoid a race.
+                      // BUT-1460: switchable except while an import is
+                      // processing, and it cannot be switched on while more
+                      // than one page is staged (the handwriting path reads
+                      // one image; see canToggleHandwritten).
                       onChanged: viewModel.canToggleHandwritten
                           ? (value) => viewModel.setHandwritten(value)
                           : null,
@@ -440,6 +475,23 @@ class _PhotoImportViewContent extends StatelessWidget {
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
 
+                  // Flow 07: what the permission answer means here, and the
+                  // way on (flows-roles-budget.md:98-106).
+                  if (viewModel.permissionNotice != null) ...[
+                    PhotoPermissionNoticeCard(
+                      notice: viewModel.permissionNotice!,
+                      onAskAgain: viewModel.askPermissionAgain,
+                      onOpenSettings: () => OsPermissionHelper.openSettings(),
+                      // A refused add-page keeps the pages already taken.
+                      onChooseFromGallery: viewModel.chooseFromGalleryInstead,
+                      onWriteYourself: () {
+                        viewModel.clearPermissionNotice();
+                        Navigator.pushNamed(context, Routes.manualEntry);
+                      },
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
+
                   // Bildvisning
                   ImagePreview(viewModel: viewModel),
                   const SizedBox(height: AppDimensions.spacingXl),
@@ -457,6 +509,29 @@ class _PhotoImportViewContent extends StatelessWidget {
                   // user sees it as a property of the chosen photo.
                   if (viewModel.hasImage) ...[
                     HeirloomSection(viewModel: viewModel),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
+
+                  // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are
+                  // taken or chosen first and the text is read only here,
+                  // the view's one saffron action (Skarmar v12 del 2
+                  // #fotoimport :704-706; Grafisk manual v6:219).
+                  if (viewModel.unreadPageCount > 0 && !viewModel.hasError) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        key: const ValueKey('photo-import-read-pages'),
+                        style: ComponentThemes.heroButtonStyle(cs),
+                        onPressed: viewModel.canReadPages
+                            ? viewModel.readPages
+                            : null,
+                        child: Text(
+                          context.l10n.importReadPages(
+                            viewModel.unreadPageCount,
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],
 
@@ -649,6 +724,151 @@ class _PhotoImportViewContent extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The permission notice on photo import, per flow 07
+/// (flows-roles-budget.md:98-106; produktregler.md:680-687):
+///
+/// - denied: says what is missing, offers "Fråga igen" and the fallback;
+/// - permanently denied: the same, with "Öppna inställningar" instead;
+/// - blocked by the device: says so, with no button to fix it — only the
+///   fallback, which is another way to the same recipe;
+/// - limited ("valda bilder"): its own state with "Välj fler bilder", never
+///   an error (Skarmar v12 etapp 3 #behfoton).
+///
+/// Fallbacks: no camera leads to the library, no library leads to writing
+/// the recipe yourself (flows-roles-budget.md:105).
+///
+/// Colours, both modes: the card is slot 834 in #behfoton, #E6EAD9 light =
+/// cs.surfaceContainerHighest and #24382C dark = cs.primary; text and glyph
+/// are cs.onSurface (#24382C light, #F5F4ED dark). The hint line is slot 620,
+/// #627061 light / #C9D3C4 dark; cs.onSurfaceVariant is used (#93A48D dark,
+/// interpretation: the dark bodyMuted member is not delivered).
+class PhotoPermissionNoticeCard extends StatelessWidget {
+  const PhotoPermissionNoticeCard({
+    super.key,
+    required this.notice,
+    required this.onAskAgain,
+    required this.onOpenSettings,
+    required this.onChooseFromGallery,
+    required this.onWriteYourself,
+  });
+
+  final PhotoPermissionNotice notice;
+  final VoidCallback onAskAgain;
+  final VoidCallback onOpenSettings;
+  final VoidCallback onChooseFromGallery;
+  final VoidCallback onWriteYourself;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final camera = notice.source == ImageSource.camera;
+    final outcome = notice.outcome;
+
+    final message = switch (outcome) {
+      OsPermissionOutcome.limited => l10n.permPhotosLimited,
+      OsPermissionOutcome.permanentlyDenied =>
+        camera
+            ? l10n.permCameraPermanentlyDenied
+            : l10n.permPhotosPermanentlyDenied,
+      OsPermissionOutcome.restricted =>
+        camera ? l10n.permCameraRestricted : l10n.permPhotosRestricted,
+      _ => camera ? l10n.permCameraDenied : l10n.permPhotosDenied,
+    };
+
+    final actions = <Widget>[
+      if (outcome == OsPermissionOutcome.denied)
+        OutlinedButton(
+          key: const ValueKey('permission-ask-again'),
+          style: ComponentThemes.outlinedButtonStyle(cs),
+          onPressed: onAskAgain,
+          child: Text(l10n.permAskAgain),
+        ),
+      if (outcome == OsPermissionOutcome.permanentlyDenied)
+        OutlinedButton(
+          key: const ValueKey('permission-open-settings'),
+          style: ComponentThemes.outlinedButtonStyle(cs),
+          onPressed: onOpenSettings,
+          child: Text(l10n.permOpenSettings),
+        ),
+      if (outcome == OsPermissionOutcome.limited)
+        OutlinedButton.icon(
+          key: const ValueKey('permission-choose-more'),
+          style: ComponentThemes.outlinedButtonStyle(cs),
+          onPressed: onOpenSettings,
+          icon: const Icon(Icons.add),
+          label: Text(l10n.permPhotosChooseMore),
+        ),
+      if (!outcome.isUsable)
+        TextButton(
+          key: ValueKey(
+            camera
+                ? 'permission-fallback-gallery'
+                : 'permission-fallback-write',
+          ),
+          onPressed: camera ? onChooseFromGallery : onWriteYourself,
+          child: Text(
+            camera ? l10n.permFallbackGallery : l10n.permFallbackWriteYourself,
+          ),
+        ),
+    ];
+
+    return Container(
+      key: ValueKey('photo-permission-notice-${outcome.name}'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      color: cs.brightness == Brightness.dark
+          ? cs.primary
+          : cs.surfaceContainerHighest,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  camera ? Icons.no_photography_outlined : Icons.image_outlined,
+                  color: cs.onSurface,
+                  size: AppDimensions.iconSizeM,
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                child: Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (outcome == OsPermissionOutcome.limited) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            Text(
+              l10n.permPhotosLimitedHint,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+          if (actions.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            Wrap(
+              spacing: AppDimensions.spacingSm,
+              runSpacing: AppDimensions.spacingXs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: actions,
+            ),
+          ],
+        ],
       ),
     );
   }

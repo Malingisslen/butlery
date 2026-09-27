@@ -54,8 +54,10 @@ class AppDatabase extends _$AppDatabase {
 
   /// 3: the offline queue's schema (produktregler.md:183-193, § 3.1) —
   /// opId, entity type, dependsOn and a permanent-failure flag.
+  /// 4: the retry schedule (produktregler.md:188) — when a sync entry may be
+  /// sent again, and when its first attempt failed.
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -69,7 +71,10 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(uploadQueueEntries);
         }
         if (from < 3) {
+          // Rebuilds the queues in their current shape, schema 4 included.
           await _migrateQueuesToV3(m);
+        } else if (from < 4) {
+          await _migrateSyncQueueToV4(m);
         }
       },
       beforeOpen: (details) async {
@@ -101,6 +106,9 @@ class AppDatabase extends _$AppDatabase {
           syncQueueEntries.entityType,
           syncQueueEntries.dependsOn,
           syncQueueEntries.permanentlyFailed,
+          // Schema 4: the table is rebuilt in its current shape.
+          syncQueueEntries.nextAttemptAt,
+          syncQueueEntries.firstFailedAt,
         ],
       ),
     );
@@ -113,6 +121,15 @@ class AppDatabase extends _$AppDatabase {
         ],
       ),
     );
+  }
+
+  /// Schema 3 → 4: two nullable columns for the retry schedule
+  /// (produktregler.md:188). Adding a column keeps every row as it is, so
+  /// no queued change is lost (produktregler.md:192); a migrated entry has
+  /// never failed under the new schedule and is sent at the next pass.
+  Future<void> _migrateSyncQueueToV4(Migrator m) async {
+    await m.addColumn(syncQueueEntries, syncQueueEntries.nextAttemptAt);
+    await m.addColumn(syncQueueEntries, syncQueueEntries.firstFailedAt);
   }
 
   /// A random UUID v4 per row, in SQL, so migrated opIds have the same
@@ -171,10 +188,15 @@ SELECT
   ///
   /// Nothing is deleted. Returns the opIds that were marked (for an upload,
   /// its id).
+  ///
+  /// [reason] is stored on every marked entry. When [rootReason] is given,
+  /// [opId] itself gets that instead, so the entry that failed keeps its own
+  /// cause and the ones after it say they hang on it.
   Future<Set<String>> markChainPermanentlyFailed(
     String userId,
     String opId, {
     String? reason,
+    String? rootReason,
   }) {
     return transaction(() async {
       final syncRows = await (select(
@@ -237,9 +259,49 @@ SELECT
           ),
         );
       }
+      if (rootReason != null) {
+        await (update(syncQueueEntries)..where(
+              (e) => e.userId.equals(userId) & e.opId.equals(opId),
+            ))
+            .write(SyncQueueEntriesCompanion(lastError: Value(rootReason)));
+        await (update(uploadQueueEntries)..where(
+              (e) => e.userId.equals(userId) & e.id.equals(opId),
+            ))
+            .write(UploadQueueEntriesCompanion(lastError: Value(rootReason)));
+      }
       return {...syncIds, ...uploadIds};
     });
   }
+
+  /// The ids of the user's entries in both queues that have not reached the
+  /// server: [waiting] are still sent by the queue, [failed] wait for the
+  /// user. A sync entry is known by its opId, an upload by its id
+  /// (produktregler.md:185, :187). Completed and cancelled uploads are in
+  /// neither set.
+  Future<({Set<String> waiting, Set<String> failed})> queuedOpIds(
+    String userId,
+  ) async {
+    final rows = await customSelect(
+      _queuedOpIdsSql,
+      variables: [Variable.withString(userId)],
+      readsFrom: {syncQueueEntries, uploadQueueEntries},
+    ).get();
+    final waiting = <String>{};
+    final failed = <String>{};
+    for (final row in rows) {
+      final id = row.read<String>('op_id');
+      (row.read<bool>('failed') ? failed : waiting).add(id);
+    }
+    return (waiting: waiting, failed: failed);
+  }
+
+  static const String _queuedOpIdsSql = """
+SELECT op_id, permanently_failed AS failed FROM sync_queue_entries
+  WHERE user_id = ?1
+UNION ALL
+SELECT id AS op_id, permanently_failed AS failed FROM upload_queue_entries
+  WHERE user_id = ?1 AND status NOT IN ('completed', 'cancelled')
+""";
 
   /// Clear all data (for testing or user logout)
   Future<void> clearAllData() async {

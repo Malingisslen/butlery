@@ -4303,7 +4303,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentRequiredDescription =>
-      'These consents are required for the app to function and cannot be disabled.';
+      'These cannot be switched off — without them there is no service to say yes or no to. If you want to leave entirely, the way is to delete your account, not a switch here.';
 
   @override
   String get consentBasicServices => 'Basic services';
@@ -6035,7 +6035,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importPhotoDescription =>
-      'Take a picture of a recipe or choose from gallery to import text automatically';
+      'Photograph the recipe or choose photos from your library, one page at a time. The text is read when you tap Read.';
 
   @override
   String get importPhotoImport => 'Photo import';
@@ -8425,10 +8425,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navigationRecipes => 'recipes';
 
   @override
-  String get navigationMenu => 'menu';
+  String get navigationMenu => 'Menu';
 
   @override
-  String get navigationShopping => 'shopping';
+  String get navigationShopping => 'Shopping';
 
   @override
   String get navigationAddNew => 'add new';
@@ -16425,7 +16425,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deepLinkExpired =>
-      'This link has expired and can no longer be opened.';
+      'This link is no longer valid. Ask the person who shared it for a new one.';
 
   @override
   String get deepLinkUnavailable => 'This content is no longer available.';
@@ -17245,4 +17245,1367 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reportDescriptionRequiredHelper =>
       'Required when you choose Other.';
+
+  @override
+  String get menuNoMatchTitle => 'No recipes match';
+
+  @override
+  String menuNoMatchBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The description gives no matches among your $count recipes.',
+      one: 'The description gives no match for your only recipe.',
+    );
+    return '$_temp0 Change or drop a requirement and we will find suggestions.';
+  }
+
+  @override
+  String menuNoMatchConstraints(String constraints) {
+    return 'Requirements: $constraints';
+  }
+
+  @override
+  String get menuNoMatchEditPrompt => 'Change the description';
+
+  @override
+  String get menuNoMatchPlanYourself => 'Plan the days yourself';
+
+  @override
+  String get menuGenerateOfflineReason =>
+      'No connection, so the week cannot be planned now. You can still change the calendar.';
+
+  @override
+  String get menuGenerateOfflineStopped =>
+      'The connection dropped, so the suggestion was not placed. The week is unchanged.';
+
+  @override
+  String get shoppingMergeTitle => 'To the shopping list';
+
+  @override
+  String shoppingMergeItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeSummary(int recipes, int rows, String items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes dishes give',
+      one: '1 dish gives',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      rows,
+      locale: localeName,
+      other: '$rows lines',
+      one: '1 line',
+    );
+    return '$_temp0 $_temp1. After merging that is $items.';
+  }
+
+  @override
+  String get shoppingMergeStatMerged => 'merged';
+
+  @override
+  String get shoppingMergeStatConverted => 'converted';
+
+  @override
+  String get shoppingMergeStatAtHome => 'at home';
+
+  @override
+  String get shoppingMergeShowDetails => 'Show details';
+
+  @override
+  String get shoppingMergeHideDetails => 'Hide details';
+
+  @override
+  String get shoppingMergeShowDetailsA11y => 'Show details about the merge';
+
+  @override
+  String get shoppingMergeHideDetailsA11y => 'Hide details about the merge';
+
+  @override
+  String get shoppingMergeDuplicatesTitle => 'Merge duplicates';
+
+  @override
+  String get shoppingMergeDuplicatesBody =>
+      'Yellow onion from three recipes becomes one line with the amounts added up. The line says “3 recipes”.';
+
+  @override
+  String get shoppingMergeConvertTitle => 'Convert units';
+
+  @override
+  String get shoppingMergeConvertBody =>
+      '2 dl + 100 ml becomes 3 dl. Volume and weight are never converted into each other — they stay two lines.';
+
+  @override
+  String get shoppingMergePantryTitle => 'Subtract pantry items';
+
+  @override
+  String shoppingMergePantryBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items are at home.',
+      one: '1 item is at home.',
+      zero: 'None of the items are at home.',
+    );
+    return '$_temp0 An unknown amount gives no deduction — the item is added marked “Maybe at home”.';
+  }
+
+  @override
+  String shoppingMergePantryCovered(String names) {
+    return 'At home in full: $names';
+  }
+
+  @override
+  String get shoppingMergePantryUnavailable =>
+      'The pantry could not be read, so the list is made without pantry deduction.';
+
+  @override
+  String get shoppingMergeReplaceTitle => 'Replace the list instead of adding';
+
+  @override
+  String get shoppingMergeReplaceBody =>
+      'Items you added yourself are always kept.';
+
+  @override
+  String get shoppingMergeReplaceUnavailable =>
+      'This list was made before the app kept the week\'s items apart from your own, so it cannot be replaced. The week\'s items are added.';
+
+  @override
+  String shoppingMergeAdd(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count items',
+      one: 'Add 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeReplaceAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Replace with $count items',
+      one: 'Replace with 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeAdded(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items were added to $list.',
+      one: '1 item was added to $list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingMergeReplaced(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$list now has $_temp0 from the week. Your own items are still there.';
+  }
+
+  @override
+  String get shoppingMergeUndoFailed => 'The undo could not be completed';
+
+  @override
+  String get shoppingMergeUndoFailedKept => 'The items are still on the list.';
+
+  @override
+  String shoppingMergeRowRecipes(int count) {
+    return '$count recipes';
+  }
+
+  @override
+  String get shoppingMergeMarkMaybeHome => 'Maybe at home';
+
+  @override
+  String get shoppingMergeMarkCheckDate => 'Check the date';
+
+  @override
+  String signOutPendingTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes have not been saved',
+      one: '1 change has not been saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get signOutPendingBody =>
+      'If you sign out now, they are lost. Butlery is happy to wait until you are online again.';
+
+  @override
+  String signOutPendingRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recipes · $count changes',
+      one: 'Recipes · 1 change',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String signOutPendingImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Images · $count waiting to upload',
+      one: 'Images · 1 waiting to upload',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get signOutPendingWait => 'Wait for sync';
+
+  @override
+  String get signOutPendingDiscard => 'Sign out and discard the changes';
+
+  @override
+  String sessionPendingChangesIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes have not been saved yet:',
+      one: '1 change has not been saved yet:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sessionEndedBackgroundTitle =>
+      'You were signed out while the app lay still.';
+
+  @override
+  String get sessionEndedBackgroundReason =>
+      'That happens after 45 minutes without activity, and it is meant to.';
+
+  @override
+  String sessionEndedBackgroundPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are still on the phone and are sent as soon as you are back in — nothing you did is lost.',
+      one:
+          '1 change is still on the phone and is sent as soon as you are back in — nothing you did is lost.',
+      zero: 'No changes are waiting.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String draftTimeLeftDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'kept for $count more days',
+      one: 'kept for 1 more day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String draftTimeLeftHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'kept for $count more hours',
+      one: 'kept for 1 more hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileDeleteNoRecallWindow =>
+      'There is no grace period. When the deletion is done, the account is gone and cannot be restored.';
+
+  @override
+  String get profileDeleteReasonLabel => 'Why are you deleting your account?';
+
+  @override
+  String get profileDeleteReasonHint => 'For example: no longer using the app';
+
+  @override
+  String get profileDeleteReasonHelp =>
+      'The reason goes into the audit record. It is the only trace left afterwards, which is why we ask before.';
+
+  @override
+  String get accountDeletionWaitNotice =>
+      'This can take up to nine minutes. Do not close the app — the deletion continues on the server, but you get no receipt if you leave.';
+
+  @override
+  String get accountDeletionReauthTitle => 'Confirm it is you';
+
+  @override
+  String get accountDeletionReauthBody =>
+      'For security, deleting an account needs a sign-in that is at most five minutes old. Sign in again and the deletion continues where it was.';
+
+  @override
+  String get accountDeletionReauthCancel => 'Cancel the deletion';
+
+  @override
+  String get accountDeletionReauthConfirm => 'Sign in again';
+
+  @override
+  String get accountDeletionPartialTitle => 'The account is partly deleted';
+
+  @override
+  String accountDeletionPartialHeading(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The account is gone — $count parts remain',
+      one: 'The account is gone — one part remains',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountDeletionPartialBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Your sign-in is deleted. $count collections could not be removed and remain with us.',
+      one:
+          'Your sign-in is deleted. One collection could not be removed and remains with us.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeletionPartialAuditIdLabel => 'Audit id';
+
+  @override
+  String get accountDeletionPartialNoAuditId =>
+      'There is no audit id. Mention the date and time of the deletion when you contact support.';
+
+  @override
+  String get accountDeletionPartialContact => 'Contact support with the id';
+
+  @override
+  String accountDeletionPartialEmailSubject(String auditId) {
+    return 'Partly deleted account $auditId';
+  }
+
+  @override
+  String get accountDeletionPartialNoEmail =>
+      'The email app could not be opened. Write to integritet@butlery.se and include the audit id.';
+
+  @override
+  String get dataExportMemoryNotice =>
+      'Save the file before you leave this page. It only lives in the phone\'s memory — if you go back, you have to export again.';
+
+  @override
+  String get dataExportNetworkTitle => 'The export was interrupted';
+
+  @override
+  String get dataExportNetworkBody =>
+      'The connection dropped while we gathered your data. Nothing on your account has changed.';
+
+  @override
+  String get dataExportNoPartialFile =>
+      'We do not offer a partial file. Whoever receives your data cannot tell what is missing from it.';
+
+  @override
+  String get dataExportSignedOutTitle => 'Your sign-in has expired';
+
+  @override
+  String get dataExportSignedOutBody =>
+      'Sign in again to get your data. Nothing on your account has changed.';
+
+  @override
+  String get dataExportSignIn => 'Sign in again';
+
+  @override
+  String get dataExportDeniedTitle => 'The export was refused';
+
+  @override
+  String get dataExportDeniedBody =>
+      'The fault is ours, not yours, and trying again will not help right now. Nothing on your account has changed.';
+
+  @override
+  String get dataExportNotNow => 'Not now';
+
+  @override
+  String get consentAiProcessing => 'AI interpretation';
+
+  @override
+  String get consentAiProcessingDescription =>
+      'Reads recipes from links, text and photos. Without it, imports are rougher.';
+
+  @override
+  String consentRenewalChangedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'We have changed $count things',
+      one: 'We have changed one thing',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String consentRenewalSinceVersion(String version, String date) {
+    return 'You agreed to version $version on $date. This is new since then.';
+  }
+
+  @override
+  String consentRenewalUnchanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The other $count purposes are unchanged and your choices stand.',
+      one: 'The other purpose is unchanged and your choice stands.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get consentRenewalAccept => 'I agree';
+
+  @override
+  String get consentRenewalChooseMyself => 'Let me choose';
+
+  @override
+  String get consentRenewalNotNow => 'Not now';
+
+  @override
+  String get consentRenewalNotNowNote =>
+      'If you choose Not now, everything continues as before. Nothing is switched off because you have not answered.';
+
+  @override
+  String get consentChangeAiProcessingAddedTitle =>
+      'AI interpretation is a new purpose';
+
+  @override
+  String get consentChangeAiProcessingAddedBody =>
+      'Reads recipes from links, text and photos. It stays off until you switch it on yourself under Let me choose.';
+
+  @override
+  String get consentRenewalSaveFailed =>
+      'Your consent could not be saved. Your earlier choices stand.';
+
+  @override
+  String get signOutDiscardFailed =>
+      'The changes could not be discarded, so you are still signed in.';
+
+  @override
+  String get mfaChallengeTitle => 'Two-step verification';
+
+  @override
+  String get mfaChallengeHeading => 'Enter the code';
+
+  @override
+  String mfaChallengeSentTo(String tail) {
+    return 'We sent a six-digit code to the number ending in $tail. If your phone fills it in by itself, we let you in without you doing anything.';
+  }
+
+  @override
+  String get mfaChallengeSentUnknown =>
+      'We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.';
+
+  @override
+  String mfaChallengeTimeLeft(int total, int left) {
+    return 'The code is valid for $total seconds. $left s left.';
+  }
+
+  @override
+  String get mfaChallengeCodeGone => 'The code has expired. Send a new code.';
+
+  @override
+  String get mfaChallengeResend => 'Send a new code';
+
+  @override
+  String get mfaChallengeWrongCode =>
+      'The code does not match. Check the digits or send a new code.';
+
+  @override
+  String get mfaChallengeExpired => 'The code has expired. Send a new code.';
+
+  @override
+  String get mfaChallengeFailed =>
+      'The sign-in could not be completed. Send a new code.';
+
+  @override
+  String get mfaBackupCodeUse => 'Use a backup code';
+
+  @override
+  String get mfaBackupCodeHeading => 'Sign in with a backup code';
+
+  @override
+  String get mfaBackupCodeExplanation =>
+      'A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.';
+
+  @override
+  String get mfaBackupCodeLabel => 'Backup code';
+
+  @override
+  String get mfaBackupCodeEnter => 'Enter one of your ten backup codes.';
+
+  @override
+  String get mfaBackupCodeSubmit => 'Sign in with the backup code';
+
+  @override
+  String get mfaBackupCodeBack => 'Back to the text message code';
+
+  @override
+  String get mfaBackupCodeRejected =>
+      'The password or the backup code does not match. A used code cannot be used again.';
+
+  @override
+  String get mfaBackupCodeLocked =>
+      'Too many backup code attempts. Wait an hour before you try again.';
+
+  @override
+  String get mfaBackupCodeUnavailable =>
+      'The backup code could not be checked right now. Nothing on your account has changed.';
+
+  @override
+  String get mfaBackupCodeRecovered =>
+      'Two-step verification is off. Add a phone number again under Account security.';
+
+  @override
+  String get mfaBackupCodesTitle => 'Ten backup codes';
+
+  @override
+  String get mfaBackupCodesBody =>
+      'Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.';
+
+  @override
+  String get mfaBackupCodesCopy => 'Copy the codes';
+
+  @override
+  String get mfaBackupCodesCopied => 'The codes are copied.';
+
+  @override
+  String get mfaBackupCodesSaved => 'I have saved the codes';
+
+  @override
+  String get mfaBackupCodesContinue => 'Continue to the phone number';
+
+  @override
+  String get mfaBackupCodesFailed =>
+      'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
+
+  @override
+  String get permAllow => 'Allow';
+
+  @override
+  String get permNotNow => 'Not now';
+
+  @override
+  String get permAskAgain => 'Ask again';
+
+  @override
+  String get permOpenSettings => 'Open settings';
+
+  @override
+  String get permImportCameraTitle => 'Photograph the recipe';
+
+  @override
+  String get permImportCameraBody =>
+      'I read the text in the photo and fill in the recipe for you. The photo is sent only to read the text.';
+
+  @override
+  String get permImportPhotosTitle => 'Choose photos of the recipe';
+
+  @override
+  String get permImportPhotosBody =>
+      'I read the text in the photos you choose and fill in the recipe for you.';
+
+  @override
+  String get permImportConsequence =>
+      'If you say no, you can still type the recipe or paste a link.';
+
+  @override
+  String get permCameraTitle => 'Take a photo with the camera';
+
+  @override
+  String get permCameraBody =>
+      'The camera is only used when you take a photo yourself.';
+
+  @override
+  String get permPhotosTitle => 'Choose photos from your library';
+
+  @override
+  String get permPhotosBody => 'Butlery only reads the photos you choose.';
+
+  @override
+  String get permCameraDenied =>
+      'The camera is not allowed, so the recipe cannot be photographed.';
+
+  @override
+  String get permPhotosDenied =>
+      'The photo library is not allowed, so the recipe cannot be read from a photo.';
+
+  @override
+  String get permCameraPermanentlyDenied =>
+      'The camera is switched off for Butlery in the phone\'s settings.';
+
+  @override
+  String get permPhotosPermanentlyDenied =>
+      'The photo library is switched off for Butlery in the phone\'s settings.';
+
+  @override
+  String get permCameraRestricted =>
+      'This device blocks the camera. It cannot be changed here.';
+
+  @override
+  String get permPhotosRestricted =>
+      'This device blocks the photo library. It cannot be changed here.';
+
+  @override
+  String get permFallbackGallery => 'Choose from the library';
+
+  @override
+  String get permFallbackWriteYourself => 'Write it yourself';
+
+  @override
+  String get permPhotosLimited =>
+      'You have shared some photos with Butlery. I only see those.';
+
+  @override
+  String get permPhotosLimitedHint =>
+      'If you cannot find the photo, it is missing from your selection, not from the library. You can add more without giving me the whole library.';
+
+  @override
+  String get permPhotosChooseMore => 'Choose more photos';
+
+  @override
+  String get timerNotifDeniedTitle => 'The timer only shows in the app';
+
+  @override
+  String get timerNotifDeniedBody =>
+      'Notifications are off for Butlery, so the timer cannot alert you while the app is in the background or the phone is locked.';
+
+  @override
+  String get timerNotifDeniedStart => 'Start the timer';
+
+  @override
+  String get timerInAppOnly => 'The timer only shows in the app.';
+
+  @override
+  String get notifSystemOffRow =>
+      'Notifications are off for Butlery in the system settings. Nothing below can be switched on until you change that there.';
+
+  @override
+  String get a11yOpenSystemSettings => 'Open the system settings';
+
+  @override
+  String get cookingExitConfirmTitle => 'Stop cooking?';
+
+  @override
+  String cookingExitConfirmBody(int step, int total) {
+    return 'You are on step $step of $total. The recipe does not count as cooked until you tap Done.';
+  }
+
+  @override
+  String get cookingExitConfirmStay => 'Keep cooking';
+
+  @override
+  String get cookingExitConfirmLeave => 'Stop cooking';
+
+  @override
+  String get cookingDone => 'Done';
+
+  @override
+  String get cookingNoStepsTitle => 'The recipe has no steps yet';
+
+  @override
+  String get cookingNoStepsBody =>
+      'The ingredients are there, but nobody has written how to make it. Write the steps, or take the ingredients to the shopping list.';
+
+  @override
+  String get cookingNoStepsBodyNoIngredients =>
+      'Nobody has written how to make it yet. Write the steps and you can cook from here.';
+
+  @override
+  String get cookingNoStepsWrite => 'Write the steps';
+
+  @override
+  String get cookingNoStepsShopping => 'To the shopping list';
+
+  @override
+  String get parseConfidenceConfirm => 'Correct';
+
+  @override
+  String get parseConfidenceConfirmed => 'Confirmed';
+
+  @override
+  String a11yParseConfidenceConfirm(String line) {
+    return 'Confirm the line $line';
+  }
+
+  @override
+  String parseConfidencePendingSave(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Confirm $count lines before you save',
+      one: 'Confirm 1 line before you save',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get parseConfidenceUnreadLine => 'The line could not be read';
+
+  @override
+  String get a11yParseConfidenceUnreadLine => 'A line that could not be read';
+
+  @override
+  String importReadPages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count pages',
+      one: 'Read 1 page',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get roleLoweredRecipeTitle => 'You can no longer edit the recipe';
+
+  @override
+  String get roleLoweredRecipeBody =>
+      'You can now only read the recipe, so the changes are not saved to it. You can save them as your own copy.';
+
+  @override
+  String get roleLoweredSaveCopy => 'Save as your own copy';
+
+  @override
+  String get roleLoweredDiscard => 'Discard the changes';
+
+  @override
+  String get roleLoweredRecipeClosed =>
+      'You can no longer edit the recipe, only read it.';
+
+  @override
+  String get roleLoweredShoppingList =>
+      'You can no longer change the list, only read it.';
+
+  @override
+  String get roleLoweredShoppingUnsaved =>
+      'What you typed was not added to the list:';
+
+  @override
+  String get roleLoweredCopyText => 'Copy the text';
+
+  @override
+  String get roleLoweredTextCopied => 'The text is copied.';
+
+  @override
+  String get roleLoweredGroupMenu =>
+      'You can no longer change the group\'s menu, only read it.';
+
+  @override
+  String get conflictBannerTitleSuggestion => 'The owner\'s version stays';
+
+  @override
+  String conflictBannerBodySuggestion(String name) {
+    return '$name changed it at the same time. Your change is kept as a suggestion for 7 days.';
+  }
+
+  @override
+  String get conflictBannerBodySuggestionUnnamed =>
+      'Someone else changed it at the same time. Your change is kept as a suggestion for 7 days.';
+
+  @override
+  String conflictBannerBodyMemberNotSent(String name) {
+    return '$name changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.';
+  }
+
+  @override
+  String get conflictBannerBodyMemberNotSentUnnamed =>
+      'Someone else changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.';
+
+  @override
+  String get recipeSuggestionSeeMine => 'See your suggestion';
+
+  @override
+  String get recipeSuggestionSee => 'See the suggestion';
+
+  @override
+  String recipeSuggestionFromOne(String name) {
+    return '$name suggests a change to the recipe.';
+  }
+
+  @override
+  String get recipeSuggestionFromOneUnnamed =>
+      'A member suggests a change to the recipe.';
+
+  @override
+  String recipeSuggestionFromMany(int count) {
+    return '$count suggested changes are waiting for you.';
+  }
+
+  @override
+  String recipeSuggestionMinePending(String date) {
+    return 'Your suggestion is waiting for the owner. It is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionMineAccepted =>
+      'The owner took your suggestion into the recipe.';
+
+  @override
+  String recipeSuggestionMineDismissed(String date) {
+    return 'The owner dismissed your suggestion. It is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionTitle => 'Suggested change';
+
+  @override
+  String recipeSuggestionIntroOwner(String name, String date) {
+    return '$name suggests this. The suggestion is kept until $date.';
+  }
+
+  @override
+  String recipeSuggestionIntroMine(String date) {
+    return 'You suggested this. The suggestion is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionSuggestedLabel => 'Suggestion';
+
+  @override
+  String get recipeSuggestionCurrentLabel => 'Recipe now';
+
+  @override
+  String get recipeSuggestionAccept => 'Use the suggestion';
+
+  @override
+  String get recipeSuggestionDismiss => 'Dismiss the suggestion';
+
+  @override
+  String get recipeSuggestionAccepted =>
+      'The suggestion is now part of the recipe.';
+
+  @override
+  String get recipeSuggestionDismissed =>
+      'The suggestion is dismissed. The recipe is unchanged.';
+
+  @override
+  String get recipeSuggestionAcceptFailed =>
+      'The suggestion could not be taken into the recipe.';
+
+  @override
+  String get recipeSuggestionDismissFailed =>
+      'The suggestion could not be dismissed.';
+
+  @override
+  String recipeSuggestionKeptUntil(String date) {
+    return 'The suggestion is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionRecipeGone =>
+      'The recipe no longer exists, so the suggestion cannot be taken in.';
+
+  @override
+  String get recipeSuggestionLoadFailed =>
+      'The suggestion could not be compared with the recipe. Check the connection.';
+
+  @override
+  String get recipeSuggestionNoChanges =>
+      'The suggestion is the same as the recipe now.';
+
+  @override
+  String get recipeSuggestionLoading => 'Loading the suggestion …';
+
+  @override
+  String recipeAddCountToShoppingList(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count items to the shopping list',
+      one: 'Add 1 item to the shopping list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuOverflowDiscardAction => 'Discard the rest';
+
+  @override
+  String weeklyMenuOverflowDiscarded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes discarded from the tray',
+      one: '1 dish discarded from the tray',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pantryItemAmountUnknown => 'at home';
+
+  @override
+  String recipePantryAllAtHome(String names) {
+    return 'Everything is at home in full, so nothing is added to the shopping list: $names';
+  }
+
+  @override
+  String get recipeAllAtHome => 'Everything is at home';
+
+  @override
+  String recipePantryLessened(String names) {
+    return 'Less than the recipe, since some is at home: $names';
+  }
+
+  @override
+  String get navigationHome => 'Home';
+
+  @override
+  String get navigationMore => 'More';
+
+  @override
+  String get navigationAddAction => 'Add';
+
+  @override
+  String get moreTitle => 'More';
+
+  @override
+  String get moreSectionTogether => 'Together';
+
+  @override
+  String get moreSectionKitchen => 'Your kitchen';
+
+  @override
+  String get moreSectionAppAccount => 'App & account';
+
+  @override
+  String get moreFamily => 'My family';
+
+  @override
+  String get morePersonalTags => 'Personal tags';
+
+  @override
+  String get moreCollectionStats => 'Collection statistics';
+
+  @override
+  String get moreNotifications => 'Notifications';
+
+  @override
+  String get addSheetQuickSaveTitle => 'Quick save';
+
+  @override
+  String get addSheetQuickSaveSubtitle =>
+      'Just name and meal — import the details later';
+
+  @override
+  String get syncQueueTitle => 'Waiting to sync';
+
+  @override
+  String syncQueueNeedsYouHeader(int count) {
+    return 'Waiting for you · $count';
+  }
+
+  @override
+  String get syncQueueNeedsYouHint =>
+      'These are not retried by themselves. The cause is written out, and each one has an action.';
+
+  @override
+  String syncQueueQueuedHeader(int count) {
+    return 'Queued · $count';
+  }
+
+  @override
+  String get syncQueueOrderNote =>
+      'Changes to one item go in order, and different items sync side by side.';
+
+  @override
+  String get syncQueueSyncNow => 'Try to sync now';
+
+  @override
+  String get syncQueueSyncing => 'Syncing …';
+
+  @override
+  String get syncQueueRetry => 'Try again';
+
+  @override
+  String syncQueueRetryA11y(String what) {
+    return 'Try again — $what';
+  }
+
+  @override
+  String get syncQueueDiscard => 'Discard the change';
+
+  @override
+  String syncQueueDiscardA11y(String what) {
+    return 'Discard the change $what';
+  }
+
+  @override
+  String get syncQueueDiscarded => 'Change discarded.';
+
+  @override
+  String get syncQueueRecipeDiscarded => 'The recipe was discarded.';
+
+  @override
+  String get syncQueueDiscardPhoneOnlyTitle => 'Discard the recipe?';
+
+  @override
+  String syncQueueDiscardPhoneOnlyBody(String title) {
+    return '$title exists only on this phone. It never reached the server, so if you discard it, it is gone everywhere.';
+  }
+
+  @override
+  String get syncQueueDiscardPhoneOnlyConfirm => 'Discard the recipe';
+
+  @override
+  String get syncQueueDiscardFailed => 'The change could not be discarded.';
+
+  @override
+  String get syncQueueRetryFailed =>
+      'The change could not be put back in the queue.';
+
+  @override
+  String get syncQueueSyncFailed => 'The queue could not be sent right now.';
+
+  @override
+  String get syncQueueChangeKept => 'It stays under Waiting for you.';
+
+  @override
+  String get syncQueueChangesKept => 'The changes stay on the phone.';
+
+  @override
+  String get syncQueueEmpty =>
+      'Everything is saved. Nothing is waiting to sync.';
+
+  @override
+  String get syncQueueWaitsOnEarlier => 'waiting for an earlier change';
+
+  @override
+  String get syncQueueUnnamedRecipe => 'A recipe';
+
+  @override
+  String syncQueueRecipeCreated(String title) {
+    return '$title · new recipe';
+  }
+
+  @override
+  String syncQueueRecipeUpdated(String title) {
+    return '$title · changed';
+  }
+
+  @override
+  String syncQueueRecipeDeleted(String title) {
+    return '$title · deleted';
+  }
+
+  @override
+  String syncQueueRecipeTagged(String title) {
+    return '$title · being tagged';
+  }
+
+  @override
+  String syncQueueImageFor(String title) {
+    return 'Photo for $title';
+  }
+
+  @override
+  String get syncQueueImage => 'A photo';
+
+  @override
+  String get syncQueueReasonNotFound => 'The recipe no longer exists';
+
+  @override
+  String get syncQueueReasonPermission => 'You no longer have permission';
+
+  @override
+  String get syncQueueReasonTooLarge => 'The photo is too large';
+
+  @override
+  String get syncQueueReasonDependency =>
+      'It depends on a change that could not be saved';
+
+  @override
+  String get syncQueueReasonUnknown => 'The server did not accept the change';
+
+  @override
+  String get syncQueueReasonExpired => 'Could not be saved for 24 h';
+
+  @override
+  String get syncQueueSaveAsCopy => 'Save as a copy';
+
+  @override
+  String syncQueueCopyTitle(String title) {
+    return '$title (copy)';
+  }
+
+  @override
+  String syncQueueSaveAsCopyA11y(String what) {
+    return 'Save as a copy — $what';
+  }
+
+  @override
+  String get syncQueueTrySmaller => 'Try smaller';
+
+  @override
+  String syncQueueTrySmallerA11y(String what) {
+    return 'Try smaller — $what';
+  }
+
+  @override
+  String get syncQueueCopyFailed => 'The copy could not be saved.';
+
+  @override
+  String get syncQueueTrySmallerFailed =>
+      'The image could not be made smaller.';
+
+  @override
+  String syncQueueNextAttemptSeconds(int seconds) {
+    return 'next attempt in $seconds s';
+  }
+
+  @override
+  String syncQueueNextAttemptMinutes(int minutes) {
+    return 'next attempt in $minutes min';
+  }
+
+  @override
+  String get syncQueueAgeNow => 'now';
+
+  @override
+  String syncQueueAgeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String syncQueueAgeHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String syncQueueAgeHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String syncQueueAgeDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncQueueIndicatorA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes are waiting for you. Open Waiting to sync',
+      one: '1 change is waiting for you. Open Waiting to sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipeSuggestChange => 'Suggest a change';
+
+  @override
+  String get recipeSuggestionSend => 'Send the suggestion';
+
+  @override
+  String get recipeSuggestionSending => 'Sending the suggestion …';
+
+  @override
+  String get recipeSuggestionSent => 'The suggestion is sent to the owner.';
+
+  @override
+  String get recipeSuggestionSendFailed => 'The suggestion could not be sent.';
+
+  @override
+  String get recipeSuggestionCoversText =>
+      'A suggestion covers the recipe\'s text: title, description, meal, portions, time, ingredients and steps.';
+
+  @override
+  String get recipeSuggestionReplaced =>
+      'The suggestion is sent and replaced your earlier one.';
+
+  @override
+  String conflictBannerBodySuggestionReplaced(String name) {
+    return '$name changed it at the same time. Your change replaced your earlier suggestion and is kept for 7 days.';
+  }
+
+  @override
+  String get conflictBannerBodySuggestionReplacedUnnamed =>
+      'Someone else changed it at the same time. Your change replaced your earlier suggestion and is kept for 7 days.';
+
+  @override
+  String recipeSuggestionFromOneUpdated(String name) {
+    return '$name has updated their suggestion to the recipe.';
+  }
+
+  @override
+  String get recipeSuggestionFromOneUpdatedUnnamed =>
+      'A member has updated their suggestion to the recipe.';
+
+  @override
+  String recipeSuggestionFromManyUpdated(int count, int updated) {
+    String _temp0 = intl.Intl.pluralLogic(
+      updated,
+      locale: localeName,
+      other: '$updated of them have been updated.',
+      one: 'One of them has been updated.',
+    );
+    return '$count suggested changes are waiting for you. $_temp0';
+  }
+
+  @override
+  String recipeSuggestionIntroOwnerUpdated(String name, String date) {
+    return '$name has updated their suggestion to this. The suggestion is kept until $date.';
+  }
+
+  @override
+  String recipeSuggestionIntroMineUpdated(String date) {
+    return 'You suggested this, and it replaced your earlier suggestion. The suggestion is kept until $date.';
+  }
+
+  @override
+  String get recipeSuggestionChangedSinceOpened =>
+      'The suggestion has changed since you opened it. Open it again to see the new one.';
+
+  @override
+  String get cookingNoStepsSaveCopy => 'Save my copy';
+
+  @override
+  String get cookingNoStepsBodyOthers =>
+      'The ingredients are there, but nobody has written how to make it. Save your own copy and write the steps there, or take the ingredients to the shopping list.';
+
+  @override
+  String get cookingNoStepsBodyOthersNoIngredients =>
+      'Nobody has written how to make it yet. Save your own copy and write the steps there.';
+
+  @override
+  String get hemGreetingMorning => 'Good morning';
+
+  @override
+  String get hemGreetingDay => 'Hi';
+
+  @override
+  String get hemGreetingEvening => 'Good evening';
+
+  @override
+  String get hemGreetingNight => 'Good night';
+
+  @override
+  String get hemGreetingWelcome => 'Welcome';
+
+  @override
+  String hemGreetingWithName(String greeting, String name) {
+    return '$greeting, $name';
+  }
+
+  @override
+  String get hemTonight => 'Tonight';
+
+  @override
+  String hemLibraryHeading(int count) {
+    return 'Your recipes · $count';
+  }
+
+  @override
+  String hemMetaMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String hemMetaPortions(int count) {
+    return '$count serv.';
+  }
+
+  @override
+  String get hemStartCooking => 'Start cooking';
+
+  @override
+  String get hemSwapDish => 'Change dish';
+
+  @override
+  String get hemAllInPantry => 'all in the pantry';
+
+  @override
+  String get hemLoadingPlan => 'Fetching this week\'s plan …';
+
+  @override
+  String get hemPlanErrorWhat => 'This week\'s plan could not be fetched.';
+
+  @override
+  String get hemPlanErrorPreserved =>
+      'Your plan is saved and still there – it was the fetch that failed, not the plan.';
+
+  @override
+  String get hemShowSavedPlan => 'Open the week menu';
+
+  @override
+  String hemPlanFetchedAt(String time) {
+    return 'The plan was fetched at $time – someone else may have changed it since.';
+  }
+
+  @override
+  String get hemEmptyTitle => 'Butlery becomes useful with one recipe';
+
+  @override
+  String get hemEmptyBody =>
+      'Add something you already cook often. Then Butlery can plan the week, scale portions and write the shopping list for you.';
+
+  @override
+  String get hemEmptyShortcuts => 'Quickest ways';
+
+  @override
+  String get hemEmptyLinkTitle => 'Paste a link';
+
+  @override
+  String get hemEmptyLinkBody => 'from a recipe page, YouTube or Instagram';
+
+  @override
+  String get hemEmptyPhotoTitle => 'Photograph a recipe page';
+
+  @override
+  String get hemEmptyPhotoBody => 'from a cookbook or a clipping';
+
+  @override
+  String get hemEmptyWriteTitle => 'Write it yourself';
+
+  @override
+  String get hemEmptyWriteBody => 'for what you cook without a recipe';
+
+  @override
+  String get hemEmptyAllergyNote =>
+      'Does the household have allergies? Set them first – then Butlery never plans anything unsafe.';
+
+  @override
+  String get hemEmptyAllergyLink => 'Set allergens';
 }

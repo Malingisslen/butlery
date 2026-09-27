@@ -139,6 +139,37 @@ class ConflictResolutionModule {
     }
   }
 
+  /// P5-U27b: announces a conflict settled outside [resolveConflict]: on
+  /// someone else's shared recipe the owner's version wins and the losing edit
+  /// is kept as the suggestion [suggestionId] (produktregler.md:103).
+  /// [replaced] when it replaced this user's waiting suggestion (Q6-12 = B).
+  void announceSuggestion<T extends RealtimeResource>(
+    T local,
+    T remote, {
+    required String suggestionId,
+    bool replaced = false,
+  }) => _emitConflict(
+    local,
+    remote,
+    ConflictResolutionStrategy.remoteWon,
+    ConflictEntity.recipeShared,
+    suggestionId: suggestionId,
+    suggestionReplaced: replaced,
+  );
+
+  /// Q6-08 = A: announces a conflict on someone else's shared recipe where
+  /// the owner's version stayed and this user's edit was neither written nor
+  /// kept as a suggestion (no store, or storing failed).
+  /// It carries no suggestion id, so no surface offers a write the server
+  /// refuses a member.
+  void announceMemberNotSent<T extends RealtimeResource>(T local, T remote) =>
+      _emitConflict(
+        local,
+        remote,
+        ConflictResolutionStrategy.remoteWon,
+        ConflictEntity.recipeShared,
+      );
+
   /// Hands one [ConflictEvent] to [onConflict]. A sink that throws is logged
   /// and contained here, so a broken listener can neither flip the resolver's
   /// choice nor cause a second emission from the error branch.
@@ -146,8 +177,10 @@ class ConflictResolutionModule {
     T local,
     T remote,
     ConflictResolutionStrategy strategy,
-    ConflictEntity entity,
-  ) {
+    ConflictEntity entity, {
+    String? suggestionId,
+    bool suggestionReplaced = false,
+  }) {
     final sink = onConflict;
     if (sink == null) return;
     try {
@@ -160,6 +193,8 @@ class ConflictResolutionModule {
           chosenStrategy: strategy,
           entity: entity,
           occurredAt: clock.now(),
+          suggestionId: suggestionId,
+          suggestionReplaced: suggestionReplaced,
         ),
       );
     } catch (e) {

@@ -209,6 +209,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       },
       // H9: Callback for retagging recipes when connectivity restores
       onTagRecipe: _retagRecipe,
+      // A retry timer that fires offline waits for the reconnect pass.
+      isOnlineNow: () => isOnline,
     );
 
     // Initial sync state refresh

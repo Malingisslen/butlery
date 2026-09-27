@@ -20,9 +20,14 @@ import 'package:butlery/repositories/firebase/firebase_cooking_session_repositor
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_overwritten_version_repository.dart';
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
+import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_suggestion_repository.dart';
+import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -48,6 +53,9 @@ class CollaborationModule implements DIModule {
     // P5-U26b: overwritten versions kept 30 days behind "Återställ".
     OverwrittenVersionRepository,
     OverwrittenVersionService,
+    // P5-U27b: suggestions to someone else's shared recipe, kept 7 days.
+    RecipeSuggestionRepository,
+    RecipeSuggestionService,
     RealtimeRecipeService,
     RealtimeMenuService,
     UnifiedShoppingService,
@@ -79,11 +87,55 @@ class CollaborationModule implements DIModule {
       ),
     );
 
+    // P5-U27b: suggestions to someone else's shared recipe
+    // (recipe_suggestions), stored by RealtimeSyncService when a non-owner's
+    // edit meets the owner's.
+    container.registerLazySingleton<RecipeSuggestionRepository>(
+      () => FirebaseRecipeSuggestionRepository(
+        authRepository: app<AuthRepository>(),
+      ),
+    );
+
     container.registerLazySingleton<RealtimeSyncService>(
       () => RealtimeSyncService(
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
         overwrittenVersions: container<OverwrittenVersionRepository>(),
+        suggestions: container<RecipeSuggestionRepository>(),
+        // P6-U08b: conflict notices wait for the offline queue to empty
+        // (produktregler.md:189).
+        queueSettled: () => SyncQueueSource.resolve().watchSettled(),
+      ),
+    );
+
+    // Q6-08 = A: a suggestion is taken into the owner's own library recipe,
+    // written the way the owner's own editor writes it
+    // (RecipePersistenceManager.saveRecipe). Resolved at call time, so the
+    // content module's registration order does not matter.
+    container.registerLazySingleton<RecipeSuggestionService>(
+      () => RecipeSuggestionService(
+        repository: container<RecipeSuggestionRepository>(),
+        syncService: container<RealtimeSyncService>(),
+        readOwnRecipe: (id) async =>
+            container.isRegistered<UnifiedRecipeService>()
+            ? container<UnifiedRecipeService>().getRecipeById(id)
+            : null,
+        writeOwnRecipe: (recipe) async {
+          final recipes = container<UnifiedRecipeService>();
+          final result = await recipes.personal.updateUnifiedRecipe(recipe);
+          if (!result.isSuccess) {
+            throw StateError(result.message ?? 'recipe update failed');
+          }
+        },
+        // The suggester's view of their own suggestion reads the owner's
+        // recipe through the member's read path (recipe-shared-read-rules).
+        readSharedRecipe: ({required ownerId, required recipeId}) async =>
+            container.isRegistered<UnifiedRecipeService>()
+            ? container<UnifiedRecipeService>().fetchFriendRecipe(
+                ownerId: ownerId,
+                recipeId: recipeId,
+              )
+            : null,
       ),
     );
 

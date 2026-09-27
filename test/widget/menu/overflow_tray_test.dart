@@ -295,5 +295,27 @@ void main() {
       // The tray now says that week was full too and offers no third week.
       expect(find.byKey(OverflowTray.nextWeekKey), findsNothing);
     });
+
+    // Q5-01 = A (produktbeslut 2026-09-24): "Släng resten" empties the
+    // tray at once, and Ångra (7 s, produktregler.md:131) brings it back.
+    testWidgets('Släng resten empties the tray, and Ångra brings it back', (
+      tester,
+    ) async {
+      final vm = await placed(tester);
+
+      expect(find.text('Släng resten'), findsOneWidget);
+      await tester.tap(find.byKey(OverflowTray.discardKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OverflowTray), findsNothing);
+      expect(vm.hasOverflow, isFalse);
+      expect(find.text('1 rätt slängdes ur brickan'), findsOneWidget);
+
+      await tester.tap(find.text('Ångra'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OverflowTray), findsOneWidget);
+      expect(vm.overflow.map((r) => r.id), ['o1']);
+    });
   });
 }

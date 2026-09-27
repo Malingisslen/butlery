@@ -174,17 +174,16 @@ void main() {
       );
     });
 
-    test('should throw error when generated menu is empty', () async {
+    // P6-U01: nothing matched is its own outcome ("0 recept placerade ->
+    // inga matchningar", flows-roles-budget.md:32), not "Ett fel uppstod".
+    test('returns the empty menu when nothing matched, with the pool size '
+        'for the no-match state', () async {
       mockMenuService.setGenerateMenuResult(<String, List<Recipe>>{});
 
-      expect(
-        () => menuGenerator.generateMenuFromPrompt('test prompt'),
-        throwsA(
-          predicate(
-            (e) => e is Exception && e.toString().contains('Ett fel uppstod'),
-          ),
-        ),
-      );
+      final result = await menuGenerator.generateMenuFromPrompt('test prompt');
+
+      expect(result, isEmpty);
+      expect(menuGenerator.lastPoolSize, mockRecipeService.recipes.length);
     });
 
     test(

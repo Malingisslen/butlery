@@ -34,6 +34,7 @@ import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/cook_snap_service.dart';
@@ -622,6 +623,103 @@ void main() {
       );
     },
   );
+
+  // Q6-08 = A (produktbeslut 2026-09-27): the menu per role,
+  // produktregler.md:244-252. A member of someone else's shared recipe sees
+  // "Föreslå ändring" where the owner sees Redigera (:247), and no row that
+  // writes the recipe (Radera is the owner's alone, :252). The role comes
+  // from the recipe's owner id and member map, never from the screen.
+  group('RecipeDetailView — the menu follows who you are (Q6-08)', () {
+    const owner = 'friend-owner-456';
+
+    void seed(Recipe r) {
+      recipe = r;
+      recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
+    }
+
+    Recipe othersRecipe({required bool shareWithMe}) => RecipeFactory.build(
+      id: 'recipe-shared-q608',
+      title: 'Olles pannkakor',
+      createdBy: owner,
+      ingredients: ['3 dl mjöl', '6 dl mjölk', '3 ägg'],
+      instructions: ['Vispa smeten.', 'Stek tunna pannkakor.'],
+      socialData: RecipeSocialData(
+        ownerId: owner,
+        memberPermissions: shareWithMe
+            ? const {_testUserId: ResourcePermission.editor}
+            : const {'someone-else': ResourcePermission.editor},
+      ),
+    );
+
+    Future<void> openMenu(WidgetTester tester) async {
+      final previousOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
+          return;
+        }
+        previousOnError?.call(details);
+      };
+      try {
+        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      } finally {
+        FlutterError.onError = previousOnError;
+      }
+    }
+
+    testWidgets('the owner edits', (tester) async {
+      await pumpDetailView(tester);
+      await openMenu(tester);
+      final l10n = l10nOf(tester);
+      expect(find.text(l10n.recipeEdit), findsOneWidget);
+      expect(find.text(l10n.recipeSuggestChange), findsNothing);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-delete')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a member suggests a change instead, and cannot delete', (
+      tester,
+    ) async {
+      seed(othersRecipe(shareWithMe: true));
+      await pumpDetailView(tester);
+      await openMenu(tester);
+      final l10n = l10nOf(tester);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-suggest-change')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.recipeSuggestChange), findsOneWidget);
+      expect(find.text(l10n.recipeEdit), findsNothing);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-edit')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-delete')),
+        findsNothing,
+      );
+      expect(find.text(l10n.recipeUpdateTags), findsNothing);
+      expect(find.text(l10n.recipeEditTags), findsNothing);
+    });
+
+    testWidgets('someone the recipe is not shared with gets neither', (
+      tester,
+    ) async {
+      seed(othersRecipe(shareWithMe: false));
+      await pumpDetailView(tester);
+      await openMenu(tester);
+      final l10n = l10nOf(tester);
+      expect(find.text(l10n.recipeEdit), findsNothing);
+      expect(find.text(l10n.recipeSuggestChange), findsNothing);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-delete')),
+        findsNothing,
+      );
+    });
+  });
 
   group('RecipeDetailView — re-extract from source (BUT-1205)', () {
     // A parseable Swedish payload: TextImportStrategy is fully hermetic (no DI,

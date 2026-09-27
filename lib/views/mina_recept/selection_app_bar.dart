@@ -46,11 +46,6 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
   RecipeListViewModel viewModel, {
   String? secondaryLine,
 }) {
-  final cs = Theme.of(context).colorScheme;
-  // Interpretation: #flerbar is drawn at 412 dp. Below 360 dp the counter,
-  // Avbryt and three actions plus the kebab do not fit one row, so share
-  // moves to the top of the kebab ("högst tre", produktregler.md:886).
-  final narrow = MediaQuery.sizeOf(context).width < _narrowBar;
   return ButleryTopBar.rot(
     title: context.l10n.bulkSelectedCount(viewModel.selectedCount),
     titleStyle: const TextStyle(
@@ -58,58 +53,81 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
     ),
     secondaryLine: secondaryLine,
     secondaryLineIsLive: false,
-    // text.primary on surface.base in both modes (ink #24382C light, paper
-    // #F5F4ED dark; app_colors.dart:295, :331). The theme's text-button
-    // colour is cs.primary, which is ink in the dark scheme too.
-    leading: TextButton(
-      key: const ValueKey('mina-recept-selection-cancel'),
-      style: TextButton.styleFrom(
-        foregroundColor: cs.onSurface,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-        ),
-      ),
-      onPressed: viewModel.clearSelection,
-      child: Text(context.l10n.commonCancel),
-    ),
-    // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: at most
-    // three actions in the bar, ordered by how often they are used and how
-    // hard they are to undo (add to menu, tag, share), the rest in a kebab
-    // (select all, export, delete). Six 48 dp actions do not fit a phone.
-    actions: [
-      // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
-      // then loop selected recipes into chosen slot (single-slot
-      // distributes day-by-day; multi-slot stacks).
-      IconButton(
-        key: const ValueKey('mina-recept-bulk-add-to-menu'),
-        icon: const Icon(Icons.calendar_month_outlined),
-        tooltip: context.l10n.bulkAddToMenu,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkAddToMenu(context, viewModel),
-      ),
-      // BUT-1012: bulk-tag.
-      IconButton(
-        key: const ValueKey('mina-recept-bulk-tag'),
-        icon: const Icon(Icons.local_offer_outlined),
-        tooltip: context.l10n.bulkTag,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkTagPicker(context, viewModel),
-      ),
-      // BUT-933: bulk-share.
-      if (!narrow)
-        IconButton(
-          key: const ValueKey('mina-recept-bulk-share'),
-          icon: const Icon(Icons.share_outlined),
-          tooltip: context.l10n.bulkShare,
-          onPressed: viewModel.selectedCount == 0
-              ? null
-              : () => _openBulkShareDialog(context, viewModel),
-        ),
-      _BulkMoreMenu(viewModel: viewModel, withShare: narrow),
-    ],
+    leading: buildMinaReceptSelectionCancel(context, viewModel),
+    actions: buildMinaReceptSelectionActions(context, viewModel),
   );
+}
+
+/// "Avbryt", which leaves selection mode (produktregler.md:873). Shared by
+/// the selection bar and Hem's library header row (Q6-16 = B).
+Widget buildMinaReceptSelectionCancel(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) {
+  final cs = Theme.of(context).colorScheme;
+  // text.primary on surface.base in both modes (ink #24382C light, paper
+  // #F5F4ED dark; app_colors.dart:295, :331). The theme's text-button
+  // colour is cs.primary, which is ink in the dark scheme too.
+  return TextButton(
+    key: const ValueKey('mina-recept-selection-cancel'),
+    style: TextButton.styleFrom(
+      foregroundColor: cs.onSurface,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingSm,
+      ),
+    ),
+    onPressed: viewModel.clearSelection,
+    child: Text(context.l10n.commonCancel),
+  );
+}
+
+/// The selection mode's actions. Shared by the selection bar and Hem's
+/// library header row (Q6-16 = B).
+List<Widget> buildMinaReceptSelectionActions(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) {
+  // Interpretation: #flerbar is drawn at 412 dp. Below 360 dp the counter,
+  // Avbryt and three actions plus the kebab do not fit one row, so share
+  // moves to the top of the kebab ("högst tre", produktregler.md:886).
+  final narrow = MediaQuery.sizeOf(context).width < _narrowBar;
+  // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: at most
+  // three actions in the bar, ordered by how often they are used and how
+  // hard they are to undo (add to menu, tag, share), the rest in a kebab
+  // (select all, export, delete). Six 48 dp actions do not fit a phone.
+  return [
+    // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
+    // then loop selected recipes into chosen slot (single-slot
+    // distributes day-by-day; multi-slot stacks).
+    IconButton(
+      key: const ValueKey('mina-recept-bulk-add-to-menu'),
+      icon: const Icon(Icons.calendar_month_outlined),
+      tooltip: context.l10n.bulkAddToMenu,
+      onPressed: viewModel.selectedCount == 0
+          ? null
+          : () => _openBulkAddToMenu(context, viewModel),
+    ),
+    // BUT-1012: bulk-tag.
+    IconButton(
+      key: const ValueKey('mina-recept-bulk-tag'),
+      icon: const Icon(Icons.local_offer_outlined),
+      tooltip: context.l10n.bulkTag,
+      onPressed: viewModel.selectedCount == 0
+          ? null
+          : () => _openBulkTagPicker(context, viewModel),
+    ),
+    // BUT-933: bulk-share.
+    if (!narrow)
+      IconButton(
+        key: const ValueKey('mina-recept-bulk-share'),
+        icon: const Icon(Icons.share_outlined),
+        tooltip: context.l10n.bulkShare,
+        onPressed: viewModel.selectedCount == 0
+            ? null
+            : () => _openBulkShareDialog(context, viewModel),
+      ),
+    _BulkMoreMenu(viewModel: viewModel, withShare: narrow),
+  ];
 }
 
 /// "Välj" for the recipe list's own top bar (B-46; produktregler.md:870-874;
@@ -117,10 +135,14 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
 ///
 /// Returns the action to put among the bar's actions, or nothing when the
 /// list has fewer than two recipes.
+///
+/// [foregroundColor] when it stands outside a top bar (Hem's library header
+/// row, Q6-16 = B): a bar gives its actions their colour, a row does not.
 List<Widget> buildMinaReceptSelectEntry(
   BuildContext context,
-  RecipeListViewModel viewModel,
-) {
+  RecipeListViewModel viewModel, {
+  Color? foregroundColor,
+}) {
   if (!ButlerySelectButton.shownFor(viewModel.recipes.length)) {
     return const [];
   }
@@ -128,6 +150,7 @@ List<Widget> buildMinaReceptSelectEntry(
     ButlerySelectButton(
       key: const ValueKey('mina-recept-select-enter'),
       semanticLabel: context.l10n.selectionEnterRecipes,
+      foregroundColor: foregroundColor,
       onPressed: viewModel.startSelection,
     ),
   ];

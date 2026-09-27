@@ -57,6 +57,14 @@ import {
   REPORTER_RETENTION_DAYS,
   REPORTS,
 } from "../moderation/report-status";
+// P6-U09: the two-step-verification collections. Imported rather than
+// retyped so the cascade and the writer cannot disagree about a name or about
+// the shape of the per-account counter key.
+import {
+  BACKUP_CODES_COLLECTION,
+  RECOVERY_ATTEMPTS_COLLECTION,
+  uidAttemptKey,
+} from "./mfa-backup-codes";
 
 /**
  * One thing kept, and why — the Art. 12(4) notice is rendered from this.
@@ -368,6 +376,30 @@ export async function probeResidualData(
       },
     );
   }
+  // P6-U09: the two documents `deleteMfaRecoveryData` removes. Both are keyed
+  // by the uid itself and carry no uid field, so neither the `probes` list
+  // nor the field-filter loop can see them; an existence read is the leg.
+  for (const [col, id] of [
+    [BACKUP_CODES_COLLECTION, uid],
+    [RECOVERY_ATTEMPTS_COLLECTION, uidAttemptKey(uid)],
+  ] as const) {
+    try {
+      const snap = await db.collection(col).doc(id).get();
+      if (snap.exists) {
+        residual += 1;
+        logger.warn(`[deletion-cascade] residual in ${col}`, {
+          uid_prefix: uid.slice(0, 6),
+        });
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error(`[deletion-cascade] residual probe failed: ${col}`, {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
   // BUT-2072: the erased uid as the recipe OWNER on other people's ratings. Its
   // own leg because the `probes` list above filters on `userId`, which is the
   // rater. Uncapped, so it stays loud when the capped scrub declined.
@@ -578,6 +610,11 @@ export async function probeResidualData(
     // above `MAX_BLOCK_SWEEP_ROWS` and deleted nothing at all.
     [Collections.blocks, "blockerId", "=="],
     [Collections.blocks, "blockedId", "=="],
+    // P5-U27b: recipe suggestions name two people and go with either account,
+    // so both legs of `deleteRecipeSuggestions` are probed. Uncapped, so they
+    // still fire when the sweep DECLINED above its cap and deleted nothing.
+    ["recipe_suggestions", "suggesterId", "=="],
+    ["recipe_suggestions", "ownerId", "=="],
     // BUT-1971: the group weekly menu scrubs membership, per-dish provenance
     // and the edit trail in ONE `batch.update` under `strict: false`, which
     // returns `true` on a failed chunk. The provenance fields are arrays of
@@ -1564,6 +1601,97 @@ export async function deleteIngredientSuggestions(
     return false;
   }
   await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
+/**
+ * Page size for [deleteRecipeSuggestions]: one Firestore batch.
+ *
+ * Exported so its scenario can import it rather than retype the number.
+ */
+export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
+
+/**
+ * P5-U27b: suggestions to someone else's shared recipe
+ * (`recipe_suggestions`, produktregler.md:103, :241).
+ *
+ * A row names TWO people, the suggester (`suggesterId`) and the recipe's owner
+ * (`ownerId`), and it is deleted with EITHER account: the suggester's change is
+ * their content, and a suggestion to a recipe whose owner is gone has nobody
+ * to decide it. So both legs run, and both ship with a probe leg in
+ * `probeResidualData`.
+ *
+ * Unlike [deleteIngredientSuggestions] this sweep has NO decline cap. The
+ * `ownerId` leg is filled by OTHER people's writes (any member the recipe is
+ * shared with may suggest), so a large count is no sign of a bug in this
+ * user's data, and declining would let someone else hold this user's erasure
+ * in a failed state. It pages through each leg in batches of
+ * [RECIPE_SUGGESTION_SWEEP_PAGE] until the leg is empty. It returns false only
+ * when a page makes no progress (its deletes did not land), which the probe
+ * then also reports.
+ */
+export async function deleteRecipeSuggestions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  for (const field of ["suggesterId", "ownerId"] as const) {
+    let previous: Set<string> | null = null;
+    for (;;) {
+      const snap = await db
+        .collection("recipe_suggestions")
+        .where(field, "==", uid)
+        .limit(RECIPE_SUGGESTION_SWEEP_PAGE)
+        .get();
+      if (snap.empty) break;
+      const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+      const prior: Set<string> | null = previous;
+      if (prior !== null && [...paths].every((path) => prior.has(path))) {
+        logger.error(
+          "[deletion-cascade] recipe-suggestion page did not shrink; stopping",
+          { uid_prefix: uid.slice(0, 6), leg: field, rows: snap.size },
+        );
+        return false;
+      }
+      previous = paths;
+      await batchDeleteAll(db, snap.docs);
+    }
+  }
+  return true;
+}
+
+/**
+ * P6-U09: the account's two-step-verification recovery data.
+ *
+ * - `mfa_backup_codes/{uid}` holds the salted scrypt hashes of the user's ten
+ *   backup codes and when the set was created. Keyed by the raw uid and kept
+ *   until two-step verification is switched off, so without this step it
+ *   outlives the account for good.
+ * - `mfa_recovery_attempts/uid_{uid}` is the per-account wrong-code counter.
+ *   It carries `expiresAt` for the TTL policy, but it is keyed by the raw uid,
+ *   so it is personal data for as long as it stands and goes with the account
+ *   rather than waiting for the sweep.
+ *
+ * The OTHER rows in `mfa_recovery_attempts` are deliberately not touched:
+ * `ip_<HMAC(pepper, ip)>` and the single `global` counter. Nothing in them
+ * names an account, the key cannot be reversed without the server-only
+ * pepper, and there is no field or key this step could select them by. Their
+ * retention bound is the TTL on `expiresAt` (one hour window, one hour
+ * lockout at most). Registered with that reason in
+ * `COLLECTIONS_DELIBERATELY_UNTOUCHED` (admin/reset-collection-lists.ts).
+ *
+ * Both are single documents at known ids, so this is two deletes; deleting a
+ * missing document is a no-op, which keeps the step idempotent. Both ship with
+ * an existence leg in `probeResidualData`.
+ */
+export async function deleteMfaRecoveryData(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  await db.collection(BACKUP_CODES_COLLECTION).doc(uid).delete();
+  await db
+    .collection(RECOVERY_ATTEMPTS_COLLECTION)
+    .doc(uidAttemptKey(uid))
+    .delete();
   return true;
 }
 

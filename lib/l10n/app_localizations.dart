@@ -7174,7 +7174,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentRequiredDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.'**
+  /// **'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen att radera kontot, inte ett reglage här.'**
   String get consentRequiredDescription;
 
   /// No description provided for @consentBasicServices.
@@ -10156,7 +10156,7 @@ abstract class AppLocalizations {
   /// No description provided for @importPhotoDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt'**
+  /// **'Fota receptet eller välj bilder ur biblioteket, en sida i taget. Texten läses av när du trycker Läs av.'**
   String get importPhotoDescription;
 
   /// No description provided for @importPhotoImport.
@@ -14152,13 +14152,13 @@ abstract class AppLocalizations {
   /// No description provided for @navigationMenu.
   ///
   /// In sv, this message translates to:
-  /// **'meny'**
+  /// **'Meny'**
   String get navigationMenu;
 
   /// No description provided for @navigationShopping.
   ///
   /// In sv, this message translates to:
-  /// **'inköp'**
+  /// **'Inköp'**
   String get navigationShopping;
 
   /// No description provided for @navigationAddNew.
@@ -27413,10 +27413,10 @@ abstract class AppLocalizations {
   /// **'Ändra betyg för {name}'**
   String a11yEditMemberRating(String name);
 
-  /// Butler-voice snackbar shown when a shared recipe/menu/shopping deep link is older than 7 days and is dropped (BUT-1587)
+  /// Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143).
   ///
   /// In sv, this message translates to:
-  /// **'Länken har gått ut och kan inte längre öppnas.'**
+  /// **'Länken gäller inte längre. Be den som delade om en ny.'**
   String get deepLinkExpired;
 
   /// Butler-voice snackbar shown when a shared deep link is valid but its target content is gone or no longer accessible to this user (BUT-1587)
@@ -28732,6 +28732,1932 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Krävs när du väljer Annat.'**
   String get reportDescriptionRequiredHelper;
+
+  /// P6-U01: zero matches (Skarmar v12 del 1 #veckoingamatch).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept matchar'**
+  String get menuNoMatchTitle;
+
+  /// P6-U01: what stopped it, and the smallest way on (#veckoingamatch).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Beskrivningen ger ingen träff på ditt enda recept.} other{Beskrivningen ger noll träffar bland dina {count} recept.}} Ändra eller släpp ett krav så hittar vi förslag.'**
+  String menuNoMatchBody(int count);
+
+  /// P6-U01: the requirements the prompt was read as, comma separated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kraven: {constraints}'**
+  String menuNoMatchConstraints(String constraints);
+
+  /// P6-U01: moves focus to the prompt so a requirement can be dropped.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra beskrivningen'**
+  String get menuNoMatchEditPrompt;
+
+  /// P6-U01: opens the calendar to plan by hand (#veckoingamatch).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg dagarna själv'**
+  String get menuNoMatchPlanYourself;
+
+  /// P6-U01: why Generera is switched off offline (produktregler.md:1131).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.'**
+  String get menuGenerateOfflineReason;
+
+  /// P6-U01: generation finished offline in calendar mode; the saved week is untouched.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.'**
+  String get menuGenerateOfflineStopped;
+
+  /// P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge).
+  ///
+  /// In sv, this message translates to:
+  /// **'Till inköpslistan'**
+  String get shoppingMergeTitle;
+
+  /// P6-U02: the item count, shown in bold inside shoppingMergeSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara} other{{count} varor}}'**
+  String shoppingMergeItemCount(int count);
+
+  /// P6-U02: the summary line; {items} is shoppingMergeItemCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipes, plural, =1{1 rätt ger} other{{recipes} rätter ger}} {rows, plural, =1{1 rad} other{{rows} rader}}. Efter sammanslagning blir det {items}.'**
+  String shoppingMergeSummary(int recipes, int rows, String items);
+
+  /// P6-U02: summary figure label.
+  ///
+  /// In sv, this message translates to:
+  /// **'slås samman'**
+  String get shoppingMergeStatMerged;
+
+  /// P6-U02: summary figure label.
+  ///
+  /// In sv, this message translates to:
+  /// **'konverteras'**
+  String get shoppingMergeStatConverted;
+
+  /// P6-U02: summary figure label.
+  ///
+  /// In sv, this message translates to:
+  /// **'finns hemma'**
+  String get shoppingMergeStatAtHome;
+
+  /// P6-U02: opens the four switches.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa detaljer'**
+  String get shoppingMergeShowDetails;
+
+  /// P6-U02: closes the four switches.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj detaljer'**
+  String get shoppingMergeHideDetails;
+
+  /// P6-U02: accessible name of Visa detaljer (#inkopmerge data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa detaljer om sammanslagningen'**
+  String get shoppingMergeShowDetailsA11y;
+
+  /// P6-U02: accessible name of Dölj detaljer (#inkopmergeoppen data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj detaljer om sammanslagningen'**
+  String get shoppingMergeHideDetailsA11y;
+
+  /// P6-U02: switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå samman dubbletter'**
+  String get shoppingMergeDuplicatesTitle;
+
+  /// P6-U02: switch description (#inkopmergeoppen).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.'**
+  String get shoppingMergeDuplicatesBody;
+
+  /// P6-U02: switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Konvertera enheter'**
+  String get shoppingMergeConvertTitle;
+
+  /// P6-U02: switch description (#inkopmergeoppen).
+  ///
+  /// In sv, this message translates to:
+  /// **'2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.'**
+  String get shoppingMergeConvertBody;
+
+  /// P6-U02: switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dra bort skafferivaror'**
+  String get shoppingMergePantryTitle;
+
+  /// P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.'**
+  String shoppingMergePantryBody(int count);
+
+  /// P6-U02: rows the pantry left off, named (produktregler.md:234).
+  ///
+  /// In sv, this message translates to:
+  /// **'Finns hemma i tillräcklig mängd: {names}'**
+  String shoppingMergePantryCovered(String names);
+
+  /// P6-U02: degraded mode (produktregler.md:697).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.'**
+  String get shoppingMergePantryUnavailable;
+
+  /// P6-U02: switch, off by default (#inkopmerge).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ersätt listan i stället för att lägga till'**
+  String get shoppingMergeReplaceTitle;
+
+  /// P6-U02: switch description (#inkopmerge; PQ-10 = A).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina egna, manuellt tillagda varor behålls alltid.'**
+  String get shoppingMergeReplaceBody;
+
+  /// P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.'**
+  String get shoppingMergeReplaceUnavailable;
+
+  /// P6-U02: the sheet hero (#inkopmerge).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}'**
+  String shoppingMergeAdd(int count);
+
+  /// P6-U02: the sheet hero while Ersätt listan is on.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}'**
+  String shoppingMergeReplaceAction(int count);
+
+  /// P6-U02: receipt with Ångra after Lägg till.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}'**
+  String shoppingMergeAdded(int count, String list);
+
+  /// P6-U02: receipt with Ångra after a replace.
+  ///
+  /// In sv, this message translates to:
+  /// **'{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.'**
+  String shoppingMergeReplaced(int count, String list);
+
+  /// P6-U02: failure, what happened.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra gick inte att slutföra'**
+  String get shoppingMergeUndoFailed;
+
+  /// P6-U02: failure, what is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varorna finns kvar i listan.'**
+  String get shoppingMergeUndoFailedKept;
+
+  /// P6-U02: row note, how many recipes a merged row came from.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept'**
+  String shoppingMergeRowRecipes(int count);
+
+  /// P6-U02: row mark (produktregler.md:230).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kanske hemma'**
+  String get shoppingMergeMarkMaybeHome;
+
+  /// P6-U02: row mark (produktregler.md:232).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolla datum'**
+  String get shoppingMergeMarkCheckDate;
+
+  /// No description provided for @signOutPendingTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring har inte sparats} other{{count} ändringar har inte sparats}}'**
+  String signOutPendingTitle(int count);
+
+  /// No description provided for @signOutPendingBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om du loggar ut nu försvinner de. Butlery väntar gärna tills du har nät igen.'**
+  String get signOutPendingBody;
+
+  /// No description provided for @signOutPendingRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Recept · 1 ändring} other{Recept · {count} ändringar}}'**
+  String signOutPendingRecipes(int count);
+
+  /// No description provided for @signOutPendingImages.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Bilder · 1 väntar på uppladdning} other{Bilder · {count} väntar på uppladdning}}'**
+  String signOutPendingImages(int count);
+
+  /// No description provided for @signOutPendingWait.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänta på synk'**
+  String get signOutPendingWait;
+
+  /// No description provided for @signOutPendingDiscard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut och släng ändringarna'**
+  String get signOutPendingDiscard;
+
+  /// No description provided for @sessionPendingChangesIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}'**
+  String sessionPendingChangesIntro(int count);
+
+  /// No description provided for @sessionEndedBackgroundTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du loggades ut medan appen låg still.'**
+  String get sessionEndedBackgroundTitle;
+
+  /// No description provided for @sessionEndedBackgroundReason.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det händer efter 45 minuter utan aktivitet, och det är meningen.'**
+  String get sessionEndedBackgroundReason;
+
+  /// No description provided for @sessionEndedBackgroundPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen — inget av det du gjorde är borta.}}'**
+  String sessionEndedBackgroundPending(int count);
+
+  /// No description provided for @draftTimeLeftDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}'**
+  String draftTimeLeftDays(int count);
+
+  /// No description provided for @draftTimeLeftHours.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}'**
+  String draftTimeLeftHours(int count);
+
+  /// No description provided for @profileDeleteNoRecallWindow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.'**
+  String get profileDeleteNoRecallWindow;
+
+  /// No description provided for @profileDeleteReasonLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför raderar du kontot?'**
+  String get profileDeleteReasonLabel;
+
+  /// No description provided for @profileDeleteReasonHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Till exempel: använder appen inte längre'**
+  String get profileDeleteReasonHint;
+
+  /// No description provided for @profileDeleteReasonHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skälet följer med till revisionsraden. Det är det enda spåret som finns efteråt, därför frågar vi före.'**
+  String get profileDeleteReasonHelp;
+
+  /// No description provided for @accountDeletionWaitNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta kan ta upp till nio minuter. Stäng inte appen — raderingen fortsätter på servern, men du får inget kvitto om du går.'**
+  String get accountDeletionWaitNotice;
+
+  /// No description provided for @accountDeletionReauthTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta att det är du'**
+  String get accountDeletionReauthTitle;
+
+  /// No description provided for @accountDeletionReauthBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Av säkerhetsskäl krävs en inloggning som är högst fem minuter gammal för att radera ett konto. Logga in igen, så fortsätter raderingen där den var.'**
+  String get accountDeletionReauthBody;
+
+  /// No description provided for @accountDeletionReauthCancel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt raderingen'**
+  String get accountDeletionReauthCancel;
+
+  /// No description provided for @accountDeletionReauthConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen'**
+  String get accountDeletionReauthConfirm;
+
+  /// No description provided for @accountDeletionPartialTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är raderat delvis'**
+  String get accountDeletionPartialTitle;
+
+  /// No description provided for @accountDeletionPartialHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Kontot är borta — en del kvarstår} other{Kontot är borta — {count} delar kvarstår}}'**
+  String accountDeletionPartialHeading(int count);
+
+  /// No description provided for @accountDeletionPartialBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Inloggningen är raderad. En samling gick inte att ta bort och ligger kvar hos oss.} other{Inloggningen är raderad. {count} samlingar gick inte att ta bort och ligger kvar hos oss.}}'**
+  String accountDeletionPartialBody(int count);
+
+  /// No description provided for @accountDeletionPartialAuditIdLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Revisions-id'**
+  String get accountDeletionPartialAuditIdLabel;
+
+  /// No description provided for @accountDeletionPartialNoAuditId.
+  ///
+  /// In sv, this message translates to:
+  /// **'Revisions-id saknas. Nämn datum och tid för raderingen när du kontaktar support.'**
+  String get accountDeletionPartialNoAuditId;
+
+  /// No description provided for @accountDeletionPartialContact.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontakta support med id'**
+  String get accountDeletionPartialContact;
+
+  /// No description provided for @accountDeletionPartialEmailSubject.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delvis raderat konto {auditId}'**
+  String accountDeletionPartialEmailSubject(String auditId);
+
+  /// No description provided for @accountDeletionPartialNoEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postappen gick inte att öppna. Skriv till integritet@butlery.se och ange revisions-id.'**
+  String get accountDeletionPartialNoEmail;
+
+  /// No description provided for @dataExportMemoryNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara filen innan du lämnar sidan. Den ligger bara i telefonens minne — går du tillbaka får du göra om exporten.'**
+  String get dataExportMemoryNotice;
+
+  /// No description provided for @dataExportNetworkTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exporten avbröts'**
+  String get dataExportNetworkTitle;
+
+  /// No description provided for @dataExportNetworkBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anslutningen bröts medan vi samlade ihop uppgifterna. Ingenting är ändrat på ditt konto.'**
+  String get dataExportNetworkBody;
+
+  /// No description provided for @dataExportNoPartialFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi erbjuder ingen halv fil. Den som tar emot dina uppgifter kan inte se vad som saknas i den.'**
+  String get dataExportNoPartialFile;
+
+  /// No description provided for @dataExportSignedOutTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen har gått ut'**
+  String get dataExportSignedOutTitle;
+
+  /// No description provided for @dataExportSignedOutBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen för att hämta ut dina uppgifter. Ingenting är ändrat på ditt konto.'**
+  String get dataExportSignedOutBody;
+
+  /// No description provided for @dataExportSignIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen'**
+  String get dataExportSignIn;
+
+  /// No description provided for @dataExportDeniedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exporten nekades'**
+  String get dataExportDeniedTitle;
+
+  /// No description provided for @dataExportDeniedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Felet ligger hos oss, inte hos dig, och ett nytt försök hjälper inte just nu. Ingenting är ändrat på ditt konto.'**
+  String get dataExportDeniedBody;
+
+  /// No description provided for @dataExportNotNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get dataExportNotNow;
+
+  /// No description provided for @consentAiProcessing.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tolkning'**
+  String get consentAiProcessing;
+
+  /// No description provided for @consentAiProcessingDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läser recept ur länkar, text och foto. Utan detta blir importen grövre.'**
+  String get consentAiProcessingDescription;
+
+  /// No description provided for @consentRenewalChangedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Vi har ändrat en sak} other{Vi har ändrat {count} saker}}'**
+  String consentRenewalChangedTitle(int count);
+
+  /// No description provided for @consentRenewalSinceVersion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du sa ja till version {version} den {date}. Det här är nytt sedan dess.'**
+  String consentRenewalSinceVersion(String version, String date);
+
+  /// No description provided for @consentRenewalUnchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Övriga ändamål är oförändrade och dina val står kvar.} other{Övriga {count} ändamål är oförändrade och dina val står kvar.}}'**
+  String consentRenewalUnchanged(int count);
+
+  /// No description provided for @consentRenewalAccept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag godkänner'**
+  String get consentRenewalAccept;
+
+  /// No description provided for @consentRenewalChooseMyself.
+  ///
+  /// In sv, this message translates to:
+  /// **'Låt mig välja själv'**
+  String get consentRenewalChooseMyself;
+
+  /// No description provided for @consentRenewalNotNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get consentRenewalNotNow;
+
+  /// No description provided for @consentRenewalNotNowNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väljer du Inte nu fortsätter allt som förut. Ingenting slås av för att du inte svarat.'**
+  String get consentRenewalNotNowNote;
+
+  /// No description provided for @consentChangeAiProcessingAddedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tolkning är ett nytt ändamål'**
+  String get consentChangeAiProcessingAddedTitle;
+
+  /// No description provided for @consentChangeAiProcessingAddedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läser recept ur länkar, text och foto. Den står av tills du själv slår på den under Låt mig välja själv.'**
+  String get consentChangeAiProcessingAddedBody;
+
+  /// No description provided for @consentRenewalSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycket kunde inte sparas. Dina tidigare val står kvar.'**
+  String get consentRenewalSaveFailed;
+
+  /// No description provided for @signOutDiscardFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringarna kunde inte slängas, så du är fortfarande inloggad.'**
+  String get signOutDiscardFailed;
+
+  /// No description provided for @mfaChallengeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifiering'**
+  String get mfaChallengeTitle;
+
+  /// No description provided for @mfaChallengeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv koden'**
+  String get mfaChallengeHeading;
+
+  /// No description provided for @mfaChallengeSentTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
+  String mfaChallengeSentTo(String tail);
+
+  /// No description provided for @mfaChallengeSentUnknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
+  String get mfaChallengeSentUnknown;
+
+  /// No description provided for @mfaChallengeTimeLeft.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden gäller i {total} sekunder. {left} s kvar.'**
+  String mfaChallengeTimeLeft(int total, int left);
+
+  /// No description provided for @mfaChallengeCodeGone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden har gått ut. Skicka en ny kod.'**
+  String get mfaChallengeCodeGone;
+
+  /// No description provided for @mfaChallengeResend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka en ny kod'**
+  String get mfaChallengeResend;
+
+  /// No description provided for @mfaChallengeWrongCode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.'**
+  String get mfaChallengeWrongCode;
+
+  /// No description provided for @mfaChallengeExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden har gått ut. Skicka en ny kod.'**
+  String get mfaChallengeExpired;
+
+  /// No description provided for @mfaChallengeFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen kunde inte slutföras. Skicka en ny kod.'**
+  String get mfaChallengeFailed;
+
+  /// No description provided for @mfaBackupCodeUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd en reservkod'**
+  String get mfaBackupCodeUse;
+
+  /// No description provided for @mfaBackupCodeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med en reservkod'**
+  String get mfaBackupCodeHeading;
+
+  /// No description provided for @mfaBackupCodeExplanation.
+  ///
+  /// In sv, this message translates to:
+  /// **'En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.'**
+  String get mfaBackupCodeExplanation;
+
+  /// No description provided for @mfaBackupCodeLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkod'**
+  String get mfaBackupCodeLabel;
+
+  /// No description provided for @mfaBackupCodeEnter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv en av dina tio reservkoder.'**
+  String get mfaBackupCodeEnter;
+
+  /// No description provided for @mfaBackupCodeSubmit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med reservkoden'**
+  String get mfaBackupCodeSubmit;
+
+  /// No description provided for @mfaBackupCodeBack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till SMS-koden'**
+  String get mfaBackupCodeBack;
+
+  /// No description provided for @mfaBackupCodeRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.'**
+  String get mfaBackupCodeRejected;
+
+  /// No description provided for @mfaBackupCodeLocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många försök med reservkod. Vänta en timme innan du försöker igen.'**
+  String get mfaBackupCodeLocked;
+
+  /// No description provided for @mfaBackupCodeUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.'**
+  String get mfaBackupCodeUnavailable;
+
+  /// No description provided for @mfaBackupCodeRecovered.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.'**
+  String get mfaBackupCodeRecovered;
+
+  /// No description provided for @mfaBackupCodesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tio reservkoder'**
+  String get mfaBackupCodesTitle;
+
+  /// No description provided for @mfaBackupCodesBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.'**
+  String get mfaBackupCodesBody;
+
+  /// No description provided for @mfaBackupCodesCopy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera koderna'**
+  String get mfaBackupCodesCopy;
+
+  /// No description provided for @mfaBackupCodesCopied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koderna är kopierade.'**
+  String get mfaBackupCodesCopied;
+
+  /// No description provided for @mfaBackupCodesSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag har sparat koderna'**
+  String get mfaBackupCodesSaved;
+
+  /// No description provided for @mfaBackupCodesContinue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt till telefonnumret'**
+  String get mfaBackupCodesContinue;
+
+  /// No description provided for @mfaBackupCodesFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
+  String get mfaBackupCodesFailed;
+
+  /// No description provided for @permAllow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt'**
+  String get permAllow;
+
+  /// No description provided for @permNotNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get permNotNow;
+
+  /// No description provided for @permAskAgain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fråga igen'**
+  String get permAskAgain;
+
+  /// No description provided for @permOpenSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna inställningar'**
+  String get permOpenSettings;
+
+  /// No description provided for @permImportCameraTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotografera receptet'**
+  String get permImportCameraTitle;
+
+  /// No description provided for @permImportCameraBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.'**
+  String get permImportCameraBody;
+
+  /// No description provided for @permImportPhotosTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj bilder av receptet'**
+  String get permImportPhotosTitle;
+
+  /// No description provided for @permImportPhotosBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.'**
+  String get permImportPhotosBody;
+
+  /// No description provided for @permImportConsequence.
+  ///
+  /// In sv, this message translates to:
+  /// **'Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.'**
+  String get permImportConsequence;
+
+  /// No description provided for @permCameraTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta en bild med kameran'**
+  String get permCameraTitle;
+
+  /// No description provided for @permCameraBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran används bara när du själv tar en bild.'**
+  String get permCameraBody;
+
+  /// No description provided for @permPhotosTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj bilder ur bildbiblioteket'**
+  String get permPhotosTitle;
+
+  /// No description provided for @permPhotosBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery läser bara de bilder du själv väljer.'**
+  String get permPhotosBody;
+
+  /// No description provided for @permCameraDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran är inte tillåten, så receptet går inte att fotografera.'**
+  String get permCameraDenied;
+
+  /// No description provided for @permPhotosDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.'**
+  String get permPhotosDenied;
+
+  /// No description provided for @permCameraPermanentlyDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran är avstängd för Butlery i telefonens inställningar.'**
+  String get permCameraPermanentlyDenied;
+
+  /// No description provided for @permPhotosPermanentlyDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildbiblioteket är avstängt för Butlery i telefonens inställningar.'**
+  String get permPhotosPermanentlyDenied;
+
+  /// No description provided for @permCameraRestricted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enheten har spärrat kameran. Det går inte att ändra här.'**
+  String get permCameraRestricted;
+
+  /// No description provided for @permPhotosRestricted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enheten har spärrat bildbiblioteket. Det går inte att ändra här.'**
+  String get permPhotosRestricted;
+
+  /// No description provided for @permFallbackGallery.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ur bildbiblioteket'**
+  String get permFallbackGallery;
+
+  /// No description provided for @permFallbackWriteYourself.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv själv'**
+  String get permFallbackWriteYourself;
+
+  /// No description provided for @permPhotosLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har delat några bilder med Butlery. Jag ser bara dem.'**
+  String get permPhotosLimited;
+
+  /// No description provided for @permPhotosLimitedHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hittar du inte bilden är det urvalet som saknar den, inte biblioteket. Du kan lägga till fler utan att ge mig hela biblioteket.'**
+  String get permPhotosLimitedHint;
+
+  /// No description provided for @permPhotosChooseMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj fler bilder'**
+  String get permPhotosChooseMore;
+
+  /// No description provided for @timerNotifDeniedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timern syns bara i appen'**
+  String get timerNotifDeniedTitle;
+
+  /// No description provided for @timerNotifDeniedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser är avstängda för Butlery, så timern kan inte säga till när appen ligger i bakgrunden eller telefonen är låst.'**
+  String get timerNotifDeniedBody;
+
+  /// No description provided for @timerNotifDeniedStart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta timern'**
+  String get timerNotifDeniedStart;
+
+  /// No description provided for @timerInAppOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timern syns bara i appen.'**
+  String get timerInAppOnly;
+
+  /// No description provided for @notifSystemOffRow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.'**
+  String get notifSystemOffRow;
+
+  /// No description provided for @a11yOpenSystemSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna systeminställningarna'**
+  String get a11yOpenSystemSettings;
+
+  /// No description provided for @cookingExitConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta matlagningen?'**
+  String get cookingExitConfirmTitle;
+
+  /// No description provided for @cookingExitConfirmBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är på steg {step} av {total}. Receptet räknas inte som lagat förrän du trycker Klart.'**
+  String cookingExitConfirmBody(int step, int total);
+
+  /// No description provided for @cookingExitConfirmStay.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt laga'**
+  String get cookingExitConfirmStay;
+
+  /// No description provided for @cookingExitConfirmLeave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta matlagningen'**
+  String get cookingExitConfirmLeave;
+
+  /// No description provided for @cookingDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart'**
+  String get cookingDone;
+
+  /// No description provided for @cookingNoStepsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet har inga steg än'**
+  String get cookingNoStepsTitle;
+
+  /// No description provided for @cookingNoStepsBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.'**
+  String get cookingNoStepsBody;
+
+  /// No description provided for @cookingNoStepsBodyNoIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.'**
+  String get cookingNoStepsBodyNoIngredients;
+
+  /// No description provided for @cookingNoStepsWrite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv stegen'**
+  String get cookingNoStepsWrite;
+
+  /// No description provided for @cookingNoStepsShopping.
+  ///
+  /// In sv, this message translates to:
+  /// **'Till inköpslistan'**
+  String get cookingNoStepsShopping;
+
+  /// No description provided for @parseConfidenceConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stämmer'**
+  String get parseConfidenceConfirm;
+
+  /// No description provided for @parseConfidenceConfirmed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräftad'**
+  String get parseConfidenceConfirmed;
+
+  /// No description provided for @a11yParseConfidenceConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta raden {line}'**
+  String a11yParseConfidenceConfirm(String line);
+
+  /// No description provided for @parseConfidencePendingSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Bekräfta 1 rad innan du sparar} other{Bekräfta {count} rader innan du sparar}}'**
+  String parseConfidencePendingSave(int count);
+
+  /// No description provided for @parseConfidenceUnreadLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Raden kunde inte läsas'**
+  String get parseConfidenceUnreadLine;
+
+  /// No description provided for @a11yParseConfidenceUnreadLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rad som inte kunde läsas'**
+  String get a11yParseConfidenceUnreadLine;
+
+  /// No description provided for @importReadPages.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Läs av 1 sida} other{Läs av {count} sidor}}'**
+  String importReadPages(int count);
+
+  /// P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83).
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre redigera receptet'**
+  String get roleLoweredRecipeTitle;
+
+  /// P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83).
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.'**
+  String get roleLoweredRecipeBody;
+
+  /// P6-U05: dialog action that saves the unsaved edits as the user's own recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som egen kopia'**
+  String get roleLoweredSaveCopy;
+
+  /// P6-U05: dialog action that closes the editor without the unsaved edits; names what disappears (content-style-guide.md).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng ändringarna'**
+  String get roleLoweredDiscard;
+
+  /// P6-U05: snackbar after the editor closed because the role dropped to read-only and nothing was unsaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre redigera receptet, bara läsa det.'**
+  String get roleLoweredRecipeClosed;
+
+  /// P6-U05: snackbar when the role on a shared shopping list drops to read-only while it is open.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre ändra i listan, bara läsa den.'**
+  String get roleLoweredShoppingList;
+
+  /// P6-U05: lead line of the notice that stays in the list view when the role drops while an item was typed but not added; the typed text is shown below it.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du skrev lades inte till i listan:'**
+  String get roleLoweredShoppingUnsaved;
+
+  /// P6-U05: notice action that copies the typed, unadded item text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera texten'**
+  String get roleLoweredCopyText;
+
+  /// P6-U05: confirmation after the typed item text was copied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten är kopierad.'**
+  String get roleLoweredTextCopied;
+
+  /// P6-U05: notice when the role on the group week menu drops to read-only while it is open.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre ändra gruppens meny, bara läsa den.'**
+  String get roleLoweredGroupMenu;
+
+  /// P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägarens version gäller'**
+  String get conflictBannerTitleSuggestion;
+
+  /// P5-U27b: conflict banner body; name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
+  String conflictBannerBodySuggestion(String name);
+
+  /// P5-U27b: conflict banner body when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
+  String get conflictBannerBodySuggestionUnnamed;
+
+  /// Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (no store, or storing failed); name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
+  String conflictBannerBodyMemberNotSent(String name);
+
+  /// Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
+  String get conflictBannerBodyMemberNotSentUnnamed;
+
+  /// P5-U27b: banner action, verbatim from produktregler.md:103.
+  ///
+  /// In sv, this message translates to:
+  /// **'Se ditt förslag'**
+  String get recipeSuggestionSeeMine;
+
+  /// P5-U27b: the owner's action that opens a suggestion made to their recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Se förslaget'**
+  String get recipeSuggestionSee;
+
+  /// P5-U27b: owner's notice in recipe detail; name = who suggested it.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} föreslår en ändring i receptet.'**
+  String recipeSuggestionFromOne(String name);
+
+  /// P5-U27b: owner's notice when the suggester's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'En medlem föreslår en ändring i receptet.'**
+  String get recipeSuggestionFromOneUnnamed;
+
+  /// P5-U27b: owner's notice when more than one suggestion waits; count >= 2.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} förslag på ändringar väntar på dig.'**
+  String recipeSuggestionFromMany(int count);
+
+  /// P5-U27b: suggester's notice in recipe detail; date = when the 7 days end, written as content-style-guide.md:25.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt förslag väntar på ägaren. Det sparas till {date}.'**
+  String recipeSuggestionMinePending(String date);
+
+  /// P5-U27b: suggester's notice after the owner accepted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren tog in ditt förslag i receptet.'**
+  String get recipeSuggestionMineAccepted;
+
+  /// P5-U27b: suggester's notice after the owner dismissed; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren avvisade ditt förslag. Det sparas till {date}.'**
+  String recipeSuggestionMineDismissed(String date);
+
+  /// P5-U27b: title of the view that shows one suggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag till ändring'**
+  String get recipeSuggestionTitle;
+
+  /// P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} föreslår det här. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroOwner(String name, String date);
+
+  /// P5-U27b: intro line for the suggester; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här föreslog du. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroMine(String date);
+
+  /// P5-U27b: label over the suggested value of a field.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget'**
+  String get recipeSuggestionSuggestedLabel;
+
+  /// P5-U27b: label over the recipe's current value of a field.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet nu'**
+  String get recipeSuggestionCurrentLabel;
+
+  /// P5-U27b: the owner accepts the suggestion (produktregler.md:241).
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd förslaget'**
+  String get recipeSuggestionAccept;
+
+  /// P5-U27b: the owner dismisses the suggestion (produktregler.md:241).
+  ///
+  /// In sv, this message translates to:
+  /// **'Avvisa förslaget'**
+  String get recipeSuggestionDismiss;
+
+  /// P5-U27b: confirmation after the owner accepted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är nu en del av receptet.'**
+  String get recipeSuggestionAccepted;
+
+  /// P5-U27b: confirmation after the owner dismissed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är avvisat. Receptet är oförändrat.'**
+  String get recipeSuggestionDismissed;
+
+  /// P5-U27b: what did not happen when accepting failed (content-style-guide.md:87-97).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte tas in i receptet.'**
+  String get recipeSuggestionAcceptFailed;
+
+  /// P5-U27b: what did not happen when dismissing failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte avvisas.'**
+  String get recipeSuggestionDismissFailed;
+
+  /// P5-U27b: what was kept, after a failed decision; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget finns kvar till {date}.'**
+  String recipeSuggestionKeptUntil(String date);
+
+  /// P5-U27b: the recipe was deleted or unshared; nothing to accept into.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre, så förslaget kan inte tas in.'**
+  String get recipeSuggestionRecipeGone;
+
+  /// P5-U27b: the view could not read the current recipe; offered with Försök igen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte jämföras med receptet. Kontrollera anslutningen.'**
+  String get recipeSuggestionLoadFailed;
+
+  /// P5-U27b: the suggestion changes nothing against the current recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är likadant som receptet nu.'**
+  String get recipeSuggestionNoChanges;
+
+  /// P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar förslaget …'**
+  String get recipeSuggestionLoading;
+
+  /// Q4-03 = A: the recipe's add-to-shopping-list button, counting the ingredients the pantry does not already cover (content-style-guide.md:76).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lägg 1 vara i inköpslistan} other{Lägg {count} varor i inköpslistan}}'**
+  String recipeAddCountToShoppingList(int count);
+
+  /// Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng resten'**
+  String get weeklyMenuOverflowDiscardAction;
+
+  /// Q5-01 = A: undo snackbar after Släng resten.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt slängdes ur brickan} other{{count} rätter slängdes ur brickan}}'**
+  String weeklyMenuOverflowDiscarded(int count);
+
+  /// Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148).
+  ///
+  /// In sv, this message translates to:
+  /// **'har hemma'**
+  String get pantryItemAmountUnknown;
+
+  /// Q4-03: the pantry covers every ingredient of the recipe; nothing is added (produktregler.md:228, 233).
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}'**
+  String recipePantryAllAtHome(String names);
+
+  /// Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt finns hemma'**
+  String get recipeAllAtHome;
+
+  /// Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).
+  ///
+  /// In sv, this message translates to:
+  /// **'Mindre än i receptet, eftersom en del finns hemma: {names}'**
+  String recipePantryLessened(String names);
+
+  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hem'**
+  String get navigationHome;
+
+  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer).
+  ///
+  /// In sv, this message translates to:
+  /// **'Mer'**
+  String get navigationMore;
+
+  /// P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till'**
+  String get navigationAddAction;
+
+  /// P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer).
+  ///
+  /// In sv, this message translates to:
+  /// **'Mer'**
+  String get moreTitle;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer section heading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillsammans'**
+  String get moreSectionTogether;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer section heading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt kök'**
+  String get moreSectionKitchen;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer section heading.
+  ///
+  /// In sv, this message translates to:
+  /// **'App & konto'**
+  String get moreSectionAppAccount;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the family settings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min familj'**
+  String get moreFamily;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the personal tags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Egna taggar'**
+  String get morePersonalTags;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samlingsstatistik'**
+  String get moreCollectionStats;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the notifications.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser'**
+  String get moreNotifications;
+
+  /// P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582).
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbspara'**
+  String get addSheetQuickSaveTitle;
+
+  /// P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara namn och måltid — importera detaljer senare'**
+  String get addSheetQuickSaveSubtitle;
+
+  /// P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190).
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar på synk'**
+  String get syncQueueTitle;
+
+  /// P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar på dig · {count}'**
+  String syncQueueNeedsYouHeader(int count);
+
+  /// P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.'**
+  String get syncQueueNeedsYouHint;
+
+  /// P6-T6 (PQ-17, P4-U19): heading over the changes the queue sends by itself.
+  ///
+  /// In sv, this message translates to:
+  /// **'I kö · {count}'**
+  String syncQueueQueuedHeader(int count);
+
+  /// P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordningen är först in, först ut per objekt, men parallellt mellan objekt.'**
+  String get syncQueueOrderNote;
+
+  /// P6-T6 (PQ-17, P4-U19): the queue view footer button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök synka nu'**
+  String get syncQueueSyncNow;
+
+  /// P6-T6 (PQ-17, P4-U19): the footer button while it syncs (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkar …'**
+  String get syncQueueSyncing;
+
+  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen'**
+  String get syncQueueRetry;
+
+  /// P6-T6 (PQ-17, P4-U19): accessible name of Försök igen, naming the change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen — {what}'**
+  String syncQueueRetryA11y(String what);
+
+  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng ändringen'**
+  String get syncQueueDiscard;
+
+  /// P6-T6 (PQ-17, P4-U19): accessible name of Släng ändringen, naming the change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng ändringen {what}'**
+  String syncQueueDiscardA11y(String what);
+
+  /// P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen slängdes.'**
+  String get syncQueueDiscarded;
+
+  /// Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet slängdes.'**
+  String get syncQueueRecipeDiscarded;
+
+  /// Q6-11 = B: title of the confirmation before a new recipe that exists only on this phone is discarded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng receptet?'**
+  String get syncQueueDiscardPhoneOnlyTitle;
+
+  /// Q6-11 = B: body of the confirmation; title = the recipe's title, or syncQueueUnnamedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} finns bara på den här telefonen. Det har aldrig nått servern, så om du slänger det finns det inte kvar någonstans.'**
+  String syncQueueDiscardPhoneOnlyBody(String title);
+
+  /// Q6-11 = B: the confirmation's destructive action; Avbryt is the other.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng receptet'**
+  String get syncQueueDiscardPhoneOnlyConfirm;
+
+  /// P6-T6 (P4-U19): what happened when Släng failed (content-style-guide.md:89-93).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte slängas.'**
+  String get syncQueueDiscardFailed;
+
+  /// P6-T6 (P4-U19): what happened when Försök igen failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte läggas tillbaka i kön.'**
+  String get syncQueueRetryFailed;
+
+  /// P6-T6 (P4-U19): what happened when Försök synka nu failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kön kunde inte skickas nu.'**
+  String get syncQueueSyncFailed;
+
+  /// P6-T6 (P4-U19): what was kept after a failed action on one change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den ligger kvar under Väntar på dig.'**
+  String get syncQueueChangeKept;
+
+  /// P6-T6 (P4-U19): what was kept after a failed Försök synka nu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringarna ligger kvar på telefonen.'**
+  String get syncQueueChangesKept;
+
+  /// P6-T6 (PQ-17, P4-U19): the queue view when nothing waits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt är sparat. Inget väntar på att synkas.'**
+  String get syncQueueEmpty;
+
+  /// P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187).
+  ///
+  /// In sv, this message translates to:
+  /// **'väntar på en tidigare ändring'**
+  String get syncQueueWaitsOnEarlier;
+
+  /// P6-T6 (PQ-17, P4-U19): what a change concerns when the device has no title for the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett recept'**
+  String get syncQueueUnnamedRecipe;
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued create concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · nytt recept'**
+  String syncQueueRecipeCreated(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued update concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · ändrat'**
+  String syncQueueRecipeUpdated(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued delete concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · borttaget'**
+  String syncQueueRecipeDeleted(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued tagging concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · taggas'**
+  String syncQueueRecipeTagged(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild till {title}'**
+  String syncQueueImageFor(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): a queued upload with no known recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'En bild'**
+  String get syncQueueImage;
+
+  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre'**
+  String get syncQueueReasonNotFound;
+
+  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte längre behörighet'**
+  String get syncQueueReasonPermission;
+
+  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för stor'**
+  String get syncQueueReasonTooLarge;
+
+  /// P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187).
+  ///
+  /// In sv, this message translates to:
+  /// **'Den hänger på en ändring som inte gick att spara'**
+  String get syncQueueReasonDependency;
+
+  /// P6-T6 (PQ-17, P4-U19): a permanent failure with no known cause.
+  ///
+  /// In sv, this message translates to:
+  /// **'Servern tog inte emot ändringen'**
+  String get syncQueueReasonUnknown;
+
+  /// P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gick inte att spara på 24 h'**
+  String get syncQueueReasonExpired;
+
+  /// P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som kopia'**
+  String get syncQueueSaveAsCopy;
+
+  /// Q6-14 = C (produktbeslut 2026-09-27b): the title of the recipe Spara som kopia makes from a change that could not be synced; title = the original's.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} (kopia)'**
+  String syncQueueCopyTitle(String title);
+
+  /// P6-U08b: accessible name of Spara som kopia, naming the change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som kopia — {what}'**
+  String syncQueueSaveAsCopyA11y(String what);
+
+  /// P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök mindre'**
+  String get syncQueueTrySmaller;
+
+  /// P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök mindre — {what}'**
+  String syncQueueTrySmallerA11y(String what);
+
+  /// P6-U08b: Spara som kopia failed; followed by syncQueueChangeKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian kunde inte sparas.'**
+  String get syncQueueCopyFailed;
+
+  /// P6-U08b: Försök mindre failed; followed by syncQueueChangeKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte göras mindre.'**
+  String get syncQueueTrySmallerFailed;
+
+  /// P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'nästa försök om {seconds} s'**
+  String syncQueueNextAttemptSeconds(int seconds);
+
+  /// P6-U08b: when a failed change is sent again, a minute or more (content-style-guide.md:31).
+  ///
+  /// In sv, this message translates to:
+  /// **'nästa försök om {minutes} min'**
+  String syncQueueNextAttemptMinutes(int minutes);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35).
+  ///
+  /// In sv, this message translates to:
+  /// **'nu'**
+  String get syncQueueAgeNow;
+
+  /// P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:31).
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String syncQueueAgeMinutes(int minutes);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a queued change, whole hours (content-style-guide.md:32).
+  ///
+  /// In sv, this message translates to:
+  /// **'{hours} h'**
+  String syncQueueAgeHours(int hours);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:32).
+  ///
+  /// In sv, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String syncQueueAgeHoursMinutes(int hours, int minutes);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a change queued a day or more ago.
+  ///
+  /// In sv, this message translates to:
+  /// **'{days, plural, =1{1 dygn} other{{days} dygn}}'**
+  String syncQueueAgeDays(int days);
+
+  /// P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}'**
+  String syncQueueIndicatorA11y(int count);
+
+  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247).
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå ändring'**
+  String get recipeSuggestChange;
+
+  /// Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka förslaget'**
+  String get recipeSuggestionSend;
+
+  /// Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar förslaget …'**
+  String get recipeSuggestionSending;
+
+  /// Q6-08 = A: confirmation after a member's edit was kept as a suggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är skickat till ägaren.'**
+  String get recipeSuggestionSent;
+
+  /// Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte skickas.'**
+  String get recipeSuggestionSendFailed;
+
+  /// Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.'**
+  String get recipeSuggestionCoversText;
+
+  /// Q6-12 = B (produktbeslut 2026-09-27b): confirmation after a member's edit replaced their suggestion that was still waiting for the owner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är skickat och ersatte ditt förra förslag.'**
+  String get recipeSuggestionReplaced;
+
+  /// Q6-12 = B: conflict banner body when the member's losing edit replaced their waiting suggestion; name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.'**
+  String conflictBannerBodySuggestionReplaced(String name);
+
+  /// Q6-12 = B: conflictBannerBodySuggestionReplaced when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din ändring ersatte ditt förra förslag och sparas i 7 dagar.'**
+  String get conflictBannerBodySuggestionReplacedUnnamed;
+
+  /// Q6-12 = B: owner's notice in recipe detail when the one waiting suggestion was replaced by a newer edit; name = who suggested it.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har uppdaterat sitt förslag till receptet.'**
+  String recipeSuggestionFromOneUpdated(String name);
+
+  /// Q6-12 = B: recipeSuggestionFromOneUpdated when the suggester's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'En medlem har uppdaterat sitt förslag till receptet.'**
+  String get recipeSuggestionFromOneUpdatedUnnamed;
+
+  /// Q6-12 = B: owner's notice when more than one suggestion waits and some were replaced by newer edits; count >= 2, updated >= 1.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} förslag på ändringar väntar på dig. {updated, plural, =1{Ett av dem är uppdaterat.} other{{updated} av dem är uppdaterade.}}'**
+  String recipeSuggestionFromManyUpdated(int count, int updated);
+
+  /// Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroOwnerUpdated(String name, String date);
+
+  /// Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.'**
+  String recipeSuggestionIntroMineUpdated(String date);
+
+  /// Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget har ändrats sedan du öppnade det. Öppna det igen för att se det nya.'**
+  String get recipeSuggestionChangedSinceOpened;
+
+  /// Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara min kopia'**
+  String get cookingNoStepsSaveCopy;
+
+  /// Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.'**
+  String get cookingNoStepsBodyOthers;
+
+  /// Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.'**
+  String get cookingNoStepsBodyOthersNoIngredients;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'God morgon'**
+  String get hemGreetingMorning;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hej'**
+  String get hemGreetingDay;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'God kväll'**
+  String get hemGreetingEvening;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'God natt'**
+  String get hemGreetingNight;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välkommen'**
+  String get hemGreetingWelcome;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.
+  ///
+  /// In sv, this message translates to:
+  /// **'{greeting}, {name}'**
+  String hemGreetingWithName(String greeting, String name);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ikväll'**
+  String get hemTonight;
+
+  /// Q6-16 = B (produktbeslut 2026-09-27b): the heading of Hem's library header row under the Ikväll band, with Välj, ingredient search and the grid/list toggle; count = recipes in the library.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept · {count}'**
+  String hemLibraryHeading(int count);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String hemMetaMinutes(int minutes);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} port.'**
+  String hemMetaPortions(int count);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja laga'**
+  String get hemStartCooking;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt rätt'**
+  String get hemSwapDish;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'allt i skafferiet'**
+  String get hemAllInPantry;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar veckans plan …'**
+  String get hemLoadingPlan;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckans plan kunde inte hämtas.'**
+  String get hemPlanErrorWhat;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din plan är sparad och ligger kvar – det är hämtningen som misslyckades, inte planen.'**
+  String get hemPlanErrorPreserved;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna veckomenyn'**
+  String get hemShowSavedPlan;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).
+  ///
+  /// In sv, this message translates to:
+  /// **'Planen hämtades {time} – kan ha ändrats av någon annan sedan dess.'**
+  String hemPlanFetchedAt(String time);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery blir användbar med ett recept'**
+  String get hemEmptyTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg in något du redan lagar ofta. Sedan kan Butlery planera veckan, räkna om portioner och skriva inköpslistan åt dig.'**
+  String get hemEmptyBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbaste vägarna'**
+  String get hemEmptyShortcuts;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in en länk'**
+  String get hemEmptyLinkTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'från en receptsida, YouTube eller Instagram'**
+  String get hemEmptyLinkBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Fota en receptsida'**
+  String get hemEmptyPhotoTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'ur en kokbok eller ett urklipp'**
+  String get hemEmptyPhotoBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv själv'**
+  String get hemEmptyWriteTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'för det du lagar utan recept'**
+  String get hemEmptyWriteBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288).
+  ///
+  /// In sv, this message translates to:
+  /// **'Har hushållet allergier? Ställ in dem först – då planerar Butlery aldrig något osäkert.'**
+  String get hemEmptyAllergyNote;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in allergener'**
+  String get hemEmptyAllergyLink;
 }
 
 class _AppLocalizationsDelegate
