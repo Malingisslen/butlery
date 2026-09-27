@@ -3207,10 +3207,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileBackupRecipesKept => 'Your recipes are still in the app.';
 
   @override
-  String get profileRestoreNotRead => 'The backup could not be restored.';
+  String get profileRestoreNotRead => 'The backup could not be read.';
 
   @override
-  String get profileRestoreNothingRemoved => 'No recipes were removed.';
+  String get profileRestoreNothingRemoved => 'No recipes were deleted.';
 
   @override
   String get profileRestoreCompleted => 'Restore completed.';

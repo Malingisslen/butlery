@@ -139,6 +139,9 @@ class InvitationActions {
             heroTag: 'send_invitations',
             icon: const Icon(Icons.send),
             label: Text(sendTooltip ?? context.l10n.commonSend),
+            // A labelled FAB is a pill, not the theme's circle (Komponentark
+            // v1:665, tokens.json space.radius.pill).
+            shape: const StadiumBorder(),
           ),
         ),
       );

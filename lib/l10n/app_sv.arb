@@ -2305,7 +2305,7 @@
   "profileBackupNotSaved": "Backupen kunde inte sparas.",
   "profileBackupRecipesKept": "Dina recept finns kvar i appen.",
   "profileRestoreNotRead": "Backupen kunde inte läsas in.",
-  "profileRestoreNothingRemoved": "Inga recept har tagits bort.",
+  "profileRestoreNothingRemoved": "Inga recept har raderats.",
   "profileRestoreCompleted": "Återställningen är genomförd.",
   "profileRestoreFailed": "Återställning misslyckades: {error}",
   "@profileRestoreFailed": {

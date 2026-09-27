@@ -3215,7 +3215,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileRestoreNotRead => 'Backupen kunde inte läsas in.';
 
   @override
-  String get profileRestoreNothingRemoved => 'Inga recept har tagits bort.';
+  String get profileRestoreNothingRemoved => 'Inga recept har raderats.';
 
   @override
   String get profileRestoreCompleted => 'Återställningen är genomförd.';

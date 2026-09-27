@@ -214,10 +214,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // No hand-written shape: the dialog theme's radius 8 (Komponentark
+    // v1:336) applies, as for every other dialog (BUT-1237).
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: AppDimensions.buttonWidthXLarge + 170,
@@ -226,7 +225,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             boxShadow: AppShadows.floating,
           ),
           child: Column(

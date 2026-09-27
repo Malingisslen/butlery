@@ -32,6 +32,15 @@ class BackupRestoreHandler {
             message: result.message,
             closeModal: closeModal,
           );
+        } else if (result.unexpected) {
+          // The service caught an exception and logged it; the user gets
+          // the same three parts as a thrown failure below.
+          _showFailure(
+            context,
+            what: context.l10n.profileBackupNotSaved,
+            preserved: context.l10n.profileBackupRecipesKept,
+            closeModal: closeModal,
+          );
         } else {
           ResultDisplayer.showResult(
             context,
@@ -76,6 +85,13 @@ class BackupRestoreHandler {
         } else if (result.cancelled) {
           // User cancelled - no message needed
           return;
+        } else if (result.unexpected) {
+          _showFailure(
+            context,
+            what: context.l10n.profileRestoreNotRead,
+            preserved: context.l10n.profileRestoreNothingRemoved,
+            closeModal: closeModal,
+          );
         } else {
           ResultDisplayer.showResult(
             context,

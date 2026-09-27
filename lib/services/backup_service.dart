@@ -58,9 +58,11 @@ class BackupService extends BaseService {
       } else {
         return BackupResult.error(AppLocale.current.backupPlatformNotSupported);
       }
-    } catch (e) {
-      AppLogger.error('Export misslyckades', e);
-      return BackupResult.error(AppLocale.current.backupExportFailed('$e'));
+    } catch (e, stackTrace) {
+      // The cause goes to the log, never to the user
+      // (content-style-guide.md:94).
+      AppLogger.error('Export misslyckades', e, 'BackupService', stackTrace);
+      return BackupResult.unexpected();
     }
   }
 
@@ -108,9 +110,14 @@ class BackupService extends BaseService {
         filePath: file.path,
         recipeCount: recipeCount,
       );
-    } catch (e) {
-      AppLogger.error('Kunde inte spara till Android', e);
-      return BackupResult.error(AppLocale.current.backupCouldNotSaveFile('$e'));
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Kunde inte spara till Android',
+        e,
+        'BackupService',
+        stackTrace,
+      );
+      return BackupResult.unexpected();
     }
   }
 
@@ -137,9 +144,14 @@ class BackupService extends BaseService {
         filePath: file.path,
         recipeCount: recipeCount,
       );
-    } catch (e) {
-      AppLogger.error('Kunde inte spara till iOS', e);
-      return BackupResult.error(AppLocale.current.backupCouldNotSaveFile('$e'));
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Kunde inte spara till iOS',
+        e,
+        'BackupService',
+        stackTrace,
+      );
+      return BackupResult.unexpected();
     }
   }
 
@@ -259,9 +271,9 @@ class BackupService extends BaseService {
         errors: errors,
         skippedTitles: skippedTitles,
       );
-    } catch (e) {
-      AppLogger.error('Import misslyckades', e);
-      return ImportResult.error(AppLocale.current.backupImportFailed('$e'));
+    } catch (e, stackTrace) {
+      AppLogger.error('Import misslyckades', e, 'BackupService', stackTrace);
+      return ImportResult.unexpected();
     }
   }
 
@@ -290,11 +302,16 @@ class BackupResult {
   final String? filePath;
   final int? recipeCount;
 
+  /// True when an exception stopped the export. [message] then carries no
+  /// exception text; the cause is only in the log.
+  final bool unexpected;
+
   const BackupResult({
     required this.success,
     required this.message,
     this.filePath,
     this.recipeCount,
+    this.unexpected = false,
   });
 
   factory BackupResult.success({
@@ -313,6 +330,15 @@ class BackupResult {
   factory BackupResult.error(String message) {
     return BackupResult(success: false, message: message);
   }
+
+  /// An exception stopped the export; the cause is logged, not shown.
+  factory BackupResult.unexpected() {
+    return BackupResult(
+      success: false,
+      message: AppLocale.current.profileBackupNotSaved,
+      unexpected: true,
+    );
+  }
 }
 
 class ImportResult {
@@ -327,6 +353,10 @@ class ImportResult {
   final List<String> skippedTitles;
   final String? errorMessage;
 
+  /// True when an exception stopped the import. [errorMessage] then carries
+  /// no exception text; the cause is only in the log.
+  final bool unexpected;
+
   const ImportResult({
     this.success = true,
     this.cancelled = false,
@@ -338,6 +368,7 @@ class ImportResult {
     this.errors = const [],
     this.skippedTitles = const [],
     this.errorMessage,
+    this.unexpected = false,
   });
 
   factory ImportResult.cancelled() {
@@ -346,5 +377,14 @@ class ImportResult {
 
   factory ImportResult.error(String message) {
     return ImportResult(success: false, errorMessage: message);
+  }
+
+  /// An exception stopped the import; the cause is logged, not shown.
+  factory ImportResult.unexpected() {
+    return ImportResult(
+      success: false,
+      errorMessage: AppLocale.current.profileRestoreNotRead,
+      unexpected: true,
+    );
   }
 }

@@ -123,6 +123,63 @@ void main() {
     });
   });
 
+  group('BackupRestoreHandler when the service caught the exception', () {
+    // BackupService catches its own exceptions and returns an "unexpected"
+    // result. Even if such a result carried the cause, the handler shows only
+    // the three-part failure.
+    testWidgets('an unexpected export result shows the failure, not the '
+        'cause', (tester) async {
+      when(() => backup.exportToFile()).thenAnswer(
+        (_) async => const BackupResult(
+          success: false,
+          message: _rawCause,
+          unexpected: true,
+        ),
+      );
+      final navigatorKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(_app(navigatorKey));
+
+      BackupRestoreHandler.handleBackup(
+        navigatorKey.currentContext!,
+        closeModal: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('${sv.profileBackupNotSaved} ${sv.profileBackupRecipesKept}'),
+        findsOneWidget,
+      );
+      expect(find.textContaining(_rawCause), findsNothing);
+    });
+
+    testWidgets('an unexpected import result shows the failure, not the '
+        'cause', (tester) async {
+      when(() => backup.importFromFile()).thenAnswer(
+        (_) async => const ImportResult(
+          success: false,
+          errorMessage: _rawCause,
+          unexpected: true,
+        ),
+      );
+      final navigatorKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(_app(navigatorKey));
+
+      BackupRestoreHandler.handleRestore(
+        navigatorKey.currentContext!,
+        closeModal: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          '${sv.profileRestoreNotRead} ${sv.profileRestoreNothingRemoved}',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining(_rawCause), findsNothing);
+    });
+  });
+
   group('BackupRestoreHandler from a modal', () {
     testWidgets('closes the sheet, keeps the page, and shows the failure '
         'after the sheet is gone', (tester) async {

@@ -2298,8 +2298,8 @@
   },
   "profileBackupNotSaved": "The backup could not be saved.",
   "profileBackupRecipesKept": "Your recipes are still in the app.",
-  "profileRestoreNotRead": "The backup could not be restored.",
-  "profileRestoreNothingRemoved": "No recipes were removed.",
+  "profileRestoreNotRead": "The backup could not be read.",
+  "profileRestoreNothingRemoved": "No recipes were deleted.",
   "profileRestoreCompleted": "Restore completed.",
   "profileRestoreFailed": "Restore failed: {error}",
   "@profileRestoreFailed": {

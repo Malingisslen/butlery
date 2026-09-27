@@ -5302,7 +5302,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileRestoreNothingRemoved.
   ///
   /// In sv, this message translates to:
-  /// **'Inga recept har tagits bort.'**
+  /// **'Inga recept har raderats.'**
   String get profileRestoreNothingRemoved;
 
   /// No description provided for @profileRestoreCompleted.

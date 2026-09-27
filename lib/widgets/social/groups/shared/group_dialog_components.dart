@@ -231,8 +231,10 @@ class DialogHeader extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
+        // The header fills the dialog's top edge, so its corners follow the
+        // dialog's own radius, 8 (Komponentark v1:336), not the card's 12.
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
+          top: Radius.circular(AppDimensions.radiusControl),
         ),
       ),
       child: Row(
@@ -288,8 +290,10 @@ class DialogFooter extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        // The footer fills the dialog's bottom edge: dialog radius 8
+        // (Komponentark v1:336).
         borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(AppDimensions.radiusCard),
+          bottom: Radius.circular(AppDimensions.radiusControl),
         ),
       ),
       child: Row(

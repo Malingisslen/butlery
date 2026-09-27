@@ -127,9 +127,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
     return Dialog(
       backgroundColor: cs.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
+      // No hand-written shape: the dialog theme's radius 8 (Komponentark
+      // v1:336) applies (BUT-1237).
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: AppDimensions.dialogMaxHeightSmall,
