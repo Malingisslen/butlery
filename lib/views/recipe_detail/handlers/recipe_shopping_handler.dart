@@ -14,26 +14,100 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/shopping/recipe_pantry_check.dart';
 
 /// Recipe shopping list action handler
 /// Handles shopping list generation from recipe ingredients with portion scaling.
 class RecipeShoppingHandler {
+  /// Q4-03 = A (produktbeslut 2026-09-24): the recipe at [portions]
+  /// against a known [pantry] ([RecipePantryCheck.check]): what the button
+  /// adds, and what the pantry covered or lessened, so the dialog can show
+  /// that a deduction happened (produktregler.md:233). Null with no known
+  /// pantry: every ingredient is then added, as before, since nothing is
+  /// left off on a guess.
+  static RecipePantryResult? pantryCheck(
+    Recipe recipe, {
+    required int portions,
+    List<PantryItem>? pantry,
+  }) {
+    if (pantry == null) return null;
+    return RecipePantryCheck.check(
+      ShoppingListGenerator.generateShoppingItemsFromRecipe(
+        recipe,
+        portions: portions,
+      ),
+      pantry,
+    );
+  }
+
+  /// Q4-03: the items the button adds, at [portions]. With a known
+  /// [pantry], what it covers is left off or lessened and marked rows carry
+  /// their mark; when it covers everything, this is empty and nothing is
+  /// added (produktregler.md:228). The button's count is its length.
+  static List<UnifiedShoppingItem> itemsToAdd(
+    Recipe recipe, {
+    required int portions,
+    List<PantryItem>? pantry,
+  }) =>
+      pantryCheck(recipe, portions: portions, pantry: pantry)?.toBuy ??
+      ShoppingListGenerator.generateShoppingItemsFromRecipe(
+        recipe,
+        portions: portions,
+      );
+
+  /// Q4-03: how many items the button adds, or null when the pantry is not
+  /// known or covers everything (the button then says "Lägg i
+  /// inköpslistan"; the text for zero is open with the product owner).
+  static int? countToBuy(
+    Recipe recipe, {
+    required int portions,
+    List<PantryItem>? pantry,
+  }) {
+    final count = pantryCheck(
+      recipe,
+      portions: portions,
+      pantry: pantry,
+    )?.toBuy.length;
+    return count == 0 ? null : count;
+  }
+
   /// Show confirmation dialog with ingredient preview before adding to shopping list.
   /// UI Redesign: FAB triggers this dialog first to show what will be added.
   static Future<void> showAddToCartConfirmation(
     BuildContext context, {
     required int currentPortions,
+    List<PantryItem>? pantry,
   }) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
     final recipe = viewModel.recipe;
 
-    // Generate shopping items from recipe
-    final shoppingItems = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+    // The items the button counted (Q4-03), and what the pantry took.
+    final check = pantryCheck(
       recipe,
       portions: currentPortions,
+      pantry: pantry,
     );
+    final shoppingItems =
+        check?.toBuy ??
+        ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+          portions: currentPortions,
+        );
+
+    if (shoppingItems.isEmpty && (check?.coveredAtHome.isNotEmpty ?? false)) {
+      // Everything is at home: nothing is added, and the user is told so
+      // (produktregler.md:228, 233).
+      SnackBarUtils.showInfo(
+        context,
+        context.l10n.recipePantryAllAtHome(check!.coveredAtHome.join(', ')),
+      );
+      return;
+    }
 
     if (shoppingItems.isEmpty) {
       SnackBarUtils.showWarning(
@@ -69,6 +143,7 @@ class RecipeShoppingHandler {
                   itemCount: shoppingItems.length,
                   itemBuilder: (context, index) {
                     final item = shoppingItems[index];
+                    final note = item.note ?? '';
                     return Padding(
                       padding: AppDimensions.paddingVertical4,
                       child: Row(
@@ -82,9 +157,13 @@ class RecipeShoppingHandler {
                             ),
                           ),
                           const SizedBox(width: AppDimensions.spacingL),
+                          // The amount to buy, and the pantry's mark
+                          // (Q4-03, produktregler.md:229-233).
                           Expanded(
                             child: Text(
-                              item.name,
+                              note.isEmpty
+                                  ? item.displayText
+                                  : '${item.displayText} · $note',
                               style: const TextStyle(fontSize: 14),
                             ),
                           ),
@@ -94,6 +173,26 @@ class RecipeShoppingHandler {
                   },
                 ),
               ),
+              if (check != null && check.coveredAtHome.isNotEmpty) ...[
+                const SizedBox(height: AppDimensions.spacingL),
+                Text(
+                  context.l10n.shoppingMergePantryCovered(
+                    check.coveredAtHome.join(', '),
+                  ),
+                  key: const ValueKey('recipePantryCovered'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+              if (check != null && check.lessened.isNotEmpty) ...[
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(
+                  context.l10n.recipePantryLessened(
+                    check.lessened.join(', '),
+                  ),
+                  key: const ValueKey('recipePantryLessened'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
             ],
           ),
         ),
@@ -119,6 +218,7 @@ class RecipeShoppingHandler {
     await generateShoppingListFromRecipe(
       context,
       currentPortions: currentPortions,
+      pantry: pantry,
     );
   }
 
@@ -141,6 +241,7 @@ class RecipeShoppingHandler {
   static Future<void> generateShoppingListFromRecipe(
     BuildContext context, {
     required int currentPortions,
+    List<PantryItem>? pantry,
   }) async {
     if (!context.mounted) return;
 
@@ -149,12 +250,12 @@ class RecipeShoppingHandler {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
       final recipe = viewModel.recipe;
 
-      // Generate shopping items from recipe using current portions
-      final shoppingItems =
-          ShoppingListGenerator.generateShoppingItemsFromRecipe(
-            recipe,
-            portions: currentPortions,
-          );
+      // The items the button counted (Q4-03), at the current portions.
+      final shoppingItems = itemsToAdd(
+        recipe,
+        portions: currentPortions,
+        pantry: pantry,
+      );
 
       if (shoppingItems.isEmpty) {
         if (!context.mounted) return;

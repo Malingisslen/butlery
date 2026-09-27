@@ -13497,5 +13497,33 @@
   "recipeSuggestionLoading": "Loading the suggestion …",
   "@recipeSuggestionLoading": {
     "description": "P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63)."
-  }
+  },
+  "recipeAddCountToShoppingList": "{count, plural, =1{Add 1 item to the shopping list} other{Add {count} items to the shopping list}}",
+  "@recipeAddCountToShoppingList": {
+    "description": "Q4-03 = A: the recipe's add-to-shopping-list button, counting the ingredients the pantry does not already cover (content-style-guide.md:76).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowDiscardAction": "Discard the rest",
+  "@weeklyMenuOverflowDiscardAction": {
+    "description": "Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131)."
+  },
+  "weeklyMenuOverflowDiscarded": "{count, plural, =1{1 dish discarded from the tray} other{{count} dishes discarded from the tray}}",
+  "@weeklyMenuOverflowDiscarded": {
+    "description": "Q5-01 = A: undo snackbar after Släng resten.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantryItemAmountUnknown": "at home",
+  "@pantryItemAmountUnknown": {
+    "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
+  },
+  "recipePantryAllAtHome": "Everything is at home in full, so nothing is added to the shopping list: {names}",
+  "recipePantryLessened": "Less than the recipe, since some is at home: {names}"
 }

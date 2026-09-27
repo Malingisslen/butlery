@@ -18130,4 +18130,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeSuggestionLoading => 'Loading the suggestion …';
+
+  @override
+  String recipeAddCountToShoppingList(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count items to the shopping list',
+      one: 'Add 1 item to the shopping list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuOverflowDiscardAction => 'Discard the rest';
+
+  @override
+  String weeklyMenuOverflowDiscarded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes discarded from the tray',
+      one: '1 dish discarded from the tray',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pantryItemAmountUnknown => 'at home';
+
+  @override
+  String recipePantryAllAtHome(String names) {
+    return 'Everything is at home in full, so nothing is added to the shopping list: $names';
+  }
+
+  @override
+  String recipePantryLessened(String names) {
+    return 'Less than the recipe, since some is at home: $names';
+  }
 }

@@ -32,22 +32,29 @@ class SnackBarUtils {
   /// A confirmation. The ink look carries no status colour (Komponentark
   /// v1:300, "Aldrig fylld yta i statusfärg"); the message says what
   /// happened.
+  ///
+  /// Without an action of its own it carries "Stäng" (content-style-guide
+  /// .md:97, "En snackbar utan möjlig följdhandling får Stäng") and still
+  /// closes by itself after [duration] (Q4-01 = B, produktbeslut
+  /// 2026-09-24): 5 s here, 4 s for [showInfo]. [showCloseButton] left
+  /// out means that default; true asks for a notice that stays until the
+  /// user closes it, as it did before Q4-01; false shows no action.
   static void showSuccess(
     BuildContext context,
     String message, {
     Duration? duration,
     String? actionLabel,
     VoidCallback? onAction,
-    bool showCloseButton = false,
+    bool? showCloseButton,
   }) {
     try {
-      _showSnackBar(
+      _showConfirmation(
         context,
         message: message,
         duration: duration ?? const Duration(seconds: 5),
-        actionLabel:
-            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
-        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
+        actionLabel: actionLabel,
+        onAction: onAction,
+        showCloseButton: showCloseButton,
       );
 
       AppLogger.debug('Success snackbar shown: $message');
@@ -218,22 +225,23 @@ class SnackBarUtils {
     }
   }
 
+  /// A confirmation that informs: "Stäng" and 4 s, as [showSuccess].
   static void showInfo(
     BuildContext context,
     String message, {
     Duration? duration,
     String? actionLabel,
     VoidCallback? onAction,
-    bool showCloseButton = false,
+    bool? showCloseButton,
   }) {
     try {
-      _showSnackBar(
+      _showConfirmation(
         context,
         message: message,
         duration: duration ?? const Duration(seconds: 4),
-        actionLabel:
-            actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
-        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
+        actionLabel: actionLabel,
+        onAction: onAction,
+        showCloseButton: showCloseButton,
       );
 
       AppLogger.debug('Info snackbar shown: $message');
@@ -384,6 +392,57 @@ class SnackBarUtils {
     return sanitizeErrorForUser(error);
   }
 
+  /// Q4-01 = B (produktbeslut 2026-09-24): a confirmation (success or
+  /// info; not a failure, not an undo) gets "Stäng" and still closes by
+  /// itself after [duration], 4-5 s. A caller's own action (for example
+  /// "Visa receptet") replaces "Stäng" and keeps its earlier behaviour: it
+  /// stays until the user acts.
+  ///
+  /// When assistive technology drives navigation, "Stäng" stays too, as
+  /// every snackbar with an action does then (PQ-21 = A, produktbeslut
+  /// 2026-09-23): a screen-reader user is not raced by a timer.
+  ///
+  /// Interpretation: only the "Stäng" this adds by default closes by
+  /// itself. Q4-01 was asked about the confirmations that had no action; a
+  /// follow-up action was not part of it, and neither was a caller that
+  /// asked for "Stäng" explicitly ([showCloseButton] true) to keep a notice
+  /// on screen (the MFA recovery notice, the offline-stopped week notice):
+  /// those still stay until the user acts.
+  static void _showConfirmation(
+    BuildContext context, {
+    required String message,
+    required Duration duration,
+    required String? actionLabel,
+    required VoidCallback? onAction,
+    required bool? showCloseButton,
+  }) {
+    if (actionLabel != null && onAction != null) {
+      _showSnackBar(
+        context,
+        message: message,
+        duration: duration,
+        actionLabel: actionLabel,
+        onAction: onAction,
+      );
+      return;
+    }
+    if (showCloseButton == false) {
+      _showSnackBar(context, message: message, duration: duration);
+      return;
+    }
+    _showSnackBar(
+      context,
+      message: message,
+      duration: duration,
+      actionLabel: context.l10n.commonClose,
+      // "Stäng" only closes: the action itself hides the snackbar.
+      onAction: () {},
+      persist:
+          showCloseButton == true ||
+          (MediaQuery.maybeAccessibleNavigationOf(context) ?? false),
+    );
+  }
+
   static void _showSnackBar(
     BuildContext context, {
     required String message,
@@ -391,6 +450,7 @@ class SnackBarUtils {
     String? actionLabel,
     VoidCallback? onAction,
     bool alert = false,
+    bool? persist,
   }) {
     final messenger = ScaffoldMessenger.of(context);
     var acted = false;
@@ -425,8 +485,9 @@ class SnackBarUtils {
         duration: duration ?? const Duration(seconds: 3),
         // The action sits in the content, so Flutter's default
         // (`persist ?? action != null`) no longer sees it. A snackbar with
-        // an action stays until the user acts, as it did with SnackBarAction.
-        persist: action != null,
+        // an action stays until the user acts, as it did with SnackBarAction,
+        // unless the caller says otherwise (a confirmation's "Stäng").
+        persist: persist ?? action != null,
         behavior: SnackBarBehavior.floating,
       ),
     );

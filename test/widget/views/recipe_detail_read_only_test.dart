@@ -25,6 +25,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -59,6 +62,10 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
 
 const _testUserId = 'test-user-123';
 const _friendUserId = 'friend-user-456';
+
+class _MockPantryService extends Mock implements PantryService {}
+
+class _MockAuthRepository extends Mock implements AuthRepository {}
 
 // Minimal mock for SocialRecipeService: only acceptRecipeShareRequest needed.
 class _MockSocialRecipeService extends Mock implements SocialRecipeService {}
@@ -383,6 +390,80 @@ void main() {
         );
       });
     }
+
+    // Q4-02 = A (produktbeslut 2026-09-24): on a friend's recipe "Börja
+    // laga" is the ink button. Dark: no fill, a 1.5 px paper outline, as
+    // the own recipe's ink button ('Receptdetalj — mörkt läge'), since ink
+    // on #17251D does not read as a button. The shopping list is a
+    // paper-ring button on the photo.
+    testWidgets("a friend's recipe: Börja laga is ink in light mode", (
+      tester,
+    ) async {
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-start-cooking')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, AppTheme.lightTheme.colorScheme.primary);
+      expect(find.byTooltip('Lägg i inköpslistan'), findsOneWidget);
+    });
+
+    testWidgets("a friend's recipe: Börja laga is a paper outline in dark "
+        'mode', (tester) async {
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+        theme: AppTheme.darkTheme,
+      );
+      final paper = AppTheme.darkTheme.colorScheme.onSurface;
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-start-cooking')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, Colors.transparent);
+      final shape = material.shape! as OutlinedBorder;
+      expect(shape.side.color, paper);
+      expect(shape.side.width, 1.5);
+    });
+
+    // Q4-03 = A (produktbeslut 2026-09-24): the button counts what the
+    // pantry does not cover (content-style-guide.md:76).
+    testWidgets('the shopping-list action counts against the pantry', (
+      tester,
+    ) async {
+      final pantry = _MockPantryService();
+      final auth = _MockAuthRepository();
+      when(() => auth.currentUserId).thenReturn(_testUserId);
+      when(() => pantry.watchAll(_testUserId)).thenAnswer(
+        (_) => Stream.value([
+          PantryItem(
+            id: 'p-agg',
+            ingredientName: 'ägg',
+            quantity: 10,
+            unit: '',
+            location: PantryLocation.fridge,
+            addedAt: DateTime(2026, 1, 1),
+          ),
+        ]),
+      );
+      TestServiceLocator.registerMock<PantryService>(pantry);
+      TestServiceLocator.registerMock<AuthRepository>(auth);
+
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await tester.pump();
+
+      expect(
+        find.widgetWithText(FilledButton, 'Lägg 2 varor i inköpslistan'),
+        findsOneWidget,
+      );
+    });
 
     // Skarmar v12 del 1 'Receptdetalj' draws the shopping-list action with
     // an ink fill; 'Receptdetalj — mörkt läge' draws it with no fill, a

@@ -62,6 +62,7 @@ import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
+import 'package:butlery/services/shopping/recipe_pantry_check.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -209,10 +210,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   // by the recipe's id, as the ConflictBanner below is.
   late final RestorableVersionsWatcher _restorable;
 
+  // Q4-03: the pantry the add-to-shopping-list button counts against.
+  late final RecipePantryWatcher _pantry;
+
   @override
   void initState() {
     super.initState();
     _actions = RecipeDetailActions();
+    _pantry = RecipePantryWatcher(
+      onChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
     _restorable = RestorableVersionsWatcher(
       entity: ConflictEntity.recipeOwn,
       resourceId: widget.recipe.id,
@@ -236,6 +245,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     _userService!.addListener(_onUserServiceChanged);
   }
 
+  /// Q4-03 = A (produktbeslut 2026-09-24; content-style-guide.md:76,
+  /// "Lägg 2 varor i inköpslistan"): the button names how many items it
+  /// adds, counting only what the pantry does not already cover. While the
+  /// pantry is loading or cannot be read, and when it covers everything, it
+  /// says "Lägg i inköpslistan".
+  String _addToListLabel(BuildContext context, Recipe recipe) {
+    final count = _actions.countToBuy(recipe, _pantry.pantry);
+    return count == null
+        ? context.l10n.recipeAddToShoppingList
+        : context.l10n.recipeAddCountToShoppingList(count);
+  }
+
   void _onUserServiceChanged() {
     if (!mounted) return;
     if (_actions.refreshHouseholdDefault(widget.recipe)) {
@@ -246,6 +267,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   @override
   void dispose() {
     _restorable.dispose();
+    _pantry.dispose();
     _userService?.removeListener(_onUserServiceChanged);
     super.dispose();
   }
@@ -280,6 +302,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
+        // Q4-03: "Lägg {n} varor i inköpslistan", counted against the
+        // pantry.
+        final addToListLabel = _addToListLabel(context, recipe);
         Future<void> startCooking() async {
           final exit = await Navigator.pushNamed<Object?>(
             context,
@@ -315,7 +340,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 await _actions.editRecipe(context);
               }
             case CookingModeExit.toShoppingList:
-              await _actions.showAddToCartConfirmation(context);
+              await _actions.showAddToCartConfirmation(
+                context,
+                pantry: _pantry.pantry,
+              );
             default:
               break;
           }
@@ -335,8 +363,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   viewModel,
                   recipe,
                 ),
-                onAddToShoppingList: () =>
-                    _actions.showAddToCartConfirmation(context),
+                onAddToShoppingList: () => _actions.showAddToCartConfirmation(
+                  context,
+                  pantry: _pantry.pantry,
+                ),
+                addToShoppingListLabel: addToListLabel,
               ),
               ButleryBottomNavigation(
                 currentIndex: 0,
@@ -537,9 +568,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       padding: AppDimensions.paddingVertical8,
                       child: _HeroButton(
                         icon: Icons.shopping_cart_outlined,
-                        onPressed: () =>
-                            _actions.showAddToCartConfirmation(context),
-                        tooltip: context.l10n.recipeAddToShoppingList,
+                        onPressed: () => _actions.showAddToCartConfirmation(
+                          context,
+                          pantry: _pantry.pantry,
+                        ),
+                        tooltip: _addToListLabel(context, recipe),
                       ),
                     ),
                   // More actions menu
@@ -1340,12 +1373,16 @@ class _RecipeActionBar extends StatelessWidget {
     required this.onStartCooking,
     required this.onSaveToMyKitchen,
     required this.onAddToShoppingList,
+    required this.addToShoppingListLabel,
   });
 
   final bool isOthersRecipe;
   final VoidCallback onStartCooking;
   final VoidCallback onSaveToMyKitchen;
   final VoidCallback onAddToShoppingList;
+
+  /// "Lägg {n} varor i inköpslistan" or "Lägg i inköpslistan" (Q4-03).
+  final String addToShoppingListLabel;
 
   static const double _stackBelow = 360;
 
@@ -1354,12 +1391,29 @@ class _RecipeActionBar extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
 
+    // The ink button. Light: the theme's ink fill (Skarmar v12 del 1
+    // 'Receptdetalj', background:#24382c). Dark: no fill, a 1.5 px paper
+    // outline and paper text (Skarmar v12 del 1 'Receptdetalj — mörkt
+    // läge', border:1.5px solid #f5f4ed), since ink on #17251D does not
+    // read as a button. cs.onSurface is paper #F5F4ED in the dark scheme
+    // (app_colors.dart:334). Q4-02: "Börja laga" on someone else's recipe
+    // is this button too (interpretation: etapp 11 draws that bar in light
+    // only; dark follows the own recipe's ink button).
+    final isDark = cs.brightness == Brightness.dark;
+    final ButtonStyle? inkStyle = isDark
+        ? FilledButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: cs.onSurface,
+            side: BorderSide(color: cs.onSurface, width: 1.5),
+          )
+        : null;
+
     final startCooking = Semantics(
       identifier: 'btn-start-cooking',
       button: true,
       child: FilledButton(
         key: const ValueKey('test-recipe-detail-start-cooking'),
-        style: isOthersRecipe ? null : ComponentThemes.heroButtonStyle(cs),
+        style: isOthersRecipe ? inkStyle : ComponentThemes.heroButtonStyle(cs),
         onPressed: onStartCooking,
         child: Text(l10n.recipeStartCookingTooltip),
       ),
@@ -1381,24 +1435,11 @@ class _RecipeActionBar extends StatelessWidget {
       second = startCooking;
     } else {
       first = startCooking;
-      // Light: the theme's ink fill (Skarmar v12 del 1 'Receptdetalj',
-      // background:#24382c). Dark: no fill, a 1.5 px paper outline and
-      // paper text (Skarmar v12 del 1 'Receptdetalj — mörkt läge',
-      // border:1.5px solid #f5f4ed), since ink on #17251D does not read as
-      // a button. cs.onSurface is paper #F5F4ED in the dark scheme
-      // (app_colors.dart:331).
-      final isDark = cs.brightness == Brightness.dark;
       second = FilledButton(
         key: const ValueKey('test-recipe-detail-add-to-list'),
-        style: isDark
-            ? FilledButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: cs.onSurface,
-                side: BorderSide(color: cs.onSurface, width: 1.5),
-              )
-            : null,
+        style: inkStyle,
         onPressed: onAddToShoppingList,
-        child: Text(l10n.recipeAddToShoppingList),
+        child: Text(addToShoppingListLabel),
       );
     }
 
@@ -1496,8 +1537,10 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
         .acceptRecipeShareRequest(widget.shareRequest);
     if (!mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeShareRequestShared(name))),
+      // Q4-01: a confirmation carries Stäng (content-style-guide.md:97).
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.recipeShareRequestShared(name),
       );
       setState(() => _dismissed = true);
     } else {

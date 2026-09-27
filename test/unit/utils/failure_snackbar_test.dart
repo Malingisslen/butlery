@@ -146,7 +146,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(alertRole(), findsNothing);
-      expect(find.text('Stäng'), findsNothing, reason: 'unchanged behaviour');
+      // Q4-01 = B (produktbeslut 2026-09-24): a confirmation carries
+      // "Stäng" too, but closes by itself.
+      expect(find.text('Stäng'), findsOneWidget);
+      expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isFalse);
     });
 
     testWidgets('showErrorWithRetry and showNetworkError route through it', (

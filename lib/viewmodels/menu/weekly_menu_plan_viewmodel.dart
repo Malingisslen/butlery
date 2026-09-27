@@ -56,6 +56,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// (produktregler.md:206).
   _OverflowTray _tray = _OverflowTray.empty;
 
+  /// Counts every [_setTray], so [undoDiscardOverflow] can tell that the
+  /// tray it emptied has not been set again since (Q5-01).
+  int _trayRevision = 0;
+
   /// Set once anything has changed the tray in this session, so a slow
   /// restore from the device never overwrites a newer tray.
   bool _trayTouched = false;
@@ -926,6 +930,40 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     return ok ? moved : null;
   }
 
+  /// Q5-01 = A (produktbeslut 2026-09-24): the tray's "Släng resten". The
+  /// tray comes back quietly (P5-U24) and this is how it leaves without
+  /// being placed. The recipes themselves stay in Mina recept; only the
+  /// tray, and its copy on this device, goes.
+  ///
+  /// Data disappears, so it is class 1: immediate, with a 7 s Ångra
+  /// (produktregler.md:131-132, § 2.4). Returns the tray as it was, for
+  /// [undoDiscardOverflow], or null when there was nothing to discard.
+  OverflowTrayDiscard? discardOverflow() {
+    if (_overflow.isEmpty && _tray.unresolvedIds.isEmpty) return null;
+    final tray = _tray;
+    _setTray(_OverflowTray.empty);
+    notifyListeners();
+    return OverflowTrayDiscard._(tray, _trayRevision);
+  }
+
+  /// Ångra for [discardOverflow]: the tray comes back as it was. A tray that
+  /// has been set again since (a new generation or placement, even one that
+  /// left it empty) is newer and is left alone, so Ångra never overwrites
+  /// it. Returns whether the tray came back.
+  bool undoDiscardOverflow(OverflowTrayDiscard discarded) {
+    if (isDisposed) return false;
+    if (_trayRevision != discarded._revision) return false;
+    if (_overflow.isNotEmpty || _tray.unresolvedIds.isNotEmpty) return false;
+    _setTray(discarded._tray);
+    if (discarded._tray.unresolvedIds.isNotEmpty) {
+      _pendingTraySub ??= _recipeService.stateStream.listen(
+        (_) => _resolvePendingTray(),
+      );
+    }
+    notifyListeners();
+    return true;
+  }
+
   /// P5-U24: brings back the tray this device kept for the signed-in user
   /// (produktregler.md:1125: the tray "överlever omladdning, ligger kvar
   /// tills den töms"). Does nothing when this session already changed the
@@ -1011,6 +1049,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// Sets the tray and keeps it on this device (P5-U24).
   void _setTray(_OverflowTray tray) {
+    _trayRevision++;
     _trayTouched = true;
     _tray = tray;
     _persistTray();
@@ -1156,6 +1195,19 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
 /// P5-U23/U24: the overflow tray's state. Immutable, so a rollback can put
 /// the whole tray back in one assignment.
+/// Q5-01: a tray that "Släng resten" took away, held for its Ångra.
+class OverflowTrayDiscard {
+  const OverflowTrayDiscard._(this._tray, this._revision);
+
+  final _OverflowTray _tray;
+
+  /// The tray's revision right after the discard.
+  final int _revision;
+
+  /// How many recipes the tray showed ("3 rätter slängdes ur brickan").
+  int get count => _tray.recipes.length;
+}
+
 class _OverflowTray {
   const _OverflowTray({
     required this.recipes,

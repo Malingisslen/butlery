@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -215,12 +216,28 @@ class RecipeDetailActions {
 
   /// Show add to cart confirmation dialog (FAB action)
   /// UI Redesign: Shows ingredient list before adding to shopping list
-  Future<void> showAddToCartConfirmation(BuildContext context) async {
+  ///
+  /// Q4-03: with a known [pantry], only what it does not cover is added,
+  /// the same items [countToBuy] counted for the button.
+  Future<void> showAddToCartConfirmation(
+    BuildContext context, {
+    List<PantryItem>? pantry,
+  }) async {
     await RecipeShoppingHandler.showAddToCartConfirmation(
       context,
       currentPortions: _currentPortions,
+      pantry: pantry,
     );
   }
+
+  /// Q4-03: the count on "Lägg {n} varor i inköpslistan" at the current
+  /// portions, or null for "Lägg i inköpslistan".
+  int? countToBuy(Recipe recipe, List<PantryItem>? pantry) =>
+      RecipeShoppingHandler.countToBuy(
+        recipe,
+        portions: _currentPortions,
+        pantry: pantry,
+      );
 
   /// BUT-999: add the recipe to one or more weekly-menu day/slot targets.
   Future<void> addToMenu(BuildContext context) async {

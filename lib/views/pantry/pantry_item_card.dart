@@ -60,10 +60,11 @@ class PantryItemCard extends StatelessWidget {
 
   /// The line under the name: the amount, and when the row last changed.
   String _metaLine(BuildContext context) {
-    // An unknown amount ("har hemma") shows no unit on its own, with or
-    // without a change time.
+    // An unknown amount says "har hemma" (Q5-03 = B, produktbeslut
+    // 2026-09-24; produktregler.md:148: "har hemma, vet inte hur mycket"),
+    // never a unit on its own, with or without a change time.
     final amount = item.quantity == null
-        ? ''
+        ? context.l10n.pantryItemAmountUnknown
         : '${item.formattedQuantity} ${item.unit}'.trim();
     final changedAt = item.updatedAt;
     if (changedAt == null) return amount;
