@@ -129,8 +129,10 @@ export const MAP = {
   sort: 'arrowUpDown',
   // drag — Dra för att ordna
   drag_handle: 'drag', drag_indicator: 'drag',
-  // play / pause / stop
-  play_arrow: 'play', play_circle_outline: 'play',
+  // pause / stop. play_arrow and play_circle_outline stay Material: the
+  // play master (assets/icons/play.svg) fills the disc and the triangle in
+  // one colour, so it draws a solid dot (also in Skarmar v12 del 1:646), and
+  // no Material play use means "Starta matlagning" (icons.json).
   pause: 'pause', pause_circle: 'pause', pause_circle_outline: 'pause',
   stop: 'stop',
   // mic — Diktera
@@ -200,6 +202,11 @@ export const SITE = {
   'lib/widgets/common/social_components/social_collaborative_components.dart':
     { help_outline: 'circleHelp' },
   'lib/widgets/menu/parsed_extraction_chips.dart': { help_outline: 'circleHelp' },
+  // Kept Material: the glyph's icons.json meaning is not this use.
+  // stop = "Stoppa inspelning i matlagningsläget", not stopping uploads.
+  'lib/widgets/image/components/upload_progress_widgets.dart': { stop: null },
+  // more-vertical = "Fler åtgärder (kebab)"; these dots mean "is typing".
+  'lib/widgets/messaging/typing_indicator.dart': { more_horiz: null },
   // Presence at home: house "Hemma (närvaro)".
   'lib/views/family/who_is_eating_sheet.dart': { home_outlined: 'house' },
   'lib/widgets/menu/calendar/presence_overview.dart': { home_outlined: 'house' },

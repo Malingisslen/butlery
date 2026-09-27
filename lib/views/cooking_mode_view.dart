@@ -704,7 +704,9 @@ class _CookingModeContent extends StatelessWidget {
         final muted = voiceController.muted;
         return IconButton(
           icon: ButleryIcon(
-            muted ? ButleryIcons.volume : ButleryIcons.volume,
+            // One glyph for both states until design draws the second one
+            // (P7-U08 open question); the tooltip/label carries the state.
+            ButleryIcons.volume,
             color: cs.onPrimary,
           ),
           tooltip: muted

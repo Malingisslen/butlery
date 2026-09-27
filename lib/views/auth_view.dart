@@ -327,10 +327,10 @@ class _AuthViewState extends State<AuthView> {
                       button: true,
                       enabled: !viewModel.isLoading,
                       child: IconButton(
-                        icon: ButleryIcon(
-                          viewModel.isPasswordVisible
-                              ? ButleryIcons.eye
-                              : ButleryIcons.eye,
+                        icon: const ButleryIcon(
+                          // One glyph for both states until design draws the second one
+                          // (P7-U08 open question); the tooltip/label carries the state.
+                          ButleryIcons.eye,
                           size: AppDimensions.iconSizeAction,
                         ),
                         onPressed: viewModel.togglePasswordVisibility,

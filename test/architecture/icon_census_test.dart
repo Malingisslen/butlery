@@ -114,7 +114,10 @@ const Map<String, Map<String, int>> _residue = {
     'inventory_2_outlined': 1,
     'kitchen': 1,
   },
-  'lib/views/personal_tags/personal_tag_dialogs.dart': {'folder_off': 1},
+  'lib/views/personal_tags/personal_tag_dialogs.dart': {
+    'folder_off': 1,
+    'play_arrow': 1,
+  },
   'lib/views/personal_tags/personal_tag_widgets.dart': {
     'auto_awesome': 1,
     'check_box': 1,
@@ -136,6 +139,7 @@ const Map<String, Map<String, int>> _residue = {
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart': {
     'music_note': 1,
     'open_in_new': 1,
+    'play_circle_outline': 1,
     'tips_and_updates_outlined': 1,
   },
   'lib/views/recipe_detail/recipe_source_artefact_sheet.dart': {
@@ -258,6 +262,7 @@ const Map<String, Map<String, int>> _residue = {
     'dynamic_feed': 1,
     'podcasts': 1,
   },
+  'lib/views/tag_detail_view.dart': {'play_arrow': 1},
   'lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart':
       {'admin_panel_settings': 1, 'manage_accounts': 1, 'person_add': 1},
   'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart':
@@ -437,7 +442,11 @@ const Map<String, Map<String, int>> _residue = {
     'sync_problem_outlined': 1,
   },
   'lib/widgets/consent/consent_renewal_dialog.dart': {'privacy_tip_rounded': 1},
-  'lib/widgets/image/components/upload_progress_widgets.dart': {'clear_all': 1},
+  'lib/widgets/cooking/step_timer_widget.dart': {'play_arrow': 2},
+  'lib/widgets/image/components/upload_progress_widgets.dart': {
+    'clear_all': 1,
+    'stop': 1,
+  },
   'lib/widgets/image/image_gallery_widget.dart': {'circle_outlined': 1},
   'lib/widgets/import/allergen_setup_banner.dart': {
     'health_and_safety_outlined': 1,
@@ -448,6 +457,7 @@ const Map<String, Map<String, int>> _residue = {
   'lib/widgets/import/platform_badge_widget.dart': {
     'language': 2,
     'music_note': 2,
+    'play_circle_outline': 2,
     'text_snippet_outlined': 2,
   },
   'lib/widgets/import/text_line_selector.dart': {
@@ -473,6 +483,7 @@ const Map<String, Map<String, int>> _residue = {
   'lib/widgets/messaging/builders/message_content_builder.dart': {
     'broken_image': 1,
     'list_alt': 1,
+    'play_arrow': 1,
   },
   'lib/widgets/messaging/chat_app_bar.dart': {
     'exit_to_app': 1,
@@ -486,6 +497,7 @@ const Map<String, Map<String, int>> _residue = {
   'lib/widgets/messaging/message_bubble.dart': {'reply': 1},
   'lib/widgets/messaging/new_conversation_dialog.dart': {'group_add': 1},
   'lib/widgets/messaging/reply_banner.dart': {'reply': 1},
+  'lib/widgets/messaging/typing_indicator.dart': {'more_horiz': 1},
   'lib/widgets/recipe/collection_insights_card.dart': {'insights': 1},
   'lib/widgets/recipe/comment_form_widget.dart': {'reply': 1},
   'lib/widgets/recipe/comment_image_attachments.dart': {'broken_image': 2},
@@ -556,10 +568,19 @@ const Map<String, Map<String, int>> _residue = {
   },
 };
 
-/// Files the package 7 closing track deletes; left untouched by P7-U08.
-const Set<String> _plainIconAllowed = {
+/// Files the package 7 closing track (P7-Z) deletes; left untouched by
+/// P7-U08. Their residue rows only count while the file exists, so the two
+/// package 7 tracks can merge in either order. After P7-Z lands, delete
+/// their rows here and in [_residue].
+const Set<String> _deletedByClosingTrack = {
   'lib/widgets/common/feedback/snackbar_widgets.dart',
   'lib/widgets/common/indicators/sync_indicator.dart',
+};
+
+/// Files allowed to build a plain Icon: the glyph widget itself and the
+/// files [_deletedByClosingTrack] names.
+const Set<String> _plainIconAllowed = {
+  ..._deletedByClosingTrack,
   'lib/widgets/common/icons/butlery_glyph.dart',
 };
 
@@ -595,6 +616,9 @@ void main() {
       }
     }
     for (final MapEntry(key: file, value: names) in _residue.entries) {
+      if (_deletedByClosingTrack.contains(file) && !File(file).existsSync()) {
+        continue;
+      }
       for (final MapEntry(key: name, value: allowed) in names.entries) {
         final count = actual[file]?[name] ?? 0;
         if (count < allowed) {

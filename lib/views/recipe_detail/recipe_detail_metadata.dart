@@ -222,8 +222,10 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         child: OutlinedButton.icon(
           key: const ValueKey('test-recipe-detail-mark-cooked'),
           onPressed: cookedToday ? null : () => _markAsCooked(context),
-          icon: ButleryIcon(
-            cookedToday ? ButleryIcons.circleCheck : ButleryIcons.circleCheck,
+          icon: const ButleryIcon(
+            // One glyph for both states until design draws the second one
+            // (P7-U08 open question); the tooltip/label carries the state.
+            ButleryIcons.circleCheck,
             size: 14,
           ),
           label: Text(

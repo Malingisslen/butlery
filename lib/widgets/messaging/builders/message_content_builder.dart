@@ -361,7 +361,7 @@ class MessageContentBuilder {
         mainAxisSize: MainAxisSize.min,
         children: [
           ButleryIcon(
-            ButleryIcons.play,
+            Icons.play_arrow,
             color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           ),
           const SizedBox(width: AppDimensions.paddingS),

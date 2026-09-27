@@ -172,9 +172,13 @@ class ButleryGlyphPainter extends CustomPainter {
 /// The part of a master's viewBox that fills the icon box.
 ///
 /// The UI family shows its whole 24 grid. The nav family is drawn on a 160
-/// grid but every drawn tab bar shows only its live area, viewBox
-/// `22 22 116 116` at 24 px (Komponentark v1:667, the Skarmar v12 tab bars),
-/// so the tab glyphs keep the same optical size as the UI family.
+/// grid; the tab bars tagged `data-icon="nav-*"` in Skarmar v12 (del 3, del 4
+/// and etapp 9-11) show every nav glyph through one window, viewBox
+/// `22 22 116 116` at 24 px, so the tab glyphs keep the same optical size as
+/// the UI family. Interpretation: Komponentark v1:667 instead gives each nav
+/// glyph its own window (home 25 25 110 110, week 22 18 116 116, shopping
+/// 14 14 132 132, more 22 22 116 116); the tagged screens are followed and
+/// the conflict is an open question for design.
 Rect displayWindow(double viewBox) => viewBox == 160
     ? const Rect.fromLTWH(22, 22, 116, 116)
     : Rect.fromLTWH(0, 0, viewBox, viewBox);

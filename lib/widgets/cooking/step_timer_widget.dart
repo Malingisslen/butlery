@@ -297,14 +297,14 @@ class _TimerControls extends StatelessWidget {
         else if (isPaused)
           _controlButton(
             context: context,
-            icon: ButleryIcons.play,
+            icon: Icons.play_arrow,
             label: context.l10n.resumeTimer,
             onPressed: onResume,
           )
         else
           _controlButton(
             context: context,
-            icon: ButleryIcons.play,
+            icon: Icons.play_arrow,
             label: context.l10n.resumeTimer,
             onPressed: null,
           ),

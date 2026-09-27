@@ -127,7 +127,7 @@ abstract final class PersonalTagDialogs {
             if (hasRules && !allRulesEnabled)
               ListTile(
                 leading: ButleryIcon(
-                  ButleryIcons.play,
+                  Icons.play_arrow,
                   color: context.modeColors.success,
                 ),
                 title: Text(context.l10n.personalTagEnableAllRules),

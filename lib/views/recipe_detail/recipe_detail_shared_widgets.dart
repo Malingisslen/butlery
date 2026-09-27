@@ -19,7 +19,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -264,7 +263,7 @@ abstract final class RecipeDetailSharedWidgets {
   static IconData sourceIcon(String url) {
     final host = (Uri.tryParse(url)?.host.toLowerCase()).orEmpty();
     if (host.contains('youtube.') || host.contains('youtu.be')) {
-      return ButleryIcons.play;
+      return Icons.play_circle_outline;
     }
     if (host.contains('tiktok.')) {
       return Icons.music_note;

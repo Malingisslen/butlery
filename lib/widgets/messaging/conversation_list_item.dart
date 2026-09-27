@@ -69,7 +69,9 @@ class ConversationListItem extends StatelessWidget {
           ),
           color: context.modeColors.info,
           child: ButleryIcon(
-            conversation.isPinned ? ButleryIcons.pin : ButleryIcons.pin,
+            // One glyph for both states until design draws the second one
+            // (P7-U08 open question); the tooltip/label carries the state.
+            ButleryIcons.pin,
             color: context.modeColors.onInfo,
           ),
         ),
