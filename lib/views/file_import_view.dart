@@ -3,7 +3,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -236,7 +236,7 @@ class _FileImportViewState extends State<FileImportView> {
           Icon(
             Icons.check,
             size: AppDimensions.iconSizeS,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),

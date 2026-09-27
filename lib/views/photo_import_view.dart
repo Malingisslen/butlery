@@ -20,7 +20,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -307,7 +307,10 @@ class _PhotoImportViewContent extends StatelessWidget {
         context.l10n.importComplete(saved, failed),
       );
     } else {
-      SnackBarUtils.showError(context, context.l10n.importBatchSaveFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.importBatchSaveFailed,
+      );
     }
     if (ok) {
       // BUT-1200: non-blocking allergen-setup prompt when any saved recipe
@@ -544,14 +547,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: context.butleryColors.warning.withValues(
+                        color: context.modeColors.warning.withValues(
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusM,
                         ),
                         border: Border.all(
-                          color: context.butleryColors.warning.withValues(
+                          color: context.modeColors.warning.withValues(
                             alpha: AppDimensions.opacityMediumLight,
                           ),
                           width: AppDimensions.borderWidthStandard,
@@ -564,7 +567,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.warning_amber_rounded,
-                                color: context.butleryColors.warning,
+                                color: context.modeColors.warning,
                                 size: AppDimensions.iconSizeM,
                               ),
                               const SizedBox(width: AppDimensions.spacingS),
@@ -574,9 +577,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                                     (viewModel.qualityScore! * 100).toInt(),
                                   ),
                                   style: AppTextStyles.titleSmall.copyWith(
-                                    color: context
-                                        .butleryColors
-                                        .onWarningContainer,
+                                    color:
+                                        context.modeColors.onWarningContainer,
                                   ),
                                 ),
                               ),
@@ -588,7 +590,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             Text(
                               context.l10n.importImprovementSuggestions,
                               style: AppTextStyles.badgeLarge.copyWith(
-                                color: context.butleryColors.onWarningContainer,
+                                color: context.modeColors.onWarningContainer,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
@@ -604,7 +606,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                       '• ',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: context
-                                            .butleryColors
+                                            .modeColors
                                             .onWarningContainer,
                                       ),
                                     ),
@@ -613,7 +615,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                         rec,
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: context
-                                              .butleryColors
+                                              .modeColors
                                               .onWarningContainer,
                                         ),
                                       ),
@@ -627,7 +629,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           Text(
                             context.l10n.importOcrMayFail,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: context.butleryColors.onWarningContainer,
+                              color: context.modeColors.onWarningContainer,
                               fontStyle: FontStyle.italic,
                             ),
                           ),

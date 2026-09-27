@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
@@ -120,34 +121,38 @@ class _PlacementCell extends StatelessWidget {
     bool hasSelection,
   ) {
     final dimOthers = hasSelection && !eligible;
-    return Opacity(
-      opacity: dimOthers ? 0.35 : 1,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: _kCellMinHeight),
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border.all(color: Theme.of(context).dividerColor),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final entry in entries) ...[
-              _OvrigtEntryChip(vm: vm, entry: entry),
-              const SizedBox(height: 3),
-            ],
-            if (eligible)
-              Expanded(
-                child: _EligibleCell(vm: vm, day: day, slot: slot),
-              ),
+    final brightness = Theme.of(context).brightness;
+    return Container(
+      constraints: const BoxConstraints(minHeight: _kCellMinHeight),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: dimOthers
+            ? AppModeColors.surfaceDisabled(brightness)
+            : Theme.of(context).cardColor,
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final entry in entries) ...[
+            _OvrigtEntryChip(vm: vm, entry: entry, disabled: dimOthers),
+            const SizedBox(height: 3),
           ],
-        ),
+          if (eligible)
+            Expanded(
+              child: _EligibleCell(vm: vm, day: day, slot: slot),
+            ),
+        ],
       ),
     );
   }
 }
 
+// Interpretation (Q-P7-14): a cell that cannot take the chosen dish while
+// a dish is chosen is drawn disabled, surface.disabled with text.disabled
+// (tokens.json:120-123, :198), never faded to 35 %: opacity is never a
+// state (tokens.json:41), and the drawings show no 35 % dimming.
 /// Highlighted target for the selected tray item.
 class _EligibleCell extends StatelessWidget {
   final MenuPlacementViewModel vm;
@@ -259,6 +264,7 @@ class _OccupiedCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isSession = vm.isSessionEntry(entry.id);
+    final off = dimmed && !isSession;
     final cell = Container(
       constraints: const BoxConstraints(minHeight: _kCellMinHeight),
       padding: const EdgeInsets.all(4),
@@ -267,7 +273,9 @@ class _OccupiedCell extends StatelessWidget {
       // 1.5 px text.primary border. primaryContainer, outline and onSurface
       // carry those tokens in both schemes.
       decoration: BoxDecoration(
-        color: cs.primaryContainer,
+        color: off
+            ? AppModeColors.surfaceDisabled(cs.brightness)
+            : cs.primaryContainer,
         border: Border.all(
           color: isSession ? cs.onSurface : cs.outline,
           width: isSession ? 1.5 : 1,
@@ -288,6 +296,7 @@ class _OccupiedCell extends StatelessWidget {
                 fontSize: 9,
                 fontWeight: FontWeight.w600,
                 height: 1.15,
+                color: off ? AppModeColors.textDisabled(cs.brightness) : null,
               ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -296,9 +305,7 @@ class _OccupiedCell extends StatelessWidget {
         ],
       ),
     );
-    if (!isSession) {
-      return Opacity(opacity: dimmed ? 0.35 : 1, child: cell);
-    }
+    if (!isSession) return cell;
     return Semantics(
       label: context.l10n.a11yPlacementRemoveEntry(entry.recipeTitle),
       button: true,
@@ -315,16 +322,24 @@ class _OvrigtEntryChip extends StatelessWidget {
   final MenuPlacementViewModel vm;
   final WeeklyMenuPlanEntry entry;
 
-  const _OvrigtEntryChip({required this.vm, required this.entry});
+  /// Whether the column cannot take the chosen dish (drawn disabled).
+  final bool disabled;
+
+  const _OvrigtEntryChip({
+    required this.vm,
+    required this.entry,
+    this.disabled = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isSession = vm.isSessionEntry(entry.id);
+    final off = disabled && !isSession;
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: off ? AppModeColors.surfaceDisabled(cs.brightness) : cs.surface,
         border: Border(
           left: BorderSide(
             color: isSession ? cs.onSurface : cs.secondary,
@@ -341,6 +356,7 @@ class _OvrigtEntryChip extends StatelessWidget {
                 fontSize: 8,
                 fontWeight: FontWeight.w600,
                 height: 1.1,
+                color: off ? AppModeColors.textDisabled(cs.brightness) : null,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -369,14 +385,14 @@ class _NeutralEmptyCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: dimmed ? 0.35 : 1,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: _kCellMinHeight),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border.all(color: Theme.of(context).dividerColor),
-        ),
+    final theme = Theme.of(context);
+    return Container(
+      constraints: const BoxConstraints(minHeight: _kCellMinHeight),
+      decoration: BoxDecoration(
+        color: dimmed
+            ? AppModeColors.surfaceDisabled(theme.brightness)
+            : theme.cardColor,
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
     );
   }

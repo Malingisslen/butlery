@@ -11,7 +11,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -34,7 +33,7 @@ import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -166,16 +165,16 @@ class _SkrivSjalvReceptViewContentState
     switch (event.priority) {
       case NotificationPriority.critical:
       case NotificationPriority.high:
-        UtilityComponents.showErrorSnackbar(context, event.message);
+        SnackBarUtils.showFailure(context, what: event.message);
         break;
       case NotificationPriority.medium:
-        UtilityComponents.showSuccessSnackbar(context, event.message);
+        SnackBarUtils.showSuccess(context, event.message);
         break;
       case NotificationPriority.low:
         // For low priority, only show if it's a completion or success event
         if (event.trigger == UploadNotificationTrigger.allCompleted ||
             event.trigger == UploadNotificationTrigger.retrySuccess) {
-          UtilityComponents.showSuccessSnackbar(context, event.message);
+          SnackBarUtils.showSuccess(context, event.message);
         }
         break;
     }
@@ -212,13 +211,13 @@ class _SkrivSjalvReceptViewContentState
             final tagResult = savedRecipe.tagResult;
 
             if (tagResult != null && tagResult.hasFailed) {
-              UtilityComponents.showWarningSnackbar(
+              SnackBarUtils.showWarning(
                 context,
                 context.l10n.recipeSavedTaggingFailed,
               );
             } else if (tagResult != null && tagResult.tags.isNotEmpty) {
               final coverage = (tagResult.coverage * 100).toInt();
-              UtilityComponents.showSuccessSnackbar(
+              SnackBarUtils.showSuccess(
                 context,
                 context.l10n.recipeSavedWithTags(
                   tagResult.tags.length,
@@ -226,10 +225,7 @@ class _SkrivSjalvReceptViewContentState
                 ),
               );
             } else {
-              UtilityComponents.showSuccessSnackbar(
-                context,
-                context.l10n.recipeSaved,
-              );
+              SnackBarUtils.showSuccess(context, context.l10n.recipeSaved);
             }
           }
           if (mounted) {
@@ -242,11 +238,13 @@ class _SkrivSjalvReceptViewContentState
         } else {
           // After in-helper retries are exhausted (`withRetry` in the
           // recipe-save path), surface "Försök igen" so the user can try again
-          // without re-typing the form.
-          UtilityComponents.showErrorSnackbarWithRetry(
+          // without re-typing the form. The form stays on screen with what
+          // the user wrote, so the failure says so (content-style-guide.md:92).
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.recipeCouldNotSave,
-            onRetry: _saveRecipe,
+            what: viewModel.error ?? context.l10n.recipeCouldNotSave,
+            preserved: context.l10n.errorPreservedForm,
+            action: FailureAction.retry(_saveRecipe),
           );
         }
       }
@@ -338,7 +336,7 @@ class _SkrivSjalvReceptViewContentState
           // CRITICAL FIX: Block navigation if save is in progress (check both states)
           if (_isSaving || viewModel.isSaving) {
             if (context.mounted) {
-              UtilityComponents.showWarningSnackbar(
+              SnackBarUtils.showWarning(
                 context,
                 context.l10n.recipeWaitWhileSaving,
               );
@@ -358,7 +356,7 @@ class _SkrivSjalvReceptViewContentState
             } else if (shouldPop && (_isSaving || viewModel.isSaving)) {
               // Show warning if save started during dialog
               if (context.mounted) {
-                UtilityComponents.showWarningSnackbar(
+                SnackBarUtils.showWarning(
                   context,
                   context.l10n.recipeSaveStartedDuringDialog,
                 );
@@ -936,7 +934,7 @@ class _SkrivSjalvReceptViewContentState
     final quality = viewModel.parseQuality ?? 0.0;
     final qualityPercent = (quality * 100).toInt();
     final fields = viewModel.fieldsNeedingImprovement;
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingL),

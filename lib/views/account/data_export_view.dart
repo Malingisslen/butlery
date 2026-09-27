@@ -8,7 +8,7 @@ import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     as export_helper;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -278,7 +278,7 @@ class DataExportView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: context.butleryColors.success.withValues(
+      color: context.modeColors.success.withValues(
         alpha: AppDimensions.opacityVeryLight,
       ),
       child: Padding(
@@ -288,7 +288,7 @@ class DataExportView extends StatelessWidget {
             Icon(
               Icons.check_circle_outline,
               size: 48,
-              color: context.butleryColors.success,
+              color: context.modeColors.success,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
@@ -362,7 +362,7 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoSection(BuildContext context) {
     return Card(
-      color: context.butleryColors.info.withValues(
+      color: context.modeColors.info.withValues(
         alpha: AppDimensions.opacityVeryLight,
       ),
       child: Padding(
@@ -374,7 +374,7 @@ class DataExportView extends StatelessWidget {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: context.butleryColors.info,
+                  color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -415,7 +415,7 @@ class DataExportView extends StatelessWidget {
           Icon(
             Icons.check,
             size: AppDimensions.iconSizeS,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(text, style: Theme.of(context).textTheme.bodyMedium),
@@ -468,9 +468,9 @@ class DataExportView extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.dataExportCouldNotSaveFile(
+          what: context.l10n.dataExportCouldNotSaveFile(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
@@ -504,9 +504,9 @@ class DataExportView extends StatelessWidget {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.dataExportCouldNotShare(
+          what: context.l10n.dataExportCouldNotShare(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

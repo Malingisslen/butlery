@@ -24,6 +24,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 class _FakeOfflineService extends ChangeNotifier implements OfflineService {
   bool _online = true;
@@ -245,5 +246,40 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(minutes: 1));
     });
+
+    // P7-A3: a modal over the photo closes with X, never a back arrow
+    // (Komponentark v1:57, pattern 4), as the chat photo viewer does
+    // (lib/widgets/messaging/fullscreen_image_viewer.dart). The bar is the
+    // standard ButleryTopBar with the 'n / N' title; a tap hides it.
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: the bar is ButleryTopBar with an X '
+          '(Stäng) and the n / N title, no back arrow', (tester) async {
+        await tester.pumpWidget(
+          _app(
+            const FullscreenImageViewer(
+              imageUrls: [
+                'https://invalid.invalid/a.jpg',
+                'https://invalid.invalid/b.jpg',
+              ],
+              initialIndex: 1,
+            ),
+            brightness,
+          ),
+        );
+        await tester.pump();
+
+        expect(find.byType(ButleryTopBar), findsOneWidget);
+        final close = find.widgetWithIcon(IconButton, Icons.close);
+        expect(close, findsOneWidget);
+        expect(tester.widget<IconButton>(close).tooltip, sv.commonClose);
+        expect(find.byIcon(Icons.arrow_back), findsNothing);
+        expect(find.text('2 / 2'), findsOneWidget);
+
+        // Tapping the photo hides the bar.
+        await tester.tap(find.byType(InteractiveViewer));
+        await tester.pump();
+        expect(find.byType(ButleryTopBar), findsNothing);
+      });
+    }
   });
 }

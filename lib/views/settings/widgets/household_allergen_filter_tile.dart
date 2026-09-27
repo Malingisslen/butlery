@@ -15,7 +15,7 @@ import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 /// Settings toggle: opt out of household-wide allergen filtering in menus.
@@ -82,7 +82,10 @@ class _HouseholdAllergenFilterTileState
       await _userService.setUseHouseholdAllergens(value);
     } catch (_) {
       if (mounted) {
-        SnackBarUtils.showError(context, context.l10n.settingsSaveFailed);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.settingsSaveFailed,
+        );
       }
     }
   }
@@ -148,7 +151,7 @@ class _HouseholdAllergenFilterTileState
     }
     final cs = Theme.of(context).colorScheme;
     final on = _userService.currentUserProfile?.useHouseholdAllergens ?? true;
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
 
     return SwitchListTile(
       secondary: Icon(

@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -175,7 +175,7 @@ class HemPlanError extends StatelessWidget {
                 // (tokens.json:228-231), drawn in the link colour (#hemfel
                 // :227).
                 style: TextButton.styleFrom(
-                  foregroundColor: context.butleryColors.info,
+                  foregroundColor: context.modeColors.info,
                   minimumSize: const Size(0, AppDimensions.minTouchTarget),
                 ),
                 onPressed: onShowSavedPlan,

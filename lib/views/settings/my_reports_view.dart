@@ -9,7 +9,7 @@ import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
@@ -154,7 +154,7 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final (label, color) = _resolve(cs, context.butleryColors.success);
+    final (label, color) = _resolve(cs, context.modeColors.success);
     return StatusBadge(
       text: label,
       backgroundColor: color,

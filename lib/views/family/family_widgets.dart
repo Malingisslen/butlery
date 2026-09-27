@@ -7,7 +7,7 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Swedish (localized) label for a coarse age band.
 String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
@@ -125,7 +125,7 @@ class _TagChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: emphasized ? context.butleryColors.heroPaleGreen : cs.surface,
+        color: emphasized ? context.modeColors.heroPaleGreen : cs.surface,
         border: Border.all(
           color: emphasized ? cs.onSurface : cs.outlineVariant,
         ),
@@ -185,7 +185,7 @@ class FamilyAccountRow extends StatelessWidget {
         border: Border(
           left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),
@@ -252,7 +252,7 @@ class FamilyMemberRow extends StatelessWidget {
             border: Border(
               left: BorderSide(color: cs.secondary, width: 4),
               bottom: BorderSide(
-                color: context.butleryColors.recipeCardBottomBorder,
+                color: context.modeColors.recipeCardBottomBorder,
                 width: 3,
               ),
             ),

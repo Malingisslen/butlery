@@ -68,7 +68,6 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
@@ -376,14 +375,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           } else if (result.success && result.isRetry) {
             SnackBarUtils.showInfo(context, result.message);
           } else {
-            SnackBarUtils.showError(context, result.message);
+            SnackBarUtils.showFailure(context, what: result.message);
           }
         }
       } catch (e) {
         if (mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.syncFailed(
+            what: context.l10n.syncFailed(
               SnackBarUtils.userFriendlyMessage(context, e),
             ),
           );
@@ -426,11 +425,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           bottom: false,
           child: Column(
             children: [
+              // The offline banner, with its count of waiting changes, is the
+              // one offline signal on Hem (Skarmar v12 del 4 #hemoffline;
+              // package-3 answers A-03 and A-09). The separate sync icon went
+              // in package 7.
               LayoutComponents.offlineIndicator(),
-              SyncIndicator(
-                hasPendingWrites: viewModel.hasPendingWrites,
-                isFromCache: viewModel.isFromCache,
-              ),
               Expanded(
                 // HEM-HERO: the greeting and tonight scroll away above the
                 // library, so a large text size never squeezes the list out.

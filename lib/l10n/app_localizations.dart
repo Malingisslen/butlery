@@ -30658,6 +30658,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ställ in allergener'**
   String get hemEmptyAllergyLink;
+
+  /// P7-A1: failure snackbar when adding the selected recipes to the week menu fails. Says what failed, without the exception (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten kunde inte läggas till i veckomenyn.'**
+  String get bulkAddToMenuFailed;
+
+  /// P7-A1: failure snackbar when exporting the selected recipes fails. Says what failed, without the exception (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten kunde inte exporteras.'**
+  String get bulkExportFailed;
 }
 
 class _AppLocalizationsDelegate

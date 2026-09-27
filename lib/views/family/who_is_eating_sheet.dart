@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
@@ -308,55 +308,55 @@ class _DinerToggleRow extends StatelessWidget {
       label: context.l10n.a11yToggleDiner(member.displayName),
       child: InkWell(
         onTap: onTap,
-        child: Opacity(
-          opacity: selected ? 1.0 : 0.5,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              border: Border(
-                left: BorderSide(
-                  color: selected ? cs.onSurface : cs.outlineVariant,
-                  width: 4,
-                ),
-                bottom: BorderSide(
-                  color: selected
-                      ? context.butleryColors.recipeCardBottomBorder
-                      : cs.outlineVariant,
-                  width: 3,
-                ),
+        // Who eats is a chosen state: surface.selected with the real
+        // text.primary left border, never a faded row (tokens.json:41,
+        // :116-119; Grafisk manual v6:209). An unchosen row keeps full text.
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? cs.surfaceContainerHighest : cs.surface,
+            border: Border(
+              left: BorderSide(
+                color: selected ? cs.onSurface : cs.outlineVariant,
+                width: 4,
+              ),
+              bottom: BorderSide(
+                color: selected
+                    ? context.modeColors.recipeCardBottomBorder
+                    : cs.outlineVariant,
+                width: 3,
               ),
             ),
-            child: Row(
-              children: [
-                FamilyAvatar(
-                  name: member.displayName,
-                  color: parseAvatarColor(member.avatarColor),
-                  size: 40,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        member.displayName,
-                        style: AppTextStyles.titleSmall,
+          ),
+          child: Row(
+            children: [
+              FamilyAvatar(
+                name: member.displayName,
+                color: parseAvatarColor(member.avatarColor),
+                size: 40,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      member.displayName,
+                      style: AppTextStyles.titleSmall,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _tag(context),
+                      style: AppTextStyles.captionText.copyWith(
+                        color: cs.outline,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        _tag(context),
-                        style: AppTextStyles.captionText.copyWith(
-                          color: cs.outline,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                _CheckBox(selected: selected),
-              ],
-            ),
+              ),
+              _CheckBox(selected: selected),
+            ],
           ),
         ),
       ),

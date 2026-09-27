@@ -5,7 +5,7 @@ import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -304,8 +304,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
             Icon(
               _hasMfa ? Icons.verified_user : Icons.security,
               color: _hasMfa
-                  ? context.butleryColors.success
-                  : context.butleryColors.warning,
+                  ? context.modeColors.success
+                  : context.modeColors.warning,
               size: 40,
             ),
             const SizedBox(width: AppDimensions.spacingMd),

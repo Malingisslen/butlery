@@ -236,9 +236,9 @@ class _MenuPlacementViewContent extends StatelessWidget {
     final result = await vm.confirm();
     if (!context.mounted) return;
     if (result == null) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        vm.error ?? context.l10n.errorUnexpected,
+        what: vm.error ?? context.l10n.errorUnexpected,
       );
       return;
     }

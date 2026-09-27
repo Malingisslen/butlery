@@ -4,7 +4,7 @@ import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
@@ -126,14 +126,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.info.withValues(
+                  color: context.modeColors.info.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.borderRadiusM,
                   ),
                   border: Border.all(
-                    color: context.butleryColors.info.withValues(
+                    color: context.modeColors.info.withValues(
                       alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
@@ -142,7 +142,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: context.butleryColors.info,
+                      color: context.modeColors.info,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -223,7 +223,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         Icon(
           icon,
           size: AppDimensions.iconSizeM,
-          color: context.butleryColors.success,
+          color: context.modeColors.success,
         ),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
@@ -244,7 +244,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         ),
         Icon(
           Icons.check_circle,
-          color: context.butleryColors.success,
+          color: context.modeColors.success,
           size: AppDimensions.iconSizeM,
         ),
       ],
@@ -566,7 +566,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color: context.butleryColors.info.withValues(
+      color: context.modeColors.info.withValues(
         alpha: AppDimensions.opacityExtraVeryLight,
       ),
       child: Padding(
@@ -578,7 +578,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: context.butleryColors.info,
+                  color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),

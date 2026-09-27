@@ -9,7 +9,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -387,7 +387,7 @@ class _CompletenessSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final l10n = context.l10n;
     final segmentColors = <Color>[
       cs.error,

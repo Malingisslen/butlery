@@ -10,6 +10,8 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -160,7 +162,13 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
         },
       );
     } else if (vm.error != null) {
-      SnackBarUtils.showError(context, vm.error!);
+      // The sheet stays open with the title and meal type the user chose
+      // (content-style-guide.md:92).
+      SnackBarUtils.showFailure(
+        context,
+        what: vm.error!,
+        preserved: context.l10n.errorPreservedForm,
+      );
     }
   }
 }
@@ -259,8 +267,10 @@ class _QuickCaptureViewModel extends ChangeNotifier {
         return null;
       }
     } catch (e) {
+      AppLogger.error('Quick capture save failed', e);
       _isSaving = false;
-      _error = e.toString();
+      // What failed, never the exception (content-style-guide.md:95).
+      _error = AppLocale.current.recipeSaveFailed;
       notifyListeners();
       return null;
     }

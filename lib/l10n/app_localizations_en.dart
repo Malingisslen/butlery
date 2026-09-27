@@ -18608,4 +18608,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hemEmptyAllergyLink => 'Set allergens';
+
+  @override
+  String get bulkAddToMenuFailed =>
+      'The recipes could not be added to the week menu.';
+
+  @override
+  String get bulkExportFailed => 'The recipes could not be exported.';
 }

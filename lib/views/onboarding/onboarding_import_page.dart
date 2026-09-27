@@ -13,7 +13,7 @@ import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class OnboardingImportPage extends StatelessWidget {
@@ -147,7 +147,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingM),
               decoration: BoxDecoration(
-                color: context.butleryColors.success.withValues(
+                color: context.modeColors.success.withValues(
                   alpha: AppDimensions.opacityVeryLight,
                 ),
               ),
@@ -155,7 +155,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: context.butleryColors.success,
+                    color: context.modeColors.success,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(

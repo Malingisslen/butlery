@@ -372,7 +372,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       context,
       item,
       _viewModel,
-      _showSuccessSnackBar,
       _showErrorSnackBar,
     );
   }
@@ -456,7 +455,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     await ShoppingDialogs.showAddItemDialog(
       context,
       _viewModel,
-      _showSuccessSnackBar,
       _showErrorSnackBar,
     );
   }
@@ -703,7 +701,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   }
 
   void _showErrorSnackBar(String message) {
-    SnackBarUtils.showError(context, message);
+    SnackBarUtils.showFailure(context, what: message);
   }
 
   void _showSuccessSnackBar(String message) {

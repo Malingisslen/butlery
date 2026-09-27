@@ -10,7 +10,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// Fullscreen image viewer for recipe images
 /// This widget provides a full-screen image viewing experience with:
@@ -105,25 +105,20 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
     return Scaffold(
       backgroundColor: cs.onSurface,
       extendBodyBehindAppBar: true,
-      appBar: AdaptiveAppBar(
-        backgroundColor: _showAppBar
-            ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
-            : Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: _showAppBar
-            ? '${_currentIndex + 1} / ${widget.imageUrls.length}'
-            : null,
-        titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: cs.surfaceContainerHighest,
-        ),
-        iconTheme: IconThemeData(color: cs.surfaceContainerHighest),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: cs.surfaceContainerHighest),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: context.l10n.commonBack,
-        ),
-      ),
+      // A modal over the photo: X with Stäng, never a back arrow
+      // (Komponentark v1:57, pattern 4), as the chat photo viewer
+      // (lib/widgets/messaging/fullscreen_image_viewer.dart). ButleryTopBar
+      // draws its own surface; a tap on the photo still hides the bar.
+      appBar: _showAppBar
+          ? ButleryTopBar.undersida(
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: context.l10n.commonClose,
+              ),
+              title: '${_currentIndex + 1} / ${widget.imageUrls.length}',
+            )
+          : null,
       body: Builder(
         builder: (context) {
           final cacheWidth =

@@ -6,7 +6,7 @@ import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -405,7 +405,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: context.butleryColors.warning, width: 3),
+          left: BorderSide(color: context.modeColors.warning, width: 3),
         ),
       ),
       child: Column(
@@ -487,16 +487,21 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         }),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          // Chosen is surface.selected with a real border, never a tint
+          // (tokens.json:41, :116-119; Grafisk manual v6:209). surface.selected
+          // is surfaceContainerHighest in both schemes; the border and text
+          // are text.primary (onSurface): ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: selected ? cs.error.withValues(alpha: 0.1) : cs.surface,
+            color: selected ? cs.surfaceContainerHighest : cs.surface,
             border: Border.all(
-              color: selected ? cs.error : cs.outlineVariant,
+              color: selected ? cs.onSurface : cs.outlineVariant,
+              width: selected ? 1.5 : 1,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? cs.error : cs.outline,
+              color: selected ? cs.onSurface : cs.outline,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -566,16 +571,21 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         }),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          // Chosen is surface.selected with a real border, never a tint
+          // (tokens.json:41, :116-119; Grafisk manual v6:209). surface.selected
+          // is surfaceContainerHighest in both schemes; the border and text
+          // are text.primary (onSurface): ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: selected ? cs.secondary.withValues(alpha: 0.1) : cs.surface,
+            color: selected ? cs.surfaceContainerHighest : cs.surface,
             border: Border.all(
-              color: selected ? cs.secondary : cs.outlineVariant,
+              color: selected ? cs.onSurface : cs.outlineVariant,
+              width: selected ? 1.5 : 1,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? cs.secondary : cs.outline,
+              color: selected ? cs.onSurface : cs.outline,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -596,7 +606,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          color: context.butleryColors.heroPaleGreen,
+          color: context.modeColors.heroPaleGreen,
           child: Row(
             children: [
               Icon(

@@ -6,6 +6,7 @@
 /// Provider notifyListeners() from firing during dialog disposal on Flutter Web.
 library;
 
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,13 +24,12 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
@@ -123,7 +123,7 @@ abstract final class PersonalTagDialogs {
               ListTile(
                 leading: Icon(
                   Icons.play_arrow,
-                  color: context.butleryColors.success,
+                  color: context.modeColors.success,
                 ),
                 title: Text(context.l10n.personalTagEnableAllRules),
                 subtitle: Text(
@@ -140,7 +140,7 @@ abstract final class PersonalTagDialogs {
               ListTile(
                 leading: Icon(
                   Icons.pause,
-                  color: context.butleryColors.warning,
+                  color: context.modeColors.warning,
                 ),
                 title: Text(context.l10n.personalTagDisableAllRules),
                 subtitle: Text(
@@ -218,7 +218,10 @@ abstract final class PersonalTagDialogs {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.personalTagCouldNotShare);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.personalTagCouldNotShare,
+        );
       }
     }
   }
@@ -282,9 +285,9 @@ abstract final class PersonalTagDialogs {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.personalTagCouldNotChangeRules,
+            what: context.l10n.personalTagCouldNotChangeRules,
           );
         }
       }
@@ -320,57 +323,71 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        final name = tagName.trim();
-                        if (name.isEmpty) return;
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonCreate,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          null,
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : null,
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          final name = tagName.trim();
+                          if (name.isEmpty) return;
 
-                        final validationError = viewModel.validateTagName(name);
-                        if (validationError != null) {
-                          if (context.mounted) {
-                            SnackBarUtils.showError(context, validationError);
+                          final validationError = viewModel.validateTagName(
+                            name,
+                          );
+                          if (validationError != null) {
+                            if (context.mounted) {
+                              SnackBarUtils.showFailure(
+                                context,
+                                what: validationError,
+                              );
+                            }
+                            return;
                           }
-                          return;
-                        }
 
-                        setState(() => isLoading = true);
+                          setState(() => isLoading = true);
 
-                        final exists = await viewModel.tagNameExists(name);
-                        if (exists) {
-                          setState(() => isLoading = false);
-                          if (context.mounted) {
-                            SnackBarUtils.showError(
+                          final exists = await viewModel.tagNameExists(name);
+                          if (exists) {
+                            setState(() => isLoading = false);
+                            if (context.mounted) {
+                              SnackBarUtils.showFailure(
+                                context,
+                                what: context.l10n.tagAlreadyExists,
+                              );
+                            }
+                            return;
+                          }
+
+                          final success = await viewModel.createTag(name: name);
+
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          if (success) {
+                            SnackBarUtils.showSuccess(
                               context,
-                              context.l10n.tagAlreadyExists,
+                              context.l10n.personalTagCreated,
+                            );
+                          } else {
+                            SnackBarUtils.showFailure(
+                              context,
+                              what:
+                                  viewModel.error ??
+                                  context.l10n.personalTagCouldNotCreate,
                             );
                           }
-                          return;
-                        }
-
-                        final success = await viewModel.createTag(name: name);
-
-                        if (!dialogContext.mounted) return;
-                        Navigator.pop(dialogContext);
-
-                        if (!context.mounted) return;
-                        if (success) {
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagCreated,
-                          );
-                        } else {
-                          SnackBarUtils.showError(
-                            context,
-                            viewModel.error ??
-                                context.l10n.personalTagCouldNotCreate,
-                          );
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonCreate),
+                        },
+                  child: Text(context.l10n.commonCreate),
+                ),
               ),
             ],
           ),
@@ -408,36 +425,47 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        final name = groupName.trim();
-                        if (name.isEmpty) return;
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonCreate,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          null,
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : null,
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          final name = groupName.trim();
+                          if (name.isEmpty) return;
 
-                        setState(() => isLoading = true);
-                        final success = await viewModel.createGroup(name: name);
-
-                        if (!dialogContext.mounted) return;
-                        Navigator.pop(dialogContext);
-
-                        if (!context.mounted) return;
-                        if (success) {
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagGroupCreated,
+                          setState(() => isLoading = true);
+                          final success = await viewModel.createGroup(
+                            name: name,
                           );
-                        } else {
-                          SnackBarUtils.showError(
-                            context,
-                            viewModel.error ??
-                                context.l10n.personalTagCouldNotCreateGroup,
-                          );
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonCreate),
+
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          if (success) {
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context.l10n.personalTagGroupCreated,
+                            );
+                          } else {
+                            SnackBarUtils.showFailure(
+                              context,
+                              what:
+                                  viewModel.error ??
+                                  context.l10n.personalTagCouldNotCreateGroup,
+                            );
+                          }
+                        },
+                  child: Text(context.l10n.commonCreate),
+                ),
               ),
             ],
           ),
@@ -488,39 +516,47 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        if (!(formKey.currentState?.validate() ?? false)) {
-                          return;
-                        }
-                        final name = tagName.trim();
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonSave,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          null,
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : null,
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          if (!(formKey.currentState?.validate() ?? false)) {
+                            return;
+                          }
+                          final name = tagName.trim();
 
-                        setState(() => isLoading = true);
-                        try {
-                          final updated = tag.copyWith(name: name);
-                          await viewModel.updateTag(updated);
+                          setState(() => isLoading = true);
+                          try {
+                            final updated = tag.copyWith(name: name);
+                            await viewModel.updateTag(updated);
 
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
 
-                          if (!context.mounted) return;
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagUpdated,
-                          );
-                        } catch (e) {
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
+                            if (!context.mounted) return;
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context.l10n.personalTagUpdated,
+                            );
+                          } catch (e) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
 
-                          if (!context.mounted) return;
-                          SnackBarUtils.showUserFriendlyError(context, e);
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonSave),
+                            if (!context.mounted) return;
+                            SnackBarUtils.showUserFriendlyError(context, e);
+                          }
+                        },
+                  child: Text(context.l10n.commonSave),
+                ),
               ),
             ],
           ),
@@ -560,36 +596,47 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonDelete,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          FilledButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : FilledButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          setState(() => isLoading = true);
+                          try {
+                            await viewModel.deleteTag(tag.id);
+
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context.l10n.personalTagDeleted,
+                            );
+                          } catch (e) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            SnackBarUtils.showUserFriendlyError(context, e);
+                          }
+                        },
+                  child: Text(context.l10n.commonDelete),
                 ),
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        setState(() => isLoading = true);
-                        try {
-                          await viewModel.deleteTag(tag.id);
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagDeleted,
-                          );
-                        } catch (e) {
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          SnackBarUtils.showUserFriendlyError(context, e);
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonDelete),
               ),
             ],
           ),
@@ -708,49 +755,57 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        final name = groupName.trim();
-                        if (name.isEmpty) return;
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonCreate,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          null,
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : null,
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          final name = groupName.trim();
+                          if (name.isEmpty) return;
 
-                        setState(() => isLoading = true);
-                        try {
-                          final success = await viewModel.createGroup(
-                            name: name,
-                          );
-                          if (success) {
-                            final newGroup = viewModel.groups.lastOrNull;
-                            if (newGroup != null) {
-                              await viewModel.moveTagToGroup(
-                                tag.id,
-                                newGroup.id,
+                          setState(() => isLoading = true);
+                          try {
+                            final success = await viewModel.createGroup(
+                              name: name,
+                            );
+                            if (success) {
+                              final newGroup = viewModel.groups.lastOrNull;
+                              if (newGroup != null) {
+                                await viewModel.moveTagToGroup(
+                                  tag.id,
+                                  newGroup.id,
+                                );
+                              }
+                            }
+
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            if (success) {
+                              SnackBarUtils.showSuccess(
+                                context,
+                                context.l10n.personalTagGroupCreatedAndTagMoved,
                               );
                             }
+                          } catch (e) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            SnackBarUtils.showUserFriendlyError(context, e);
                           }
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          if (success) {
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagGroupCreatedAndTagMoved,
-                            );
-                          }
-                        } catch (e) {
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          SnackBarUtils.showUserFriendlyError(context, e);
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonCreate),
+                        },
+                  child: Text(context.l10n.commonCreate),
+                ),
               ),
             ],
           ),
@@ -789,37 +844,45 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        final name = groupName.trim();
-                        if (name.isEmpty) return;
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonSave,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          null,
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : null,
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          final name = groupName.trim();
+                          if (name.isEmpty) return;
 
-                        setState(() => isLoading = true);
-                        try {
-                          final updated = group.copyWith(name: name);
-                          await viewModel.updateGroup(updated);
+                          setState(() => isLoading = true);
+                          try {
+                            final updated = group.copyWith(name: name);
+                            await viewModel.updateGroup(updated);
 
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
 
-                          if (!context.mounted) return;
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagGroupUpdated,
-                          );
-                        } catch (e) {
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
+                            if (!context.mounted) return;
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context.l10n.personalTagGroupUpdated,
+                            );
+                          } catch (e) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
 
-                          if (!context.mounted) return;
-                          SnackBarUtils.showUserFriendlyError(context, e);
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonSave),
+                            if (!context.mounted) return;
+                            SnackBarUtils.showUserFriendlyError(context, e);
+                          }
+                        },
+                  child: Text(context.l10n.commonSave),
+                ),
               ),
             ],
           ),
@@ -851,36 +914,47 @@ abstract final class PersonalTagDialogs {
                     : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
+              BusyButtonSemantics(
+                busy: isLoading,
+                name: context.l10n.commonDelete,
+                child: FilledButton(
+                  style: isLoading
+                      ? PlateLineButton.busyStyle(
+                          FilledButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : FilledButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                  onPressed: isLoading
+                      ? PlateLineButton.ignore
+                      : () async {
+                          setState(() => isLoading = true);
+                          try {
+                            await viewModel.deleteGroup(group.id);
+
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context.l10n.personalTagGroupDeleted,
+                            );
+                          } catch (e) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext);
+
+                            if (!context.mounted) return;
+                            SnackBarUtils.showUserFriendlyError(context, e);
+                          }
+                        },
+                  child: Text(context.l10n.commonDelete),
                 ),
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        setState(() => isLoading = true);
-                        try {
-                          await viewModel.deleteGroup(group.id);
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          SnackBarUtils.showSuccess(
-                            context,
-                            context.l10n.personalTagGroupDeleted,
-                          );
-                        } catch (e) {
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          SnackBarUtils.showUserFriendlyError(context, e);
-                        }
-                      },
-                child: isLoading
-                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
-                    : Text(context.l10n.commonDelete),
               ),
             ],
           ),

@@ -91,7 +91,10 @@ class RecipeTaggingHandler {
       closeDialog();
 
       if (tagResult == null) {
-        SnackBarUtils.showError(context, context.l10n.taggingCouldNotAnalyze);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.taggingCouldNotAnalyze,
+        );
         return;
       }
 
@@ -121,9 +124,9 @@ class RecipeTaggingHandler {
     } catch (e) {
       closeDialog();
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.taggingError(
+        what: context.l10n.taggingError(
           SnackBarUtils.userFriendlyMessage(context, e),
         ),
       );

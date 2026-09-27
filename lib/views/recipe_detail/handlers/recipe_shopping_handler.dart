@@ -316,9 +316,9 @@ class RecipeShoppingHandler {
 
       if (targetListId == null) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.shoppingCouldNotCreateOrSelectList,
+            what: context.l10n.shoppingCouldNotCreateOrSelectList,
           );
         }
         return;
@@ -333,9 +333,9 @@ class RecipeShoppingHandler {
       final permissionService = ServiceLocator.get<PermissionService>();
       if (!permissionService.canEditShoppingList(targetListId)) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.shoppingNoEditPermission,
+            what: context.l10n.shoppingNoEditPermission,
           );
         }
         return;
@@ -383,9 +383,9 @@ class RecipeShoppingHandler {
           Navigator.pushNamed(context, Routes.shoppingList);
         }
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingCouldNotAddIngredients,
+          what: context.l10n.shoppingCouldNotAddIngredients,
         );
       }
     } catch (e) {
@@ -393,14 +393,14 @@ class RecipeShoppingHandler {
 
       // Handle specific permission errors with clear Swedish messages
       if (e is PermissionDeniedException) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.shoppingNoEditPermissionShared,
+          what: context.l10n.shoppingNoEditPermissionShared,
         );
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorOccurredWithDetails(
+          what: context.l10n.errorOccurredWithDetails(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );

@@ -117,7 +117,10 @@ class RecipeManagementHandler {
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.recipeCouldNotOpenEditor);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeCouldNotOpenEditor,
+      );
     }
   }
 
@@ -171,7 +174,10 @@ class RecipeManagementHandler {
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.recipeCouldNotMarkAsCooked);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeCouldNotMarkAsCooked,
+      );
     }
   }
 
@@ -200,7 +206,10 @@ class RecipeManagementHandler {
       SnackBarUtils.showSuccess(context, context.l10n.recipeShared);
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.recipeCouldNotShare);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeCouldNotShare,
+      );
     }
   }
 
@@ -228,7 +237,10 @@ class RecipeManagementHandler {
     final friends = friendsService.friendsList;
 
     if (friends.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.collaborationNoFriends);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.collaborationNoFriends,
+      );
       return;
     }
 
@@ -295,9 +307,9 @@ class RecipeManagementHandler {
       if (success) {
         SnackBarUtils.showSuccess(context, context.l10n.collaborationEnabled);
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.collaborationCouldNotEnable,
+          what: context.l10n.collaborationCouldNotEnable,
         );
       }
     }
@@ -339,9 +351,9 @@ class RecipeManagementHandler {
           context.l10n.collaborationDeactivated,
         );
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.collaborationCouldNotDeactivate,
+          what: context.l10n.collaborationCouldNotDeactivate,
         );
       }
     }

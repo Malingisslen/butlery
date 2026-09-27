@@ -170,7 +170,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     // was the link colour on light and vanished on the dark page. The link
     // reads colorScheme.onSecondaryContainer (text.accent.onRaised,
     // tokens.json:179-183; tools/app-theme-map.json), which carries the same
-    // two values and knows the mode. ButleryColors.info is not used: its
+    // two values and knows the mode. ModeColors.info is not used: its
     // dark entry points at the light member, so it would render #8A5212 on
     // the dark page (about 2.5:1).
     final linkColor = theme.colorScheme.onSecondaryContainer;

@@ -108,7 +108,10 @@ class RecipePersonalTagHandler {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.taggingCouldNotSaveTags);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.taggingCouldNotSaveTags,
+        );
       }
     }
   }
@@ -441,9 +444,10 @@ class _QuickTagChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: cs.surface,
-        selectedColor: cs.onSurface.withValues(
-          alpha: AppDimensions.opacityLightMedium,
-        ),
+        // surface.selected (surfaceContainerHighest in both schemes) with the
+        // real 2 px border below, never a tint (tokens.json:41, :116-119;
+        // Grafisk manual v6:209).
+        selectedColor: cs.surfaceContainerHighest,
         checkmarkColor: cs.onSurface,
         side: BorderSide(
           color: isSelected ? cs.onSurface : cs.outlineVariant,

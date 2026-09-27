@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -232,7 +231,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             style: AppTextStyles.labelSmall,
           ),
           style: OutlinedButton.styleFrom(
-            foregroundColor: context.butleryColors.success,
+            foregroundColor: context.modeColors.success,
             // Disabled is text.disabled on a surface.disabled edge, never a
             // faded green (tokens.json:40-53, :120-123, :198; enhet-3
             // recipe_detail_metadata.dart:235-241).
@@ -242,7 +241,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             side: BorderSide(
               color: cookedToday
                   ? AppModeColors.surfaceDisabled(Theme.of(context).brightness)
-                  : context.butleryColors.success,
+                  : context.modeColors.success,
               width: 0.5,
             ),
             padding: const EdgeInsets.symmetric(
@@ -274,9 +273,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             style: AppTextStyles.labelSmall,
           ),
           style: OutlinedButton.styleFrom(
-            foregroundColor: context.butleryColors.starGold,
+            foregroundColor: context.modeColors.starGold,
             side: BorderSide(
-              color: context.butleryColors.starGold,
+              color: context.modeColors.starGold,
               width: 0.5,
             ),
             padding: const EdgeInsets.symmetric(
@@ -473,7 +472,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       // profile-resolution), NOT a queued offline write — offline state doesn't
       // prove otherwise. Always surface the real error so the rating isn't lost
       // silently; the pending-sync hint belongs only on the success branch.
-      SnackBarUtils.showError(context, context.l10n.ratingError);
+      SnackBarUtils.showFailure(context, what: context.l10n.ratingError);
     }
   }
 
@@ -499,7 +498,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.ratingRemoveError);
+      SnackBarUtils.showFailure(context, what: context.l10n.ratingRemoveError);
     }
   }
 
