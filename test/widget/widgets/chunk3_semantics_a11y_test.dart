@@ -8,18 +8,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
-import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
-import 'package:butlery/widgets/common/input/shopping_list_card.dart'
-    as input_card;
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection_enhanced.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
@@ -27,8 +22,6 @@ import 'package:butlery/widgets/recipe/heirloom_section.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
-
-class _MockShoppingViewModel extends Mock implements UnifiedShoppingViewModel {}
 
 void main() {
   setUpAll(() async {
@@ -206,37 +199,6 @@ void main() {
         expect(
           find.bySemanticsLabel(RegExp(r'Visa ')),
           findsWidgets,
-        );
-        handle.dispose();
-      },
-    );
-
-    testWidgets(
-      'input/shopping_list_card — list card exposes shopping-list label',
-      (tester) async {
-        final handle = tester.ensureSemantics();
-        final mockVm = _MockShoppingViewModel();
-        final list = UnifiedShoppingList(
-          id: 'list_1',
-          ownerId: 'user_1',
-          ownerDisplayName: 'Test',
-          name: 'Veckans inköp',
-        );
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: input_card.ShoppingListCard(
-              list: list,
-              viewModel: mockVm,
-              isSelected: false,
-              showActions: false,
-            ),
-          ),
-        );
-
-        expect(
-          find.bySemanticsLabel(RegExp(r'Inköpslista: Veckans inköp')),
-          findsOneWidget,
         );
         handle.dispose();
       },

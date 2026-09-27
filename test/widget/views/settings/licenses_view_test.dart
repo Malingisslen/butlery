@@ -62,11 +62,12 @@ void main() {
       for (final heading in [
         sv.licensesNoticesHeading,
         sv.licensesOflHeading,
-        'Josefin Sans',
-        'Space Grotesk',
       ]) {
         expect(find.text(heading), findsOneWidget);
       }
+      // The retired legacy families are gone from the page.
+      expect(find.text('Josefin Sans'), findsNothing);
+      expect(find.text('Space Grotesk'), findsNothing);
     });
 
     testWidgets('every font family in pubspec has its licence on the page', (
@@ -78,10 +79,11 @@ void main() {
           .allMatches(File('pubspec.yaml').readAsStringSync())
           .map((m) => m.group(1))
           .toList();
-      expect(families, ['ButlerySans', 'JosefinSans', 'SpaceGrotesk']);
-      expect(LicensesView.assets, contains(LicensesView.oflAsset));
-      expect(LicensesView.assets, contains(LicensesView.josefinSansAsset));
-      expect(LicensesView.assets, contains(LicensesView.spaceGroteskAsset));
+      expect(families, ['ButlerySans']);
+      expect(LicensesView.assets, [
+        LicensesView.noticesAsset,
+        LicensesView.oflAsset,
+      ]);
     });
 
     testWidgets('shows the error copy, and retry recovers once the bundle '

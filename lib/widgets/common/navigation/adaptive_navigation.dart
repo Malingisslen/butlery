@@ -50,12 +50,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
   /// Main content
   final Widget body;
 
-  /// App bar title
-  final String? title;
-
-  /// App bar actions
-  final List<Widget>? actions;
-
   /// Floating action button
   final Widget? floatingActionButton;
 
@@ -73,8 +67,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     required this.currentIndex,
     required this.items,
     required this.body,
-    this.title,
-    this.actions,
     this.floatingActionButton,
     this.onNavigationChanged,
     this.onAdd,
@@ -94,7 +86,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
 
         if (!useNavigationRail(size)) {
           return Scaffold(
-            appBar: _buildAppBar(context),
+            appBar: appBar,
             body: FocusTraversalGroup(child: body),
             floatingActionButton: floatingActionButton,
             bottomNavigationBar: FocusTraversalGroup(
@@ -111,7 +103,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
         // The rail is read after the content, as the bottom row is
         // (tillganglighetshandoff 'Navigation & toppfält').
         return Scaffold(
-          appBar: _buildAppBar(context),
+          appBar: appBar,
           body: Row(
             children: [
               Semantics(
@@ -139,22 +131,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget? _buildAppBar(BuildContext context) {
-    if (appBar != null) return appBar;
-    if (title == null) return null;
-
-    return AppBar(
-      title: Text(
-        title!,
-        style: AppTextStyles.headlineSmall,
-      ),
-      actions: actions,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      automaticallyImplyLeading: false,
-    );
-  }
-
   void _select(BuildContext context, int index) {
     final onChanged = onNavigationChanged;
     if (onChanged != null) {
@@ -175,22 +151,17 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
 /// ButleryAdaptiveNavigation(
 ///   currentIndex: 0,
 ///   body: YourContent(),
-///   title: 'Page Title',
 /// )
 /// ```
 class ButleryAdaptiveNavigation extends StatelessWidget {
   final int currentIndex;
   final Widget body;
-  final String? title;
-  final List<Widget>? actions;
   final Widget? floatingActionButton;
 
   const ButleryAdaptiveNavigation({
     super.key,
     required this.currentIndex,
     required this.body,
-    this.title,
-    this.actions,
     this.floatingActionButton,
   });
 
@@ -235,8 +206,6 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
       currentIndex: currentIndex,
       items: getNavigationItems(context),
       body: body,
-      title: title,
-      actions: actions,
       floatingActionButton: floatingActionButton,
     );
   }

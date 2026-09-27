@@ -1,9 +1,9 @@
 /// Journey test: weekly menu → generate shopping list.
 ///
-/// Exercises the menu-to-shopping pipeline as it is actually composed in
-/// production (`veckomeny_dialogs.showShoppingListSelector` →
-/// `ShoppingListSelector._convertMenuToShoppingItems` →
-/// `ShoppingListGenerator.generateShoppingItemsFromMenu`). The journey is
+/// Exercises the menu-to-shopping pipeline around
+/// `ShoppingListGenerator.generateShoppingItemsFromMenu` (the old
+/// `showShoppingListSelector` sheet had no callers and was removed in
+/// package 7). The journey is
 /// simulated through a small widget that mirrors that composition: a user
 /// with a menu of 2+ recipes taps "Skapa inköpslista" and sees the
 /// aggregated shopping items.

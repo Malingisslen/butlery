@@ -17,18 +17,14 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/filter_status_chip.dart';
-import 'package:butlery/widgets/common/input/shopping_list_card.dart';
 import 'package:butlery/widgets/common/profile/utils/result_displayer.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
@@ -37,8 +33,6 @@ const _paper = Color(0xFFF5F4ED);
 const _ink = Color(0xFF24382C);
 const _inkDeep = Color(0xFF17251D);
 const _raisedDark = Color(0xFF2F4437);
-
-class _MockShoppingViewModel extends Mock implements UnifiedShoppingViewModel {}
 
 double _luminance(Color c) => c.computeLuminance();
 
@@ -273,52 +267,6 @@ void main() {
         expect(find.byKey(InkSnackBarAction.actionKey), findsNothing);
         expect(bar.persist, isFalse);
       });
-
-      for (final selected in [true, false]) {
-        testWidgets(
-          'a ${selected ? 'chosen' : 'plain'} shopping list '
-          '${selected ? 'is surface.selected with a text.primary border' : 'has no border'}',
-          (tester) async {
-            await tester.pumpWidget(
-              _app(
-                theme,
-                ShoppingListCard(
-                  list: UnifiedShoppingList(
-                    id: 'list_1',
-                    ownerId: 'user_1',
-                    ownerDisplayName: 'Test',
-                    name: 'Veckans inköp',
-                  ),
-                  viewModel: _MockShoppingViewModel(),
-                  isSelected: selected,
-                  showActions: false,
-                ),
-              ),
-            );
-            final material = tester.widget<Material>(
-              find
-                  .descendant(
-                    of: find.byType(ShoppingListCard),
-                    matching: find.byType(Material),
-                  )
-                  .first,
-            );
-            final side = (material.shape! as RoundedRectangleBorder).side;
-            if (selected) {
-              // Grafisk manual v6:207-209: "Vald = riktig border".
-              expect(material.color, cs.surfaceContainerHighest);
-              expect(
-                material.color,
-                isDark ? _raisedDark : const Color(0xFFE6EAD9),
-              );
-              expect(side.color, cs.onSurface);
-              expect(side.width, 1.5);
-            } else {
-              expect(side, BorderSide.none);
-            }
-          },
-        );
-      }
     });
   }
 }

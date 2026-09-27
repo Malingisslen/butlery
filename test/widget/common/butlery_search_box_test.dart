@@ -1,4 +1,5 @@
-/// Widget tests for ButlerySearchBox + ButleryHeaderSearchBox.
+/// Widget tests for ButlerySearchBox. (ButleryHeaderSearchBox was retired in
+/// package 7.)
 library;
 
 import 'package:flutter/material.dart';
@@ -200,83 +201,6 @@ void main() {
       // External controller should still be usable
       expect(controller.text, 'survives');
       controller.dispose();
-    });
-  });
-
-  group('ButleryHeaderSearchBox', () {
-    testWidgets(
-      'readOnly=true renders Semantics(button) with custom Container',
-      (tester) async {
-        var tapped = 0;
-        await tester.pumpWidget(
-          _wrap(
-            ButleryHeaderSearchBox(
-              readOnly: true,
-              onTap: () => tapped++,
-              hintText: 'sök recept...',
-            ),
-          ),
-        );
-        // No TextField in readOnly path
-        expect(find.byType(TextField), findsNothing);
-        // Hint visible as Text
-        expect(find.text('sök recept...'), findsOneWidget);
-        // Search icon visible
-        expect(find.byIcon(Icons.search), findsOneWidget);
-        // Tap fires onTap
-        await tester.tap(find.text('sök recept...'));
-        expect(tapped, 1);
-      },
-    );
-
-    testWidgets('readOnly=false delegates to ButlerySearchBox', (tester) async {
-      await tester.pumpWidget(_wrap(const ButleryHeaderSearchBox()));
-      expect(find.byType(ButlerySearchBox), findsOneWidget);
-      expect(find.byType(TextField), findsOneWidget);
-    });
-
-    testWidgets('forwards controller + callbacks to nested ButlerySearchBox', (
-      tester,
-    ) async {
-      final controller = TextEditingController();
-      final changes = <String>[];
-      await tester.pumpWidget(
-        _wrap(
-          ButleryHeaderSearchBox(
-            controller: controller,
-            onChanged: changes.add,
-          ),
-        ),
-      );
-      await tester.enterText(find.byType(TextField), 'hej');
-      expect(changes, ['hej']);
-      expect(controller.text, 'hej');
-    });
-
-    testWidgets('explicit hintText is used when supplied', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const ButleryHeaderSearchBox(
-            readOnly: true,
-            hintText: 'specifik hint',
-          ),
-        ),
-      );
-      expect(find.text('specifik hint'), findsOneWidget);
-    });
-
-    testWidgets('readOnly with no hintText falls back to localized default', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const ButleryHeaderSearchBox(
-            readOnly: true,
-          ),
-        ),
-      );
-      // Should render *some* text (the l10n default), not throw
-      expect(tester.takeException(), isNull);
     });
   });
 }

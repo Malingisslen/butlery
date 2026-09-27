@@ -12,7 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 
@@ -37,8 +36,6 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(PeaLoadingOverlay), findsNothing);
-    expect(find.byType(PeaLoadingAnimation), findsNothing);
     expect(find.byType(PlateLine), findsOneWidget);
     expect(
       tester.widget<PlateLine>(find.byType(PlateLine)).value,

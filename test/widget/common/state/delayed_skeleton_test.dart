@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state/delayed_skeleton.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
@@ -100,7 +99,6 @@ void main() {
     ) async {
       await tester.pumpWidget(_variant(LoadingVariant.peaAnimation));
       expect(find.byType(PlateLine), findsOneWidget);
-      expect(find.byType(PeaLoadingAnimation), findsNothing);
     });
 
     testWidgets('the line carries the text as its name, read once', (
@@ -125,7 +123,6 @@ void main() {
         _wrap(StateWidget.loading(message: 'Hämtar recepten …')),
       );
       expect(find.byType(PlateLine), findsOneWidget);
-      expect(find.byType(PeaLoadingAnimation), findsNothing);
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('Hämtar recepten …'), findsOneWidget);
     });

@@ -26,7 +26,6 @@ import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
-import 'package:butlery/widgets/common/input/adaptive_switch.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
@@ -112,7 +111,12 @@ final _cases = <String, _Case>{
     () => find.byType(ButleryControlFocus),
   ),
   'switch': _Case(
-    () => AdaptiveSwitch(value: true, onChanged: (_) {}),
+    // The shared grip around a plain Switch, as the retired AdaptiveSwitch
+    // drew it (Grafisk manual v6:209, :381).
+    () => ButleryControlFocus(
+      borderRadius: BorderRadius.circular(999),
+      child: Switch(value: true, onChanged: (_) {}),
+    ),
     () => find.byType(ButleryControlFocus),
   ),
   'radio': _Case(

@@ -2,14 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -138,29 +136,6 @@ class VeckomenyDialogs {
     );
 
     return result;
-  }
-
-  /// Shows shopping list selector for creating shopping list from menu.
-  static Future<void> showShoppingListSelector(
-    BuildContext context, {
-    required MenuViewModel viewModel,
-  }) async {
-    if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      SnackBarUtils.showWarning(
-        context,
-        context.l10n.menuCreateBeforeShoppingList,
-      );
-      return;
-    }
-
-    await InputComponents.showListSelector(
-      context,
-      menu: viewModel.menu,
-      onListSelected: () {
-        Navigator.pop(context);
-        Navigator.pushNamed(context, Routes.shoppingList);
-      },
-    );
   }
 
   /// Shows exit confirmation dialog.
