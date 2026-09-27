@@ -758,6 +758,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       child: MaterialApp(
         navigatorKey: appNavigatorKey,
         navigatorObservers: observers,
+        // PQ-17: the shell's chosen tab survives the OS ending the app in
+        // the background (layout_scaffolds.dart, RestorationMixin).
+        restorationScopeId: 'butlery',
         title: 'Butlery',
         theme: AppTheme.lightThemeWith(lightAccent),
         darkTheme: AppTheme.darkThemeWith(darkAccent),

@@ -18130,4 +18130,174 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeSuggestionLoading => 'Loading the suggestion …';
+
+  @override
+  String get navigationHome => 'home';
+
+  @override
+  String get navigationMore => 'more';
+
+  @override
+  String get navigationAddAction => 'Add';
+
+  @override
+  String get moreTitle => 'More';
+
+  @override
+  String get moreSectionTogether => 'Together';
+
+  @override
+  String get moreSectionKitchen => 'Your kitchen';
+
+  @override
+  String get moreSectionAppAccount => 'App & account';
+
+  @override
+  String get moreFamily => 'My family';
+
+  @override
+  String get morePersonalTags => 'Personal tags';
+
+  @override
+  String get moreCollectionStats => 'Collection statistics';
+
+  @override
+  String get moreNotifications => 'Notifications';
+
+  @override
+  String get syncQueueTitle => 'Waiting to sync';
+
+  @override
+  String syncQueueNeedsYouHeader(int count) {
+    return 'Waiting for you · $count';
+  }
+
+  @override
+  String get syncQueueNeedsYouHint =>
+      'These are not retried by themselves. The cause is written out, and each one has an action.';
+
+  @override
+  String syncQueueQueuedHeader(int count) {
+    return 'Queued · $count';
+  }
+
+  @override
+  String get syncQueueOrderNote =>
+      'Changes to one item go in order, and different items sync side by side.';
+
+  @override
+  String get syncQueueSyncNow => 'Try to sync now';
+
+  @override
+  String get syncQueueSyncing => 'Syncing …';
+
+  @override
+  String get syncQueueRetry => 'Try again';
+
+  @override
+  String syncQueueRetryA11y(String what) {
+    return 'Try again — $what';
+  }
+
+  @override
+  String get syncQueueDiscard => 'Discard the change';
+
+  @override
+  String syncQueueDiscardA11y(String what) {
+    return 'Discard the change $what';
+  }
+
+  @override
+  String get syncQueueEmpty =>
+      'Everything is saved. Nothing is waiting to sync.';
+
+  @override
+  String get syncQueueWaitsOnEarlier => 'waiting for an earlier change';
+
+  @override
+  String get syncQueueUnnamedRecipe => 'A recipe';
+
+  @override
+  String syncQueueRecipeCreated(String title) {
+    return '$title · new recipe';
+  }
+
+  @override
+  String syncQueueRecipeUpdated(String title) {
+    return '$title · changed';
+  }
+
+  @override
+  String syncQueueRecipeDeleted(String title) {
+    return '$title · deleted';
+  }
+
+  @override
+  String syncQueueRecipeTagged(String title) {
+    return '$title · being tagged';
+  }
+
+  @override
+  String syncQueueImageFor(String title) {
+    return 'Photo for $title';
+  }
+
+  @override
+  String get syncQueueImage => 'A photo';
+
+  @override
+  String get syncQueueReasonNotFound => 'The recipe no longer exists';
+
+  @override
+  String get syncQueueReasonPermission => 'You no longer have permission';
+
+  @override
+  String get syncQueueReasonTooLarge => 'The photo is too large';
+
+  @override
+  String get syncQueueReasonDependency =>
+      'It depends on a change that could not be saved';
+
+  @override
+  String get syncQueueReasonUnknown => 'The server did not accept the change';
+
+  @override
+  String get syncQueueAgeNow => 'now';
+
+  @override
+  String syncQueueAgeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String syncQueueAgeHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String syncQueueAgeHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String syncQueueAgeDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncQueueIndicatorA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes are waiting for you. Open Waiting to sync',
+      one: '1 change is waiting for you. Open Waiting to sync',
+    );
+    return '$_temp0';
+  }
 }

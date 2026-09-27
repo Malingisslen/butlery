@@ -1,0 +1,23 @@
+// lib/services/offline/sync_queue_reader_web.dart
+//
+// P4-U19: the web has no offline queue (app_database_stub_web.dart), so the
+// "Väntar på synk" view is always empty there and no action has anything to
+// act on.
+library;
+
+import 'package:butlery/core/storage/drift/app_database_stub_web.dart';
+import 'package:butlery/services/offline/queued_change.dart';
+
+/// Nothing waits on the web.
+Stream<List<QueuedChange>> watchQueuedChanges(AppDatabase db, String userId) =>
+    Stream.value(const []);
+
+/// Nothing to retry on the web.
+Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {}
+
+/// Nothing to discard on the web.
+Future<void> discardQueuedChange(
+  AppDatabase db,
+  String userId,
+  QueuedChange change,
+) async {}

@@ -18163,4 +18163,173 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeSuggestionLoading => 'Hämtar förslaget …';
+
+  @override
+  String get navigationHome => 'hem';
+
+  @override
+  String get navigationMore => 'mer';
+
+  @override
+  String get navigationAddAction => 'Lägg till';
+
+  @override
+  String get moreTitle => 'Mer';
+
+  @override
+  String get moreSectionTogether => 'Tillsammans';
+
+  @override
+  String get moreSectionKitchen => 'Ditt kök';
+
+  @override
+  String get moreSectionAppAccount => 'App & konto';
+
+  @override
+  String get moreFamily => 'Min familj';
+
+  @override
+  String get morePersonalTags => 'Egna taggar';
+
+  @override
+  String get moreCollectionStats => 'Samlingsstatistik';
+
+  @override
+  String get moreNotifications => 'Notiser';
+
+  @override
+  String get syncQueueTitle => 'Väntar på synk';
+
+  @override
+  String syncQueueNeedsYouHeader(int count) {
+    return 'Väntar på dig · $count';
+  }
+
+  @override
+  String get syncQueueNeedsYouHint =>
+      'Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.';
+
+  @override
+  String syncQueueQueuedHeader(int count) {
+    return 'I kö · $count';
+  }
+
+  @override
+  String get syncQueueOrderNote =>
+      'Ordningen är först in, först ut per objekt, men parallellt mellan objekt.';
+
+  @override
+  String get syncQueueSyncNow => 'Försök synka nu';
+
+  @override
+  String get syncQueueSyncing => 'Synkar …';
+
+  @override
+  String get syncQueueRetry => 'Försök igen';
+
+  @override
+  String syncQueueRetryA11y(String what) {
+    return 'Försök igen — $what';
+  }
+
+  @override
+  String get syncQueueDiscard => 'Släng ändringen';
+
+  @override
+  String syncQueueDiscardA11y(String what) {
+    return 'Släng ändringen $what';
+  }
+
+  @override
+  String get syncQueueEmpty => 'Allt är sparat. Inget väntar på att synkas.';
+
+  @override
+  String get syncQueueWaitsOnEarlier => 'väntar på en tidigare ändring';
+
+  @override
+  String get syncQueueUnnamedRecipe => 'Ett recept';
+
+  @override
+  String syncQueueRecipeCreated(String title) {
+    return '$title · nytt recept';
+  }
+
+  @override
+  String syncQueueRecipeUpdated(String title) {
+    return '$title · ändrat';
+  }
+
+  @override
+  String syncQueueRecipeDeleted(String title) {
+    return '$title · borttaget';
+  }
+
+  @override
+  String syncQueueRecipeTagged(String title) {
+    return '$title · taggas';
+  }
+
+  @override
+  String syncQueueImageFor(String title) {
+    return 'Bild till $title';
+  }
+
+  @override
+  String get syncQueueImage => 'En bild';
+
+  @override
+  String get syncQueueReasonNotFound => 'Receptet finns inte längre';
+
+  @override
+  String get syncQueueReasonPermission => 'Du har inte längre behörighet';
+
+  @override
+  String get syncQueueReasonTooLarge => 'Bilden är för stor';
+
+  @override
+  String get syncQueueReasonDependency =>
+      'Den hänger på en ändring som inte gick att spara';
+
+  @override
+  String get syncQueueReasonUnknown => 'Servern tog inte emot ändringen';
+
+  @override
+  String get syncQueueAgeNow => 'nu';
+
+  @override
+  String syncQueueAgeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String syncQueueAgeHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String syncQueueAgeHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String syncQueueAgeDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days dygn',
+      one: '1 dygn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncQueueIndicatorA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar väntar på dig. Öppna Väntar på synk',
+      one: '1 ändring väntar på dig. Öppna Väntar på synk',
+    );
+    return '$_temp0';
+  }
 }

@@ -29938,6 +29938,258 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar förslaget …'**
   String get recipeSuggestionLoading;
+
+  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055).
+  ///
+  /// In sv, this message translates to:
+  /// **'hem'**
+  String get navigationHome;
+
+  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer).
+  ///
+  /// In sv, this message translates to:
+  /// **'mer'**
+  String get navigationMore;
+
+  /// P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till'**
+  String get navigationAddAction;
+
+  /// P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer).
+  ///
+  /// In sv, this message translates to:
+  /// **'Mer'**
+  String get moreTitle;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer section heading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillsammans'**
+  String get moreSectionTogether;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer section heading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt kök'**
+  String get moreSectionKitchen;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer section heading.
+  ///
+  /// In sv, this message translates to:
+  /// **'App & konto'**
+  String get moreSectionAppAccount;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the family settings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min familj'**
+  String get moreFamily;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the personal tags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Egna taggar'**
+  String get morePersonalTags;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samlingsstatistik'**
+  String get moreCollectionStats;
+
+  /// P6-T6 (PQ-17, P4-U19): Mer row to the notifications.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser'**
+  String get moreNotifications;
+
+  /// P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190).
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar på synk'**
+  String get syncQueueTitle;
+
+  /// P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar på dig · {count}'**
+  String syncQueueNeedsYouHeader(int count);
+
+  /// P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.'**
+  String get syncQueueNeedsYouHint;
+
+  /// P6-T6 (PQ-17, P4-U19): heading over the changes the queue sends by itself.
+  ///
+  /// In sv, this message translates to:
+  /// **'I kö · {count}'**
+  String syncQueueQueuedHeader(int count);
+
+  /// P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordningen är först in, först ut per objekt, men parallellt mellan objekt.'**
+  String get syncQueueOrderNote;
+
+  /// P6-T6 (PQ-17, P4-U19): the queue view footer button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök synka nu'**
+  String get syncQueueSyncNow;
+
+  /// P6-T6 (PQ-17, P4-U19): the footer button while it syncs (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkar …'**
+  String get syncQueueSyncing;
+
+  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen'**
+  String get syncQueueRetry;
+
+  /// P6-T6 (PQ-17, P4-U19): accessible name of Försök igen, naming the change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen — {what}'**
+  String syncQueueRetryA11y(String what);
+
+  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng ändringen'**
+  String get syncQueueDiscard;
+
+  /// P6-T6 (PQ-17, P4-U19): accessible name of Släng ändringen, naming the change.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng ändringen {what}'**
+  String syncQueueDiscardA11y(String what);
+
+  /// P6-T6 (PQ-17, P4-U19): the queue view when nothing waits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt är sparat. Inget väntar på att synkas.'**
+  String get syncQueueEmpty;
+
+  /// P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187).
+  ///
+  /// In sv, this message translates to:
+  /// **'väntar på en tidigare ändring'**
+  String get syncQueueWaitsOnEarlier;
+
+  /// P6-T6 (PQ-17, P4-U19): what a change concerns when the device has no title for the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett recept'**
+  String get syncQueueUnnamedRecipe;
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued create concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · nytt recept'**
+  String syncQueueRecipeCreated(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued update concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · ändrat'**
+  String syncQueueRecipeUpdated(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued delete concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · borttaget'**
+  String syncQueueRecipeDeleted(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued tagging concerns.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · taggas'**
+  String syncQueueRecipeTagged(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild till {title}'**
+  String syncQueueImageFor(String title);
+
+  /// P6-T6 (PQ-17, P4-U19): a queued upload with no known recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'En bild'**
+  String get syncQueueImage;
+
+  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre'**
+  String get syncQueueReasonNotFound;
+
+  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte längre behörighet'**
+  String get syncQueueReasonPermission;
+
+  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för stor'**
+  String get syncQueueReasonTooLarge;
+
+  /// P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187).
+  ///
+  /// In sv, this message translates to:
+  /// **'Den hänger på en ändring som inte gick att spara'**
+  String get syncQueueReasonDependency;
+
+  /// P6-T6 (PQ-17, P4-U19): a permanent failure with no known cause.
+  ///
+  /// In sv, this message translates to:
+  /// **'Servern tog inte emot ändringen'**
+  String get syncQueueReasonUnknown;
+
+  /// P6-T6 (PQ-17, P4-U19): age of a change queued under a minute ago (content-style-guide.md:35).
+  ///
+  /// In sv, this message translates to:
+  /// **'nu'**
+  String get syncQueueAgeNow;
+
+  /// P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:31).
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String syncQueueAgeMinutes(int minutes);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a queued change, whole hours (content-style-guide.md:32).
+  ///
+  /// In sv, this message translates to:
+  /// **'{hours} h'**
+  String syncQueueAgeHours(int hours);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a queued change (content-style-guide.md:32).
+  ///
+  /// In sv, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String syncQueueAgeHoursMinutes(int hours, int minutes);
+
+  /// P6-T6 (PQ-17, P4-U19): age of a change queued a day or more ago.
+  ///
+  /// In sv, this message translates to:
+  /// **'{days, plural, =1{1 dygn} other{{days} dygn}}'**
+  String syncQueueAgeDays(int days);
+
+  /// P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}'**
+  String syncQueueIndicatorA11y(int count);
 }
 
 class _AppLocalizationsDelegate

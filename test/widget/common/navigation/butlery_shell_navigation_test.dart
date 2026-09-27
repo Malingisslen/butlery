@@ -1,0 +1,331 @@
+// PQ-17: the shell's navigation. Four destinations in a tab list, Hem · Meny
+// · Inköp · Mer, and a separate "Lägg till" outside it
+// (tillganglighetshandoff 'Navigation & toppfält'; Komponentark v1:661-667;
+// produktregler.md:1052-1058). The plus opens the add sheet (Skarmar v12 del
+// 1 #plussheet). From 768 dp wide and 500 dp tall the rail carries the same
+// destinations (produktregler.md:1054).
+
+import 'dart:ui' show Tristate;
+
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+
+final _sv = AppLocalizationsSv();
+
+const _routes = [
+  Routes.home,
+  Routes.weeklyMenu,
+  Routes.shoppingList,
+  Routes.more,
+];
+
+class _Pushes extends NavigatorObserver {
+  final List<String> names = [];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final name = route.settings.name;
+    if (name != null) names.add(name);
+  }
+}
+
+Widget _app({
+  required Widget Function(BuildContext) home,
+  ThemeData? theme,
+  NavigatorObserver? observer,
+}) {
+  return MaterialApp(
+    locale: const Locale('sv'),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    theme: theme ?? AppTheme.lightTheme,
+    navigatorObservers: [?observer],
+    onGenerateRoute: (settings) => MaterialPageRoute<void>(
+      settings: settings,
+      builder: (_) => const Scaffold(body: Text('pushed')),
+    ),
+    home: Builder(builder: home),
+  );
+}
+
+Widget _bar(BuildContext context, {int? current, ValueChanged<int>? onTap}) {
+  return Scaffold(
+    body: const SizedBox.expand(),
+    bottomNavigationBar: ButleryBottomNavigation(
+      currentIndex: current,
+      items: ButleryAdaptiveNavigation.getNavigationItems(context),
+      onTap: onTap ?? (_) {},
+    ),
+  );
+}
+
+SemanticsNode _node(WidgetTester tester, Finder finder) =>
+    tester.getSemantics(finder);
+
+void main() {
+  group('bottom row', () {
+    testWidgets('four tabs in the drawn order, keyed by route', (tester) async {
+      await tester.pumpWidget(_app(home: (c) => _bar(c, current: 0)));
+      for (final route in _routes) {
+        expect(find.byKey(ValueKey('test-nav-$route')), findsOneWidget);
+      }
+      // Lowercase labels (produktregler.md:1055); "meny", not "veckomeny"
+      // (B-17).
+      expect(find.text('hem'), findsOneWidget);
+      expect(find.text('meny'), findsOneWidget);
+      expect(find.text('inköp'), findsOneWidget);
+      expect(find.text('mer'), findsOneWidget);
+      expect(find.text('lägg till'), findsNothing);
+      // The order on screen follows the drawing: Hem, Meny, +, Inköp, Mer.
+      double x(String route) =>
+          tester.getCenter(find.byKey(ValueKey('test-nav-$route'))).dx;
+      final plus = tester.getCenter(find.byKey(ButleryAddButton.buttonKey)).dx;
+      expect(x(Routes.home), lessThan(x(Routes.weeklyMenu)));
+      expect(x(Routes.weeklyMenu), lessThan(plus));
+      expect(plus, lessThan(x(Routes.shoppingList)));
+      expect(x(Routes.shoppingList), lessThan(x(Routes.more)));
+    });
+
+    testWidgets('the tabs are a tab list; the chosen one is exposed as '
+        'selected, the others as not selected', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_app(home: (c) => _bar(c, current: 2)));
+
+      final tabs = find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.role == SemanticsRole.tab,
+      );
+      expect(tabs, findsNWidgets(4));
+      final bar = find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.role == SemanticsRole.tabBar,
+      );
+      expect(bar, findsOneWidget);
+      // The tab list holds the four tabs and nothing else: the plus is not
+      // inside it.
+      expect(
+        find.descendant(
+          of: bar,
+          matching: find.byKey(ButleryAddButton.buttonKey),
+        ),
+        findsNothing,
+      );
+
+      for (var i = 0; i < _routes.length; i++) {
+        final data = _node(
+          tester,
+          find.byKey(ValueKey('test-nav-${_routes[i]}')),
+        ).getSemanticsData();
+        expect(
+          data.flagsCollection.isSelected,
+          i == 2 ? Tristate.isTrue : Tristate.isFalse,
+          reason: _routes[i],
+        );
+      }
+      handle.dispose();
+    });
+
+    testWidgets('each tab reports its own index', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(_app(home: (c) => _bar(c, onTap: taps.add)));
+      for (final route in _routes) {
+        await tester.tap(find.byKey(ValueKey('test-nav-$route')));
+      }
+      expect(taps, [0, 1, 2, 3]);
+    });
+
+    testWidgets('the plus is its own button named "Lägg till", 62 dp', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_app(home: (c) => _bar(c, current: 0)));
+      expect(
+        tester.getSemantics(find.byKey(ButleryAddButton.buttonKey)),
+        matchesSemantics(
+          label: _sv.navigationAddAction,
+          isButton: true,
+          hasTapAction: true,
+          isFocusable: true,
+          hasFocusAction: true,
+        ),
+      );
+      expect(
+        tester.getSize(find.byKey(ButleryAddButton.buttonKey)),
+        const Size.square(ButleryAddButton.outerDiameter),
+      );
+      handle.dispose();
+    });
+
+    testWidgets('the plus is saffron with an ink glyph in light and dark', (
+      tester,
+    ) async {
+      for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+        await tester.pumpWidget(
+          _app(theme: theme, home: (c) => _bar(c, current: 0)),
+        );
+        final material = tester.widget<Material>(
+          find.byKey(ButleryAddButton.buttonKey),
+        );
+        // action.primary and text.onActionPrimary are the same in both
+        // modes (tokens.json semantic).
+        expect(material.color, const Color(0xFFCE7C1E));
+        final icon = tester.widget<Icon>(
+          find.descendant(
+            of: find.byKey(ButleryAddButton.buttonKey),
+            matching: find.byIcon(Icons.add),
+          ),
+        );
+        expect(icon.color, const Color(0xFF17251D));
+      }
+    });
+  });
+
+  group('add sheet', () {
+    testWidgets('the plus opens the drawn choices', (tester) async {
+      await tester.pumpWidget(_app(home: (c) => _bar(c, current: 0)));
+      await tester.tap(find.byKey(ButleryAddButton.buttonKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ButleryAddSheet), findsOneWidget);
+      expect(find.text(_sv.addRecipeTitle), findsOneWidget);
+      expect(find.text(_sv.quickCaptureTitle), findsOneWidget);
+      expect(find.text(_sv.recipeImportLink), findsOneWidget);
+      expect(find.text(_sv.recipeWriteManually), findsOneWidget);
+      expect(find.text(_sv.recipeFromImage), findsOneWidget);
+      expect(find.text(_sv.recipeFromArchive), findsOneWidget);
+      expect(find.text(_sv.recipeVoiceImport), findsOneWidget);
+    });
+
+    final choices = <String, String>{
+      'test-add-sheet-quick-save': Routes.quickCapture,
+      'test-add-sheet-btn-import-url': Routes.smartImport,
+      'test-add-sheet-btn-write-manually': Routes.manualEntry,
+      'test-add-sheet-btn-photo-import': Routes.photoImport,
+      'test-add-sheet-btn-archive-import': Routes.importFromArchive,
+      'test-add-sheet-btn-voice-import': Routes.voiceImport,
+    };
+    for (final entry in choices.entries) {
+      testWidgets('${entry.key} closes the sheet and opens ${entry.value}', (
+        tester,
+      ) async {
+        final pushes = _Pushes();
+        await tester.pumpWidget(
+          _app(observer: pushes, home: (c) => _bar(c, current: 0)),
+        );
+        await tester.tap(find.byKey(ButleryAddButton.buttonKey));
+        await tester.pumpAndSettle();
+        pushes.names.clear();
+
+        await tester.ensureVisible(find.byKey(ValueKey(entry.key)));
+        await tester.tap(find.byKey(ValueKey(entry.key)));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ButleryAddSheet), findsNothing);
+        expect(pushes.names, [entry.value]);
+      });
+    }
+  });
+
+  group('detail views', () {
+    testWidgets('the shared detail bar has the four tabs, the plus and '
+        'nothing selected', (tester) async {
+      final pushes = _Pushes();
+      await tester.pumpWidget(
+        _app(
+          observer: pushes,
+          home: (c) =>
+              Scaffold(bottomNavigationBar: LayoutScaffolds.detailBottomNav(c)),
+        ),
+      );
+      final nav = tester.widget<ButleryBottomNavigation>(
+        find.byType(ButleryBottomNavigation),
+      );
+      expect(nav.items.map((i) => i.route), _routes);
+      expect(nav.currentIndex, isNull);
+      expect(find.byKey(ButleryAddButton.buttonKey), findsOneWidget);
+
+      pushes.names.clear();
+      await tester.tap(find.byKey(const ValueKey('test-nav-${Routes.more}')));
+      await tester.pumpAndSettle();
+      expect(pushes.names, [Routes.more]);
+    });
+  });
+
+  group('rail', () {
+    Future<void> pumpAt(WidgetTester tester, Size size) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        _app(
+          home: (c) => AdaptiveNavigationScaffold(
+            currentIndex: 3,
+            items: ButleryAdaptiveNavigation.getNavigationItems(c),
+            onNavigationChanged: (_) {},
+            body: const Text('body'),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('from 768 dp wide and 500 dp tall: our rail, same '
+        'destinations, the plus on top', (tester) async {
+      await pumpAt(tester, const Size(1024, 768));
+      expect(find.byType(ButleryNavigationRail), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
+      expect(find.byType(ButleryBottomNavigation), findsNothing);
+      for (final route in _routes) {
+        expect(find.byKey(ValueKey('test-rail-$route')), findsOneWidget);
+      }
+      final plus = tester.getCenter(find.byKey(ButleryAddButton.buttonKey));
+      final home = tester.getCenter(
+        find.byKey(const ValueKey('test-rail-${Routes.home}')),
+      );
+      expect(plus.dy, lessThan(home.dy));
+    });
+
+    testWidgets('under 500 dp tall the bottom row stays, whatever the width', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(1024, 480));
+      expect(find.byType(ButleryNavigationRail), findsNothing);
+      expect(find.byType(ButleryBottomNavigation), findsOneWidget);
+    });
+
+    testWidgets('a phone in landscape under 768 wide keeps the bottom row', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(700, 600));
+      expect(find.byType(ButleryBottomNavigation), findsOneWidget);
+    });
+
+    testWidgets('the rail exposes the chosen tab as selected', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpAt(tester, const Size(1024, 768));
+      final data = tester
+          .getSemantics(find.byKey(const ValueKey('test-rail-${Routes.more}')))
+          .getSemanticsData();
+      expect(data.flagsCollection.isSelected, Tristate.isTrue);
+      handle.dispose();
+    });
+  });
+
+  test('the shell has four tabs and Mer is the fourth', () {
+    expect(LayoutScaffolds.homeTab, 0);
+    expect(LayoutScaffolds.menuTab, 1);
+    expect(LayoutScaffolds.shoppingTab, 2);
+    expect(LayoutScaffolds.moreTab, 3);
+  });
+}
