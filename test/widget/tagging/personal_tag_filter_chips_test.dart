@@ -188,11 +188,14 @@ void main() {
     });
   });
 
-  // P7-B4: exclusion is a glyph and a real border, never a red wash (state is
-  // never opacity, tokens.json:40-53; Grafisk manual v6:209).
+  // P7-B4: the excluded chip as drawn in Skarmar v12 etapp 9 #sokpanel:
+  // no glyph, struck-through w600 text.danger label, 1.5 px text.danger
+  // edge; the off chip is a 1 px border.subtle outline with no glyph.
   for (final dark in [false, true]) {
-    testWidgets('an excluded tag: block glyph, 2 px error border, paper '
-        'plate, no checkmark (${dark ? 'dark' : 'light'})', (tester) async {
+    testWidgets('an excluded tag: struck-through danger label, 1.5 px danger '
+        'border, no glyph, paper plate (${dark ? 'dark' : 'light'})', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,
@@ -218,17 +221,19 @@ void main() {
       expect(excluded.backgroundColor, cs.surface);
       expect(excluded.showCheckmark, isFalse);
       expect(excluded.side!.color, cs.error);
-      expect(excluded.side!.width, 2);
-      final glyph = excluded.avatar! as Icon;
-      expect(glyph.icon, Icons.block);
-      expect(glyph.color, cs.error);
+      expect(excluded.side!.width, 1.5);
+      expect(excluded.avatar, isNull);
+      expect(excluded.labelStyle!.color, cs.error);
+      expect(excluded.labelStyle!.fontWeight, FontWeight.w600);
+      expect(excluded.labelStyle!.decoration, TextDecoration.lineThrough);
 
-      // Not excluded: the plain glyph in secondary text, not faded red.
-      final plain = chips.lastWhere((c) => !c.selected && c.avatar != null);
-      final plainGlyph = plain.avatar! as Icon;
-      expect(plainGlyph.icon, Icons.remove_circle_outline);
-      expect(plainGlyph.color, cs.onSurfaceVariant);
-      expect(plain.side!.color, cs.outline);
+      // Not excluded: the last chip belongs to the exclude row (it follows
+      // the include row) and is a plain border.subtle outline, no glyph.
+      final plain = chips.last;
+      expect(plain.selected, isFalse);
+      expect(plain.avatar, isNull);
+      expect(plain.side!.color, cs.outlineVariant);
+      expect(plain.side!.width, 1);
     });
   }
 }

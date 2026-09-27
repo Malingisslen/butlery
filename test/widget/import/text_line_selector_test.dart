@@ -164,6 +164,24 @@ void main() {
         isEmpty,
         reason: 'no plate is a translucent tint',
       );
+
+      // The chosen line's edge is the drawn "Vald" border: 1.5 px
+      // text.primary (Grafisk manual v6:207).
+      final borders = tester
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(TextLineSelector),
+              matching: find.byType(Container),
+            ),
+          )
+          .map((c) => c.decoration)
+          .whereType<BoxDecoration>()
+          .map((d) => d.border)
+          .whereType<Border>()
+          .where((b) => b.top.width == 1.5)
+          .toList();
+      expect(borders, hasLength(1));
+      expect(borders.single.top.color, theme.colorScheme.onSurface);
     });
   }
 }

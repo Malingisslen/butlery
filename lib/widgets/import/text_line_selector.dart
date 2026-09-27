@@ -246,14 +246,15 @@ class _LineItem extends StatelessWidget {
     Color borderColor;
     BorderStyle borderStyle;
 
-    // State is never opacity (tokens.json:40-53). A chosen line is
-    // surface.selected with a real border (Grafisk manual v6:209, "Vald =
-    // riktig border"; tokens.json:116-119, the surfaceContainerHighest slot
-    // in both schemes); the border keeps the mode's colour, which says where
-    // the line goes. A suggested line has the thin border only.
+    // State is never opacity (tokens.json:40-53). A chosen line is drawn
+    // as "Vald": surface.selected with a 1.5 px text.primary border
+    // (Grafisk manual v6:207, :209 "Vald = riktig border"; tokens.json:
+    // 116-119, the surfaceContainerHighest slot in both schemes; text.primary
+    // is onSurface in both). The mode colour stays on the checkbox and the
+    // label. A suggested line has the thin mode-coloured border only.
     if (isSelected) {
       backgroundColor = colorScheme.surfaceContainerHighest;
-      borderColor = modeColor;
+      borderColor = colorScheme.onSurface;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
       backgroundColor = Colors.transparent;
@@ -292,7 +293,7 @@ class _LineItem extends StatelessWidget {
                 ),
                 border: Border.all(
                   color: borderColor,
-                  width: isSelected ? 2 : 1,
+                  width: isSelected ? 1.5 : 1,
                   style: borderStyle,
                 ),
               ),
