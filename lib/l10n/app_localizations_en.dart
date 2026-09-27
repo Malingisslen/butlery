@@ -18533,6 +18533,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hemTonight => 'Tonight';
 
   @override
+  String hemLibraryHeading(int count) {
+    return 'Your recipes · $count';
+  }
+
+  @override
   String hemMetaMinutes(int minutes) {
     return '$minutes min';
   }

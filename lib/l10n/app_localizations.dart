@@ -30527,6 +30527,12 @@ abstract class AppLocalizations {
   /// **'Ikväll'**
   String get hemTonight;
 
+  /// Q6-16 = B (produktbeslut 2026-09-27b): the heading of Hem's library header row under the Ikväll band, with Välj, ingredient search and the grid/list toggle; count = recipes in the library.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept · {count}'**
+  String hemLibraryHeading(int count);
+
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.
   ///
   /// In sv, this message translates to:

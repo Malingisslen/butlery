@@ -18564,6 +18564,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get hemTonight => 'Ikväll';
 
   @override
+  String hemLibraryHeading(int count) {
+    return 'Dina recept · $count';
+  }
+
+  @override
   String hemMetaMinutes(int minutes) {
     return '$minutes min';
   }
