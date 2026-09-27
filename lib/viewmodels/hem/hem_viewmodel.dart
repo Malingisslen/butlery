@@ -155,6 +155,7 @@ class HemViewModel extends BaseViewModel {
   HemHero? _hero;
   DateTime? _fetchedAt;
   int _generation = 0;
+  bool _resolving = false;
 
   HemPlanStatus get status => _status;
 
@@ -184,16 +185,8 @@ class HemViewModel extends BaseViewModel {
     }
     final picked = hemHeroEntry(read.plan, now);
     final recipe = picked == null ? null : _recipeById(picked.entry.recipeId);
-    var allInPantry = false;
-    if (recipe != null) {
-      try {
-        allInPantry = hemAllInPantry(recipe, await _pantryIngredientIds());
-      } catch (_) {
-        // The pantry line is extra information; without it the card stands.
-        allInPantry = false;
-      }
-      if (isDisposed || generation != _generation) return;
-    }
+    final allInPantry = recipe == null ? false : await _allInPantry(recipe);
+    if (isDisposed || generation != _generation) return;
     _hero = picked == null
         ? null
         : HemHero(
@@ -205,5 +198,47 @@ class HemViewModel extends BaseViewModel {
     if (online) _fetchedAt = now;
     _status = HemPlanStatus.ready;
     notifyListeners();
+  }
+
+  /// Fills in the hero's recipe once the library has it.
+  ///
+  /// The week is often read before the library has loaded (both start on the
+  /// first frame), and the recipe lookup is a plain read of what is loaded.
+  /// Without this the card would keep the planned title only, with no
+  /// "Börja laga" and no pantry line, until the next pull-to-refresh. Cheap
+  /// when there is nothing to fill in, so the view calls it on every change
+  /// of the library.
+  Future<void> resolveRecipe() async {
+    final hero = _hero;
+    if (_resolving || hero == null || hero.recipe != null) return;
+    final recipe = _recipeById(hero.entry.recipeId);
+    if (recipe == null) return;
+    final generation = _generation;
+    _resolving = true;
+    final bool allInPantry;
+    try {
+      allInPantry = await _allInPantry(recipe);
+    } finally {
+      _resolving = false;
+    }
+    if (isDisposed || generation != _generation || !identical(_hero, hero)) {
+      return;
+    }
+    _hero = HemHero(
+      entry: hero.entry,
+      isTonight: hero.isTonight,
+      recipe: recipe,
+      allInPantry: allInPantry,
+    );
+    notifyListeners();
+  }
+
+  Future<bool> _allInPantry(Recipe recipe) async {
+    try {
+      return hemAllInPantry(recipe, await _pantryIngredientIds());
+    } catch (_) {
+      // The pantry line is extra information; without it the card stands.
+      return false;
+    }
   }
 }

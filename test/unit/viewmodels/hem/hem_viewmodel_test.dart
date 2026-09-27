@@ -197,5 +197,38 @@ void main() {
       expect(vm.hero, isNull);
       vm.dispose();
     });
+
+    test('the recipe arrives after the week: the hero gets it', () async {
+      // The week is read before the library has loaded (cold start), then
+      // the library fills in. The card must not stay title-only.
+      final recipes = <String, Recipe>{};
+      final vm = _vm(
+        read: () => WeeklyMenuPlanRead(
+          plan: _plan([_dinner(DayOfWeek.thu, 'a')]),
+          readFailed: false,
+        ),
+        recipes: recipes,
+        pantry: {'x'},
+      );
+      await withClock(Clock.fixed(_thursday), vm.load);
+      expect(vm.hero?.entry.recipeId, 'a');
+      expect(vm.hero?.recipe, isNull);
+
+      var notified = 0;
+      vm.addListener(() => notified++);
+      await vm.resolveRecipe();
+      expect(notified, 0, reason: 'nothing to fill in yet');
+
+      recipes['a'] = _recipe('a', normalized: ['x']);
+      await vm.resolveRecipe();
+      expect(vm.hero?.recipe?.id, 'a');
+      expect(vm.hero?.isTonight, isTrue);
+      expect(vm.hero?.allInPantry, isTrue);
+      expect(notified, 1);
+
+      await vm.resolveRecipe();
+      expect(notified, 1, reason: 'a resolved hero is left alone');
+      vm.dispose();
+    });
   });
 }

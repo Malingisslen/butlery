@@ -33,6 +33,7 @@ import 'package:butlery/core/keyboard/app_actions.dart'
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/views/hem/hem_empty_state.dart';
+import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart'
     show LayoutScaffolds;
@@ -123,10 +124,14 @@ class _MinaReceptViewState extends State<MinaReceptView> {
     _queryViewModel = RecipeQueryViewModel();
     _friendsViewModel = ServiceLocator.get<FriendsViewModel>();
     _hemViewModel = HemViewModel.fromServices();
+    // HEM-HERO: the week is often read before the library has loaded; the
+    // hero picks up its recipe (Börja laga, minutes, pantry) when it lands.
+    _recipeListViewModel.addListener(_hemViewModel.resolveRecipe);
   }
 
   @override
   void dispose() {
+    _recipeListViewModel.removeListener(_hemViewModel.resolveRecipe);
     _recipeListViewModel.dispose();
     _queryViewModel.dispose();
     _friendsViewModel.dispose();
@@ -193,12 +198,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   final CookingSessionStreamHolder _sessionsHolder =
       CookingSessionStreamHolder();
 
-  /// BUT-1028: scroll-offset persistence for the recipe list. The controller is
-  /// shared by both view modes via an ambient [PrimaryScrollController] (only
-  /// one of the grid/list is mounted at a time), so a single controller covers
-  /// both without threading one through the shared `responsiveListGrid` helper.
-  final ScrollController _scrollController = ScrollController();
+  /// BUT-1028: scroll-offset persistence for the recipe list. The list and
+  /// the grid attach to the PrimaryScrollController that Hem's
+  /// NestedScrollView provides (only one is mounted at a time), which links
+  /// them to the Hem header. The offset is read from their scroll
+  /// notifications and restored through the NestedScrollView's inner
+  /// controller.
+  final GlobalKey<NestedScrollViewState> _nestedScrollKey =
+      GlobalKey<NestedScrollViewState>();
   late final PersistenceService _persistence;
+
+  /// The library's last scroll offset, for the flush on teardown.
+  double? _lastLibraryOffset;
 
   /// 300ms debounce mirroring BUT-1018's filter-write debounce, so rapid
   /// scrolling doesn't burn a prefs write per frame.
@@ -213,21 +224,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   @override
   void dispose() {
     _scrollPersistTimer?.cancel();
-    _scrollController.removeListener(_onScroll);
-    // Best-effort flush of the final offset on teardown (route change / pop)
-    // before the controller detaches, so we don't lose the last scroll. The
-    // listener is removed first so no later debounce can overwrite this write.
-    if (_scrollController.hasClients) {
-      _persistence.setRecipeListScrollOffset(_scrollController.offset);
-    }
-    _scrollController.dispose();
+    // Best-effort flush of the final offset on teardown (route change / pop),
+    // so we don't lose the last scroll. The timer is cancelled first so no
+    // later debounce can overwrite this write.
+    final last = _lastLibraryOffset;
+    if (last != null) _persistence.setRecipeListScrollOffset(last);
     _sessionsHolder.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final offset = _scrollController.offset;
+  void _onLibraryScrolled(double offset) {
+    _lastLibraryOffset = offset;
     _scrollPersistTimer?.cancel();
     _scrollPersistTimer = Timer(
       const Duration(milliseconds: 300),
@@ -248,15 +255,19 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void _applyPendingRestore() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _pendingRestoreOffset == null) return;
+      final inner = _nestedScrollKey.currentState?.innerController;
       final notReady =
-          !_scrollController.hasClients ||
-          _scrollController.position.maxScrollExtent <= 0;
+          inner == null ||
+          inner.positions.length != 1 ||
+          inner.position.maxScrollExtent <= 0;
       if (notReady) {
         if (_restoreAttempts++ < 30) _applyPendingRestore();
         return;
       }
-      final max = _scrollController.position.maxScrollExtent;
-      _scrollController.jumpTo(_pendingRestoreOffset!.clamp(0.0, max));
+      final max = inner.position.maxScrollExtent;
+      // The inner position's jumpTo goes through the NestedScrollView, which
+      // scrolls the Hem header out first.
+      inner.jumpTo(_pendingRestoreOffset!.clamp(0.0, max));
       _pendingRestoreOffset = null;
     });
   }
@@ -272,7 +283,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     // BUT-1028: scroll-offset persistence.
     _persistence = ServiceLocator.get<PersistenceService>();
-    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -431,11 +441,12 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             Expanded(
               // HEM-HERO: the greeting and tonight scroll away above the
               // library, so a large text size never squeezes the list out.
-              child: NestedScrollView(
-                headerSliverBuilder: (context, _) => [
-                  if (!viewModel.isSelectionMode)
-                    SliverToBoxAdapter(
-                      child: HemSection(
+              child: HemLibraryScroll(
+                nestedKey: _nestedScrollKey,
+                onLibraryScrolled: _onLibraryScrolled,
+                header: viewModel.isSelectionMode
+                    ? null
+                    : HemSection(
                         viewModel: context.read<HemViewModel>(),
                         now: clock.now(),
                         firstName: firstName,
@@ -447,8 +458,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                         onOpenMenu: () => mainTabSwitchRequest.value =
                             LayoutScaffolds.menuTab,
                       ),
-                    ),
-                ],
                 body: _buildLibrary(
                   context,
                   viewModel: viewModel,
@@ -728,41 +737,41 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
           ],
           Expanded(
-            // BUT-1028: ambient controller so both grid and list modes attach
-            // to the same ScrollController for offset persistence/restore.
-            child: PrimaryScrollController(
-              controller: _scrollController,
-              child: viewModel.isGridView
-                  ? _buildRecipeGrid(
-                      context,
-                      viewModel: viewModel,
-                      recipes: recipes,
-                      allergenPrefs: allergenPrefs,
-                    )
-                  : KeyedSubtree(
-                      key: const ValueKey('recipe-list-scrollable'),
-                      child: LayoutComponents.responsiveListGrid(
-                        items: recipes,
-                        tabletColumns: 2,
-                        desktopColumns: 3,
-                        spacing: AppDimensions.responsiveGridSpacing(context),
-                        padding: AppDimensions.responsiveContentPadding(
-                          context,
-                        ),
-                        shrinkWrap: false,
-                        gridChildAspectRatio:
-                            AppDimensions.recipeGridAspectRatio(context),
-                        animate: true,
-                        itemBuilder: (context, recipe) => MinaReceptRecipeCard(
-                          viewModel: viewModel,
-                          recipe: recipe,
-                          allergenPrefs: allergenPrefs,
-                          onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
-                          index: recipes.indexOf(recipe),
-                        ),
+            // HEM-HERO / BUT-1028: no controller of its own. Both grid and
+            // list attach to the PrimaryScrollController of Hem's
+            // NestedScrollView, which links them to the Hem header; the offset
+            // is persisted from their notifications (HemLibraryScroll).
+            child: viewModel.isGridView
+                ? _buildRecipeGrid(
+                    context,
+                    viewModel: viewModel,
+                    recipes: recipes,
+                    allergenPrefs: allergenPrefs,
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('recipe-list-scrollable'),
+                    child: LayoutComponents.responsiveListGrid(
+                      items: recipes,
+                      tabletColumns: 2,
+                      desktopColumns: 3,
+                      spacing: AppDimensions.responsiveGridSpacing(context),
+                      padding: AppDimensions.responsiveContentPadding(
+                        context,
+                      ),
+                      shrinkWrap: false,
+                      gridChildAspectRatio: AppDimensions.recipeGridAspectRatio(
+                        context,
+                      ),
+                      animate: true,
+                      itemBuilder: (context, recipe) => MinaReceptRecipeCard(
+                        viewModel: viewModel,
+                        recipe: recipe,
+                        allergenPrefs: allergenPrefs,
+                        onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
+                        index: recipes.indexOf(recipe),
                       ),
                     ),
-            ),
+                  ),
           ),
           if (viewModel.canLoadMore)
             Padding(
