@@ -1,10 +1,10 @@
-/// Parity for ModeColors, the accessor that replaces context.butleryColors
-/// (package 7, P7-U00).
+/// Parity for ModeColors, the accessor that replaced the retired
+/// compatibility theme extension (package 7, P7-U00 and P7-Z).
 ///
-/// Every ButleryColors member, in light and in dark, must equal the
-/// ModeColors member of the same name value by value, so the codemod in
-/// tracks A, B and C changes no colour. P7-Z rewrites this against
-/// AppColors/AppColorsDark once ButleryColors is gone.
+/// Every member, in light and in dark, must equal the generated AppColors,
+/// AppColorsDark or AppSpecificColors member the retired extension carried
+/// at 3a68d5318 (lib/theme/butlery_colors_extension.dart, deleted in P7-Z),
+/// so the retirement changes no colour.
 library;
 
 import 'dart:io';
@@ -16,51 +16,109 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_specific_colors.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 
-final Map<String, Color Function(ButleryColors)> _legacy = {
-  'chatBubbleOutgoing': (ButleryColors c) => c.chatBubbleOutgoing,
-  'chatBubbleIncoming': (ButleryColors c) => c.chatBubbleIncoming,
-  'chatTextOutgoing': (ButleryColors c) => c.chatTextOutgoing,
-  'chatTextIncoming': (ButleryColors c) => c.chatTextIncoming,
-  'success': (ButleryColors c) => c.success,
-  'onSuccess': (ButleryColors c) => c.onSuccess,
-  'successContainer': (ButleryColors c) => c.successContainer,
-  'onSuccessContainer': (ButleryColors c) => c.onSuccessContainer,
-  'warning': (ButleryColors c) => c.warning,
-  'onWarning': (ButleryColors c) => c.onWarning,
-  'warningContainer': (ButleryColors c) => c.warningContainer,
-  'onWarningContainer': (ButleryColors c) => c.onWarningContainer,
-  'info': (ButleryColors c) => c.info,
-  'onInfo': (ButleryColors c) => c.onInfo,
-  'infoContainer': (ButleryColors c) => c.infoContainer,
-  'onInfoContainer': (ButleryColors c) => c.onInfoContainer,
-  'neutral': (ButleryColors c) => c.neutral,
-  'starGold': (ButleryColors c) => c.starGold,
-  'recipeCardLeftBorder': (ButleryColors c) => c.recipeCardLeftBorder,
-  'recipeCardBottomBorder': (ButleryColors c) => c.recipeCardBottomBorder,
-  'navAccent': (ButleryColors c) => c.navAccent,
-  'iconMuted': (ButleryColors c) => c.iconMuted,
-  'heroPaleGreen': (ButleryColors c) => c.heroPaleGreen,
-  'categoryMeatFish': (ButleryColors c) => c.categoryMeatFish,
-  'categoryDairy': (ButleryColors c) => c.categoryDairy,
-  'categoryVegetables': (ButleryColors c) => c.categoryVegetables,
-  'categoryFruit': (ButleryColors c) => c.categoryFruit,
-  'categoryBreadGrains': (ButleryColors c) => c.categoryBreadGrains,
-  'categoryFrozen': (ButleryColors c) => c.categoryFrozen,
-  'categoryDryGoods': (ButleryColors c) => c.categoryDryGoods,
-  'categoryOther': (ButleryColors c) => c.categoryOther,
-  'categoryDrinks': (ButleryColors c) => c.categoryDrinks,
-  'categoryCleaning': (ButleryColors c) => c.categoryCleaning,
-  'categorySnacks': (ButleryColors c) => c.categorySnacks,
-  'categoryCanned': (ButleryColors c) => c.categoryCanned,
-  'sharedRecipeText': (ButleryColors c) => c.sharedRecipeText,
-  'sharedRecipeIcon': (ButleryColors c) => c.sharedRecipeIcon,
-  'sharedRecipeBackground': (ButleryColors c) => c.sharedRecipeBackground,
-  'focusRing': (ButleryColors c) => c.focusRing,
-  'progressTrack': (ButleryColors c) => c.progressTrack,
-  'progressIndicator': (ButleryColors c) => c.progressIndicator,
-  'surfaceDisabled': (ButleryColors c) => c.surfaceDisabled,
+/// (light, dark) per member: the generated member each mode read before the
+/// extension was retired.
+const Map<String, (Color, Color)> _expected = {
+  'chatBubbleOutgoing': (
+    AppColors.chatBubbleOutgoing,
+    AppColorsDark.chatBubbleOutgoing,
+  ),
+  'chatBubbleIncoming': (
+    AppColors.chatBubbleIncoming,
+    AppColorsDark.chatBubbleIncoming,
+  ),
+  'chatTextOutgoing': (
+    AppColors.chatTextOutgoing,
+    AppColorsDark.chatTextOutgoing,
+  ),
+  'chatTextIncoming': (
+    AppColors.chatTextIncoming,
+    AppColorsDark.chatTextIncoming,
+  ),
+  'success': (AppColors.success, AppColorsDark.success),
+  'onSuccess': (AppColors.onSuccess, AppColorsDark.onSuccess),
+  'successContainer': (
+    AppColors.successContainer,
+    AppColorsDark.successContainer,
+  ),
+  'onSuccessContainer': (
+    AppColors.onSuccessContainer,
+    AppColorsDark.onSuccessContainer,
+  ),
+  'warning': (AppColors.warning, AppColorsDark.warning),
+  'onWarning': (AppColors.onWarning, AppColorsDark.onWarning),
+  'warningContainer': (
+    AppColors.warningContainer,
+    AppColorsDark.warningContainer,
+  ),
+  'onWarningContainer': (
+    AppColors.onWarningContainer,
+    AppColorsDark.onWarningContainer,
+  ),
+  'info': (AppColors.info, AppColorsDark.info),
+  'onInfo': (AppColors.onInfo, AppColorsDark.onInfo),
+  'infoContainer': (AppColors.infoContainer, AppColorsDark.infoContainer),
+  'onInfoContainer': (AppColors.onInfoContainer, AppColorsDark.onInfoContainer),
+  'neutral': (AppColors.neutralMedium, AppColors.neutralMedium),
+  'starGold': (AppColors.starGold, AppColors.starGold),
+  'recipeCardLeftBorder': (
+    AppColors.recipeCardLeftBorder,
+    AppColorsDark.recipeCardLeftBorder,
+  ),
+  'recipeCardBottomBorder': (
+    AppColors.recipeCardBottomBorder,
+    AppColorsDark.recipeCardBottomBorder,
+  ),
+  'navAccent': (AppColors.navSelectedIndicator, AppColors.navSelectedIndicator),
+  'iconMuted': (AppColors.greenMuted, AppColorsDark.greenMuted),
+  'heroPaleGreen': (AppColors.greenPale, AppColorsDark.greenPale),
+  'categoryMeatFish': (AppColors.categoryMeatFish, AppColors.categoryMeatFish),
+  'categoryDairy': (AppColors.categoryDairy, AppColors.categoryDairy),
+  'categoryVegetables': (
+    AppColors.categoryVegetables,
+    AppColors.categoryVegetables,
+  ),
+  'categoryFruit': (AppColors.categoryFruit, AppColors.categoryFruit),
+  'categoryBreadGrains': (
+    AppColors.categoryBreadGrains,
+    AppColors.categoryBreadGrains,
+  ),
+  'categoryFrozen': (AppColors.categoryFrozen, AppColors.categoryFrozen),
+  'categoryDryGoods': (AppColors.categoryDryGoods, AppColors.categoryDryGoods),
+  'categoryOther': (AppColors.categoryOther, AppColors.categoryOther),
+  'categoryDrinks': (
+    AppSpecificColors.categoryDrinks,
+    AppSpecificColors.categoryDrinksDark,
+  ),
+  'categoryCleaning': (
+    AppSpecificColors.categoryCleaning,
+    AppSpecificColors.categoryCleaningDark,
+  ),
+  'categorySnacks': (
+    AppSpecificColors.categorySnacks,
+    AppSpecificColors.categorySnacksDark,
+  ),
+  'categoryCanned': (
+    AppSpecificColors.categoryCanned,
+    AppSpecificColors.categoryCannedDark,
+  ),
+  'sharedRecipeText': (
+    AppColors.sharedRecipeText,
+    AppColorsDark.sharedRecipeText,
+  ),
+  'sharedRecipeIcon': (AppColors.sharedRecipeIcon, AppColors.sharedRecipeIcon),
+  'sharedRecipeBackground': (
+    AppColors.sharedRecipeBackground,
+    AppColorsDark.sharedRecipeBackground,
+  ),
+  'focusRing': (AppColors.focusRing, AppColorsDark.focusRing),
+  'progressTrack': (AppColors.progressTrack, AppColorsDark.progressTrack),
+  'progressIndicator': (
+    AppColors.progressIndicator,
+    AppColorsDark.progressIndicator,
+  ),
+  'surfaceDisabled': (AppColors.surfaceDisabled, AppColorsDark.surfaceDisabled),
 };
 
 final Map<String, Color Function(ModeColors)> _mode = {
@@ -108,37 +166,25 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'surfaceDisabled': (ModeColors c) => c.surfaceDisabled,
 };
 
-Set<String> _declared(String path, RegExp pattern) => pattern
-    .allMatches(File(path).readAsStringSync())
-    .map((m) => m.group(1)!)
-    .toSet();
-
 void main() {
-  group('ModeColors covers every ButleryColors member', () {
-    test('the tables name every declared member', () {
-      final legacyFields = _declared(
-        'lib/theme/butlery_colors_extension.dart',
-        RegExp(r'^\s*final Color (\w+);', multiLine: true),
-      );
-      final modeGetters = _declared(
-        'lib/theme/app_mode_colors.dart',
-        RegExp(r'^\s*Color get (\w+) =>', multiLine: true),
-      );
-      expect(legacyFields, hasLength(42));
-      expect(_legacy.keys.toSet(), legacyFields);
-      expect(_mode.keys.toSet(), legacyFields);
-      expect(modeGetters, legacyFields);
-    });
+  test('the tables name every ModeColors member', () {
+    final modeGetters = RegExp(r'^\s*Color get (\w+) =>', multiLine: true)
+        .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
+        .map((m) => m.group(1)!)
+        .toSet();
+    expect(modeGetters, hasLength(42));
+    expect(_expected.keys.toSet(), modeGetters);
+    expect(_mode.keys.toSet(), modeGetters);
   });
 
-  for (final (label, legacy, mode) in [
-    ('light', ButleryColors.light, ModeColors.light),
-    ('dark', ButleryColors.dark, ModeColors.dark),
+  for (final (label, mode, pick) in [
+    ('light', ModeColors.light, ((Color, Color) e) => e.$1),
+    ('dark', ModeColors.dark, ((Color, Color) e) => e.$2),
   ]) {
     group('parity in $label mode', () {
-      for (final name in _legacy.keys) {
+      for (final name in _expected.keys) {
         test(name, () {
-          expect(_mode[name]!(mode), _legacy[name]!(legacy));
+          expect(_mode[name]!(mode), pick(_expected[name]!));
         });
       }
     });

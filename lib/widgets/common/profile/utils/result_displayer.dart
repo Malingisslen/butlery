@@ -11,7 +11,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 /// Every result is the ink snackbar (Komponentark v1:745-750; produktbeslut
 /// PQ-09 = A): no green or red status fill (Komponentark v1:300), the
 /// message says what happened. A failure gets "Stäng" and stays until the
-/// user closes it, like every other error through SnackBarUtils.showError
+/// user closes it, like every failure through SnackBarUtils.showFailure
 /// (content-style-guide.md:97; Komponentark v1:750, never "OK").
 class ResultDisplayer {
   /// Show an operation result with consistent styling.
@@ -78,7 +78,7 @@ class ResultDisplayer {
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
           // A failure with "Stäng" stays until the user closes it, as the
-          // errors through SnackBarUtils.showError do.
+          // failures through SnackBarUtils.showFailure do.
           persist: action != null,
         ),
       );

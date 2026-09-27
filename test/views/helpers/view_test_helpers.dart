@@ -40,7 +40,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 // Import existing test infrastructure
@@ -374,19 +373,14 @@ class ViewTestHelpers extends BaseWidgetTest {
 
   /// Expect loading state to be displayed.
   ///
-  /// BUT-891: prefers `LoadingIndicator` (the canonical wrapper) but
-  /// tolerates raw `CircularProgressIndicator` as legacy fallback —
-  /// `lib/widgets/common/indicators/` still renders raw CPI internally
-  /// and some primitive widget tests legitimately assert on it. Forcing
-  /// LoadingIndicator-only would force wholesale migration before this
-  /// helper becomes usable on migrated views. `PlateLine` is the loading
-  /// indicator itself (decision B-18) and is what StateWidget.loading draws.
+  /// `PlateLine` is the only loading indicator (decision B-18,
+  /// produktregler.md:163) and is what StateWidget.loading draws.
   static void expectLoadingState(WidgetTester tester) {
-    final hasLoading =
-        tester.any(find.byType(LoadingIndicator)) ||
-        tester.any(find.byType(PlateLine)) ||
-        tester.any(find.byType(CircularProgressIndicator));
-    expect(hasLoading, isTrue, reason: 'Loading state not displayed');
+    expect(
+      tester.any(find.byType(PlateLine)),
+      isTrue,
+      reason: 'Loading state not displayed',
+    );
   }
 
   /// Expect error state to be displayed.
@@ -421,13 +415,12 @@ class ViewTestHelpers extends BaseWidgetTest {
 
   /// Expect content state to be displayed (no loading, no error).
   ///
-  /// BUT-891: checks for both `LoadingIndicator` AND raw CPI to catch
-  /// content-state in either rendering path.
+  /// No plate line and no spinner once the content is there.
   static void expectContentState(WidgetTester tester) {
     expect(
-      find.byType(LoadingIndicator),
+      find.byType(PlateLine),
       findsNothing,
-      reason: 'LoadingIndicator still visible in content state',
+      reason: 'PlateLine still visible in content state',
     );
     expect(
       find.byType(CircularProgressIndicator),

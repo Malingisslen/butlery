@@ -232,7 +232,7 @@ void main() {
         expect(bar.backgroundColor, isNull, reason: 'the theme gives ink');
         expect(bar.content, isA<InkSnackBar>());
         expect(theme.snackBarTheme.backgroundColor, _ink);
-        // A failure gets "Stäng" and stays, like SnackBarUtils.showError
+        // A failure gets "Stäng" and stays, like SnackBarUtils.showFailure
         // (content-style-guide.md:97).
         expect(find.byKey(InkSnackBarAction.actionKey), findsOneWidget);
         expect(find.text('Stäng'), findsOneWidget);

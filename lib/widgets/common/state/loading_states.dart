@@ -20,11 +20,9 @@ import 'package:butlery/widgets/common/state/skeleton_components.dart';
 class LoadingStates {
   /// Build loading state based on variant.
   ///
-  /// [LoadingVariant.peaAnimation] ritar tallrikslinjen. Ärtbaljan är ingen
-  /// laddningsindikator: produktregler.md:163 och :304 definierar laddning
-  /// uttömmande som tallrikslinje + text, och B-18 stryker rörelse som
-  /// simulerar framsteg som inte mäts. Enumvärdet står kvar tills
-  /// bortstädningen (paket 7).
+  /// produktregler.md:163 och :304 definierar laddning uttömmande som
+  /// tallrikslinje + text, och B-18 stryker rörelse som simulerar framsteg
+  /// som inte mäts.
   static Widget buildLoadingState(
     BuildContext context, {
     required LoadingVariant? variant,
@@ -40,10 +38,9 @@ class LoadingStates {
         return DelayedSkeleton(child: _buildSkeletonRecipeCard());
       case LoadingVariant.skeletonGeneric:
         return DelayedSkeleton(child: _buildGenericSkeleton());
-      case LoadingVariant.shimmerBox:
-        return DelayedSkeleton(child: _buildShimmerBox());
-      case LoadingVariant.peaAnimation:
-      case LoadingVariant.spinner:
+      case LoadingVariant.staticBox:
+        return DelayedSkeleton(child: _buildStaticBox());
+      case LoadingVariant.plateLine:
       case null:
         return _buildPlateLineLoading(context, message);
     }
@@ -189,7 +186,7 @@ class LoadingStates {
     );
   }
 
-  static Widget _buildShimmerBox() {
+  static Widget _buildStaticBox() {
     return SkeletonComponents.skeletonBox(
       width: 100,
       height: 100,

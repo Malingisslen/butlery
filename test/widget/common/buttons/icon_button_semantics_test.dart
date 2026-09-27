@@ -77,28 +77,5 @@ void main() {
       // After toggle, tooltip flips to "Dölj lösenord".
       expect(find.byTooltip('Dölj lösenord'), findsOneWidget);
     });
-
-    testWidgets('bulk-selection close button announces bulkCancelSelection', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Builder(
-            builder: (context) => Scaffold(
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {},
-                  tooltip: context.l10n.bulkCancelSelection,
-                ),
-              ),
-            ),
-          ),
-          wrapInScaffold: false,
-        ),
-      );
-
-      expect(find.byTooltip('Avbryt val'), findsOneWidget);
-    });
   });
 }

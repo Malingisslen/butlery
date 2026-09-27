@@ -35,13 +35,9 @@ enum EmptyStateVariant {
 
 /// Enum for different loading variants
 enum LoadingVariant {
-  /// Tallrikslinjen med text. Namnet är historiskt: ingen snurra ritas
-  /// (beslut B-18). Byter namn i bortstädningen (paket 7).
-  spinner,
-
-  /// Ritar tallrikslinjen. Ärtbaljan är ingen laddningsindikator
-  /// (produktregler.md:163, :304). Värdet tas bort i paket 7.
-  peaAnimation,
+  /// Tallrikslinjen med text (beslut B-18; produktregler.md:163). Ingen
+  /// snurra och ingen ärtbalja ritas.
+  plateLine,
 
   /// Skeleton card placeholder
   skeletonRecipeCard,
@@ -53,5 +49,5 @@ enum LoadingVariant {
   skeletonGeneric,
 
   /// Stillastående ruta, visas efter 300 ms. Ingen shimmer (beslut B-18).
-  shimmerBox,
+  staticBox,
 }
