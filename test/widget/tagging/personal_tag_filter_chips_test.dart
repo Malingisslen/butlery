@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -186,4 +187,48 @@ void main() {
       expect(called, isTrue);
     });
   });
+
+  // P7-B4: exclusion is a glyph and a real border, never a red wash (state is
+  // never opacity, tokens.json:40-53; Grafisk manual v6:209).
+  for (final dark in [false, true]) {
+    testWidgets('an excluded tag: block glyph, 2 px error border, paper '
+        'plate, no checkmark (${dark ? 'dark' : 'light'})', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: Theme(
+            data: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            child: PersonalTagFilterChipsWidget(
+              tags: testTags,
+              selectedTagIds: const {},
+              onToggle: (_) {},
+              showExcludeSection: true,
+              excludedTagIds: const {'tag-1'},
+              onExcludeToggle: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final cs = (dark ? AppTheme.darkTheme : AppTheme.lightTheme).colorScheme;
+      final chips = tester.widgetList<FilterChip>(find.byType(FilterChip));
+      final excluded = chips.singleWhere((c) => c.selected);
+      expect(excluded.selectedColor, cs.surface);
+      expect(excluded.backgroundColor, cs.surface);
+      expect(excluded.showCheckmark, isFalse);
+      expect(excluded.side!.color, cs.error);
+      expect(excluded.side!.width, 2);
+      final glyph = excluded.avatar! as Icon;
+      expect(glyph.icon, Icons.block);
+      expect(glyph.color, cs.error);
+
+      // Not excluded: the plain glyph in secondary text, not faded red.
+      final plain = chips.lastWhere((c) => !c.selected && c.avatar != null);
+      final plainGlyph = plain.avatar! as Icon;
+      expect(plainGlyph.icon, Icons.remove_circle_outline);
+      expect(plainGlyph.color, cs.onSurfaceVariant);
+      expect(plain.side!.color, cs.outline);
+    });
+  }
 }

@@ -87,6 +87,7 @@ void main() {
           _triggerButton<bool>(
             openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
               ctx,
+              confirmText: 'Bekräfta',
               title: 't',
               message: 'm',
             ),
@@ -109,6 +110,7 @@ void main() {
           _triggerButton<bool>(
             openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
               ctx,
+              confirmText: 'Bekräfta',
               title: 't',
               message: 'm',
               cancelText: 'Nej tack',
@@ -155,6 +157,7 @@ void main() {
           _triggerButton<bool>(
             openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
               ctx,
+              confirmText: 'Bekräfta',
               title: 't',
               message: 'm',
               cancelText: 'Avbryt',
@@ -572,6 +575,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 'Namnge',
               hintText: 'Skriv något',
             ),
@@ -593,6 +597,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               initialValue: 'förvalt',
             ),
@@ -639,6 +644,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               cancelText: 'Avbryt',
             ),
@@ -700,6 +706,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               maxLength: 12,
             ),

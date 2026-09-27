@@ -248,22 +248,20 @@ class _PersonalTagExcludeChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         child: FilterChip(
           label: Text(tag.name),
-          avatar: isExcluded
-              ? null
-              : Icon(
-                  Icons.remove_circle_outline,
-                  size: AppDimensions.iconSizeS,
-                  color: colorScheme.error.withValues(
-                    alpha: AppDimensions.opacityMediumDark,
-                  ),
-                ),
+          // Exclusion is a glyph and a real border, not a red wash: state
+          // is never opacity (tokens.json:40-53; Grafisk manual v6:209,
+          // "Vald = riktig border"). The plate stays paper in both states.
+          avatar: Icon(
+            isExcluded ? Icons.block : Icons.remove_circle_outline,
+            size: AppDimensions.iconSizeS,
+            color: isExcluded
+                ? colorScheme.error
+                : colorScheme.onSurfaceVariant,
+          ),
           selected: isExcluded,
           onSelected: (_) => onSelected(),
           backgroundColor: colorScheme.surface,
-          selectedColor: colorScheme.error.withValues(
-            alpha: AppDimensions.opacityLightSubtle,
-          ),
-          checkmarkColor: colorScheme.error,
+          selectedColor: colorScheme.surface,
           side: BorderSide(
             color: isExcluded ? colorScheme.error : colorScheme.outline,
             width: isExcluded ? 2 : 1,
@@ -271,7 +269,7 @@ class _PersonalTagExcludeChip extends StatelessWidget {
           labelStyle: isExcluded
               ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
               : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-          showCheckmark: isExcluded,
+          showCheckmark: false,
         ),
       ),
     );

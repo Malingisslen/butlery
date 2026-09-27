@@ -246,17 +246,18 @@ class _LineItem extends StatelessWidget {
     Color borderColor;
     BorderStyle borderStyle;
 
+    // State is never opacity (tokens.json:40-53). A chosen line is
+    // surface.selected with a real border (Grafisk manual v6:209, "Vald =
+    // riktig border"; tokens.json:116-119, the surfaceContainerHighest slot
+    // in both schemes); the border keeps the mode's colour, which says where
+    // the line goes. A suggested line has the thin border only.
     if (isSelected) {
-      backgroundColor = modeColor.withValues(
-        alpha: AppDimensions.opacityLightSubtle,
-      );
+      backgroundColor = colorScheme.surfaceContainerHighest;
       borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
-      backgroundColor = modeColor.withValues(
-        alpha: AppDimensions.opacityExtraVeryLight,
-      );
-      borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
+      backgroundColor = Colors.transparent;
+      borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else {
       backgroundColor = Colors.transparent;
@@ -305,11 +306,7 @@ class _LineItem extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: isSelected ? modeColor : Colors.transparent,
                       border: Border.all(
-                        color: isSelected
-                            ? modeColor
-                            : colorScheme.outline.withValues(
-                                alpha: AppDimensions.opacityHalf,
-                              ),
+                        color: isSelected ? modeColor : colorScheme.outline,
                         width: 2,
                       ),
                     ),
@@ -383,10 +380,11 @@ class _LineItem extends StatelessWidget {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(
                       padding: AppDimensions.paddingSymmetric6x2,
+                      // A thin border in the mode's colour, not a tint:
+                      // the line's suggested state is never opacity
+                      // (tokens.json:40-53).
                       decoration: BoxDecoration(
-                        color: modeColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        border: Border.all(color: modeColor),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusS,
                         ),

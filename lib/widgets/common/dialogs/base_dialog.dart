@@ -104,7 +104,9 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     if (widget.primaryActionText != null) return widget.primaryActionText!;
     if (widget.isDangerous) return context.l10n.commonDelete;
     if (widget is BaseFormDialog) return context.l10n.commonSave;
-    return 'OK';
+    // A dialog that names no action only closes: "Stäng", never "OK"
+    // (content-style-guide.md:77; Q-P7-03).
+    return context.l10n.commonClose;
   }
 
   /// The primary action. While it works it keeps its colours and its name
@@ -232,7 +234,9 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required this.message,
     this.customContent,
     super.titleIcon,
-    super.primaryActionText = 'OK',
+    // The button says what happens (content-style-guide.md:77), so every
+    // caller names it; there is no "OK" default.
+    required String super.primaryActionText,
     super.secondaryActionText,
     super.isDangerous = false,
     super.primaryActionIcon,
@@ -254,7 +258,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required String message,
     Widget? customContent,
     IconData? titleIcon,
-    String primaryActionText = 'OK',
+    required String primaryActionText,
     String? secondaryActionText,
     bool isDangerous = false,
     IconData? primaryActionIcon,

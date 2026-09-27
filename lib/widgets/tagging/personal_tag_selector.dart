@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -150,10 +150,12 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
           Consumer<PersonalTagViewModel>(
             builder: (context, viewModel, _) {
               if (!_initialized || viewModel.isLoading) {
-                return const Padding(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  child: Center(
-                    child: LoadingIndicator(size: 24, strokeWidth: 2),
+                // The plate line with what is being fetched, never a
+                // spinner (produktregler.md:163, B-18).
+                return Padding(
+                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  child: PlateLineMessage(
+                    message: context.l10n.loadingPersonalTags,
                   ),
                 );
               }

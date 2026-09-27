@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -123,4 +124,46 @@ void main() {
       expect(lastSelection, contains(0));
     });
   });
+
+  // P7-B4: a chosen line is surface.selected with a real border, never a
+  // tint (tokens.json:40-53, :116-119; Grafisk manual v6:209).
+  for (final dark in [false, true]) {
+    testWidgets('a chosen line is the solid surface.selected plate '
+        '(${dark ? 'dark' : 'light'})', (tester) async {
+      final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Theme(
+            data: theme,
+            child: TextLineSelector(
+              lines: lines,
+              selectedIndices: const {1},
+              onSelectionChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final plates = tester
+          .widgetList<Material>(
+            find.descendant(
+              of: find.byType(TextLineSelector),
+              matching: find.byType(Material),
+            ),
+          )
+          .map((m) => m.color)
+          .whereType<Color>()
+          .toList();
+      expect(
+        plates.where((c) => c == theme.colorScheme.surfaceContainerHighest),
+        hasLength(1),
+      );
+      expect(
+        plates.where((c) => c.a > 0 && c.a < 1),
+        isEmpty,
+        reason: 'no plate is a translucent tint',
+      );
+    });
+  }
 }

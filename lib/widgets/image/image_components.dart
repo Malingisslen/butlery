@@ -375,11 +375,12 @@ class ImageComponents {
                     ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      // The current dot is ink, the others the solid
+                      // surface.selected plate (tokens.json:116-119), never
+                      // a faded one (tokens.json:40-53).
                       color: index == currentIndex
                           ? cs.onSurface
-                          : cs.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityMediumDark,
-                            ),
+                          : cs.surfaceContainerHighest,
                       border: Border.all(
                         color: cs.outlineVariant,
                         width: AppDimensions.strokeWidth05,

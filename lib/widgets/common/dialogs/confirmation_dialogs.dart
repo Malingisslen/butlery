@@ -11,12 +11,13 @@ import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 /// Confirmation dialogs for user actions
 /// Refactored to use BaseDialog classes, eliminating 50+ lines of duplicate dialog code.
 class ConfirmationDialogs {
-  /// Standard confirmation dialog
+  /// Standard confirmation dialog. [confirmText] says what happens
+  /// (content-style-guide.md:77), so there is no "OK" default.
   static Future<bool> showConfirmationDialog(
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'OK',
+    required String confirmText,
     String? cancelText,
     Color? confirmColor,
   }) async {
@@ -165,7 +166,7 @@ class ConfirmationDialogs {
     String? message,
     String? initialValue,
     String? hintText,
-    String confirmText = 'OK',
+    required String confirmText,
     String? cancelText,
     bool isRequired = false,
     int? maxLength,
