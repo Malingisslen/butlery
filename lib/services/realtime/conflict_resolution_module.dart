@@ -154,6 +154,19 @@ class ConflictResolutionModule {
     suggestionId: suggestionId,
   );
 
+  /// Q6-08 = A: announces a conflict on someone else's shared recipe where
+  /// the owner's version stayed and this user's edit was neither written nor
+  /// kept as a suggestion (one already waits, Q6-07 = B, or storing failed).
+  /// It carries no suggestion id, so no surface offers a write the server
+  /// refuses a member.
+  void announceMemberNotSent<T extends RealtimeResource>(T local, T remote) =>
+      _emitConflict(
+        local,
+        remote,
+        ConflictResolutionStrategy.remoteWon,
+        ConflictEntity.recipeShared,
+      );
+
   /// Hands one [ConflictEvent] to [onConflict]. A sink that throws is logged
   /// and contained here, so a broken listener can neither flip the resolver's
   /// choice nor cause a second emission from the error branch.

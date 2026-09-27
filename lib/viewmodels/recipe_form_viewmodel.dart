@@ -17,6 +17,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -65,6 +66,10 @@ enum RecipeSaveFailure {
 
   /// The save itself did not go through; trying again can help.
   failed,
+
+  /// Q6-07 = B: the member's earlier suggestion to this recipe still waits
+  /// for the owner, so no second one was made. The edits stay in the form.
+  suggestionWaiting,
 }
 
 /// Coordinator for recipe form operations with delegation to specialized managers.
@@ -157,6 +162,8 @@ class RecipeFormViewModel extends BaseViewModel
 
     // Load permissions and images if editing existing recipe
     if (initialRecipe != null && !isTemplate) {
+      // Q6-08 = A: someone else's recipe opens in suggestion mode.
+      _suggestionOwnerId = _permissionManager.someoneElsesOwner(initialRecipe);
       _coordinator.loadInitialPermissions(initialRecipe);
 
       // CRITICAL FIX: Sync existing image URLs to ImageManager
@@ -354,7 +361,10 @@ class RecipeFormViewModel extends BaseViewModel
   FormFieldsManager get tagsManager => _state.tagsManager;
 
   @override
-  bool get isCollaborative => _collaborativeManager.isCollaborative;
+  /// Never in suggestion mode (Q6-08 = A): typing in someone else's recipe
+  /// must not reach its shared document live.
+  bool get isCollaborative =>
+      !suggestsChange && _collaborativeManager.isCollaborative;
   bool get isConnectedToFirebase => _collaborativeManager.isConnectedToFirebase;
   String get connectionStatusText => _collaborativeManager.connectionStatusText;
   List<UserProfile> get collaborativeParticipants =>
@@ -497,8 +507,19 @@ class RecipeFormViewModel extends BaseViewModel
     notifyListeners();
   }
 
+  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): the
+  /// owner of the recipe being edited when it is someone else's. Set once,
+  /// from the recipe's owner id, when the form opens.
+  String? _suggestionOwnerId;
+
+  /// Whether this form edits someone else's recipe. Then Spara never writes
+  /// the recipe: it sends the edit to the owner as a suggestion
+  /// ([saveRecipe]).
+  bool get suggestsChange => _suggestionOwnerId != null;
+
   Future<Recipe?> saveRecipe() async {
     _lastSaveFailure = null;
+    if (suggestsChange) return _suggestChange(_suggestionOwnerId!);
     final saved = await _persistenceManager.saveRecipe(
       isCollaborative: isCollaborative,
       onNotify: _coordinator.safeNotifyParent,
@@ -513,6 +534,54 @@ class RecipeFormViewModel extends BaseViewModel
           : RecipeSaveFailure.failed;
     }
     return saved;
+  }
+
+  /// Q6-08 = A: sends the form as a suggestion to [ownerId]. Nothing is
+  /// written to the recipe, and the draft is cleared only once the
+  /// suggestion is kept. Returns the suggested recipe, or null with
+  /// [lastSaveFailure] saying why.
+  Future<Recipe?> _suggestChange(String ownerId) async {
+    final original = _state.originalRecipe;
+    final uid = _permissionManager.currentUserId;
+    if (!_state.isValid) {
+      _lastSaveFailure = RecipeSaveFailure.incomplete;
+      return null;
+    }
+    final service = ServiceLocator.tryGet<RecipeSuggestionService>();
+    if (original == null || uid == null || service == null) {
+      _lastSaveFailure = RecipeSaveFailure.failed;
+      return null;
+    }
+    if (_state.isSaving) return null;
+    _state.setSaving(true);
+    try {
+      final edited = _state.createRecipe(
+        recipeId: original.id,
+        imageUrls: original.imageUrls,
+      );
+      await service.suggestEdit(
+        edited: edited,
+        ownerId: ownerId,
+        suggesterId: uid,
+      );
+      try {
+        await _state.clearCurrentDraft();
+      } catch (e) {
+        // The suggestion is kept; a draft left behind expires on its own
+        // (produktregler.md:170).
+        AppLogger.warning('Suggestion sent, draft not cleared: $e');
+      }
+      return edited;
+    } on RecipeSuggestionAlreadyWaiting {
+      _lastSaveFailure = RecipeSaveFailure.suggestionWaiting;
+      return null;
+    } catch (e) {
+      AppLogger.error('The suggestion could not be kept', e);
+      _lastSaveFailure = RecipeSaveFailure.failed;
+      return null;
+    } finally {
+      if (!_disposed) _state.setSaving(false);
+    }
   }
 
   Future<Recipe?> forkRecipe() async {

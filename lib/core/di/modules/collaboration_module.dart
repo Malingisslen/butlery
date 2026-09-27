@@ -26,6 +26,7 @@ import 'package:butlery/services/realtime/overwritten_version_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_suggestion_repository.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -103,10 +104,34 @@ class CollaborationModule implements DIModule {
       ),
     );
 
+    // Q6-08 = A: a suggestion is taken into the owner's own library recipe,
+    // written the way the owner's own editor writes it
+    // (RecipePersistenceManager.saveRecipe). Resolved at call time, so the
+    // content module's registration order does not matter.
     container.registerLazySingleton<RecipeSuggestionService>(
       () => RecipeSuggestionService(
         repository: container<RecipeSuggestionRepository>(),
         syncService: container<RealtimeSyncService>(),
+        readOwnRecipe: (id) async =>
+            container.isRegistered<UnifiedRecipeService>()
+            ? container<UnifiedRecipeService>().getRecipeById(id)
+            : null,
+        writeOwnRecipe: (recipe) async {
+          final recipes = container<UnifiedRecipeService>();
+          final result = await recipes.personal.updateUnifiedRecipe(recipe);
+          if (!result.isSuccess) {
+            throw StateError(result.message ?? 'recipe update failed');
+          }
+        },
+        // The suggester's view of their own suggestion reads the owner's
+        // recipe through the member's read path (recipe-shared-read-rules).
+        readSharedRecipe: ({required ownerId, required recipeId}) async =>
+            container.isRegistered<UnifiedRecipeService>()
+            ? container<UnifiedRecipeService>().fetchFriendRecipe(
+                ownerId: ownerId,
+                recipeId: recipeId,
+              )
+            : null,
       ),
     );
 

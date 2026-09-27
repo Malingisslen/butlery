@@ -102,6 +102,9 @@ void main() {
 
     expect(find.text(l10n.recipeSuggestionTitle), findsOneWidget);
     expect(find.text('Pannkakor med sylt'), findsOneWidget);
+    // The field is named as a person reads it, never by its stored key.
+    expect(find.text(l10n.recipeTitle), findsOneWidget);
+    expect(find.text('title'), findsNothing);
     expect(find.text(l10n.recipeSuggestionSuggestedLabel), findsOneWidget);
     expect(find.text(l10n.recipeSuggestionCurrentLabel), findsOneWidget);
 

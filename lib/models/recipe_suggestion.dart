@@ -98,6 +98,19 @@ class RecipeSuggestion {
 
   bool get isPending => status == RecipeSuggestionStatus.pending;
 
+  /// Q6-07 = B (produktbeslut 2026-09-27): a member has at most one pending
+  /// suggestion per recipe. The one among [rows] (one member's suggestions
+  /// to one recipe) that still waits for the owner at [now], or null.
+  static RecipeSuggestion? waitingAmong(
+    Iterable<RecipeSuggestion> rows,
+    DateTime now,
+  ) {
+    for (final s in rows) {
+      if (s.isPending && s.isKeptAt(now)) return s;
+    }
+    return null;
+  }
+
   /// A copy carrying the document id the repository stored it under.
   RecipeSuggestion withId(String newId) => RecipeSuggestion(
     id: newId,

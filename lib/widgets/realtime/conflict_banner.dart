@@ -123,15 +123,14 @@ class _ConflictBannerState extends State<ConflictBanner> {
 
   /// The drawn title names what has two versions (Komponentark v1:756 draws
   /// "Två versioner av listan"). P5-U27b: on someone else's shared recipe
-  /// whose edit was kept as a suggestion there are not two versions to choose
-  /// between, so the title says the owner's version stays; without a stored
-  /// suggestion the own-recipe wording and choice remain (PQ-02 = A).
+  /// there are not two versions to choose between, so the title says the
+  /// owner's version stays. Q6-08 = A: that holds without a stored
+  /// suggestion too, since a member never writes the owner's recipe.
   String _title(BuildContext context, ConflictEvent event) {
     final l = context.l10n;
-    if (_isSuggestion(event)) return l.conflictBannerTitleSuggestion;
     return switch (event.entity) {
-      ConflictEntity.recipeOwn ||
-      ConflictEntity.recipeShared => l.conflictBannerTitleRecipe,
+      ConflictEntity.recipeOwn => l.conflictBannerTitleRecipe,
+      ConflictEntity.recipeShared => l.conflictBannerTitleSuggestion,
       ConflictEntity.weekMenu => l.conflictBannerTitleWeek,
     };
   }
@@ -144,6 +143,13 @@ class _ConflictBannerState extends State<ConflictBanner> {
       return name.isEmpty
           ? context.l10n.conflictBannerBodySuggestionUnnamed
           : context.l10n.conflictBannerBodySuggestion(name);
+    }
+    // Q6-08 = A: someone else's recipe, and no suggestion was stored (one
+    // already waits, Q6-07 = B, or storing failed). Nothing was written.
+    if (event.entity == ConflictEntity.recipeShared) {
+      return name.isEmpty
+          ? context.l10n.conflictBannerBodyMemberNotSentUnnamed
+          : context.l10n.conflictBannerBodyMemberNotSent(name);
     }
     return name.isEmpty
         ? context.l10n.conflictBannerBodyUnnamed

@@ -29468,7 +29468,7 @@ abstract class AppLocalizations {
   /// No description provided for @permImportCameraBody.
   ///
   /// In sv, this message translates to:
-  /// **'Jag läser texten ur bilden och fyller i receptet åt dig.'**
+  /// **'Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.'**
   String get permImportCameraBody;
 
   /// No description provided for @permImportPhotosTitle.
@@ -29794,6 +29794,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
   String get conflictBannerBodySuggestionUnnamed;
+
+  /// Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (one already waits, Q6-07 = B, or storing failed). Interim until the product owner decides; name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
+  String conflictBannerBodyMemberNotSent(String name);
+
+  /// Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
+  String get conflictBannerBodyMemberNotSentUnnamed;
 
   /// P5-U27b: banner action, verbatim from produktregler.md:103.
   ///
@@ -30274,6 +30286,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}'**
   String syncQueueIndicatorA11y(int count);
+
+  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247).
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå ändring'**
+  String get recipeSuggestChange;
+
+  /// Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka förslaget'**
+  String get recipeSuggestionSend;
+
+  /// Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar förslaget …'**
+  String get recipeSuggestionSending;
+
+  /// Q6-08 = A: confirmation after a member's edit was kept as a suggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är skickat till ägaren.'**
+  String get recipeSuggestionSent;
+
+  /// Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget kunde inte skickas.'**
+  String get recipeSuggestionSendFailed;
+
+  /// Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.'**
+  String get recipeSuggestionCoversText;
+
+  /// Q6-07 = B: the member already has a pending suggestion to this recipe, so no second one was sent; followed by errorPreservedRecipeEdits. Interim: what else the member is offered here is an open question to the product owner (Q6-07 = B against Q6-08 = A).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget skickades inte: ditt förra förslag väntar på ägaren.'**
+  String get recipeSuggestionWaitingNotSent;
+
+  /// Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara min kopia'**
+  String get cookingNoStepsSaveCopy;
+
+  /// Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.'**
+  String get cookingNoStepsBodyOthers;
+
+  /// Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.'**
+  String get cookingNoStepsBodyOthersNoIngredients;
 }
 
 class _AppLocalizationsDelegate

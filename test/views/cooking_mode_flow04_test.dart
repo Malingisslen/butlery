@@ -314,6 +314,60 @@ void main() {
       expect(find.text(sv.cookingNoStepsShopping), findsNothing);
       expect(find.text(sv.cookingNoStepsWrite), findsOneWidget);
     });
+
+    // Q6-05 = C (produktbeslut 2026-09-27): on someone else's recipe the
+    // first action is "Spara min kopia", and it leaves with saveCopy, which
+    // recipe detail turns into the user's own copy (never an edit of theirs,
+    // produktregler.md:241).
+    testWidgets('someone else\'s recipe: "Spara min kopia" instead of '
+        '"Skriv stegen", and it asks for a copy', (tester) async {
+      final results = <Object?>[];
+      await tester.pumpWidget(
+        host(
+          (_) => CookingModeView(
+            recipe: _recipe(steps: const []),
+            copyInsteadOfEdit: true,
+            effects: _FakeEffects(),
+          ),
+          results: results,
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.cookingNoStepsSaveCopy), findsOneWidget);
+      expect(find.text(sv.cookingNoStepsWrite), findsNothing);
+      expect(find.text(sv.cookingNoStepsBodyOthers), findsOneWidget);
+      expect(find.text(sv.cookingNoStepsShopping), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const ValueKey('cooking-no-steps-save-copy')),
+      );
+      await tester.pumpAndSettle();
+      expect(results, [CookingModeExit.saveCopy]);
+    });
+
+    testWidgets('someone else\'s recipe without ingredients says the steps '
+        'go in the copy', (tester) async {
+      await tester.pumpWidget(
+        host(
+          (_) => CookingModeView(
+            recipe: _recipe(steps: const [], ingredients: const []),
+            copyInsteadOfEdit: true,
+            effects: _FakeEffects(),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(sv.cookingNoStepsBodyOthersNoIngredients),
+        findsOneWidget,
+      );
+      expect(find.text(sv.cookingNoStepsSaveCopy), findsOneWidget);
+      expect(find.text(sv.cookingNoStepsShopping), findsNothing);
+    });
   });
 
   group('CookingModeView · leaving and finishing', () {

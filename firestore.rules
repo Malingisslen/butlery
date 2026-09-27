@@ -388,6 +388,10 @@ service cloud.firestore {
         //   2. legacy->1: resource.data.core.cookCount was null, new is 1
         //   3. normal bump: new == old + 1, or equal (no-op/other field edit)
         // Arbitrary values (e.g. +5, reset to 0) are rejected.
+        // Owner only, whatever the member's permission (Q6-08 = A,
+        // produktregler.md:241): a member's edit is a suggestion in
+        // recipe_suggestions, and members' ratings, comments and cook marks
+        // live in their own collections, not on this document.
         allow update: if isOwner(userId)
           && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null))
           && (
@@ -1298,8 +1302,18 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
 
+      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a
+      // member never writes someone else's recipe; a member's edit becomes a
+      // suggestion (recipe_suggestions). So only the owner updates this
+      // document: its content (`recipe`) and who takes part
+      // (`participants`, `participantIds`) alike. Participants used to be
+      // able to rewrite both. A member's live presence is the `presence`
+      // subcollection below, which stays theirs to write. The client does
+      // not send a member's write here either: RealtimeSyncService
+      // .updateResource refuses it before the network, and a member's
+      // conflict writes nothing (it becomes a suggestion or a notice).
       allow update: if isAuthenticated()
-        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds)
+        && request.auth.uid == resource.data.ownerId
         && cannotModify(['ownerId', 'createdAt']);
 
       allow delete: if isAuthenticated()

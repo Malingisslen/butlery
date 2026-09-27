@@ -339,8 +339,47 @@ void main() {
     },
   );
 
-  // PQ-02 = A (2026-09-23): the choice goes both ways, for the owner's recipe
-  // and for someone else's shared recipe alike (produktregler.md:102;
+  // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241): a member
+  // never writes someone else's recipe, and firestore.rules refuses it, so
+  // the view offers neither "Behåll min version" nor "Använd deras version"
+  // there; both versions are still shown.
+  for (final strategy in ConflictResolutionStrategy.values) {
+    testWidgets('someone else\'s recipe (${strategy.name}): both versions '
+        'shown, no button that writes the recipe', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => ConflictDiffView.show(
+                context,
+                _event(
+                  strategy: strategy,
+                  local: {'title': 'Mias titel'},
+                  remote: {'title': 'Olles titel'},
+                  entity: ConflictEntity.recipeShared,
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mias titel'), findsOneWidget);
+      expect(find.text('Olles titel'), findsOneWidget);
+      expect(find.byKey(const ValueKey('conflictDiff.keepMine')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('conflictDiff.useTheirs')),
+        findsNothing,
+      );
+      verifyNever(() => service.recoverLocalVersion<RealtimeResource>(any()));
+    });
+  }
+
+  // PQ-02 = A (2026-09-23): the choice goes both ways on the owner's recipe
+  // (produktregler.md:102;
   // Skarmar v12 del 3 #konflikt :1199 draws "Behåll min version" and
   // "Använd Eriks version").
   group('the choice goes both ways (PQ-02 = A)', () {
@@ -374,10 +413,8 @@ void main() {
     final useTheirsKey = find.byKey(const ValueKey('conflictDiff.useTheirs'));
     final keepMineKey = find.byKey(const ValueKey('conflictDiff.keepMine'));
 
-    for (final entity in [
-      ConflictEntity.recipeOwn,
-      ConflictEntity.recipeShared,
-    ]) {
+    // Q6-08 = A: someone else's recipe gets neither button (below).
+    for (final entity in [ConflictEntity.recipeOwn]) {
       testWidgets('${entity.name}: my version won -> "Använd deras version" '
           'writes THEIR snapshot back and closes', (tester) async {
         when(

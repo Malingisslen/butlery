@@ -13553,7 +13553,7 @@
   "permAskAgain": "Fråga igen",
   "permOpenSettings": "Öppna inställningar",
   "permImportCameraTitle": "Fotografera receptet",
-  "permImportCameraBody": "Jag läser texten ur bilden och fyller i receptet åt dig.",
+  "permImportCameraBody": "Jag läser texten ur bilden och fyller i receptet åt dig. Bilden skickas bara för att läsa av texten.",
   "permImportPhotosTitle": "Välj bilder av receptet",
   "permImportPhotosBody": "Jag läser texten ur bilderna du väljer och fyller i receptet åt dig.",
   "permImportConsequence": "Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.",
@@ -13682,6 +13682,19 @@
   "conflictBannerBodySuggestionUnnamed": "Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
   "@conflictBannerBodySuggestionUnnamed": {
     "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
+  },
+  "conflictBannerBodyMemberNotSent": "{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.",
+  "@conflictBannerBodyMemberNotSent": {
+    "description": "Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (one already waits, Q6-07 = B, or storing failed). Interim until the product owner decides; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodyMemberNotSentUnnamed": "Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.",
+  "@conflictBannerBodyMemberNotSentUnnamed": {
+    "description": "Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown."
   },
   "recipeSuggestionSeeMine": "Se ditt förslag",
   "@recipeSuggestionSeeMine": {
@@ -14133,5 +14146,45 @@
         "type": "int"
       }
     }
+  },
+  "recipeSuggestChange": "Föreslå ändring",
+  "@recipeSuggestChange": {
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247)."
+  },
+  "recipeSuggestionSend": "Skicka förslaget",
+  "@recipeSuggestionSend": {
+    "description": "Q6-08 = A: the editor's saffron action in suggestion mode; it sends the edit to the owner and writes nothing to the recipe."
+  },
+  "recipeSuggestionSending": "Skickar förslaget …",
+  "@recipeSuggestionSending": {
+    "description": "Q6-08 = A: plate line text while the suggestion is being kept (content-style-guide.md:63)."
+  },
+  "recipeSuggestionSent": "Förslaget är skickat till ägaren.",
+  "@recipeSuggestionSent": {
+    "description": "Q6-08 = A: confirmation after a member's edit was kept as a suggestion."
+  },
+  "recipeSuggestionSendFailed": "Förslaget kunde inte skickas.",
+  "@recipeSuggestionSendFailed": {
+    "description": "Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93)."
+  },
+  "recipeSuggestionCoversText": "Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.",
+  "@recipeSuggestionCoversText": {
+    "description": "Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode."
+  },
+  "recipeSuggestionWaitingNotSent": "Förslaget skickades inte: ditt förra förslag väntar på ägaren.",
+  "@recipeSuggestionWaitingNotSent": {
+    "description": "Q6-07 = B: the member already has a pending suggestion to this recipe, so no second one was sent; followed by errorPreservedRecipeEdits. Interim: what else the member is offered here is an open question to the product owner (Q6-07 = B against Q6-08 = A)."
+  },
+  "cookingNoStepsSaveCopy": "Spara min kopia",
+  "@cookingNoStepsSaveCopy": {
+    "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
+  },
+  "cookingNoStepsBodyOthers": "Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.",
+  "@cookingNoStepsBodyOthers": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
+  },
+  "cookingNoStepsBodyOthersNoIngredients": "Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.",
+  "@cookingNoStepsBodyOthersNoIngredients": {
+    "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
   }
 }

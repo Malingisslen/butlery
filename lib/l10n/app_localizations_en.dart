@@ -17829,7 +17829,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permImportCameraBody =>
-      'I read the text in the photo and fill in the recipe for you.';
+      'I read the text in the photo and fill in the recipe for you. The photo is sent only to read the text.';
 
   @override
   String get permImportPhotosTitle => 'Choose photos of the recipe';
@@ -18035,6 +18035,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get conflictBannerBodySuggestionUnnamed =>
       'Someone else changed it at the same time. Your change is kept as a suggestion for 7 days.';
+
+  @override
+  String conflictBannerBodyMemberNotSent(String name) {
+    return '$name changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.';
+  }
+
+  @override
+  String get conflictBannerBodyMemberNotSentUnnamed =>
+      'Someone else changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.';
 
   @override
   String get recipeSuggestionSeeMine => 'See your suggestion';
@@ -18364,4 +18373,38 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get recipeSuggestChange => 'Suggest a change';
+
+  @override
+  String get recipeSuggestionSend => 'Send the suggestion';
+
+  @override
+  String get recipeSuggestionSending => 'Sending the suggestion …';
+
+  @override
+  String get recipeSuggestionSent => 'The suggestion is sent to the owner.';
+
+  @override
+  String get recipeSuggestionSendFailed => 'The suggestion could not be sent.';
+
+  @override
+  String get recipeSuggestionCoversText =>
+      'A suggestion covers the recipe\'s text: title, description, meal, portions, time, ingredients and steps.';
+
+  @override
+  String get recipeSuggestionWaitingNotSent =>
+      'The suggestion was not sent: your last suggestion is waiting for the owner.';
+
+  @override
+  String get cookingNoStepsSaveCopy => 'Save my copy';
+
+  @override
+  String get cookingNoStepsBodyOthers =>
+      'The ingredients are there, but nobody has written how to make it. Save your own copy and write the steps there, or take the ingredients to the shopping list.';
+
+  @override
+  String get cookingNoStepsBodyOthersNoIngredients =>
+      'Nobody has written how to make it yet. Save your own copy and write the steps there.';
 }

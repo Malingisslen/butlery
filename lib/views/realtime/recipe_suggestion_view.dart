@@ -200,7 +200,11 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
         else
           for (final field in diff.changedFields) ...[
             ConflictDiffFieldCard(
-              field: field,
+              field: ConflictFieldDiff(
+                fieldKey: _fieldLabel(context, field.fieldKey),
+                localText: field.localText,
+                remoteText: field.remoteText,
+              ),
               localLabel: l.recipeSuggestionSuggestedLabel,
               remoteLabel: l.recipeSuggestionCurrentLabel,
             ),
@@ -208,6 +212,22 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
           ],
       ],
     );
+  }
+
+  /// The name a person reads for a compared field
+  /// (RecipeSuggestionService.contentFields), never the stored key.
+  static String _fieldLabel(BuildContext context, String key) {
+    final l = context.l10n;
+    return switch (key) {
+      'title' => l.recipeTitle,
+      'description' => l.recipeDescription,
+      'ingredients' => l.recipeIngredients,
+      'instructions' => l.recipeInstructions,
+      'portions' => l.recipePortions,
+      'timeMinutes' => l.recipeCookingTime,
+      'mealType' => l.recipeMealType,
+      _ => key,
+    };
   }
 
   Widget _decisionBar(BuildContext context) {

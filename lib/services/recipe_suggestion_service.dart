@@ -6,8 +6,23 @@
 /// non-owner's edit meets the owner's; this service lists the ones still kept
 /// and carries out the owner's decision.
 ///
-/// Accepting writes the suggested content onto the recipe as the owner, on
-/// top of the current version's edit counter so it wins the next comparison
+/// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a member
+/// never writes someone else's recipe. Every edit a member saves in the
+/// recipe editor becomes a suggestion here ([suggestEdit]), not only the one
+/// that meets the owner's save. Q6-07 = B: a member has at most one pending
+/// suggestion per recipe; while it waits, no second one is made.
+///
+/// Which recipe a suggestion is taken into: the owner's own recipe in their
+/// library (users/{owner}/recipes/{id}, the one recipe detail shows and the
+/// only one firestore.rules lets the owner alone write) when the owner has
+/// it, otherwise the recipe's realtime resource, where P5-U27b's conflict
+/// path made it.
+///
+/// Accepting writes the suggested content onto the recipe as the owner. Into
+/// the library recipe it takes the text content only (title, description,
+/// ingredients, steps, portions, time and meal type) and keeps everything
+/// else, sharing included. Into the realtime resource it goes on top of the
+/// current version's edit counter so it wins the next comparison
 /// (RealtimeSyncService.recoverLocalVersion), and keeps who the recipe is
 /// shared with as it is now: a suggestion never changes access. Dismissing
 /// writes nothing to the recipe.
@@ -18,6 +33,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
 import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
@@ -25,6 +41,7 @@ import 'package:butlery/services/realtime/overwritten_version_service.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
 /// Thrown when the recipe a suggestion is for no longer exists or is no
 /// longer shared, so there is nothing to accept it into. The suggestion is
@@ -38,15 +55,108 @@ class RecipeSuggestionTargetMissing implements Exception {
   String toString() => 'RecipeSuggestionTargetMissing($recipeId)';
 }
 
+/// Q6-07 = B: the member already has a suggestion to this recipe that waits
+/// for the owner, so no second one is made. Nothing is stored; the edit is
+/// still the member's to keep.
+class RecipeSuggestionAlreadyWaiting implements Exception {
+  const RecipeSuggestionAlreadyWaiting(this.waiting);
+
+  final RecipeSuggestion waiting;
+
+  @override
+  String toString() => 'RecipeSuggestionAlreadyWaiting(${waiting.id})';
+}
+
+/// Reads the signed-in owner's own recipe [recipeId] from their library, or
+/// null when they do not have it.
+typedef OwnRecipeReader = Future<Recipe?> Function(String recipeId);
+
+/// Writes the signed-in owner's own recipe, the way their own editor does.
+/// Throws when the write did not go through.
+typedef OwnRecipeWriter = Future<void> Function(Recipe recipe);
+
+/// Reads [ownerId]'s recipe [recipeId] as it is shared with the signed-in
+/// user, through the read path firestore.rules gives a member, or null when
+/// it cannot be read.
+typedef SharedRecipeReader =
+    Future<Recipe?> Function({
+      required String ownerId,
+      required String recipeId,
+    });
+
 class RecipeSuggestionService {
   RecipeSuggestionService({
     required RecipeSuggestionRepository repository,
     required RealtimeSyncService syncService,
+    OwnRecipeReader? readOwnRecipe,
+    OwnRecipeWriter? writeOwnRecipe,
+    SharedRecipeReader? readSharedRecipe,
   }) : _repository = repository,
-       _sync = syncService;
+       _sync = syncService,
+       _readOwn = readOwnRecipe,
+       _writeOwn = writeOwnRecipe,
+       _readShared = readSharedRecipe;
 
   final RecipeSuggestionRepository _repository;
   final RealtimeSyncService _sync;
+  final OwnRecipeReader? _readOwn;
+  final OwnRecipeWriter? _writeOwn;
+  final SharedRecipeReader? _readShared;
+
+  /// The fields a suggestion carries into the owner's library recipe, and
+  /// the ones the suggestion view compares, in the order it shows them.
+  /// Identity, sharing, images, tags, ratings and cook counts stay the
+  /// owner's.
+  static const List<String> contentFields = [
+    'title',
+    'description',
+    'ingredients',
+    'instructions',
+    'portions',
+    'timeMinutes',
+    'mealType',
+  ];
+
+  static Map<String, Object?> _content(Recipe r) => {
+    'title': r.title,
+    'description': r.description,
+    'ingredients': r.ingredients,
+    'instructions': r.instructions,
+    'portions': r.portions,
+    'timeMinutes': r.timeMinutes,
+    'mealType': r.mealType,
+  };
+
+  /// Q6-08 = A: [suggesterId]'s edit of [ownerId]'s recipe, saved from the
+  /// recipe editor, becomes a pending suggestion; nothing is written to the
+  /// recipe. Throws [RecipeSuggestionAlreadyWaiting] when the member already
+  /// has one waiting for this recipe (Q6-07 = B), and whatever the store
+  /// throws when it cannot be kept.
+  Future<RecipeSuggestion> suggestEdit({
+    required Recipe edited,
+    required String ownerId,
+    required String suggesterId,
+  }) async {
+    final waiting = RecipeSuggestion.waitingAmong(
+      await _repository.watchMine(edited.id).first,
+      clock.now(),
+    );
+    if (waiting != null) throw RecipeSuggestionAlreadyWaiting(waiting);
+    final shaped = RealtimeRecipe.fromRecipe(
+      recipe: edited,
+      ownerId: ownerId,
+      ownerDisplayName: '',
+    ).copyWithMetadata(lastEditedBy: suggesterId);
+    return _repository.suggest(
+      RecipeSuggestion.create(
+        recipeId: edited.id,
+        ownerId: ownerId,
+        suggesterId: suggesterId,
+        suggestion: shaped.toFirestore(),
+        at: clock.now(),
+      ),
+    );
+  }
 
   /// The suggestions the signed-in user made to [recipeId] that are still
   /// kept, newest first. Decided ones stay listed until their 7 days end, so
@@ -90,27 +200,79 @@ class RecipeSuggestionService {
     ];
   }
 
-  /// What [suggestion] changes against the recipe as it is now. Throws
-  /// [RecipeSuggestionTargetMissing] when the recipe is gone.
+  /// What [suggestion] changes against the recipe as it is now, field by
+  /// field over [contentFields]. Throws [RecipeSuggestionTargetMissing] when
+  /// the recipe is gone.
+  ///
+  /// On the suggester's device the recipe is not in their own library, and
+  /// a recipe shared from the owner's library has no realtime resource. So
+  /// when the own library misses, the owner's recipe is read as it is shared
+  /// with this user (UnifiedRecipeService.fetchFriendRecipe) before the
+  /// realtime resource is tried.
   Future<ConflictDiff> diffAgainstLive(RecipeSuggestion suggestion) async {
-    final current = await _live(suggestion.recipeId);
+    final target = await _target(
+      suggestion.recipeId,
+      sharedBy: suggestion.ownerId,
+    );
+    final current = target.own ?? _recipeOf(target.live!);
+    if (current == null) {
+      return ConflictDiff.fromMaps(
+        suggestion.suggestion,
+        target.live!.toFirestore(),
+      );
+    }
     return ConflictDiff.fromMaps(
-      suggestion.suggestion,
-      current.toFirestore(),
+      _content(_suggested(suggestion)),
+      _content(current),
     );
   }
 
   /// The owner accepts [suggestion]: its content becomes the recipe's, with
   /// the sharing the recipe has now, and the row records the decision.
   Future<void> accept(RecipeSuggestion suggestion) async {
-    final current = await _live(suggestion.recipeId);
-    final suggested = RealtimeRecipe.fromMap(
-      suggestion.recipeId,
-      suggestion.suggestion,
-    );
-    await _sync.recoverLocalVersion<RealtimeResource>(
-      OverwrittenVersionService.withSharingOf(suggested, current),
-    );
+    final target = await _target(suggestion.recipeId);
+    final own = target.own;
+    if (own != null) {
+      final s = _suggested(suggestion);
+      await _writeOwn!(
+        own.copyWith(
+          title: s.title,
+          description: s.description,
+          ingredients: s.ingredients,
+          // The structured list must line up with the new ingredient lines,
+          // or Recipe.structuredIngredients falls back to raw lines and the
+          // owner loses section headings and parsed amounts (portion scaling,
+          // shopping aggregation). Rebuilt from the final lines the way the
+          // owner's own editor does (RecipeFormState.createRecipe, BUT-1232):
+          // an unchanged line keeps its entry, the suggester's entries first
+          // (their form derived them, sections included), then the owner's.
+          structuredIngredients: s.ingredients.isEmpty
+              ? null
+              : StructuredIngredientDeriver.deriveAll(
+                  s.ingredients,
+                  reuse: [
+                    ...?s.core.structuredIngredients,
+                    ...?own.core.structuredIngredients,
+                  ],
+                ),
+          // Cleared so the recipe repository normalises the new lines on
+          // write (IngredientProcessor.needsNormalization).
+          ingredientsNormalized: null,
+          instructions: s.instructions,
+          portions: s.portions,
+          timeMinutes: s.timeMinutes,
+          mealType: s.mealType,
+        ),
+      );
+    } else {
+      final suggested = RealtimeRecipe.fromMap(
+        suggestion.recipeId,
+        suggestion.suggestion,
+      );
+      await _sync.recoverLocalVersion<RealtimeResource>(
+        OverwrittenVersionService.withSharingOf(suggested, target.live!),
+      );
+    }
     await _repository.decide(suggestion.id, RecipeSuggestionStatus.accepted);
   }
 
@@ -118,13 +280,36 @@ class RecipeSuggestionService {
   Future<void> dismiss(RecipeSuggestion suggestion) =>
       _repository.decide(suggestion.id, RecipeSuggestionStatus.dismissed);
 
-  Future<RealtimeResource> _live(String recipeId) async {
+  static Recipe _suggested(RecipeSuggestion suggestion) =>
+      RealtimeRecipe.fromMap(suggestion.recipeId, suggestion.suggestion).recipe;
+
+  static Recipe? _recipeOf(RealtimeResource live) =>
+      live is RealtimeRecipe ? live.recipe : null;
+
+  /// The owner's library recipe when they have it and it can be written,
+  /// otherwise the active realtime resource. With [sharedBy] (reading only,
+  /// never for a write) the recipe [sharedBy] shares with this user is tried
+  /// between the two.
+  Future<({Recipe? own, RealtimeResource? live})> _target(
+    String recipeId, {
+    String? sharedBy,
+  }) async {
+    final readOwn = _readOwn;
+    if (readOwn != null && _writeOwn != null) {
+      final own = await readOwn(recipeId);
+      if (own != null) return (own: own, live: null);
+    }
+    final readShared = _readShared;
+    if (readShared != null && sharedBy != null && sharedBy.isNotEmpty) {
+      final shared = await readShared(ownerId: sharedBy, recipeId: recipeId);
+      if (shared != null) return (own: shared, live: null);
+    }
     final current = await _sync.fetchLatestResource<RealtimeResource>(
       recipeId,
     );
     if (current == null || !current.isActive) {
       throw RecipeSuggestionTargetMissing(recipeId);
     }
-    return current;
+    return (own: null, live: current);
   }
 }

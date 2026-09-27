@@ -181,6 +181,9 @@ void main() {
         'igen, and the editor stays open', (tester) async {
       final Recipe recipe = RecipeFactory.build(
         id: 'recipe-p5-u12',
+        // The signed-in user's own recipe; someone else's would open in
+        // suggestion mode (Q6-08 = A).
+        createdBy: 'test-user-123',
         title: 'Testrecept',
         description: 'Beskrivning',
         ingredients: const ['Mjöl', 'Socker'],
