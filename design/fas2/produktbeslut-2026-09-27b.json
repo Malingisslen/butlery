@@ -35,8 +35,13 @@
   },
   {
    "id": "Q6-16",
-   "beslut": "A",
-   "innebord": "Hem behåller toppfältet Mina recept; skillnaden visas som prototyp."
+   "beslut": "B",
+   "innebord": "Hem utan toppfält; Välj, sök och vy-byte i bibliotekets rubrikrad.",
+   "revision": {
+    "tidigare_beslut": "A",
+    "nytt_beslut": "B",
+    "grund": "Malin såg prototypen 2026-09-27-prototyp-hem.html och valde B: Hem utan toppfältet Mina recept; Välj, sök och vy-byte flyttar till bibliotekets rubrikrad under Ikväll-bandet. B-46 behöver en rad om att Välj på Hem står i bibliotekets rubrikrad."
+   }
   }
  ]
 }
