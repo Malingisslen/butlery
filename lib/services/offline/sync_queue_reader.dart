@@ -157,14 +157,18 @@ Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {
 /// ([QueuedChange.isNeverSyncedRecipe]) takes that recipe with it, since the
 /// device's copy is the only one and the user chose to throw it away after a
 /// confirmation that said so. Otherwise it would stay on the phone and never
-/// be sent.
+/// be sent. What was queued behind that create for the same recipe (later
+/// edits of it, its photo uploads) goes with it in the same transaction:
+/// they belong to the recipe she threw away and could never be sent or
+/// kept as a copy, so leaving them under Väntar på dig would only offer
+/// choices that fail.
 Future<void> discardQueuedChange(
   AppDatabase db,
   String userId,
   QueuedChange change,
 ) {
   return db.transaction(() async {
-    await db.markChainPermanentlyFailed(
+    final chain = await db.markChainPermanentlyFailed(
       userId,
       change.id,
       reason: QueuedChangeReason.dependencyFailed.code,
@@ -180,6 +184,26 @@ Future<void> discardQueuedChange(
           db.syncQueueEntries,
         )..where((e) => e.opId.equals(change.id))).go();
         if (entry != null && change.isNeverSyncedRecipe) {
+          final dependants = chain.difference({change.id}).toList();
+          if (dependants.isNotEmpty) {
+            // Only the recipe's own entries: anything else in the chain
+            // keeps its "dependency-failed" mark and waits for her.
+            await (db.delete(db.syncQueueEntries)..where(
+                  (e) =>
+                      e.userId.equals(userId) &
+                      e.opId.isIn(dependants) &
+                      e.recipeId.equals(entry.recipeId),
+                ))
+                .go();
+            final uploads =
+                await (db.select(db.uploadQueueEntries)..where(
+                      (e) => e.userId.equals(userId) & e.id.isIn(dependants),
+                    ))
+                    .get();
+            for (final upload in uploads) {
+              await db.uploadQueueDao.cancelUpload(upload.id);
+            }
+          }
           await db.recipeDao.deleteRecipe(entry.recipeId, userId);
         }
       case QueuedChangeKind.image:

@@ -18,8 +18,10 @@
 /// the rule is text.primary (colorScheme.onSurface: #24382C light, #F5F4ED
 /// dark; tokens.json:54-56), the label captionBase in text.secondary
 /// (onSurfaceVariant: #627061 / #93A48D; tokens.json:62-65). Interpretation:
-/// the drawn label says "Ditt bibliotek"; the decision names the row
-/// "Dina recept · N", and the count is what the removed top bar carried.
+/// the label at this spot is drawn as "Ditt bibliotek" (#hemrecept :153),
+/// and the decision names no label ("bibliotekets rubrikrad"). The row says
+/// "Dina recept · N": Hem's section label as drawn in Skarmar v12 del 4
+/// :729, with the count the removed top bar carried.
 library;
 
 import 'package:flutter/material.dart';

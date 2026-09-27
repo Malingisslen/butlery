@@ -253,8 +253,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   /// adds, counting only what the pantry does not already cover. While the
   /// pantry is loading or cannot be read it says "Lägg i inköpslistan".
   /// Q6-09 = C (produktbeslut 2026-09-27b): when the pantry covers
-  /// everything there is no button; the recipe says "Allt finns hemma", and
-  /// the photo's shopping button (someone else's recipe) is named so too.
+  /// everything there is no button; the action bar says "Allt finns
+  /// hemma", and the photo's shopping button (someone else's recipe) is
+  /// left out.
   String _addToListLabel(BuildContext context, Recipe recipe) {
     if (_actions.pantryCoversAll(recipe, _pantry.pantry)) {
       return context.l10n.recipeAllAtHome;
@@ -593,7 +594,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // "Spara till mitt kök" is the saffron action in the
                   // bar below on someone else's recipe (BUT-972), so the
                   // shopping list moves up here as a paper-ring button.
-                  if (isOthersRecipe)
+                  // Q6-09 = C (produktbeslut 2026-09-27b): when the pantry
+                  // covers everything there is no button to promise an
+                  // add that adds nothing, so it is left out here too.
+                  if (isOthersRecipe &&
+                      !_actions.pantryCoversAll(recipe, _pantry.pantry))
                     Padding(
                       key: const ValueKey('test-recipe-detail-add-to-list'),
                       padding: AppDimensions.paddingVertical8,

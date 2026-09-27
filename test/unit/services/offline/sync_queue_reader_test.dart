@@ -150,8 +150,10 @@ void main() {
     expect(await db.syncQueueDao.countPending('u1'), 1);
   });
 
+  // A change to a recipe the server has: its dependants stay, marked. (A
+  // phone-only create takes its own dependants with it; Q6-11, below.)
   test('Släng removes only the chosen change and fails its chain', () async {
-    await enqueue('add', 'r1', SyncOperation.create);
+    await enqueue('add', 'r1', SyncOperation.update);
     await enqueue('check', 'r1', SyncOperation.update, dependsOn: ['add']);
     await enqueue('other', 'r2', SyncOperation.update);
     await db.syncQueueDao.markPermanentlyFailed('add', reason: 'not-found');
@@ -197,6 +199,52 @@ void main() {
     );
     expect(await readQueuedChanges(db, 'u1'), isEmpty);
   });
+
+  // Q6-11 = B: what was queued behind the thrown-away create for the same
+  // recipe (a later edit, its photo) goes with it; it could never be sent
+  // or kept as a copy. Another recipe's entry in the chain keeps its mark.
+  test(
+    'Släng on a phone-only new recipe takes its dependants with it',
+    () async {
+      await recipe('r1', 'Kålpudding');
+      await recipe('r2', 'Pannbiffar');
+      await enqueue('new', 'r1', SyncOperation.create);
+      await enqueue('later', 'r1', SyncOperation.update, dependsOn: ['new']);
+      await enqueue('other', 'r2', SyncOperation.update, dependsOn: ['new']);
+      await withClock(
+        Clock.fixed(t0),
+        () => db.uploadQueueDao.queueUpload(
+          id: 'photo',
+          userId: 'u1',
+          localPath: '/a.jpg',
+          targetPath: 'x/a.jpg',
+          fileSizeBytes: 10,
+          entityId: 'r1',
+          entityType: 'recipe',
+          dependsOn: ['new'],
+        ),
+      );
+      await db.syncQueueDao.markPermanentlyFailed('new', reason: 'not-found');
+      final created = (await readQueuedChanges(
+        db,
+        'u1',
+      )).firstWhere((c) => c.id == 'new');
+      expect(created.isNeverSyncedRecipe, isTrue);
+
+      await discardQueuedChange(db, 'u1', created);
+
+      expect(await db.recipeDao.getRecipe('r1', 'u1'), isNull);
+      final left = await readQueuedChanges(db, 'u1');
+      expect(left.map((c) => c.id), ['other']);
+      expect(left.single.reason, QueuedChangeReason.dependencyFailed);
+      final photo = await (db.select(
+        db.uploadQueueEntries,
+      )..where((e) => e.id.equals('photo'))).getSingle();
+      expect(photo.status, 'cancelled');
+      final counts = await db.watchQueueCounts('u1').first;
+      expect(counts.needsUser, 1);
+    },
+  );
 
   test('Släng on an image cancels the upload and it stops counting', () async {
     await withClock(

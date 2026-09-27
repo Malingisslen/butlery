@@ -533,14 +533,19 @@ void main() {
     }
 
     testWidgets("Q6-09: on a friend's recipe the photo's shopping button is "
-        'named Allt finns hemma', (tester) async {
+        'left out', (tester) async {
       pantryCovering(['pasta', 'tomatsås', 'ost']);
       await pumpView(
         tester,
         RecipeDetailView(recipe: friendRecipe, readOnly: true),
       );
       await tester.pump();
-      expect(find.byTooltip('Allt finns hemma'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+        findsNothing,
+        reason: 'no live button named as a status',
+      );
+      expect(find.byTooltip('Allt finns hemma'), findsNothing);
       expect(find.byTooltip('Lägg i inköpslistan'), findsNothing);
     });
 
