@@ -1,10 +1,10 @@
 /// Q6-08 = A (produktbeslut 2026-09-27): who the signed-in user is to a
-/// recipe, for the recipe detail menu (produktregler.md:243-251, "Kebabmenyn
+/// recipe, for the recipe detail menu (produktregler.md:244-252, "Kebabmenyn
 /// per behörighet").
 ///
 /// - [RecipeMenuRole.owner] edits: "Redigera", and the owner-only rows.
 /// - [RecipeMenuRole.member] of someone else's shared recipe cannot edit it
-///   (produktregler.md:241): "Redigera" shows as "Föreslå ändring" (:246),
+///   (produktregler.md:241): "Redigera" shows as "Föreslå ändring" (:247),
 ///   and the rows that write the recipe are not offered.
 /// - [RecipeMenuRole.other], anyone else, gets neither.
 ///

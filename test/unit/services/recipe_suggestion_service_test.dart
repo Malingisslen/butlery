@@ -10,8 +10,13 @@
 ///   the owner's version stays, nothing of the edit is written to the shared
 ///   recipe, and the conflict event carries the suggestion's id — even when
 ///   the edit's counter would have won under the old rule;
-/// - without a store, or when storing fails, the package 5 choice applies
-///   (no suggestion id on the event), so the edit is never dropped;
+/// - without a store, when storing fails or while one waits (Q6-07 = B),
+///   nothing is written either (Q6-08 = A: a member never writes the owner's
+///   recipe) and the notice carries no suggestion id;
+/// - a member's save outside a conflict is refused before the network;
+/// - the suggester's own view of a suggestion reads the owner's recipe
+///   through the member's read path when it has no realtime resource;
+/// - accepting an ingredient change keeps the section headings;
 /// - the user's own save from another device makes no suggestion;
 /// - the repository makes a suggestion only as oneself and never to one's own
 ///   recipe, lists only by one's own id, and lets only the owner decide;
@@ -35,6 +40,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
@@ -48,7 +54,7 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
-import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/production_mocks.dart' hide SyncError;
 
 class _MockAuthRepository extends Mock implements auth.AuthRepository {}
 
@@ -133,10 +139,12 @@ void main() {
         suggestions: repo,
       );
 
-  /// The member saves the owner's recipe, the owner saves over it, then the
-  /// member saves again within the conflict window. The member's second save
-  /// carries a HIGHER edit counter than the owner's, so under the resolver's
-  /// counter rule it would win: the owner's version must win anyway.
+  /// A save on this device opens the conflict window, the owner saves over
+  /// it, then the member saves within the window. The member's save carries
+  /// a HIGHER edit counter than the owner's, so under the resolver's counter
+  /// rule it would win: the owner's version must win anyway. The first save
+  /// is made signed in as the owner, since a member's save outside a
+  /// conflict is refused (Q6-08 = A).
   Future<void> conflict(
     RealtimeSyncService service,
     String id, {
@@ -145,12 +153,14 @@ void main() {
     final first = _recipe(
       id: id,
       lastEditedAt: DateTime(2026, 4, 1, 11, 59),
-      lastEditedBy: _member,
-      name: 'Mia',
-      title: 'Mias första',
+      lastEditedBy: _owner,
+      name: 'Olle',
+      title: 'Olles första',
     );
     await seed(first);
+    signIn(_owner);
     await service.updateResource(first);
+    signIn(_member);
     await seed(
       _recipe(
         id: id,
@@ -231,7 +241,8 @@ void main() {
       expect(events.single.docId, 'r1');
     });
 
-    test('without a store the package 5 choice applies (PQ-02 = A)', () async {
+    test('without a store nothing is written and the notice says so '
+        '(Q6-08 = A)', () async {
       final sync = buildSync(null);
       addTearDown(sync.dispose);
       final events = <ConflictEvent>[];
@@ -244,11 +255,52 @@ void main() {
       await pumpEventQueue();
 
       expect(await rows(), isEmpty);
+      expect(await liveTitle('r2'), 'Olles');
       expect(events, hasLength(1));
+      expect(events.single.entity, ConflictEntity.recipeShared);
+      expect(
+        events.single.chosenStrategy,
+        ConflictResolutionStrategy.remoteWon,
+      );
       expect(events.single.suggestionId, isNull);
     });
 
-    test('a store that fails falls back to the package 5 choice', () async {
+    test("a member's save outside a conflict is refused before it reaches "
+        'the server (Q6-08 = A)', () async {
+      final sync = buildSync(store);
+      addTearDown(sync.dispose);
+      await seed(
+        _recipe(
+          id: 'r5',
+          lastEditedAt: DateTime(2026, 4, 1, 11),
+          lastEditedBy: _owner,
+          name: 'Olle',
+          title: 'Olles',
+        ),
+      );
+      await expectLater(
+        sync.updateResource(
+          _recipe(
+            id: 'r5',
+            editCount: 2,
+            lastEditedAt: DateTime(2026, 4, 1, 12),
+            lastEditedBy: _member,
+            name: 'Mia',
+            title: 'Mias',
+          ),
+        ),
+        throwsA(
+          isA<SyncError>().having(
+            (e) => e.type,
+            'type',
+            SyncErrorType.permissionDenied,
+          ),
+        ),
+      );
+      expect(await liveTitle('r5'), 'Olles');
+    });
+
+    test('a store that fails writes nothing either', () async {
       final failing = _FailingStore();
       final sync = buildSync(failing);
       addTearDown(sync.dispose);
@@ -262,6 +314,7 @@ void main() {
       await pumpEventQueue();
 
       expect(failing.calls, 1);
+      expect(await liveTitle('r3'), 'Olles');
       expect(events, hasLength(1));
       expect(events.single.suggestionId, isNull);
     });
@@ -422,8 +475,8 @@ void main() {
   });
 
   group('one pending suggestion per member (Q6-07 = B)', () {
-    test('a conflict while my suggestion waits gets the package 5 choice, '
-        'not a second suggestion', () async {
+    test('a conflict while my suggestion waits makes no second suggestion '
+        'and writes nothing', () async {
       final waiting = await store.suggest(
         RecipeSuggestion.create(
           recipeId: 'q1',
@@ -447,12 +500,14 @@ void main() {
       final kept = await rows();
       expect(kept.map((s) => s.id), [waiting.id]);
       expect(events, hasLength(1));
+      expect(await liveTitle('q1'), 'Olles');
       expect(
         events.single.suggestionId,
         isNull,
         reason:
-            'the choice (Behåll min version / Använd deras) applies, so '
-            'the edit is not dropped silently',
+            'no suggestion was stored, so the notice says the change was '
+            'neither saved nor sent (what else to offer is open, Q6-07 '
+            'against Q6-08)',
       );
     });
 
@@ -614,6 +669,86 @@ void main() {
         reason: 'a suggestion never changes access',
       );
       expect((await rows()).single.status, RecipeSuggestionStatus.accepted);
+    });
+
+    test("the suggester opens their own suggestion: the owner's recipe is "
+        'read as shared with them, with no realtime resource', () async {
+      final shared = <String>[];
+      final memberSide = RecipeSuggestionService(
+        repository: store,
+        syncService: sync,
+        // Not in the member's own library.
+        readOwnRecipe: (id) async => null,
+        writeOwnRecipe: (r) async => fail('a member never writes'),
+        readSharedRecipe: ({required ownerId, required recipeId}) async {
+          shared.add('$ownerId/$recipeId');
+          return ownerId == _owner ? ownersRecipe(recipeId) : null;
+        },
+      );
+      final s = await memberSide.suggestEdit(
+        edited: edited('m6'),
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      expect(
+        (await fake.collection('realtime_resources').get()).docs,
+        isEmpty,
+        reason: 'a recipe shared from the library has no realtime resource',
+      );
+
+      final diff = await memberSide.diffAgainstLive(s);
+
+      expect(shared, ['$_owner/m6'], reason: 'read by the suggestion owner');
+      expect(diff.changedFields.map((f) => f.fieldKey), [
+        'instructions',
+        'title',
+      ]);
+    });
+
+    test('accepting an ingredient change keeps the section headings and '
+        'lines the structured list up with the new lines', () async {
+      final owners = ownersRecipe('m7').copyWith(
+        ingredients: ['3 dl mjöl', '1 ägg'],
+        structuredIngredients: const [
+          RecipeIngredient(name: 'mjöl', raw: '3 dl mjöl', section: 'Smet'),
+          RecipeIngredient(name: 'ägg', raw: '1 ägg', section: 'Smet'),
+        ],
+      );
+      final suggestedEdit = owners.copyWith(
+        ingredients: ['3 dl mjöl', '1 ägg', '2 msk smör'],
+        structuredIngredients: const [
+          RecipeIngredient(name: 'mjöl', raw: '3 dl mjöl', section: 'Smet'),
+          RecipeIngredient(name: 'ägg', raw: '1 ägg', section: 'Smet'),
+          RecipeIngredient(
+            name: 'smör',
+            raw: '2 msk smör',
+            section: 'Stekning',
+          ),
+        ],
+      );
+      final s = await service.suggestEdit(
+        edited: suggestedEdit,
+        ownerId: _owner,
+        suggesterId: _member,
+      );
+      signIn(_owner);
+      library['m7'] = owners.copyWith(ingredientsNormalized: ['mjöl', 'ägg']);
+
+      await service.accept(s);
+
+      final after = written.single;
+      expect(after.ingredients, ['3 dl mjöl', '1 ägg', '2 msk smör']);
+      expect(after.structuredIngredients.map((i) => i.raw), after.ingredients);
+      expect(after.structuredIngredients.map((i) => i.section), [
+        'Smet',
+        'Smet',
+        'Stekning',
+      ]);
+      expect(
+        after.core.ingredientsNormalized,
+        isNull,
+        reason: 'recomputed from the new lines when the recipe is written',
+      );
     });
 
     test('dismissing writes nothing to the owner\'s recipe', () async {

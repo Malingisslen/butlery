@@ -507,7 +507,7 @@ class RecipeFormViewModel extends BaseViewModel
     notifyListeners();
   }
 
-  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :246): the
+  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): the
   /// owner of the recipe being edited when it is someone else's. Set once,
   /// from the recipe's owner id, when the form opens.
   String? _suggestionOwnerId;

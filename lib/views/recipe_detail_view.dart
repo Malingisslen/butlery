@@ -305,7 +305,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           ServiceLocator.get<PermissionService>().currentUserId,
         );
         // Q6-08 = A: the menu follows who the user is to the recipe
-        // (produktregler.md:243-251).
+        // (produktregler.md:244-252).
         final menuRole = recipeMenuRole(
           recipe,
           ServiceLocator.get<PermissionService>().currentUserId,
@@ -639,7 +639,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ),
                             // Q6-08 = A: a member of someone else's shared
                             // recipe sees "Föreslå ändring" where the owner
-                            // sees Redigera (produktregler.md:246). The
+                            // sees Redigera (produktregler.md:247). The
                             // editor then sends a suggestion and never writes
                             // the recipe (produktregler.md:241).
                             if (!widget.readOnly &&
@@ -721,7 +721,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ),
                             ),
                             // reTag/editTags/delete — owner-only: each writes
-                            // the recipe (produktregler.md:241, :251)
+                            // the recipe (produktregler.md:241, :252)
                             if (ownsMenu)
                               ButleryMenuItem(
                                 value: _MenuAction.reTag,

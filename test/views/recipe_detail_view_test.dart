@@ -625,9 +625,9 @@ void main() {
   );
 
   // Q6-08 = A (produktbeslut 2026-09-27): the menu per role,
-  // produktregler.md:243-251. A member of someone else's shared recipe sees
-  // "Föreslå ändring" where the owner sees Redigera (:246), and no row that
-  // writes the recipe (Radera is the owner's alone, :251). The role comes
+  // produktregler.md:244-252. A member of someone else's shared recipe sees
+  // "Föreslå ändring" where the owner sees Redigera (:247), and no row that
+  // writes the recipe (Radera is the owner's alone, :252). The role comes
   // from the recipe's owner id and member map, never from the screen.
   group('RecipeDetailView — the menu follows who you are (Q6-08)', () {
     const owner = 'friend-owner-456';

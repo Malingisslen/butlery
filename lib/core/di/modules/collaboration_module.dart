@@ -123,6 +123,15 @@ class CollaborationModule implements DIModule {
             throw StateError(result.message ?? 'recipe update failed');
           }
         },
+        // The suggester's view of their own suggestion reads the owner's
+        // recipe through the member's read path (recipe-shared-read-rules).
+        readSharedRecipe: ({required ownerId, required recipeId}) async =>
+            container.isRegistered<UnifiedRecipeService>()
+            ? container<UnifiedRecipeService>().fetchFriendRecipe(
+                ownerId: ownerId,
+                recipeId: recipeId,
+              )
+            : null,
       ),
     );
 

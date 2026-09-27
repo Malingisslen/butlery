@@ -252,7 +252,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           (vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
         );
     // Q6-08 = A: someone else's recipe is not edited, a change is suggested
-    // (produktregler.md:246, the menu item's own words).
+    // (produktregler.md:247, the menu item's own words).
     final suggests = context.select<RecipeFormViewModel, bool>(
       (vm) => vm.suggestsChange,
     );
@@ -388,8 +388,23 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     final mealTypeOptions = RecipeFormViewModel.mealTypeOptions(
       viewModel.mealType,
     );
+    // Q6-08 = A: a suggestion carries the recipe's text content only
+    // (RecipeSuggestionService.contentFields). Controls whose edits it would
+    // not carry, or that write the owner's recipe at once (related recipes),
+    // are not offered, so nothing the member does here is dropped silently
+    // and no picked photo is uploaded for nothing.
+    final suggests = viewModel.suggestsChange;
 
     return [
+      if (suggests) ...[
+        Text(
+          context.l10n.recipeSuggestionCoversText,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingXl),
+      ],
       // Meal type dropdown
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,24 +442,26 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Image management
-      UniversalImageManager.recipeEdit(
-        imageUrls: viewModel.imageUrls,
-        onRemoveImage: viewModel.removeImageAt,
-        onSetPrimary: (index) {
-          if (index < viewModel.imageUrls.length) {
-            final imageUrl = viewModel.imageUrls[index];
-            viewModel.setPrimaryImage(imageUrl);
-          }
-        },
-        userId: _currentUserId,
-        onPickImage: () => RecipeImagePicker.showAndPick(
-          context: context,
-          viewModel: viewModel,
+      if (!suggests) ...[
+        UniversalImageManager.recipeEdit(
+          imageUrls: viewModel.imageUrls,
+          onRemoveImage: viewModel.removeImageAt,
+          onSetPrimary: (index) {
+            if (index < viewModel.imageUrls.length) {
+              final imageUrl = viewModel.imageUrls[index];
+              viewModel.setPrimaryImage(imageUrl);
+            }
+          },
+          userId: _currentUserId,
+          onPickImage: () => RecipeImagePicker.showAndPick(
+            context: context,
+            viewModel: viewModel,
+          ),
+          maxImages: 5,
+          isLoading: viewModel.isUploadingImage,
         ),
-        maxImages: 5,
-        isLoading: viewModel.isUploadingImage,
-      ),
-      const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.spacingXl),
+      ],
 
       // Title field
       TextFormField(
@@ -552,66 +569,68 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Personal tags selector (select from predefined tags)
       // Users can create new tags via the "Hantera" button
-      PersonalTagSelector(
-        selectedTagIds: viewModel.tags.where((t) => t.isNotEmpty).toList(),
-        onChanged: viewModel.setPersonalTagNames,
-        title: context.l10n.recipePersonalTags,
-        showManageButton: true,
-      ),
-      const SizedBox(height: AppDimensions.spacingM),
+      if (!suggests) ...[
+        PersonalTagSelector(
+          selectedTagIds: viewModel.tags.where((t) => t.isNotEmpty).toList(),
+          onChanged: viewModel.setPersonalTagNames,
+          title: context.l10n.recipePersonalTags,
+          showManageButton: true,
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
 
-      // Auto-generated tags management (allergens, dietary, etc.)
-      _buildManageTagsButton(context, viewModel),
-      const SizedBox(height: AppDimensions.spacingXl),
+        // Auto-generated tags management (allergens, dietary, etc.)
+        _buildManageTagsButton(context, viewModel),
+        const SizedBox(height: AppDimensions.spacingXl),
 
-      // Rating field
-      TextFormField(
-        // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
-        // Fixing one without the other leaves the bug on the other screen, and
-        // this is the one reached by editing a saved recipe.
-        initialValue: viewModel.rating == null
-            ? ''
-            : formatSwedishDecimal(viewModel.rating!),
-        decoration: InputDecoration(labelText: context.l10n.recipeRating),
-        style: AppTextStyles.bodyMedium,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: const [SwedishDecimalInputFormatter()],
-        textInputAction: TextInputAction.next,
-        onChanged: (value) => viewModel.setRating(parseSwedishDecimal(value)),
-        validator: FormValidators.rating(),
-      ),
-      const SizedBox(height: AppDimensions.spacingXl),
+        // Rating field
+        TextFormField(
+          // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
+          // Fixing one without the other leaves the bug on the other screen, and
+          // this is the one reached by editing a saved recipe.
+          initialValue: viewModel.rating == null
+              ? ''
+              : formatSwedishDecimal(viewModel.rating!),
+          decoration: InputDecoration(labelText: context.l10n.recipeRating),
+          style: AppTextStyles.bodyMedium,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: const [SwedishDecimalInputFormatter()],
+          textInputAction: TextInputAction.next,
+          onChanged: (value) => viewModel.setRating(parseSwedishDecimal(value)),
+          validator: FormValidators.rating(),
+        ),
+        const SizedBox(height: AppDimensions.spacingXl),
 
-      // Source URL field
-      TextFormField(
-        initialValue: viewModel.sourceUrl.orEmpty(),
-        decoration: InputDecoration(
-          labelText: context.l10n.recipeSourceUrl,
-          hintText: context.l10n.recipeSourceUrlHint,
-          helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
-              ? context.l10n.recipeImportedFromShare
-              : context.l10n.recipeSourceUrlHelper,
-          prefixIcon: const Icon(
-            Icons.link,
-            size: AppDimensions.iconSizeAction,
+        // Source URL field
+        TextFormField(
+          initialValue: viewModel.sourceUrl.orEmpty(),
+          decoration: InputDecoration(
+            labelText: context.l10n.recipeSourceUrl,
+            hintText: context.l10n.recipeSourceUrlHint,
+            helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
+                ? context.l10n.recipeImportedFromShare
+                : context.l10n.recipeSourceUrlHelper,
+            prefixIcon: const Icon(
+              Icons.link,
+              size: AppDimensions.iconSizeAction,
+            ),
           ),
+          style: AppTextStyles.bodyMedium,
+          keyboardType: TextInputType.url,
+          onChanged: viewModel.setSourceUrl,
+          validator: FormValidators.recipeSourceUrl(),
         ),
-        style: AppTextStyles.bodyMedium,
-        keyboardType: TextInputType.url,
-        onChanged: viewModel.setSourceUrl,
-        validator: FormValidators.recipeSourceUrl(),
-      ),
-      const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.spacingXl),
 
-      // BUT-1057: Related recipes section — link/unlink other recipes.
-      // Only shown when editing an existing recipe (originalRecipe != null).
-      if (viewModel.originalRecipe != null)
-        RelatedRecipesEditor(
-          currentRecipeId: viewModel.originalRecipe!.id,
-          relatedRecipes: viewModel.relatedRecipes,
-          onLink: viewModel.linkRelatedRecipe,
-          onUnlink: viewModel.unlinkRelatedRecipe,
-        ),
+        // BUT-1057: Related recipes section — link/unlink other recipes.
+        // Only shown when editing an existing recipe (originalRecipe != null).
+        if (viewModel.originalRecipe != null)
+          RelatedRecipesEditor(
+            currentRecipeId: viewModel.originalRecipe!.id,
+            relatedRecipes: viewModel.relatedRecipes,
+            onLink: viewModel.linkRelatedRecipe,
+            onUnlink: viewModel.unlinkRelatedRecipe,
+          ),
+      ],
     ];
   }
 
@@ -696,15 +715,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         // The kind comes from the view model, never from the error text.
         final l10n = context.l10n;
         final failure = viewModel.lastSaveFailure;
-        if (failure == RecipeSaveFailure.suggestionWaiting) {
-          await _onSuggestionWaiting(context);
-          return;
-        }
         SnackBarUtils.showFailure(
           context,
           what: switch (failure) {
             RecipeSaveFailure.incomplete => l10n.recipeSaveIncomplete,
             RecipeSaveFailure.noPermission => l10n.recipeSaveNoPermission,
+            // Q6-07 = B (produktbeslut 2026-09-27): the member's earlier
+            // suggestion still waits, so no second one was sent. Interim: it
+            // only says so and discards nothing (the edits stay in the form);
+            // what else the member is offered here is an open question to
+            // the product owner, since the package 5 choice Q6-07 names would
+            // write the owner's recipe, which Q6-08 = A rules out.
+            RecipeSaveFailure.suggestionWaiting =>
+              l10n.recipeSuggestionWaitingNotSent,
             _ when viewModel.suggestsChange => l10n.recipeSuggestionSendFailed,
             _ => l10n.recipeSaveFailed,
           },
@@ -715,41 +738,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         );
       }
     }
-  }
-
-  /// Q6-07 = B (produktbeslut 2026-09-27): the member's earlier suggestion
-  /// to this recipe still waits for the owner, so no second one was sent.
-  /// Nothing is discarded: the dialog says so, Stäng keeps the edits in the
-  /// editor, and "Spara som egen kopia" keeps them as the user's own recipe
-  /// ([_forkRecipe]), the same way a lowered role offers them (P6-U05). The
-  /// recipe itself is never written (Q6-08 = A).
-  Future<void> _onSuggestionWaiting(BuildContext context) async {
-    final keepCopy = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.recipeSuggestionWaitingTitle),
-        content: Text(context.l10n.recipeSuggestionWaitingBody),
-        actions: [
-          KeyedSubtree(
-            key: const ValueKey('suggestion-waiting-close'),
-            child: ActionButtons.secondaryButton(
-              context,
-              label: context.l10n.commonClose,
-              onPressed: () => Navigator.of(context).pop(false),
-            ),
-          ),
-          KeyedSubtree(
-            key: const ValueKey('suggestion-waiting-save-copy'),
-            child: ActionButtons.primaryButton(
-              context,
-              label: context.l10n.roleLoweredSaveCopy,
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (keepCopy == true && context.mounted) await _forkRecipe(context);
   }
 
   /// Försök igen only where trying again can help: not for an incomplete

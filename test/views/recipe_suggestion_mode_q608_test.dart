@@ -3,7 +3,7 @@
 //
 // Sources: produktregler.md:241 (a member cannot edit a recipe someone else
 // owns; the change is kept as a suggestion the owner accepts or dismisses),
-// :246 (Redigera shows as "Föreslå ändring" for a member); Q6-07 = B (one
+// :247 (Redigera shows as "Föreslå ändring" for a member); Q6-07 = B (one
 // pending suggestion per member and recipe; nothing is discarded silently);
 // content-style-guide.md:87-97 (a failure says what happened, what is kept
 // and what to do).
@@ -37,6 +37,9 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
+import 'package:butlery/widgets/image/universal_image_manager.dart';
+import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
+import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 
 import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/factories/mock_factory.dart';
@@ -153,8 +156,12 @@ void main() {
     instructions: const ['Vispa', 'Stek'],
   );
 
-  Future<void> openEditor(WidgetTester tester, Recipe recipe) async {
-    tester.view.physicalSize = const Size(800, 1400);
+  Future<void> openEditor(
+    WidgetTester tester,
+    Recipe recipe, {
+    double height = 1400,
+  }) async {
+    tester.view.physicalSize = Size(800, height);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
@@ -225,7 +232,7 @@ void main() {
   });
 
   testWidgets('Q6-07: while my last suggestion waits, no second one is sent; '
-      'Stäng keeps the edits, and they can be kept as my own copy', (
+      'the editor says so, keeps the edits and offers nothing else (interim)', (
     tester,
   ) async {
     when(
@@ -239,29 +246,44 @@ void main() {
     await retitle(tester, 'Olles pannkakor med sylt');
     await tapSave(tester);
 
-    expect(find.text(l10n.recipeSuggestionWaitingTitle), findsOneWidget);
-    expect(find.text(l10n.recipeSuggestionWaitingBody), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey('suggestion-waiting-close')));
-    await tester.pumpAndSettle();
+    expect(
+      find.textContaining(l10n.recipeSuggestionWaitingNotSent),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(l10n.errorPreservedRecipeEdits),
+      findsOneWidget,
+    );
+    // Trying again cannot help while the first one waits, and no copy
+    // action is invented before the product owner decides.
+    expect(find.text(l10n.commonRetry), findsNothing);
+    expect(find.text(l10n.roleLoweredSaveCopy), findsNothing);
+    expect(find.byType(AlertDialog), findsNothing);
     expect(find.byType(EditRecipeView), findsOneWidget);
     expect(find.text('Olles pannkakor med sylt'), findsOneWidget);
     verifyNever(() => personal.updateUnifiedRecipe(any()));
     verifyNever(() => personal.addUnifiedRecipe(any()));
+  });
 
-    await tapSave(tester);
-    await tester.tap(
-      find.byKey(const ValueKey('suggestion-waiting-save-copy')),
-    );
-    await tester.pumpAndSettle();
+  testWidgets('suggestion mode offers only what a suggestion carries: no '
+      'photo, tag, rating, source or related-recipe controls', (tester) async {
+    // Tall enough that the whole (lazy) form is built.
+    await openEditor(tester, recipeOwnedBy(_owner), height: 6000);
 
-    final copy =
-        verify(() => personal.addUnifiedRecipe(captureAny())).captured.single
-            as Recipe;
-    expect(copy.id, isNot('shared-recipe-1'), reason: 'my copy, not theirs');
-    expect(copy.title, 'Olles pannkakor med sylt');
-    verifyNever(() => personal.updateUnifiedRecipe(any()));
-    expect(find.text(l10n.recipeCopySaved), findsOneWidget);
+    expect(find.text(l10n.recipeSuggestionCoversText), findsOneWidget);
+    expect(find.byType(UniversalImageManager), findsNothing);
+    expect(find.byType(PersonalTagSelector), findsNothing);
+    expect(find.text(l10n.recipeRating), findsNothing);
+    expect(find.text(l10n.recipeSourceUrl), findsNothing);
+    expect(find.byType(RelatedRecipesEditor), findsNothing);
+  });
+
+  testWidgets('my own recipe keeps its photo and tag controls', (tester) async {
+    await openEditor(tester, recipeOwnedBy(_me), height: 6000);
+
+    expect(find.text(l10n.recipeSuggestionCoversText), findsNothing);
+    expect(find.byType(UniversalImageManager), findsOneWidget);
+    expect(find.byType(PersonalTagSelector), findsOneWidget);
   });
 
   testWidgets('a suggestion that cannot be sent says so, keeps the edits and '

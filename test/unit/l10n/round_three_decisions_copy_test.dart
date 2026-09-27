@@ -35,7 +35,7 @@ void main() {
     expect(en.cookingNoStepsSaveCopy, 'Save my copy');
   });
 
-  test('Q6-08 = A: a member suggests a change (produktregler.md:246)', () {
+  test('Q6-08 = A: a member suggests a change (produktregler.md:247)', () {
     expect(sv.recipeSuggestChange, 'Föreslå ändring');
     expect(en.recipeSuggestChange, 'Suggest a change');
   });
@@ -51,8 +51,10 @@ void main() {
       sv.recipeSuggestionSending,
       sv.recipeSuggestionSent,
       sv.recipeSuggestionSendFailed,
-      sv.recipeSuggestionWaitingTitle,
-      sv.recipeSuggestionWaitingBody,
+      sv.recipeSuggestionWaitingNotSent,
+      sv.recipeSuggestionCoversText,
+      sv.conflictBannerBodyMemberNotSent('Olle'),
+      sv.conflictBannerBodyMemberNotSentUnnamed,
     ];
     for (final t in texts) {
       expect(t, isNot(contains('!')), reason: t);

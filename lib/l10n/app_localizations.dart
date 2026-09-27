@@ -29795,6 +29795,18 @@ abstract class AppLocalizations {
   /// **'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.'**
   String get conflictBannerBodySuggestionUnnamed;
 
+  /// Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (one already waits, Q6-07 = B, or storing failed). Interim until the product owner decides; name = who saved the version that stays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
+  String conflictBannerBodyMemberNotSent(String name);
+
+  /// Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
+  String get conflictBannerBodyMemberNotSentUnnamed;
+
   /// P5-U27b: banner action, verbatim from produktregler.md:103.
   ///
   /// In sv, this message translates to:
@@ -30275,7 +30287,7 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}'**
   String syncQueueIndicatorA11y(int count);
 
-  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:246).
+  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247).
   ///
   /// In sv, this message translates to:
   /// **'Föreslå ändring'**
@@ -30305,17 +30317,17 @@ abstract class AppLocalizations {
   /// **'Förslaget kunde inte skickas.'**
   String get recipeSuggestionSendFailed;
 
-  /// Q6-07 = B: dialog title when the member already has a pending suggestion to this recipe, so no second one is sent.
+  /// Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode.
   ///
   /// In sv, this message translates to:
-  /// **'Ditt förra förslag väntar på ägaren'**
-  String get recipeSuggestionWaitingTitle;
+  /// **'Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.'**
+  String get recipeSuggestionCoversText;
 
-  /// Q6-07 = B: dialog body; nothing is discarded, the edits stay in the editor and can be kept as a copy.
+  /// Q6-07 = B: the member already has a pending suggestion to this recipe, so no second one was sent; followed by errorPreservedRecipeEdits. Interim: what else the member is offered here is an open question to the product owner (Q6-07 = B against Q6-08 = A).
   ///
   /// In sv, this message translates to:
-  /// **'Ett nytt förslag kan skickas när ägaren har svarat. Ändringarna ligger kvar här, och du kan spara dem som en egen kopia.'**
-  String get recipeSuggestionWaitingBody;
+  /// **'Förslaget skickades inte: ditt förra förslag väntar på ägaren.'**
+  String get recipeSuggestionWaitingNotSent;
 
   /// Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy.
   ///

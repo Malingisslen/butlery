@@ -1302,14 +1302,16 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
 
-      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :246): a
+      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a
       // member never writes someone else's recipe; a member's edit becomes a
       // suggestion (recipe_suggestions). So only the owner updates this
       // document: its content (`recipe`) and who takes part
       // (`participants`, `participantIds`) alike. Participants used to be
       // able to rewrite both. A member's live presence is the `presence`
-      // subcollection below, which stays theirs to write; no client writes
-      // this document as a participant.
+      // subcollection below, which stays theirs to write. The client does
+      // not send a member's write here either: RealtimeSyncService
+      // .updateResource refuses it before the network, and a member's
+      // conflict writes nothing (it becomes a suggestion or a notice).
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId
         && cannotModify(['ownerId', 'createdAt']);

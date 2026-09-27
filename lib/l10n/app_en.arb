@@ -13364,6 +13364,19 @@
   "@conflictBannerBodySuggestionUnnamed": {
     "description": "P5-U27b: conflict banner body when the other editor's name is unknown."
   },
+  "conflictBannerBodyMemberNotSent": "{name} changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.",
+  "@conflictBannerBodyMemberNotSent": {
+    "description": "Q6-08 = A: conflict banner body on someone else's shared recipe when the member's edit was neither written (a member never writes the owner's recipe) nor kept as a suggestion (one already waits, Q6-07 = B, or storing failed). Interim until the product owner decides; name = who saved the version that stays.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictBannerBodyMemberNotSentUnnamed": "Someone else changed it at the same time. Your change was not saved to the recipe and was not sent as a suggestion.",
+  "@conflictBannerBodyMemberNotSentUnnamed": {
+    "description": "Q6-08 = A: conflictBannerBodyMemberNotSent when the other editor's name is unknown."
+  },
   "recipeSuggestionSeeMine": "See your suggestion",
   "@recipeSuggestionSeeMine": {
     "description": "P5-U27b: banner action, verbatim from produktregler.md:103."
@@ -13801,7 +13814,7 @@
   },
   "recipeSuggestChange": "Suggest a change",
   "@recipeSuggestChange": {
-    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:246)."
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247)."
   },
   "recipeSuggestionSend": "Send the suggestion",
   "@recipeSuggestionSend": {
@@ -13819,19 +13832,19 @@
   "@recipeSuggestionSendFailed": {
     "description": "Q6-08 = A: failure when the suggestion could not be kept; followed by what was kept and Försök igen (content-style-guide.md:90-93)."
   },
-  "recipeSuggestionWaitingTitle": "Your last suggestion is waiting for the owner",
-  "@recipeSuggestionWaitingTitle": {
-    "description": "Q6-07 = B: dialog title when the member already has a pending suggestion to this recipe, so no second one is sent."
+  "recipeSuggestionCoversText": "A suggestion covers the recipe's text: title, description, meal, portions, time, ingredients and steps.",
+  "@recipeSuggestionCoversText": {
+    "description": "Q6-08 = A: line at the top of the editor in suggestion mode; the fields a suggestion carries (RecipeSuggestionService.contentFields). Images, tags, rating, source and related recipes are not shown in this mode."
   },
-  "recipeSuggestionWaitingBody": "A new suggestion can be sent once the owner has answered. Your changes stay here, and you can save them as your own copy.",
-  "@recipeSuggestionWaitingBody": {
-    "description": "Q6-07 = B: dialog body; nothing is discarded, the edits stay in the editor and can be kept as a copy."
+  "recipeSuggestionWaitingNotSent": "The suggestion was not sent: your last suggestion is waiting for the owner.",
+  "@recipeSuggestionWaitingNotSent": {
+    "description": "Q6-07 = B: the member already has a pending suggestion to this recipe, so no second one was sent; followed by errorPreservedRecipeEdits. Interim: what else the member is offered here is an open question to the product owner (Q6-07 = B against Q6-08 = A)."
   },
   "cookingNoStepsSaveCopy": "Save my copy",
   "@cookingNoStepsSaveCopy": {
     "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
   },
-  "cookingNoStepsBodyOthers": "The ingredients are there – but nobody has written how to make it. Save your own copy and write the steps there, or take the ingredients to the shopping list.",
+  "cookingNoStepsBodyOthers": "The ingredients are there, but nobody has written how to make it. Save your own copy and write the steps there, or take the ingredients to the shopping list.",
   "@cookingNoStepsBodyOthers": {
     "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
   },

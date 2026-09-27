@@ -557,13 +557,15 @@ void main() {
           when(() => mockAuth.currentUserId).thenReturn('recovering_user');
 
           // Local snapshot authored by someone else, carrying a stale edit time.
+          // The recovering user owns the recipe: a member never writes
+          // someone else's recipe (Q6-08 = A).
           final local = RealtimeRecipe(
             id: 'rec_stamp',
-            ownerId: 'user_owner',
-            ownerDisplayName: 'Owner user_owner',
+            ownerId: 'recovering_user',
+            ownerDisplayName: 'Owner recovering_user',
             participants: const {
-              'user_owner': ResourcePermission.owner,
-              'recovering_user': ResourcePermission.editor,
+              'recovering_user': ResourcePermission.owner,
+              'original_author': ResourcePermission.editor,
             },
             createdAt: DateTime(2026, 1, 1, 10),
             lastEditedAt: DateTime(2026, 2, 1, 8),
@@ -856,7 +858,11 @@ void main() {
           lastEditedAt: DateTime(2026, 4, 1, 11, 59),
         );
         await _seed(fake, initial);
+        // A member's save outside a conflict is refused (Q6-08 = A), so the
+        // conflict window is opened by a save signed in as the owner.
+        when(() => mockAuth.currentUserId).thenReturn('owner_user');
         await service.updateResource(initial);
+        when(() => mockAuth.currentUserId).thenReturn('editor_user');
 
         await _seed(
           fake,
@@ -883,7 +889,54 @@ void main() {
 
         expect(events, hasLength(1));
         expect(events.single.entity, ConflictEntity.recipeShared);
+        final snap = await fake
+            .collection('realtime_resources')
+            .doc('cs2')
+            .get();
+        expect(
+          snap.data()!['editCount'],
+          9,
+          reason: 'a member never writes the owner\'s recipe (Q6-08 = A)',
+        );
       });
+    });
+
+    /// Q6-08 = A: an editor member's save of someone else's recipe outside a
+    /// conflict is refused before it reaches the server, which would refuse
+    /// it too (firestore.rules realtime_recipes update is owner-only).
+    test('an editor member\'s save outside a conflict is refused', () async {
+      when(() => mockAuth.currentUserId).thenReturn('editor_user');
+      final resource = _buildResource(
+        id: 'cs3',
+        ownerId: 'owner_user',
+        participants: const {
+          'owner_user': ResourcePermission.owner,
+          'editor_user': ResourcePermission.editor,
+        },
+      );
+      await _seed(fake, resource);
+      await expectLater(
+        service.updateResource(
+          _buildResource(
+            id: 'cs3',
+            ownerId: 'owner_user',
+            participants: const {
+              'owner_user': ResourcePermission.owner,
+              'editor_user': ResourcePermission.editor,
+            },
+            editCount: 4,
+          ),
+        ),
+        throwsA(
+          isA<SyncError>().having(
+            (e) => e.type,
+            'type',
+            SyncErrorType.permissionDenied,
+          ),
+        ),
+      );
+      final snap = await fake.collection('realtime_resources').doc('cs3').get();
+      expect(snap.data()!['editCount'], 1);
     });
   });
 

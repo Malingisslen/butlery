@@ -18072,6 +18072,15 @@ class AppLocalizationsSv extends AppLocalizations {
       'Någon annan ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.';
 
   @override
+  String conflictBannerBodyMemberNotSent(String name) {
+    return '$name ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.';
+  }
+
+  @override
+  String get conflictBannerBodyMemberNotSentUnnamed =>
+      'Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.';
+
+  @override
   String get recipeSuggestionSeeMine => 'Se ditt förslag';
 
   @override
@@ -18413,12 +18422,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSuggestionSendFailed => 'Förslaget kunde inte skickas.';
 
   @override
-  String get recipeSuggestionWaitingTitle =>
-      'Ditt förra förslag väntar på ägaren';
+  String get recipeSuggestionCoversText =>
+      'Ett förslag gäller receptets text: titel, beskrivning, måltid, portioner, tid, ingredienser och steg.';
 
   @override
-  String get recipeSuggestionWaitingBody =>
-      'Ett nytt förslag kan skickas när ägaren har svarat. Ändringarna ligger kvar här, och du kan spara dem som en egen kopia.';
+  String get recipeSuggestionWaitingNotSent =>
+      'Förslaget skickades inte: ditt förra förslag väntar på ägaren.';
 
   @override
   String get cookingNoStepsSaveCopy => 'Spara min kopia';

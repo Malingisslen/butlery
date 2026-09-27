@@ -274,6 +274,16 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         );
       }
 
+      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241): a member
+      // never writes someone else's recipe, and firestore.rules lets only
+      // the owner update it. So this user's edit of someone else's shared
+      // recipe is never written here: outside a conflict it is refused
+      // before it reaches the server (a member's edit is sent as a
+      // suggestion from the recipe editor instead), and in a conflict it
+      // becomes a suggestion or nothing (below).
+      final isMemberOfShared =
+          resource.conflictEntityFor(userId) == ConflictEntity.recipeShared;
+
       final docRef = _parserModule.getResourceDocRef(resource.id);
 
       // Check if conflict resolution is needed
@@ -295,10 +305,9 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         final entity = resource.conflictEntityFor(userId);
         // P5-U27b: someone else's shared recipe. The owner's version wins and
         // this edit becomes a suggestion (produktregler.md:103, :241), so
-        // nothing is written to the shared recipe. Only once the suggestion
-        // is stored: until then the package 5 choice below still applies
-        // (PQ-02 = A), so the edit is never dropped.
-        final suggestionId = entity == ConflictEntity.recipeShared
+        // nothing is written to the shared recipe, whether or not the
+        // suggestion could be stored (Q6-08 = A).
+        final suggestionId = isMemberOfShared
             ? await _keepAsSuggestion(userId, resource, remote)
             : null;
         if (suggestionId != null) {
@@ -308,6 +317,16 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
             remote,
             suggestionId: suggestionId,
           );
+        } else if (isMemberOfShared) {
+          // No suggestion was stored (one already waits, Q6-07 = B, or the
+          // store failed). The package 5 choice cannot apply: both "Behåll
+          // min version" and "Använd deras version" write the owner's recipe,
+          // which the server refuses a member. So nothing is written, the
+          // owner's version stays, and the notice says the change was
+          // neither saved nor sent. What the member should get here is an
+          // open question to the product owner (Q6-07 = B against Q6-08 = A).
+          persisted = remote;
+          _conflictModule.announceMemberNotSent<T>(resource, remote);
         } else {
           persisted = await _conflictModule.resolveConflict<T>(
             resource,
@@ -322,6 +341,13 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
           }
           await _conflictModule.performUpdate(docRef, persisted);
         }
+      } else if (isMemberOfShared) {
+        throw SyncError(
+          type: SyncErrorType.permissionDenied,
+          message: AppLocale.current.errorNoEditPermission,
+          resourceId: resource.id,
+          resourceType: resource.type,
+        );
       } else {
         persisted = resource;
         await _conflictModule.performUpdate(docRef, resource);
@@ -397,8 +423,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// (that is not the owner's version winning), when this user already has a
   /// suggestion to the recipe waiting for the owner (Q6-07 = B, produktbeslut
   /// 2026-09-27: one pending suggestion per member and recipe), or when
-  /// storing fails; the caller then falls back to the package 5 choice
-  /// (PQ-02 = A), so the edit is never dropped silently.
+  /// storing fails; the caller then writes nothing and says so, since a
+  /// member cannot write the owner's recipe (Q6-08 = A).
   Future<String?> _keepAsSuggestion(
     String userId,
     RealtimeResource edit,
@@ -414,7 +440,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       );
       if (waiting != null) {
         AppLogger.info(
-          'Ett förslag väntar redan för ${edit.id}; valet från paket 5 gäller',
+          'Ett förslag väntar redan för ${edit.id}; inget nytt skickas',
         );
         return null;
       }
