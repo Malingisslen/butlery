@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class _FakeGateway implements PermissionGateway {
   _FakeGateway({
@@ -429,7 +430,7 @@ void main() {
           consequence: 'Säger du nej går det att skriva själv.',
           grantLabel: 'Tillåt',
           declineLabel: 'Inte nu',
-          icon: Icons.photo_camera_outlined,
+          icon: ButleryIcons.camera,
         );
         await tester.pumpAndSettle();
 

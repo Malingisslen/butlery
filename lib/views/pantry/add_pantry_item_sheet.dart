@@ -10,6 +10,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -387,10 +389,10 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                     ),
                     suffixIcon: _expiryDate != null
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const ButleryIcon(ButleryIcons.x),
                             onPressed: () => setState(() => _expiryDate = null),
                           )
-                        : const Icon(Icons.calendar_today_outlined),
+                        : const ButleryIcon(ButleryIcons.calendar),
                   ),
                   child: Text(
                     _expiryDate == null

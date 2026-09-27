@@ -3,6 +3,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-1214: pre-upload dialog offering the per-snap visibility override —
 /// "Samma som receptet" (default) or "Bara jag". [message] is the BUT-901
@@ -23,8 +25,8 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
       builder: (ctx, setDialogState) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.visibility_outlined,
+            ButleryIcon(
+              ButleryIcons.eye,
               size: AppDimensions.iconSizeS,
               color: Theme.of(ctx).colorScheme.onPrimaryContainer,
             ),
@@ -147,7 +149,11 @@ class _VisibilityOptionTile extends StatelessWidget {
                       : Border.all(color: cs.outlineVariant, width: 2),
                 ),
                 child: selected
-                    ? Icon(Icons.check, size: 14, color: cs.onPrimary)
+                    ? ButleryIcon(
+                        ButleryIcons.check,
+                        size: 14,
+                        color: cs.onPrimary,
+                      )
                     : null,
               ),
               const SizedBox(width: _gap),

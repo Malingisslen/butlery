@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// A square summary stat box used across the admin dashboard tabs: a big value
 /// over a small label. Mirrors the visual of the import-health summary cards so
@@ -75,12 +77,12 @@ class _DeltaChip extends StatelessWidget {
     final (icon, color) = switch (rounded.sign) {
       1 => (Icons.arrow_upward, cs.onSurface),
       -1 => (Icons.arrow_downward, cs.error),
-      _ => (Icons.remove, cs.outline),
+      _ => (ButleryIcons.minus, cs.outline),
     };
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color),
+        ButleryIcon(icon, size: 14, color: color),
         const SizedBox(width: 2),
         Text(
           '${rounded.abs()} %',

@@ -27,6 +27,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/views/import_via_url_view.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Self-contained ChangeNotifier fake exposing only the surface the view reads
@@ -324,8 +325,8 @@ void main() {
     registerFake(fakeVm);
     await pumpView(tester, settle: false);
 
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
-    expect(find.byIcon(Icons.error), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
     // A loading row shows the plate line instead of an icon (B-18).
     expect(find.byType(PlateLine), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -502,8 +503,8 @@ void main() {
       // and no "Importera N recept" batch CTA.
       expect(find.text(okUrl), findsNothing);
       expect(find.text('Försök igen'), findsNothing);
-      expect(find.byIcon(Icons.check_circle), findsNothing);
-      expect(find.byIcon(Icons.error), findsNothing);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       expect(find.textContaining('hämtade'), findsNothing);
       // The batch CTA, not the top bar's title "Importera via URL".
       expect(

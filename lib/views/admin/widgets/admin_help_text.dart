@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// A muted one-line "what this tab shows" helper, with an info icon. Lets the
 /// bespoke (non-registry) admin tabs teach themselves too, matching the
@@ -23,7 +25,7 @@ class AdminHelpText extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, size: 16, color: cs.outline),
+          ButleryIcon(ButleryIcons.info, size: 16, color: cs.outline),
           const SizedBox(width: AppDimensions.spacingXs),
           Expanded(
             child: Text(

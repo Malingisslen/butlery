@@ -4,6 +4,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog shown when user hits a rate limit during import.
 ///
@@ -49,7 +51,7 @@ class RateLimitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: Icon(
+      icon: ButleryIcon(
         _getIconForLimitType(rateLimitResult.limitType),
         color: context.modeColors.warning,
         size: AppDimensions.iconSizeXxl,
@@ -110,8 +112,8 @@ class RateLimitDialog extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.timer_outlined,
+          ButleryIcon(
+            ButleryIcons.clock,
             color: context.modeColors.warning,
             size: AppDimensions.iconSizeM,
           ),
@@ -151,7 +153,7 @@ class RateLimitDialog extends StatelessWidget {
     if (onManualImport != null) {
       actions.add(
         _ActionTile(
-          icon: Icons.edit_outlined,
+          icon: ButleryIcons.pencil,
           title: context.l10n.dialogManualImport,
           subtitle: context.l10n.dialogMarkIngredientsYourself,
           onTap: () {
@@ -194,7 +196,7 @@ class RateLimitDialog extends StatelessWidget {
       case LimitType.perHour:
         return Icons.speed_outlined;
       case LimitType.perDay:
-        return Icons.today_outlined;
+        return ButleryIcons.calendar;
       case LimitType.llmDaily:
       case LimitType.llmMonthly:
         return Icons.smart_toy_outlined;
@@ -252,7 +254,7 @@ class _ActionTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeL,
@@ -275,8 +277,8 @@ class _ActionTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 color: cs.onSurfaceVariant,
               ),
             ],

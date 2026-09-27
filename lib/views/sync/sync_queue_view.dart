@@ -32,6 +32,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/sync/sync_queue_row.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 
 class SyncQueueView extends StatefulWidget {
@@ -321,7 +323,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                       children: [
                         if (queue.needsUser.isNotEmpty) ...[
                           _SectionHeading(
-                            icon: Icons.error_outline,
+                            icon: ButleryIcons.triangleAlert,
                             text: l10n.syncQueueNeedsYouHeader(
                               queue.needsUser.length,
                             ),
@@ -358,7 +360,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                             ),
                           const SizedBox(height: AppDimensions.spacingMd - 2),
                           _SectionHeading(
-                            icon: Icons.schedule,
+                            icon: ButleryIcons.clock,
                             text: l10n.syncQueueQueuedHeader(
                               queue.draining.length,
                             ),
@@ -394,7 +396,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                     // Offline the queue cannot be sent; the banner above says
                     // why.
                     onPressed: _syncing || !_source.isOnline ? null : _syncNow,
-                    icon: const Icon(Icons.sync),
+                    icon: const ButleryIcon(ButleryIcons.refreshCw),
                     label: Text(
                       _syncing ? l10n.syncQueueSyncing : l10n.syncQueueSyncNow,
                     ),
@@ -427,7 +429,11 @@ class _SectionHeading extends StatelessWidget {
       child: Row(
         children: [
           ExcludeSemantics(
-            child: Icon(icon, size: AppDimensions.iconSizeS, color: color),
+            child: ButleryIcon(
+              icon,
+              size: AppDimensions.iconSizeS,
+              color: color,
+            ),
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(

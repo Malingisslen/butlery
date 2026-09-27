@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -189,8 +191,8 @@ class SimpleImageWidget extends StatelessWidget {
                     child: GestureDetector(
                       onTap: onTap,
                       child: const Center(
-                        child: Icon(
-                          Icons.add_photo_alternate_outlined,
+                        child: ButleryIcon(
+                          ButleryIcons.camera,
                           size: AppDimensions.iconSizeXl,
                         ),
                       ),
@@ -255,8 +257,8 @@ class NetworkImageWidget extends StatelessWidget {
               width: width,
               height: height,
               color: cs.surfaceContainerHighest,
-              child: Icon(
-                Icons.error_outline,
+              child: ButleryIcon(
+                ButleryIcons.triangleAlert,
                 color: cs.error,
               ),
             ),
@@ -451,8 +453,8 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.image_outlined,
+                  const ButleryIcon(
+                    ButleryIcons.image,
                     size: AppDimensions.iconSizeXl,
                   ),
                   const SizedBox(height: AppDimensions.spacingSm),

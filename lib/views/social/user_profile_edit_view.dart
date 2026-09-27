@@ -7,6 +7,8 @@
 // ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
@@ -299,7 +301,7 @@ class _UserProfileEditViewContentState
                 additionalActions: [
                   if (viewModel.hasError)
                     IconButton(
-                      icon: const Icon(Icons.refresh),
+                      icon: const ButleryIcon(ButleryIcons.refreshCw),
                       onPressed: viewModel.clearError,
                       tooltip: context.l10n.commonClearError,
                     ),

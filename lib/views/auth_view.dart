@@ -7,6 +7,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -193,8 +195,8 @@ class _AuthViewState extends State<AuthView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.check_circle_outline,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             color: context.modeColors.success,
             size: AppDimensions.iconSizeM,
           ),
@@ -222,7 +224,7 @@ class _AuthViewState extends State<AuthView> {
           ),
           IconButton(
             tooltip: l10n.commonClose,
-            icon: Icon(Icons.close, color: cs.onSurfaceVariant),
+            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurfaceVariant),
             onPressed: () => setState(SessionEndNotice.clear),
           ),
         ],
@@ -325,10 +327,10 @@ class _AuthViewState extends State<AuthView> {
                       button: true,
                       enabled: !viewModel.isLoading,
                       child: IconButton(
-                        icon: Icon(
+                        icon: ButleryIcon(
                           viewModel.isPasswordVisible
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                              ? ButleryIcons.eye
+                              : ButleryIcons.eye,
                           size: AppDimensions.iconSizeAction,
                         ),
                         onPressed: viewModel.togglePasswordVisibility,

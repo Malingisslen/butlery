@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
 /// Handles tab navigation between recipes, menus, and shared shopping lists with unread counts.
@@ -38,7 +40,10 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.restaurant, size: AppDimensions.iconSizeM),
+                  const ButleryIcon(
+                    ButleryIcons.utensils,
+                    size: AppDimensions.iconSizeM,
+                  ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     context.l10n.sharedTabRecipes(
@@ -59,8 +64,8 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.calendar_month,
+                  const ButleryIcon(
+                    ButleryIcons.calendar,
                     size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
@@ -83,8 +88,8 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.shopping_cart,
+                  const ButleryIcon(
+                    ButleryIcons.shoppingCart,
                     size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_helpers.dart';
 
 class InvitationTargetWidgets {
@@ -18,7 +20,7 @@ class InvitationTargetWidgets {
     return Card(
       child: ListTile(
         leading: showTypeIcon
-            ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+            ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
             : null,
         title: Text(target.displayName),
         subtitle: showStatus ? Text(target.type.name) : null,
@@ -39,7 +41,7 @@ class InvitationTargetWidgets {
     return Card(
       child: ListTile(
         leading: showTypeIcon
-            ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+            ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
             : null,
         title: Text(target.displayName),
         subtitle: showStatus ? Text(target.type.name) : null,
@@ -57,7 +59,7 @@ class InvitationTargetWidgets {
   }) {
     return ActionChip(
       avatar: showTypeIcon
-          ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+          ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
           : null,
       label: Text(target.displayName),
       onPressed: onTap,
@@ -74,7 +76,7 @@ class InvitationTargetWidgets {
   }) {
     return ListTile(
       leading: showTypeIcon
-          ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+          ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
           : null,
       title: Text(target.displayName),
       subtitle: showStatus ? Text(target.type.name) : null,
@@ -90,7 +92,7 @@ class InvitationTargetWidgets {
   }) {
     return Chip(
       avatar: showTypeIcon
-          ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+          ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
           : null,
       label: Text(target.displayName),
     );
@@ -201,7 +203,7 @@ class InvitationTargetWidgets {
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hint ?? context.l10n.commonSearch,
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const ButleryIcon(ButleryIcons.search),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),

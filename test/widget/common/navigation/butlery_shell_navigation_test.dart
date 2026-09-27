@@ -10,6 +10,7 @@ import 'dart:ui' show Tristate;
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
@@ -185,7 +186,7 @@ void main() {
         final icon = tester.widget<Icon>(
           find.descendant(
             of: find.byKey(ButleryAddButton.buttonKey),
-            matching: find.byIcon(Icons.add),
+            matching: find.byIcon(ButleryIcons.navAdd),
           ),
         );
         expect(icon.color, const Color(0xFF17251D));

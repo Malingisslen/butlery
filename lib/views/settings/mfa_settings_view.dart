@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -301,8 +303,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Row(
           children: [
-            Icon(
-              _hasMfa ? Icons.verified_user : Icons.security,
+            ButleryIcon(
+              _hasMfa ? ButleryIcons.shieldCheck : Icons.security,
               color: _hasMfa
                   ? context.modeColors.success
                   : context.modeColors.warning,
@@ -351,7 +353,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         ..._enrolledFactors.map(
           (factor) => Card(
             child: ListTile(
-              leading: const Icon(Icons.phone_android),
+              leading: const ButleryIcon(Icons.phone_android),
               title: Text(factor.displayName ?? context.l10n.mfaPhone),
               subtitle: Text(
                 context.l10n.mfaRegistered(
@@ -359,8 +361,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                 ),
               ),
               trailing: IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
+                icon: ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 onPressed: () => _unenrollMfa(factor),
@@ -399,7 +401,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               decoration: InputDecoration(
                 labelText: context.l10n.mfaPhoneNumber,
                 hintText: context.l10n.mfaPhoneHint,
-                prefixIcon: const Icon(Icons.phone),
+                prefixIcon: const ButleryIcon(Icons.phone),
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -444,7 +446,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               maxLength: 6,
               decoration: InputDecoration(
                 labelText: context.l10n.mfaSixDigitCode,
-                prefixIcon: const Icon(Icons.lock),
+                prefixIcon: const ButleryIcon(ButleryIcons.lock),
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -496,8 +498,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: Theme.of(context).colorScheme.onErrorContainer,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -579,7 +581,7 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
               Clipboard.setData(ClipboardData(text: widget.codes.join('\n')));
               SnackBarUtils.showInfo(context, l10n.mfaBackupCodesCopied);
             },
-            icon: const Icon(Icons.copy_rounded),
+            icon: const ButleryIcon(ButleryIcons.copy),
             label: Text(l10n.mfaBackupCodesCopy),
           ),
           CheckboxListTile(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-1041: the recipe-detail source link picks a platform-aware leading icon
 /// purely by sniffing the URL host — no sourceType enum / schema migration.
@@ -13,21 +14,21 @@ void main() {
         RecipeDetailSharedWidgets.sourceIcon(
           'https://www.youtube.com/watch?v=abc123',
         ),
-        Icons.play_circle_outline,
+        ButleryIcons.play,
       );
     });
 
     test('youtu.be short links map to the play icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://youtu.be/abc123'),
-        Icons.play_circle_outline,
+        ButleryIcons.play,
       );
     });
 
     test('YouTube subdomains (m.youtube.com) still map to the play icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://m.youtube.com/watch?v=x'),
-        Icons.play_circle_outline,
+        ButleryIcons.play,
       );
     });
 
@@ -67,7 +68,7 @@ void main() {
       // is dead-defensive. This pins the user-visible result regardless.
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://YouTube.com/watch?v=x'),
-        Icons.play_circle_outline,
+        ButleryIcons.play,
       );
     });
   });

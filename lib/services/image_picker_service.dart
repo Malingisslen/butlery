@@ -36,6 +36,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 export 'package:butlery/core/utils/os_permission_helper.dart'
     show OsPermissionOutcome, OsPermissionOutcomeX;
@@ -105,7 +106,7 @@ MediaRationalePrompt mediaRationalePrompt(BuildContext context) =>
         body: camera ? l10n.permCameraBody : l10n.permPhotosBody,
         grantLabel: l10n.permAllow,
         declineLabel: l10n.permNotNow,
-        icon: camera ? Icons.photo_camera_outlined : Icons.image_outlined,
+        icon: camera ? ButleryIcons.camera : ButleryIcons.image,
       );
     };
 

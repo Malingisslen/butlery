@@ -10,6 +10,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart'
     show MenuPrefSource;
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -55,8 +57,8 @@ class MenuContentWidgets {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.restaurant_menu,
+              ButleryIcon(
+                ButleryIcons.utensils,
                 size: AppDimensions.iconSizeAction,
                 color: cs.onSurface,
               ),
@@ -75,15 +77,15 @@ class MenuContentWidgets {
             focusNode: focusNode,
             enabled: !isGenerating,
             hint: context.l10n.menuPromptHint,
-            prefixIcon: const Icon(Icons.edit),
+            prefixIcon: const ButleryIcon(ButleryIcons.pencil),
             suffixIcon: (controller.text.isNotEmpty || voiceButton != null)
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (controller.text.isNotEmpty)
                         IconButton(
-                          icon: Icon(
-                            Icons.clear,
+                          icon: ButleryIcon(
+                            ButleryIcons.x,
                             size: AppDimensions.iconSizeAction,
                             color: cs.onSurface.withValues(
                               alpha: AppDimensions.opacityDark,
@@ -132,7 +134,7 @@ class MenuContentWidgets {
               : (viewModel.hasMenu
                     ? context.l10n.menuGenerateNew
                     : context.l10n.menuGenerate),
-          icon: Icons.restaurant_menu,
+          icon: ButleryIcons.utensils,
           onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
           isLoading: viewModel.isGenerating,
           loadingText: context.l10n.menuGenerating,
@@ -170,14 +172,14 @@ class MenuContentWidgets {
             ActionButtons.primaryButton(
               context,
               label: context.l10n.menuGenerate,
-              icon: Icons.restaurant_menu,
+              icon: ButleryIcons.utensils,
               onPressed: onRetry,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             ActionButtons.outlinedButton(
               context,
               label: context.l10n.menuChooseManually,
-              icon: Icons.list,
+              icon: ButleryIcons.list,
               onPressed: () => Navigator.pushNamed(context, Routes.home),
             ),
           ],
@@ -242,8 +244,8 @@ class MenuContentWidgets {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.restaurant,
+              ButleryIcon(
+                ButleryIcons.utensils,
                 color: cs.onPrimaryContainer,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -295,8 +297,8 @@ class MenuContentWidgets {
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
       child: Row(
         children: [
-          Icon(
-            isFamilyScope ? Icons.family_restroom : Icons.no_meals,
+          ButleryIcon(
+            isFamilyScope ? ButleryIcons.users : Icons.no_meals,
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),
@@ -335,8 +337,8 @@ class MenuContentWidgets {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.warning_amber,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             size: AppDimensions.iconSizeS,
             color: colors.warning,
           ),
@@ -428,8 +430,8 @@ class MenuContentWidgets {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(AppDimensions.spacingSm),
-                      child: Icon(
-                        Icons.refresh,
+                      child: ButleryIcon(
+                        ButleryIcons.refreshCw,
                         size: AppDimensions.iconSizeM,
                         color: viewModel.isGenerating
                             ? cs.onSurfaceVariant
@@ -511,8 +513,8 @@ Widget _buildInlineError(
               color: cs.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.zero,
             ),
-            child: Icon(
-              Icons.error_outline,
+            child: ButleryIcon(
+              ButleryIcons.triangleAlert,
               size: 32,
               color: cs.secondary,
             ),
@@ -544,7 +546,7 @@ Widget _buildInlineError(
             ActionButtons.primaryButton(
               context,
               label: context.l10n.commonRetry,
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               onPressed: () {
                 viewModel.clearError();
                 onRetry();
@@ -715,8 +717,8 @@ class _MenuRecipeCard extends StatelessWidget {
                             padding: const EdgeInsets.all(
                               AppDimensions.spacingXs,
                             ),
-                            child: Icon(
-                              Icons.how_to_vote,
+                            child: ButleryIcon(
+                              ButleryIcons.vote,
                               size: AppDimensions.iconSizeS,
                               color: cs.onSurface,
                             ),
@@ -765,8 +767,8 @@ class _MenuRecipeCard extends StatelessWidget {
                           padding: const EdgeInsets.all(
                             AppDimensions.spacingXs,
                           ),
-                          child: Icon(
-                            Icons.swap_horiz,
+                          child: ButleryIcon(
+                            ButleryIcons.swapHorizontal,
                             size: AppDimensions.iconSizeS,
                             color: viewModel.isGenerating
                                 ? cs.onSurfaceVariant

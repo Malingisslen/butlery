@@ -10,6 +10,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -250,8 +252,8 @@ class _RecipePickerItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         color: cs.onSurface,
         size: AppDimensions.iconSizeAction,
       ),

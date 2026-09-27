@@ -30,6 +30,7 @@ import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/content_cards/menu_card.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -39,6 +40,7 @@ import 'package:butlery/theme/app_theme.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   locale: const Locale('sv'),
@@ -517,7 +519,10 @@ void main() {
           ContentCard(
             item: _user(),
             type: ContentCardType.friend,
-            trailing: const Icon(Icons.chevron_right, key: trailingKey),
+            trailing: const ButleryIcon(
+              ButleryIcons.chevronRight,
+              key: trailingKey,
+            ),
           ),
         ),
       );
@@ -723,7 +728,7 @@ void main() {
         _wrap(
           ContentCard.friend(
             user: _user(),
-            trailing: const Icon(Icons.message, key: k),
+            trailing: const ButleryIcon(ButleryIcons.messageSquare, key: k),
           ),
         ),
       );

@@ -10,6 +10,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_entry_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -162,8 +164,8 @@ class _FamilyRatingEntryContent extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.lock_outline,
+          ButleryIcon(
+            ButleryIcons.lock,
             size: 15,
             color: cs.onSurface,
           ),
@@ -199,7 +201,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 onPressed: (vm.hasAnyRating && !vm.isLoading)
                     ? () => _save(context)
                     : null,
-                icon: const Icon(Icons.check, size: 18),
+                icon: const ButleryIcon(ButleryIcons.check, size: 18),
                 label: Text(l10n.familyRatingSave),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),

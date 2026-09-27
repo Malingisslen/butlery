@@ -6,6 +6,8 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Banner shown above chat input when replying to a message.
 /// Displays the original message content and sender, with a close button
@@ -48,7 +50,7 @@ class ReplyBanner extends StatelessWidget {
       child: Row(
         children: [
           // Reply icon
-          Icon(
+          ButleryIcon(
             Icons.reply,
             size: AppDimensions.iconSizeM,
             color: context.modeColors.success,
@@ -88,7 +90,7 @@ class ReplyBanner extends StatelessWidget {
           // Cancel button
           IconButton(
             onPressed: onCancelReply,
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
             iconSize: 20,
             color: cs.onSurfaceVariant,
             constraints: const BoxConstraints(

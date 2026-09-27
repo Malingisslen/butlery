@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -23,7 +24,7 @@ class GroupDetailStats {
         children: [
           Expanded(
             child: StatItemWidget(
-              icon: Icons.people,
+              icon: ButleryIcons.users,
               label: context.l10n.groupMembers,
               value: '${members.length}',
               color: Theme.of(context).colorScheme.onSurface,
@@ -35,7 +36,7 @@ class GroupDetailStats {
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: StatItemWidget(
-              icon: Icons.calendar_today,
+              icon: ButleryIcons.calendar,
               label: context.l10n.groupDaysActive,
               value: _calculateDaysActive(group.createdAt),
               color: Theme.of(context).colorScheme.secondary,

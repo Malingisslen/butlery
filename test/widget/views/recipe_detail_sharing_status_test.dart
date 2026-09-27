@@ -34,6 +34,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -63,7 +64,7 @@ Recipe _sharedRecipe() => Recipe(
 
 /// The revoke button inside the row that renders [name].
 ///
-/// `find.byIcon(Icons.close)` is not enough: the panel renders a third close
+/// `find.byIcon(ButleryIcons.x)` is not enough: the panel renders a third close
 /// icon outside the two sharee rows, and `.first`/`.last` on it silently
 /// depends on paint order. Scoping by the row's own text makes the two rows
 /// individually addressable and the test independent of layout.
@@ -299,7 +300,7 @@ void main() {
 
     expect(find.text(_memberId), findsNothing);
     expect(find.text(_groupId), findsNothing);
-    expect(find.byIcon(Icons.share_outlined), findsNothing);
+    expect(find.byIcon(ButleryIcons.share2), findsNothing);
     // The title says "no revoke buttons", so assert them rather than implying
     // them from the roster being absent.
     expect(find.byType(IconButton), findsNothing);

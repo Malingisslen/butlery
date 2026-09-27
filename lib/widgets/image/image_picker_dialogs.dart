@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -66,8 +68,8 @@ class ImagePickerDialogs {
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             ListTile(
-              leading: const Icon(
-                Icons.camera_alt,
+              leading: const ButleryIcon(
+                ButleryIcons.camera,
                 size: AppDimensions.iconSizeL,
               ),
               title: Text(context.l10n.commonTakePhoto),
@@ -79,8 +81,8 @@ class ImagePickerDialogs {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(
-                Icons.photo_library,
+              leading: const ButleryIcon(
+                ButleryIcons.image,
                 size: AppDimensions.iconSizeL,
               ),
               title: Text(context.l10n.commonSelectFromGallery),

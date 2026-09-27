@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -87,7 +89,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         actions: [
           if (viewModel.hasError)
             IconButton(
-              icon: Icon(Icons.error, color: cs.error),
+              icon: ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
               onPressed: () {
                 SnackBarUtils.showFailure(context, what: viewModel.error!);
                 viewModel.clearError();
@@ -374,7 +376,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             child: UtilityComponents.outlinedButton(
               context,
               label: context.l10n.commonSelectAll,
-              icon: Icons.select_all,
+              icon: ButleryIcons.checkSquare,
               onPressed: viewModel.isImporting
                   ? null
                   : viewModel.toggleSelectAll,

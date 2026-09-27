@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Import our helper infrastructure
 import 'view_test_helpers.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('View Helper Infrastructure Integration', () {
@@ -77,7 +79,7 @@ void main() {
                   : const Text('Content Loaded'),
               floatingActionButton: FloatingActionButton(
                 onPressed: () => setState(() => showLoading = false),
-                child: const Icon(Icons.check),
+                child: const ButleryIcon(ButleryIcons.check),
               ),
             );
           },

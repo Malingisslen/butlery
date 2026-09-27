@@ -19,6 +19,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// #hemladdar: the plate line with what is being fetched, and after 300 ms a
@@ -166,7 +168,7 @@ class HemPlanError extends StatelessWidget {
                   minimumSize: const Size(0, AppDimensions.minTouchTarget),
                 ),
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
+                icon: const ButleryIcon(ButleryIcons.refreshCw),
                 label: Text(l10n.commonRetry),
               ),
               TextButton(

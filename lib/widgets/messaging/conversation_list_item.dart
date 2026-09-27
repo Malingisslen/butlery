@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -66,8 +68,8 @@ class ConversationListItem extends StatelessWidget {
             horizontal: AppDimensions.spacingLg,
           ),
           color: context.modeColors.info,
-          child: Icon(
-            conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+          child: ButleryIcon(
+            conversation.isPinned ? ButleryIcons.pin : ButleryIcons.pin,
             color: context.modeColors.onInfo,
           ),
         ),
@@ -77,8 +79,8 @@ class ConversationListItem extends StatelessWidget {
             horizontal: AppDimensions.spacingLg,
           ),
           color: context.modeColors.warning,
-          child: Icon(
-            conversation.isArchived ? Icons.unarchive : Icons.archive,
+          child: ButleryIcon(
+            conversation.isArchived ? Icons.unarchive : ButleryIcons.archive,
             color: context.modeColors.onWarning,
           ),
         ),
@@ -111,8 +113,8 @@ class ConversationListItem extends StatelessWidget {
                                 padding: const EdgeInsetsDirectional.only(
                                   end: AppDimensions.spacingXs,
                                 ),
-                                child: Icon(
-                                  Icons.push_pin,
+                                child: ButleryIcon(
+                                  ButleryIcons.pin,
                                   size: AppDimensions.iconSize14,
                                   color: cs.outlineVariant,
                                 ),
@@ -230,8 +232,8 @@ class ConversationListItem extends StatelessWidget {
         shape: BoxShape.circle,
         color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
-      child: Icon(
-        Icons.group,
+      child: ButleryIcon(
+        ButleryIcons.users,
         color: cs.onSurface,
         size: AppDimensions.iconSizeL,
       ),

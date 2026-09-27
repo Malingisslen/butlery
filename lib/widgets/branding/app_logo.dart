@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class AppLogo extends StatelessWidget {
   final double? size;
@@ -64,7 +66,7 @@ class AppLogo extends StatelessWidget {
     final logoSize = size ?? AppDimensions.imageSizeLarge;
     final bgColor = backgroundColor ?? cs.primary;
     final iconCol = iconColor ?? cs.outlineVariant;
-    final logoIcon = icon ?? Icons.restaurant_menu;
+    final logoIcon = icon ?? ButleryIcons.utensils;
 
     return Container(
       width: logoSize,
@@ -74,7 +76,7 @@ class AppLogo extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         boxShadow: showShadow ? AppShadows.elevated : null,
       ),
-      child: Icon(
+      child: ButleryIcon(
         logoIcon,
         size: logoSize * 0.4, // 40% of container size
         color: iconCol,

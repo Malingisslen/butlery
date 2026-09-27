@@ -8,6 +8,8 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Displays a rule with its status, condition summary, and match count.
 class TagDetailRuleTile extends StatelessWidget {
@@ -38,8 +40,8 @@ class TagDetailRuleTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
       child: ListTile(
-        leading: Icon(
-          rule.isEnabled ? Icons.check_circle : Icons.pause_circle,
+        leading: ButleryIcon(
+          rule.isEnabled ? ButleryIcons.circleCheck : ButleryIcons.pause,
           color: rule.isEnabled
               ? context.modeColors.success
               : colorScheme.onSurfaceVariant,
@@ -85,13 +87,16 @@ class TagDetailRuleTile extends StatelessWidget {
               onChanged: (_) => onToggleEnabled(rule.isEnabled),
             ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
+              icon: const ButleryIcon(
+                ButleryIcons.moreVertical,
+                size: AppDimensions.iconSizeM,
+              ),
               onSelected: _handleMenuAction,
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 'edit',
                   child: ListTile(
-                    leading: const Icon(Icons.edit),
+                    leading: const ButleryIcon(ButleryIcons.pencil),
                     title: Text(context.l10n.commonEdit),
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -99,7 +104,10 @@ class TagDetailRuleTile extends StatelessWidget {
                 PopupMenuItem(
                   value: 'delete',
                   child: ListTile(
-                    leading: Icon(Icons.delete, color: colorScheme.error),
+                    leading: ButleryIcon(
+                      ButleryIcons.trash2,
+                      color: colorScheme.error,
+                    ),
                     title: Text(
                       context.l10n.commonDelete,
                       style: TextStyle(color: colorScheme.error),

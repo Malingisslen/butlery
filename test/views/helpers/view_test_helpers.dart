@@ -40,6 +40,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -397,9 +398,9 @@ class ViewTestHelpers extends BaseWidgetTest {
 
     // Look for common error indicators
     final errorIndicators = [
-      find.byIcon(Icons.error),
-      find.byIcon(Icons.error_outline),
-      find.byIcon(Icons.warning),
+      find.byIcon(ButleryIcons.triangleAlert),
+      find.byIcon(ButleryIcons.triangleAlert),
+      find.byIcon(ButleryIcons.triangleAlert),
       find.text('Något gick fel'),
       find.text('Fel uppstod'),
     ];
@@ -436,8 +437,8 @@ class ViewTestHelpers extends BaseWidgetTest {
     );
 
     // Should not find common error indicators
-    expect(find.byIcon(Icons.error), findsNothing);
-    expect(find.byIcon(Icons.error_outline), findsNothing);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
   }
 
   // ==================== FORM TESTING UTILITIES ====================

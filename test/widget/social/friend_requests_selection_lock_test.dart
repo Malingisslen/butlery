@@ -25,6 +25,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -196,7 +197,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ButleryTopBar),
-        matching: find.byIcon(Icons.checklist),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
     );
     await settle(tester);
@@ -276,7 +277,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(ButleryTopBar),
-        matching: find.byIcon(Icons.checklist),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
       findsNothing,
     );
@@ -352,7 +353,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ButleryTopBar),
-        matching: find.byIcon(Icons.checklist),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
     );
     await settle(tester);

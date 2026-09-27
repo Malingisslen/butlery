@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Display configuration for a single notification category toggle.
 class NotificationCategoryItem {
@@ -21,12 +22,12 @@ List<NotificationCategoryItem> buildNotificationCategoryItems(
   NotificationCategoryItem(
     category: NotificationCategory.friends,
     label: context.l10n.notificationCategoryFriends,
-    icon: Icons.people_outline,
+    icon: ButleryIcons.users,
   ),
   NotificationCategoryItem(
     category: NotificationCategory.recipes,
     label: context.l10n.notificationCategoryRecipes,
-    icon: Icons.restaurant_outlined,
+    icon: ButleryIcons.utensils,
   ),
   NotificationCategoryItem(
     category: NotificationCategory.collaboration,
@@ -36,21 +37,21 @@ List<NotificationCategoryItem> buildNotificationCategoryItems(
   NotificationCategoryItem(
     category: NotificationCategory.shopping,
     label: context.l10n.notificationCategoryShopping,
-    icon: Icons.shopping_cart_outlined,
+    icon: ButleryIcons.shoppingCart,
   ),
   NotificationCategoryItem(
     category: NotificationCategory.messaging,
     label: context.l10n.notificationCategoryMessaging,
-    icon: Icons.chat_outlined,
+    icon: ButleryIcons.messageSquare,
   ),
   NotificationCategoryItem(
     category: NotificationCategory.social,
     label: context.l10n.notificationCategorySocial,
-    icon: Icons.forum_outlined,
+    icon: ButleryIcons.messageSquare,
   ),
   NotificationCategoryItem(
     category: NotificationCategory.system,
     label: context.l10n.notificationCategorySystem,
-    icon: Icons.settings_outlined,
+    icon: ButleryIcons.settings,
   ),
 ];

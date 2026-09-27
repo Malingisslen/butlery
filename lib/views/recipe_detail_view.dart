@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/views/recipe_detail/recipe_source_artefact_sheet.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -36,6 +35,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
@@ -457,7 +458,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 leading: Padding(
                   padding: AppDimensions.paddingAll8,
                   child: _HeroButton(
-                    icon: Icons.arrow_back,
+                    icon: ButleryIcons.arrowLeft,
                     onPressed: () => Navigator.pop(context),
                     tooltip: widget.backTo == null
                         ? context.l10n.accessibilityBackButton
@@ -501,8 +502,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 errorWidget: (context, url, error) {
                                   return ColoredBox(
                                     color: cs.surfaceContainerHighest,
-                                    child: Icon(
-                                      Icons.restaurant,
+                                    child: ButleryIcon(
+                                      ButleryIcons.utensils,
                                       size: AppDimensions.iconSizeHero,
                                       color: cs.onSurfaceVariant,
                                     ),
@@ -539,8 +540,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             : context.l10n.favoritesAdd,
                         child: _HeroButton(
                           icon: recipe.isFavorite
-                              ? AdaptiveIcons.favouriteFilled
-                              : AdaptiveIcons.favouriteOutline,
+                              ? ButleryIcons.favourite
+                              : ButleryIcons.favouriteOutline,
                           onPressed: () async {
                             await viewModel.toggleFavorite();
                             if (!context.mounted) return;
@@ -569,7 +570,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       button: true,
                       label: context.l10n.recipeShareWithFriends,
                       child: _HeroButton(
-                        icon: Icons.people_outline,
+                        icon: ButleryIcons.users,
                         onPressed: () =>
                             _actions.showSocialShareDialog(context),
                         tooltip: context.l10n.recipeShareWithFriends,
@@ -585,7 +586,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       button: true,
                       label: context.l10n.recipeShareExternal,
                       child: _HeroButton(
-                        icon: Icons.share_outlined,
+                        icon: ButleryIcons.share2,
                         onPressed: () => _actions.shareRecipe(context),
                         tooltip: context.l10n.recipeShareExternal,
                       ),
@@ -603,7 +604,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       key: const ValueKey('test-recipe-detail-add-to-list'),
                       padding: AppDimensions.paddingVertical8,
                       child: _HeroButton(
-                        icon: Icons.shopping_cart_outlined,
+                        icon: ButleryIcons.shoppingCart,
                         onPressed: () => _actions.showAddToCartConfirmation(
                           context,
                           pantry: _pantry.pantry,
@@ -627,7 +628,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       // describe the menu, not one item (WCAG 4.1.2).
                       label: context.l10n.a11yRecipeMoreActions,
                       child: _HeroMenuButton(
-                        icon: Icons.more_horiz,
+                        icon: ButleryIcons.moreVertical,
                         itemBuilder: (context) {
                           final menuCs = Theme.of(context).colorScheme;
                           return [
@@ -638,8 +639,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.edit,
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.edit_outlined,
+                                    ButleryIcon(
+                                      ButleryIcons.pencil,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -664,7 +665,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.suggestChange,
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    ButleryIcon(
                                       Icons.rate_review_outlined,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
@@ -688,8 +689,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.fork,
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.content_copy_outlined,
+                                    ButleryIcon(
+                                      ButleryIcons.copy,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -709,8 +710,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               value: _MenuAction.addToMenu,
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.calendar_month_outlined,
+                                  ButleryIcon(
+                                    ButleryIcons.calendar,
                                     size: AppDimensions.iconSizeM,
                                     color: menuCs.onSurface,
                                   ),
@@ -723,8 +724,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               value: _MenuAction.generateShoppingList,
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.shopping_cart_outlined,
+                                  ButleryIcon(
+                                    ButleryIcons.shoppingCart,
                                     size: AppDimensions.iconSizeM,
                                     color: menuCs.onSurface,
                                   ),
@@ -740,8 +741,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.reTag,
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.local_offer_outlined,
+                                    ButleryIcon(
+                                      ButleryIcons.tag,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -757,8 +758,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.editTags,
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.edit_note,
+                                    ButleryIcon(
+                                      ButleryIcons.pencil,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -777,8 +778,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.delete,
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.delete_outlined,
+                                    ButleryIcon(
+                                      ButleryIcons.trash2,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.error,
                                     ),
@@ -805,7 +806,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.toggleCollaboration,
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    ButleryIcon(
                                       recipe.isCollaborative
                                           ? Icons.group_off_outlined
                                           : Icons.group_add_outlined,
@@ -836,8 +837,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.source,
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.link_outlined,
+                                    ButleryIcon(
+                                      ButleryIcons.link,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -856,7 +857,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.viewSourceArtefact,
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    ButleryIcon(
                                       Icons.description_outlined,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
@@ -873,7 +874,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.printRecipe,
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    ButleryIcon(
                                       Icons.print_outlined,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
@@ -897,7 +898,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.restoreVersion,
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    ButleryIcon(
                                       Icons.history,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
@@ -917,7 +918,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               value: _MenuAction.report,
                               child: Row(
                                 children: [
-                                  Icon(
+                                  ButleryIcon(
                                     Icons.flag_outlined,
                                     size: AppDimensions.iconSizeM,
                                     color: menuCs.error,
@@ -1180,7 +1181,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       context: context,
       itemName: '', // The dialog already says "Delete photo"; no identifier.
       itemType: 'foto',
-      icon: Icons.photo_outlined,
+      icon: ButleryIcons.image,
     );
     if (confirmed != true || !mounted) return;
 
@@ -1314,7 +1315,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       title: context.l10n.recipeSourceReextractConfirmTitle,
       message: context.l10n.recipeSourceReextractConfirmMessage,
       confirmText: context.l10n.recipeSourceReextractConfirmAction,
-      icon: Icons.refresh_outlined,
+      icon: ButleryIcons.refreshCw,
       isDangerous: true,
     );
     if (confirmed != true || !context.mounted) return;
@@ -1388,7 +1389,7 @@ class _HeroButton extends StatelessWidget {
             height: AppDimensions.minTouchTarget,
             child: Center(
               child: _PaperRing(
-                child: Icon(
+                child: ButleryIcon(
                   icon,
                   color: cs.primary,
                   size: AppDimensions.iconSizeM,
@@ -1627,7 +1628,7 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
               child: Text(context.l10n.recipeShareRequestShareAction(name)),
             ),
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: const ButleryIcon(ButleryIcons.x),
               onPressed: () => setState(() => _dismissed = true),
               tooltip: context.l10n.commonClose,
             ),
@@ -1681,7 +1682,11 @@ class _HeroMenuButton extends StatelessWidget {
         child: PopupMenuButton<_MenuAction>(
           padding: EdgeInsets.zero,
           icon: _PaperRing(
-            child: Icon(icon, color: cs.primary, size: AppDimensions.iconSizeM),
+            child: ButleryIcon(
+              icon,
+              color: cs.primary,
+              size: AppDimensions.iconSizeM,
+            ),
           ),
           itemBuilder: itemBuilder,
           onSelected: onSelected,

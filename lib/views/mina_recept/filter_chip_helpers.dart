@@ -18,6 +18,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
@@ -118,8 +120,8 @@ class MinaReceptSortChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.sort,
+                ButleryIcon(
+                  ButleryIcons.arrowUpDown,
                   size: AppDimensions.iconSizeS,
                   color: cs.onSurfaceVariant,
                 ),

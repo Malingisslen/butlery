@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -53,7 +54,7 @@ void main() {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_circle), findsNothing);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
     });
 
     testWidgets('tapping shows check_circle icon', (tester) async {
@@ -64,7 +65,7 @@ void main() {
       await tester.tap(_findDietaryCards().first);
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
       expect(viewModel.isDietaryPrefSelected('vegetarisk'), isTrue);
     });
 
@@ -96,7 +97,7 @@ void main() {
       await tester.tap(_findDietaryCards().at(1));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
+      expect(find.byIcon(ButleryIcons.circleCheck), findsNWidgets(2));
       expect(viewModel.isDietaryPrefSelected('vegetarisk'), isTrue);
       expect(viewModel.isDietaryPrefSelected('vegansk'), isTrue);
     });

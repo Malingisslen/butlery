@@ -11,6 +11,8 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
@@ -127,8 +129,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.access_time,
+            ButleryIcon(
+              ButleryIcons.clock,
               size: AppDimensions.iconSizeS,
               color: cs.onSurface,
             ),
@@ -151,8 +153,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.person_outline,
+            ButleryIcon(
+              ButleryIcons.user,
               size: AppDimensions.iconSizeS,
               color: cs.onSurface,
             ),
@@ -194,8 +196,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
                 button: true,
                 child: GestureDetector(
                   onTap: () => _removeMyRating(context),
-                  child: Icon(
-                    Icons.close,
+                  child: ButleryIcon(
+                    ButleryIcons.x,
                     size: 14,
                     color: cs.onSurfaceVariant,
                   ),
@@ -220,8 +222,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         child: OutlinedButton.icon(
           key: const ValueKey('test-recipe-detail-mark-cooked'),
           onPressed: cookedToday ? null : () => _markAsCooked(context),
-          icon: Icon(
-            cookedToday ? Icons.check_circle : Icons.check_circle_outline,
+          icon: ButleryIcon(
+            cookedToday ? ButleryIcons.circleCheck : ButleryIcons.circleCheck,
             size: 14,
           ),
           label: Text(
@@ -267,7 +269,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         label: context.l10n.familyRatingManualButton,
         child: OutlinedButton.icon(
           onPressed: () => RecipeManagementHandler.rateAsFamily(context),
-          icon: const Icon(Icons.groups_outlined, size: 14),
+          icon: const ButleryIcon(ButleryIcons.users, size: 14),
           label: Text(
             context.l10n.familyRatingManualButton,
             style: AppTextStyles.labelSmall,
@@ -399,7 +401,11 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.star, size: 12, color: cs.onSurfaceVariant),
+            ButleryIcon(
+              ButleryIcons.star,
+              size: 12,
+              color: cs.onSurfaceVariant,
+            ),
             const SizedBox(width: 3),
             Text(
               formatRatingComma(avg),
@@ -482,7 +488,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       title: context.l10n.ratingRemoveTitle,
       message: context.l10n.ratingRemoveMessage,
       confirmText: context.l10n.commonDelete,
-      icon: Icons.star_border,
+      icon: ButleryIcons.starOutline,
       isDangerous: true,
     );
     if (confirmed != true || !context.mounted) return;

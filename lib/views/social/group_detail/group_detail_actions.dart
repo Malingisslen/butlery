@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/events/group_events.dart';
@@ -83,7 +84,7 @@ class GroupDetailActions {
         group.name,
       ),
       confirmText: context.l10n.commonRemove,
-      icon: Icons.person_remove,
+      icon: ButleryIcons.userMinus,
       isDangerous: true,
     );
     if (shouldRemove != true) return null;
@@ -139,7 +140,7 @@ class GroupDetailActions {
         group.name,
       ),
       confirmText: context.l10n.commonRemove,
-      icon: Icons.person_remove,
+      icon: ButleryIcons.userMinus,
       isDangerous: true,
     );
 
@@ -264,7 +265,7 @@ class GroupDetailActions {
       itemName: group.name,
       itemType: context.l10n.groupItemType,
       warningMessage: context.l10n.commonActionCannotBeUndone,
-      icon: Icons.group,
+      icon: ButleryIcons.users,
     );
 
     if (shouldDelete == true) {

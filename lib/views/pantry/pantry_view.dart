@@ -20,6 +20,8 @@ import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 
@@ -183,7 +185,7 @@ class _PantrySections extends StatelessWidget {
         if (expiring.isNotEmpty)
           _PantrySection(
             title: l10n.pantrySectionExpiring,
-            icon: Icons.schedule,
+            icon: ButleryIcons.clock,
             items: expiring,
             initiallyExpanded: true,
           ),
@@ -257,7 +259,7 @@ class _PantrySection extends StatelessWidget {
             vertical: AppDimensions.spacingXs,
           ),
           childrenPadding: EdgeInsets.zero,
-          leading: Icon(
+          leading: ButleryIcon(
             icon,
             color: cs.onSurface,
             size: AppDimensions.iconSizeM,
@@ -310,8 +312,8 @@ class _PantryFab extends StatelessWidget {
           child: SizedBox(
             width: 56,
             height: 56,
-            child: Icon(
-              Icons.add,
+            child: ButleryIcon(
+              ButleryIcons.plus,
               color: cs.onPrimary,
               size: AppDimensions.iconSizeL,
             ),
@@ -355,7 +357,7 @@ class _PantryBulkBar extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const ButleryIcon(ButleryIcons.x),
                 tooltip: context.l10n.commonCancel,
                 color: cs.onPrimaryContainer,
                 onPressed: onClose,
@@ -379,7 +381,7 @@ class _PantryBulkBar extends StatelessWidget {
                     cs.brightness,
                   ),
                 ),
-                icon: const Icon(Icons.delete_outline),
+                icon: const ButleryIcon(ButleryIcons.trash2),
                 label: Text(context.l10n.commonDelete),
               ),
             ],

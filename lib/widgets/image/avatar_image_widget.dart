@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -150,8 +152,8 @@ class AvatarImageWidget extends StatelessWidget {
                   width: 2,
                 ),
               ),
-              child: Icon(
-                Icons.edit,
+              child: ButleryIcon(
+                ButleryIcons.pencil,
                 size: AppDimensions.iconSizeS,
                 color: cs.onPrimary,
               ),
@@ -357,8 +359,8 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                           width: 2,
                         ),
                       ),
-                      child: Icon(
-                        Icons.close,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
                         size: AppDimensions.iconSizeS,
                         color: cs.surfaceContainerHighest,
                       ),

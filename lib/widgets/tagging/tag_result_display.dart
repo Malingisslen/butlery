@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -229,7 +231,7 @@ class TagResultDisplay extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             Icons.update,
             color: warningColor,
             size: AppDimensions.iconSize18,
@@ -268,7 +270,7 @@ class TagResultDisplay extends StatelessWidget {
 
   Widget _buildDraftWarning(BuildContext context) {
     return InlineWarning(
-      icon: Icons.info_outline,
+      icon: ButleryIcons.info,
       color: context.modeColors.warning,
       text: context.l10n.ingredientDataUnverified,
     );
@@ -276,7 +278,7 @@ class TagResultDisplay extends StatelessWidget {
 
   Widget _buildDegradedWarning(BuildContext context) {
     return InlineWarning(
-      icon: Icons.warning_amber,
+      icon: ButleryIcons.triangleAlert,
       color: Theme.of(context).colorScheme.error,
       text: context.l10n.taggingDegradedWarning,
     );
@@ -292,7 +294,7 @@ class TagResultDisplay extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.analytics_outlined,
               color: cs.onSurface,
               size: compact
@@ -340,8 +342,8 @@ class TagResultDisplay extends StatelessWidget {
               onTap: onUnknownIngredientsTap,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
+                  ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     size: AppDimensions.iconSizeS,
                     color: context.modeColors.warning,
                   ),
@@ -357,8 +359,8 @@ class TagResultDisplay extends StatelessWidget {
                     ),
                   ),
                   if (onUnknownIngredientsTap != null)
-                    Icon(
-                      Icons.chevron_right,
+                    ButleryIcon(
+                      ButleryIcons.chevronRight,
                       size: AppDimensions.iconSize18,
                       color: context.modeColors.warning,
                     ),
@@ -585,8 +587,8 @@ class AllergenDisclaimer extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.info_outline,
+        ButleryIcon(
+          ButleryIcons.info,
           size: AppDimensions.iconSize14,
           color: cs.onSurfaceVariant,
         ),

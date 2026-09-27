@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -183,8 +185,8 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
     final recording = _state == _VoiceState.recording;
     return IconButton(
       visualDensity: widget.compact ? VisualDensity.compact : null,
-      icon: Icon(
-        recording ? Icons.stop : Icons.mic_none,
+      icon: ButleryIcon(
+        recording ? ButleryIcons.stop : ButleryIcons.mic,
         size: AppDimensions.iconSizeAction,
         color: recording ? cs.error : cs.onSurface,
       ),

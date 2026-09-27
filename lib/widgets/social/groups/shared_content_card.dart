@@ -6,6 +6,8 @@ import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 /// Card widget for displaying shared content items (recipes, menus, shopping lists)
@@ -24,13 +26,13 @@ class SharedContentCard extends StatelessWidget {
   IconData _getIconForType(String type) {
     switch (type) {
       case 'recipe':
-        return Icons.restaurant_menu;
+        return ButleryIcons.utensils;
       case 'menu':
-        return Icons.calendar_today;
+        return ButleryIcons.calendar;
       case 'shopping_list':
-        return Icons.shopping_cart;
+        return ButleryIcons.shoppingCart;
       default:
-        return Icons.share;
+        return ButleryIcons.share2;
     }
   }
 
@@ -95,7 +97,7 @@ class SharedContentCard extends StatelessWidget {
                           AppDimensions.radiusControl,
                         ),
                       ),
-                      child: Icon(
+                      child: ButleryIcon(
                         _getIconForType(item.type),
                         color: iconColor,
                         size: AppDimensions.iconSizeM,
@@ -177,8 +179,8 @@ class SharedContentCard extends StatelessWidget {
                     if (onImport != null) ...[
                       TextButton.icon(
                         onPressed: onImport,
-                        icon: const Icon(
-                          Icons.download,
+                        icon: const ButleryIcon(
+                          ButleryIcons.download,
                           size: AppDimensions.iconSize18,
                         ),
                         label: Text(context.l10n.groupImport),
@@ -189,8 +191,8 @@ class SharedContentCard extends StatelessWidget {
                       Flexible(
                         child: FilledButton.icon(
                           onPressed: onView,
-                          icon: const Icon(
-                            Icons.visibility,
+                          icon: const ButleryIcon(
+                            ButleryIcons.eye,
                             size: AppDimensions.iconSize18,
                           ),
                           label: Text(context.l10n.groupView),

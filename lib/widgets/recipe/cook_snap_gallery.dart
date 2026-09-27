@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -74,7 +76,7 @@ class CookSnapGallery extends StatelessWidget {
                 )
               else
                 IconButton(
-                  icon: const Icon(Icons.add_a_photo),
+                  icon: const ButleryIcon(ButleryIcons.camera),
                   tooltip: context.l10n.cookSnapAddTooltip,
                   onPressed: onAdd,
                   iconSize: AppDimensions.iconSizeM,
@@ -106,7 +108,7 @@ class CookSnapGallery extends StatelessWidget {
               vertical: AppDimensions.spacingSm,
             ),
             child: StateWidget.empty(
-              icon: Icons.camera_alt,
+              icon: ButleryIcons.camera,
               title: context.l10n.cookSnapEmptyTitle,
               subtitle: context.l10n.cookSnapEmptySubtitle,
             ),
@@ -185,7 +187,7 @@ class _SnapThumbnail extends StatelessWidget {
                         ),
                         errorWidget: (_, __, ___) => ColoredBox(
                           color: colorScheme.surfaceContainerHighest,
-                          child: Icon(
+                          child: ButleryIcon(
                             Icons.broken_image,
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -232,8 +234,8 @@ class _SnapThumbnail extends StatelessWidget {
           children: [
             if (isOwn)
               ListTile(
-                leading: Icon(
-                  Icons.delete,
+                leading: ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(context.l10n.cookSnapDelete),
@@ -244,7 +246,7 @@ class _SnapThumbnail extends StatelessWidget {
               )
             else
               ListTile(
-                leading: const Icon(Icons.flag),
+                leading: const ButleryIcon(Icons.flag),
                 title: Text(context.l10n.cookSnapReport),
                 onTap: () {
                   Navigator.pop(context);
@@ -272,7 +274,7 @@ class _PhotoCountBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.collections, size: 12, color: Colors.white),
+          const ButleryIcon(ButleryIcons.image, size: 12, color: Colors.white),
           const SizedBox(width: 2),
           Text(
             '$count',

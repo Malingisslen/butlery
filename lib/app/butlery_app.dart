@@ -57,6 +57,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -86,8 +88,8 @@ class ErrorApp extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
+                    ButleryIcon(
+                      ButleryIcons.triangleAlert,
                       size: AppDimensions.iconSizeXxl,
                       color: cs.error,
                     ),
@@ -430,7 +432,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       messenger.showMaterialBanner(
         MaterialBanner(
           content: Text(l10n.importClipboardUrlDetected),
-          leading: const Icon(Icons.link),
+          leading: const ButleryIcon(ButleryIcons.link),
           actions: [
             TextButton(
               onPressed: () {
@@ -850,8 +852,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                         AppDimensions.radiusCard,
                       ),
                     ),
-                    child: Icon(
-                      Icons.restaurant_menu,
+                    child: ButleryIcon(
+                      ButleryIcons.utensils,
                       size: AppDimensions.iconSizeHero,
                       color: cs.outlineVariant,
                     ),

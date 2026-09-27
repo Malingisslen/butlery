@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -60,7 +62,7 @@ class PrivacySettingsSection extends StatelessWidget {
                           );
                         }
                       },
-                secondary: const Icon(Icons.search),
+                secondary: const ButleryIcon(ButleryIcons.search),
               ),
               const Divider(height: 1),
               SwitchListTile(
@@ -70,7 +72,7 @@ class PrivacySettingsSection extends StatelessWidget {
                 ),
                 value: viewModel.allowEmailSearch,
                 onChanged: viewModel.updateAllowEmailSearch,
-                secondary: const Icon(Icons.email),
+                secondary: const ButleryIcon(ButleryIcons.mail),
               ),
               const Divider(height: 1),
               SwitchListTile(
@@ -78,7 +80,7 @@ class PrivacySettingsSection extends StatelessWidget {
                 subtitle: Text(context.l10n.profileShowOnlineStatusDescription),
                 value: viewModel.showOnlineStatus,
                 onChanged: viewModel.updateShowOnlineStatus,
-                secondary: const Icon(Icons.podcasts),
+                secondary: const ButleryIcon(Icons.podcasts),
               ),
               const Divider(height: 1),
               SwitchListTile(
@@ -86,7 +88,7 @@ class PrivacySettingsSection extends StatelessWidget {
                 subtitle: Text(context.l10n.privacyShareActivitySubtitle),
                 value: viewModel.shareActivityToFeed,
                 onChanged: viewModel.updateShareActivityToFeed,
-                secondary: const Icon(Icons.dynamic_feed),
+                secondary: const ButleryIcon(Icons.dynamic_feed),
               ),
               // BUT-1220: per-event-type toggles sit under the master switch.
               // They only have effect while the master toggle is on, so we

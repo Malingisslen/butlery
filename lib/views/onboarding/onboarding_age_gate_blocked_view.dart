@@ -7,6 +7,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class OnboardingAgeGateBlockedView extends StatefulWidget {
@@ -83,7 +85,11 @@ class _OnboardingAgeGateBlockedViewState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.lock_outline, size: 72, color: cs.onSurface),
+                    ButleryIcon(
+                      ButleryIcons.lock,
+                      size: 72,
+                      color: cs.onSurface,
+                    ),
                     const SizedBox(height: AppDimensions.spacingXl),
                     Text(
                       context.l10n.onboardingAgeGateTooYoungTitle,

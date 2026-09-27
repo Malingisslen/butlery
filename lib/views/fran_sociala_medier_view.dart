@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -390,8 +392,8 @@ class _FranSocialaMedierViewContentState
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
+              ButleryIcon(
+                ButleryIcons.info,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurface,
               ),

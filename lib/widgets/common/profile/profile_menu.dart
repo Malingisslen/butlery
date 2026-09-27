@@ -7,6 +7,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -261,8 +263,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
             button: true,
             child: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: Icon(
-                Icons.close,
+              icon: ButleryIcon(
+                ButleryIcons.x,
                 color: cs.onPrimary.withValues(alpha: 0.8),
                 size: AppDimensions.iconSizeAction,
               ),
@@ -379,7 +381,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileEditProfile,
             subtitle: context.l10n.profileEditProfileSubtitle,
-            icon: Icons.edit,
+            icon: ButleryIcons.pencil,
             onTap: widget.onEditProfile,
           ),
           ProfileActions.buildMenuItem(
@@ -393,7 +395,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileFriendsAndGroups,
             subtitle: context.l10n.profileFriendsAndGroupsSubtitle,
-            icon: Icons.people,
+            icon: ButleryIcons.users,
             onTap: widget.onViewFriends,
             count: _pendingRequestsCount + _pendingGroupInvitationsCount,
           ),
@@ -401,7 +403,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileSharedWithMe,
             subtitle: context.l10n.profileSharedWithMeSubtitle,
-            icon: Icons.share,
+            icon: ButleryIcons.share2,
             onTap: widget.onViewShared,
             count: _sharedItemsCount,
           ),
@@ -409,7 +411,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileMessages,
             subtitle: context.l10n.profileMessagesSubtitle,
-            icon: Icons.message,
+            icon: ButleryIcons.messageSquare,
             onTap: widget.onViewMessages,
             count: _unreadMessagesCount,
           ),
@@ -417,7 +419,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.commonSettings,
             subtitle: context.l10n.settingsSubtitle,
-            icon: Icons.settings,
+            icon: ButleryIcons.settings,
             onTap: () => Navigator.pushNamed(context, Routes.settings),
           ),
           ProfileActions.buildMenuItem(
@@ -447,7 +449,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileMyTags,
             subtitle: context.l10n.profileMyTagsSubtitle,
-            icon: Icons.local_offer_outlined,
+            icon: ButleryIcons.tag,
             onTap: widget.onViewPersonalTags,
           ),
           ProfileActions.buildMenuItem(

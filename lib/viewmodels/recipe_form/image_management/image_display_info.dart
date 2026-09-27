@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Comprehensive image display information for immediate UI feedback
 class ImageDisplayInfo {
@@ -33,17 +34,17 @@ class ImageDisplayInfo {
   IconData getStateIcon() {
     switch (state) {
       case ImageUploadState.pending:
-        return Icons.schedule;
+        return ButleryIcons.clock;
       case ImageUploadState.uploading:
         return Icons.cloud_upload;
       case ImageUploadState.retrying:
-        return Icons.refresh;
+        return ButleryIcons.refreshCw;
       case ImageUploadState.completed:
         return Icons.cloud_done;
       case ImageUploadState.failed:
-        return Icons.error;
+        return ButleryIcons.triangleAlert;
       case ImageUploadState.cancelled:
-        return Icons.cancel;
+        return ButleryIcons.x;
     }
   }
 }

@@ -9,6 +9,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// A simple 3-step progress indicator for import operations.
@@ -190,8 +192,8 @@ class _StepIndicator extends StatelessWidget {
             // The running step shows its number; the plate line under the
             // steps says that it runs (B-18: no spinner, beslutslogg.md:25).
             child: isComplete
-                ? Icon(
-                    Icons.check,
+                ? ButleryIcon(
+                    ButleryIcons.check,
                     size: AppDimensions.iconSizeM,
                     color: colorScheme.onPrimary,
                   )

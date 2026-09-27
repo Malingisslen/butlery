@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -80,7 +81,7 @@ class FormScaffold extends StatelessWidget {
                     onFill: false,
                   )
                 : null,
-            icon: const Icon(Icons.save),
+            icon: const ButleryIcon(Icons.save),
             tooltip: context.l10n.commonSave,
           ),
         ),

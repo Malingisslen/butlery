@@ -5,6 +5,8 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -72,7 +74,7 @@ class ConversationGroupDetailView extends StatelessWidget {
       actions: [
         if (viewModel.isAdmin)
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const ButleryIcon(ButleryIcons.pencil),
             onPressed: () => _showEditGroupNameDialog(context, viewModel),
             tooltip: context.l10n.messagingEditGroupName,
           ),

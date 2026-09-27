@@ -6,6 +6,7 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/permissions/edit_mode_ui_helper.dart';
 
 /// Permission-related widgets for collaborative content
@@ -38,7 +39,7 @@ class CollaborativePermissionsWidgets {
           borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 EditModeUIHelper.getIcon(editMode),
                 color: color,
                 size: AppDimensions.iconSizeAction,

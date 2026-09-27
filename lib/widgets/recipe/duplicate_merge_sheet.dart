@@ -13,6 +13,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Actions the user can take when a duplicate is detected.
 enum DuplicateMergeChoice {
@@ -287,7 +289,10 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
           height: AppDimensions.heightThumbnail,
           color: cs.surfaceContainerHighest,
           alignment: Alignment.center,
-          child: Icon(Icons.broken_image_outlined, color: cs.onSurfaceVariant),
+          child: ButleryIcon(
+            Icons.broken_image_outlined,
+            color: cs.onSurfaceVariant,
+          ),
         ),
       ),
     );
@@ -449,7 +454,7 @@ class _ActionButtons extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () =>
                         onChoice(DuplicateMergeChoice.mergeBestFields),
-                    icon: const Icon(Icons.merge_type, size: 18),
+                    icon: const ButleryIcon(Icons.merge_type, size: 18),
                     label: Text(l10n.duplicateMergeBestFields),
                     style: FilledButton.styleFrom(
                       minimumSize: minSize,
@@ -461,7 +466,7 @@ class _ActionButtons extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => onChoice(DuplicateMergeChoice.saveAsNew),
-                    icon: const Icon(Icons.add, size: 18),
+                    icon: const ButleryIcon(ButleryIcons.plus, size: 18),
                     label: Text(l10n.duplicateMergeSaveAsNew),
                     style: OutlinedButton.styleFrom(
                       minimumSize: minSize,

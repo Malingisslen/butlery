@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class InvitationTargetStates {
@@ -42,8 +44,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             size: 48,
             color: Theme.of(context).colorScheme.error,
           ),
@@ -77,8 +79,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.people_outline,
+          ButleryIcon(
+            ButleryIcons.users,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -111,7 +113,7 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             Icons.search_off,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -147,8 +149,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.check_circle,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             size: 48,
             color: context.modeColors.success,
           ),
@@ -226,8 +228,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.checklist,
+          ButleryIcon(
+            ButleryIcons.listCheck,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

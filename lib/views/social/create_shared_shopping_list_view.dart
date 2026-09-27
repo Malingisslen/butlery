@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -208,8 +210,8 @@ class _CreateSharedShoppingListViewState
         children: [
           Row(
             children: [
-              Icon(
-                Icons.group,
+              ButleryIcon(
+                ButleryIcons.users,
                 color: Theme.of(context).colorScheme.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -251,7 +253,7 @@ class _CreateSharedShoppingListViewState
           decoration: InputDecoration(
             labelText: context.l10n.shoppingSharedListTitle,
             hintText: context.l10n.shoppingSharedListTitleHint,
-            prefixIcon: const Icon(Icons.title),
+            prefixIcon: const ButleryIcon(Icons.title),
             errorText: viewModel.titleError,
           ),
           onChanged: viewModel.updateTitle,
@@ -316,8 +318,8 @@ class _CreateSharedShoppingListViewState
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
+              ButleryIcon(
+                ButleryIcons.info,
                 color: context.modeColors.success,
                 size: AppDimensions.iconSizeM,
               ),

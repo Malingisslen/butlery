@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -101,7 +103,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.privacy_tip_rounded,
                   size: 32,
                   color: cs.onSurface,
@@ -142,8 +144,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
+                    ButleryIcon(
+                      ButleryIcons.info,
                       color: context.modeColors.info,
                       size: AppDimensions.iconSizeM,
                     ),
@@ -177,8 +179,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.lock,
+                ButleryIcon(
+                  ButleryIcons.lock,
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -204,7 +206,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             _buildRequiredConsentItem(
               context.l10n.consentDataProcessing,
               context.l10n.consentDataProcessingDescription,
-              Icons.storage,
+              ButleryIcons.server,
             ),
           ],
         ),
@@ -222,7 +224,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
+        ButleryIcon(
           icon,
           size: AppDimensions.iconSizeM,
           color: context.modeColors.success,
@@ -244,8 +246,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ],
           ),
         ),
-        Icon(
-          Icons.check_circle,
+        ButleryIcon(
+          ButleryIcons.circleCheck,
           color: context.modeColors.success,
           size: AppDimensions.iconSizeM,
         ),
@@ -270,7 +272,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               onPressed: viewModel.isSaving
                   ? null
                   : () => _handleRevokeAll(viewModel),
-              icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
+              icon: const ButleryIcon(
+                ButleryIcons.block,
+                size: AppDimensions.iconSizeS,
+              ),
               label: Text(context.l10n.consentRejectAll),
               style: TextButton.styleFrom(
                 foregroundColor: cs.error,
@@ -364,7 +369,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   AppDimensions.radiusControl,
                 ),
               ),
-              child: Icon(
+              child: ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeL,
                 color: value ? cs.onSurface : cs.onSurfaceVariant,
@@ -472,7 +477,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             AppDimensions.spacingMd,
             AppDimensions.spacingMd,
           ),
-          leading: Icon(
+          leading: ButleryIcon(
             Icons.fact_check_outlined,
             size: AppDimensions.iconSizeM,
             color: cs.onSurfaceVariant,
@@ -533,8 +538,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
@@ -578,8 +583,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.info_outline,
+                ButleryIcon(
+                  ButleryIcons.info,
                   color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),

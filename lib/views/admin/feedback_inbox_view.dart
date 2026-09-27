@@ -11,6 +11,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only inbox listing beta feedback newest-first, with the screenshot,
@@ -58,7 +60,7 @@ class _FeedbackInboxContent extends StatelessWidget {
         title: context.l10n.adminFeedbackInboxTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const ButleryIcon(Icons.logout),
             tooltip: context.l10n.adminSignOut,
             onPressed: () => ServiceLocator.get<AuthService>().signOut(),
           ),
@@ -223,7 +225,7 @@ class _FeedbackCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: () => _copyForClaude(context),
-                icon: const Icon(Icons.copy_all_outlined, size: 18),
+                icon: const ButleryIcon(ButleryIcons.copy, size: 18),
                 label: Text(context.l10n.adminCopyForClaude),
                 style: TextButton.styleFrom(
                   shape: const RoundedRectangleBorder(),
@@ -338,7 +340,7 @@ class _Screenshot extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Row(
           children: [
-            Icon(Icons.broken_image_outlined, color: cs.outline),
+            ButleryIcon(Icons.broken_image_outlined, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -381,7 +383,7 @@ class _Screenshot extends StatelessWidget {
                 top: AppDimensions.spacingSm,
                 right: AppDimensions.spacingSm,
                 child: IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const ButleryIcon(ButleryIcons.x),
                   color: Colors.white,
                   tooltip: dialogCtx.l10n.adminScreenshotClose,
                   style: IconButton.styleFrom(

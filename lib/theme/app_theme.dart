@@ -5,6 +5,8 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Central theme orchestrator combining colors, typography, and component themes.
 class AppTheme {
@@ -29,6 +31,14 @@ class AppTheme {
       textTheme: AppTextStyles.createTextTheme(),
 
       visualDensity: VisualDensity.adaptivePlatformDensity,
+
+      // P7-U08: the framework back and close buttons draw the Butlery
+      // glyphs (beslutslogg.md:9, B-02; plattformsmatris.md:75), in the
+      // ambient IconTheme colour of the bar they sit in.
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (_) => const ButleryIcon(ButleryIcons.back),
+        closeButtonIconBuilder: (_) => const ButleryIcon(ButleryIcons.close),
+      ),
 
       // Component themes — all ColorScheme-aware
       elevatedButtonTheme: ComponentThemes.elevatedButtonTheme(colorScheme),

@@ -25,6 +25,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -140,14 +141,14 @@ void main() {
     await tester.pump();
 
     final paper = AppTheme.darkTheme.colorScheme.onSurface;
-    final clock = tester.widget<Icon>(find.byIcon(Icons.access_time));
+    final clock = tester.widget<Icon>(find.byIcon(ButleryIcons.clock));
     expect(clock.color, paper);
     final time = tester.widget<Text>(
       find
           .descendant(
             of: find
                 .ancestor(
-                  of: find.byIcon(Icons.access_time),
+                  of: find.byIcon(ButleryIcons.clock),
                   matching: find.byType(Row),
                 )
                 .first,

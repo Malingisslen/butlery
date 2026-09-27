@@ -6,10 +6,10 @@
 /// - Tapping a recipe option's thumbnail calls [onRecipeTap]
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/messaging/poll.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/poll_message_widget.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -95,7 +95,7 @@ void main() {
         await tester.pump();
 
         // Tap the fallback thumbnail of the first option (Icon restaurant_menu).
-        final thumbnailIcons = find.byIcon(Icons.restaurant_menu);
+        final thumbnailIcons = find.byIcon(ButleryIcons.utensils);
         expect(thumbnailIcons, findsWidgets);
         await tester.tap(thumbnailIcons.first);
         await tester.pump();
@@ -126,7 +126,7 @@ void main() {
       expect(find.text('Sushi'), findsOneWidget);
 
       // Plain-text mode must not render the recipe fallback thumbnail icon.
-      expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+      expect(find.byIcon(ButleryIcons.utensils), findsNothing);
     });
   });
 }

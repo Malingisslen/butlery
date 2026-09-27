@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
@@ -355,24 +357,24 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                             unselectedLabelColor: cs.onSurfaceVariant,
                             tabs: [
                               ButleryTab(
-                                icon: const Icon(
-                                  Icons.restaurant_menu,
+                                icon: const ButleryIcon(
+                                  ButleryIcons.utensils,
                                   size: AppDimensions.iconSizeM,
                                 ),
                                 text:
                                     '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
                               ),
                               ButleryTab(
-                                icon: const Icon(
-                                  Icons.calendar_today,
+                                icon: const ButleryIcon(
+                                  ButleryIcons.calendar,
                                   size: AppDimensions.iconSizeM,
                                 ),
                                 text:
                                     '${context.l10n.groupTabMenus} (${menus.length})',
                               ),
                               ButleryTab(
-                                icon: const Icon(
-                                  Icons.shopping_cart,
+                                icon: const ButleryIcon(
+                                  ButleryIcons.shoppingCart,
                                   size: AppDimensions.iconSizeM,
                                 ),
                                 text:
@@ -395,19 +397,19 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                             recipes,
                             context.l10n.groupNoRecipesShared,
                             context.l10n.groupNoRecipesSharedSubtitle,
-                            Icons.restaurant_menu_outlined,
+                            ButleryIcons.utensils,
                           ),
                           _buildTabContent(
                             menus,
                             context.l10n.groupNoMenusShared,
                             context.l10n.groupNoMenusSharedSubtitle,
-                            Icons.calendar_today_outlined,
+                            ButleryIcons.calendar,
                           ),
                           _buildTabContent(
                             shoppingLists,
                             context.l10n.groupNoShoppingListsShared,
                             context.l10n.groupNoShoppingListsSharedSubtitle,
-                            Icons.shopping_cart_outlined,
+                            ButleryIcons.shoppingCart,
                           ),
                         ],
                       ),

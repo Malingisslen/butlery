@@ -26,6 +26,7 @@ import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -107,9 +108,9 @@ void main() {
       expect(find.text('1 valda'), findsOneWidget);
       expect(find.text('12 recept'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
-      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
       expect(find.byType(BackButton), findsNothing);
-      expect(find.byIcon(Icons.arrow_back), findsNothing);
+      expect(find.byIcon(ButleryIcons.arrowLeft), findsNothing);
     });
 
     testWidgets('Avbryt leaves the selection', (tester) async {

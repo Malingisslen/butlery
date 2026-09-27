@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 
@@ -50,20 +51,20 @@ void main() {
         ),
         const AdaptiveNavigationItem(
           label: 'Meny',
-          icon: Icons.calendar_today,
-          activeIcon: Icons.calendar_today,
+          icon: ButleryIcons.calendar,
+          activeIcon: ButleryIcons.calendar,
           route: '/veckomeny',
         ),
         const AdaptiveNavigationItem(
           label: 'Inköp',
-          icon: Icons.shopping_cart,
-          activeIcon: Icons.shopping_cart,
+          icon: ButleryIcons.shoppingCart,
+          activeIcon: ButleryIcons.shoppingCart,
           route: '/inkopslista',
         ),
         const AdaptiveNavigationItem(
           label: 'Lägg till',
-          icon: Icons.add,
-          activeIcon: Icons.add,
+          icon: ButleryIcons.plus,
+          activeIcon: ButleryIcons.plus,
           route: '/laggTill',
         ),
       ];

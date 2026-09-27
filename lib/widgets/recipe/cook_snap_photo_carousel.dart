@@ -8,6 +8,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Renders a cook snap's photos as a swipeable, fixed-height carousel.
 ///
@@ -114,7 +116,7 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
         placeholder: (_, __) => ColoredBox(color: cs.surfaceContainerHighest),
         errorWidget: (_, __, ___) => ColoredBox(
           color: cs.surfaceContainerHighest,
-          child: Icon(Icons.broken_image, color: cs.onSurfaceVariant),
+          child: ButleryIcon(Icons.broken_image, color: cs.onSurfaceVariant),
         ),
       ),
     );
@@ -202,7 +204,7 @@ class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
                     // A still plate while the image loads, never a spinner (P4-U05).
                     placeholder: (_, __) => const SizedBox.shrink(),
                     errorWidget: (_, __, ___) => const Center(
-                      child: Icon(
+                      child: ButleryIcon(
                         Icons.broken_image,
                         color: Colors.white,
                         size: 48,
@@ -219,7 +221,7 @@ class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
             child: SafeArea(
               child: IconButton(
                 tooltip: context.l10n.a11yCloseImageViewer,
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: const ButleryIcon(ButleryIcons.x, color: Colors.white),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),

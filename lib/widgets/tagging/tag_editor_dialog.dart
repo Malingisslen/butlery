@@ -7,6 +7,8 @@ import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog for viewing and managing all recipe tags.
 ///
@@ -143,8 +145,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
               // Header
               Row(
                 children: [
-                  Icon(
-                    Icons.local_offer_outlined,
+                  ButleryIcon(
+                    ButleryIcons.tag,
                     color: cs.onPrimaryContainer,
                     size: AppDimensions.iconSizeAction,
                   ),
@@ -158,7 +160,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const ButleryIcon(ButleryIcons.x),
                     onPressed: () => Navigator.of(context).pop(),
                     tooltip: context.l10n.commonClose,
                   ),
@@ -258,7 +260,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             const SizedBox(width: AppDimensions.space4),
                             IconButton.filled(
                               onPressed: _addNewTag,
-                              icon: const Icon(Icons.add),
+                              icon: const ButleryIcon(ButleryIcons.plus),
                               tooltip: context.l10n.tagAddTag,
                               style: IconButton.styleFrom(
                                 backgroundColor: cs.primary,
@@ -314,12 +316,15 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       side: BorderSide(
         color: isUserAdded ? cs.outline : cs.outlineVariant,
       ),
-      deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
+      deleteIcon: const ButleryIcon(
+        ButleryIcons.x,
+        size: AppDimensions.iconSize18,
+      ),
       deleteIconColor: cs.onSurfaceVariant,
       onDeleted: () => _removeTag(tag),
       avatar: isUserAdded
-          ? Icon(
-              Icons.person,
+          ? ButleryIcon(
+              ButleryIcons.user,
               size: AppDimensions.iconSizeS,
               color: cs.onPrimaryContainer,
             )
@@ -344,7 +349,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       // surface with border.subtle, never faded (tokens.json:40-53).
       backgroundColor: cs.surface,
       side: BorderSide(color: cs.outlineVariant),
-      avatar: Icon(
+      avatar: ButleryIcon(
         Icons.undo,
         size: AppDimensions.iconSizeS,
         color: cs.onSurfaceVariant,

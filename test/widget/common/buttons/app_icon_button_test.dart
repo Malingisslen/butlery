@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
@@ -24,7 +25,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: AppIconButton(
-            icon: Icons.share,
+            icon: ButleryIcons.share2,
             onPressed: () {},
             semanticLabel: 'Dela recept',
           ),
@@ -44,7 +45,7 @@ void main() {
         createLocalizedTestApp(
           child: Center(
             child: AppIconButton(
-              icon: Icons.add,
+              icon: ButleryIcons.plus,
               onPressed: () {},
               semanticLabel: 'Lägg till',
             ),
@@ -62,7 +63,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: AppIconButton(
-            icon: Icons.favorite,
+            icon: ButleryIcons.heart,
             onPressed: () => taps++,
             semanticLabel: 'Gilla',
           ),

@@ -5,6 +5,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 
 final _testTag = PersonalTag(
@@ -174,7 +175,7 @@ void main() {
 
         final initialCards = find.byType(Card).evaluate().length;
 
-        await tester.tap(find.byIcon(Icons.add));
+        await tester.tap(find.byIcon(ButleryIcons.plus));
         await tester.pumpAndSettle();
 
         final newCards = find.byType(Card).evaluate().length;
@@ -186,7 +187,7 @@ void main() {
         (tester) async {
           await _showSheet(tester);
 
-          expect(find.byIcon(Icons.close), findsNothing);
+          expect(find.byIcon(ButleryIcons.x), findsNothing);
         },
       );
     });

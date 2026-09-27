@@ -8,6 +8,8 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Editable card for a single rule condition with type, operator, and value fields.
 class RuleConditionCard extends StatefulWidget {
@@ -121,8 +123,8 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                 if (widget.canDelete) ...[
                   const SizedBox(width: AppDimensions.spacingSm),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close,
+                    icon: const ButleryIcon(
+                      ButleryIcons.x,
                       size: AppDimensions.iconSizeM,
                     ),
                     onPressed: widget.onDelete,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
@@ -445,8 +447,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                       Row(
                         children: [
                           // Chevron icon
-                          Icon(
-                            isCollapsed ? Icons.expand_more : Icons.expand_less,
+                          ButleryIcon(
+                            isCollapsed
+                                ? ButleryIcons.chevronDown
+                                : ButleryIcons.chevronUp,
                             color: cs.onPrimary,
                             size: AppDimensions.iconSizeM,
                           ),
@@ -591,8 +595,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             }),
             child: Row(
               children: [
-                Icon(
-                  _showEmptyCategories ? Icons.expand_less : Icons.expand_more,
+                ButleryIcon(
+                  _showEmptyCategories
+                      ? ButleryIcons.chevronUp
+                      : ButleryIcons.chevronDown,
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -704,8 +710,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     return Row(
       children: [
-        Icon(
-          Icons.check_circle,
+        ButleryIcon(
+          ButleryIcons.circleCheck,
           size: AppDimensions.iconSizeM,
           color: cs.onSurface,
         ),

@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
@@ -125,8 +127,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.comment_outlined,
+              ButleryIcon(
+                ButleryIcons.messageSquare,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -164,10 +166,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   ],
                 ),
               ),
-              Icon(
-                _isExpanded
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
+              ButleryIcon(
+                _isExpanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 color: cs.onSurfaceVariant,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -239,8 +239,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           onTap: () => _showAudienceDialog(context, vm),
           child: Row(
             children: [
-              Icon(
-                Icons.visibility_outlined,
+              ButleryIcon(
+                ButleryIcons.eye,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
@@ -280,8 +280,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(
-                Icons.visibility_outlined,
+              ButleryIcon(
+                ButleryIcons.eye,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
@@ -309,8 +309,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.person_outline,
+                              ButleryIcon(
+                                ButleryIcons.user,
                                 size: AppDimensions.iconSizeS,
                                 color: cs.onSurfaceVariant,
                               ),
@@ -497,7 +497,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           ? '${comment.text.substring(0, 40)}...'
           : comment.text,
       itemType: 'kommentar',
-      icon: Icons.comment_outlined,
+      icon: ButleryIcons.messageSquare,
     );
     if (confirmed != true || !mounted) return;
 

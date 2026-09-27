@@ -10,6 +10,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -93,8 +95,8 @@ class DataExportView extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.download_rounded,
+                ButleryIcon(
+                  ButleryIcons.export,
                   size: 32,
                   color: cs.onSurface,
                 ),
@@ -138,7 +140,7 @@ class DataExportView extends StatelessWidget {
     return HeroButton(
       key: const ValueKey('dataExport.export'),
       label: context.l10n.dataExportTitle,
-      icon: Icons.cloud_download_rounded,
+      icon: ButleryIcons.export,
       onPressed: () => _handleExport(context, viewModel),
       busy: viewModel.isExporting,
       busyLabel: context.l10n.dataExportExporting,
@@ -287,8 +289,8 @@ class DataExportView extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           children: [
-            Icon(
-              Icons.check_circle_outline,
+            ButleryIcon(
+              ButleryIcons.circleCheck,
               size: 48,
               color: context.modeColors.success,
             ),
@@ -319,7 +321,7 @@ class DataExportView extends StatelessWidget {
                   child: HeroButton(
                     key: const ValueKey('dataExport.saveFile'),
                     label: context.l10n.dataExportSaveFile,
-                    icon: Icons.save_alt,
+                    icon: ButleryIcons.download,
                     onPressed: () => _handleDownload(context, viewModel),
                     expand: true,
                   ),
@@ -329,7 +331,7 @@ class DataExportView extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _handleShare(context, viewModel),
-                      icon: const Icon(Icons.share),
+                      icon: const ButleryIcon(ButleryIcons.share2),
                       label: Text(context.l10n.commonShare),
                     ),
                   ),
@@ -350,7 +352,7 @@ class DataExportView extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingL),
             TextButton.icon(
               onPressed: () => _handleClear(context, viewModel),
-              icon: const Icon(Icons.delete_outline),
+              icon: const ButleryIcon(ButleryIcons.trash2),
               label: Text(context.l10n.dataExportClear),
               style: TextButton.styleFrom(
                 foregroundColor: cs.onSurfaceVariant,
@@ -374,8 +376,8 @@ class DataExportView extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.info_outline,
+                ButleryIcon(
+                  ButleryIcons.info,
                   color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -414,8 +416,8 @@ class DataExportView extends StatelessWidget {
       padding: AppDimensions.paddingVertical4,
       child: Row(
         children: [
-          Icon(
-            Icons.check,
+          ButleryIcon(
+            ButleryIcons.check,
             size: AppDimensions.iconSizeS,
             color: context.modeColors.success,
           ),

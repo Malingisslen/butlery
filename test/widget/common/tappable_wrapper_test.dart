@@ -7,11 +7,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
 import '../golden/golden_helper.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('TappableWrapper', () {
@@ -28,7 +30,7 @@ void main() {
               child: TappableWrapper(
                 onTap: () {},
                 semanticLabel: 'Test action',
-                child: const Icon(Icons.info_outline, size: 14),
+                child: const ButleryIcon(ButleryIcons.info, size: 14),
               ),
             ),
           ),
@@ -48,7 +50,7 @@ void main() {
           child: TappableWrapper(
             onTap: () {},
             semanticLabel: 'Gilla kommentar',
-            child: const Icon(Icons.favorite),
+            child: const ButleryIcon(ButleryIcons.heart),
           ),
         ),
       );
@@ -64,7 +66,7 @@ void main() {
             child: TappableWrapper(
               onTap: () => taps++,
               semanticLabel: 'Tap me',
-              child: const Icon(Icons.star, size: 12),
+              child: const ButleryIcon(ButleryIcons.star, size: 12),
             ),
           ),
         ),
@@ -112,7 +114,7 @@ void main() {
               onTap: () => taps++,
               semanticLabel: 'Disabled action',
               enabled: false,
-              child: const Icon(Icons.block),
+              child: const ButleryIcon(ButleryIcons.block),
             ),
           ),
         ),
@@ -136,7 +138,7 @@ void main() {
         child: TappableWrapper(
           onTap: () {},
           semanticLabel: 'Mer information',
-          child: const Icon(Icons.info_outline, size: 14),
+          child: const ButleryIcon(ButleryIcons.info, size: 14),
         ),
       ),
     );

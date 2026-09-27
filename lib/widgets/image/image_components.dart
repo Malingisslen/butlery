@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -110,8 +112,8 @@ class ImageComponents {
               buildPlaceholder(
                 config: config,
                 child: Builder(
-                  builder: (ctx) => Icon(
-                    Icons.image_outlined,
+                  builder: (ctx) => ButleryIcon(
+                    ButleryIcons.image,
                     size: AppDimensions.iconSizeXl,
                     color: Theme.of(ctx).colorScheme.outline,
                   ),
@@ -205,8 +207,8 @@ class ImageComponents {
           ),
           child:
               child ??
-              Icon(
-                Icons.restaurant_menu,
+              ButleryIcon(
+                ButleryIcons.utensils,
                 size: AppDimensions.iconSizeM,
                 color: cs.outline,
               ),
@@ -243,8 +245,8 @@ class ImageComponents {
       config: config,
       backgroundColor: backgroundColor,
       child: Builder(
-        builder: (context) => Icon(
-          Icons.image_outlined,
+        builder: (context) => ButleryIcon(
+          ButleryIcons.image,
           size: AppDimensions.iconSizeL,
           color: Theme.of(context).colorScheme.outline,
         ),
@@ -282,8 +284,8 @@ class ImageComponents {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.collections_outlined,
+                ButleryIcon(
+                  ButleryIcons.image,
                   size: AppDimensions.iconSizeXs,
                   color: cs.onSurface,
                 ),

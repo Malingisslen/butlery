@@ -35,6 +35,7 @@ import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 import 'package:butlery/views/social/friends_list/friends_empty_state.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class _MockPantryViewModel extends Mock implements PantryViewModel {}
 
@@ -157,7 +158,7 @@ void main() {
             ),
           ),
         );
-        final mark = tester.widget<Icon>(find.byIcon(Icons.check_circle));
+        final mark = tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck));
         expect(mark.color, _textPrimary(theme));
       });
 
@@ -212,7 +213,7 @@ void main() {
         );
         await tester.enterText(find.byType(TextField).first, 'hej');
         await tester.pump();
-        final send = tester.widget<Icon>(find.byIcon(Icons.send));
+        final send = tester.widget<Icon>(find.byIcon(ButleryIcons.send));
         expect(send.color, _textPrimary(theme));
       });
 

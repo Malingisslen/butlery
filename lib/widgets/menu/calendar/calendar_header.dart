@@ -16,6 +16,8 @@ import 'package:butlery/services/menu/weekly_menu_plan_service.dart'
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 
 class WeekNavHeader extends StatelessWidget {
@@ -62,7 +64,7 @@ class WeekNavHeader extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.chevron_left),
+            icon: const ButleryIcon(ButleryIcons.chevronLeft),
             color: cs.onPrimaryContainer,
             onPressed: onPrev,
             tooltip: context.l10n.weeklyMenuPrevWeek,
@@ -78,27 +80,27 @@ class WeekNavHeader extends StatelessWidget {
           ),
           if (onSelectMode != null)
             IconButton(
-              icon: const Icon(Icons.checklist_outlined),
+              icon: const ButleryIcon(ButleryIcons.listCheck),
               color: cs.onPrimaryContainer,
               onPressed: onSelectMode,
               tooltip: context.l10n.weeklyMenuSelectAction,
             ),
           if (onCopyWeek != null)
             IconButton(
-              icon: const Icon(Icons.copy_all_outlined),
+              icon: const ButleryIcon(ButleryIcons.copy),
               color: cs.onPrimaryContainer,
               onPressed: onCopyWeek,
               tooltip: context.l10n.weeklyMenuCopyToNextAction,
             ),
           if (onClearWeek != null)
             IconButton(
-              icon: const Icon(Icons.delete_sweep_outlined),
+              icon: const ButleryIcon(ButleryIcons.trash2),
               color: cs.onPrimaryContainer,
               onPressed: onClearWeek,
               tooltip: context.l10n.weeklyMenuClearWeekAction,
             ),
           IconButton(
-            icon: const Icon(Icons.chevron_right),
+            icon: const ButleryIcon(ButleryIcons.chevronRight),
             color: cs.onPrimaryContainer,
             onPressed: onNext,
             tooltip: context.l10n.weeklyMenuNextWeek,
@@ -141,7 +143,7 @@ class SelectionActionBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
             color: cs.onPrimaryContainer,
             onPressed: onCancel,
             tooltip: context.l10n.commonCancel,
@@ -156,7 +158,7 @@ class SelectionActionBar extends StatelessWidget {
           ),
           TextButton.icon(
             onPressed: selectedCount > 0 ? onMove : null,
-            icon: const Icon(Icons.drive_file_move_outline),
+            icon: const ButleryIcon(Icons.drive_file_move_outline),
             label: Text(context.l10n.weeklyMenuMoveSelectionAction),
             style: TextButton.styleFrom(
               foregroundColor: cs.onPrimaryContainer,
@@ -318,8 +320,8 @@ class _OverflowChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.drag_indicator,
+          ButleryIcon(
+            ButleryIcons.drag,
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),

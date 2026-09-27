@@ -13,6 +13,8 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Static API surface for shopping item tiles.
 ///
@@ -82,7 +84,7 @@ class ShoppingItemTiles {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: 64,
             color: cs.onSurfaceVariant,
@@ -256,8 +258,10 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                 child: Row(
                   children: [
                     if (selectionMode) ...[
-                      Icon(
-                        selected ? Icons.check_circle : Icons.circle_outlined,
+                      ButleryIcon(
+                        selected
+                            ? ButleryIcons.circleCheck
+                            : Icons.circle_outlined,
                         color: selected ? cs.onSurface : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
@@ -302,8 +306,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           switchInCurve: ThemeConstants.standardCurve,
           switchOutCurve: ThemeConstants.standardCurve,
           child: widget.isCompleted
-              ? Icon(
-                  Icons.check,
+              ? ButleryIcon(
+                  ButleryIcons.check,
                   key: const ValueKey('check-icon'),
                   size: _checkIconSize,
                   color: cs.surfaceContainerHighest,
@@ -383,14 +387,14 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
             iconSize: AppDimensions.iconSizeS,
           ),
         AppIconButton(
-          icon: Icons.edit,
+          icon: ButleryIcons.pencil,
           onPressed: () => widget.onEditItem(widget.item),
           semanticLabel: context.l10n.a11yEditItem(widget.item.name),
           color: cs.onSurfaceVariant,
           iconSize: AppDimensions.iconSizeS,
         ),
         AppIconButton(
-          icon: Icons.delete,
+          icon: ButleryIcons.trash2,
           onPressed: () => widget.onDeleteItem(widget.item),
           semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
           color: cs.onSurfaceVariant.withValues(
@@ -433,8 +437,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         // it doesn't respond to a screen-reader activate/tap (the accessible
         // path is the move-to-category button). `button: true` was misleading.
         label: context.l10n.a11yShoppingReorderHandle(widget.item.name),
-        child: Icon(
-          Icons.drag_handle,
+        child: ButleryIcon(
+          ButleryIcons.drag,
           color: cs.onSurfaceVariant,
           size: AppDimensions.iconSizeS,
         ),

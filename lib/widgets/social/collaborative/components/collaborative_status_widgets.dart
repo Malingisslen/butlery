@@ -8,6 +8,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
 
 /// Status badges, banners, and app bars for collaborative content
@@ -15,7 +17,7 @@ class CollaborativeStatusWidgets {
   /// Compact badge to show that content is shared/collaborative
   static Widget statusBadge({
     String? text,
-    IconData icon = Icons.people,
+    IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
   }) {
@@ -44,7 +46,7 @@ class CollaborativeStatusWidgets {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeM,
                 color: effectiveColor,
@@ -102,8 +104,8 @@ class CollaborativeStatusWidgets {
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.people,
+                  ButleryIcon(
+                    ButleryIcons.users,
                     color: cs.onSurface,
                     size: AppDimensions.iconSizeAction,
                   ),
@@ -141,8 +143,8 @@ class CollaborativeStatusWidgets {
                     trailing
                   // LAST FALLBACK - show just an icon
                   else
-                    Icon(
-                      Icons.people_outline,
+                    ButleryIcon(
+                      ButleryIcons.users,
                       size: AppDimensions.iconSizeL,
                       color: cs.onSurface,
                     ),
@@ -292,7 +294,7 @@ class _CollaborativeAppBar extends StatelessWidget
                       text: participants.isNotEmpty
                           ? '${participants.length}'
                           : context.l10n.collaborativeShared,
-                      icon: Icons.people,
+                      icon: ButleryIcons.users,
                       // Paper on the ink bar (onPrimary, both schemes).
                       color: cs.onPrimary,
                     ),

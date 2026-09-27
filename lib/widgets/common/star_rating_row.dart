@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 /// Shared star rating row supporting display-only and interactive modes.
@@ -36,12 +38,12 @@ class StarRatingRow extends StatelessWidget {
         final isFilled = starValue <= rating;
         final isHalf = !isFilled && starValue - 0.5 <= rating;
 
-        final star = Icon(
+        final star = ButleryIcon(
           isFilled
-              ? Icons.star
+              ? ButleryIcons.star
               : isHalf
               ? Icons.star_half
-              : Icons.star_border,
+              : ButleryIcons.starOutline,
           color: isFilled || isHalf ? starColor : cs.onSurfaceVariant,
           size: size,
         );

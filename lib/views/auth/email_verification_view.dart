@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Soft-gate verification screen shown to new users after registration.
 /// Polls for email verification status and auto-navigates when verified.
@@ -151,7 +153,11 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, size: 64, color: cs.onSurface),
+              ButleryIcon(
+                ButleryIcons.circleCheck,
+                size: 64,
+                color: cs.onSurface,
+              ),
               const SizedBox(height: AppDimensions.spacingM),
               Text(l.emailVerificationSuccess, style: tt.titleLarge),
             ],
@@ -180,7 +186,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    ButleryIcon(
                       Icons.mark_email_unread_outlined,
                       size: 80,
                       color: cs.onSurface,

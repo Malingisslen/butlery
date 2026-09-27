@@ -14,6 +14,8 @@ import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class OnboardingImportPage extends StatelessWidget {
@@ -97,9 +99,9 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             onChanged: viewModel.updateInput,
             decoration: InputDecoration(
               hintText: context.l10n.onboardingImportUrlTitle,
-              prefixIcon: const Icon(Icons.link),
+              prefixIcon: const ButleryIcon(ButleryIcons.link),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.content_paste),
+                icon: const ButleryIcon(Icons.content_paste),
                 tooltip: context.l10n.commonPaste,
                 onPressed: () => _pasteFromClipboard(viewModel),
               ),
@@ -136,7 +138,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
                       onPressed: viewModel.canImport
                           ? () => _handleImport(viewModel)
                           : null,
-                      icon: const Icon(Icons.download),
+                      icon: const ButleryIcon(ButleryIcons.download),
                       label: Text(context.l10n.importRecipeTitle),
                     ),
             ),
@@ -155,8 +157,8 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.check_circle,
+                  ButleryIcon(
+                    ButleryIcons.circleCheck,
                     color: context.modeColors.success,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
@@ -185,7 +187,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               alignment: AlignmentDirectional.centerStart,
               child: TextButton.icon(
                 onPressed: () => _handleImport(viewModel),
-                icon: const Icon(Icons.refresh),
+                icon: const ButleryIcon(ButleryIcons.refreshCw),
                 label: Text(context.l10n.commonRetry),
               ),
             ),
@@ -195,7 +197,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
 
           // Alternative: photo import card (still navigates)
           _ImportOptionCard(
-            icon: Icons.camera_alt_outlined,
+            icon: ButleryIcons.camera,
             title: context.l10n.onboardingImportPhotoTitle,
             description: context.l10n.onboardingImportPhotoDescription,
             onTap: () {
@@ -300,7 +302,7 @@ class _ImportOptionCard extends StatelessWidget {
                     alpha: AppDimensions.opacityLight,
                   ),
                 ),
-                child: Icon(
+                child: ButleryIcon(
                   icon,
                   size: AppDimensions.iconSizeL,
                   color: cs.onSurface,
@@ -322,8 +324,8 @@ class _ImportOptionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 color: cs.outline,
               ),
             ],

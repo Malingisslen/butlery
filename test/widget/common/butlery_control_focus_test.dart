@@ -26,6 +26,7 @@ import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
@@ -33,6 +34,7 @@ import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 final _boundaryKey = GlobalKey();
 
@@ -271,7 +273,7 @@ void main() {
               child: IconButton(
                 focusNode: heartNode,
                 onPressed: () {},
-                icon: const Icon(Icons.favorite_border),
+                icon: const ButleryIcon(ButleryIcons.heartOutline),
               ),
             ),
           ),

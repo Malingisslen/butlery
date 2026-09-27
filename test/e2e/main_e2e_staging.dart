@@ -35,6 +35,8 @@ import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// E2E Staging Application Entry Point
 /// This entry point provides complete Butlery app functionality for E2E testing
@@ -170,8 +172,8 @@ class _E2EStagingErrorApp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.cloud_off_outlined,
+                  ButleryIcon(
+                    ButleryIcons.wifiOff,
                     size: AppDimensions.iconSizeXxl,
                     color: butlery.info,
                   ),

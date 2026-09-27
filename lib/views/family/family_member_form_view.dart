@@ -12,6 +12,8 @@ import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Add or edit a non-account family member, with the two-tier GDPR consent UX:
@@ -197,7 +199,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                       const SizedBox(height: AppDimensions.spacingM),
                       TextButton.icon(
                         onPressed: _delete,
-                        icon: const Icon(Icons.delete_outline),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         label: Text(l10n.familyDeleteMember),
                         style: TextButton.styleFrom(
                           foregroundColor: cs.error,
@@ -457,7 +459,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: _withdraw,
-                icon: const Icon(Icons.undo, size: 16),
+                icon: const ButleryIcon(Icons.undo, size: 16),
                 label: Text(l10n.familyWithdrawAllergenConsent),
                 style: TextButton.styleFrom(
                   foregroundColor: cs.error,
@@ -609,8 +611,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           color: context.modeColors.heroPaleGreen,
           child: Row(
             children: [
-              Icon(
-                Icons.verified_user_outlined,
+              ButleryIcon(
+                ButleryIcons.shieldCheck,
                 size: 18,
                 color: cs.onSurface,
               ),

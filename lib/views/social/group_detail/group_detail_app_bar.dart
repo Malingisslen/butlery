@@ -9,6 +9,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
@@ -36,7 +38,7 @@ class GroupDetailAppBar {
           )
         else
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             onPressed: onRefresh,
             tooltip: context.l10n.commonRefresh,
           ),
@@ -62,7 +64,7 @@ class GroupDetailAppBar {
         currentUserId != null && currentUserId != group.ownerId;
 
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
+      icon: const ButleryIcon(ButleryIcons.moreVertical),
       onSelected: (value) {
         if (value == 'report') {
           ReportContentDialog.show(
@@ -82,7 +84,7 @@ class GroupDetailAppBar {
             value: 'add_members',
             child: Row(
               children: [
-                const Icon(Icons.person_add),
+                const ButleryIcon(Icons.person_add),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.groupAddMembers),
               ],
@@ -94,7 +96,7 @@ class GroupDetailAppBar {
             value: 'edit',
             child: Row(
               children: [
-                const Icon(Icons.edit),
+                const ButleryIcon(ButleryIcons.pencil),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.groupEditGroup),
               ],
@@ -106,8 +108,8 @@ class GroupDetailAppBar {
             value: 'delete',
             child: Row(
               children: [
-                Icon(
-                  Icons.delete,
+                ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -128,7 +130,7 @@ class GroupDetailAppBar {
               children: [
                 // The menu's own text colour: saffron belongs to a view's
                 // hero action only (Grafisk manual v6:219).
-                const Icon(Icons.exit_to_app),
+                const ButleryIcon(Icons.exit_to_app),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.groupLeaveGroup),
               ],
@@ -140,7 +142,7 @@ class GroupDetailAppBar {
             value: 'report',
             child: Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.flag_outlined,
                   color: Theme.of(context).colorScheme.error,
                 ),

@@ -10,6 +10,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Focused module for shopping list card components
 /// This module handles ONLY shopping list card display responsibilities:
@@ -164,8 +166,8 @@ class ShoppingListCard extends StatelessWidget {
     final title = _getListTitle();
     return Row(
       children: [
-        Icon(
-          Icons.shopping_cart,
+        ButleryIcon(
+          ButleryIcons.shoppingCart,
           size: AppDimensions.iconSizeM,
           color: cs.onSurfaceVariant,
         ),
@@ -223,8 +225,8 @@ class ShoppingListCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.info_outline,
+            ButleryIcon(
+              ButleryIcons.info,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
@@ -253,9 +255,9 @@ class ShoppingListCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
                 child: Row(
                   children: [
-                    Icon(
+                    ButleryIcon(
                       _isItemCompleted(item)
-                          ? Icons.check_circle
+                          ? ButleryIcons.circleCheck
                           : Icons.radio_button_unchecked,
                       size: AppDimensions.iconSizeS,
                       color: _isItemCompleted(item)
@@ -320,8 +322,8 @@ class ShoppingListCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.people,
+          ButleryIcon(
+            ButleryIcons.users,
             size: AppDimensions.iconSizeS,
             color: cs.onSurface,
           ),
@@ -351,8 +353,8 @@ class ShoppingListCard extends StatelessWidget {
         color: cs.primary,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.people,
+      child: ButleryIcon(
+        ButleryIcons.users,
         size: AppDimensions.iconSizeS,
         color: cs.onPrimary,
       ),
@@ -385,8 +387,8 @@ class ShoppingListCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isComplete ? Icons.check_circle : Icons.hourglass_empty,
+          ButleryIcon(
+            isComplete ? ButleryIcons.circleCheck : Icons.hourglass_empty,
             size: AppDimensions.iconSizeS,
             color: isComplete ? bc.success : bc.warning,
           ),

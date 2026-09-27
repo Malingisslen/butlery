@@ -9,6 +9,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Shows a bottom sheet for selecting recipes to suggest as vote alternatives.
@@ -133,7 +135,7 @@ class _SheetContentState extends State<_SheetContent> {
                       controller: _searchController,
                       decoration: InputDecoration(
                         hintText: context.l10n.commonSearch,
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon: const ButleryIcon(ButleryIcons.search),
                         border: const OutlineInputBorder(),
                       ),
                       onChanged: (query) {
@@ -181,8 +183,8 @@ class _SheetContentState extends State<_SheetContent> {
                                         width: AppDimensions.avatarSizeM,
                                         height: AppDimensions.avatarSizeM,
                                         color: cs.surfaceContainer,
-                                        child: Icon(
-                                          Icons.restaurant,
+                                        child: ButleryIcon(
+                                          ButleryIcons.utensils,
                                           color: cs.onSurfaceVariant,
                                         ),
                                       ),

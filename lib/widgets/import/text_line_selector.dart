@@ -9,6 +9,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -89,9 +91,9 @@ class TextLineSelector extends StatelessWidget {
             padding: AppDimensions.paddingSymmetric16x8,
             child: Row(
               children: [
-                Icon(
+                ButleryIcon(
                   mode == SelectionMode.ingredients
-                      ? Icons.restaurant
+                      ? ButleryIcons.utensils
                       : Icons.format_list_numbered,
                   size: AppDimensions.iconSizeM,
                   color: _getModeColor(context, colorScheme),
@@ -147,7 +149,7 @@ class TextLineSelector extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               Icons.text_fields,
               size: 48,
               color: theme.colorScheme.onSurfaceVariant.withValues(
@@ -181,7 +183,7 @@ class TextLineSelector extends StatelessWidget {
           newSelection.addAll(highlightedIndices);
           onSelectionChanged(newSelection);
         },
-        icon: const Icon(Icons.select_all),
+        icon: const ButleryIcon(ButleryIcons.checkSquare),
         label: Text(
           context.l10n.importSelectAllHighlighted(highlightedIndices.length),
         ),
@@ -312,8 +314,8 @@ class _LineItem extends StatelessWidget {
                       ),
                     ),
                     child: isSelected
-                        ? Icon(
-                            Icons.check,
+                        ? ButleryIcon(
+                            ButleryIcons.check,
                             size: AppDimensions.iconSizeS,
                             color: colorScheme.onPrimary,
                           )
@@ -360,7 +362,7 @@ class _LineItem extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          ButleryIcon(
                             Icons.auto_awesome,
                             size: AppDimensions.iconSizeXs,
                             color: colorScheme.onSecondaryContainer,

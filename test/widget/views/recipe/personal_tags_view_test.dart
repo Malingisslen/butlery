@@ -25,6 +25,7 @@ import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -227,7 +228,7 @@ void main() {
       );
       expect(tester.getSize(bar).height, before);
       final delete = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.delete_outline),
+        find.widgetWithIcon(IconButton, ButleryIcons.trash2),
       );
       expect(delete.onPressed, isNull);
     });

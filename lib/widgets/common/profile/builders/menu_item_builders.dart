@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Builders for profile menu item widgets.
 class MenuItemBuilders {
@@ -31,7 +33,7 @@ class MenuItemBuilders {
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeAction,
                 color: Theme.of(context).colorScheme.onSurface,
@@ -53,8 +55,8 @@ class MenuItemBuilders {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -93,7 +95,7 @@ class MenuItemBuilders {
             children: [
               Stack(
                 children: [
-                  Icon(
+                  ButleryIcon(
                     icon,
                     size: AppDimensions.iconSizeAction,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -142,8 +144,8 @@ class MenuItemBuilders {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -181,7 +183,7 @@ class MenuItemBuilders {
           ),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeAction,
                 color: color,

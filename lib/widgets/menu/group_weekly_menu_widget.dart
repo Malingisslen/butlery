@@ -19,6 +19,8 @@ import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
@@ -170,7 +172,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     return StateWidget.empty(
       title: context.l10n.groupMenuEmptyTitle,
       subtitle: context.l10n.groupMenuEmptyBody,
-      icon: Icons.how_to_vote_outlined,
+      icon: ButleryIcons.vote,
       actionLabel: widget.onStartPoll == null
           ? null
           : context.l10n.groupMenuEmptyAction,
@@ -390,7 +392,10 @@ class _DayRow extends StatelessWidget {
                             ),
                             if (vm.canEdit)
                               IconButton(
-                                icon: const Icon(Icons.close, size: 18),
+                                icon: const ButleryIcon(
+                                  ButleryIcons.x,
+                                  size: 18,
+                                ),
                                 tooltip: MaterialLocalizations.of(
                                   context,
                                 ).deleteButtonTooltip,
@@ -511,7 +516,7 @@ void _showVoters(
                   final name = vm.displayNameFor(voter);
                   return ListTile(
                     key: ValueKey(voter),
-                    leading: const Icon(Icons.how_to_vote_outlined),
+                    leading: const ButleryIcon(ButleryIcons.vote),
                     // A uid is never rendered, here either — and a blank display
                     // name falls back the same way the face row does.
                     title: Text(
@@ -554,7 +559,7 @@ class _WeekArrows extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: vm.goToPreviousWeek,
-                icon: const Icon(Icons.chevron_left),
+                icon: const ButleryIcon(ButleryIcons.chevronLeft),
                 label: Text(
                   context.l10n.groupMenuWeekShort(
                     IsoWeekUtils.isoWeekNumber(previous),
@@ -582,7 +587,7 @@ class _WeekArrows extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Icon(Icons.chevron_right),
+                    const ButleryIcon(ButleryIcons.chevronRight),
                   ],
                 ),
               ),

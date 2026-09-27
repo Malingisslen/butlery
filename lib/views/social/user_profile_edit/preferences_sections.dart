@@ -9,6 +9,8 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -64,8 +66,8 @@ class LanguageSettingsSection extends StatelessWidget {
                       );
                     }
                   },
-                  secondary: Icon(
-                    isSelected ? Icons.check_circle : Icons.language,
+                  secondary: ButleryIcon(
+                    isSelected ? ButleryIcons.circleCheck : Icons.language,
                     color: isSelected ? context.modeColors.success : null,
                   ),
                 ),
@@ -131,8 +133,8 @@ class ThemeSettingsSection extends StatelessWidget {
                       );
                     }
                   },
-                  secondary: Icon(
-                    isSelected ? Icons.check_circle : mode.$3,
+                  secondary: ButleryIcon(
+                    isSelected ? ButleryIcons.circleCheck : mode.$3,
                     color: isSelected ? context.modeColors.success : null,
                   ),
                 ),
@@ -180,7 +182,7 @@ class ProfileActionButtons extends StatelessWidget {
         ActionButtons.outlinedButton(
           context,
           label: context.l10n.profileResetChanges,
-          icon: Icons.refresh,
+          icon: ButleryIcons.refreshCw,
           onPressed: viewModel.hasUnsavedChanges ? onReset : null,
           isExpanded: true,
         ),
@@ -204,8 +206,8 @@ class ProfileActionButtons extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.warning_amber,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   color: context.modeColors.warning,
                   size: AppDimensions.iconSizeM,
                 ),

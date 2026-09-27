@@ -18,6 +18,8 @@ import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -78,7 +80,7 @@ abstract final class RecipeDetailSharedWidgets {
             children: [
               // BUT-1041: platform-aware leading icon so video imports read as
               // media at a glance, generic links as external.
-              Icon(
+              ButleryIcon(
                 sourceIcon(url),
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
@@ -213,7 +215,7 @@ abstract final class RecipeDetailSharedWidgets {
         children: [
           Row(
             children: [
-              Icon(
+              ButleryIcon(
                 Icons.tips_and_updates_outlined,
                 size: 18,
                 color: cs.onSurface,
@@ -262,7 +264,7 @@ abstract final class RecipeDetailSharedWidgets {
   static IconData sourceIcon(String url) {
     final host = (Uri.tryParse(url)?.host.toLowerCase()).orEmpty();
     if (host.contains('youtube.') || host.contains('youtu.be')) {
-      return Icons.play_circle_outline;
+      return ButleryIcons.play;
     }
     if (host.contains('tiktok.')) {
       return Icons.music_note;

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -81,7 +83,7 @@ class QuickFilterChips extends StatelessWidget {
     QuickFilterOption(
       id: RecipeFilters.filterIngredientSearch,
       label: context.l10n.ingredientSearchChip,
-      icon: Icons.search_outlined,
+      icon: ButleryIcons.search,
     ),
   ];
 
@@ -98,7 +100,7 @@ class QuickFilterChips extends StatelessWidget {
       return QuickFilterOption(
         id: mapping[key]!,
         label: label,
-        icon: Icons.check_circle_outline,
+        icon: ButleryIcons.circleCheck,
       );
     }).toList();
   }
@@ -216,7 +218,7 @@ class _QuickChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      Icon(
+                      ButleryIcon(
                         icon,
                         size: AppDimensions.iconSizeS,
                         color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,

@@ -40,6 +40,7 @@ import 'package:butlery/services/unified/operations/collaborative_shopping_opera
 import 'package:butlery/services/unified/shopping_failure_message.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../helpers/user_profile_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -249,7 +250,7 @@ void main() {
   }
 
   Future<void> removeBob(WidgetTester tester) async {
-    await tester.tap(find.byIcon(Icons.person_remove));
+    await tester.tap(find.byIcon(ButleryIcons.userMinus));
     await tester.pumpAndSettle();
     // The confirmation dialog's primary button. Its title is "Ta bort medlem",
     // a different string, so the bare verb is unambiguous.

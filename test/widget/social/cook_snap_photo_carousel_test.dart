@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
 
@@ -176,9 +177,9 @@ void main() {
       );
       await tester.pump();
 
-      // The album badge is an Icons.collections marker — absent for one photo.
+      // The album badge is an ButleryIcons.image marker — absent for one photo.
       expect(
-        find.byIcon(Icons.collections),
+        find.byIcon(ButleryIcons.image),
         findsNothing,
         reason: 'a legacy single-photo snap must not show an album badge',
       );
@@ -201,7 +202,7 @@ void main() {
       await tester.pump();
 
       expect(
-        find.byIcon(Icons.collections),
+        find.byIcon(ButleryIcons.image),
         findsOneWidget,
         reason: 'a multi-photo album thumbnail must show the count badge',
       );

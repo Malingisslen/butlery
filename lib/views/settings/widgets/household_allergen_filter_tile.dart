@@ -17,6 +17,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: opt out of household-wide allergen filtering in menus.
 ///
@@ -109,14 +111,14 @@ class _HouseholdAllergenFilterTileState
       message: rosterComplete
           ? body
           : '$body\n\n${l10n.householdAllergenRosterIncomplete}',
-      titleIcon: Icons.warning_amber,
+      titleIcon: ButleryIcons.triangleAlert,
       // Weighted red confirm (isDangerous) — this is the one settings toggle
       // whose wrong tap has a child-safety consequence, so it should carry
       // gravity. But it is NOT a delete, so override the default trash icon
       // with a warning icon (base_dialog defaults primaryActionIcon to
-      // Icons.delete when isDangerous).
+      // ButleryIcons.trash2 when isDangerous).
       isDangerous: true,
-      primaryActionIcon: Icons.warning_amber,
+      primaryActionIcon: ButleryIcons.triangleAlert,
       primaryActionText: l10n.commonTurnOff,
       secondaryActionText: l10n.commonCancel,
     );
@@ -154,8 +156,8 @@ class _HouseholdAllergenFilterTileState
     final colors = context.modeColors;
 
     return SwitchListTile(
-      secondary: Icon(
-        Icons.groups_outlined,
+      secondary: ButleryIcon(
+        ButleryIcons.users,
         color: on ? cs.onSurfaceVariant : colors.warning,
       ),
       title: Text(
@@ -172,8 +174,8 @@ class _HouseholdAllergenFilterTileState
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.warning_amber,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   size: AppDimensions.iconSizeS,
                   color: colors.warning,
                 ),

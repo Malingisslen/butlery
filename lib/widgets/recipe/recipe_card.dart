@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -9,6 +8,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
@@ -495,7 +496,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final (IconData icon, String label) = switch (recipe) {
       Recipe(isCollaborative: true) => (
-        Icons.people_outline,
+        ButleryIcons.users,
         context.l10n.recipeVisibilityCollaborative,
       ),
       Recipe(isPublic: true) => (
@@ -503,7 +504,7 @@ class RecipeCard extends StatelessWidget {
         context.l10n.recipeVisibilityPublic,
       ),
       _ => (
-        Icons.lock_outline,
+        ButleryIcons.lock,
         context.l10n.recipeVisibilityPrivate,
       ),
     };
@@ -514,7 +515,7 @@ class RecipeCard extends StatelessWidget {
         child: Semantics(
           label: label,
           excludeSemantics: true,
-          child: Icon(
+          child: ButleryIcon(
             icon,
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant.withValues(
@@ -536,10 +537,8 @@ class RecipeCard extends StatelessWidget {
         height: 32,
         child: IconButton(
           onPressed: () => onFavoriteToggle?.call(recipe),
-          icon: Icon(
-            isFav
-                ? AdaptiveIcons.favouriteFilled
-                : AdaptiveIcons.favouriteOutline,
+          icon: ButleryIcon(
+            isFav ? ButleryIcons.favourite : ButleryIcons.favouriteOutline,
             size: 20,
             // Colour convention (BUT-1213): green = personal favourite,
             // red stays reserved for social likes.
@@ -659,7 +658,7 @@ class RecipeCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.groups_outlined, size: 12, color: fg),
+            ButleryIcon(ButleryIcons.users, size: 12, color: fg),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeFamilyRatingPill(formatRatingComma(avg)),
@@ -685,7 +684,7 @@ class RecipeCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.star, size: 12, color: cs.surface),
+            ButleryIcon(ButleryIcons.star, size: 12, color: cs.surface),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeAllaRatingPill(formatRatingComma(avg)),
@@ -1006,8 +1005,8 @@ class RecipeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              hasFailed ? Icons.error_outline : Icons.pending_outlined,
+            ButleryIcon(
+              hasFailed ? ButleryIcons.triangleAlert : Icons.pending_outlined,
               size: 14,
               color: hasFailed ? cs.error : context.modeColors.warning,
             ),
@@ -1074,7 +1073,7 @@ class RecipeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.help_outline, size: 14, color: cs.outline),
+            ButleryIcon(Icons.help_outline, size: 14, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
@@ -1119,7 +1118,7 @@ class RecipeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.pie_chart_outline, size: 14, color: cs.outline),
+            ButleryIcon(Icons.pie_chart_outline, size: 14, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible for the reason on the unassessed marker above.
             Flexible(
@@ -1138,8 +1137,8 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
+      icon: ButleryIcon(
+        ButleryIcons.moreVertical,
         color: cs.onSurfaceVariant,
       ),
       // Ensure minimum touch target size for accessibility
@@ -1165,7 +1164,7 @@ class RecipeCard extends StatelessWidget {
         ButleryMenuItem(
           value: 'edit',
           child: ListTile(
-            leading: const Icon(Icons.edit),
+            leading: const ButleryIcon(ButleryIcons.pencil),
             title: Text(context.l10n.commonEdit),
             contentPadding: EdgeInsets.zero,
           ),
@@ -1173,7 +1172,7 @@ class RecipeCard extends StatelessWidget {
         ButleryMenuItem(
           value: 'share',
           child: ListTile(
-            leading: const Icon(Icons.share),
+            leading: const ButleryIcon(ButleryIcons.share2),
             title: Text(context.l10n.commonShare),
             contentPadding: EdgeInsets.zero,
           ),
@@ -1181,7 +1180,7 @@ class RecipeCard extends StatelessWidget {
         ButleryMenuItem(
           value: 'delete',
           child: ListTile(
-            leading: const Icon(Icons.delete),
+            leading: const ButleryIcon(ButleryIcons.trash2),
             title: Text(context.l10n.commonDelete),
             contentPadding: EdgeInsets.zero,
           ),

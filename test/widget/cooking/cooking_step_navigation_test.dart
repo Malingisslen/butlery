@@ -25,6 +25,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/views/cooking_mode_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -158,7 +159,7 @@ void main() {
       // First step: "Föregående steg" is disabled.
       final previous = find.descendant(
         of: find.byType(TappableWrapper),
-        matching: find.byIcon(Icons.arrow_back),
+        matching: find.byIcon(ButleryIcons.arrowLeft),
       );
       final icon = tester.widget<Icon>(previous);
       final base = baseOf(tester);

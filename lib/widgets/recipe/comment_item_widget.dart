@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/recipe/comment_time_formatter.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -96,10 +97,10 @@ class CommentItemWidget extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ButleryIcon(
                 socialViewModel.hasLikedComment(comment.id)
-                    ? AdaptiveIcons.favouriteFilled
-                    : AdaptiveIcons.favouriteOutline,
+                    ? ButleryIcons.favourite
+                    : ButleryIcons.favouriteOutline,
                 size: AppDimensions.iconSizeM,
                 // Red is deliberate (BUT-1213): red = social like,
                 // green (cs.primary) = personal favourite.

@@ -16,6 +16,7 @@ import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
 
 /// Section rendering the original heirloom scan with a rust corner stamp.
@@ -59,7 +60,10 @@ class HeirloomSection extends StatelessWidget {
                 // A still plate while the image loads, never a spinner (P4-U05).
                 placeholder: (_, __) => const SizedBox.shrink(),
                 errorWidget: (_, __, ___) => Center(
-                  child: Icon(Icons.broken_image_outlined, color: cs.onSurface),
+                  child: ButleryIcon(
+                    Icons.broken_image_outlined,
+                    color: cs.onSurface,
+                  ),
                 ),
               ),
             ),

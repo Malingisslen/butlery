@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -46,7 +47,7 @@ void main() {
     testWidgets('renders title with sync icon', (tester) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
-      expect(find.byIcon(Icons.sync), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.refreshCw), findsOneWidget);
       // Cleanup: complete the future so the dialog drains
       completer.complete(0);
       await tester.pumpAndSettle();

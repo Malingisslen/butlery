@@ -7,6 +7,8 @@ import 'package:butlery/models/admin/parse_event.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Opens the drill-down for a tapped metric row. Dispatches by [kind]; the only
@@ -128,8 +130,8 @@ class _EventTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            ok ? Icons.check_circle_outline : Icons.error_outline,
+          ButleryIcon(
+            ok ? ButleryIcons.circleCheck : ButleryIcons.triangleAlert,
             size: 18,
             color: ok ? cs.onSurface : cs.error,
           ),

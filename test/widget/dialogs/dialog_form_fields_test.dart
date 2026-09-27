@@ -6,6 +6,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -54,12 +55,12 @@ void main() {
             child: DialogFormFields.buildTextFormField(
               controller: controller,
               labelText: 'Email',
-              prefixIcon: Icons.email,
+              prefixIcon: ButleryIcons.mail,
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.email), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.mail), findsOneWidget);
       });
 
       testWidgets('enforces max length constraint', (
@@ -244,7 +245,7 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.label_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.tag), findsOneWidget);
       });
 
       testWidgets('renders description field', (WidgetTester tester) async {
@@ -334,7 +335,7 @@ void main() {
 
         expect(find.byType(TextFormField), findsOneWidget);
         expect(find.text('E-post'), findsOneWidget);
-        expect(find.byIcon(Icons.email_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.mail), findsOneWidget);
       });
 
       testWidgets('renders URL field', (WidgetTester tester) async {
@@ -353,7 +354,7 @@ void main() {
 
         expect(find.byType(TextFormField), findsOneWidget);
         expect(find.text('URL'), findsOneWidget);
-        expect(find.byIcon(Icons.link), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.link), findsOneWidget);
       });
 
       testWidgets('renders password field', (WidgetTester tester) async {
@@ -371,7 +372,7 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
       });
 
       testWidgets('renders search field', (WidgetTester tester) async {
@@ -389,7 +390,7 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.search), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
       });
     });
 

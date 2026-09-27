@@ -16,6 +16,8 @@ import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
@@ -357,8 +359,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                             padding: const EdgeInsetsDirectional.only(
                               end: AppDimensions.spacingXs,
                             ),
-                            child: Icon(
-                              Icons.warning_amber,
+                            child: ButleryIcon(
+                              ButleryIcons.triangleAlert,
                               size: AppDimensions.iconSizeS,
                               color: cs.error,
                             ),
@@ -374,8 +376,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.swap_horiz,
+                  ButleryIcon(
+                    ButleryIcons.swapHorizontal,
                     size: AppDimensions.iconSizeS,
                     color: cs.onSurfaceVariant.withValues(
                       alpha: AppDimensions.opacityMediumLight,
@@ -536,8 +538,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       ),
       child: Center(
         child: isCompleted
-            ? Icon(
-                Icons.check,
+            ? ButleryIcon(
+                ButleryIcons.check,
                 size: 16,
                 color: cs.onPrimary,
               )
@@ -644,8 +646,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.local_offer_outlined,
+              ButleryIcon(
+                ButleryIcons.tag,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -718,8 +720,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
-                Icon(
-                  Icons.photo_library_outlined,
+                ButleryIcon(
+                  ButleryIcons.image,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -831,8 +833,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           // Header with expand/collapse
           Row(
             children: [
-              Icon(
-                Icons.label_outline,
+              ButleryIcon(
+                ButleryIcons.tag,
                 color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
@@ -846,8 +848,10 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               if (hasOverflow)
                 TextButton.icon(
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                  icon: Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  icon: ButleryIcon(
+                    _isExpanded
+                        ? ButleryIcons.chevronUp
+                        : ButleryIcons.chevronDown,
                     size: AppDimensions.iconSizeM,
                   ),
                   label: Text(

@@ -23,6 +23,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Hem when the library is empty (#hemtom).
 class HemEmptyState extends StatelessWidget {
@@ -41,19 +43,19 @@ class HemEmptyState extends StatelessWidget {
         route: Routes.smartImport,
         title: l10n.hemEmptyLinkTitle,
         body: l10n.hemEmptyLinkBody,
-        icon: Icons.link,
+        icon: ButleryIcons.link,
       ),
       (
         route: Routes.photoImport,
         title: l10n.hemEmptyPhotoTitle,
         body: l10n.hemEmptyPhotoBody,
-        icon: Icons.photo_camera_outlined,
+        icon: ButleryIcons.camera,
       ),
       (
         route: Routes.manualEntry,
         title: l10n.hemEmptyWriteTitle,
         body: l10n.hemEmptyWriteBody,
-        icon: Icons.edit_outlined,
+        icon: ButleryIcons.pencil,
       ),
     ];
 
@@ -111,7 +113,7 @@ class HemEmptyState extends StatelessWidget {
                     style: ComponentThemes.heroButtonStyle(cs),
                     onPressed: () =>
                         Navigator.pushNamed(context, Routes.addRecipe),
-                    icon: const Icon(Icons.add),
+                    icon: const ButleryIcon(ButleryIcons.plus),
                     label: Text(l10n.addRecipeTitle),
                   ),
                 ),
@@ -166,7 +168,7 @@ class HemEmptyState extends StatelessWidget {
               onPressed: () =>
                   Navigator.pushNamed(context, Routes.settingsAllergens),
               iconAlignment: IconAlignment.end,
-              icon: const Icon(Icons.chevron_right),
+              icon: const ButleryIcon(ButleryIcons.chevronRight),
               label: Text(l10n.hemEmptyAllergyLink),
             ),
           ),
@@ -207,7 +209,11 @@ class _ShortcutRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, color: cs.onSurface, size: AppDimensions.iconSizeM),
+              ButleryIcon(
+                icon,
+                color: cs.onSurface,
+                size: AppDimensions.iconSizeM,
+              ),
               const SizedBox(width: AppDimensions.spacingSm + 4),
               Expanded(
                 child: Padding(
@@ -234,8 +240,8 @@ class _ShortcutRow extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 color: cs.onSurfaceVariant,
                 size: AppDimensions.iconSizeM,
               ),

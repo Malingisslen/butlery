@@ -37,6 +37,8 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 // Pure mocks — no concrete overrides so when()/verify() work cleanly.
 class _MockAuthService extends Mock implements AuthService {}
@@ -85,7 +87,7 @@ class _SettingsBodyState extends State<_SettingsBody> {
             ),
             ListTile(
               key: const Key('delete_account_tile'),
-              leading: Icon(Icons.delete_forever, color: cs.error),
+              leading: ButleryIcon(ButleryIcons.trash2, color: cs.error),
               title: Text(
                 'Radera konto',
                 style: TextStyle(color: cs.error),

@@ -4,6 +4,8 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class ParsedExtractionChips extends StatelessWidget {
   final ParsedMenuRequest? parsed;
@@ -138,8 +140,8 @@ class _NotUnderstoodChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.help_outline,
+          ButleryIcon(
+            ButleryIcons.circleHelp,
             size: AppDimensions.iconSizeS,
             color: colors.warning,
           ),

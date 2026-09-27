@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 // Re-export ImageSize for easier imports
@@ -295,7 +296,7 @@ class AvatarWidgets {
   static Widget emptyUserState({
     String? title,
     String? subtitle,
-    IconData icon = Icons.people_outline,
+    IconData icon = ButleryIcons.users,
     VoidCallback? onAction,
     String? actionLabel,
   }) {

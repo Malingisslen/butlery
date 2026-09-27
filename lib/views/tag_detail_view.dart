@@ -21,6 +21,8 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -171,7 +173,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       // v1:57).
       return ButleryTopBar.undersida(
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const ButleryIcon(ButleryIcons.x),
           onPressed: _cancelEditMode,
           tooltip: context.l10n.commonClose,
         ),
@@ -196,22 +198,23 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       // app bar rather than moving to a FAB. Do NOT add a FAB here.
       actions: [
         IconButton(
-          icon: const Icon(Icons.share),
+          icon: const ButleryIcon(ButleryIcons.share2),
           tooltip: context.l10n.commonShare,
           onPressed: () => _shareTag(context, tag),
         ),
         IconButton(
-          icon: const Icon(Icons.edit),
+          icon: const ButleryIcon(ButleryIcons.pencil),
           tooltip: context.l10n.commonEdit,
           onPressed: () => _enterEditMode(tag),
         ),
         PopupMenuButton<String>(
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
           onSelected: (value) => _handleMenuAction(context, value, tag),
           itemBuilder: (menuContext) => [
             PopupMenuItem(
               value: 'apply_rules',
               child: ListTile(
-                leading: const Icon(Icons.play_arrow),
+                leading: const ButleryIcon(ButleryIcons.play),
                 title: Text(context.l10n.tagDetailApplyRules),
                 subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
                 contentPadding: EdgeInsets.zero,
@@ -220,8 +223,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             PopupMenuItem(
               value: 'delete',
               child: ListTile(
-                leading: Icon(
-                  Icons.delete,
+                leading: ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(

@@ -10,6 +10,8 @@ import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -56,7 +58,7 @@ class PlatformBadgeWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               _getIconForPlatform(detection!.platform),
               size: AppDimensions.iconSizeS,
               color: _getIconColor(detection!.platform, colorScheme),
@@ -77,11 +79,11 @@ class PlatformBadgeWidget extends StatelessWidget {
   IconData _getIconForPlatform(Platform platform) {
     switch (platform) {
       case Platform.youtube:
-        return Icons.play_circle_outline;
+        return ButleryIcons.play;
       case Platform.tiktok:
         return Icons.music_note;
       case Platform.instagram:
-        return Icons.camera_alt_outlined;
+        return ButleryIcons.camera;
       case Platform.website:
         return Icons.language;
       case Platform.unknown:
@@ -174,7 +176,7 @@ class PlatformIconWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
+    return ButleryIcon(
       _getIconForPlatform(platform),
       size: size,
       color: _getIconColor(platform, Theme.of(context).colorScheme),
@@ -184,11 +186,11 @@ class PlatformIconWidget extends StatelessWidget {
   IconData _getIconForPlatform(Platform platform) {
     switch (platform) {
       case Platform.youtube:
-        return Icons.play_circle_outline;
+        return ButleryIcons.play;
       case Platform.tiktok:
         return Icons.music_note;
       case Platform.instagram:
-        return Icons.camera_alt_outlined;
+        return ButleryIcons.camera;
       case Platform.website:
         return Icons.language;
       case Platform.unknown:

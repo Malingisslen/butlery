@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 
@@ -21,7 +22,7 @@ void main() {
 
         expect(find.byIcon(Icons.eco_outlined), findsOneWidget);
         expect(find.byIcon(Icons.cancel_outlined), findsNothing);
-        expect(find.byIcon(Icons.help_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
 
       testWidgets('CONTAINS renders cancel_outlined icon', (tester) async {
@@ -37,10 +38,10 @@ void main() {
 
         expect(find.byIcon(Icons.cancel_outlined), findsOneWidget);
         expect(find.byIcon(Icons.eco_outlined), findsNothing);
-        expect(find.byIcon(Icons.help_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
 
-      testWidgets('UNKNOWN renders help_outline icon and "okänd" label', (
+      testWidgets('UNKNOWN renders the info glyph and "okänd" label', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -53,7 +54,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.help_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.info), findsOneWidget);
         // Uses neutral "Vegetarisk: okänd" label so it doesn't read like a
         // yes/no question (BUT-399).
         expect(find.textContaining('okänd'), findsOneWidget);

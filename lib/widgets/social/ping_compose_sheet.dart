@@ -3,6 +3,8 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
@@ -227,7 +229,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-timer'),
             label: l10n.pingTimerAlert,
-            icon: Icons.timer_outlined,
+            icon: ButleryIcons.clock,
             selected: selected == PingType.timerAlert,
             onTap: () => onSelect(PingType.timerAlert),
           ),
@@ -290,7 +292,7 @@ class _TypeChip extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: AppDimensions.iconSizeM, color: fg),
+              ButleryIcon(icon, size: AppDimensions.iconSizeM, color: fg),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 label,

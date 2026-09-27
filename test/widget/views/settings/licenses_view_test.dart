@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -106,7 +107,7 @@ void main() {
       expect(find.byType(SelectableText), findsNothing);
 
       bundleBroken = false;
-      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.tap(find.byIcon(ButleryIcons.refreshCw));
       await tester.pumpAndSettle();
 
       expect(find.text(sv.licensesCouldNotLoad), findsNothing);

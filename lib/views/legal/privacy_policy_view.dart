@@ -5,6 +5,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/legal/legal_contact_footer.dart';
@@ -113,7 +115,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         title: context.l10n.privacyTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             onPressed: _isLoading ? null : _loadPrivacyPolicy,
             tooltip: context.l10n.privacyReload,
           ),
@@ -234,8 +236,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             color: context.modeColors.info,
             size: AppDimensions.iconSizeM,
           ),

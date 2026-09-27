@@ -14,6 +14,8 @@ import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
@@ -250,7 +252,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             ),
             child: Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.reply,
                   size: AppDimensions.iconSizeM,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -266,8 +268,8 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 ),
                 IconButton(
                   onPressed: socialViewModel.cancelReply,
-                  icon: const Icon(
-                    Icons.close,
+                  icon: const ButleryIcon(
+                    ButleryIcons.x,
                     size: AppDimensions.iconSizeM,
                   ),
                   constraints: const BoxConstraints(),
@@ -319,7 +321,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               IconButton(
                 tooltip: context.l10n.commentAttachImage,
                 onPressed: _isBusy ? null : _pickImages,
-                icon: const Icon(Icons.add_photo_alternate_outlined),
+                icon: const ButleryIcon(ButleryIcons.camera),
               ),
             IconButton(
               onPressed: _canSend ? _onSendPressed : null,
@@ -332,7 +334,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                         semanticLabel: context.l10n.sendingComment,
                       ),
                     )
-                  : const Icon(Icons.send),
+                  : const ButleryIcon(ButleryIcons.send),
               style: IconButton.styleFrom(
                 backgroundColor: _canSend
                     ? Theme.of(context).colorScheme.primary
@@ -389,8 +391,8 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                     onTap: _isBusy ? null : () => _removeImageAt(index),
                     child: ColoredBox(
                       color: cs.scrim.withValues(alpha: 0.6),
-                      child: Icon(
-                        Icons.close,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
                         size: AppDimensions.iconSizeS,
                         color: cs.onPrimary,
                       ),

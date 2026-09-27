@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
@@ -156,7 +158,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       return StateWidget.empty(
         title: context.l10n.dialogNoMenus,
         subtitle: context.l10n.dialogNoMenusToShare,
-        icon: Icons.calendar_today,
+        icon: ButleryIcons.calendar,
       );
     }
 
@@ -202,8 +204,8 @@ class _MenuListItem extends StatelessWidget {
               color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
-              Icons.calendar_today,
+            child: ButleryIcon(
+              ButleryIcons.calendar,
               color: cs.onPrimaryContainer,
               size: AppDimensions.iconSizeAction,
             ),
@@ -235,8 +237,8 @@ class _MenuListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
+      trailing: const ButleryIcon(
+        ButleryIcons.chevronRight,
         size: AppDimensions.iconSizeS,
       ),
       onTap: onTap,

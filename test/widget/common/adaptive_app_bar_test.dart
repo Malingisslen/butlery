@@ -12,13 +12,15 @@ import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   Widget host() => const MaterialApp(
     home: Scaffold(
       appBar: AdaptiveAppBar(
         title: 'Statistik',
-        actions: [Icon(Icons.share)],
+        actions: [ButleryIcon(ButleryIcons.share2)],
       ),
       body: SizedBox.shrink(),
     ),
@@ -35,7 +37,7 @@ void main() {
     expect(find.byType(AppBar), findsNothing);
     expect(find.text('Statistik'), findsOneWidget);
     expect(
-      find.byIcon(Icons.share),
+      find.byIcon(ButleryIcons.share2),
       findsOneWidget,
       reason: 'actions are packed into the Cupertino trailing slot',
     );
@@ -53,7 +55,7 @@ void main() {
     expect(find.byType(AppBar), findsOneWidget);
     expect(find.byType(CupertinoNavigationBar), findsNothing);
     expect(find.text('Statistik'), findsOneWidget);
-    expect(find.byIcon(Icons.share), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.share2), findsOneWidget);
 
     debugDefaultTargetPlatformOverride = null;
   });

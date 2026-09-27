@@ -4,6 +4,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -177,9 +179,12 @@ class SocialGroupComponents {
                   context.l10n.socialMembersCount(0),
                 ) // FriendCategory doesn't have memberIds
               : null,
-          leading: const Icon(Icons.group),
+          leading: const ButleryIcon(ButleryIcons.users),
           trailing: isSelected
-              ? Icon(Icons.check, color: context.modeColors.success)
+              ? ButleryIcon(
+                  ButleryIcons.check,
+                  color: context.modeColors.success,
+                )
               : null,
           selected: isSelected,
           onTap: () {
@@ -246,13 +251,13 @@ class SocialGroupComponents {
   static Widget addCategoryButton({
     VoidCallback? onPressed,
     String? text,
-    IconData icon = Icons.add,
+    IconData icon = ButleryIcons.plus,
     bool outlined = false,
   }) {
     if (outlined) {
       return OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon),
+        icon: ButleryIcon(icon),
         label: Builder(
           builder: (context) => Text(text ?? context.l10n.socialAddCategory),
         ),
@@ -260,7 +265,7 @@ class SocialGroupComponents {
     } else {
       return ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon),
+        icon: ButleryIcon(icon),
         label: Builder(
           builder: (context) => Text(text ?? context.l10n.socialAddCategory),
         ),
@@ -291,7 +296,7 @@ class SocialGroupComponents {
           Builder(
             builder: (context) => IconButton(
               onPressed: onFilterCategories,
-              icon: const Icon(Icons.tune),
+              icon: const ButleryIcon(ButleryIcons.filter),
               tooltip: context.l10n.socialFilterCategories,
             ),
           ),
@@ -299,7 +304,7 @@ class SocialGroupComponents {
           Builder(
             builder: (context) => IconButton(
               onPressed: onSortCategories,
-              icon: const Icon(Icons.sort),
+              icon: const ButleryIcon(ButleryIcons.arrowUpDown),
               tooltip: context.l10n.socialSortCategories,
             ),
           ),
@@ -350,7 +355,7 @@ class SocialGroupComponents {
                 if (showTotalMembers)
                   Expanded(
                     child: StatItemWidget(
-                      icon: Icons.people,
+                      icon: ButleryIcons.users,
                       value: totalMembers.toString(),
                       label: context.l10n.socialTotalMembers,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -380,7 +385,7 @@ class SocialGroupComponents {
                   if (showLargestCategory && largestCategory != null)
                     Expanded(
                       child: StatItemWidget(
-                        icon: Icons.star,
+                        icon: ButleryIcons.star,
                         value: largestCategory.name,
                         label: context.l10n.socialLargestCategory,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -410,7 +415,7 @@ class SocialGroupComponents {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

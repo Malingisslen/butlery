@@ -26,6 +26,8 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -404,7 +406,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return ActionButtons.actionButton(
       context,
       label: context.l10n.menuToShoppingList,
-      icon: Icons.shopping_cart,
+      icon: ButleryIcons.shoppingCart,
       isLoading: planVm.isShoppingFlowRunning,
       onPressed: () => unawaited(_openShoppingMerge()),
       style: ActionButtonStyle.primary,
@@ -510,7 +512,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       const GroupMenuEntryButton(),
       PopupMenuButton<_VeckomenyRootAction>(
         key: const ValueKey('veckomeny-root-more'),
-        icon: const Icon(Icons.more_vert),
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
         tooltip: context.l10n.rootBarMoreActions,
         onSelected: (action) {
           switch (action) {
@@ -540,7 +542,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         itemBuilder: (menuContext) => [
           _rootItem(
             _VeckomenyRootAction.load,
-            Icons.folder_open,
+            ButleryIcons.folder,
             context.l10n.menuLoadSaved,
           ),
           if (viewModel.hasMenu)
@@ -552,7 +554,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           if (viewModel.hasMenu)
             _rootItem(
               _VeckomenyRootAction.clear,
-              Icons.clear,
+              ButleryIcons.x,
               context.l10n.menuClear,
             ),
         ],
@@ -572,7 +574,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       value: value,
       child: Row(
         children: [
-          Icon(icon, size: AppDimensions.iconSizeM),
+          ButleryIcon(icon, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingM),
           Flexible(child: Text(label)),
         ],

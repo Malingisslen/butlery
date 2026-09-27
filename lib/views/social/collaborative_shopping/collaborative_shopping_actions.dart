@@ -11,6 +11,8 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
@@ -53,7 +55,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildShareAction(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.share),
+      icon: const ButleryIcon(ButleryIcons.share2),
       onPressed: onShare,
       tooltip: context.l10n.collaborativeShareList,
     );
@@ -61,7 +63,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildMenuActions(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
+      icon: const ButleryIcon(ButleryIcons.moreVertical),
       onSelected: onMenuAction,
       tooltip: context.l10n.collaborativeMoreActions,
       itemBuilder: (context) => [
@@ -84,7 +86,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       value: value,
       child: Row(
         children: [
-          Icon(icon),
+          ButleryIcon(icon),
           const SizedBox(width: AppDimensions.spacingM),
           Text(label),
         ],
@@ -143,8 +145,8 @@ class CollaborativeShoppingActions extends BaseActionHandler
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.visibility,
+          ButleryIcon(
+            ButleryIcons.eye,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
@@ -188,7 +190,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
   Widget _buildAddButton(BuildContext context) {
     return FilledButton.icon(
       onPressed: viewModel.isAddingItem ? null : onAddItem,
-      icon: Icon(viewModel.isAddingItem ? Icons.hourglass_empty : Icons.add),
+      icon: ButleryIcon(
+        viewModel.isAddingItem ? Icons.hourglass_empty : ButleryIcons.plus,
+      ),
       label: Text(
         viewModel.isAddingItem
             ? context.l10n.collaborativeAdding
@@ -265,7 +269,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
           ),
           const SizedBox(height: AppDimensions.spacingL),
           ListTile(
-            leading: const Icon(Icons.link),
+            leading: const ButleryIcon(ButleryIcons.link),
             title: Text(context.l10n.collaborativeCopyLink),
             subtitle: Text(context.l10n.collaborativeCopyLinkDescription),
             onTap: () {
@@ -274,7 +278,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             },
           ),
           ListTile(
-            leading: const Icon(Icons.message),
+            leading: const ButleryIcon(ButleryIcons.messageSquare),
             title: Text(context.l10n.collaborativeSendMessage),
             subtitle: Text(context.l10n.collaborativeSendMessageDescription),
             onTap: () {
@@ -283,7 +287,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             },
           ),
           ListTile(
-            leading: const Icon(Icons.email),
+            leading: const ButleryIcon(ButleryIcons.mail),
             title: Text(context.l10n.collaborativeSendEmail),
             subtitle: Text(context.l10n.collaborativeSendEmailDescription),
             onTap: () {
@@ -374,7 +378,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     if (viewModel.isAddingItem) {
       return Icons.hourglass_empty;
     }
-    return Icons.add;
+    return ButleryIcons.plus;
   }
 
   /// Check if menu action is available

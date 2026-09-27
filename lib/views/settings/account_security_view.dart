@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class AccountSecurityView extends StatefulWidget {
@@ -179,7 +181,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.lock_outline, color: cs.onSurface),
+            ButleryIcon(ButleryIcons.lock, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityChangePassword,
@@ -198,10 +200,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureCurrentPassword
-                    ? Icons.visibility_off
-                    : Icons.visibility,
+              icon: ButleryIcon(
+                _obscureCurrentPassword ? ButleryIcons.eye : ButleryIcons.eye,
               ),
               tooltip: _obscureCurrentPassword
                   ? context.l10n.tooltipShowPassword
@@ -223,8 +223,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityNewPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+              icon: ButleryIcon(
+                _obscureNewPassword ? ButleryIcons.eye : ButleryIcons.eye,
               ),
               tooltip: _obscureNewPassword
                   ? context.l10n.tooltipShowPassword
@@ -245,10 +245,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityConfirmPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureConfirmPassword
-                    ? Icons.visibility_off
-                    : Icons.visibility,
+              icon: ButleryIcon(
+                _obscureConfirmPassword ? ButleryIcons.eye : ButleryIcons.eye,
               ),
               tooltip: _obscureConfirmPassword
                   ? context.l10n.tooltipShowPassword
@@ -276,7 +274,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.email_outlined, color: cs.onSurface),
+            ButleryIcon(ButleryIcons.mail, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityChangeEmail,
@@ -305,8 +303,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureEmailPassword ? Icons.visibility_off : Icons.visibility,
+              icon: ButleryIcon(
+                _obscureEmailPassword ? ButleryIcons.eye : ButleryIcons.eye,
               ),
               tooltip: _obscureEmailPassword
                   ? context.l10n.tooltipShowPassword
@@ -374,7 +372,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.security, color: cs.onSurface),
+            ButleryIcon(Icons.security, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityMfaSettings,
@@ -385,12 +383,15 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
           key: const ValueKey('accountSecurity.mfa'),
-          leading: Icon(Icons.phone_android, color: cs.onSurface),
+          leading: ButleryIcon(Icons.phone_android, color: cs.onSurface),
           title: Text(
             context.l10n.accountSecurityMfaSettings,
             style: AppTextStyles.titleMedium,
           ),
-          trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          trailing: ButleryIcon(
+            ButleryIcons.chevronRight,
+            color: cs.onSurfaceVariant,
+          ),
           contentPadding: EdgeInsets.zero,
           onTap: () async {
             await Navigator.of(context).push(
@@ -415,7 +416,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.gavel_outlined, color: cs.onSurface),
+            ButleryIcon(Icons.gavel_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.legalTermsOfService,
@@ -425,27 +426,27 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
-          leading: const Icon(Icons.description_outlined),
+          leading: const ButleryIcon(Icons.description_outlined),
           title: Text(context.l10n.legalTermsOfService),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.termsOfService),
         ),
         ListTile(
-          leading: const Icon(Icons.people_outline),
+          leading: const ButleryIcon(ButleryIcons.users),
           title: Text(context.l10n.legalCommunityGuidelines),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.communityGuidelines),
         ),
         ListTile(
-          leading: const Icon(Icons.flag_outlined),
+          leading: const ButleryIcon(Icons.flag_outlined),
           title: Text(context.l10n.settingsMyReports),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.myReports),
         ),
         ListTile(
-          leading: const Icon(Icons.code),
+          leading: const ButleryIcon(Icons.code),
           title: Text(context.l10n.legalOpenSourceLicenses),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => showLicensePage(
             context: context,
             applicationName: 'Butlery',

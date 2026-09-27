@@ -5,6 +5,8 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Displays an interactive poll within a chat message.
@@ -290,8 +292,8 @@ class PollMessageWidget extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(
                   end: AppDimensions.spacingXs,
                 ),
-                child: Icon(
-                  Icons.check_circle,
+                child: ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: 16,
                   color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                 ),
@@ -373,8 +375,8 @@ class PollMessageWidget extends StatelessWidget {
                           padding: const EdgeInsetsDirectional.only(
                             end: AppDimensions.spacingXs,
                           ),
-                          child: Icon(
-                            Icons.check_circle,
+                          child: ButleryIcon(
+                            ButleryIcons.circleCheck,
                             size: 16,
                             color: isFromCurrentUser
                                 ? cs.onPrimary
@@ -490,8 +492,8 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
             ? cs.onPrimary.withValues(alpha: AppDimensions.opacityVeryLight)
             : cs.surfaceContainerHighest,
       ),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         size: 20,
         color: isFromCurrent
             ? cs.onPrimary.withValues(alpha: AppDimensions.opacityMedium)

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/profile/builders/menu_item_builders.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -37,7 +39,7 @@ class ProfileSectionBuilders {
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.download,
+            icon: ButleryIcons.download,
             title: context.l10n.profileDownloadBackup,
             subtitle: context.l10n.profileDownloadBackupSubtitle,
             onTap: () =>
@@ -93,7 +95,7 @@ class ProfileSectionBuilders {
                   ),
                 ),
               ),
-              icon: const Icon(Icons.logout),
+              icon: const ButleryIcon(Icons.logout),
               label: Text(
                 context.l10n.profileLogout,
                 style: AppTextStyles.labelLarge,
@@ -151,7 +153,7 @@ class ProfileSectionBuilders {
           // GDPR Article 20 - Right to Data Portability
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.download_rounded,
+            icon: ButleryIcons.download,
             title: context.l10n.profileExportData,
             subtitle: context.l10n.profileExportDataSubtitle,
             onTap: () => GdprConsentHandler.handleExportData(context),
@@ -162,7 +164,7 @@ class ProfileSectionBuilders {
           // GDPR Article 17 - Right to Erasure
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.delete_forever,
+            icon: ButleryIcons.trash2,
             title: context.l10n.profileDeleteAccount,
             subtitle: context.l10n.profileDeleteAccountSubtitle,
             onTap: () => AuthActionHandler.handleDeleteAccount(context),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -41,11 +43,11 @@ class EmptyStates {
     final shouldUseIllustration =
         useIllustration ?? emptyConfig.illustration != null;
 
-    // Passing [icon] == Icons.clear is a sentinel meaning "render no leading
+    // Passing [icon] == ButleryIcons.x is a sentinel meaning "render no leading
     // visual at all" — neither illustration nor icon. Used by compact empty
     // states embedded in already-decorated surfaces. Named here so the
     // suppression is explicit rather than a silent magic-value check.
-    final suppressLeadingVisual = icon == Icons.clear;
+    final suppressLeadingVisual = icon == ButleryIcons.x;
 
     return Center(
       child: Padding(
@@ -62,7 +64,7 @@ class EmptyStates {
                     size: iconSize ?? 100,
                   )
                 else
-                  Icon(
+                  ButleryIcon(
                     icon ?? emptyConfig.icon,
                     size: iconSize ?? AppDimensions.iconSizeXl,
                     color: iconColor ?? Theme.of(context).colorScheme.outline,
@@ -118,11 +120,11 @@ class EmptyStates {
     switch (variant) {
       case EmptyStateVariant.noRecipes:
         return _EmptyStateConfig(
-          icon: Icons.restaurant_menu,
+          icon: ButleryIcons.utensils,
           illustration: VegetableType.broccoli,
           title: l10n.emptyNoResults,
           subtitle: l10n.emptyNoRecipesSubtitle(l10n.commonAdd),
-          actionIcon: AdaptiveIcons.add,
+          actionIcon: ButleryIcons.plus,
         );
       case EmptyStateVariant.noSearchResults:
         return _EmptyStateConfig(
@@ -130,7 +132,7 @@ class EmptyStates {
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoResults,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
-          actionIcon: Icons.clear,
+          actionIcon: ButleryIcons.x,
         );
       case EmptyStateVariant.noFriendsSearchResults:
         return _EmptyStateConfig(
@@ -138,7 +140,7 @@ class EmptyStates {
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoFriendsSearchTitle,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
-          actionIcon: Icons.clear,
+          actionIcon: ButleryIcons.x,
         );
       case EmptyStateVariant.noGroupsSearchResults:
         return _EmptyStateConfig(
@@ -146,11 +148,11 @@ class EmptyStates {
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoGroupsSearchTitle,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
-          actionIcon: Icons.clear,
+          actionIcon: ButleryIcons.x,
         );
       case EmptyStateVariant.noMenu:
         return _EmptyStateConfig(
-          icon: Icons.restaurant_menu,
+          icon: ButleryIcons.utensils,
           illustration: VegetableType.peaPod,
           title: l10n.emptyNoMenuTitle,
           subtitle: l10n.emptyNoMenuSubtitle,
@@ -158,15 +160,15 @@ class EmptyStates {
         );
       case EmptyStateVariant.noShoppingList:
         return _EmptyStateConfig(
-          icon: AdaptiveIcons.cartOutlined,
+          icon: ButleryIcons.shoppingCart,
           illustration: VegetableType.carrot,
           title: l10n.emptyNoShoppingListTitle,
           subtitle: l10n.emptyNoShoppingListSubtitle,
-          actionIcon: AdaptiveIcons.restaurant,
+          actionIcon: ButleryIcons.utensils,
         );
       case EmptyStateVariant.noFriends:
         return _EmptyStateConfig(
-          icon: AdaptiveIcons.peopleOutlined,
+          icon: ButleryIcons.users,
           // No illustration for social states - use icon
           title: l10n.emptyNoFriendsTitle,
           subtitle: l10n.emptyNoFriendsSubtitle,
@@ -177,44 +179,44 @@ class EmptyStates {
           icon: Icons.category,
           title: l10n.emptyNoCategoriesTitle,
           subtitle: l10n.emptyNoCategoriesSubtitle,
-          actionIcon: AdaptiveIcons.add,
+          actionIcon: ButleryIcons.plus,
         );
       case EmptyStateVariant.noImages:
         return _EmptyStateConfig(
-          icon: Icons.image_outlined,
+          icon: ButleryIcons.image,
           title: l10n.emptyNoImagesTitle,
           subtitle: l10n.emptyNoImagesSubtitle,
-          actionIcon: Icons.add_a_photo,
+          actionIcon: ButleryIcons.camera,
         );
       case EmptyStateVariant.noTargets:
         return _EmptyStateConfig(
           icon: Icons.group_add,
           title: l10n.emptyNoTargetsTitle,
           subtitle: l10n.emptyNoTargetsSubtitle,
-          actionIcon: AdaptiveIcons.add,
+          actionIcon: ButleryIcons.plus,
         );
       case EmptyStateVariant.noSavedMenus:
         return _EmptyStateConfig(
-          icon: AdaptiveIcons.bookmarkOutlined,
+          icon: PendingGlyphs.savedTemplateOutline,
           illustration: VegetableType.peaPod,
           title: l10n.emptyNoSavedMenusTitle,
           subtitle: l10n.emptyNoSavedMenusSubtitle,
-          actionIcon: AdaptiveIcons.add,
+          actionIcon: ButleryIcons.plus,
         );
       case EmptyStateVariant.noSharedShoppingLists:
         return _EmptyStateConfig(
-          icon: Icons.shopping_cart_outlined,
+          icon: ButleryIcons.shoppingCart,
           title: l10n.emptyNoSharedShoppingListsTitle,
           subtitle: l10n.emptyNoSharedShoppingListsSubtitle,
           actionIcon: null,
         );
       case EmptyStateVariant.noTags:
         return _EmptyStateConfig(
-          icon: Icons.label_outline,
+          icon: ButleryIcons.tag,
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoTagsTitle,
           subtitle: l10n.emptyNoTagsSubtitle,
-          actionIcon: AdaptiveIcons.add,
+          actionIcon: ButleryIcons.plus,
         );
       case EmptyStateVariant.noNotifications:
         // BUT-986: branded illustration instead of generic bell icon.
@@ -230,7 +232,7 @@ class EmptyStates {
         // BUT-986: branded illustration; mushroom matches the "be the first to
         // comment" tone (small, inviting).
         return _EmptyStateConfig(
-          icon: Icons.comment_outlined,
+          icon: ButleryIcons.messageSquare,
           illustration: VegetableType.mushroom,
           title: l10n.socialNoCommentsYet,
           subtitle: l10n.socialBeFirstToComment,
@@ -240,15 +242,15 @@ class EmptyStates {
         // BUT-979: branded peaPod illustration (matches noNotifications;
         // the "pod of peas together" reads as collaborative grouping).
         return _EmptyStateConfig(
-          icon: Icons.group_outlined,
+          icon: ButleryIcons.users,
           illustration: VegetableType.peaPod,
           title: l10n.emptyNoGroupsTitle,
           subtitle: l10n.emptyNoGroupsSubtitle,
-          actionIcon: AdaptiveIcons.add,
+          actionIcon: ButleryIcons.plus,
         );
       case EmptyStateVariant.noConversations:
         return _EmptyStateConfig(
-          icon: Icons.chat_bubble_outline,
+          icon: ButleryIcons.messageSquare,
           title: l10n.emptyNoConversationsTitle,
           subtitle: l10n.emptyNoConversationsSubtitle,
           actionIcon: null,
@@ -256,7 +258,7 @@ class EmptyStates {
       case EmptyStateVariant.generic:
       default:
         return _EmptyStateConfig(
-          icon: AdaptiveIcons.infoOutlined,
+          icon: ButleryIcons.info,
           title: l10n.emptyGenericTitle,
           subtitle: null,
           actionIcon: null,

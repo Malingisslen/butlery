@@ -10,6 +10,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Refactored FriendRequestActions using BaseActionHandler
 /// This class provides standardized friend request operations with:
@@ -39,7 +41,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         // view, which a cleared selection cannot take off screen (BUT-2041).
         onPressed: batchRunning ? null : onBatchAccept,
         tooltip: context.l10n.socialAcceptSelected,
-        icon: const Icon(Icons.check_circle),
+        icon: const ButleryIcon(ButleryIcons.circleCheck),
         // The label stays put so the button does not resize mid-batch.
         label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
         // The FAB theme's own surface, never a fill in a status colour
@@ -84,7 +86,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         requestIds.length,
       ),
       confirmActionText: context.l10n.socialAcceptAll,
-      confirmationIcon: Icons.check_circle,
+      confirmationIcon: ButleryIcons.circleCheck,
       errorMessage: context.l10n.socialCouldNotAcceptAllRequests,
       metadata: {
         'request_count': requestIds.length,
@@ -136,7 +138,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         requestIds.length,
       ),
       confirmActionText: context.l10n.socialRejectAll,
-      confirmationIcon: Icons.person_remove,
+      confirmationIcon: ButleryIcons.userMinus,
       isDangerous: true,
       errorMessage: context.l10n.socialCouldNotRejectAllRequests,
       metadata: {
@@ -189,7 +191,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         requestIds.length,
       ),
       confirmActionText: context.l10n.socialCancelAll,
-      confirmationIcon: Icons.cancel,
+      confirmationIcon: ButleryIcons.x,
       isDangerous: true,
       errorMessage: context.l10n.socialCouldNotCancelAllRequests,
       metadata: {

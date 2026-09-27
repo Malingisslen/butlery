@@ -341,7 +341,7 @@ class LayoutComponents {
   static Widget recipeUploadButtonGrid(
     BuildContext context, {
     required List<Map<String, dynamic>>
-    buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
+    buttons, // [{'label': 'Instagram', 'icon': ButleryIcons.camera, 'onPressed': () => ...}]
     required Map<String, dynamic> archiveButton, // Archive button config
   }) {
     if (buttons.length != 6) {

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -11,6 +10,9 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 
 /// Header section with list selector and actions
 class ShoppingListHeader {
@@ -85,7 +87,10 @@ class ShoppingListHeader {
                 value: viewModel.activeList?.id,
                 hint: Text(context.l10n.shoppingSelectList),
                 isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down, color: cs.onSurfaceVariant),
+                icon: ButleryIcon(
+                  ButleryIcons.chevronDown,
+                  color: cs.onSurfaceVariant,
+                ),
                 onChanged: (listId) {
                   if (listId != null) {
                     viewModel.setActiveList(listId);
@@ -114,7 +119,7 @@ class ShoppingListHeader {
               border: Border.all(color: cs.outlineVariant),
             ),
             child: AppIconButton(
-              icon: Icons.edit,
+              icon: ButleryIcons.pencil,
               onPressed: onRenameList,
               semanticLabel: context.l10n.shoppingRenameList,
               // text.primary itself, never faded (tokens.json:40-53).
@@ -135,7 +140,7 @@ class ShoppingListHeader {
                 border: Border.all(color: cs.outlineVariant),
               ),
               child: AppIconButton(
-                icon: Icons.swap_horiz,
+                icon: ButleryIcons.swapHorizontal,
                 onPressed: onConvertList,
                 semanticLabel: viewModel.activeList?.isPersonal == true
                     ? context.l10n.shoppingConvertToCollaborative
@@ -158,7 +163,7 @@ class ShoppingListHeader {
               border: Border.all(color: cs.outlineVariant),
             ),
             child: AppIconButton(
-              icon: Icons.delete,
+              icon: ButleryIcons.trash2,
               onPressed: onDeleteList,
               semanticLabel: context.l10n.shoppingDeleteList,
               // text.primary itself, never faded (tokens.json:40-53).
@@ -196,8 +201,8 @@ class ShoppingListHeader {
                 ),
               ),
             ),
-            icon: Icon(
-              Icons.sort,
+            icon: ButleryIcon(
+              ButleryIcons.arrowUpDown,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
@@ -225,8 +230,8 @@ class ShoppingListHeader {
                   ),
                 ),
               ),
-              icon: Icon(
-                Icons.clear,
+              icon: ButleryIcon(
+                ButleryIcons.x,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
@@ -255,7 +260,7 @@ class ShoppingListHeader {
                   ),
                 ),
               ),
-              icon: Icon(
+              icon: ButleryIcon(
                 Icons.check_box_outline_blank,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurface,
@@ -288,7 +293,7 @@ class ShoppingListHeader {
 
     switch (list.type) {
       case ListType.personal:
-        sharingIcon = Icons.person;
+        sharingIcon = ButleryIcons.user;
         sharingColor = cs.onSurface;
         break;
       case ListType.collaborative:
@@ -303,12 +308,12 @@ class ShoppingListHeader {
           } else {
             switch (userPermission) {
               case SharedListPermission.view:
-                sharingIcon = Icons.visibility;
+                sharingIcon = ButleryIcons.eye;
                 sharingColor = cs.onSurfaceVariant;
                 permissionText = context.l10n.shoppingPermissionView;
                 break;
               case SharedListPermission.edit:
-                sharingIcon = Icons.edit;
+                sharingIcon = ButleryIcons.pencil;
                 sharingColor = cs.secondary;
                 permissionText = context.l10n.shoppingPermissionEdit;
                 break;
@@ -318,19 +323,19 @@ class ShoppingListHeader {
                 permissionText = context.l10n.shoppingPermissionAdmin;
                 break;
               default:
-                sharingIcon = Icons.people;
+                sharingIcon = ButleryIcons.users;
                 sharingColor = cs.onSurface;
                 permissionText = context.l10n.shoppingPermissionShared;
             }
           }
         } else {
-          sharingIcon = Icons.people;
+          sharingIcon = ButleryIcons.users;
           sharingColor = cs.tertiary;
           permissionText = context.l10n.shoppingPermissionShared;
         }
         break;
       case ListType.template:
-        sharingIcon = AdaptiveIcons.savedTemplate;
+        sharingIcon = PendingGlyphs.savedTemplate;
         sharingColor = cs.onSurfaceVariant;
         permissionText = context.l10n.shoppingPermissionTemplate;
         break;
@@ -338,7 +343,7 @@ class ShoppingListHeader {
 
     return Row(
       children: [
-        Icon(
+        ButleryIcon(
           sharingIcon,
           size: AppDimensions.iconSizeM,
           color: sharingColor,

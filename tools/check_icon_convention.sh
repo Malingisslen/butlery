@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # BUT-1213 (enforce half of BUT-944): keep the favourite/saved icon convention
-# from eroding. `AdaptiveIcons` (lib/widgets/common/icons/adaptive_icon.dart)
-# is the single source for the concept glyphs:
-#   heart    -> AdaptiveIcons.favouriteFilled / favouriteOutline  (favourite, like)
-#   bookmark -> AdaptiveIcons.savedTemplate   / savedTemplateOutline (template/saved)
+# from eroding. P7-U08 replaced AdaptiveIcons with the Butlery icon family
+# (beslutslogg.md:9, B-02); the concept glyphs have one home each:
+#   heart    -> ButleryIcons.favourite / favouriteOutline  (favourite, like)
+#   bookmark -> PendingGlyphs.savedTemplate / savedTemplateOutline
+#               (template/saved; a Material stand-in until design draws it)
 #
 # This guard FAILS CI when raw `Icons.favorite*` or `Icons.bookmark*` appears in
 # lib/views/ or lib/widgets/ — both glyphs have NO legitimate non-concept use, so
-# a raw occurrence is always a convention violation. Use the AdaptiveIcons getter.
+# a raw occurrence is always a convention violation. Use the semantic alias.
 #
 # Deliberately NOT enforced here: `Icons.star*`. Star is genuinely overloaded —
 # ratings (star_rating_row), sort menus, dietary chips, permission-role badges —
@@ -15,7 +16,7 @@
 # left to manual review / the design-system audit. (See BUT-1213 for the colour
 # half, still pending a product decision.)
 #
-# The AdaptiveIcons definition file is the one allowed home for the raw glyphs.
+# pending_glyphs.dart is the one allowed home for the raw bookmark glyphs.
 
 set -euo pipefail
 
@@ -34,7 +35,7 @@ if [[ ${#SEARCH_PATHS[@]} -eq 0 ]]; then
   exit 0
 fi
 
-# Raw concept glyphs that must route through AdaptiveIcons. The optional
+# Raw concept glyphs that must route through the semantic aliases. The optional
 # `(_[a-z]+)*` suffix subsumes every Material variant — favorite / favorite_border
 # / favorite_rounded / bookmark / bookmark_add / bookmark_border / … — so new
 # glyph spellings can't slip past without enumerating each. The trailing `\b`
@@ -42,14 +43,14 @@ fi
 # because favourite + bookmark have no legitimate non-concept use.
 PATTERN='Icons\.(favorite|bookmark)(_[a-z]+)*\b'
 
-# The AdaptiveIcons definition legitimately maps these glyphs.
+# PendingGlyphs legitimately holds the bookmark stand-ins.
 matches="$(grep -rnE "$PATTERN" "${SEARCH_PATHS[@]}" \
   --include='*.dart' \
-  --exclude='adaptive_icon.dart' || true)"
+  --exclude='pending_glyphs.dart' || true)"
 
 if [[ -n "$matches" ]]; then
   echo "❌ Icon-convention violation (BUT-944/BUT-1213): raw favourite/bookmark glyph in lib/views|lib/widgets."
-  echo "   Use AdaptiveIcons.favouriteFilled/favouriteOutline (heart) or AdaptiveIcons.savedTemplate/savedTemplateOutline (bookmark)."
+  echo "   Use ButleryIcons.favourite/favouriteOutline (heart) or PendingGlyphs.savedTemplate/savedTemplateOutline (bookmark)."
   echo ""
   echo "$matches"
   exit 1

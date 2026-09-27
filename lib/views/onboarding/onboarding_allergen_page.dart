@@ -6,6 +6,8 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class OnboardingAllergenPage extends StatefulWidget {
   const OnboardingAllergenPage({super.key});
@@ -24,7 +26,7 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
     'nötter': Icons.eco_outlined,
     'ägg': Icons.egg_outlined,
     'soja': Icons.spa_outlined,
-    'fisk': Icons.set_meal_outlined,
+    'fisk': ButleryIcons.utensils,
     'skaldjur': Icons.catching_pokemon,
     'sesam': Icons.grass_outlined,
   };
@@ -165,8 +167,8 @@ class _ShowAllToggle extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                showAll ? Icons.expand_less : Icons.expand_more,
+              ButleryIcon(
+                showAll ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurface,
               ),
@@ -236,7 +238,7 @@ class _AllergenToggleCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeL,
                 color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
@@ -251,8 +253,8 @@ class _AllergenToggleCard extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check,
+                ButleryIcon(
+                  ButleryIcons.check,
                   size: AppDimensions.iconSizeM,
                   color: cs.onSurface,
                 ),

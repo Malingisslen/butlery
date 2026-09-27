@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Filter chips for personal tags with include/exclude support.
@@ -75,8 +77,8 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(
-                    Icons.settings,
+                  icon: const ButleryIcon(
+                    ButleryIcons.settings,
                     size: AppDimensions.iconSize18,
                   ),
                   onPressed: onManageTags,
@@ -151,7 +153,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           // way forward.
           StateWidget.empty(
             title: context.l10n.taggingNoPersonalTags,
-            icon: Icons.label_outline,
+            icon: ButleryIcons.tag,
             actionLabel: context.l10n.filterCreatePersonalTags,
             onAction: onManageTags,
           ),

@@ -9,6 +9,8 @@ import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Focused module for menu card components
 /// This module handles ONLY menu card display responsibilities:
@@ -156,8 +158,8 @@ class MenuCard extends StatelessWidget {
     final title = _getMenuTitle(context);
     return Row(
       children: [
-        Icon(
-          Icons.restaurant_menu,
+        ButleryIcon(
+          ButleryIcons.utensils,
           size: AppDimensions.iconSizeM,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
@@ -210,8 +212,8 @@ class MenuCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.info_outline,
+            ButleryIcon(
+              ButleryIcons.info,
               size: AppDimensions.iconSizeS,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -299,8 +301,8 @@ class MenuCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.people,
+          ButleryIcon(
+            ButleryIcons.users,
             size: AppDimensions.iconSizeS,
             color: cs.onSurface,
           ),
@@ -330,8 +332,8 @@ class MenuCard extends StatelessWidget {
         color: cs.primary,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.people,
+      child: ButleryIcon(
+        ButleryIcons.users,
         size: AppDimensions.iconSizeS,
         color: cs.onPrimary,
       ),

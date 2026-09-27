@@ -11,9 +11,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('Icon-button semantics (BUT-508 critical surfaces)', () {
@@ -30,7 +32,7 @@ void main() {
             builder: (context) => Scaffold(
               appBar: AppBar(
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const ButleryIcon(ButleryIcons.arrowLeft),
                   onPressed: () {},
                   tooltip: context.l10n.commonBack,
                 ),
@@ -55,9 +57,7 @@ void main() {
           child: StatefulBuilder(
             builder: (context, setState) => IconButton(
               icon: Icon(
-                isVisible
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
+                isVisible ? ButleryIcons.eye : ButleryIcons.eye,
               ),
               onPressed: () => setState(() => isVisible = !isVisible),
               tooltip: isVisible
@@ -87,7 +87,7 @@ void main() {
             builder: (context) => Scaffold(
               appBar: AppBar(
                 leading: IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const ButleryIcon(ButleryIcons.x),
                   onPressed: () {},
                   tooltip: context.l10n.bulkCancelSelection,
                 ),

@@ -23,6 +23,8 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/navigation_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 final _boundaryKey = GlobalKey();
 
@@ -69,7 +71,9 @@ void main() {
     test('a label or an icon alone reserves the 48 dp target', () {
       expect(const ButleryTab(text: 'Flöde').preferredSize.height, 48);
       expect(
-        const ButleryTab(icon: Icon(Icons.people)).preferredSize.height,
+        const ButleryTab(
+          icon: ButleryIcon(ButleryIcons.users),
+        ).preferredSize.height,
         48,
       );
     });
@@ -78,7 +82,7 @@ void main() {
       expect(
         const ButleryTab(
           text: 'Vänner',
-          icon: Icon(Icons.people),
+          icon: ButleryIcon(ButleryIcons.users),
         ).preferredSize.height,
         72,
       );
@@ -89,7 +93,7 @@ void main() {
     ) async {
       const tabs = [
         ButleryTab(text: 'Flöde', icon: Icon(Icons.dynamic_feed)),
-        ButleryTab(text: 'Vänner', icon: Icon(Icons.people)),
+        ButleryTab(text: 'Vänner', icon: ButleryIcon(ButleryIcons.users)),
       ];
       final bar = TabBar(tabs: tabs);
       expect(bar.preferredSize.height, greaterThanOrEqualTo(72));

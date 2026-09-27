@@ -11,6 +11,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -195,7 +196,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.people_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
 
       testWidgets('shows categories section only when friends are empty', (
@@ -308,7 +309,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.people_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
     });
 
@@ -528,8 +529,10 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.group), findsOneWidget);
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        // The summary's group glyph and the list's people glyph are both the
+        // Butlery users glyph (P7-U08), so the summary adds a second one.
+        expect(find.byIcon(ButleryIcons.users), findsNWidgets(2));
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
       testWidgets('hides summary when no friends selected', (
@@ -547,7 +550,8 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.group), findsNothing);
+        // Only the list's people glyph; no summary glyph (see above).
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
 
       testWidgets('clear button resets all selections', (
@@ -572,8 +576,8 @@ void main() {
         );
         await tester.pump();
 
-        // Tap the clear button (TextButton.icon with Icons.clear)
-        await tester.tap(find.byIcon(Icons.clear));
+        // Tap the clear button (TextButton.icon with ButleryIcons.x)
+        await tester.tap(find.byIcon(ButleryIcons.x));
         await tester.pump();
 
         expect(capturedSelection, isEmpty);

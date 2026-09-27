@@ -7,6 +7,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
@@ -52,7 +54,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       icon: widget.titleIcon != null
-          ? Icon(
+          ? ButleryIcon(
               widget.titleIcon!,
               color: widget.isDangerous
                   ? cs.error
@@ -136,9 +138,11 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         // Busy: the words only, as drawn (Komponentark v1:372).
         icon: _isLoading
             ? null
-            : Icon(
+            : ButleryIcon(
                 widget.primaryActionIcon ??
-                    (widget.isDangerous ? Icons.delete : Icons.check),
+                    (widget.isDangerous
+                        ? ButleryIcons.trash2
+                        : ButleryIcons.check),
               ),
         label: Text(resolvedText),
       ),
@@ -294,9 +298,9 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     super.primaryActionText,
     super.secondaryActionText,
   }) : super(
-         titleIcon: Icons.warning_amber_rounded,
+         titleIcon: ButleryIcons.triangleAlert,
          isDangerous: true,
-         primaryActionIcon: Icons.delete,
+         primaryActionIcon: ButleryIcons.trash2,
        );
 
   @override
@@ -370,7 +374,7 @@ abstract class BaseActionDialog<T> extends StatefulWidget {
   String? get cancelButtonText => null;
   String actionButtonLabel(BuildContext context);
   String? loadingButtonLabel(BuildContext context) => null;
-  Widget get actionButtonIcon => const Icon(Icons.check);
+  Widget get actionButtonIcon => const ButleryIcon(ButleryIcons.check);
   ButtonStyle? actionButtonStyleFor(BuildContext context) => null;
   bool get isDestructiveAction => false;
 

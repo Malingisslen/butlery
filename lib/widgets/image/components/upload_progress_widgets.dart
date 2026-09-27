@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Provides upload progress UI components for image editing.
@@ -111,8 +113,8 @@ class UploadProgressWidgets {
       );
     } else {
       return Builder(
-        builder: (context) => Icon(
-          Icons.check_circle,
+        builder: (context) => ButleryIcon(
+          ButleryIcons.circleCheck,
           size: AppDimensions.iconSizeS,
           color: context.modeColors.success,
         ),
@@ -143,7 +145,7 @@ class UploadProgressWidgets {
         if (canBulkRetry && onRetryAllFailed != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               label: context.l10n.uploadRetryAllCount(failed),
               onTap: onRetryAllFailed,
               color: cs.onSurface,
@@ -154,7 +156,7 @@ class UploadProgressWidgets {
         if (canBulkCancel && onCancelAllActive != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.stop,
+              icon: ButleryIcons.stop,
               label: context.l10n.uploadStopAllCount(active),
               onTap: onCancelAllActive,
               color: cs.onSurfaceVariant,
@@ -211,7 +213,7 @@ class UploadProgressWidgets {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    ButleryIcon(
                       icon,
                       size: AppDimensions.iconSizeS,
                       color: cs.surfaceContainerHighest,
@@ -362,7 +364,7 @@ class UploadProgressWidgets {
                     children: [
                       if (status.canRetry && onRetryUpload != null)
                         buildUploadActionButton(
-                          icon: Icons.refresh,
+                          icon: ButleryIcons.refreshCw,
                           label: context.l10n.commonRetry,
                           onTap: () => onRetryUpload(imageUrl),
                           color: cs.onSurface,
@@ -373,7 +375,7 @@ class UploadProgressWidgets {
                         const SizedBox(width: AppDimensions.spacingSm),
                       if (onCancelUpload != null)
                         buildUploadActionButton(
-                          icon: Icons.close,
+                          icon: ButleryIcons.x,
                           label: context.l10n.commonDelete,
                           onTap: () => onCancelUpload(imageUrl),
                           color: cs.error,
@@ -405,8 +407,8 @@ class UploadProgressWidgets {
                   alpha: AppDimensions.opacityLight,
                 ),
               ),
-              child: Icon(
-                Icons.schedule,
+              child: ButleryIcon(
+                ButleryIcons.clock,
                 color: cs.surfaceContainerHighest,
                 size: AppDimensions.iconSizeL,
               ),
@@ -434,8 +436,8 @@ class UploadProgressWidgets {
                   alpha: AppDimensions.opacityExtraDark,
                 ),
               ),
-              child: Icon(
-                Icons.check,
+              child: ButleryIcon(
+                ButleryIcons.check,
                 color: cs.onPrimary,
                 size: AppDimensions.iconSizeL,
               ),
@@ -451,8 +453,8 @@ class UploadProgressWidgets {
                   alpha: AppDimensions.opacityExtraDark,
                 ),
               ),
-              child: Icon(
-                Icons.error,
+              child: ButleryIcon(
+                ButleryIcons.triangleAlert,
                 color: cs.surfaceContainerHighest,
                 size: AppDimensions.iconSizeL,
               ),
@@ -468,8 +470,8 @@ class UploadProgressWidgets {
                   alpha: AppDimensions.opacityExtraDark,
                 ),
               ),
-              child: Icon(
-                Icons.cancel,
+              child: ButleryIcon(
+                ButleryIcons.x,
                 color: cs.surfaceContainerHighest,
                 size: AppDimensions.iconSizeL,
               ),
@@ -507,7 +509,7 @@ class UploadProgressWidgets {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  ButleryIcon(
                     icon,
                     color: cs.surfaceContainerHighest,
                     size: AppDimensions.iconSizeS,

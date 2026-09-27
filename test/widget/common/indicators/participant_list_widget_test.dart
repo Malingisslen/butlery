@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/participant_list_widget.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -56,7 +57,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(ParticipantListWidget),
-          matching: find.byIcon(Icons.people),
+          matching: find.byIcon(ButleryIcons.users),
         ),
         findsNothing,
       );
@@ -90,7 +91,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(ParticipantListWidget),
-          matching: find.byIcon(Icons.people),
+          matching: find.byIcon(ButleryIcons.users),
         ),
         findsOneWidget,
       );

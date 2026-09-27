@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -399,7 +401,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.close),
+          icon: const ButleryIcon(ButleryIcons.x),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: context.l10n.commonClose,
         ),
@@ -437,8 +439,8 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              Icon(
-                Icons.label,
+              ButleryIcon(
+                ButleryIcons.tag,
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
@@ -478,7 +480,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ButtonSegment(
               value: MatchMode.all,
               label: Text(context.l10n.ruleMatchModeAllConditions),
-              icon: const Icon(
+              icon: const ButleryIcon(
                 Icons.all_inclusive,
                 size: AppDimensions.iconSize18,
               ),
@@ -486,7 +488,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ButtonSegment(
               value: MatchMode.any,
               label: Text(context.l10n.ruleMatchModeAnyCondition),
-              icon: const Icon(
+              icon: const ButleryIcon(
                 Icons.call_split,
                 size: AppDimensions.iconSize18,
               ),
@@ -518,7 +520,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             const Spacer(),
             TextButton.icon(
               onPressed: _isSaving ? null : _addCondition,
-              icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
+              icon: const ButleryIcon(
+                ButleryIcons.plus,
+                size: AppDimensions.iconSize18,
+              ),
               label: Text(context.l10n.commonAdd),
             ),
           ],
@@ -596,8 +601,8 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
@@ -715,7 +720,10 @@ class _ConditionRow extends StatelessWidget {
               // Delete button
               if (canDelete)
                 IconButton(
-                  icon: const Icon(Icons.close, size: AppDimensions.iconSizeM),
+                  icon: const ButleryIcon(
+                    ButleryIcons.x,
+                    size: AppDimensions.iconSizeM,
+                  ),
                   onPressed: enabled ? onDelete : null,
                   tooltip: context.l10n.ruleRemoveCondition,
                   constraints: const BoxConstraints(

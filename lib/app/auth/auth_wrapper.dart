@@ -30,6 +30,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -370,8 +372,8 @@ class _ProfileLoadErrorView extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.error_outline,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   size: AppDimensions.iconSizeXxl,
                   color: cs.error,
                 ),

@@ -9,6 +9,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -37,21 +39,21 @@ void main() {
 
     testWidgets('no icon row when icon is null', (tester) async {
       await tester.pumpWidget(_wrap(const UnifiedBadge(label: 'Plain')));
-      expect(find.byType(Icon), findsNothing);
+      expect(find.byType(ButleryIcon), findsNothing);
     });
 
     testWidgets('renders icon before label when icon is set', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const UnifiedBadge(label: 'Tagged', icon: Icons.star),
+          const UnifiedBadge(label: 'Tagged', icon: ButleryIcons.star),
         ),
       );
-      expect(find.byIcon(Icons.star), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.star), findsOneWidget);
     });
 
     testWidgets('no remove button when onRemove is null', (tester) async {
       await tester.pumpWidget(_wrap(const UnifiedBadge(label: 'No-remove')));
-      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
     });
 
     testWidgets('renders X icon when onRemove is supplied', (tester) async {
@@ -60,7 +62,7 @@ void main() {
           UnifiedBadge(label: 'Closable', onRemove: () {}),
         ),
       );
-      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.x), findsOneWidget);
     });
 
     testWidgets('square corners (BorderRadius.zero) per design system', (
@@ -242,7 +244,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       expect(removes, 1);
       expect(taps, 0);
     });
@@ -295,7 +297,7 @@ void main() {
     testWidgets('renders allergen text with warning icon', (tester) async {
       await tester.pumpWidget(_wrap(const AllergenBadge(allergen: 'Gluten')));
       expect(find.text('Gluten'), findsOneWidget);
-      expect(find.byIcon(Icons.warning_amber_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
     });
 
     testWidgets('uses warning color from theme extension', (tester) async {
@@ -373,7 +375,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       expect(removes, 1);
     });
   });

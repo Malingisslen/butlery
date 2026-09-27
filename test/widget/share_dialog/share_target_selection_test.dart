@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
 import 'package:butlery/models/user_profile.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -90,7 +91,7 @@ void main() {
 
       // Check for correct Swedish empty state text
       expect(find.text('Inga vänner tillgängliga'), findsOneWidget);
-      expect(find.byIcon(Icons.people_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.users), findsOneWidget);
     });
 
     testWidgets('shows correct Swedish text for no search results', (

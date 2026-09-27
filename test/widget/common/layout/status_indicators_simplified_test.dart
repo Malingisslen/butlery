@@ -13,6 +13,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -154,7 +155,7 @@ void main() {
           expect(border.top.color, warning);
           expect(border.top.width, 1.0);
 
-          final icon = tester.widget<Icon>(find.byIcon(Icons.wifi_off));
+          final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.wifiOff));
           expect(icon.color, warning);
 
           final title = tester.widget<Text>(find.text('Ingen anslutning'));
@@ -237,7 +238,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.chevron_right), findsNothing);
+        expect(find.byIcon(ButleryIcons.chevronRight), findsNothing);
         final node = tester.getSemantics(
           find.bySemanticsLabel('Ingen anslutning'),
         );
@@ -259,9 +260,9 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.chevronRight), findsOneWidget);
         expect(
-          tester.widget<Icon>(find.byIcon(Icons.chevron_right)).color,
+          tester.widget<Icon>(find.byIcon(ButleryIcons.chevronRight)).color,
           AppModeColors.textWarning(Brightness.light),
         );
         final node = tester.getSemantics(
@@ -325,7 +326,7 @@ void main() {
         expect(deco.color, cs.surface);
         expect((deco.border! as Border).top.color, cs.tertiary);
         expect(
-          tester.widget<Icon>(find.byIcon(Icons.check_circle_outline)).color,
+          tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
           cs.tertiary,
         );
         expect(find.text('Ansluten igen'), findsOneWidget);
@@ -458,8 +459,8 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(child: const OfflineStatusIcon()),
         );
-        expect(find.byIcon(Icons.wifi_off), findsNothing);
-        expect(find.byIcon(Icons.cloud_off), findsNothing);
+        expect(find.byIcon(ButleryIcons.wifiOff), findsNothing);
+        expect(find.byIcon(ButleryIcons.wifiOff), findsNothing);
       });
 
       for (final brightness in Brightness.values) {
@@ -470,8 +471,7 @@ void main() {
           await tester.pumpWidget(
             _themedApp(const OfflineStatusIcon(), brightness: brightness),
           );
-          expect(find.byIcon(Icons.cloud_off), findsNothing);
-          final icon = tester.widget<Icon>(find.byIcon(Icons.wifi_off));
+          final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.wifiOff));
           expect(icon.color, AppModeColors.textWarning(brightness));
           expect(icon.size, AppDimensions.iconSizeAction);
         });
@@ -482,10 +482,10 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(child: const OfflineStatusIcon()),
         );
-        expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.wifiOff), findsOneWidget);
         mockOffline.setOnline(true);
         await tester.pump();
-        expect(find.byIcon(Icons.wifi_off), findsNothing);
+        expect(find.byIcon(ButleryIcons.wifiOff), findsNothing);
       });
     });
   });

@@ -6,6 +6,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -83,7 +85,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                       ),
                     ),
                   ),
-                  icon: const Icon(Icons.add),
+                  icon: const ButleryIcon(ButleryIcons.plus),
                   label: Text(
                     '${context.l10n.commonAdd} (${_selectedRecipeIds.length})',
                   ),
@@ -312,8 +314,8 @@ class MenuRecipeListItem extends StatelessWidget {
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
-              Icon(
-                Icons.access_time,
+              ButleryIcon(
+                ButleryIcons.clock,
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurfaceVariant,
               ),
@@ -329,8 +331,8 @@ class MenuRecipeListItem extends StatelessWidget {
                 Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.space4),
               ],
-              Icon(
-                Icons.people,
+              ButleryIcon(
+                ButleryIcons.users,
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurfaceVariant,
               ),
@@ -359,8 +361,8 @@ class MenuRecipeListItem extends StatelessWidget {
             ),
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         color: Theme.of(context).colorScheme.onSurface,
         size: AppDimensions.iconSizeAction,
       ),

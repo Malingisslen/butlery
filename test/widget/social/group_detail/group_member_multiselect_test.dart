@@ -21,6 +21,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class _StubPermissionService extends Fake implements PermissionService {
   _StubPermissionService({required this.uid});
@@ -111,7 +112,7 @@ void main() {
         await tester.pump();
 
         expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.more_vert), findsNothing);
+        expect(find.byIcon(ButleryIcons.moreVertical), findsNothing);
       },
     );
 
@@ -195,7 +196,7 @@ void main() {
 
         // No select indicator — the avatar is shown instead of the toggle icon.
         expect(find.byIcon(Icons.circle_outlined), findsNothing);
-        expect(find.byIcon(Icons.check_circle), findsNothing);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
 
         // Tapping the tile does nothing (onTap is null for non-removable).
         await tester.tap(find.byType(ListTile));

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/widgets/user/user_layout_widgets.dart';
@@ -195,7 +196,7 @@ class UserDisplayWidgets {
   static Widget emptyUserState({
     String? title,
     String? subtitle,
-    IconData icon = Icons.people_outline,
+    IconData icon = ButleryIcons.users,
     VoidCallback? onAction,
     String? actionLabel,
   }) => UserCollectionWidgets.emptyUserState(

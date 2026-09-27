@@ -6,6 +6,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/social_avatar_api.dart';
 import 'package:butlery/widgets/common/social/social_collaborative_api.dart';
@@ -104,7 +105,7 @@ class SocialFacade {
   // Collaborative API delegation
   static Widget collaborativeStatusBadge({
     String text = 'Delat',
-    IconData icon = Icons.people,
+    IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
   }) => SocialCollaborativeApi.collaborativeStatusBadge(

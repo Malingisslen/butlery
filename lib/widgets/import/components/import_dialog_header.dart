@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Header component for import dialogs with icon, title, and close button.
 class ImportDialogHeader extends StatelessWidget {
@@ -37,8 +39,8 @@ class ImportDialogHeader extends StatelessWidget {
           // Pattern 4, a dialog: title, and the X at the top right
           // (Komponentark v1:79-99). text.primary (onSurface) in both modes;
           // cs.primary is ink in both and would vanish on the dark dialog.
-          Icon(
-            Icons.edit_note,
+          ButleryIcon(
+            ButleryIcons.pencil,
             color: theme.colorScheme.onSurface,
           ),
           const SizedBox(width: AppDimensions.width12),
@@ -60,7 +62,7 @@ class ImportDialogHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
             onPressed: onClose,
             tooltip: context.l10n.commonCancel,
           ),

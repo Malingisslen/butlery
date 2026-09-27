@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -131,7 +133,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
   String? get cancelButtonText => cancelLabel;
 
   @override
-  Widget get actionButtonIcon => icon ?? const Icon(Icons.check);
+  Widget get actionButtonIcon => icon ?? const ButleryIcon(ButleryIcons.check);
 
   @override
   bool validateBeforeAction() => validateOk;
@@ -182,10 +184,10 @@ void main() {
       showDialog<void>(
         context: ctx,
         builder: (_) =>
-            const _TestBaseDialog(title: 't', titleIcon: Icons.info),
+            const _TestBaseDialog(title: 't', titleIcon: ButleryIcons.info),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.info), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.info), findsOneWidget);
     });
 
     testWidgets('renders subtitle above content', (tester) async {
@@ -247,7 +249,7 @@ void main() {
       // Default primary label for isDangerous + no override = commonDelete = "Ta bort"
       expect(find.text('Ta bort'), findsOneWidget);
       // Default delete icon on the primary button
-      expect(find.byIcon(Icons.delete), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
     });
   });
 
@@ -365,7 +367,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // No error, no progress spinner
-      expect(find.byIcon(Icons.error_outline), findsNothing);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       expect(find.byType(PlateLine), findsNothing);
     });
   });
@@ -489,7 +491,7 @@ void main() {
         findsOneWidget,
       );
       // Warning icon
-      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
       // Danger label = commonDelete = "Ta bort"
       expect(find.text('Ta bort'), findsAtLeastNWidgets(1));
     });
@@ -586,7 +588,7 @@ void main() {
       await tester.tap(find.text('Go'));
       await tester.pumpAndSettle();
       // No error displayed, no spinner
-      expect(find.byIcon(Icons.error_outline), findsNothing);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       expect(find.byType(PlateLine), findsNothing);
     });
   });

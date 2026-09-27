@@ -6,6 +6,8 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class OnboardingDietaryPage extends StatelessWidget {
   const OnboardingDietaryPage({super.key});
@@ -13,11 +15,11 @@ class OnboardingDietaryPage extends StatelessWidget {
   static const Map<String, IconData> _dietaryIcons = {
     'vegetarisk': Icons.eco,
     'vegansk': Icons.spa,
-    'pescetarian': Icons.set_meal,
+    'pescetarian': ButleryIcons.utensils,
     'glutenfri': Icons.no_food,
     'laktosfri': Icons.water_drop_outlined,
-    'halalanpassad': Icons.verified,
-    'kosheranpassad': Icons.star_outline,
+    'halalanpassad': ButleryIcons.shieldCheck,
+    'kosheranpassad': ButleryIcons.starOutline,
   };
 
   static String _dietaryLabel(BuildContext context, String key) {
@@ -142,7 +144,7 @@ class _DietaryToggleCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Row(
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeXl,
                 color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
@@ -169,8 +171,8 @@ class _DietaryToggleCard extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check_circle,
+                ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: AppDimensions.iconSizeL,
                   color: cs.onSurface,
                 ),

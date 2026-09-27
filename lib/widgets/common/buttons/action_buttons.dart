@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -46,7 +48,7 @@ class ActionButtons {
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.space4,
               ),
-              child: Icon(icon),
+              child: ButleryIcon(icon),
             ),
           Flexible(
             child: Text(
@@ -169,7 +171,7 @@ class ActionButtons {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (!isLoading) ...[
-              Icon(icon, size: AppDimensions.iconSizeXl),
+              ButleryIcon(icon, size: AppDimensions.iconSizeXl),
               const SizedBox(height: AppDimensions.spacingSm),
             ],
             // Flexible, not a bare Text: the canonical type scale carries an
@@ -238,7 +240,11 @@ class ActionButtons {
             : null,
         icon: isLoading
             ? null
-            : Icon(icon, size: AppDimensions.iconSizeXl, color: onPrimary),
+            : ButleryIcon(
+                icon,
+                size: AppDimensions.iconSizeXl,
+                color: onPrimary,
+              ),
         label: Text(
           _visibleLabel(isLoading, label, loadingText),
           style: AppTextStyles.labelLarge.copyWith(color: onPrimary),
@@ -347,7 +353,7 @@ class ActionButtons {
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.space4,
               ),
-              child: Icon(icon),
+              child: ButleryIcon(icon),
             ),
           Flexible(
             child: Text(
@@ -446,7 +452,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
     required this.onPressed,
     required this.semanticLabel,
     this.enablePressAnimation = true,
-  }) : child = const Icon(Icons.message),
+  }) : child = const ButleryIcon(ButleryIcons.messageSquare),
        backgroundColor = null,
        foregroundColor = null;
 
@@ -522,7 +528,7 @@ class AppIconButton extends StatelessWidget {
       button: true,
       enabled: onPressed != null,
       child: IconButton(
-        icon: Icon(icon, color: color, size: iconSize),
+        icon: ButleryIcon(icon, color: color, size: iconSize),
         onPressed: onPressed,
         tooltip: semanticLabel,
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),

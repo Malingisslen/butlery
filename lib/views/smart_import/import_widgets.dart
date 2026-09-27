@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -100,7 +102,7 @@ class ImportInputSection extends StatelessWidget {
         contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear),
+                icon: const ButleryIcon(ButleryIcons.x),
                 onPressed: () {
                   controller.clear();
                   viewModel.clearInput();
@@ -182,9 +184,9 @@ class ImportErrorMessage extends StatelessWidget {
               key: routeKey(route),
               filled: i == 0,
               icon: switch (route) {
-                ImportRoute.photo => Icons.photo_camera_outlined,
+                ImportRoute.photo => ButleryIcons.camera,
                 ImportRoute.pasteText => Icons.content_paste,
-                ImportRoute.manual => Icons.edit_outlined,
+                ImportRoute.manual => ButleryIcons.pencil,
               },
               label: switch (route) {
                 ImportRoute.photo => l10n.importRoutePhoto,
@@ -227,7 +229,7 @@ class _RouteButton extends StatelessWidget {
         ),
       ),
     );
-    final iconWidget = Icon(icon, size: AppDimensions.iconSize18);
+    final iconWidget = ButleryIcon(icon, size: AppDimensions.iconSize18);
     final cs = Theme.of(context).colorScheme;
     final dark = cs.brightness == Brightness.dark;
     final outlinedStyle = style.copyWith(
@@ -284,7 +286,7 @@ class ImportActionSection extends StatelessWidget {
         if (viewModel.input.isEmpty) ...[
           OutlinedButton.icon(
             onPressed: onPaste,
-            icon: const Icon(Icons.content_paste),
+            icon: const ButleryIcon(Icons.content_paste),
             label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(
@@ -316,7 +318,7 @@ class ImportActionSection extends StatelessWidget {
                   : (viewModel.canImport ? onImport : null),
               icon: viewModel.isImporting
                   ? const SizedBox.shrink()
-                  : const Icon(Icons.download),
+                  : const ButleryIcon(ButleryIcons.download),
               label: Text(
                 viewModel.isImporting
                     ? context.l10n.importFetchingRecipe

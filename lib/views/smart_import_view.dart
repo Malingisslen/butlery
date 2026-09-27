@@ -20,6 +20,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
@@ -392,7 +394,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: Icon(
+        icon: ButleryIcon(
           Icons.videocam_off,
           size: 48,
           color: theme.colorScheme.onSurface,
@@ -408,7 +410,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(dialogContext).pop('photo'),
-            icon: const Icon(Icons.photo_camera),
+            icon: const ButleryIcon(ButleryIcons.camera),
             label: Text(context.l10n.importPhotoImport),
           ),
         ],

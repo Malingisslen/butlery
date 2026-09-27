@@ -5,6 +5,8 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Animated typing indicator widget for showing when users are typing
 /// Displays a visual typing indicator with:
@@ -109,8 +111,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Icon(
-                  Icons.more_horiz,
+                child: ButleryIcon(
+                  ButleryIcons.moreVertical,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeS,
                 ),

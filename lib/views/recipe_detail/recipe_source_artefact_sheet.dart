@@ -9,6 +9,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-1079 + BUT-1205: bottom sheet showing the persisted source artefact (the
 /// raw text/URL the recipe was extracted from), with a stale-source banner
@@ -73,8 +75,8 @@ void showSourceArtefactSheet({
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                icon: const Icon(
-                  Icons.refresh_outlined,
+                icon: const ButleryIcon(
+                  ButleryIcons.refreshCw,
                   size: AppDimensions.iconSizeM,
                 ),
                 label: Text(ctx.l10n.recipeSourceReextract),
@@ -125,7 +127,7 @@ class _StaleSourceBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
+          ButleryIcon(
             Icons.history_outlined,
             size: AppDimensions.iconSizeM,
             color: warning,

@@ -22,6 +22,8 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
@@ -264,7 +266,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       foregroundColor: cs.onSurface,
       leading: IconButton(
         key: const ValueKey('edit-recipe-close'),
-        icon: const Icon(Icons.close),
+        icon: const ButleryIcon(ButleryIcons.x),
         tooltip: context.l10n.recipeEditorClose,
         onPressed: () => Navigator.of(context).maybePop(),
       ),
@@ -275,7 +277,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             child: PlateLine(semanticLabel: context.l10n.statusSaving),
           )
         else if (hasRecentAutoSave)
-          Icon(
+          ButleryIcon(
             Icons.cloud_done_outlined,
             size: AppDimensions.iconSizeM,
             color: cs.onSurface,
@@ -285,7 +287,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         if (isCollaborative)
           SocialCollaborativeComponents.collaborativeStatusBadge(
             text: context.l10n.socialShared,
-            icon: Icons.people,
+            icon: ButleryIcons.users,
           ),
       ],
     );
@@ -609,8 +611,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
                 ? context.l10n.recipeImportedFromShare
                 : context.l10n.recipeSourceUrlHelper,
-            prefixIcon: const Icon(
-              Icons.link,
+            prefixIcon: const ButleryIcon(
+              ButleryIcons.link,
               size: AppDimensions.iconSizeAction,
             ),
           ),
@@ -642,7 +644,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     return OutlinedButton.icon(
       onPressed: () => _openTagEditor(context, viewModel),
-      icon: const Icon(Icons.local_offer_outlined),
+      icon: const ButleryIcon(ButleryIcons.tag),
       label: Text(
         hasAutoTags
             ? context.l10n.recipeManageAllTags
