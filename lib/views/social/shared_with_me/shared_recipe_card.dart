@@ -14,6 +14,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
 
@@ -148,8 +150,8 @@ class SharedRecipeCard {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainer,
               ),
-              child: Icon(
-                Icons.restaurant,
+              child: ButleryIcon(
+                ButleryIcons.utensils,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: AppDimensions.iconSizeM,
               ),
@@ -176,8 +178,8 @@ class SharedRecipeCard {
               const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
-                  Icon(
-                    Icons.restaurant,
+                  ButleryIcon(
+                    ButleryIcons.utensils,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -189,8 +191,8 @@ class SharedRecipeCard {
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.space4),
-                  Icon(
-                    Icons.access_time,
+                  ButleryIcon(
+                    ButleryIcons.clock,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -247,7 +249,7 @@ class SharedRecipeCard {
                 arguments: sharedRecipe.contentSnapshot,
               );
             },
-            icon: Icons.visibility,
+            icon: ButleryIcons.eye,
             outlined: true,
             compact: true,
           ),
@@ -268,10 +270,10 @@ class SharedRecipeCard {
               }
             },
             icon: isImported
-                ? Icons.check
+                ? ButleryIcons.check
                 : viewModel.recipeViewModel.isOperating
                 ? null // Loading handled by facade
-                : Icons.download,
+                : ButleryIcons.download,
             loading: viewModel.recipeViewModel.isOperating,
             compact: true,
           ),

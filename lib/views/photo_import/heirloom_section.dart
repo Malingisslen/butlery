@@ -9,6 +9,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-410 heirloom toggle + metadata form.
 ///
@@ -94,8 +96,8 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.cloud_off,
+                    ButleryIcon(
+                      ButleryIcons.wifiOff,
                       color: context.modeColors.warning,
                       size: AppDimensions.iconSizeM,
                     ),

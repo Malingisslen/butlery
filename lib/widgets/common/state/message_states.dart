@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
@@ -93,7 +95,7 @@ class MessageStates {
                   context,
                   label: actionLabel,
                   onPressed: onAction,
-                  icon: Icons.refresh,
+                  icon: ButleryIcons.refreshCw,
                 ),
               ],
             ],
@@ -123,8 +125,8 @@ class MessageStates {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Success ikon
-              Icon(
-                icon ?? Icons.check_circle_outline,
+              ButleryIcon(
+                icon ?? ButleryIcons.circleCheck,
                 size: iconSize ?? AppDimensions.iconSizeXl,
                 color: iconColor ?? context.modeColors.success,
               ),
@@ -184,8 +186,8 @@ class MessageStates {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon ?? Icons.info_outline,
+              ButleryIcon(
+                icon ?? ButleryIcons.info,
                 size: iconSize ?? AppDimensions.iconSizeL,
                 color: iconColor ?? Theme.of(context).colorScheme.primary,
               ),
@@ -239,8 +241,8 @@ class MessageStates {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon ?? Icons.warning_outlined,
+              ButleryIcon(
+                icon ?? ButleryIcons.triangleAlert,
                 size: iconSize ?? AppDimensions.iconSizeL,
                 color: iconColor ?? context.modeColors.warning,
               ),

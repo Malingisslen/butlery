@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Dialog for selecting friends to add to a group conversation.
@@ -74,7 +76,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: context.l10n.chatSearchFriends,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const ButleryIcon(ButleryIcons.search),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),

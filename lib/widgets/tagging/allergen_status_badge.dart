@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 
 /// Badge displaying allergen status with tri-state coloring.
@@ -111,12 +112,12 @@ class AllergenStatusBadge extends StatelessWidget {
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
-        return (context.modeColors.success, Icons.check_circle_outline);
+        return (context.modeColors.success, ButleryIcons.circleCheck);
       case TriState.contains:
         // Triangle shape distinguishes from other states
-        return (cs.error, Icons.warning_amber);
+        return (cs.error, ButleryIcons.triangleAlert);
       case TriState.unknown:
-        return (cs.onSurfaceVariant, Icons.help_outline);
+        return (cs.onSurfaceVariant, ButleryIcons.info);
     }
   }
 

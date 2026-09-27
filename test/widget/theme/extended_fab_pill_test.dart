@@ -13,7 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/social/friend_requests/friend_request_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components/invitation_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   final themes = {
@@ -97,7 +99,7 @@ void main() {
           entry.value,
           (_) => FloatingActionButton(
             onPressed: () {},
-            child: const Icon(Icons.add),
+            child: const ButleryIcon(ButleryIcons.plus),
           ),
         ),
       );

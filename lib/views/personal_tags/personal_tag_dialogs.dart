@@ -6,6 +6,8 @@
 /// Provider notifyListeners() from firing during dialog disposal on Flutter Web.
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -91,7 +93,10 @@ abstract final class PersonalTagDialogs {
               padding: const EdgeInsets.all(AppDimensions.spacingLg),
               child: Row(
                 children: [
-                  const Icon(Icons.label, size: AppDimensions.iconSizeL),
+                  const ButleryIcon(
+                    ButleryIcons.tag,
+                    size: AppDimensions.iconSizeL,
+                  ),
                   const SizedBox(width: AppDimensions.spacingM),
                   Expanded(
                     child: Text(
@@ -104,7 +109,7 @@ abstract final class PersonalTagDialogs {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.info_outline),
+              leading: const ButleryIcon(ButleryIcons.info),
               title: Text(context.l10n.commonShowDetails),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -112,7 +117,7 @@ abstract final class PersonalTagDialogs {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.edit),
+              leading: const ButleryIcon(ButleryIcons.pencil),
               title: Text(context.l10n.commonEditName),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -121,7 +126,7 @@ abstract final class PersonalTagDialogs {
             ),
             if (hasRules && !allRulesEnabled)
               ListTile(
-                leading: Icon(
+                leading: ButleryIcon(
                   Icons.play_arrow,
                   color: context.modeColors.success,
                 ),
@@ -138,8 +143,8 @@ abstract final class PersonalTagDialogs {
               ),
             if (hasRules && !allRulesDisabled)
               ListTile(
-                leading: Icon(
-                  Icons.pause,
+                leading: ButleryIcon(
+                  ButleryIcons.pause,
                   color: context.modeColors.warning,
                 ),
                 title: Text(context.l10n.personalTagDisableAllRules),
@@ -152,7 +157,7 @@ abstract final class PersonalTagDialogs {
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.share),
+              leading: const ButleryIcon(ButleryIcons.share2),
               title: Text(context.l10n.commonShare),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -160,7 +165,7 @@ abstract final class PersonalTagDialogs {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.folder),
+              leading: const ButleryIcon(ButleryIcons.folder),
               title: Text(context.l10n.personalTagMoveToGroup),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -169,8 +174,8 @@ abstract final class PersonalTagDialogs {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: Icon(
-                Icons.delete,
+              leading: ButleryIcon(
+                ButleryIcons.trash2,
                 color: Theme.of(context).colorScheme.error,
               ),
               title: Text(
@@ -662,7 +667,7 @@ abstract final class PersonalTagDialogs {
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, ''),
             child: ListTile(
-              leading: const Icon(Icons.folder_off),
+              leading: const ButleryIcon(Icons.folder_off),
               title: Text(context.l10n.personalTagNoGroup),
               contentPadding: EdgeInsets.zero,
             ),
@@ -671,7 +676,7 @@ abstract final class PersonalTagDialogs {
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, group.id),
               child: ListTile(
-                leading: const Icon(Icons.folder),
+                leading: const ButleryIcon(ButleryIcons.folder),
                 title: Text(group.name),
                 contentPadding: EdgeInsets.zero,
                 selected: tag.groupId == group.id,
@@ -681,7 +686,7 @@ abstract final class PersonalTagDialogs {
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, createNewSentinel),
             child: ListTile(
-              leading: const Icon(Icons.add),
+              leading: const ButleryIcon(ButleryIcons.plus),
               title: Text(context.l10n.personalTagCreateNewGroup),
               contentPadding: EdgeInsets.zero,
             ),

@@ -58,6 +58,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// One thing that did not go through, with its reason and its way on.
 @immutable
@@ -154,8 +156,8 @@ class PartialOutcome extends StatelessWidget {
               ExcludeSemantics(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 1),
-                  child: Icon(
-                    Icons.info_outline,
+                  child: ButleryIcon(
+                    ButleryIcons.info,
                     size: 20,
                     color: cs.onSecondaryContainer,
                   ),

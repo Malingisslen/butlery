@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Toggle button for showing/hiding filters
 class FilterToggleButton extends StatelessWidget {
@@ -24,8 +26,8 @@ class FilterToggleButton extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onToggle,
-          icon: Icon(
-            Icons.tune,
+          icon: ButleryIcon(
+            ButleryIcons.filter,
             size: AppDimensions.iconSizeAction,
             color: showFilters ? cs.onSurface : cs.onSurfaceVariant,
           ),

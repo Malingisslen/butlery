@@ -102,6 +102,7 @@ const _foregroundArgs = {
 /// Calls whose `color:` is a foreground: a glyph, a text style, a line.
 const _foregroundCalls = {
   'Icon',
+  'ButleryIcon',
   'IconButton',
   'TextStyle',
   'copyWith',
@@ -193,7 +194,7 @@ void main() {
             _foregroundArgs.contains(arg) ||
             (arg == 'color' && _foregroundCalls.contains(call)) ||
             // `Icon(icon, color: …)` style positional first, named after.
-            (call == 'Icon');
+            (call == 'Icon' || call == 'ButleryIcon');
         if (!isForeground) continue;
         // A border that matches its own ink fill (a checked control) is
         // the fill's edge, not a line on the page: the same expression

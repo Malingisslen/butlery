@@ -16,6 +16,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 
 // Test fixture helpers
@@ -319,8 +320,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // No expand chevron rendered
-        expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
-        expect(find.byIcon(Icons.keyboard_arrow_up), findsNothing);
+        // The row chevrons are the same glyphs as the expanded section's
+        // chevron-up (P7-U08), so only that one remains.
+        expect(find.byIcon(ButleryIcons.chevronDown), findsNothing);
+        expect(find.byIcon(ButleryIcons.chevronUp), findsOneWidget);
 
         // Tapping the row still does nothing
         await tester.tap(find.text('100 g smör'));
@@ -348,7 +351,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Chevron is visible before expand
-      expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.chevronDown), findsOneWidget);
     });
   });
 

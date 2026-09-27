@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Fullscreen image viewer for recipe images
 /// This widget provides a full-screen image viewing experience with:
@@ -119,7 +121,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       appBar: _showAppBar
           ? ButleryTopBar.undersida(
               leading: IconButton(
-                icon: const Icon(Icons.close),
+                icon: const ButleryIcon(ButleryIcons.x),
                 onPressed: () => Navigator.of(context).pop(),
                 tooltip: context.l10n.commonClose,
               ),
@@ -232,7 +234,7 @@ class FullscreenCloseButton extends StatelessWidget {
       brightness: Brightness.dark,
       child: IconButton(
         key: const ValueKey('fullscreenImage.close'),
-        icon: const Icon(Icons.close),
+        icon: const ButleryIcon(ButleryIcons.x),
         tooltip: context.l10n.commonClose,
         onPressed: () => Navigator.of(context).pop(),
         style: IconButton.styleFrom(
@@ -293,8 +295,8 @@ class ImageFailedPlate extends StatelessWidget {
               children: [
                 // Drawn at 26 px (del 4:888); iconSizeL (24) is the nearest
                 // standard step.
-                Icon(
-                  Icons.image_outlined,
+                ButleryIcon(
+                  ButleryIcons.image,
                   size: AppDimensions.iconSizeL,
                   color: secondary,
                 ),

@@ -8,6 +8,8 @@ import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-406: Square, cream-bg widget shown in the bottom sheet triggered by
 /// long-pressing a cooking-mode step. Drives a [StepTimerService] that the
@@ -288,7 +290,7 @@ class _TimerControls extends StatelessWidget {
         if (isRunning)
           _controlButton(
             context: context,
-            icon: Icons.pause,
+            icon: ButleryIcons.pause,
             label: context.l10n.pauseTimer,
             onPressed: onPause,
           )
@@ -308,7 +310,7 @@ class _TimerControls extends StatelessWidget {
           ),
         _controlButton(
           context: context,
-          icon: Icons.refresh,
+          icon: ButleryIcons.refreshCw,
           label: context.l10n.resetTimer,
           onPressed: onReset,
         ),
@@ -336,7 +338,7 @@ class _TimerControls extends StatelessWidget {
           iconSize: 32,
           color: color,
           onPressed: onPressed,
-          icon: Icon(icon),
+          icon: ButleryIcon(icon),
           tooltip: label,
         ),
         Text(

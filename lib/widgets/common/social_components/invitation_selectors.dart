@@ -3,6 +3,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Invitation target selection widgets.
 class InvitationSelectors {
@@ -159,7 +161,7 @@ class InvitationSelectors {
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint,
-    IconData prefixIcon = Icons.search,
+    IconData prefixIcon = ButleryIcons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
@@ -172,7 +174,7 @@ class InvitationSelectors {
           autofocus: autofocus,
           decoration: InputDecoration(
             hintText: hint ?? context.l10n.invitationSearchTargets,
-            prefixIcon: Icon(prefixIcon),
+            prefixIcon: ButleryIcon(prefixIcon),
             border: const OutlineInputBorder(),
           ),
           onChanged: onSearchChanged,
@@ -484,8 +486,8 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
                   : Colors.transparent,
             ),
             child: isSelected
-                ? Icon(
-                    Icons.check,
+                ? ButleryIcon(
+                    ButleryIcons.check,
                     size: 14,
                     color: Theme.of(
                       context,

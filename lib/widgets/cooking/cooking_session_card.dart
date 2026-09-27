@@ -9,6 +9,8 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
 /// Compose the primary presence line from one or more [names] cooking a
@@ -142,8 +144,8 @@ class CookingSessionCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
                     color: cs.onPrimary.withValues(alpha: 0.6),
                     size: AppDimensions.iconSizeM,
                   ),

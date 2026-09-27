@@ -9,6 +9,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/group_draft_codec.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -250,7 +251,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         controller: _nameController,
                         labelText: context.l10n.socialGroupName,
                         hintText: context.l10n.groupNameHint,
-                        prefixIcon: Icons.group,
+                        prefixIcon: ButleryIcons.users,
                         maxLength: 50,
                       ),
 

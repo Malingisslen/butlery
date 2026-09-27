@@ -36,6 +36,8 @@ import 'package:flutter/semantics.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// An error line with what happened, what was kept and one action.
 class InlineError extends StatelessWidget {
@@ -108,8 +110,8 @@ class InlineError extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: ExcludeSemantics(
-                  child: Icon(
-                    Icons.warning_amber_rounded,
+                  child: ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     color: danger,
                     size: AppDimensions.iconSize18,
                   ),

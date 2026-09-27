@@ -5,6 +5,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 
 /// Seasonal hero header for BUT-409.
@@ -105,8 +107,8 @@ class SeasonalHeroHeader extends StatelessWidget {
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
                   color: cs.onSurfaceVariant,
                   size: 18,
                 ),

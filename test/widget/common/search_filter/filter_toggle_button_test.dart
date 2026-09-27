@@ -1,9 +1,10 @@
 // test/widget/common/search_filter/filter_toggle_button_test.dart
-// Tests for FilterToggleButton - updated for UI Redesign (Icons.tune, l10n tooltips)
+// Tests for FilterToggleButton - updated for UI Redesign (ButleryIcons.filter, l10n tooltips)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -57,7 +58,7 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(find.byType(Stack), findsAtLeastNWidgets(1));
         expect(find.byType(IconButton), findsOneWidget);
-        expect(find.byIcon(Icons.tune), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.filter), findsOneWidget);
       });
 
       testWidgets('should use correct icon size', (WidgetTester tester) async {
@@ -74,7 +75,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.filter));
         expect(icon.size, equals(AppDimensions.iconSizeAction));
       });
     });
@@ -96,7 +97,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.filter));
         // Sloten ägs av det kanoniska schemat, inte av en enskild medlem.
         expect(icon.color, AppColors.lightColorScheme.onSurfaceVariant);
       });
@@ -139,7 +140,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.filter));
         expect(icon.color, AppColors.forestGreen);
       });
 
@@ -437,7 +438,7 @@ void main() {
           await tester.pumpAndSettle();
 
           // text.primary (onSurface) from the theme, not ink (P4-T7).
-          final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+          final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.filter));
           expect(icon.color, Colors.teal);
         },
       );
@@ -464,7 +465,7 @@ void main() {
           await tester.pumpAndSettle();
 
           // Widget uses cs.onSurfaceVariant from the theme
-          final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+          final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.filter));
           expect(icon.color, Colors.grey);
         },
       );

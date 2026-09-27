@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -162,7 +163,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
         child: StateWidget.empty(
           title: context.l10n.sharedNoContentYet,
           subtitle: context.l10n.sharedEmptyStateExplanation,
-          icon: Icons.share_outlined,
+          icon: ButleryIcons.share2,
           actionLabel: context.l10n.sharedShareFirstRecipe,
           onAction: () => Navigator.pushNamed(context, Routes.home),
         ),

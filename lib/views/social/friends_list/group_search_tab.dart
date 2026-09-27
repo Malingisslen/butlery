@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -20,7 +21,7 @@ class GroupSearchTab {
       return StateWidget.empty(
         title: context.l10n.groupSearchGroups,
         subtitle: context.l10n.groupSearchGroupsDescription,
-        icon: Icons.search,
+        icon: ButleryIcons.search,
       );
     }
 

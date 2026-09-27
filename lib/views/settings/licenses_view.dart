@@ -5,6 +5,8 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -106,8 +108,8 @@ class _LicensesViewState extends State<LicensesView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              ButleryIcon(
+                ButleryIcons.triangleAlert,
                 size: 64,
                 color: Theme.of(context).colorScheme.error,
               ),
@@ -119,7 +121,7 @@ class _LicensesViewState extends State<LicensesView> {
               const SizedBox(height: AppDimensions.spacingLg),
               ElevatedButton.icon(
                 onPressed: _load,
-                icon: const Icon(Icons.refresh),
+                icon: const ButleryIcon(ButleryIcons.refreshCw),
                 label: Text(context.l10n.commonRetry),
               ),
             ],
@@ -152,9 +154,9 @@ class _LicensesViewState extends State<LicensesView> {
           // duplicate them.
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.code),
+            leading: const ButleryIcon(Icons.code),
             title: Text(context.l10n.legalOpenSourceLicenses),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const ButleryIcon(ButleryIcons.chevronRight),
             onTap: () =>
                 showLicensePage(context: context, applicationName: 'Butlery'),
           ),

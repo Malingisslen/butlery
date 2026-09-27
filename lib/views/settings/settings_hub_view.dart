@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
@@ -42,14 +44,14 @@ class SettingsHubView extends StatelessWidget {
               children: [
                 _SectionHeader(title: context.l10n.settingsSectionFood),
                 _SettingsTile(
-                  icon: Icons.family_restroom,
+                  icon: ButleryIcons.users,
                   title: context.l10n.familyTitle,
                   subtitle: context.l10n.familyHubSubtitle,
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsFamily),
                 ),
                 _SettingsTile(
-                  icon: Icons.restaurant_menu,
+                  icon: ButleryIcons.utensils,
                   title: context.l10n.allergenSettingsTitle,
                   subtitle: context.l10n.allergenSettingsHubSubtitle,
                   onTap: () =>
@@ -66,14 +68,14 @@ class SettingsHubView extends StatelessWidget {
                 // portions and scales the weekly menu. (Was "Meny och smak"
                 // with cuisine/skill tuning until BUT-1594 removed those.)
                 _SettingsTile(
-                  icon: Icons.groups,
+                  icon: ButleryIcons.users,
                   title: context.l10n.settingsHouseholdSizeTitle,
                   subtitle: context.l10n.settingsHouseholdSizeSubtitle,
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsHousehold),
                 ),
                 _SettingsTile(
-                  icon: Icons.label_outline,
+                  icon: ButleryIcons.tag,
                   title: context.l10n.personalTagsViewTitle,
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsPersonalTags),
@@ -107,7 +109,7 @@ class SettingsHubView extends StatelessWidget {
                 // not discoverable from /settings). BUT-2150: this is a plain
                 // page, not a modal, so nothing closes before the result.
                 _SettingsTile(
-                  icon: Icons.download_outlined,
+                  icon: ButleryIcons.download,
                   title: context.l10n.profileDownloadBackup,
                   onTap: () => BackupRestoreHandler.handleBackup(
                     context,
@@ -132,7 +134,7 @@ class SettingsHubView extends StatelessWidget {
                   onTap: () => AuthActionHandler.handleLogout(context),
                 ),
                 _DangerSettingsTile(
-                  icon: Icons.delete_forever,
+                  icon: ButleryIcons.trash2,
                   title: context.l10n.profileDeleteAccount,
                   onTap: () => AuthActionHandler.handleDeleteAccount(context),
                 ),
@@ -142,7 +144,7 @@ class SettingsHubView extends StatelessWidget {
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionAbout),
                 _SettingsTile(
-                  icon: Icons.info_outline,
+                  icon: ButleryIcons.info,
                   title: context.l10n.settingsAboutTitle,
                   subtitle: context.l10n.settingsAboutSubtitle,
                   onTap: () =>
@@ -160,7 +162,7 @@ class SettingsHubView extends StatelessWidget {
                       Navigator.pushNamed(context, Routes.termsOfService),
                 ),
                 _SettingsTile(
-                  icon: Icons.mail_outline,
+                  icon: ButleryIcons.mail,
                   title: context.l10n.appealEmailLinkLabel,
                   onTap: () => _launchAppealEmail(context),
                 ),
@@ -267,7 +269,7 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
-      leading: Icon(icon, color: cs.onSurfaceVariant),
+      leading: ButleryIcon(icon, color: cs.onSurfaceVariant),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: subtitle != null
           ? Text(
@@ -277,7 +279,7 @@ class _SettingsTile extends StatelessWidget {
               ),
             )
           : null,
-      trailing: Icon(Icons.chevron_right, color: cs.outline),
+      trailing: ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
       onTap: onTap,
     );
   }
@@ -301,12 +303,12 @@ class _DangerSettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
-      leading: Icon(icon, color: cs.error),
+      leading: ButleryIcon(icon, color: cs.error),
       title: Text(
         title,
         style: AppTextStyles.bodyMedium.copyWith(color: cs.error),
       ),
-      trailing: Icon(Icons.chevron_right, color: cs.outline),
+      trailing: ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
       onTap: onTap,
     );
   }
@@ -357,7 +359,10 @@ class _AutoAddPantryTileState extends State<AutoAddPantryTile> {
     final enabled =
         _userService.currentUserProfile?.autoAddBoughtToPantry ?? false;
     return SwitchListTile(
-      secondary: Icon(Icons.kitchen_outlined, color: cs.onSurfaceVariant),
+      secondary: ButleryIcon(
+        Icons.kitchen_outlined,
+        color: cs.onSurfaceVariant,
+      ),
       title: Text(
         context.l10n.settingsAutoAddPantryTitle,
         style: AppTextStyles.bodyMedium,
@@ -409,7 +414,7 @@ class _LanguageTileState extends State<LanguageTile> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
-      leading: Icon(Icons.language, color: cs.onSurfaceVariant),
+      leading: ButleryIcon(Icons.language, color: cs.onSurfaceVariant),
       title: Text(
         context.l10n.settingsLanguageTitle,
         style: AppTextStyles.bodyMedium,
@@ -418,7 +423,7 @@ class _LanguageTileState extends State<LanguageTile> {
         LocaleProvider.getLocaleName(_localeProvider.locale.languageCode),
         style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
       ),
-      trailing: Icon(Icons.chevron_right, color: cs.outline),
+      trailing: ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
       onTap: () => _showLanguagePicker(context),
     );
   }
@@ -436,7 +441,9 @@ class _LanguageTileState extends State<LanguageTile> {
                 .map(
                   (code) => ListTile(
                     title: Text(LocaleProvider.getLocaleName(code)),
-                    trailing: code == current ? const Icon(Icons.check) : null,
+                    trailing: code == current
+                        ? const ButleryIcon(ButleryIcons.check)
+                        : null,
                     onTap: () => Navigator.of(ctx).pop(code),
                   ),
                 )

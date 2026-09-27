@@ -4,6 +4,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 
@@ -69,7 +71,7 @@ class PersonalTagTile extends StatelessWidget {
             : null,
         textColor: isUnused ? colorScheme.onSurfaceVariant : null,
         leading: inSelectionMode
-            ? Icon(
+            ? ButleryIcon(
                 isSelected ? Icons.check_box : Icons.check_box_outline_blank,
                 color: isSelected
                     ? colorScheme.onSurface
@@ -86,8 +88,8 @@ class PersonalTagTile extends StatelessWidget {
                         : colorScheme.onSurface.withValues(
                             alpha: AppDimensions.opacityLight,
                           ),
-                    child: Icon(
-                      Icons.label,
+                    child: ButleryIcon(
+                      ButleryIcons.tag,
                       color: hasActiveRules
                           ? context.modeColors.success
                           : colorScheme.onSurface,
@@ -108,7 +110,7 @@ class PersonalTagTile extends StatelessWidget {
                             width: 1.5,
                           ),
                         ),
-                        child: Icon(
+                        child: ButleryIcon(
                           Icons.auto_awesome,
                           size: 10,
                           color: colorScheme.surfaceContainerHighest,
@@ -145,7 +147,7 @@ class PersonalTagTile extends StatelessWidget {
         trailing: inSelectionMode
             ? null
             : IconButton(
-                icon: const Icon(Icons.more_vert),
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
                 tooltip: context.l10n.personalTagOptions,
                 onPressed: () =>
                     PersonalTagDialogs.showTagOptionsSheet(context, tag),
@@ -319,7 +321,7 @@ class UnusedTagsSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ExpansionTile(
-      leading: Icon(
+      leading: ButleryIcon(
         Icons.label_off,
         color: colorScheme.onSurfaceVariant,
         size: AppDimensions.iconSizeM,
@@ -347,7 +349,7 @@ class UnusedTagsSection extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: onDeleteAll,
-              icon: Icon(Icons.delete_sweep, color: colorScheme.error),
+              icon: ButleryIcon(ButleryIcons.trash2, color: colorScheme.error),
               label: Text(
                 context.l10n.personalTagDeleteAllUnused,
                 style: TextStyle(color: colorScheme.error),
@@ -380,7 +382,10 @@ class PersonalTagGroupSection extends StatelessWidget {
       tags: tags,
       viewModel: viewModel,
       trailing: PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
+        icon: const ButleryIcon(
+          ButleryIcons.moreVertical,
+          size: AppDimensions.iconSizeM,
+        ),
         onSelected: (value) {
           // Defer to next frame so PopupMenu fully dismisses before dialog opens
           // Fixes BUG-033 (RenderBox assertion during popup dismiss animation)
@@ -393,7 +398,7 @@ class PersonalTagGroupSection extends StatelessWidget {
           PopupMenuItem(
             value: 'rename',
             child: ListTile(
-              leading: const Icon(Icons.edit),
+              leading: const ButleryIcon(ButleryIcons.pencil),
               title: Text(context.l10n.commonRename),
               contentPadding: EdgeInsets.zero,
             ),
@@ -401,8 +406,8 @@ class PersonalTagGroupSection extends StatelessWidget {
           PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(
-                Icons.delete,
+              leading: ButleryIcon(
+                ButleryIcons.trash2,
                 color: Theme.of(context).colorScheme.error,
               ),
               title: Text(

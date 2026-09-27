@@ -8,6 +8,8 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
@@ -83,6 +85,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
         title: friend.displayName,
         actions: [
           PopupMenuButton<String>(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
             onSelected: (value) {
               if (value == 'block') {
                 _blockFriend();
@@ -104,8 +107,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                   value: 'block',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.block,
+                      ButleryIcon(
+                        ButleryIcons.block,
                         color: Theme.of(context).colorScheme.error,
                       ),
                       const SizedBox(width: AppDimensions.spacingSm),
@@ -117,7 +120,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                 value: 'report',
                 child: Row(
                   children: [
-                    Icon(
+                    ButleryIcon(
                       Icons.flag_outlined,
                       color: Theme.of(context).colorScheme.error,
                     ),
@@ -207,12 +210,12 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                     StatItemWidget(
                                       label: context.l10n.socialFriends,
                                       value: '${friend.friendsCount}',
-                                      icon: Icons.people,
+                                      icon: ButleryIcons.users,
                                     ),
                                     StatItemWidget(
                                       label: context.l10n.socialRecipes,
                                       value: '${friend.publicRecipeCount}',
-                                      icon: Icons.restaurant_menu,
+                                      icon: ButleryIcons.utensils,
                                     ),
                                   ],
                                 ),
@@ -231,7 +234,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   Routes.publicProfile,
                                   arguments: friend.uid,
                                 ),
-                                icon: const Icon(Icons.restaurant_menu),
+                                icon: const ButleryIcon(ButleryIcons.utensils),
                                 label: Text(
                                   context.l10n.publicProfilePublicRecipes,
                                 ),
@@ -252,7 +255,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   ),
                                 ),
                               ),
-                              icon: const Icon(Icons.folder_shared_outlined),
+                              icon: const ButleryIcon(
+                                Icons.folder_shared_outlined,
+                              ),
                               label: Text(
                                 context.l10n.sharedRecipesByFriendButton,
                               ),
@@ -272,7 +277,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                     child: ActionButtons.outlinedButton(
                                       context,
                                       label: context.l10n.socialSendMessage,
-                                      icon: Icons.message,
+                                      icon: ButleryIcons.messageSquare,
                                       onPressed: () =>
                                           _startConversation(context),
                                       isLoading: _isStartingConversation,
@@ -290,7 +295,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                         'friendProfile.shareRecipe',
                                       ),
                                       label: context.l10n.socialShareRecipe,
-                                      icon: Icons.share,
+                                      icon: ButleryIcons.share2,
                                       onPressed: () =>
                                           _showRecipeSelection(context),
                                       expand: true,
@@ -303,7 +308,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                 width: double.infinity,
                                 child: OutlinedButton.icon(
                                   onPressed: () => _shareProfile(context),
-                                  icon: const Icon(Icons.link),
+                                  icon: const ButleryIcon(ButleryIcons.link),
                                   label: Text(
                                     context.l10n.publicProfileShareButton,
                                   ),
@@ -318,7 +323,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   style: ComponentThemes.deleteButtonStyle(
                                     Theme.of(context).colorScheme,
                                   ),
-                                  icon: const Icon(Icons.person_remove),
+                                  icon: const ButleryIcon(
+                                    ButleryIcons.userMinus,
+                                  ),
                                   label: Text(context.l10n.socialRemoveFriend),
                                 ),
                               ),

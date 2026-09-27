@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
 import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
 import 'package:butlery/widgets/messaging/messaging_ui_components.dart';
@@ -87,7 +89,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       actions: [
         IconButton(
           onPressed: _showNewConversationDialog,
-          icon: const Icon(Icons.add),
+          icon: const ButleryIcon(ButleryIcons.plus),
           tooltip: l10n.messagingNewConversation,
         ),
       ],
@@ -155,7 +157,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           return EmptyStates.buildEmptyState(
             context,
             variant: EmptyStateVariant.generic,
-            icon: Icons.error_outline,
+            icon: ButleryIcons.triangleAlert,
             // The VM's error names what failed (errorCouldNotLoad), so it is
             // the title; no causeless errorGeneric (content-style-guide.md:95).
             title: vm.conversationsError!,
@@ -180,7 +182,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             return EmptyStates.buildEmptyState(
               context,
               variant: EmptyStateVariant.generic,
-              icon: Icons.chat_bubble_outline,
+              icon: ButleryIcons.messageSquare,
               title: l10n.messagingNoConversationsYet,
               subtitle: l10n.messagingStartFirstConversation,
               customAction: ActionButtons.primaryButton(
@@ -199,7 +201,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         final items = <Widget>[
           if (pinned.isNotEmpty) ...[
             _buildSectionHeader(
-              icon: Icons.push_pin,
+              icon: ButleryIcons.pin,
               label: context.l10n.messagingPinned,
             ),
             ...pinned.map((c) => _buildConversationItem(vm, c)),
@@ -237,7 +239,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         header: true,
         child: Row(
           children: [
-            Icon(
+            ButleryIcon(
               icon,
               size: AppDimensions.iconSize14,
               color: cs.onSurfaceVariant,
@@ -282,8 +284,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.archive,
+                    ButleryIcon(
+                      ButleryIcons.archive,
                       size: AppDimensions.iconSizeM,
                       color: cs.onSurfaceVariant,
                     ),
@@ -296,8 +298,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                         ),
                       ),
                     ),
-                    Icon(
-                      _archivedExpanded ? Icons.expand_less : Icons.expand_more,
+                    ButleryIcon(
+                      _archivedExpanded
+                          ? ButleryIcons.chevronUp
+                          : ButleryIcons.chevronDown,
                       color: cs.onSurfaceVariant,
                     ),
                   ],
@@ -352,8 +356,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             conversation.getDisplayTitle(vm.currentUserId.orEmpty()),
           ),
           ListTile(
-            leading: Icon(
-              conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+            leading: const ButleryIcon(
+              // One glyph for both states until design draws the second one
+              // (P7-U08 open question); the tooltip/label carries the state.
+              ButleryIcons.pin,
             ),
             title: Text(
               conversation.isPinned
@@ -366,8 +372,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             },
           ),
           ListTile(
-            leading: Icon(
-              conversation.isArchived ? Icons.unarchive : Icons.archive,
+            leading: ButleryIcon(
+              conversation.isArchived ? Icons.unarchive : ButleryIcons.archive,
             ),
             title: Text(
               conversation.isArchived
@@ -380,7 +386,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.mark_chat_read),
+            leading: const ButleryIcon(Icons.mark_chat_read),
             title: Text(l10n.messagingMarkAsRead),
             onTap: () {
               Navigator.pop(context);
@@ -389,7 +395,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ),
           if (conversation.isGroup) ...[
             ListTile(
-              leading: const Icon(Icons.info_outline),
+              leading: const ButleryIcon(ButleryIcons.info),
               title: Text(l10n.messagingGroupInfo),
               onTap: () {
                 Navigator.pop(context);
@@ -397,7 +403,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.exit_to_app),
+              leading: const ButleryIcon(Icons.exit_to_app),
               title: Text(l10n.messagingLeaveGroup),
               onTap: () {
                 Navigator.pop(context);
@@ -406,7 +412,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             ),
           ] else ...[
             ListTile(
-              leading: const Icon(Icons.person),
+              leading: const ButleryIcon(ButleryIcons.user),
               title: Text(l10n.messagingViewProfile),
               onTap: () {
                 Navigator.pop(context);
@@ -425,7 +431,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           // takes an emptied group down properly.
           if (conversation.groupId == null)
             ErrorListTile(
-              icon: Icons.delete_outline,
+              icon: ButleryIcons.trash2,
               title: l10n.messagingDeleteConversation,
               onTap: () {
                 Navigator.pop(context);

@@ -26,6 +26,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class _FakeOfflineService extends ChangeNotifier implements OfflineService {
   bool _online = true;
@@ -91,7 +92,7 @@ void main() {
         );
 
         final secondary = AppModeColors.textSecondaryOnRaised(brightness);
-        final icon = tester.widget<Icon>(find.byIcon(Icons.image_outlined));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.image));
         expect(icon.color, secondary);
 
         final first = tester.widget<Text>(find.text(sv.imageCouldNotBeShown));
@@ -106,7 +107,7 @@ void main() {
 
         // The drawing offers no button, and the old faded icon is gone.
         expect(find.byType(ButtonStyleButton), findsNothing);
-        expect(find.byIcon(Icons.error_outline), findsNothing);
+        expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
       });
     }
 
@@ -270,10 +271,10 @@ void main() {
         await tester.pump();
 
         expect(find.byType(ButleryTopBar), findsOneWidget);
-        final close = find.widgetWithIcon(IconButton, Icons.close);
+        final close = find.widgetWithIcon(IconButton, ButleryIcons.x);
         expect(close, findsOneWidget);
         expect(tester.widget<IconButton>(close).tooltip, sv.commonClose);
-        expect(find.byIcon(Icons.arrow_back), findsNothing);
+        expect(find.byIcon(ButleryIcons.arrowLeft), findsNothing);
         expect(find.text('2 / 2'), findsOneWidget);
 
         // Tapping the photo hides the bar.
@@ -339,7 +340,7 @@ void main() {
           find.byKey(const ValueKey('fullscreenImage.close')),
           findsNothing,
         );
-        expect(find.byIcon(Icons.close), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
 
         await tester.tap(find.byType(InteractiveViewer));
         await tester.pump();
@@ -347,7 +348,7 @@ void main() {
 
         final closeFinder = find.byKey(const ValueKey('fullscreenImage.close'));
         expect(closeFinder, findsOneWidget);
-        expect(find.byIcon(Icons.close), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
         final close = tester.widget<IconButton>(closeFinder);
         expect(close.tooltip, sv.commonClose);
         expect(close.style!.backgroundColor!.resolve({}), cs.primary);

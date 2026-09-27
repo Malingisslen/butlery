@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/messaging/builders/message_content_builder.dart';
@@ -204,7 +205,7 @@ class _MessageBubbleState extends State<MessageBubble>
                           child: Opacity(
                             opacity: (_dragExtent.abs() / _swipeThreshold)
                                 .clamp(0.0, 1.0),
-                            child: Icon(
+                            child: ButleryIcon(
                               Icons.reply,
                               color: context.modeColors.success,
                               size: AppDimensions.iconSizeL,

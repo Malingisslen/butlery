@@ -7,6 +7,8 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -125,8 +127,8 @@ class SharedMenuCard {
                 : Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
-          child: Icon(
-            isCollaborative ? Icons.group : Icons.calendar_month,
+          child: ButleryIcon(
+            isCollaborative ? ButleryIcons.users : ButleryIcons.calendar,
             size: AppDimensions.iconSizeXl,
             color: isCollaborative
                 ? Theme.of(context).colorScheme.onTertiaryContainer
@@ -164,8 +166,10 @@ class SharedMenuCard {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          isCollaborative ? Icons.sync : Icons.content_copy,
+                        ButleryIcon(
+                          isCollaborative
+                              ? ButleryIcons.refreshCw
+                              : ButleryIcons.copy,
                           size: AppDimensions.iconSizeXs,
                           color: isCollaborative
                               ? Theme.of(
@@ -203,8 +207,8 @@ class SharedMenuCard {
               const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
-                  Icon(
-                    Icons.restaurant_menu,
+                  ButleryIcon(
+                    ButleryIcons.utensils,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -214,7 +218,7 @@ class SharedMenuCard {
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.space4),
-                  Icon(
+                  ButleryIcon(
                     Icons.category,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -265,7 +269,7 @@ class SharedMenuCard {
           child: ActionButtons.secondaryButton(
             context,
             label: context.l10n.commonView,
-            icon: Icons.visibility,
+            icon: ButleryIcons.eye,
             onPressed: () {
               if (!isRead) {
                 viewModel.menuViewModel.markAsViewed(sharedMenu);
@@ -294,7 +298,7 @@ class SharedMenuCard {
                 label: isImported
                     ? context.l10n.sharedImported
                     : context.l10n.sharedImport,
-                icon: isImported ? Icons.check : Icons.download,
+                icon: isImported ? ButleryIcons.check : ButleryIcons.download,
                 isLoading: isThisMenuOperating,
                 onPressed: isImported || isThisMenuOperating
                     ? null

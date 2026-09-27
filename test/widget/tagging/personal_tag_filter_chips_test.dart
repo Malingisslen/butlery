@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -181,7 +182,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final settingsButton = find.byIcon(Icons.settings);
+      final settingsButton = find.byIcon(ButleryIcons.settings);
       expect(settingsButton, findsOneWidget);
       await tester.tap(settingsButton);
       expect(called, isTrue);

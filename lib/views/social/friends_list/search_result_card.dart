@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SearchResultCard - Enhanced search result card component with explicit action buttons
 /// Displays search result user with clear friendship status and action buttons.
@@ -75,7 +76,7 @@ class SearchResultCard {
     return ActionButtons.outlinedButton(
       context,
       label: context.l10n.socialRequestSent,
-      icon: Icons.schedule,
+      icon: ButleryIcons.clock,
       onPressed: null, // Disabled
     );
   }
@@ -85,7 +86,7 @@ class SearchResultCard {
     return ActionButtons.outlinedButton(
       context,
       label: context.l10n.socialFriends,
-      icon: Icons.check_circle,
+      icon: ButleryIcons.circleCheck,
       onPressed: null, // Disabled
     );
   }
@@ -112,7 +113,7 @@ class SearchResultCard {
     return ActionButtons.outlinedButton(
       context,
       label: context.l10n.blockedUsersUnblock,
-      icon: Icons.block,
+      icon: ButleryIcons.block,
       onPressed: () => _handleUnblockUser(context, user, viewModel),
     );
   }

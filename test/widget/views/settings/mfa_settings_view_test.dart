@@ -17,6 +17,7 @@ import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/views/settings/mfa_settings_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -94,9 +95,9 @@ void main() {
     await pump(tester);
 
     expect(find.text('Min telefon'), findsOneWidget);
-    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.tap(find.byIcon(ButleryIcons.trash2));
     await tester.pumpAndSettle();
     // The removal asks first; the way off is intact.
     expect(find.text('Ta bort MFA?'), findsOneWidget);

@@ -10,6 +10,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -118,8 +120,8 @@ class SharedShoppingListCard {
             color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
-          child: Icon(
-            Icons.shopping_cart,
+          child: ButleryIcon(
+            ButleryIcons.shoppingCart,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
@@ -156,8 +158,8 @@ class SharedShoppingListCard {
               const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
-                  Icon(
-                    Icons.shopping_basket,
+                  ButleryIcon(
+                    ButleryIcons.shoppingCart,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -167,8 +169,8 @@ class SharedShoppingListCard {
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.space4),
-                  Icon(
-                    Icons.person,
+                  ButleryIcon(
+                    ButleryIcons.user,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -216,7 +218,7 @@ class SharedShoppingListCard {
           child: ActionButtons.secondaryButton(
             context,
             label: context.l10n.commonView,
-            icon: Icons.visibility,
+            icon: ButleryIcons.eye,
             onPressed: () {
               if (!isRead) {
                 viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
@@ -232,7 +234,7 @@ class SharedShoppingListCard {
             label: isJoined
                 ? context.l10n.sharedMember
                 : context.l10n.sharedJoin,
-            icon: isJoined ? Icons.check : Icons.add_shopping_cart,
+            icon: isJoined ? ButleryIcons.check : Icons.add_shopping_cart,
             isLoading: viewModel.shoppingViewModel.isOperating,
             onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                 ? null
@@ -337,8 +339,8 @@ class SharedShoppingListCard {
               itemCount: 1,
               itemBuilder: (context, index) {
                 return ListTile(
-                  leading: const Icon(
-                    Icons.shopping_basket_outlined,
+                  leading: const ButleryIcon(
+                    ButleryIcons.shoppingCart,
                     size: AppDimensions.iconSizeM,
                   ),
                   title: Text(
@@ -347,8 +349,8 @@ class SharedShoppingListCard {
                     ),
                   ),
                   subtitle: Text(context.l10n.sharedTapToSeeAllItems),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
+                  trailing: const ButleryIcon(
+                    ButleryIcons.chevronRight,
                     size: AppDimensions.iconSizeS,
                   ),
                 );
@@ -375,7 +377,9 @@ class SharedShoppingListCard {
                     label: isJoined
                         ? context.l10n.sharedAlreadyMember
                         : context.l10n.sharedJoinList,
-                    icon: isJoined ? Icons.check : Icons.add_shopping_cart,
+                    icon: isJoined
+                        ? ButleryIcons.check
+                        : Icons.add_shopping_cart,
                     isLoading: viewModel.shoppingViewModel.isOperating,
                     onPressed:
                         isJoined || viewModel.shoppingViewModel.isOperating

@@ -28,6 +28,8 @@ import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
@@ -379,8 +381,8 @@ class CookingNoStepsState extends StatelessWidget {
                     child: TappableWrapper(
                       onTap: onClose,
                       semanticLabel: l10n.a11yCookingModeClose,
-                      child: Icon(
-                        Icons.close,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
                         color: cs.primary,
                         size: AppDimensions.iconSizeM,
                       ),
@@ -397,7 +399,7 @@ class CookingNoStepsState extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ExcludeSemantics(
-                          child: Icon(
+                          child: ButleryIcon(
                             Icons.no_meals,
                             color: cs.onPrimary,
                             size: AppDimensions.iconSizeDisplay,
@@ -675,8 +677,8 @@ class _CookingModeContent extends StatelessWidget {
             child: TappableWrapper(
               onTap: () => Navigator.maybePop(context),
               semanticLabel: context.l10n.a11yCookingModeClose,
-              child: Icon(
-                Icons.close,
+              child: ButleryIcon(
+                ButleryIcons.x,
                 color: cs.primary,
                 size: AppDimensions.iconSizeM,
               ),
@@ -701,8 +703,10 @@ class _CookingModeContent extends StatelessWidget {
         if (!voiceController.ttsAvailable) return const SizedBox.shrink();
         final muted = voiceController.muted;
         return IconButton(
-          icon: Icon(
-            muted ? Icons.volume_off : Icons.volume_up,
+          icon: ButleryIcon(
+            // One glyph for both states until design draws the second one
+            // (P7-U08 open question); the tooltip/label carries the state.
+            ButleryIcons.volume,
             color: cs.onPrimary,
           ),
           tooltip: muted
@@ -762,7 +766,7 @@ class _IngredientsPanel extends StatelessWidget {
                   children: [
                     _buildPortionButton(
                       context,
-                      icon: Icons.remove,
+                      icon: ButleryIcons.minus,
                       onPressed:
                           vm.currentPortions > CookingModeViewModel.minPortions
                           ? () => vm.updatePortions(vm.currentPortions - 1)
@@ -782,7 +786,7 @@ class _IngredientsPanel extends StatelessWidget {
                     ),
                     _buildPortionButton(
                       context,
-                      icon: Icons.add,
+                      icon: ButleryIcons.plus,
                       onPressed:
                           vm.currentPortions < CookingModeViewModel.maxPortions
                           ? () => vm.updatePortions(vm.currentPortions + 1)
@@ -942,7 +946,7 @@ class _IngredientsPanel extends StatelessWidget {
   }) {
     final cs = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null;
-    final label = icon == Icons.remove
+    final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
     return Semantics(
@@ -963,7 +967,7 @@ class _IngredientsPanel extends StatelessWidget {
                 width: 2,
               ),
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeL,
               color: isEnabled ? cs.onPrimary : _disabledOnInk,
@@ -1279,7 +1283,7 @@ class CookingStepNavigation extends StatelessWidget {
       child: Row(
         children: [
           _NavButton(
-            icon: Icons.arrow_back,
+            icon: ButleryIcons.arrowLeft,
             label: context.l10n.cookingModePreviousStep,
             onPressed: vm.hasPreviousStep ? vm.previousStep : null,
           ),
@@ -1307,7 +1311,7 @@ class CookingStepNavigation extends StatelessWidget {
                       HapticFeedback.lightImpact();
                       onFinish!();
                     },
-                    icon: const Icon(Icons.check),
+                    icon: const ButleryIcon(ButleryIcons.check),
                     label: Text(context.l10n.cookingDone),
                   )
                 : FilledButton.icon(
@@ -1320,7 +1324,7 @@ class CookingStepNavigation extends StatelessWidget {
                             vm.nextStep();
                           }
                         : null,
-                    icon: const Icon(Icons.arrow_forward),
+                    icon: const ButleryIcon(ButleryIcons.arrowRight),
                     label: Text(context.l10n.cookingModeNextStep),
                   ),
           ),
@@ -1355,7 +1359,7 @@ class _NavButton extends StatelessWidget {
           : null,
       enabled: enabled,
       semanticLabel: label,
-      child: Icon(
+      child: ButleryIcon(
         icon,
         color: enabled ? cs.onPrimary : _disabledOnInk,
         size: AppDimensions.iconSizeL,

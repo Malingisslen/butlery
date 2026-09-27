@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 /// Shared badge widget used by both AllergenStatusBadge and DietaryStatusBadge.
@@ -42,7 +44,7 @@ class TagStatusBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               icon,
               size: AppDimensions.iconSize18,
               color: color,
@@ -64,8 +66,8 @@ class TagStatusBadge extends StatelessWidget {
               TappableWrapper(
                 onTap: onInfoTap,
                 semanticLabel: context.l10n.a11yTagStatusInfo(semanticLabel),
-                child: Icon(
-                  Icons.info_outline,
+                child: ButleryIcon(
+                  ButleryIcons.info,
                   size: AppDimensions.iconSize14,
                   color: color,
                 ),
@@ -112,7 +114,7 @@ class TagStatusBadgeCompact extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               icon,
               size: AppDimensions.iconSize14,
               color: color,

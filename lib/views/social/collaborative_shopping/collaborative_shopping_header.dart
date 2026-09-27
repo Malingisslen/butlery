@@ -1,6 +1,8 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_header.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -210,8 +212,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.group,
+        ButleryIcon(
+          ButleryIcons.users,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
@@ -227,8 +229,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildActivitySummary(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          Icons.access_time,
+        ButleryIcon(
+          ButleryIcons.clock,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),

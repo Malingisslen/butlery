@@ -24,10 +24,12 @@ import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 class _MockRecipeListViewModel extends Mock implements RecipeListViewModel {}
 
@@ -87,7 +89,10 @@ void main() {
             secondaryLine: 'Veckans inköp · 4 av 16 klara',
             actions: [
               ButlerySelectButton(onPressed: () {}),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
+                onPressed: () {},
+              ),
             ],
           ),
           textScale: scale,
@@ -121,7 +126,10 @@ void main() {
             title: '0 valda',
             leading: ButleryCancelSelectionButton(onPressed: () {}),
             actions: const [
-              IconButton(icon: Icon(Icons.delete_outline), onPressed: null),
+              IconButton(
+                icon: ButleryIcon(ButleryIcons.trash2),
+                onPressed: null,
+              ),
             ],
           ),
           textScale: scale,
@@ -145,7 +153,7 @@ void main() {
                 title: '0 valda',
                 actions: const [
                   IconButton(
-                    icon: Icon(Icons.local_offer_outlined),
+                    icon: ButleryIcon(ButleryIcons.tag),
                     onPressed: null,
                   ),
                 ],
@@ -156,16 +164,19 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<RichText>(
+        final icon = tester.widget<CustomPaint>(
           find.descendant(
-            of: find.byIcon(Icons.local_offer_outlined),
-            matching: find.byType(RichText),
+            of: find.byIcon(ButleryIcons.tag),
+            matching: find.byType(CustomPaint),
           ),
         );
-        expect(icon.text.style?.color, AppModeColors.textDisabled(brightness));
+        expect(
+          (icon.painter! as ButleryGlyphPainter).color,
+          AppModeColors.textDisabled(brightness),
+        );
         expect(
           find.ancestor(
-            of: find.byIcon(Icons.local_offer_outlined),
+            of: find.byIcon(ButleryIcons.tag),
             matching: find.byType(Opacity),
           ),
           findsNothing,

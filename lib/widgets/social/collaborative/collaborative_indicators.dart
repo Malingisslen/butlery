@@ -8,6 +8,7 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 
 // Focused Components
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_status_widgets.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_live_widgets.dart';
@@ -31,7 +32,7 @@ class CollaborativeIndicators {
   /// Compact badge to show that content is shared/collaborative
   static Widget collaborativeStatusBadge({
     String text = 'Delat',
-    IconData icon = Icons.people,
+    IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
   }) {

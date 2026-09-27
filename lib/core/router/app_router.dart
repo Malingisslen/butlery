@@ -29,6 +29,8 @@ import 'package:butlery/views/veckomeny_view.dart' as vecko;
 import 'package:butlery/views/receive_share_view.dart';
 
 // Shell layout (IndexedStack for tab state preservation)
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
@@ -634,8 +636,8 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              ButleryIcon(
+                ButleryIcons.triangleAlert,
                 size: AppDimensions.iconSizeXl,
                 color: Theme.of(context).colorScheme.error,
               ),

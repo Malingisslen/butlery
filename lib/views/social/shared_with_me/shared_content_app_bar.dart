@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SharedContentAppBar - App bar for shared content view
 /// Handles the app bar with notification badges and refresh functionality.
@@ -20,7 +22,7 @@ class SharedContentAppBar {
     final cs = Theme.of(context).colorScheme;
     final refresh = IconButton(
       onPressed: () => viewModel.refreshAllContent(),
-      icon: const Icon(Icons.refresh),
+      icon: const ButleryIcon(ButleryIcons.refreshCw),
       tooltip: context.l10n.commonRefresh,
     );
     return ButleryTopBar.undersida(

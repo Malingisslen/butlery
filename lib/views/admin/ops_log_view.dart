@@ -9,6 +9,8 @@ import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
 import 'package:butlery/views/admin/widgets/admin_help_text.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only ops-log tab: recent scheduled-job runs from `system_events`.
@@ -56,7 +58,7 @@ class _OpsLogContent extends StatelessWidget {
         title: context.l10n.adminOpsTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             tooltip: context.l10n.adminRefresh,
             onPressed: vm.isLoading ? null : vm.refresh,
           ),
@@ -77,7 +79,7 @@ class _OpsLogContent extends StatelessWidget {
     if (vm.events.isEmpty) {
       return StateWidget.empty(
         title: l10n.adminOpsEmpty,
-        icon: Icons.dns_outlined,
+        icon: ButleryIcons.server,
       );
     }
     return Column(

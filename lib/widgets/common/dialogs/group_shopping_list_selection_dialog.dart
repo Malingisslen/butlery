@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -124,7 +126,7 @@ class _GroupShoppingListSelectionDialogState
       return StateWidget.empty(
         title: context.l10n.dialogNoShoppingLists,
         subtitle: context.l10n.dialogNoShoppingListsToShare,
-        icon: Icons.shopping_cart,
+        icon: ButleryIcons.shoppingCart,
       );
     }
 
@@ -173,8 +175,8 @@ class _ShoppingListItem extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
-              Icons.shopping_cart,
+            child: ButleryIcon(
+              ButleryIcons.shoppingCart,
               color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),
@@ -206,8 +208,8 @@ class _ShoppingListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
+      trailing: const ButleryIcon(
+        ButleryIcons.chevronRight,
         size: AppDimensions.iconSizeS,
       ),
       onTap: onTap,

@@ -7,6 +7,8 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -226,8 +228,8 @@ class _CreateGroupConversationViewState
       children: [
         Row(
           children: [
-            Icon(
-              Icons.people,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -254,8 +256,8 @@ class _CreateGroupConversationViewState
                 size: ImageSize.small,
               ),
               label: Text(member.displayName),
-              deleteIcon: const Icon(
-                Icons.close,
+              deleteIcon: const ButleryIcon(
+                ButleryIcons.x,
                 size: AppDimensions.iconSizeS,
               ),
               onDeleted: () => viewModel.toggleMemberSelection(member.uid),
@@ -338,8 +340,8 @@ class _CreateGroupConversationViewState
             ),
           ),
           if (isSelected)
-            Icon(
-              Icons.check_circle,
+            ButleryIcon(
+              ButleryIcons.circleCheck,
               color: Theme.of(context).colorScheme.onSurface,
             ),
         ],

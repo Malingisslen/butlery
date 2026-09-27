@@ -32,6 +32,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 
 /// Vilket av Komponentarkets toppfältsmönster ett [ButleryTopBar] ritar.
@@ -501,7 +503,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
       // Tolkning: ritningen visar glyfen i 17 px. Här gäller appens
       // ikonknappstema (AppDimensions.iconSizeL), som alla ikonknappar
       // har; arket anger ingen egen storlek för toppfältet.
-      icon: const Icon(Icons.chevron_left),
+      icon: const ButleryIcon(ButleryIcons.chevronLeft),
       tooltip: name,
       onPressed: onBack ?? () => Navigator.maybePop(context),
     );

@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 
 /// Social collaborative indicators and status components.
@@ -16,7 +18,7 @@ class SocialCollaborativeComponents {
   static Widget collaborativeStatusBadge({
     BuildContext? context,
     String? text,
-    IconData icon = Icons.people,
+    IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
   }) {
@@ -129,8 +131,8 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.sync,
+          ButleryIcon(
+            ButleryIcons.refreshCw,
             size: AppDimensions.iconSizeXs,
             color: activeColor ?? context.modeColors.success,
           ),
@@ -162,7 +164,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.all(AppDimensions.spacingSm),
       child: Row(
         children: [
-          const Icon(Icons.people, size: AppDimensions.iconSizeS),
+          const ButleryIcon(ButleryIcons.users, size: AppDimensions.iconSizeS),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             context.l10n.socialParticipants,
@@ -232,7 +234,7 @@ class SocialCollaborativeComponents {
     BuildContext context, {
     String? text,
     Color? color,
-    IconData icon = Icons.sync,
+    IconData icon = ButleryIcons.refreshCw,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -251,7 +253,7 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXs,
             color: color ?? context.modeColors.success,
@@ -274,7 +276,7 @@ class SocialCollaborativeComponents {
     BuildContext context, {
     String? text,
     Color? color,
-    IconData icon = Icons.pause_circle_outline,
+    IconData icon = ButleryIcons.pause,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -295,7 +297,7 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXs,
             color: color ?? cs.onSurfaceVariant,
@@ -349,14 +351,14 @@ class SocialCollaborativeComponents {
             children: [
               _buildMetricItem(
                 context,
-                icon: Icons.people,
+                icon: ButleryIcons.users,
                 value: memberCount.toString(),
                 label: context.l10n.socialMembers,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               _buildMetricItem(
                 context,
-                icon: Icons.edit,
+                icon: ButleryIcons.pencil,
                 value: activeEditors.toString(),
                 label: context.l10n.socialActiveEditors,
               ),
@@ -399,7 +401,7 @@ class SocialCollaborativeComponents {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               icon,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
@@ -461,7 +463,7 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          ButleryIcon(
             config.icon,
             size: AppDimensions.iconSizeXs,
             color: color ?? config.color,
@@ -490,7 +492,7 @@ class SocialCollaborativeComponents {
     switch (permissionLevel.toLowerCase()) {
       case 'owner':
         return _PermissionConfig(
-          icon: Icons.star,
+          icon: ButleryIcons.star,
           label: context?.l10n.socialPermissionOwner ?? 'Ägare',
           color: cs?.onSurface ?? AppColors.forestGreen,
         );
@@ -502,19 +504,19 @@ class SocialCollaborativeComponents {
         );
       case 'editor':
         return _PermissionConfig(
-          icon: Icons.edit,
+          icon: ButleryIcons.pencil,
           label: context?.l10n.socialPermissionEditor ?? 'Redigera',
           color: cs?.onSurface ?? AppColors.forestGreen,
         );
       case 'viewer':
         return _PermissionConfig(
-          icon: Icons.visibility,
+          icon: ButleryIcons.eye,
           label: context?.l10n.socialPermissionViewer ?? 'Läsa',
           color: cs?.onSurfaceVariant ?? AppColors.textLight,
         );
       default:
         return _PermissionConfig(
-          icon: Icons.help_outline,
+          icon: ButleryIcons.circleHelp,
           label: context?.l10n.socialPermissionUnknown ?? '?',
           color: cs?.onSurfaceVariant ?? AppColors.textLight,
         );

@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHeader {
@@ -38,7 +40,11 @@ class ShareDialogHeader {
       ),
       child: Row(
         children: [
-          Icon(icon, color: cs.onSurface, size: AppDimensions.iconSizeAction),
+          ButleryIcon(
+            icon,
+            color: cs.onSurface,
+            size: AppDimensions.iconSizeAction,
+          ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Column(
@@ -67,7 +73,7 @@ class ShareDialogHeader {
           IconButton(
             onPressed: () => Navigator.pop(context),
             tooltip: context.l10n.commonClose,
-            icon: Icon(Icons.close, color: cs.onSurface),
+            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurface),
           ),
         ],
       ),
@@ -85,7 +91,7 @@ class ShareDialogHeader {
         return (
           context.l10n.shareRecipeWithFriends,
           recipe.title,
-          Icons.restaurant_menu,
+          ButleryIcons.utensils,
         );
       case ShareContentType.menu:
         final menu = content as Map<String, List<Recipe>>;
@@ -96,21 +102,21 @@ class ShareDialogHeader {
         return (
           context.l10n.shareMenuWithFriends,
           context.l10n.shareRecipesInCategories(totalRecipes, menu.length),
-          Icons.restaurant,
+          ButleryIcons.utensils,
         );
       case ShareContentType.shoppingList:
         final shoppingList = content as UnifiedShoppingList;
         return (
           context.l10n.shareShoppingListTitle,
           shoppingList.name,
-          Icons.shopping_cart_outlined,
+          ButleryIcons.shoppingCart,
         );
       case ShareContentType.personalTag:
         final tagData = content as Map<String, String>;
         return (
           'Dela tagg med vanner',
           tagData['tagName'].orEmpty(),
-          Icons.label_outline,
+          ButleryIcons.tag,
         );
     }
   }

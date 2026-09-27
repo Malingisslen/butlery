@@ -11,6 +11,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Clean chat app bar with conversation info and menu actions
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -66,14 +68,14 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         PopupMenuButton<String>(
           onSelected: _handleMenuAction,
-          icon: const Icon(Icons.more_vert),
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
           itemBuilder: (context) => [
             ButleryMenuItem(
               value: 'info',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.info_outline),
+                  const ButleryIcon(ButleryIcons.info),
                   const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.chatConversationInfo),
@@ -86,7 +88,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.notifications_off_outlined),
+                  const ButleryIcon(Icons.notifications_off_outlined),
                   const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.chatMute),
@@ -103,7 +105,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.calendar_month_outlined),
+                    const ButleryIcon(ButleryIcons.calendar),
                     const SizedBox(width: AppDimensions.space4),
                     Flexible(child: Text(context.l10n.groupMenuChatAction)),
                   ],
@@ -114,7 +116,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.block, color: cs.error),
+                  ButleryIcon(ButleryIcons.block, color: cs.error),
                   const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.socialBlock),
@@ -128,7 +130,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.exit_to_app, color: cs.error),
+                  ButleryIcon(Icons.exit_to_app, color: cs.error),
                   const SizedBox(width: AppDimensions.space4),
                   Flexible(
                     child: Text(context.l10n.chatLeaveConversation),

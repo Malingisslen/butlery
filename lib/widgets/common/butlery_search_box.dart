@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Custom search box with Butlery styling.
 ///
@@ -150,8 +152,8 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
             ),
             prefixIcon:
                 widget.prefixIcon ??
-                Icon(
-                  Icons.search,
+                ButleryIcon(
+                  ButleryIcons.search,
                   color: _isFocused ? cs.onSurface : cs.outline,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -159,8 +161,8 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
                 widget.suffixIcon ??
                 (_hasText
                     ? IconButton(
-                        icon: Icon(
-                          Icons.close,
+                        icon: ButleryIcon(
+                          ButleryIcons.x,
                           color: cs.outline,
                           size: AppDimensions.iconSizeM,
                         ),

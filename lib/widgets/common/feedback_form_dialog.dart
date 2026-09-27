@@ -15,6 +15,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog that collects feedback details and submits via FeedbackService.
 class FeedbackFormDialog extends StatefulWidget {
@@ -57,7 +59,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
         appBar: ButleryTopBar.undersida(
           title: context.l10n.feedbackSendLabel,
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
             tooltip: context.l10n.commonClose,
             onPressed: () => Navigator.pop(context),
           ),
@@ -152,7 +154,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                       style: AppTextStyles.labelLarge,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, size: 18),
+                      icon: const ButleryIcon(ButleryIcons.x, size: 18),
                       onPressed: () => setState(() => _screenshot = null),
                       tooltip: context.l10n.feedbackRemoveScreenshot,
                     ),

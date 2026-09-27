@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// UI components for the portion scaler widget.
 ///
@@ -114,7 +116,7 @@ class PortionScalerUI {
               // Minus button
               _buildControlButton(
                 context,
-                icon: Icons.remove,
+                icon: ButleryIcons.minus,
                 onPressed: currentPortions > minPortions
                     ? () => onUpdatePortions(currentPortions - 1)
                     : null,
@@ -137,7 +139,7 @@ class PortionScalerUI {
               // Plus button
               _buildControlButton(
                 context,
-                icon: Icons.add,
+                icon: ButleryIcons.plus,
                 onPressed: currentPortions < maxPortions
                     ? () => onUpdatePortions(currentPortions + 1)
                     : null,
@@ -156,7 +158,7 @@ class PortionScalerUI {
     required VoidCallback? onPressed,
   }) {
     final cs = Theme.of(context).colorScheme;
-    final label = icon == Icons.remove
+    final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
     return Semantics(
@@ -179,7 +181,7 @@ class PortionScalerUI {
                 width: 2.0,
               ),
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeL,
               color: onPressed != null ? cs.onSurface : cs.onSurfaceVariant,
@@ -211,7 +213,7 @@ class PortionScalerUI {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ButleryIcon(
                 convertToSwedish ? Icons.language : Icons.calculate,
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -251,8 +253,8 @@ class PortionScalerUI {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: onToggleUnitConversion,
-              icon: Icon(
-                convertToSwedish ? Icons.check_circle : Icons.language,
+              icon: ButleryIcon(
+                convertToSwedish ? ButleryIcons.circleCheck : Icons.language,
                 size: AppDimensions.iconSizeS,
               ),
               label: Text(

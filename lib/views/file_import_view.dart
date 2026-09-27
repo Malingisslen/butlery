@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -162,8 +164,8 @@ class _FileImportViewState extends State<FileImportView> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (_vm.importedCount > 0) ...[
-                                  Icon(
-                                    Icons.check_circle,
+                                  ButleryIcon(
+                                    ButleryIcons.circleCheck,
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.onSurface,
@@ -179,8 +181,8 @@ class _FileImportViewState extends State<FileImportView> {
                                     _vm.failedCount > 0)
                                   const SizedBox(width: AppDimensions.spacingL),
                                 if (_vm.failedCount > 0) ...[
-                                  Icon(
-                                    Icons.error,
+                                  ButleryIcon(
+                                    ButleryIcons.triangleAlert,
                                     color: Theme.of(context).colorScheme.error,
                                   ),
                                   const SizedBox(width: AppDimensions.space4),
@@ -233,8 +235,8 @@ class _FileImportViewState extends State<FileImportView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check,
+          ButleryIcon(
+            ButleryIcons.check,
             size: AppDimensions.iconSizeS,
             color: context.modeColors.success,
           ),
@@ -253,8 +255,8 @@ class _FileImportViewState extends State<FileImportView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.add,
+          ButleryIcon(
+            ButleryIcons.plus,
             size: AppDimensions.iconSizeS,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

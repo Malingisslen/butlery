@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Reusable status indicator component
 /// Provides consistent styling for status indicators with icons.
@@ -28,7 +29,7 @@ class StatusIndicator extends StatelessWidget {
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
-      child: Icon(
+      child: ButleryIcon(
         icon,
         color: color,
         size: iconSize ?? AppDimensions.iconSizeAction,

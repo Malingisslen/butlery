@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SharedContentSearchBar - Search bar for shared content
 /// Handles search functionality for shared recipes and menus.
@@ -27,16 +29,16 @@ class SharedContentSearchBar {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: context.l10n.sharedSearchHint,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const ButleryIcon(ButleryIcons.search),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Filter toggle for showing/hiding imported content
                     IconButton(
-                      icon: Icon(
+                      icon: ButleryIcon(
                         viewModel.showImported
-                            ? Icons.tune
-                            : Icons.tune_outlined,
+                            ? ButleryIcons.filter
+                            : ButleryIcons.filter,
                         color: viewModel.showImported
                             ? Theme.of(context).colorScheme.onSurface
                             : null,
@@ -53,7 +55,7 @@ class SharedContentSearchBar {
                           searchController.clear();
                           viewModel.clearAllSearch();
                         },
-                        icon: const Icon(Icons.clear),
+                        icon: const ButleryIcon(ButleryIcons.x),
                       ),
                   ],
                 ),
@@ -71,8 +73,8 @@ class SharedContentSearchBar {
                 padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: Chip(
                   label: Text(context.l10n.sharedShowingImported),
-                  deleteIcon: const Icon(
-                    Icons.close,
+                  deleteIcon: const ButleryIcon(
+                    ButleryIcons.x,
                     size: AppDimensions.iconSize18,
                   ),
                   onDeleted: () => viewModel.toggleShowImported(),

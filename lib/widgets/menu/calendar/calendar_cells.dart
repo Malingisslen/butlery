@@ -20,6 +20,8 @@ import 'package:butlery/theme/app_text_roles_pending.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
 
@@ -389,7 +391,11 @@ class _SlotPresenceRow extends StatelessWidget {
                     style: _label(cs.secondary),
                   ),
                 ),
-              Icon(Icons.expand_more, size: 12, color: cs.outline),
+              ButleryIcon(
+                ButleryIcons.chevronDown,
+                size: 12,
+                color: cs.outline,
+              ),
             ],
           ),
         ),
@@ -519,7 +525,7 @@ class _AssignedSlot extends StatelessWidget {
               Row(
                 children: [
                   if (selectionMode)
-                    Icon(
+                    ButleryIcon(
                       isSelected
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
@@ -541,8 +547,8 @@ class _AssignedSlot extends StatelessWidget {
                 height: 28,
                 color: cs.surface,
                 alignment: Alignment.center,
-                child: Icon(
-                  Icons.restaurant_outlined,
+                child: ButleryIcon(
+                  ButleryIcons.utensils,
                   size: 18,
                   color: _slotIconColor(context),
                 ),
@@ -712,7 +718,7 @@ class _OvrigtEntry extends StatelessWidget {
               if (selectionMode)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 3),
-                  child: Icon(
+                  child: ButleryIcon(
                     isSelected
                         ? Icons.check_box
                         : Icons.check_box_outline_blank,
@@ -726,7 +732,7 @@ class _OvrigtEntry extends StatelessWidget {
                   height: 16,
                   color: cs.surfaceContainerHighest,
                   alignment: Alignment.center,
-                  child: Icon(
+                  child: ButleryIcon(
                     Icons.cake_outlined,
                     size: 11,
                     color: _slotIconColor(context),

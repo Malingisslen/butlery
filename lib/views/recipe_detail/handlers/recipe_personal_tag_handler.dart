@@ -13,6 +13,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -242,7 +244,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 child: Row(
                   children: [
-                    const Icon(Icons.label),
+                    const ButleryIcon(ButleryIcons.tag),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
@@ -307,8 +309,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.check_circle,
+                const ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: AppDimensions.iconSize18,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -361,7 +363,10 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
-            icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.settings,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.taggingManageTags),
           ),
         ),
@@ -379,8 +384,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.label_outline,
+            const ButleryIcon(
+              ButleryIcons.tag,
               size: 64,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
@@ -401,7 +406,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             const SizedBox(height: AppDimensions.spacingLg),
             FilledButton.icon(
               onPressed: _navigateToManageTags,
-              icon: const Icon(Icons.add),
+              icon: const ButleryIcon(ButleryIcons.plus),
               label: Text(context.l10n.taggingCreateTag),
             ),
           ],

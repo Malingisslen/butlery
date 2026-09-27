@@ -3,6 +3,8 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -74,8 +76,8 @@ class GroupDetailHeader {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
+                    ButleryIcon(
+                      ButleryIcons.info,
                       size: AppDimensions.iconSizeM,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -93,7 +95,7 @@ class GroupDetailHeader {
                   context,
                   context.l10n.groupCreated,
                   _formatDate(context, group.createdAt),
-                  Icons.calendar_today,
+                  ButleryIcons.calendar,
                 ),
                 _buildDetailRow(
                   context,
@@ -105,7 +107,7 @@ class GroupDetailHeader {
                   context,
                   context.l10n.groupMembers,
                   context.l10n.groupMemberCount(group.friendCount),
-                  Icons.people,
+                  ButleryIcons.users,
                 ),
               ],
             ),
@@ -127,7 +129,7 @@ class GroupDetailHeader {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              secondary: Icon(
+              secondary: ButleryIcon(
                 Icons.home,
                 color: isHousehold
                     ? Theme.of(context).colorScheme.onSurface
@@ -152,7 +154,7 @@ class GroupDetailHeader {
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

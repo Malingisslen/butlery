@@ -21,6 +21,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -119,7 +120,7 @@ void main() {
       onTranscript: (_) {},
     );
 
-    expect(find.byIcon(Icons.mic_none), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.mic), findsOneWidget);
     expect(find.byTooltip('Tala in veckomenyn'), findsOneWidget);
   });
 
@@ -137,7 +138,7 @@ void main() {
       await tester.tap(find.byType(IconButton));
       await tester.pumpAndSettle();
       expect(
-        find.byIcon(Icons.stop),
+        find.byIcon(ButleryIcons.stop),
         findsOneWidget,
         reason: 'recording state shows the stop affordance',
       );
@@ -148,7 +149,7 @@ void main() {
 
       expect(delivered, 'fyra middagar');
       expect(
-        find.byIcon(Icons.mic_none),
+        find.byIcon(ButleryIcons.mic),
         findsOneWidget,
         reason: 'button returns to idle after delivery',
       );
@@ -182,7 +183,7 @@ void main() {
       findsOneWidget,
       reason: 'failure copy must point back to typed input',
     );
-    expect(find.byIcon(Icons.mic_none), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.mic), findsOneWidget);
   });
 
   testWidgets('failed recording start degrades the same way', (tester) async {
@@ -202,7 +203,7 @@ void main() {
       find.textContaining('inte tillgänglig just nu'),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.mic_none), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.mic), findsOneWidget);
   });
 
   testWidgets('failed transcription shows the quiet notice and resets', (
@@ -235,7 +236,7 @@ void main() {
       find.textContaining('Det går bra att skriva i stället'),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.mic_none), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.mic), findsOneWidget);
   });
 
   testWidgets(
@@ -256,7 +257,7 @@ void main() {
       expect(delivered, isNull);
       expect(find.text('Öppna inställningar'), findsOneWidget);
       expect(
-        find.byIcon(Icons.mic_none),
+        find.byIcon(ButleryIcons.mic),
         findsOneWidget,
         reason: 'denial never dead-ends the feature — idle mic remains',
       );
@@ -368,7 +369,7 @@ void main() {
 
     await tester.tap(find.byType(IconButton));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.stop), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.stop), findsOneWidget);
 
     enabled.value = false; // menu generation starts mid-recording
     await tester.pumpAndSettle();

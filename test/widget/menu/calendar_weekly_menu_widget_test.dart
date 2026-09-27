@@ -26,6 +26,7 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
@@ -462,15 +463,15 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Nav arrows use Icons.chevron_left / chevron_right.
-          await tester.tap(find.byIcon(Icons.chevron_right));
+          // Nav arrows use ButleryIcons.chevronLeft / chevron_right.
+          await tester.tap(find.byIcon(ButleryIcons.chevronRight));
           await tester.pumpAndSettle();
           expect(vm.currentWeekStart, nextWeek.weekStartDate);
 
           // Going back twice crosses the anchor to prevWeek.
-          await tester.tap(find.byIcon(Icons.chevron_left));
+          await tester.tap(find.byIcon(ButleryIcons.chevronLeft));
           await tester.pumpAndSettle();
-          await tester.tap(find.byIcon(Icons.chevron_left));
+          await tester.tap(find.byIcon(ButleryIcons.chevronLeft));
           await tester.pumpAndSettle();
           expect(vm.currentWeekStart, prevWeek.weekStartDate);
         },
@@ -511,12 +512,12 @@ void main() {
           // header nor its copy/select buttons are present.
           await pumpPopulated(tester, plan: _plan(weekStart: weekStart));
           expect(
-            find.byIcon(Icons.copy_all_outlined),
+            find.byIcon(ButleryIcons.copy),
             findsNothing,
             reason: 'copy is meaningless with nothing to copy',
           );
           expect(
-            find.byIcon(Icons.checklist_outlined),
+            find.byIcon(ButleryIcons.listCheck),
             findsNothing,
             reason: 'select is meaningless with nothing to select',
           );
@@ -541,8 +542,8 @@ void main() {
               ],
             ),
           );
-          expect(find.byIcon(Icons.copy_all_outlined), findsOneWidget);
-          expect(find.byIcon(Icons.checklist_outlined), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.copy), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.listCheck), findsOneWidget);
         },
       );
 
@@ -571,7 +572,7 @@ void main() {
           expect(find.byType(SelectionActionBar), findsNothing);
 
           // Tap the select (checklist) button -> beginSelection().
-          await tester.tap(find.byIcon(Icons.checklist_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.listCheck));
           await tester.pumpAndSettle();
           expect(vm.selectionMode, isTrue);
           expect(find.byType(SelectionActionBar), findsOneWidget);
@@ -582,7 +583,7 @@ void main() {
           );
 
           // Tap cancel (close) in the action bar -> clearSelection().
-          await tester.tap(find.byIcon(Icons.close));
+          await tester.tap(find.byIcon(ButleryIcons.x));
           await tester.pumpAndSettle();
           expect(vm.selectionMode, isFalse);
           expect(find.byType(WeekNavHeader), findsOneWidget);
@@ -612,7 +613,7 @@ void main() {
           );
 
           // Enter selection mode.
-          await tester.tap(find.byIcon(Icons.checklist_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.listCheck));
           await tester.pumpAndSettle();
 
           // Before tapping: the cell shows an EMPTY checkbox.
@@ -662,7 +663,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Enter selection mode and select the one populated cell.
-        await tester.tap(find.byIcon(Icons.checklist_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.listCheck));
         await tester.pumpAndSettle();
         await tester.tap(find.text('pasta'));
         await tester.pumpAndSettle();
@@ -1101,7 +1102,7 @@ void main() {
 
         await pumpOneEntryWeek(tester);
 
-        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.copy));
         await tester.pumpAndSettle();
         // Confirm dialog header (l10n weeklyMenuCopyToNextConfirmTitle).
         expect(find.text('Kopiera veckan?'), findsOneWidget);
@@ -1134,7 +1135,7 @@ void main() {
 
         await pumpOneEntryWeek(tester);
 
-        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.copy));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Fortsätt'));
         await tester.pumpAndSettle();
@@ -1159,7 +1160,7 @@ void main() {
 
           await pumpOneEntryWeek(tester);
 
-          await tester.tap(find.byIcon(Icons.copy_all_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.copy));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Fortsätt'));
           await tester.pumpAndSettle();
@@ -1178,7 +1179,7 @@ void main() {
         (tester) async {
           await pumpOneEntryWeek(tester);
 
-          await tester.tap(find.byIcon(Icons.copy_all_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.copy));
           await tester.pumpAndSettle();
           expect(find.text('Kopiera veckan?'), findsOneWidget);
 

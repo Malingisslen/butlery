@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/hoverable_tap.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Type of badge to display.
 enum BadgeType {
@@ -155,7 +157,7 @@ class UnifiedBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(
+            ButleryIcon(
               icon,
               size: dimensions.iconSize,
               color: textColor,
@@ -174,8 +176,8 @@ class UnifiedBadge extends StatelessWidget {
               child: HoverableTap(
                 child: GestureDetector(
                   onTap: onRemove,
-                  child: Icon(
-                    Icons.close,
+                  child: ButleryIcon(
+                    ButleryIcons.x,
                     size: dimensions.iconSize,
                     color: textColor.withValues(alpha: 0.7),
                   ),
@@ -323,7 +325,7 @@ class AllergenBadge extends StatelessWidget {
       label: allergen,
       type: BadgeType.allergen,
       variant: BadgeVariant.subtle,
-      icon: Icons.warning_amber_outlined,
+      icon: ButleryIcons.triangleAlert,
       onTap: onTap,
       size: BadgeSize.small,
     );

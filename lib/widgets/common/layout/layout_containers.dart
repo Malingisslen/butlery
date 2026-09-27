@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Consolidated layout container widgets.
 
@@ -158,7 +159,7 @@ class CategoryHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeM,
             color:

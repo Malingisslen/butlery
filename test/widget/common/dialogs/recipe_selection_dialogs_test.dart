@@ -33,6 +33,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -273,7 +274,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.access_time), findsNothing);
+      expect(find.byIcon(ButleryIcons.clock), findsNothing);
       expect(find.text('30 min'), findsNothing);
     });
 
@@ -292,7 +293,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.people), findsNothing);
+      expect(find.byIcon(ButleryIcons.users), findsNothing);
       expect(find.text('4 port'), findsNothing);
     });
 
@@ -311,7 +312,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       },
     );
   });
@@ -441,7 +442,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.access_time), findsNothing);
+      expect(find.byIcon(ButleryIcons.clock), findsNothing);
       expect(find.text('30 min'), findsNothing);
     });
 
@@ -457,7 +458,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.people), findsNothing);
+      expect(find.byIcon(ButleryIcons.users), findsNothing);
       expect(find.text('4 port'), findsNothing);
     });
 
@@ -475,7 +476,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       },
     );
   });

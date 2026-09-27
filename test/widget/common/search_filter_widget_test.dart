@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/voice/voice_capture_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
@@ -559,7 +560,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.byIcon(Icons.mic_none),
+          find.byIcon(ButleryIcons.mic),
           findsOneWidget,
           reason: 'opt-in mic renders in the search field',
         );
@@ -573,9 +574,9 @@ void main() {
               'to prevent',
         );
 
-        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.tap(find.byIcon(ButleryIcons.mic));
         await tester.pumpAndSettle();
-        await tester.tap(find.byIcon(Icons.stop));
+        await tester.tap(find.byIcon(ButleryIcons.stop));
         await tester.pumpAndSettle();
 
         expect(
@@ -619,9 +620,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.tap(find.byIcon(ButleryIcons.mic));
         await tester.pumpAndSettle();
-        expect(find.byIcon(Icons.stop), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.stop), findsOneWidget);
 
         // Typing mid-recording makes the clear button appear, which
         // rebuilds the trailing slot as a Row — without the GlobalKey the
@@ -631,7 +632,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.byIcon(Icons.stop),
+          find.byIcon(ButleryIcons.stop),
           findsOneWidget,
           reason:
               'the mic must still show the stop control after the suffix '
@@ -646,7 +647,7 @@ void main() {
         );
 
         // The same capture still completes normally.
-        await tester.tap(find.byIcon(Icons.stop));
+        await tester.tap(find.byIcon(ButleryIcons.stop));
         await tester.pumpAndSettle();
         expect(find.text('Köttbullar'), findsOneWidget);
       },
@@ -667,7 +668,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byIcon(Icons.mic_none),
+        find.byIcon(ButleryIcons.mic),
         findsNothing,
         reason:
             'voice input is opt-in per surface — shared list screens must '

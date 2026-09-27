@@ -38,6 +38,8 @@ import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// E2E Emulator Application Entry Point
 /// This entry point provides complete Butlery app functionality for E2E testing
@@ -162,8 +164,8 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.warning_outlined,
+                  ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     size: AppDimensions.iconSizeXxl,
                     color: butlery.warning,
                   ),

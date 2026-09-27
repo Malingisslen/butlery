@@ -5,6 +5,8 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
@@ -48,7 +50,7 @@ class FeedTab {
           : context.l10n.feedEmptyNoFriendsSubtitle,
       emptyActionLabel: hasFriends ? null : context.l10n.feedEmptyNoFriendsCta,
       onEmptyAction: hasFriends ? null : onAddFriendsCta,
-      emptyIcon: Icons.groups_outlined,
+      emptyIcon: ButleryIcons.users,
       builder: (context, events) => Column(
         children: [
           _buildFilterChips(context, viewModel),
@@ -329,8 +331,8 @@ class FeedTab {
                 alignment: Alignment.center,
                 // text.secondary (onSurfaceVariant), #627061 light, #93A48D
                 // dark (tokens.json:61-64): greenMuted's values, mode-aware.
-                child: Icon(
-                  Icons.restaurant_outlined,
+                child: ButleryIcon(
+                  ButleryIcons.utensils,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -353,8 +355,8 @@ class FeedTab {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),

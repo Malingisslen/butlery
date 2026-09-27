@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operatio
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -184,7 +185,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
       subtitle: viewModel.canEdit
           ? context.l10n.collaborativeAddFirstItem
           : context.l10n.collaborativeWaitingForOthers,
-      icon: Icons.shopping_cart_outlined,
+      icon: ButleryIcons.shoppingCart,
     );
   }
 

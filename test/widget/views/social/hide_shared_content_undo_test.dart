@@ -26,6 +26,7 @@ import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -209,9 +210,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(MenuPreviewView), findsOneWidget);
 
-    await tester.ensureVisible(find.byIcon(Icons.visibility_off));
+    await tester.ensureVisible(find.byIcon(ButleryIcons.eye));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.visibility_off));
+    await tester.tap(find.byIcon(ButleryIcons.eye));
     await tester.pumpAndSettle();
     await confirmHide(tester);
 

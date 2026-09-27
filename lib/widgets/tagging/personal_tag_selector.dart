@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -130,8 +132,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               if (widget.showManageButton)
                 TextButton.icon(
                   onPressed: _openTagManager,
-                  icon: const Icon(
-                    Icons.settings,
+                  icon: const ButleryIcon(
+                    ButleryIcons.settings,
                     size: AppDimensions.iconSize18,
                   ),
                   label: Text(context.l10n.personalTagManage),
@@ -188,8 +190,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.label_outline,
+          ButleryIcon(
+            ButleryIcons.tag,
             color: cs.onSurfaceVariant.withValues(
               alpha: AppDimensions.opacityHalf,
             ),
@@ -226,8 +228,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
@@ -307,8 +309,8 @@ class _PersonalTagChip extends StatelessWidget {
         ),
         avatar: isSelected
             ? null
-            : Icon(
-                Icons.label_outline,
+            : ButleryIcon(
+                ButleryIcons.tag,
                 size: AppDimensions.iconSize14,
                 color: cs.onPrimaryContainer,
               ),
@@ -405,8 +407,8 @@ class _MiniTagChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.label,
+            ButleryIcon(
+              ButleryIcons.tag,
               size: AppDimensions.iconSizeXs,
               color: cs.onPrimaryContainer,
             ),
@@ -445,8 +447,8 @@ class _PlaceholderTagChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.label_outline,
+          ButleryIcon(
+            ButleryIcons.tag,
             size: AppDimensions.iconSizeXs,
             color: cs.onPrimaryContainer,
           ),

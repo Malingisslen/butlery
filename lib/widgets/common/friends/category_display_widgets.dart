@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -25,8 +27,8 @@ class CategoryDisplayWidgets {
       itemBuilder: (context, index) {
         final category = categories[index];
         return ListTile(
-          leading: Icon(
-            category.emoji != null ? Icons.emoji_emotions : Icons.group,
+          leading: ButleryIcon(
+            category.emoji != null ? Icons.emoji_emotions : ButleryIcons.users,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           title: Text(category.name),
@@ -35,8 +37,8 @@ class CategoryDisplayWidgets {
                   context.l10n.friendMemberCount(category.friendUserIds.length),
                 )
               : null,
-          trailing: const Icon(
-            Icons.arrow_forward_ios,
+          trailing: const ButleryIcon(
+            ButleryIcons.chevronRight,
             size: AppDimensions.iconSizeS,
           ),
           onTap: () => onCategoryTap(category),
@@ -75,10 +77,10 @@ class CategoryDisplayWidgets {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    ButleryIcon(
                       category.emoji != null
                           ? Icons.emoji_emotions
-                          : Icons.group,
+                          : ButleryIcons.users,
                       size: AppDimensions.iconSizeXl,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -152,7 +154,7 @@ class CategoryDisplayWidgets {
                 ),
                 Expanded(
                   child: StatItemWidget(
-                    icon: Icons.people,
+                    icon: ButleryIcons.users,
                     label: context.l10n.friendTotalMembers,
                     value: totalMembers.toString(),
                     color: context.modeColors.success,
@@ -222,10 +224,10 @@ class CategoryDisplayWidgets {
                     mainAxisSize: MainAxisSize
                         .min, // Fix unbounded width constraints in horizontal scrollable
                     children: [
-                      Icon(
+                      ButleryIcon(
                         category.emoji != null
                             ? Icons.emoji_emotions
-                            : Icons.group,
+                            : ButleryIcons.users,
                         color: Theme.of(context).colorScheme.onSurface,
                         size: AppDimensions.iconSizeM,
                       ),
@@ -255,8 +257,8 @@ class CategoryDisplayWidgets {
                     const SizedBox(height: AppDimensions.space4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.people,
+                        ButleryIcon(
+                          ButleryIcons.users,
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -334,7 +336,7 @@ class CategoryDisplayWidgets {
       ),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             Icons.category,
             color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeM,
@@ -376,7 +378,7 @@ class CategoryDisplayWidgets {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             Icons.category_outlined,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -401,7 +403,7 @@ class CategoryDisplayWidgets {
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: onCreateCategory,
-              icon: const Icon(Icons.add),
+              icon: const ButleryIcon(ButleryIcons.plus),
               label: Text(context.l10n.friendCreateCategory),
             ),
           ],

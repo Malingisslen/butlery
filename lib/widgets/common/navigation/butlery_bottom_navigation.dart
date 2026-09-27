@@ -41,6 +41,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
@@ -319,7 +321,11 @@ class NavBadgedIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final glyph = Icon(icon, color: color, size: AppDimensions.iconSizeL);
+    final glyph = ButleryIcon(
+      icon,
+      color: color,
+      size: AppDimensions.iconSizeL,
+    );
     final count = badgeCount;
     if (count == null || count <= 0) return glyph;
     return Badge(
@@ -400,8 +406,8 @@ class ButleryAddButton extends StatelessWidget {
               onTap: onPressed,
               customBorder: const CircleBorder(),
               child: ExcludeSemantics(
-                child: Icon(
-                  Icons.add,
+                child: ButleryIcon(
+                  ButleryIcons.navAdd,
                   color: cs.onSecondary,
                   size: AppDimensions.iconSizeL,
                 ),

@@ -3,6 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 
 /// Empty state scaffold consolidating patterns from 20+ files
@@ -48,7 +49,7 @@ class EmptyStateScaffold extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (emptyIcon != null) ...[
-                Icon(
+                ButleryIcon(
                   emptyIcon,
                   size: iconSize,
                   color: Theme.of(context).colorScheme.onSurface.withValues(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -40,7 +41,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.swipe), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.swipe), findsNothing);
@@ -109,7 +110,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
       final prefs = await SharedPreferences.getInstance();

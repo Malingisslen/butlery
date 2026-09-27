@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// BUT-1198: non-blocking import-flow prompt shown when a freshly-imported
 /// recipe contains an allergen the user hasn't configured to track.
@@ -31,7 +32,7 @@ class AllergenSetupBanner {
     messenger.showMaterialBanner(
       MaterialBanner(
         backgroundColor: scheme.surface,
-        leading: Icon(
+        leading: ButleryIcon(
           Icons.health_and_safety_outlined,
           color: colors.warning,
         ),

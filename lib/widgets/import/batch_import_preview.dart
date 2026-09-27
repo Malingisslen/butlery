@@ -4,6 +4,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Preview screen for batch file import.
 /// Shows parsed recipes as a selectable checklist before saving.
@@ -70,8 +72,8 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
         actions: [
           TextButton.icon(
             onPressed: _toggleAll,
-            icon: Icon(
-              _allSelected ? Icons.deselect : Icons.select_all,
+            icon: ButleryIcon(
+              _allSelected ? Icons.deselect : ButleryIcons.checkSquare,
               size: AppDimensions.iconSizeS,
             ),
             label: Text(
@@ -116,7 +118,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
           padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: FilledButton.icon(
             onPressed: _selectedIndices.isEmpty ? null : _confirm,
-            icon: const Icon(Icons.file_download),
+            icon: const ButleryIcon(ButleryIcons.download),
             label: Text(
               context.l10n.importConfirmButton(_selectedIndices.length),
             ),

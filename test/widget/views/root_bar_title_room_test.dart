@@ -17,6 +17,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 const _titleKey = ValueKey('butleryTopBar.title');
 const _secondaryKey = ValueKey('butleryTopBar.secondaryLine');
@@ -71,7 +73,7 @@ Future<void> _pump(
 }
 
 Widget _more() => PopupMenuButton<int>(
-  icon: const Icon(Icons.more_vert),
+  icon: const ButleryIcon(ButleryIcons.moreVertical),
   itemBuilder: (_) => const [PopupMenuItem(value: 0, child: Text('x'))],
 );
 
@@ -118,7 +120,7 @@ void main() {
           line: 'Vecka 28 · inget planerat',
           actions: [
             IconButton(
-              icon: const Icon(Icons.groups_outlined),
+              icon: const ButleryIcon(ButleryIcons.users),
               onPressed: () {},
             ),
             _more(),

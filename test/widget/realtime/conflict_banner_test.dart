@@ -26,6 +26,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -108,7 +109,7 @@ void main() {
     await tester.pump();
 
     expect(find.text(message), findsNothing);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
     expect(find.byType(SizedBox), findsWidgets); // SizedBox.shrink placeholder
   });
 
@@ -122,7 +123,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(message), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
   });
 
   testWidgets('filterDocId ignores events for other documents', (tester) async {
@@ -340,7 +341,7 @@ void main() {
         expect(shape.side.width, 1.0);
         expect(shape.borderRadius, BorderRadius.circular(8));
         expect(
-          tester.widget<Icon>(find.byIcon(Icons.warning_amber_rounded)).color,
+          tester.widget<Icon>(find.byIcon(ButleryIcons.triangleAlert)).color,
           danger,
         );
         final titleText = tester.widget<Text>(find.text(title));

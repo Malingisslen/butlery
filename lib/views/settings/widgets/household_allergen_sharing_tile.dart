@@ -27,6 +27,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: share your own allergen list with your household.
 ///
@@ -143,8 +145,8 @@ class _HouseholdAllergenSharingTileState
       context,
       title: l10n.householdAllergenShareConfirmTitle,
       message: l10n.householdAllergenShareConfirmBody,
-      titleIcon: Icons.lock_outline,
-      primaryActionIcon: Icons.lock_outline,
+      titleIcon: ButleryIcons.lock,
+      primaryActionIcon: ButleryIcons.lock,
       primaryActionText: l10n.householdAllergenShareConfirmAction,
       secondaryActionText: l10n.commonCancel,
     );
@@ -313,8 +315,8 @@ class _HouseholdAllergenSharingTileState
     final l10n = context.l10n;
 
     return SwitchListTile(
-      secondary: Icon(
-        Icons.lock_outline,
+      secondary: ButleryIcon(
+        ButleryIcons.lock,
         color: sharing ? cs.onSurfaceVariant : context.modeColors.warning,
       ),
       title: Text(

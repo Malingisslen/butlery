@@ -7,6 +7,8 @@ import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Review widget that surfaces per-ingredient parse confidence (BUT-925).
 ///
@@ -161,8 +163,8 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                   ],
                 ),
               ),
-              Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
+              ButleryIcon(
+                _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -288,10 +290,10 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppDimensions.spacingXs,
                         ),
-                        child: Icon(
+                        child: ButleryIcon(
                           _showOriginal
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
+                              ? ButleryIcons.chevronUp
+                              : ButleryIcons.chevronDown,
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -314,8 +316,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.check,
+                        ButleryIcon(
+                          ButleryIcons.check,
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),

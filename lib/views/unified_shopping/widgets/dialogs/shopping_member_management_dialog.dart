@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -368,7 +370,10 @@ class _ShoppingMemberManagementDialogState
     return AlertDialog(
       title: Row(
         children: [
-          const Icon(Icons.manage_accounts, size: AppDimensions.iconSizeAction),
+          const ButleryIcon(
+            Icons.manage_accounts,
+            size: AppDimensions.iconSizeAction,
+          ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
@@ -448,7 +453,7 @@ class _ShoppingMemberManagementDialogState
             StyledInput(
               controller: _searchController,
               hint: context.l10n.shoppingSearchFriends,
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const ButleryIcon(ButleryIcons.search),
               onChanged: (_) => _updateFilteredFriends(),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -554,8 +559,8 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.view,
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.visibility,
+                      ButleryIcon(
+                        ButleryIcons.eye,
                         size: AppDimensions.iconSizeS,
                         color: cs.onSurfaceVariant,
                       ),
@@ -568,8 +573,8 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.edit,
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.edit,
+                      ButleryIcon(
+                        ButleryIcons.pencil,
                         size: AppDimensions.iconSizeS,
                         color: cs.secondary,
                       ),
@@ -582,7 +587,7 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.admin,
                   child: Row(
                     children: [
-                      Icon(
+                      ButleryIcon(
                         Icons.admin_panel_settings,
                         size: AppDimensions.iconSizeS,
                         color: cs.onSurface,
@@ -599,7 +604,7 @@ class _ShoppingMemberManagementDialogState
               onPressed: _isLoading
                   ? null
                   : () => _removeMember(userId, userName),
-              icon: Icon(Icons.person_remove, color: cs.error),
+              icon: ButleryIcon(ButleryIcons.userMinus, color: cs.error),
               tooltip: context.l10n.shoppingRemoveMember,
             )
           : null,

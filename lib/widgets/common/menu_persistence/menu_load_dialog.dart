@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -100,8 +102,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.folder_open,
+                ButleryIcon(
+                  ButleryIcons.folder,
                   size: AppDimensions.iconSizeAction,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -143,7 +145,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       child: StateWidget.empty(
         title: context.l10n.menuNoSavedMenus,
         subtitle: context.l10n.menuNoSavedMenusDescription,
-        icon: Icons.folder_outlined,
+        icon: ButleryIcons.folder,
         onAction: () => Navigator.pop(context),
         actionLabel: context.l10n.commonClose,
       ),
@@ -175,8 +177,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
-          child: Icon(
-            Icons.restaurant_menu,
+          child: ButleryIcon(
+            ButleryIcons.utensils,
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
@@ -189,6 +191,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           style: AppTextStyles.bodySmall,
         ),
         trailing: PopupMenuButton<String>(
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
           onSelected: (value) => _handleMenuAction(menu, value),
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -196,7 +199,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               child: Builder(
                 builder: (context) => Row(
                   children: [
-                    const Icon(Icons.download),
+                    const ButleryIcon(ButleryIcons.download),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(context.l10n.menuLoad),
                   ],
@@ -208,8 +211,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               child: Builder(
                 builder: (context) => Row(
                   children: [
-                    Icon(
-                      Icons.delete,
+                    ButleryIcon(
+                      ButleryIcons.trash2,
                       color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Builder functions for social components
@@ -34,7 +35,7 @@ class SocialBuilders {
         onPressed: isLoading
             ? PlateLineButton.ignore
             : (enabled ? onPressed : null),
-        icon: Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
+        icon: ButleryIcon(icon, size: iconSize ?? AppDimensions.iconSizeS),
         label: Text(label),
         style: isLoading ? PlateLineButton.busyStyle(style, null) : style,
       ),

@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -60,7 +62,7 @@ class RequestsTab extends StatelessWidget {
                     StateWidget.empty(
                       title: context.l10n.socialNoFriendRequests,
                       subtitle: context.l10n.socialNoFriendRequestsDescription,
-                      icon: Icons.search,
+                      icon: ButleryIcons.search,
                     ),
                   ],
                 ],
@@ -82,7 +84,7 @@ class RequestsTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.inbox,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
@@ -135,7 +137,7 @@ class RequestsTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.outbox,
               size: AppDimensions.iconSizeM,
               color: cs.onSurfaceVariant,
@@ -206,8 +208,8 @@ class RequestsTab extends StatelessWidget {
                 color: cs.surfaceContainerLow,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.person,
+              child: ButleryIcon(
+                ButleryIcons.user,
                 size: AppDimensions.iconSizeL,
                 color: cs.onSurfaceVariant,
               ),
@@ -342,8 +344,8 @@ class _DiscoverySection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.search,
+          ButleryIcon(
+            ButleryIcons.search,
             size: AppDimensions.iconSizeXl,
             color: cs.onSurface,
           ),
@@ -375,7 +377,10 @@ class _DiscoverySection extends StatelessWidget {
                   final vm = context.read<FriendsViewModel>();
                   RequestsTab.shareInvitationLink(context, vm);
                 },
-                icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
+                icon: const ButleryIcon(
+                  ButleryIcons.share2,
+                  size: AppDimensions.iconSizeM,
+                ),
                 label: Text(context.l10n.socialInviteFriends),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
@@ -384,7 +389,10 @@ class _DiscoverySection extends StatelessWidget {
                   final vm = context.read<FriendsViewModel>();
                   RequestsTab.copyInvitationLink(context, vm);
                 },
-                icon: const Icon(Icons.copy, size: AppDimensions.iconSizeM),
+                icon: const ButleryIcon(
+                  ButleryIcons.link,
+                  size: AppDimensions.iconSizeM,
+                ),
                 tooltip: context.l10n.commonCopyLink,
               ),
             ],

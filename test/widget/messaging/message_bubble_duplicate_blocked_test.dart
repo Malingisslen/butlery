@@ -23,6 +23,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/components/message_status_widget.dart';
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/widgets/messaging/message_bubble.dart';
@@ -390,7 +391,7 @@ void main() {
 
       expect(find.text('Anna har lagts till i gruppen'), findsOneWidget);
       expect(
-        find.byIcon(Icons.close),
+        find.byIcon(ButleryIcons.x),
         findsNothing,
         reason: 'only the duplicate-guard notice is dismissible',
       );
@@ -442,7 +443,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
       expect(
         _tapRegion,
         findsNothing,
@@ -474,7 +475,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(attempts, 1);
       expect(
-        find.byIcon(Icons.close),
+        find.byIcon(ButleryIcons.x),
         findsOneWidget,
         reason: 'the control comes back when the delete did not happen',
       );

@@ -47,6 +47,7 @@ import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/social_sharing_viewmodel.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -278,7 +279,7 @@ void main() {
         0,
         reason: 'no retry has happened before the tap',
       );
-      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.tap(find.byIcon(ButleryIcons.refreshCw));
       await tester.pump();
 
       expect(
@@ -301,7 +302,7 @@ void main() {
         findsOneWidget,
         reason: 'an empty friend list must render the empty state',
       );
-      expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
     });
 
     testWidgets(

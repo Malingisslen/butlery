@@ -12,8 +12,9 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 import 'package:butlery/widgets/common/navigation/butlery_navigation_rail.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
@@ -175,27 +176,27 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   ) => [
     AdaptiveNavigationItem(
       label: context.l10n.navigationHome,
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_outlined, // Outline for both states
+      icon: ButleryIcons.navHome,
+      activeIcon: ButleryIcons.navHome, // Outline for both states
       route: Routes.home,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMenu,
-      icon: AdaptiveIcons.calendarOutlined,
-      activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
+      icon: ButleryIcons.navWeek,
+      activeIcon: ButleryIcons.navWeek, // Outline for both states
       route: Routes.weeklyMenu,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationShopping,
-      icon: AdaptiveIcons.cartOutlined,
-      activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
+      icon: ButleryIcons.navShopping,
+      activeIcon: ButleryIcons.navShopping, // Outline for both states
       route: Routes.shoppingList,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMore,
       // Three lines, as drawn (Komponentark v1:666).
-      icon: Icons.menu,
-      activeIcon: Icons.menu,
+      icon: ButleryIcons.navMore,
+      activeIcon: ButleryIcons.navMore,
       route: Routes.more,
     ),
   ];
@@ -216,9 +217,11 @@ extension AdaptiveNavigationItemExtension on BottomNavigationBarItem {
   AdaptiveNavigationItem toAdaptiveItem({required String route}) {
     return AdaptiveNavigationItem(
       label: label.orEmpty(),
-      icon: (icon as Icon).icon ?? Icons.error,
+      icon: (icon as Icon).icon ?? ButleryIcons.triangleAlert,
       activeIcon:
-          (activeIcon as Icon?)?.icon ?? (icon as Icon).icon ?? Icons.error,
+          (activeIcon as Icon?)?.icon ??
+          (icon as Icon).icon ??
+          ButleryIcons.triangleAlert,
       route: route,
     );
   }
@@ -327,12 +330,12 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
     BuildContext context,
   ) {
     if (badgeCount == null || badgeCount == 0) {
-      return Icon(icon);
+      return ButleryIcon(icon);
     }
 
     return Badge(
       label: Text(badgeCount.toString()),
-      child: Icon(icon),
+      child: ButleryIcon(icon),
     );
   }
 }

@@ -5,6 +5,8 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
@@ -150,8 +152,8 @@ class FiltersPanelWidget extends StatelessWidget {
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
                               onPressed: onManageFoodPreferences,
-                              icon: const Icon(
-                                Icons.tune,
+                              icon: const ButleryIcon(
+                                ButleryIcons.filter,
                                 size: AppDimensions.iconSizeAction,
                               ),
                               label: Text(
@@ -179,7 +181,7 @@ class FiltersPanelWidget extends StatelessWidget {
                         Center(
                           child: TextButton.icon(
                             onPressed: onClearAllFilters,
-                            icon: const Icon(
+                            icon: const ButleryIcon(
                               Icons.clear_all,
                               size: AppDimensions.iconSizeAction,
                             ),

@@ -8,6 +8,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 
 /// Avatar widgets and related functionality
@@ -108,7 +110,7 @@ class UserAvatarWidgets {
                         width: AppDimensions.borderWidthThin,
                       ),
                     ),
-                    child: Icon(
+                    child: ButleryIcon(
                       isOnline ? Icons.circle : Icons.circle_outlined,
                       size: statusSize,
                       color: isOnline ? bc.success : cs.outline,
@@ -193,8 +195,8 @@ class UserAvatarWidgets {
                           width: AppDimensions.borderWidthThick,
                         ),
                       ),
-                      child: Icon(
-                        Icons.edit,
+                      child: ButleryIcon(
+                        ButleryIcons.pencil,
                         size: AppDimensions.iconSizeM,
                         color: cs.onPrimary,
                       ),
@@ -228,7 +230,7 @@ class UserAvatarWidgets {
               ? context.l10n.a11yStatusOnline
               : context.l10n.a11yStatusOffline,
           excludeSemantics: true,
-          child: Icon(
+          child: ButleryIcon(
             isOnline ? Icons.circle : Icons.circle_outlined,
             size: indicatorSize,
             color: isOnline ? bc.success : cs.outline,
@@ -309,7 +311,7 @@ class UserAvatarWidgets {
     TextStyle? baseStyle,
   }) {
     if (initials == unknownInitials) {
-      return Icon(Icons.person, size: fontSize * 1.5, color: color);
+      return ButleryIcon(ButleryIcons.user, size: fontSize * 1.5, color: color);
     }
     return Text(
       initials,

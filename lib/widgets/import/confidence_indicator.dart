@@ -5,6 +5,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Color-coded OCR confidence badge (green >=80%, orange 60-79%, red <60%).
 class ConfidenceIndicator extends StatelessWidget {
@@ -33,7 +35,7 @@ class ConfidenceIndicator extends StatelessWidget {
       );
       badgeIconColor = context.modeColors.success;
       badgeTextColor = context.modeColors.onSuccessContainer;
-      icon = Icons.check_circle;
+      icon = ButleryIcons.circleCheck;
       label = context.l10n.importHighQuality;
     } else if (confidence >= 0.6) {
       // Medium confidence - Orange
@@ -45,7 +47,7 @@ class ConfidenceIndicator extends StatelessWidget {
       );
       badgeIconColor = context.modeColors.warning;
       badgeTextColor = context.modeColors.onWarningContainer;
-      icon = Icons.info;
+      icon = ButleryIcons.info;
       label = context.l10n.importGoodQuality;
     } else {
       // Low confidence - Red
@@ -57,7 +59,7 @@ class ConfidenceIndicator extends StatelessWidget {
       );
       badgeIconColor = cs.error;
       badgeTextColor = cs.onErrorContainer;
-      icon = Icons.warning;
+      icon = ButleryIcons.triangleAlert;
       label = context.l10n.importLowQuality;
     }
 
@@ -79,7 +81,11 @@ class ConfidenceIndicator extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppDimensions.iconSizeS, color: badgeIconColor),
+            ButleryIcon(
+              icon,
+              size: AppDimensions.iconSizeS,
+              color: badgeIconColor,
+            ),
             const SizedBox(width: AppDimensions.space4),
             Text(
               '$percentage%',

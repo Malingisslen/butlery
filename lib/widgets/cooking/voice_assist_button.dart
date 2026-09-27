@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -149,16 +151,16 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
     switch (state) {
       case VoiceAssistState.idle:
         background = cs.primary;
-        content = Icon(
-          Icons.mic_none,
+        content = ButleryIcon(
+          ButleryIcons.mic,
           color: cs.onPrimary,
           size: AppDimensions.iconSizeXl,
         );
         label = l10n.voiceAssistMicTooltip;
       case VoiceAssistState.listening:
         background = cs.error;
-        content = Icon(
-          Icons.stop,
+        content = ButleryIcon(
+          ButleryIcons.stop,
           color: cs.onError,
           size: AppDimensions.iconSizeXl,
         );
@@ -176,8 +178,8 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
         label = l10n.voicePromptTranscribing;
       case VoiceAssistState.speaking:
         background = cs.primary;
-        content = Icon(
-          Icons.volume_up,
+        content = ButleryIcon(
+          ButleryIcons.volume,
           color: cs.onPrimary,
           size: AppDimensions.iconSizeXl,
         );

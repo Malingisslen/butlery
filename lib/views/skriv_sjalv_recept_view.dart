@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
@@ -383,7 +385,7 @@ class _SkrivSjalvReceptViewContentState
                 child: PlateLine(semanticLabel: context.l10n.statusSaving),
               )
             else if (viewModel.hasRecentAutoSave)
-              const Icon(
+              const ButleryIcon(
                 Icons.cloud_done_outlined,
                 size: AppDimensions.iconSizeM,
               ),
@@ -695,8 +697,8 @@ class _SkrivSjalvReceptViewContentState
                                     context.l10n.recipeSharedFromApp
                                 ? context.l10n.recipeImportedFromShare
                                 : context.l10n.recipeSourceUrlHelper,
-                            prefixIcon: const Icon(
-                              Icons.link,
+                            prefixIcon: const ButleryIcon(
+                              ButleryIcons.link,
                               size: AppDimensions.iconSizeAction,
                             ),
                             keyboardType: TextInputType.url,
@@ -840,8 +842,8 @@ class _SkrivSjalvReceptViewContentState
                         padding: EdgeInsetsDirectional.only(
                           end: AppDimensions.space4,
                         ),
-                        child: Icon(
-                          Icons.drag_handle,
+                        child: ButleryIcon(
+                          ButleryIcons.drag,
                           size: AppDimensions.iconSizeM,
                         ),
                       ),
@@ -862,7 +864,7 @@ class _SkrivSjalvReceptViewContentState
                     ),
                     if (controllers.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         tooltip: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
@@ -895,7 +897,7 @@ class _SkrivSjalvReceptViewContentState
                     ),
                     if (controllers.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         tooltip: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
@@ -909,7 +911,7 @@ class _SkrivSjalvReceptViewContentState
         ],
         if (controllers.isEmpty)
           TextButton.icon(
-            icon: const Icon(Icons.add),
+            icon: const ButleryIcon(ButleryIcons.plus),
             label: Text(context.l10n.recipeAddItem(label)),
             onPressed: onAdd,
           ),
@@ -953,8 +955,8 @@ class _SkrivSjalvReceptViewContentState
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.warning_amber_rounded,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   color: colors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -972,8 +974,8 @@ class _SkrivSjalvReceptViewContentState
                   button: true,
                   child: GestureDetector(
                     onTap: () => setState(() => _showQualityWarning = false),
-                    child: Icon(
-                      Icons.close,
+                    child: ButleryIcon(
+                      ButleryIcons.x,
                       size: AppDimensions.iconSizeS,
                       color: colors.onWarningContainer,
                     ),

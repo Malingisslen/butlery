@@ -10,6 +10,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
@@ -198,7 +200,11 @@ class _CookingSkillBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.restaurant, size: 16, color: cs.onPrimaryContainer),
+          ButleryIcon(
+            ButleryIcons.utensils,
+            size: 16,
+            color: cs.onPrimaryContainer,
+          ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label,
@@ -236,14 +242,14 @@ class _ProfileStats extends StatelessWidget {
               StatItemWidget(
                 label: context.l10n.socialFriends,
                 value: '${profile.friendsCount}',
-                icon: Icons.people,
+                icon: ButleryIcons.users,
                 color: cs.onSurface,
                 labelColor: cs.onSurfaceVariant,
               ),
               StatItemWidget(
                 label: context.l10n.publicProfilePublicRecipes,
                 value: '${profile.publicRecipeCount}',
-                icon: Icons.restaurant_menu,
+                icon: ButleryIcons.utensils,
                 color: cs.onSurface,
                 labelColor: cs.onSurfaceVariant,
               ),
@@ -269,7 +275,7 @@ class _PublicRecipesSection extends StatelessWidget {
     if (!hasRecipes) {
       return StateWidget.empty(
         title: context.l10n.publicProfileEmpty,
-        icon: Icons.restaurant_menu,
+        icon: ButleryIcons.utensils,
       );
     }
 
@@ -366,8 +372,8 @@ class _PublicRecipeCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
                     color: cs.onSurfaceVariant,
                   ),
                 ],
@@ -383,8 +389,8 @@ class _PublicRecipeCard extends StatelessWidget {
     return ColoredBox(
       color: cs.surfaceContainerHighest,
       child: Center(
-        child: Icon(
-          Icons.restaurant_menu,
+        child: ButleryIcon(
+          ButleryIcons.utensils,
           color: cs.onSurfaceVariant,
         ),
       ),

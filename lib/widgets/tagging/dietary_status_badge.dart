@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 
 /// Badge displaying dietary status with tri-state coloring and shape distinction.
@@ -96,7 +97,7 @@ class DietaryStatusBadge extends StatelessWidget {
         // a cancel icon keeps the message clear without overstating risk.
         return (cs.onSurfaceVariant, Icons.cancel_outlined);
       case TriState.unknown:
-        return (cs.onSurfaceVariant, Icons.help_outline);
+        return (cs.onSurfaceVariant, ButleryIcons.info);
     }
   }
 

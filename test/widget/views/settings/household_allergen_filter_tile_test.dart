@@ -21,6 +21,7 @@ import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -139,7 +140,7 @@ void main() {
         final icon = tester.widget<Icon>(
           find.descendant(
             of: find.byType(SwitchListTile),
-            matching: find.byIcon(Icons.warning_amber),
+            matching: find.byIcon(ButleryIcons.triangleAlert),
           ),
         );
         expect(icon.color, ModeColors.light.warning);

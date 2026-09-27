@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// The view's single saffron action (Komponentark v1:843-844).
@@ -75,7 +76,7 @@ class HeroButton extends StatelessWidget {
         : FilledButton.icon(
             onPressed: pressed,
             style: style,
-            icon: Icon(icon),
+            icon: ButleryIcon(icon),
             label: text,
           );
     if (expand) {

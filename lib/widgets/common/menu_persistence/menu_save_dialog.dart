@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -148,7 +150,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         labelText: context.l10n.menuNameLabel,
         hintText: context.l10n.menuNameHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.restaurant_menu),
+        prefixIcon: const ButleryIcon(ButleryIcons.utensils),
       ),
       validator: FormValidators.required(context.l10n.menuNameRequired),
       maxLength: 50,
@@ -163,7 +165,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         labelText: context.l10n.menuCommentLabel,
         hintText: context.l10n.menuCommentHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.comment),
+        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
       ),
       maxLines: 3,
       maxLength: 200,
@@ -259,7 +261,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         labelText: context.l10n.menuShareMessageLabel,
         hintText: context.l10n.menuShareMessageHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.message),
+        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
       ),
       maxLines: 2,
       maxLength: 100,

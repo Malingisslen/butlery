@@ -9,6 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart'
@@ -92,18 +94,18 @@ void main() {
       expect(cancel, findsOneWidget);
       expect(enter, findsNothing);
       final unblock = find.ancestor(
-        of: find.byIcon(Icons.lock_open),
+        of: find.byIcon(ButleryIcons.unlock),
         matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
       );
       expect(tester.widget<ButtonStyleButton>(unblock).onPressed, isNull);
-      final icon = tester.widget<RichText>(
+      final icon = tester.widget<CustomPaint>(
         find.descendant(
-          of: find.byIcon(Icons.lock_open),
-          matching: find.byType(RichText),
+          of: find.byIcon(ButleryIcons.unlock),
+          matching: find.byType(CustomPaint),
         ),
       );
       expect(
-        icon.text.style?.color,
+        (icon.painter! as ButleryGlyphPainter).color,
         AppModeColors.textDisabled(Brightness.light),
       );
       expect(
@@ -113,7 +115,7 @@ void main() {
 
       await tester.tap(cancel);
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
       expect(enter, findsOneWidget);
     });
 
@@ -127,7 +129,7 @@ void main() {
       await tester.tap(find.text('u1'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
     });
 
     testWidgets('lists blocked users; no selection bar until long-press', (
@@ -140,7 +142,7 @@ void main() {
       expect(find.text('u2'), findsOneWidget);
       expect(find.text('u3'), findsOneWidget);
       // Bulk action bar (lock_open) only appears in selection mode.
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
     });
 
     testWidgets('long-press enters selection mode and selects that tile', (
@@ -151,7 +153,10 @@ void main() {
       await tester.longPress(find.text('u1'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.lock_open), findsOneWidget); // bulk bar shown
+      expect(
+        find.byIcon(ButleryIcons.unlock),
+        findsOneWidget,
+      ); // bulk bar shown
       expect(find.byIcon(Icons.check_box), findsOneWidget); // u1 selected
       expect(find.byIcon(Icons.check_box_outline_blank), findsNWidgets(2));
     });
@@ -181,7 +186,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
       expect(find.byIcon(Icons.check_box), findsNothing);
     });
 
@@ -192,7 +197,7 @@ void main() {
         await tester.longPress(find.text('u1'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.lock_open));
+        await tester.tap(find.byIcon(ButleryIcons.unlock));
         await tester.pumpAndSettle();
 
         expect(find.byType(AlertDialog), findsOneWidget);
@@ -211,7 +216,7 @@ void main() {
       await tester.tap(find.text('u2')); // 2 selected
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.lock_open));
+      await tester.tap(find.byIcon(ButleryIcons.unlock));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Avblockera')); // dialog confirm button
       await tester.pumpAndSettle();
@@ -219,7 +224,7 @@ void main() {
       // Mock returns full success (ids.length) → result branch, not partial.
       expect(find.text('2 användare avblockerade'), findsOneWidget);
       // Selection mode exited after the action.
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
     });
   });
 }

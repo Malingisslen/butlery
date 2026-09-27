@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/comment_image_attachments.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -93,6 +94,6 @@ void main() {
       reason: 'tapping a thumbnail must open the full-screen viewer dialog',
     );
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.x), findsOneWidget);
   });
 }

@@ -15,6 +15,8 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 // Local
@@ -56,7 +58,7 @@ class FriendRequestsHeaderBuilder {
               icon: Badge(
                 isLabelVisible: viewModel.incomingRequests.isNotEmpty,
                 label: Text('${viewModel.incomingRequests.length}'),
-                child: const Icon(Icons.inbox),
+                child: const ButleryIcon(Icons.inbox),
               ),
               text: context.l10n.socialIncoming,
             ),
@@ -64,7 +66,7 @@ class FriendRequestsHeaderBuilder {
               icon: Badge(
                 isLabelVisible: viewModel.sentRequests.isNotEmpty,
                 label: Text('${viewModel.sentRequests.length}'),
-                child: const Icon(Icons.outbox),
+                child: const ButleryIcon(Icons.outbox),
               ),
               text: context.l10n.socialSent,
             ),
@@ -77,7 +79,7 @@ class FriendRequestsHeaderBuilder {
           PopupMenuButton<String>(
             enabled: !batchRunning,
             // Paper on the ink bar (the bar's icon theme).
-            icon: const Icon(Icons.checklist),
+            icon: const ButleryIcon(ButleryIcons.listCheck),
             onSelected: (value) {
               if (value == 'accept_all') {
                 onBatchAccept();
@@ -90,8 +92,8 @@ class FriendRequestsHeaderBuilder {
                 value: 'accept_all',
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.check_circle,
+                    ButleryIcon(
+                      ButleryIcons.circleCheck,
                       color: context.modeColors.success,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -105,8 +107,8 @@ class FriendRequestsHeaderBuilder {
                 value: 'reject_all',
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.cancel,
+                    ButleryIcon(
+                      ButleryIcons.x,
                       color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -120,7 +122,7 @@ class FriendRequestsHeaderBuilder {
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(
-            icon: const Icon(Icons.cancel),
+            icon: const ButleryIcon(ButleryIcons.x),
             onPressed: batchRunning ? null : onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),
@@ -148,7 +150,7 @@ class FriendRequestsHeaderBuilder {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: cs.error),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
           const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
@@ -246,8 +248,8 @@ class IncomingRequestsTabBuilder {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist,
+                  ButleryIcon(
+                    ButleryIcons.listCheck,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
                   const SizedBox(width: AppDimensions.space4),
@@ -339,8 +341,8 @@ class SentRequestsTabBuilder {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist,
+                  ButleryIcon(
+                    ButleryIcons.listCheck,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
                   const SizedBox(width: AppDimensions.space4),

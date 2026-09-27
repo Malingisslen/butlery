@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -138,8 +140,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.photo_library_outlined,
+            ButleryIcon(
+              ButleryIcons.image,
               size: AppDimensions.iconSizeXxl,
               color: cs.onSurface.withValues(
                 alpha: AppDimensions.opacityMedium,
@@ -185,8 +187,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             color: cs.onPrimary,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -238,8 +240,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.add_photo_alternate_outlined,
+                  ButleryIcon(
+                    ButleryIcons.camera,
                     size: AppDimensions.iconSizeXl,
                     color: cs.onSurface,
                   ),
@@ -327,8 +329,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 color: isSelected ? cs.primary : cs.surface,
                 border: Border.all(color: cs.outlineVariant),
               ),
-              child: Icon(
-                isSelected ? Icons.check : Icons.circle_outlined,
+              child: ButleryIcon(
+                isSelected ? ButleryIcons.check : Icons.circle_outlined,
                 size: AppDimensions.iconSizeS,
                 color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
               ),
@@ -441,8 +443,8 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.photo_library_outlined,
+              ButleryIcon(
+                ButleryIcons.image,
                 size: AppDimensions.iconSizeXxl,
                 color: cs.onSurface.withValues(
                   alpha: AppDimensions.opacityMedium,

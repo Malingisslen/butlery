@@ -8,6 +8,8 @@ import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
 import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/views/admin/admin_url_state_stub.dart'
     if (dart.library.js_interop) 'package:butlery/views/admin/admin_url_state_web.dart';
 
@@ -115,10 +117,10 @@ class AdminRail extends StatelessWidget {
   ) {
     return NavigationRailDestination(
       icon: ButleryAncestorFocusRing(
-        child: ButleryControlFocus.box(child: Icon(icon)),
+        child: ButleryControlFocus.box(child: ButleryIcon(icon)),
       ),
       selectedIcon: ButleryAncestorFocusRing(
-        child: ButleryControlFocus.box(child: Icon(selectedIcon)),
+        child: ButleryControlFocus.box(child: ButleryIcon(selectedIcon)),
       ),
       label: Text(label),
     );
@@ -140,22 +142,26 @@ class AdminRail extends StatelessWidget {
             l10n.adminNavFeedback,
           ),
           _destination(
-            Icons.cloud_download_outlined,
-            Icons.cloud_download,
+            ButleryIcons.download,
+            ButleryIcons.download,
             l10n.adminNavImport,
           ),
           _destination(
-            Icons.people_outline,
-            Icons.people,
+            ButleryIcons.users,
+            ButleryIcons.users,
             l10n.adminNavEngagement,
           ),
           _destination(Icons.rule_outlined, Icons.rule, l10n.adminNavParsing),
           _destination(
-            Icons.restaurant_menu_outlined,
-            Icons.restaurant_menu,
+            ButleryIcons.utensils,
+            ButleryIcons.utensils,
             l10n.adminNavRecipes,
           ),
-          _destination(Icons.dns_outlined, Icons.dns, l10n.adminNavOps),
+          _destination(
+            ButleryIcons.server,
+            ButleryIcons.server,
+            l10n.adminNavOps,
+          ),
         ],
       ),
     );

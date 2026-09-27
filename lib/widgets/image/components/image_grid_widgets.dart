@@ -4,10 +4,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_components.dart';
@@ -156,10 +157,10 @@ class ImageGridWidgets {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      ButleryIcon(
                         isPrimary
-                            ? AdaptiveIcons.primaryFilled
-                            : AdaptiveIcons.primaryOutline,
+                            ? ButleryIcons.primary
+                            : ButleryIcons.primaryOutline,
                         size: AppDimensions.iconSizeXs,
                         color: Theme.of(
                           context,
@@ -197,7 +198,7 @@ class ImageGridWidgets {
                       onRemoveImage(index);
                     },
                     child: buildGridActionButton(
-                      icon: Icons.close,
+                      icon: ButleryIcons.x,
                       tooltip: context.l10n.imageRemoveImage,
                       isDestructive: true,
                     ),
@@ -229,7 +230,7 @@ class ImageGridWidgets {
               shape: BoxShape.circle,
               boxShadow: AppShadows.subtle,
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeS,
               color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
@@ -291,8 +292,8 @@ class ImageGridWidgets {
                       ),
                     ),
                   ] else ...[
-                    Icon(
-                      Icons.add_photo_alternate_outlined,
+                    ButleryIcon(
+                      ButleryIcons.camera,
                       color: cs.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),

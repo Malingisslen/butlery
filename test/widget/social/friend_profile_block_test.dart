@@ -26,6 +26,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_profile_view.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -90,7 +91,7 @@ void main() {
       createLocalizedTestApp(child: FriendProfileView(friend: _friend)),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
     await tester.pumpAndSettle();
   }
 

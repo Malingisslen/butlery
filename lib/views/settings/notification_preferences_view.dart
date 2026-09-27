@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/views/settings/notification_category_items.dart';
@@ -248,8 +250,8 @@ class _NotificationPreferencesViewState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ExcludeSemantics(
-                child: Icon(
-                  Icons.warning_amber_rounded,
+                child: ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   color: cs.error,
                   size: AppDimensions.iconSizeS,
                 ),
@@ -299,7 +301,7 @@ class _NotificationPreferencesViewState
         context.l10n.notificationEnableSubtitle,
         style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
       ),
-      secondary: Icon(
+      secondary: ButleryIcon(
         _preferences.enabled
             ? Icons.notifications_active_outlined
             : Icons.notifications_off_outlined,
@@ -345,7 +347,7 @@ class _NotificationPreferencesViewState
         item.label,
         style: AppTextStyles.titleMedium.copyWith(color: fg),
       ),
-      secondary: Icon(
+      secondary: ButleryIcon(
         item.icon,
         color: fg,
         size: AppDimensions.iconSizeL,
@@ -389,7 +391,7 @@ class _NotificationPreferencesViewState
         const SizedBox(height: AppDimensions.spacingMd),
         InputDecorator(
           decoration: InputDecoration(
-            prefixIcon: Icon(
+            prefixIcon: ButleryIcon(
               Icons.summarize_outlined,
               color: cs.onSurface,
               size: AppDimensions.iconSizeL,
@@ -463,7 +465,7 @@ class _NotificationPreferencesViewState
             context.l10n.notificationQuietHoursSubtitle,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
-          secondary: Icon(
+          secondary: ButleryIcon(
             Icons.do_not_disturb_on_outlined,
             color: cs.onSurface,
             size: AppDimensions.iconSizeL,
@@ -516,8 +518,8 @@ class _NotificationPreferencesViewState
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingSm,
           ),
-          child: Icon(
-            Icons.arrow_forward,
+          child: ButleryIcon(
+            ButleryIcons.arrowRight,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),

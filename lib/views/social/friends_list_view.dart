@@ -7,6 +7,8 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
@@ -227,11 +229,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
                           ButleryTab(
-                            icon: const Icon(Icons.dynamic_feed),
+                            icon: const ButleryIcon(Icons.dynamic_feed),
                             text: context.l10n.socialFeed,
                           ),
                           ButleryTab(
-                            icon: const Icon(Icons.people),
+                            icon: const ButleryIcon(ButleryIcons.users),
                             text: context.l10n.socialFriends,
                           ),
                           ButleryTab(
@@ -243,7 +245,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                               label: Text(
                                 '${friendsService.invitations.pendingReceivedInvitations.length}',
                               ),
-                              child: const Icon(Icons.groups),
+                              child: const ButleryIcon(ButleryIcons.users),
                             ),
                             text: context.l10n.socialGroups,
                           ),
@@ -254,7 +256,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                               label: Text(
                                 '${viewModel.incomingRequests.length}',
                               ),
-                              child: const Icon(Icons.search),
+                              child: const ButleryIcon(ButleryIcons.search),
                             ),
                             text: context.l10n.socialFindFriends,
                           ),
@@ -288,8 +290,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.error_outline,
+                              ButleryIcon(
+                                ButleryIcons.triangleAlert,
                                 color: Theme.of(context).colorScheme.error,
                               ),
                               const SizedBox(width: AppDimensions.space4),
@@ -377,7 +379,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           child: FloatingActionButton(
             onPressed: () => _tabController.animateTo(3),
             tooltip: context.l10n.socialAddFriend,
-            child: const Icon(
+            child: const ButleryIcon(
               Icons.person_add_alt_1,
               size: AppDimensions.iconSizeL,
             ),
@@ -393,8 +395,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
             child: const Stack(
               children: [
                 Center(
-                  child: Icon(
-                    Icons.groups,
+                  child: ButleryIcon(
+                    ButleryIcons.users,
                     size: AppDimensions.iconSizeL,
                   ),
                 ),

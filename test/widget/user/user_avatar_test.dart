@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -86,7 +87,7 @@ void main() {
         );
 
         // Empty name → person icon fallback (renders via initialsOrFallback).
-        expect(find.byIcon(Icons.person), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.user), findsOneWidget);
       });
 
       testWidgets('handles names with extra spaces', (

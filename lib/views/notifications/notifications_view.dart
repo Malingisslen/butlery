@@ -9,6 +9,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -119,6 +121,7 @@ class _NotificationsContentState extends State<_NotificationsContent> {
         // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
         // the action would be a no-op and shouldn't suggest otherwise.
         PopupMenuButton<String>(
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
           enabled: hasUnread,
           onSelected: (value) {
             if (value == 'mark_all_read') {
@@ -146,14 +149,14 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     // (produktregler.md:873). Whether it says Avbryt is P5-U31's.
     return ButleryTopBar.undersida(
       leading: IconButton(
-        icon: const Icon(Icons.close),
+        icon: const ButleryIcon(ButleryIcons.x),
         tooltip: context.l10n.commonClose,
         onPressed: _cancelSelection,
       ),
       title: context.l10n.notificationsSelectedCount(count),
       actions: [
         IconButton(
-          icon: const Icon(Icons.delete_outline),
+          icon: const ButleryIcon(ButleryIcons.trash2),
           tooltip: context.l10n.commonDismiss,
           onPressed: count > 0 ? () => _dismissSelected(vm) : null,
         ),
@@ -260,12 +263,12 @@ class _NotificationTile extends StatelessWidget {
       selectedColor: cs.onSurface,
       shape: chosen ? Border.all(color: cs.onSurface, width: 1.5) : null,
       leading: isSelectionMode
-          ? Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
+          ? ButleryIcon(
+              isSelected ? ButleryIcons.circleCheck : Icons.circle_outlined,
               color: isSelected ? cs.onSurface : cs.outline,
               size: AppDimensions.iconSizeAction,
             )
-          : Icon(
+          : ButleryIcon(
               _categoryIcon(entry.category),
               color: entry.opened ? cs.onSurfaceVariant : cs.onSurface,
               size: AppDimensions.iconSizeAction,
@@ -298,15 +301,15 @@ class _NotificationTile extends StatelessWidget {
   static IconData _categoryIcon(String category) {
     switch (category) {
       case 'social':
-        return Icons.people_outline;
+        return ButleryIcons.users;
       case 'recipe':
-        return Icons.restaurant_outlined;
+        return ButleryIcons.utensils;
       case 'shopping':
-        return Icons.shopping_cart_outlined;
+        return ButleryIcons.shoppingCart;
       case 'menu':
-        return Icons.calendar_today_outlined;
+        return ButleryIcons.calendar;
       case 'system':
-        return Icons.info_outline;
+        return ButleryIcons.info;
       default:
         return Icons.notifications_outlined;
     }

@@ -1,6 +1,8 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:flutter/material.dart';
 
@@ -56,8 +58,8 @@ class SharedCardHeader extends StatelessWidget {
           ),
         ),
         PopupMenuButton<_CardAction>(
-          icon: Icon(
-            Icons.more_vert,
+          icon: ButleryIcon(
+            ButleryIcons.moreVertical,
             size: AppDimensions.iconSizeM,
             color: cs.onSurfaceVariant,
           ),
@@ -75,8 +77,8 @@ class SharedCardHeader extends StatelessWidget {
               value: _CardAction.dismiss,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.close,
+                  ButleryIcon(
+                    ButleryIcons.x,
                     size: AppDimensions.iconSizeM,
                     color: cs.onSurfaceVariant,
                   ),
@@ -89,7 +91,7 @@ class SharedCardHeader extends StatelessWidget {
               value: _CardAction.unshare,
               child: Row(
                 children: [
-                  Icon(
+                  ButleryIcon(
                     Icons.link_off,
                     size: AppDimensions.iconSizeM,
                     color: cs.error,

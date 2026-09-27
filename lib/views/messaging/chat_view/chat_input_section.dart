@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/widgets/messaging/image_picker_dialog.dart';
 import 'package:butlery/widgets/messaging/reply_banner.dart';
@@ -294,7 +296,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.restaurant_menu,
+              ButleryIcons.utensils,
               context.l10n.chatAttachmentRecipe,
               'recipe',
             ),
@@ -302,7 +304,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.calendar_month,
+              ButleryIcons.calendar,
               context.l10n.chatAttachmentMenu,
               'menu',
             ),
@@ -310,7 +312,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.shopping_cart,
+              ButleryIcons.shoppingCart,
               context.l10n.chatAttachmentShoppingList,
               'shopping_list',
             ),
@@ -318,7 +320,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.photo_outlined,
+              ButleryIcons.image,
               context.l10n.chatAttachmentPhoto,
               'photo',
             ),
@@ -340,7 +342,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       children: [
         IconButton(
           onPressed: () => _handleAttachmentTap(type),
-          icon: Icon(icon),
+          icon: ButleryIcon(icon),
           color: cs.onSurface,
           tooltip: label,
         ),
@@ -396,7 +398,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     // Image button
                     IconButton(
                       onPressed: _handleImagePick,
-                      icon: const Icon(Icons.image_outlined),
+                      icon: const ButleryIcon(ButleryIcons.image),
                       color: context.modeColors.success,
                       tooltip: context.l10n.tooltipAttachImage,
                     ),
@@ -405,7 +407,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     if (widget.onPollCreate != null)
                       IconButton(
                         onPressed: _handlePollCreate,
-                        icon: const Icon(Icons.poll_outlined),
+                        icon: const ButleryIcon(Icons.poll_outlined),
                         color: cs.onSurfaceVariant,
                         tooltip: context.l10n.tooltipCreatePoll,
                       ),
@@ -413,10 +415,10 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     // Attachment button
                     IconButton(
                       onPressed: _toggleAttachments,
-                      icon: Icon(
+                      icon: ButleryIcon(
                         _state.showAttachments
-                            ? Icons.close
-                            : Icons.attach_file,
+                            ? ButleryIcons.x
+                            : ButleryIcons.paperclip,
                         color: _state.showAttachments
                             ? cs.onSurface
                             : cs.onSurfaceVariant,
@@ -446,8 +448,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         onPressed: _state.isComposing
                             ? _handleSendMessage
                             : null,
-                        icon: Icon(
-                          Icons.send,
+                        icon: ButleryIcon(
+                          ButleryIcons.send,
                           color: _state.isComposing
                               ? cs.onSurface
                               : cs.onSurfaceVariant,

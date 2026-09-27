@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Floating action buttons for image editing operations
 class EditActionsPanel extends StatelessWidget {
@@ -30,20 +31,20 @@ class EditActionsPanel extends StatelessWidget {
         children: [
           if (canAddImage)
             _EditActionButton(
-              icon: Icons.add_photo_alternate_outlined,
+              icon: ButleryIcons.camera,
               onTap: onAddImage,
               tooltip: context.l10n.imageAddImage,
             ),
           const SizedBox(height: AppDimensions.spacingSm),
           if (canSetPrimary)
             _EditActionButton(
-              icon: AdaptiveIcons.primaryOutline,
+              icon: ButleryIcons.primaryOutline,
               onTap: onSetPrimary,
               tooltip: context.l10n.imageSetAsPrimary,
             ),
           const SizedBox(height: AppDimensions.spacingSm),
           _EditActionButton(
-            icon: Icons.delete_outline,
+            icon: ButleryIcons.trash2,
             onTap: onRemoveImage,
             tooltip: context.l10n.imageRemoveImage,
             isDestructive: true,
@@ -83,7 +84,7 @@ class _EditActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.spacingSm),
-              child: Icon(
+              child: ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeM,
                 color: isDestructive

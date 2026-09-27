@@ -16,6 +16,8 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -181,7 +183,7 @@ class FriendRequestCard {
                         child: HeroButton(
                           key: ValueKey('friendRequest.accept.${request.id}'),
                           label: context.l10n.commonAccept,
-                          icon: Icons.check,
+                          icon: ButleryIcons.check,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
@@ -194,7 +196,7 @@ class FriendRequestCard {
                         child: ActionButtons.outlinedButton(
                           context,
                           label: context.l10n.socialDecline,
-                          icon: Icons.close,
+                          icon: ButleryIcons.x,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
@@ -234,17 +236,17 @@ class FriendRequestCard {
     switch (request.status) {
       case FriendRequestStatus.pending:
         statusColor = context.modeColors.warning;
-        statusIcon = Icons.schedule;
+        statusIcon = ButleryIcons.clock;
         statusText = context.l10n.socialPendingResponse;
         break;
       case FriendRequestStatus.accepted:
         statusColor = context.modeColors.success;
-        statusIcon = Icons.check_circle;
+        statusIcon = ButleryIcons.circleCheck;
         statusText = context.l10n.socialAccepted;
         break;
       case FriendRequestStatus.rejected:
         statusColor = cs.error;
-        statusIcon = Icons.cancel;
+        statusIcon = ButleryIcons.x;
         statusText = context.l10n.socialDeclined;
         break;
       case FriendRequestStatus.expired:
@@ -254,7 +256,7 @@ class FriendRequestCard {
         break;
       default:
         statusColor = cs.onSurfaceVariant;
-        statusIcon = Icons.help;
+        statusIcon = ButleryIcons.circleHelp;
         statusText = context.l10n.socialUnknownStatus;
     }
 
@@ -351,7 +353,7 @@ class FriendRequestCard {
                       const SizedBox(height: AppDimensions.spacingXs),
                       Row(
                         children: [
-                          Icon(
+                          ButleryIcon(
                             statusIcon,
                             size: AppDimensions.iconSizeS,
                             color: statusColor,
@@ -383,7 +385,7 @@ class FriendRequestCard {
                   IconButton(
                     onPressed: () =>
                         _cancelSentRequest(context, request, viewModel),
-                    icon: Icon(Icons.cancel, color: cs.error),
+                    icon: ButleryIcon(ButleryIcons.x, color: cs.error),
                     tooltip: context.l10n.socialCancelRequest,
                   ),
               ],

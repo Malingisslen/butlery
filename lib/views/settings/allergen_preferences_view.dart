@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
@@ -111,7 +113,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   Icons.shield_outlined,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
@@ -176,8 +178,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.restaurant_outlined,
+                ButleryIcon(
+                  ButleryIcons.utensils,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -241,8 +243,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.visibility_outlined,
+                ButleryIcon(
+                  ButleryIcons.eye,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -353,7 +355,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: cs.error),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
           const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
@@ -377,8 +379,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.sync,
+                ButleryIcon(
+                  ButleryIcons.refreshCw,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -400,7 +402,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ActionButtons.secondaryButton(
               context,
               label: context.l10n.allergenUpdateAllRecipes,
-              icon: Icons.sync,
+              icon: ButleryIcons.refreshCw,
               onPressed: () => _showRetagDialog(context),
               isExpanded: true,
             ),

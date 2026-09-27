@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -121,7 +123,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
               child: OutlinedButton.icon(
                 onPressed: _navigateToGroupCreation,
-                icon: const Icon(Icons.group_add),
+                icon: const ButleryIcon(Icons.group_add),
                 label: Text(context.l10n.conversationCreateGroup),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
@@ -177,7 +179,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       controller: _searchController,
       decoration: InputDecoration(
         hintText: context.l10n.chatSearchFriends,
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const ButleryIcon(ButleryIcons.search),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
@@ -200,8 +202,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
+            ButleryIcon(
+              ButleryIcons.triangleAlert,
               size: AppDimensions.iconSizeXxl,
               color: cs.error,
             ),
@@ -218,7 +220,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
                 setState(() => _hasError = false);
                 _loadFriends();
               },
-              icon: const Icon(Icons.refresh),
+              icon: const ButleryIcon(ButleryIcons.refreshCw),
               label: Text(context.l10n.commonRetry),
             ),
           ],
@@ -231,8 +233,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.people_outline,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeXxl,
               color: cs.onSurfaceVariant,
             ),

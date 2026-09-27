@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
@@ -121,8 +123,8 @@ class ShareDialogActions {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.info_outline,
+            ButleryIcon(
+              ButleryIcons.info,
               size: AppDimensions.iconSizeS,
               color: warningColor,
             ),
@@ -157,8 +159,8 @@ class ShareDialogActions {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle_outline,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             size: AppDimensions.iconSizeS,
             color: successColor,
           ),

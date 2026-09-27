@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/common/input_components.dart';
 
@@ -108,7 +109,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(findControlIcon(Icons.add));
+      await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pumpAndSettle();
 
       expect(finalPortions, equals(5));
@@ -127,7 +128,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(findControlIcon(Icons.remove));
+      await tester.tap(findControlIcon(ButleryIcons.minus));
       await tester.pumpAndSettle();
 
       expect(callbackCount, equals(0));
@@ -145,7 +146,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(findControlIcon(Icons.add));
+      await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pumpAndSettle();
 
       expect(callbackCount, equals(0));
@@ -190,7 +191,7 @@ void main() {
       await tester.pumpWidget(buildScaler());
       await tester.pumpAndSettle();
 
-      await tester.tap(findControlIcon(Icons.add));
+      await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pump(const Duration(milliseconds: 50));
 
       // Widget should still be present mid-animation
@@ -213,7 +214,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Increase portions: 4 -> 5
-      await tester.tap(findControlIcon(Icons.add));
+      await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pumpAndSettle();
 
       expect(scaled.length, equals(testIngredients.length));
@@ -263,7 +264,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1 -> 2 portions: factor 2.0 -> 2,5 dl becomes 5 dl.
-        await tester.tap(findControlIcon(Icons.add));
+        await tester.tap(findControlIcon(ButleryIcons.plus));
         await tester.pumpAndSettle();
 
         expect(
@@ -293,7 +294,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(findControlIcon(Icons.add));
+      await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pumpAndSettle();
 
       // Documented-wrong legacy output (probe-then-pin): the v1 parser
@@ -372,7 +373,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // User steps 4 -> 5 locally.
-        await tester.tap(findControlIcon(Icons.add));
+        await tester.tap(findControlIcon(ButleryIcons.plus));
         await tester.pumpAndSettle();
         expect(find.text('5'), findsOneWidget);
 
@@ -399,7 +400,7 @@ void main() {
 
       expect(find.byType(PortionScaler), findsOneWidget);
 
-      await tester.tap(findControlIcon(Icons.add));
+      await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pumpAndSettle();
 
       expect(called, isTrue);
@@ -419,11 +420,11 @@ void main() {
       await tester.pumpAndSettle();
 
       for (int i = 0; i < 3; i++) {
-        await tester.tap(findControlIcon(Icons.add));
+        await tester.tap(findControlIcon(ButleryIcons.plus));
         await tester.pump(const Duration(milliseconds: 10));
       }
       for (int i = 0; i < 5; i++) {
-        await tester.tap(findControlIcon(Icons.remove));
+        await tester.tap(findControlIcon(ButleryIcons.minus));
         await tester.pump(const Duration(milliseconds: 10));
       }
       await tester.pumpAndSettle();
@@ -448,11 +449,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(findControlIcon(Icons.add)); // 5
+      await tester.tap(findControlIcon(ButleryIcons.plus)); // 5
       await tester.pumpAndSettle();
-      await tester.tap(findControlIcon(Icons.add)); // 6
+      await tester.tap(findControlIcon(ButleryIcons.plus)); // 6
       await tester.pumpAndSettle();
-      await tester.tap(findControlIcon(Icons.remove)); // 5
+      await tester.tap(findControlIcon(ButleryIcons.minus)); // 5
       await tester.pumpAndSettle();
 
       expect(lastPortions, equals(5));

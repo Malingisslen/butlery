@@ -1,6 +1,8 @@
 // lib/widgets/common/friends/friend_category_manager.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -131,7 +133,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return StateWidget.empty(
             title: context.l10n.friendNoFriendsOrCategories,
             subtitle: context.l10n.friendAddFriendsAndCategoriesFirst,
-            icon: Icons.people_outline,
+            icon: ButleryIcons.users,
             actionLabel: context.l10n.friendManageFriends,
             onAction: () => Navigator.pushNamed(context, Routes.friends),
           );
@@ -193,7 +195,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       children: [
         Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.category_outlined,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
@@ -294,8 +296,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.people_outline,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -330,7 +332,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 ? StateWidget.empty(
                     title: context.l10n.friendNoFriendsToShow,
                     subtitle: context.l10n.friendAddFriendsFirst,
-                    icon: Icons.people_outline,
+                    icon: ButleryIcons.users,
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(AppDimensions.spacingXs),
@@ -420,8 +422,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
-              Icons.group,
+            child: ButleryIcon(
+              ButleryIcons.users,
               color: Theme.of(context).colorScheme.onPrimary,
               size: AppDimensions.iconSizeM,
             ),
@@ -449,7 +451,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           if (_selectedFriends.isNotEmpty)
             TextButton.icon(
               onPressed: _clearAllSelections,
-              icon: const Icon(Icons.clear, size: AppDimensions.iconSizeS),
+              icon: const ButleryIcon(
+                ButleryIcons.x,
+                size: AppDimensions.iconSizeS,
+              ),
               label: Text(context.l10n.commonClear),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.onSurface,

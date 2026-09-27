@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Handles image picker UI and logic for recipe forms.
 class RecipeImagePicker {
@@ -64,8 +66,8 @@ class RecipeImagePicker {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: Icon(
-                Icons.photo_camera,
+              leading: ButleryIcon(
+                ButleryIcons.camera,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
               title: Text(context.l10n.imageTakePhoto),
@@ -73,8 +75,8 @@ class RecipeImagePicker {
               onTap: () => Navigator.pop(context, 'camera'),
             ),
             ListTile(
-              leading: Icon(
-                Icons.photo_library,
+              leading: ButleryIcon(
+                ButleryIcons.image,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
               title: Text(context.l10n.imageFromGallery),
@@ -90,7 +92,7 @@ class RecipeImagePicker {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.close),
+              leading: const ButleryIcon(ButleryIcons.x),
               title: Text(context.l10n.commonCancel),
               onTap: () => Navigator.pop(context),
             ),

@@ -12,6 +12,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Onboarding-skipped banner — dismissible, with a CTA that navigates to
 /// allergen settings. The dismiss callback also fires when the CTA is
@@ -38,7 +40,7 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.info_outline, color: cs.onSurface),
+            ButleryIcon(ButleryIcons.info, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -58,7 +60,7 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
             // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
             IconButton(
               onPressed: viewModel.dismissOnboardingBanner,
-              icon: const Icon(Icons.close),
+              icon: const ButleryIcon(ButleryIcons.x),
               iconSize: AppDimensions.iconSizeM,
               tooltip: context.l10n.commonClose,
               color: cs.onSurface,
@@ -97,7 +99,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.celebration_outlined, color: cs.onSurface),
+            ButleryIcon(Icons.celebration_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -117,7 +119,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
             // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
             IconButton(
               onPressed: viewModel.dismissWelcomeBanner,
-              icon: const Icon(Icons.close),
+              icon: const ButleryIcon(ButleryIcons.x),
               iconSize: AppDimensions.iconSizeM,
               tooltip: context.l10n.commonClose,
               color: cs.onSurface,

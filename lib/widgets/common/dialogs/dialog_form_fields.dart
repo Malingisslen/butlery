@@ -24,6 +24,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
 /// through [buildTextFormField]; the dropdown, checkbox and switch builders
@@ -52,7 +54,7 @@ class DialogFormFields {
         decoration: InputDecoration(
           labelText: labelText,
           hintText: hintText,
-          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+          prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
           border: const OutlineInputBorder(),
           counterText: maxLength != null ? null : '',
         ),
@@ -97,7 +99,7 @@ class DialogFormFields {
     required TextEditingController controller,
     String? labelText,
     String? hintText,
-    IconData prefixIcon = Icons.label_outline,
+    IconData prefixIcon = ButleryIcons.tag,
     bool enabled = true,
     int maxLength = 50,
     int minLength = 2,
@@ -201,7 +203,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.dialogEmailLabel,
       hintText: hintText ?? context.l10n.dialogEmailHint,
-      prefixIcon: Icons.email_outlined,
+      prefixIcon: ButleryIcons.mail,
       enabled: enabled,
       keyboardType: TextInputType.emailAddress,
       customValidator: FormValidators.authEmail(),
@@ -223,7 +225,7 @@ class DialogFormFields {
       controller: controller,
       labelText: effectiveLabelText,
       hintText: hintText ?? context.l10n.dialogUrlHint,
-      prefixIcon: Icons.link,
+      prefixIcon: ButleryIcons.link,
       enabled: enabled,
       keyboardType: TextInputType.url,
       required: required,
@@ -269,7 +271,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.authPassword,
       hintText: hintText,
-      prefixIcon: Icons.lock_outline,
+      prefixIcon: ButleryIcons.lock,
       enabled: enabled,
       customValidator: FormValidators.authPassword(),
       maxLengthLimit: 128,
@@ -289,7 +291,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.commonSearch,
       hintText: hintText ?? context.l10n.dialogSearchHint,
-      prefixIcon: Icons.search,
+      prefixIcon: ButleryIcons.search,
       enabled: enabled,
       required: false,
       customValidator: (value) => null, // No validation for search
@@ -365,7 +367,7 @@ class DialogFormFields {
         decoration: InputDecoration(
           labelText: labelText,
           hintText: hintText,
-          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+          prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
           border: const OutlineInputBorder(),
         ),
         validator:

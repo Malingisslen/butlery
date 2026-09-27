@@ -8,6 +8,8 @@ import 'package:butlery/widgets/common/buttons/overlay_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
@@ -99,8 +101,8 @@ class PhotoPageStrip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(
-                  Icons.camera_alt,
+                leading: ButleryIcon(
+                  ButleryIcons.camera,
                   color: Theme.of(sheetContext).colorScheme.onSurface,
                 ),
                 title: Text(sheetContext.l10n.importTakePhoto),
@@ -110,8 +112,8 @@ class PhotoPageStrip extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(
-                  Icons.photo_library,
+                leading: ButleryIcon(
+                  ButleryIcons.image,
                   color: Theme.of(sheetContext).colorScheme.onSurface,
                 ),
                 title: Text(sheetContext.l10n.importChooseFromGallery),
@@ -210,8 +212,8 @@ class _AddPageTile extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.add_a_photo,
+              ButleryIcon(
+                ButleryIcons.camera,
                 color: onPressed == null ? cs.outlineVariant : cs.onSurface,
                 size: AppDimensions.iconSizeM,
               ),

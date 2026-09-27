@@ -11,6 +11,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -110,7 +112,7 @@ class _ReportTile extends StatelessWidget {
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return ListTile(
-      leading: Icon(_iconForType(report.contentType)),
+      leading: ButleryIcon(_iconForType(report.contentType)),
       title: Text(
         report.reason,
         style: AppTextStyles.titleSmall,
@@ -130,17 +132,17 @@ class _ReportTile extends StatelessWidget {
   IconData _iconForType(ContentType type) {
     switch (type) {
       case ContentType.recipe:
-        return Icons.restaurant_menu_outlined;
+        return ButleryIcons.utensils;
       case ContentType.comment:
-        return Icons.chat_bubble_outline;
+        return ButleryIcons.messageSquare;
       case ContentType.message:
-        return Icons.message_outlined;
+        return ButleryIcons.messageSquare;
       case ContentType.profile:
-        return Icons.person_outline;
+        return ButleryIcons.user;
       case ContentType.cookSnap:
-        return Icons.photo_camera_outlined;
+        return ButleryIcons.camera;
       case ContentType.group:
-        return Icons.group_outlined;
+        return ButleryIcons.users;
     }
   }
 }

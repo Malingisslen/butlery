@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Widget for displaying system messages in chat.
 ///
@@ -65,8 +67,8 @@ class SystemMessageWidget extends StatelessWidget {
           ),
           if (onDismiss != null) ...[
             const SizedBox(width: AppDimensions.paddingS),
-            Icon(
-              Icons.close,
+            ButleryIcon(
+              ButleryIcons.x,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),

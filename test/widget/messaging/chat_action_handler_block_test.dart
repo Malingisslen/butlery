@@ -35,6 +35,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 
@@ -168,7 +169,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
     await tester.pumpAndSettle();
   }
 

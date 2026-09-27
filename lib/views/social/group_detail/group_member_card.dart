@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -66,8 +68,8 @@ class GroupMemberCard {
         // BUT-948: long-press = multi-select (convention).
         onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
         leading: isSelectionMode && selectable
-            ? Icon(
-                isSelected ? Icons.check_circle : Icons.circle_outlined,
+            ? ButleryIcon(
+                isSelected ? ButleryIcons.circleCheck : Icons.circle_outlined,
                 color: isSelected ? cs.onSurface : cs.outline,
                 size: AppDimensions.iconSizeL,
               )
@@ -136,6 +138,7 @@ class GroupMemberCard {
         ),
         trailing: showMenu && !isSelectionMode
             ? PopupMenuButton<String>(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
                 onSelected: (value) async {
                   if (value == 'remove') {
                     final success = await GroupDetailActions.removeMember(
@@ -156,8 +159,8 @@ class GroupMemberCard {
                       value: 'remove',
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.person_remove,
+                          ButleryIcon(
+                            ButleryIcons.userMinus,
                             size: AppDimensions.iconSizeM,
                             color: Theme.of(context).colorScheme.error,
                           ),
@@ -177,7 +180,7 @@ class GroupMemberCard {
                       value: 'report',
                       child: Row(
                         children: [
-                          Icon(
+                          ButleryIcon(
                             Icons.flag_outlined,
                             size: AppDimensions.iconSizeM,
                             color: Theme.of(context).colorScheme.error,

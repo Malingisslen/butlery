@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -474,21 +476,21 @@ class _UrlResultRow extends StatelessWidget {
           child: PlateLine(semanticLabel: context.l10n.importFetchingRecipe),
         );
       case UrlFetchStatus.success:
-        return Icon(
-          Icons.check_circle,
+        return ButleryIcon(
+          ButleryIcons.circleCheck,
           color: context.modeColors.success,
           size: 20,
         );
       case UrlFetchStatus.failure:
-        return Icon(
-          Icons.error,
+        return ButleryIcon(
+          ButleryIcons.triangleAlert,
           color: Theme.of(context).colorScheme.error,
           size: 20,
         );
       case UrlFetchStatus.pending:
         // text.secondary (onSurfaceVariant): #627061 light, #93A48D dark.
-        return Icon(
-          Icons.schedule,
+        return ButleryIcon(
+          ButleryIcons.clock,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: 20,
         );

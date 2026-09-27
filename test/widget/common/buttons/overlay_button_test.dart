@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/overlay_button.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 // Comprehensive widget test for OverlayButton following ultrathink methodology
 void main() {
@@ -24,14 +26,14 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OverlayButton(
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
                 onPressed: () {},
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.edit), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.pencil), findsOneWidget);
         expect(find.byType(IconButton), findsOneWidget);
         expect(find.byType(DecoratedBox), findsOneWidget);
       });
@@ -47,7 +49,7 @@ void main() {
               body: OverlayButton(
                 backgroundColor: customColor,
                 onPressed: () {},
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
               ),
             ),
           ),
@@ -69,7 +71,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   return OverlayButton(
-                    child: const Icon(Icons.edit),
+                    child: const ButleryIcon(ButleryIcons.pencil),
                     onPressed: () {},
                   );
                 },
@@ -96,7 +98,7 @@ void main() {
             home: Scaffold(
               body: OverlayButton(
                 onPressed: null,
-                child: Icon(Icons.edit),
+                child: ButleryIcon(ButleryIcons.pencil),
               ),
             ),
           ),
@@ -115,7 +117,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OverlayButton(
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
                 onPressed: () {
                   wasPressed = true;
                 },
@@ -139,7 +141,7 @@ void main() {
               body: OverlayButton(
                 tooltip: tooltipText,
                 onPressed: () {},
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
               ),
             ),
           ),
@@ -156,7 +158,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OverlayButton(
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
                 onPressed: () {},
               ),
             ),
@@ -172,7 +174,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OverlayButton(
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
                 onPressed: () {},
               ),
             ),
@@ -210,7 +212,7 @@ void main() {
             home: Scaffold(
               body: OverlayButton(
                 onPressed: null,
-                child: Icon(Icons.edit),
+                child: ButleryIcon(ButleryIcons.pencil),
               ),
             ),
           ),
@@ -237,7 +239,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
       testWidgets('uses correct icon color for remove variant', (
@@ -259,7 +261,7 @@ void main() {
 
         // Icon color is provided via IconTheme (cs.surfaceContainerHighest).
         final iconTheme = IconTheme.of(
-          tester.element(find.byIcon(Icons.clear)),
+          tester.element(find.byIcon(ButleryIcons.x)),
         );
         expect(iconTheme.color, equals(cs.surfaceContainerHighest));
       });
@@ -340,7 +342,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OverlayButton(
-                child: const Icon(Icons.edit),
+                child: const ButleryIcon(ButleryIcons.pencil),
                 onPressed: () {},
               ),
             ),
@@ -363,7 +365,7 @@ void main() {
                 children: [
                   OverlayButton(
                     onPressed: () {},
-                    child: const Icon(Icons.edit),
+                    child: const ButleryIcon(ButleryIcons.pencil),
                   ),
                   OverlayButton.remove(
                     onPressed: () {},
@@ -375,8 +377,8 @@ void main() {
         );
 
         expect(find.byType(OverlayButton), findsNWidgets(2));
-        expect(find.byIcon(Icons.edit), findsOneWidget);
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.pencil), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
       testWidgets('renders correctly in Stack layout', (
@@ -406,7 +408,7 @@ void main() {
         );
 
         expect(find.byType(OverlayButton), findsOneWidget);
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
       testWidgets('uses theme surface color when no background specified', (
@@ -419,7 +421,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   return OverlayButton(
-                    child: const Icon(Icons.edit),
+                    child: const ButleryIcon(ButleryIcons.pencil),
                     onPressed: () {},
                   );
                 },
@@ -448,8 +450,8 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OverlayButton(
-                child: const Icon(
-                  Icons.edit,
+                child: const ButleryIcon(
+                  ButleryIcons.pencil,
                   semanticLabel: 'Redigera', // Swedish for "Edit"
                 ),
                 onPressed: () {},

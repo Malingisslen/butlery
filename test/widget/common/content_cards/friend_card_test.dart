@@ -21,6 +21,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -96,7 +98,10 @@ void main() {
         _wrap(
           FriendCard(
             user: _user(),
-            trailing: const Icon(Icons.chevron_right, key: trailingKey),
+            trailing: const ButleryIcon(
+              ButleryIcons.chevronRight,
+              key: trailingKey,
+            ),
           ),
         ),
       );

@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -223,11 +225,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
               controller: _tabController,
               tabs: [
                 Tab(
-                  icon: const Icon(Icons.shopping_cart_outlined),
+                  icon: const ButleryIcon(ButleryIcons.shoppingCart),
                   text: context.l10n.shoppingTabLists,
                 ),
                 Tab(
-                  icon: const Icon(Icons.kitchen_outlined),
+                  icon: const ButleryIcon(Icons.kitchen_outlined),
                   text: context.l10n.shoppingTabPantry,
                 ),
               ],
@@ -535,7 +537,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const ButleryIcon(ButleryIcons.x),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],

@@ -177,8 +177,8 @@ class _DetailsToggle extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(color: link),
                   ),
                 ),
-                Icon(
-                  open ? Icons.expand_less : Icons.expand_more,
+                ButleryIcon(
+                  open ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                   size: AppDimensions.iconSizeM,
                   color: link,
                 ),

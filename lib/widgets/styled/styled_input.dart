@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app
@@ -124,7 +126,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.visiblePassword,
        textInputAction = TextInputAction.done,
        inputFormatters = null,
-       prefixIcon = const Icon(Icons.lock_outline),
+       prefixIcon = const ButleryIcon(ButleryIcons.lock),
        contentPadding = null,
        autofillHints = const [AutofillHints.password],
        showWarning = false;
@@ -152,7 +154,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.emailAddress,
        textInputAction = TextInputAction.next,
        inputFormatters = null,
-       prefixIcon = const Icon(Icons.email),
+       prefixIcon = const ButleryIcon(ButleryIcons.mail),
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.email],
@@ -181,7 +183,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.phone,
        textInputAction = TextInputAction.done,
        inputFormatters = null,
-       prefixIcon = const Icon(Icons.phone),
+       prefixIcon = const ButleryIcon(Icons.phone),
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.telephoneNumber],
@@ -269,7 +271,7 @@ class StyledInput extends StatelessWidget {
        textInputAction = TextInputAction.search,
        inputFormatters = null,
        validator = null,
-       prefixIcon = const Icon(Icons.search),
+       prefixIcon = const ButleryIcon(ButleryIcons.search),
        contentPadding = null,
        autofillHints = null,
        showWarning = false;

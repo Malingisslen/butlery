@@ -16,9 +16,11 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _app(Widget home) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -148,7 +150,7 @@ void main() {
           actions: [
             IconButton(
               tooltip: 'Sök',
-              icon: const Icon(Icons.search),
+              icon: const ButleryIcon(ButleryIcons.search),
               onPressed: () {},
             ),
           ],

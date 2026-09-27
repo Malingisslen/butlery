@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -147,8 +149,8 @@ class ErrorDisplayWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
@@ -192,8 +194,8 @@ class WarningDisplayWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             color: warningColor,
             size: AppDimensions.iconSizeM,
           ),
@@ -239,7 +241,7 @@ class DialogHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             color: Theme.of(context).colorScheme.onSurface,
           ),
@@ -253,7 +255,7 @@ class DialogHeader extends StatelessWidget {
           const Spacer(),
           IconButton(
             onPressed: onClose,
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
           ),
         ],
       ),
@@ -331,7 +333,7 @@ class DialogFooter extends StatelessWidget {
                             Theme.of(context).filledButtonTheme.style,
                           )
                         : own,
-                    icon: Icon(primaryActionIcon),
+                    icon: ButleryIcon(primaryActionIcon),
                     label: Text(primaryActionText),
                   );
                 },

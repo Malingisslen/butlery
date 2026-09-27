@@ -3,9 +3,10 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_comment.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
@@ -322,7 +323,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       button: true,
                       child: IconButton(
                         onPressed: widget.onReply,
-                        icon: Icon(
+                        icon: ButleryIcon(
                           Icons.reply,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
@@ -337,10 +338,10 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       button: true,
                       child: IconButton(
                         onPressed: widget.onToggleLike,
-                        icon: Icon(
+                        icon: ButleryIcon(
                           widget.isLiked
-                              ? AdaptiveIcons.favouriteFilled
-                              : AdaptiveIcons.favouriteOutline,
+                              ? ButleryIcons.favourite
+                              : ButleryIcons.favouriteOutline,
                           // Red is deliberate (BUT-1213): red = social like,
                           // green (cs.primary) = personal favourite.
                           color: widget.isLiked
@@ -353,8 +354,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     if (widget.isOwnComment && widget.onEdit != null)
                       IconButton(
                         onPressed: widget.onEdit,
-                        icon: Icon(
-                          Icons.edit_outlined,
+                        icon: ButleryIcon(
+                          ButleryIcons.pencil,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),
@@ -362,8 +363,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     if (widget.isOwnComment && widget.onDelete != null)
                       IconButton(
                         onPressed: widget.onDelete,
-                        icon: Icon(
-                          Icons.delete_outline,
+                        icon: ButleryIcon(
+                          ButleryIcons.trash2,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),
@@ -377,7 +378,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                           contentId: widget.comment.id,
                           contentOwnerId: widget.comment.authorId,
                         ),
-                        icon: Icon(
+                        icon: ButleryIcon(
                           Icons.flag_outlined,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
@@ -422,8 +423,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.add_reaction_outlined,
+                            ButleryIcon(
+                              ButleryIcons.reactionAdd,
                               size: AppDimensions.iconSizeS,
                               color: cs.onSurfaceVariant,
                             ),

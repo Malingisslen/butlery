@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Outcome of the who's-eating picker.
 ///
@@ -71,7 +73,7 @@ Future<WhoAteResult?> showWhoIsEatingSheet(
     config: _PickerConfig(
       title: l10n.whoAteTitle,
       subtitle: recipeTitle,
-      subtitleIcon: Icons.restaurant_outlined,
+      subtitleIcon: ButleryIcons.utensils,
       confirmLabel: l10n.whoAteConfirm,
       skipLabel: l10n.whoAteSkip,
     ),
@@ -97,7 +99,7 @@ Future<WhoAteResult?> showWhoIsHomeSheet(
     config: _PickerConfig(
       title: l10n.menuPresenceSheetTitle,
       subtitle: slotLabel,
-      subtitleIcon: Icons.home_outlined,
+      subtitleIcon: ButleryIcons.house,
       confirmLabel: (_) => l10n.menuPresenceThisMeal,
       wholeDayLabel: l10n.menuPresenceWholeDay,
       allowEmpty: true,
@@ -182,7 +184,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(config.subtitleIcon, size: 15, color: cs.secondary),
+                ButleryIcon(config.subtitleIcon, size: 15, color: cs.secondary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -223,7 +225,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                         WhoAteResult.attended(vm.selectedMemberIds),
                       )
                     : null,
-                icon: const Icon(Icons.how_to_reg, size: 18),
+                icon: const ButleryIcon(Icons.how_to_reg, size: 18),
                 label: Text(config.confirmLabel(vm.selectedCount)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
@@ -381,7 +383,9 @@ class _CheckBox extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: selected ? Icon(Icons.check, size: 18, color: cs.onPrimary) : null,
+      child: selected
+          ? ButleryIcon(ButleryIcons.check, size: 18, color: cs.onPrimary)
+          : null,
     );
   }
 }

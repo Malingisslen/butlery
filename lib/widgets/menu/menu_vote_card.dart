@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Displays a menu slot vote with alternatives, progress bars, and actions.
@@ -55,8 +57,8 @@ class MenuVoteCard extends StatelessWidget {
               children: [
                 // text.primary, not cs.primary: primary is ink in both
                 // modes and would vanish on the dark card.
-                Icon(
-                  Icons.how_to_vote,
+                ButleryIcon(
+                  ButleryIcons.vote,
                   size: AppDimensions.iconSizeM,
                   color: cs.onSurface,
                 ),
@@ -172,8 +174,8 @@ class MenuVoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
-            Icon(
-              Icons.check_circle,
+            ButleryIcon(
+              ButleryIcons.circleCheck,
               color: context.modeColors.success,
               size: AppDimensions.iconSizeL,
             ),
@@ -208,7 +210,7 @@ class MenuVoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
-            Icon(
+            ButleryIcon(
               Icons.timer_off,
               color: cs.onSurfaceVariant,
               size: AppDimensions.iconSizeL,

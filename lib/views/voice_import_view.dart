@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/views/smart_import/import_result_handler.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/import/voice_section_card.dart';
@@ -253,7 +254,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
                 child: ActionButtons.primaryButton(
                   context,
                   label: context.l10n.voiceImportSubmit,
-                  icon: Icons.download_done,
+                  icon: ButleryIcons.download,
                   onPressed: vm.canImport ? _onImport : null,
                   isLoading: vm.isImporting,
                   loadingText: context.l10n.voiceImportImporting,

@@ -6,6 +6,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 
 /// Warning dialog shown before session timeout
@@ -188,8 +190,8 @@ class _SessionTimeoutWarningDialogState
     return AlertDialog(
       // The clock is drawn in ink (Skarmar v12 etapp 9 #globsession, stroke
       // #24382c): onSurface in light and dark.
-      icon: Icon(
-        Icons.timer_outlined,
+      icon: ButleryIcon(
+        ButleryIcons.clock,
         color: cs.onSurface,
         size: AppDimensions.iconSizeXxl,
       ),

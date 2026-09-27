@@ -1,6 +1,8 @@
 // lib/widgets/messaging/fullscreen_image_viewer.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -51,7 +53,7 @@ class FullscreenImageViewer extends StatelessWidget {
       backgroundColor: cs.primary,
       appBar: ButleryTopBar.undersida(
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const ButleryIcon(ButleryIcons.x),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: context.l10n.commonClose,
         ),
@@ -91,7 +93,7 @@ class FullscreenImageViewer extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ButleryIcon(
                           Icons.broken_image,
                           size: 64,
                           color: cs.outline,

@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -52,7 +54,7 @@ class MenuPreviewView extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () => _shareMenu(context),
-            icon: const Icon(Icons.share),
+            icon: const ButleryIcon(ButleryIcons.share2),
             tooltip: context.l10n.menuShareMenu,
           ),
         ],
@@ -156,8 +158,8 @@ class MenuPreviewView extends StatelessWidget {
               // Meny statistik
               Row(
                 children: [
-                  Icon(
-                    Icons.restaurant_menu,
+                  ButleryIcon(
+                    ButleryIcons.utensils,
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
@@ -169,7 +171,7 @@ class MenuPreviewView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingL),
-                  Icon(
+                  ButleryIcon(
                     Icons.category,
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -236,7 +238,7 @@ class MenuPreviewView extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: StateWidget.empty(
             title: context.l10n.menuNoRecipesInMenu,
-            icon: Icons.restaurant_outlined,
+            icon: ButleryIcons.utensils,
           ),
         ),
       );
@@ -316,7 +318,7 @@ class MenuPreviewView extends StatelessWidget {
                   label: isImported
                       ? context.l10n.menuImported
                       : context.l10n.menuImportAll,
-                  icon: isImported ? Icons.check : Icons.download,
+                  icon: isImported ? ButleryIcons.check : ButleryIcons.download,
                   onPressed: isImported
                       ? null
                       : () => _importMenu(context, viewModel),
@@ -331,7 +333,7 @@ class MenuPreviewView extends StatelessWidget {
                 ActionButtons.outlinedButton(
                   context,
                   label: context.l10n.sharedHideFromList,
-                  icon: Icons.visibility_off,
+                  icon: ButleryIcons.eye,
                   onPressed: () => _dismissMenu(context, viewModel),
                   isExpanded: true,
                 ),
@@ -363,10 +365,10 @@ class MenuPreviewView extends StatelessWidget {
       return Icons.free_breakfast;
     }
     if (categoryLower.contains('lunch')) {
-      return Icons.lunch_dining;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('middag')) {
-      return Icons.dinner_dining;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('mellanmål') ||
         categoryLower.contains('snack')) {
@@ -379,7 +381,7 @@ class MenuPreviewView extends StatelessWidget {
       return Icons.local_cafe;
     }
 
-    return Icons.restaurant_menu;
+    return ButleryIcons.utensils;
   }
 
   void _navigateToRecipeDetail(BuildContext context, Recipe recipe) {

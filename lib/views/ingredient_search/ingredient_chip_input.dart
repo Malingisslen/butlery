@@ -7,6 +7,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 
 class IngredientChipInput extends StatefulWidget {
@@ -68,7 +70,7 @@ class _IngredientChipInputState extends State<IngredientChipInput> {
           onChanged: _onSearchChanged,
           decoration: InputDecoration(
             hintText: l10n.ingredientSearchHint,
-            prefixIcon: const Icon(Icons.search),
+            prefixIcon: const ButleryIcon(ButleryIcons.search),
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.zero,
             ),
@@ -142,8 +144,8 @@ class _IngredientChip extends StatelessWidget {
               child: SizedBox(
                 width: AppDimensions.minTouchTarget,
                 height: AppDimensions.minTouchTarget,
-                child: Icon(
-                  Icons.close,
+                child: ButleryIcon(
+                  ButleryIcons.x,
                   size: AppDimensions.iconSizeS,
                   color: cs.onPrimaryContainer,
                 ),

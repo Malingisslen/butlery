@@ -18,6 +18,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 import 'package:butlery/widgets/import/components/import_dialog_header.dart';
 import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
@@ -350,7 +351,7 @@ class _ReviewEditStep extends StatelessWidget {
           // Ingredients section
           EditableListHeader(
             title: context.l10n.recipeIngredients,
-            icon: Icons.restaurant,
+            icon: ButleryIcons.utensils,
             count: viewModel.editedIngredients.length,
           ),
           const SizedBox(height: AppDimensions.spacingSm),

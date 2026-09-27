@@ -7,6 +7,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Displays the tag icon, name, recipe count, and active rules count.
 class TagDetailHeader extends StatelessWidget {
@@ -33,8 +35,8 @@ class TagDetailHeader extends StatelessWidget {
               backgroundColor: colorScheme.onSurface.withValues(
                 alpha: AppDimensions.opacityLight,
               ),
-              child: Icon(
-                Icons.label,
+              child: ButleryIcon(
+                ButleryIcons.tag,
                 color: colorScheme.onSurface,
                 size: 32,
               ),

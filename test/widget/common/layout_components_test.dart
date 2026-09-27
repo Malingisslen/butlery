@@ -11,9 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/responsive/responsive_builder.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Plain MaterialApp wrapper for widgets that don't touch `context.l10n`.
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -402,8 +404,8 @@ void main() {
       ),
       const AdaptiveNavigationItem(
         label: 'Profile',
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
+        icon: ButleryIcons.user,
+        activeIcon: ButleryIcons.user,
         route: '/profile',
       ),
     ];
@@ -491,7 +493,7 @@ void main() {
           floatingActionButton: FloatingActionButton(
             key: fabKey,
             onPressed: () {},
-            child: const Icon(Icons.add),
+            child: const ButleryIcon(ButleryIcons.plus),
           ),
         ),
         withL10n: true,
@@ -608,7 +610,7 @@ void main() {
       return List.generate(n, (i) {
         return {
           'label': 'btn-$i',
-          'icon': Icons.add,
+          'icon': ButleryIcons.plus,
           'onPressed': (i == 0 && onPressedAt0 != null) ? onPressedAt0 : () {},
         };
       });
@@ -617,7 +619,7 @@ void main() {
     Map<String, dynamic> archive({VoidCallback? onPressed}) {
       return {
         'label': 'arkiv',
-        'icon': Icons.archive,
+        'icon': ButleryIcons.archive,
         'onPressed': onPressed ?? () {},
       };
     }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareModeSelection {
@@ -61,7 +62,7 @@ class ShareModeSelection {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        ButleryIcon(
                           selectedMode == ShareMode.staticCopy
                               ? Icons.radio_button_checked
                               : Icons.radio_button_unchecked,
@@ -128,7 +129,7 @@ class ShareModeSelection {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      ButleryIcon(
                         selectedMode == ShareMode.realtime
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,

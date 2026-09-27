@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 void main() {
   late BuildContext ctx;
@@ -147,7 +148,7 @@ void main() {
 
           final bar = shownSnackBar(tester);
           expect(bar.backgroundColor, isNull, reason: 'snackBarTheme decides');
-          expect(find.byIcon(Icons.check), findsNothing);
+          expect(find.byIcon(ButleryIcons.check), findsNothing);
           // The painted surface: surface.ink in both modes.
           final material = tester.widget<Material>(
             find

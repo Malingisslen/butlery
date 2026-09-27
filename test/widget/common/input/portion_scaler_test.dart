@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 
@@ -82,11 +83,11 @@ void main() {
 
         // Assert
         // UI Redesign: restaurant_menu icon removed per mockup
-        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+        expect(find.byIcon(ButleryIcons.utensils), findsNothing);
         expect(find.text('Portioner:'), findsOneWidget);
         expect(find.text('$originalPortions'), findsOneWidget);
-        expect(find.byIcon(Icons.remove), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.minus), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('does not render ingredients (handled by caller)', (
@@ -212,7 +213,7 @@ void main() {
         );
 
         // Tap add button
-        await tester.tap(find.byIcon(Icons.add));
+        await tester.tap(find.byIcon(ButleryIcons.plus));
         await tester.pump();
 
         // Assert
@@ -235,7 +236,7 @@ void main() {
         );
 
         // Tap remove button
-        await tester.tap(find.byIcon(Icons.remove));
+        await tester.tap(find.byIcon(ButleryIcons.minus));
         await tester.pump();
 
         // Assert
@@ -255,7 +256,7 @@ void main() {
         );
 
         // Assert - Production uses InkWell with Icon, not IconButton
-        final removeIcon = find.byIcon(Icons.remove);
+        final removeIcon = find.byIcon(ButleryIcons.minus);
         expect(removeIcon, findsOneWidget);
 
         // Find the InkWell containing the remove icon
@@ -282,7 +283,7 @@ void main() {
         );
 
         // Assert - Production uses InkWell with Icon, not IconButton
-        final addIcon = find.byIcon(Icons.add);
+        final addIcon = find.byIcon(ButleryIcons.plus);
         expect(addIcon, findsOneWidget);
 
         // Find the InkWell containing the add icon
@@ -456,8 +457,8 @@ void main() {
 
         // Assert - controls are rendered (Column with header)
         expect(find.text('Portioner:'), findsOneWidget);
-        expect(find.byIcon(Icons.remove), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.minus), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('maintains proper spacing between elements', (
@@ -530,7 +531,7 @@ void main() {
 
         // Assert - Should not crash
         // UI Redesign: restaurant_menu icon removed per mockup
-        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+        expect(find.byIcon(ButleryIcons.utensils), findsNothing);
       });
 
       testWidgets('handles very large portion numbers', (
@@ -640,7 +641,7 @@ void main() {
 
         // Rapidly tap add button
         for (int i = 0; i < 5; i++) {
-          await tester.tap(find.byIcon(Icons.add));
+          await tester.tap(find.byIcon(ButleryIcons.plus));
           await tester.pump(const Duration(milliseconds: 50));
         }
 

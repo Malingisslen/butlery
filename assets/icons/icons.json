@@ -1,0 +1,946 @@
+{
+  "$schema_note": "Normativ ikoninventering. Manualen visar glyferna; detta manifest räknar och namnger dem. Vid konflikt vinner detta manifest. Fältet \"usages\" är GENERERAT ur data-icon-attributen i skärmfilen, komponentarket och manualen — det redigeras aldrig för hand.",
+  "version": "1.8",
+  "date": "2026-08-03",
+  "manual": "V6",
+  "screens": "Butlery Skarmar v12 · fem delfiler (se innehållsfilen)",
+  "decision": {
+    "track": "Butlery-ritad familj (alternativ 2 i granskningen)",
+    "naming": "kebab-case semantiska nycklar. Namnen sammanfaller medvetet med vanliga bibliotekskonventioner för utvecklarnas läsbarhet — geometrin är Butlerys egen (24-rutnät, stroke 1,75, runda ändar).",
+    "no_library": "Inget ikonbibliotek länkas eller paketeras.",
+    "render": "currentColor, aldrig hårdkodad färg i glyfen.",
+    "provenance": "Alla glyfer är ritade för Butlery. Inget bibliotek är källa, kopierat eller paketerat. Namnen sammanfaller med vanliga bibliotekskonventioner enbart för utvecklarnas läsbarhet.",
+    "license": "Butlery, all rights reserved. Levereras som del av appens runtime-bundle; ingen tredjepartslicens gäller ikonerna.",
+    "geometry": "24×24 rutnät, live area 20×20, stroke 1,75 vid ≥15 px och 2,2 vid ≤14 px, runda ändar och hörn (butt cap endast där två streck möts i rät vinkel), inga fyllningar utom där konventionen kräver (star, heart, more-vertical).",
+    "new_icons": "Ny glyf godkänns i tre steg: (1) behovet kan inte lösas med befintlig glyf eller med ord, (2) glyfen ritas på rutnätet och granskas mot familjen i 16, 20 och 24 px, (3) den förs in här med namn, betydelse och kategori innan den används i en skärm. En glyf utan post i detta manifest är ett spec-lint-fel.",
+    "superseded": "Tidigare riktning ”Lucide” är formellt övergiven 2026-07-25. Se beslutslogg B-02 i beslutslogg.md."
+  },
+  "counts": {
+    "ui": 73,
+    "nav": 5,
+    "total": 78,
+    "used": 78,
+    "source_date": "2026-08-05"
+  },
+  "nav_family": [
+    {
+      "name": "nav-home",
+      "grid": "160×160, stroke 7",
+      "master_svg": "assets/icons/nav-home.svg",
+      "status": "levererad",
+      "usages": 12
+    },
+    {
+      "name": "nav-week",
+      "grid": "160×160, stroke 7",
+      "master_svg": "assets/icons/nav-week.svg",
+      "status": "levererad",
+      "usages": 14
+    },
+    {
+      "name": "nav-add",
+      "grid": "160×160, stroke 7",
+      "note": "central knapp, ej tab",
+      "master_svg": "assets/icons/nav-add.svg",
+      "status": "levererad",
+      "usages": 8
+    },
+    {
+      "name": "nav-shopping",
+      "grid": "160×160, stroke 7",
+      "master_svg": "assets/icons/nav-shopping.svg",
+      "status": "levererad",
+      "usages": 14
+    },
+    {
+      "name": "nav-more",
+      "grid": "160×160, stroke 7",
+      "master_svg": "assets/icons/nav-more.svg",
+      "status": "levererad",
+      "usages": 12
+    }
+  ],
+  "ui_family": [
+    {
+      "name": "archive",
+      "category": "åtgärd",
+      "meaning": "Arkivera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 5,
+      "master_svg": "assets/icons/archive.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "arrow-left",
+      "category": "navigation",
+      "meaning": "Tillbaka",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 163,
+      "master_svg": "assets/icons/arrow-left.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "arrow-right",
+      "category": "navigation",
+      "meaning": "Nästa steg — arrow-left fanns, arrow-right saknades",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/arrow-right.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "arrow-up-down",
+      "category": "åtgärd",
+      "meaning": "Sortera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 14,
+      "master_svg": "assets/icons/arrow-up-down.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "bell",
+      "category": "tillstånd",
+      "meaning": "Timern är klar",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/bell.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "block",
+      "category": "tillstånd",
+      "meaning": "Blockerad",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/block.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "calendar",
+      "category": "övrigt",
+      "meaning": "Veckomeny / datum",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 5,
+      "master_svg": "assets/icons/calendar.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "camera",
+      "category": "övrigt",
+      "meaning": "Kamera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 19,
+      "master_svg": "assets/icons/camera.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "check",
+      "category": "status",
+      "meaning": "Bockad / klar",
+      "grid": "24×24, live area 20×20",
+      "stroke": "2,2 (≤14 px)",
+      "fill": "none",
+      "usages": 142,
+      "master_svg": "assets/icons/check.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "check-square",
+      "category": "åtgärd",
+      "meaning": "Markera alla",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/check-square.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "chevron-down",
+      "category": "navigation",
+      "meaning": "Fäll ut",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 39,
+      "master_svg": "assets/icons/chevron-down.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "chevron-left",
+      "category": "navigation",
+      "meaning": "Föregående",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 20,
+      "master_svg": "assets/icons/chevron-left.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "chevron-right",
+      "category": "navigation",
+      "meaning": "Nästa / framåt i rad",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 125,
+      "master_svg": "assets/icons/chevron-right.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "chevron-up",
+      "category": "navigation",
+      "meaning": "Fäll in",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 8,
+      "master_svg": "assets/icons/chevron-up.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "circle-check",
+      "category": "status",
+      "meaning": "Bekräftad",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 18,
+      "master_svg": "assets/icons/circle-check.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "circle-help",
+      "category": "status",
+      "meaning": "Okänt / förstods inte",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/circle-help.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "clock",
+      "category": "status",
+      "meaning": "Tid",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 24,
+      "master_svg": "assets/icons/clock.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "copy",
+      "category": "åtgärd",
+      "meaning": "Duplicera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 6,
+      "master_svg": "assets/icons/copy.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "download",
+      "category": "åtgärd",
+      "meaning": "Spara offline",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 10,
+      "master_svg": "assets/icons/download.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "drag",
+      "category": "åtgärd",
+      "meaning": "Dra för att ordna",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 13,
+      "master_svg": "assets/icons/drag.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "drop",
+      "category": "tillstånd",
+      "meaning": "Släppmål i veckorutnätet",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/drop.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "export",
+      "category": "åtgärd",
+      "meaning": "Exportera (skild från download)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 4,
+      "master_svg": "assets/icons/export.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "eye",
+      "category": "åtgärd",
+      "meaning": "Visa/dölj",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 9,
+      "master_svg": "assets/icons/eye.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "file",
+      "category": "övrigt",
+      "meaning": "Fil",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 9,
+      "master_svg": "assets/icons/file.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "filter",
+      "category": "åtgärd",
+      "meaning": "Filtrera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/filter.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "folder",
+      "category": "övrigt",
+      "meaning": "Samling",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/folder.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "hand",
+      "category": "åtgärd",
+      "meaning": "Gör själv / placera manuellt",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/hand.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "heart",
+      "category": "status",
+      "meaning": "Favorit",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "fylld där konventionen kräver",
+      "usages": 6,
+      "master_svg": "assets/icons/heart.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "house",
+      "category": "objekt",
+      "meaning": "Hemma (närvaro)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/house.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "image",
+      "category": "övrigt",
+      "meaning": "Bild",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 12,
+      "master_svg": "assets/icons/image.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "info",
+      "category": "status",
+      "meaning": "Information",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 30,
+      "master_svg": "assets/icons/info.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "link",
+      "category": "åtgärd",
+      "meaning": "Kopiera länk",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 9,
+      "master_svg": "assets/icons/link.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "list",
+      "category": "objekt",
+      "meaning": "Lista / välj själv",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/list.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "list-check",
+      "category": "åtgärd",
+      "meaning": "Välj flera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 3,
+      "master_svg": "assets/icons/list-check.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "lock",
+      "category": "status",
+      "meaning": "Låst / privat",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 9,
+      "master_svg": "assets/icons/lock.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "mail",
+      "category": "personer",
+      "meaning": "E-post",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 3,
+      "master_svg": "assets/icons/mail.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "message-square",
+      "category": "personer",
+      "meaning": "Meddelande",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 12,
+      "master_svg": "assets/icons/message-square.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "mic",
+      "category": "åtgärd",
+      "meaning": "Diktera (röstinmatning)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 4,
+      "master_svg": "assets/icons/mic.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "minus",
+      "category": "åtgärd",
+      "meaning": "Minska — stepparens andra hälft; plus fanns, minus saknades",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 8,
+      "master_svg": "assets/icons/minus.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "more-vertical",
+      "category": "navigation",
+      "meaning": "Fler åtgärder (kebab)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "fylld där konventionen kräver",
+      "usages": 36,
+      "master_svg": "assets/icons/more-vertical.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "move",
+      "category": "åtgärd",
+      "meaning": "Flytta en måltid mellan platser",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/move.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "paperclip",
+      "category": "åtgärd",
+      "meaning": "Bifoga",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 6,
+      "master_svg": "assets/icons/paperclip.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "pause",
+      "meaning": "Pausa en pågående timer i matlagningsläget.",
+      "category": "åtgärd",
+      "grid": "24×24, live area 20×20",
+      "stroke": "2 (≥15 px)",
+      "fill": "none",
+      "usages": 3,
+      "master_svg": "assets/icons/pause.svg",
+      "status": "levererad",
+      "approved": "Behovet kan inte lösas med ord i en 48 dp-knapp, och play fanns redan utan sin motsats. Ritad på rutnätet, granskad i 16, 20 och 24 px.",
+      "delivered": "2026-07-26"
+    },
+    {
+      "name": "pencil",
+      "category": "åtgärd",
+      "meaning": "Redigera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 17,
+      "master_svg": "assets/icons/pencil.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "pin",
+      "category": "åtgärd",
+      "meaning": "Fäst",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/pin.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "play",
+      "category": "åtgärd",
+      "meaning": "Starta matlagning",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/play.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "plus",
+      "category": "åtgärd",
+      "meaning": "Lägg till",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 59,
+      "master_svg": "assets/icons/plus.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "reaction-add",
+      "category": "åtgärd",
+      "meaning": "Lägg till en reaktion",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/reaction-add.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "refresh-cw",
+      "category": "åtgärd",
+      "meaning": "Försök igen / synka",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 25,
+      "master_svg": "assets/icons/refresh-cw.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "search",
+      "category": "åtgärd",
+      "meaning": "Sök",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 12,
+      "master_svg": "assets/icons/search.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "send",
+      "category": "åtgärd",
+      "meaning": "Skicka",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 8,
+      "master_svg": "assets/icons/send.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "server",
+      "category": "objekt",
+      "meaning": "Drift och system (adminflik)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 3,
+      "master_svg": "assets/icons/server.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "settings",
+      "category": "åtgärd",
+      "meaning": "Inställningar",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/settings.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "share-2",
+      "category": "åtgärd",
+      "meaning": "Dela",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 13,
+      "master_svg": "assets/icons/share-2.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "shield-check",
+      "category": "status",
+      "meaning": "Verifierad",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 8,
+      "master_svg": "assets/icons/shield-check.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "shopping-cart",
+      "category": "övrigt",
+      "meaning": "Inköp",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 9,
+      "master_svg": "assets/icons/shopping-cart.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "shuffle",
+      "category": "åtgärd",
+      "meaning": "Slumpa / fördela resten",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/shuffle.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "star",
+      "category": "status",
+      "meaning": "Betyg",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "fylld där konventionen kräver",
+      "usages": 88,
+      "master_svg": "assets/icons/star.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "stop",
+      "category": "åtgärd",
+      "meaning": "Stoppa inspelning i matlagningsläget",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/stop.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "swap-horizontal",
+      "category": "åtgärd",
+      "meaning": "Byt ut",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 14,
+      "master_svg": "assets/icons/swap-horizontal.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "tag",
+      "category": "objekt",
+      "meaning": "Egen tagg",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 2,
+      "master_svg": "assets/icons/tag.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "trash-2",
+      "category": "åtgärd",
+      "meaning": "Radera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 13,
+      "master_svg": "assets/icons/trash-2.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "triangle-alert",
+      "category": "status",
+      "meaning": "Varning / fel",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 42,
+      "master_svg": "assets/icons/triangle-alert.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "unlock",
+      "category": "åtgärd",
+      "meaning": "Avblockera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/unlock.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "user",
+      "category": "personer",
+      "meaning": "En person",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 6,
+      "master_svg": "assets/icons/user.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "user-minus",
+      "category": "åtgärd",
+      "meaning": "Ta bort medlem",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/user-minus.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "users",
+      "category": "personer",
+      "meaning": "Flera personer / grupp",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 15,
+      "master_svg": "assets/icons/users.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "utensils",
+      "category": "objekt",
+      "meaning": "Meny / måltid",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 33,
+      "master_svg": "assets/icons/utensils.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "volume",
+      "category": "åtgärd",
+      "meaning": "Tysta uppläsningen",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 1,
+      "master_svg": "assets/icons/volume.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "vote",
+      "category": "åtgärd",
+      "meaning": "Rösta / föreslå alternativ",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 5,
+      "master_svg": "assets/icons/vote.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "wifi-off",
+      "category": "status",
+      "meaning": "Offline",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 13,
+      "master_svg": "assets/icons/wifi-off.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "x",
+      "category": "navigation",
+      "meaning": "Stäng",
+      "grid": "24×24, live area 20×20",
+      "stroke": "2,2 (≤14 px)",
+      "fill": "none",
+      "usages": 61,
+      "master_svg": "assets/icons/x.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "zap",
+      "category": "status",
+      "meaning": "Snabbt",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 4,
+      "master_svg": "assets/icons/zap.svg",
+      "status": "levererad"
+    }
+  ],
+  "path": "assets/icons/",
+  "diet_icons": {
+    "decision": "Butlery har inga kostikoner.",
+    "rationale": "Kost och allergener är säkerhetsinformation. En glyf kan inte bära skillnaden mellan säker, osäker och okänd, och feltolkas i små storlekar. Kost visas därför alltid som ord (chip eller rad) och säkerhetsstatus alltid som ord + statusfärg + statusglyf ur UI-familjen (circle-check, triangle-alert, info).",
+    "closes": "open_p0 i version 1.1"
+  },
+  "lint": {
+    "unknown_icon_names": [],
+    "source_date": "2026-08-05",
+    "note": "Fjorton mastrar ritade och SVG-kontraktet infört i Fas 1. Fas 1 (tredje vändan): de fjorton posterna stod kvar som \"att rita\" trots att filerna fanns — statusen är normaliserad till levererad och T-05 mäter nu status mot filnärvaro. Fältet hette \"generated\" men bar tokens.date; det heter source_date för att inte påstå en klocktid."
+  },
+  "contract": {
+    "$note": "SVG-kontraktet per familj. Mäts av T-05. Fas 1: formen var tidigare bara prosa. Undantag deklareras per ikon — en glyf som avviker utan post här är ett fel.",
+    "ui_family": {
+      "viewBox": "0 0 24 24",
+      "width": "24",
+      "height": "24",
+      "fill": "none",
+      "stroke": "currentColor",
+      "stroke-width": "1.75",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round"
+    },
+    "nav_family": {
+      "viewBox": "0 0 160 160",
+      "width": "160",
+      "height": "160",
+      "fill": "none",
+      "stroke": "currentColor",
+      "stroke-width": "7",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round"
+    },
+    "filled": {
+      "viewBox": "0 0 24 24",
+      "width": "24",
+      "height": "24",
+      "fill": "currentColor",
+      "stroke": "none"
+    },
+    "exceptions": {
+      "drag": {
+        "variant": "filled",
+        "reason": "punktrastret läses som massa, inte som streck"
+      },
+      "heart": {
+        "variant": "filled",
+        "reason": "gillamarkeringens fyllda tillstånd är dess betydelse"
+      },
+      "more-vertical": {
+        "variant": "filled",
+        "reason": "tre punkter — streck skulle bli ringar"
+      },
+      "play": {
+        "variant": "filled",
+        "reason": "uppspelningstriangeln är massiv i alla plattformskonventioner"
+      },
+      "star": {
+        "variant": "filled",
+        "reason": "betygsstjärnans fyllda tillstånd är dess betydelse"
+      },
+      "check": {
+        "stroke-width": "2.2",
+        "reason": "bocken bär hela kryssrutans avläsning och behöver tyngd (B-37)"
+      },
+      "x": {
+        "stroke-width": "2.2",
+        "reason": "stängkrysset paras med bocken och måste ha samma tyngd"
+      },
+      "pause": {
+        "stroke-width": "2",
+        "reason": "två parallella streck — 1,75 gav ojämn gråton mot play"
+      }
+    }
+  },
+  "$contractNote": "SVG-kontraktet för ui- och nav-familjen. Mäts av T-05. Fas 1: formen var tidigare bara beskriven i prosa och manuellt kontrollerad."
+}

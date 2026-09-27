@@ -9,6 +9,8 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/rule_condition_card.dart';
 
 /// Bottom sheet that allows creating or editing a [PersonalTagRule].
@@ -288,7 +290,10 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
           fit: FlexFit.loose,
           child: TextButton.icon(
             onPressed: _addCondition,
-            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.plus,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.commonAdd),
           ),
         ),

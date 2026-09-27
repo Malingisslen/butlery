@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/scaffolds/tabbed_scaffold.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -131,7 +133,7 @@ void main() {
   testWidgets('floatingActionButton forwards to BaseScaffold', (tester) async {
     final fab = FloatingActionButton(
       onPressed: () {},
-      child: const Icon(Icons.add),
+      child: const ButleryIcon(ButleryIcons.plus),
     );
     await tester.pumpWidget(
       _wrap(
@@ -147,7 +149,7 @@ void main() {
       ),
     );
     expect(find.byType(FloatingActionButton), findsOneWidget);
-    expect(find.byIcon(Icons.add), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
   });
 
   testWidgets('actions list forwards to BaseScaffold AppBar', (tester) async {
@@ -160,12 +162,15 @@ void main() {
             tabs: const [Tab(text: 'A')],
             tabViews: const [Text('view A')],
             actions: [
-              IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.search),
+                onPressed: () {},
+              ),
             ],
           ),
         ),
       ),
     );
-    expect(find.byIcon(Icons.search), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.search), findsOneWidget);
   });
 }

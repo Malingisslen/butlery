@@ -10,6 +10,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
 /// Dialog for editing an existing group
@@ -125,7 +127,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
               // Header
               DialogHeader(
                 title: context.l10n.socialEditGroup,
-                icon: Icons.edit,
+                icon: ButleryIcons.pencil,
                 onClose: () => Navigator.of(context).pop(),
               ),
 
@@ -155,7 +157,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         controller: _nameController,
                         decoration: InputDecoration(
                           labelText: '${context.l10n.socialGroupName} *',
-                          prefixIcon: const Icon(Icons.group),
+                          prefixIcon: const ButleryIcon(ButleryIcons.users),
                         ),
                         // BUT-517: chain content-filter onto group-name rules.
                         validator: FormValidators.combine([
@@ -176,7 +178,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         decoration: InputDecoration(
                           labelText: context.l10n.groupDescriptionLabel,
                           hintText: context.l10n.groupDescriptionHint,
-                          prefixIcon: const Icon(Icons.description),
+                          prefixIcon: const ButleryIcon(Icons.description),
                         ),
                         // BUT-517
                         validator: FormValidators.contentFilter(
