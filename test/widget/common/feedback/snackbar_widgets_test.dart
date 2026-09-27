@@ -74,7 +74,10 @@ void main() {
         expect(find.byType(SnackBar), findsOneWidget);
       });
 
-      testWidgets('should display check circle icon', (
+      // Q4-01 = B (produktbeslut 2026-09-24): a confirmation carries
+      // "Stäng" (content-style-guide.md:97) and is the ink snackbar
+      // (Komponentark v1:300, no status fill).
+      testWidgets('carries Stäng and no status icon', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(createTestApp());
@@ -82,10 +85,11 @@ void main() {
         await tester.tap(find.text('Success'));
         await tester.pump();
 
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.text('Stäng'), findsOneWidget);
+        expect(find.byIcon(Icons.check_circle), findsNothing);
       });
 
-      testWidgets('should use success background color', (
+      testWidgets('is the ink snackbar, with no status colour', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(createTestApp());
@@ -94,7 +98,18 @@ void main() {
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.backgroundColor, equals(capturedButleryColors.success));
+        expect(snackBar.backgroundColor, isNull);
+        expect(find.byType(InkSnackBar), findsOneWidget);
+      });
+
+      testWidgets('closes by itself', (WidgetTester tester) async {
+        await tester.pumpWidget(createTestApp());
+
+        await tester.tap(find.text('Success'));
+        await tester.pump();
+
+        final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+        expect(snackBar.persist, isFalse);
       });
 
       testWidgets('should have floating behavior', (WidgetTester tester) async {
@@ -107,14 +122,14 @@ void main() {
         expect(snackBar.behavior, equals(SnackBarBehavior.floating));
       });
 
-      testWidgets('should have 3 second duration', (WidgetTester tester) async {
+      testWidgets('should have 5 second duration', (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Success'));
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.duration, equals(const Duration(seconds: 3)));
+        expect(snackBar.duration, equals(const Duration(seconds: 5)));
       });
 
       testWidgets('should display custom message', (WidgetTester tester) async {
@@ -175,18 +190,6 @@ void main() {
           find.byType(Expanded),
           findsWidgets,
         ); // Text is wrapped in Expanded
-      });
-
-      testWidgets('should have correct duration setting', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpWidget(createTestApp());
-
-        await tester.tap(find.text('Success'));
-        await tester.pump();
-
-        final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.duration, equals(const Duration(seconds: 3)));
       });
     });
 
@@ -353,20 +356,6 @@ void main() {
     });
 
     group('Icon Styling', () {
-      testWidgets('should show success icon with correct styling', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpWidget(createTestApp());
-
-        await tester.tap(find.text('Success'));
-        await tester.pump();
-
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
-        final icon = tester.widget<Icon>(find.byIcon(Icons.check_circle));
-        expect(icon.size, equals(AppDimensions.iconSizeM));
-        expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
-      });
-
       testWidgets('should show warning icon with correct styling', (
         WidgetTester tester,
       ) async {

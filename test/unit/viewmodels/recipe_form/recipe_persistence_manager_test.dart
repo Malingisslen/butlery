@@ -349,4 +349,28 @@ void main() {
       },
     );
   });
+
+  // BUT-2161: the recipe is written before the draft is cleared. A cleanup
+  // that throws must not report the save as failed: the user would press
+  // "Försök igen" and could create a duplicate.
+  group('draft cleanup after a save (BUT-2161)', () {
+    test('a cleanup that throws still returns the saved recipe', () async {
+      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+        (_) async => RecipeOperationResult.success('Recipe saved'),
+      );
+      when(
+        () => mockState.clearCurrentDraft(),
+      ).thenAnswer((_) async => throw StateError('prefs unavailable'));
+
+      final result = await manager.saveRecipe(
+        isCollaborative: false,
+        onNotify: () {},
+      );
+
+      expect(result, isNotNull);
+      verify(() => mockState.clearCurrentDraft()).called(1);
+      verifyNever(() => mockState.setError(any()));
+      verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
+    });
+  });
 }

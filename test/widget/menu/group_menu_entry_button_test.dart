@@ -153,10 +153,12 @@ void main() {
     await tapEntry(tester);
 
     expect(find.text('Du är inte med i någon grupp än.'), findsOneWidget);
-    // Informational, not an error: `showError` would draw its own dismiss
-    // action ("Stäng") and read as something having gone wrong.
+    // Informational, not an error: it carries "Stäng" as every
+    // confirmation does (Q4-01 = B, produktbeslut 2026-09-24) and closes by
+    // itself, where an error would stay until acted on.
     expect(find.byType(InkSnackBar), findsOneWidget);
-    expect(find.byType(InkSnackBarAction), findsNothing);
+    expect(find.text('Stäng'), findsOneWidget);
+    expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isFalse);
     expect(
       find.byType(GroupWeeklyMenuView),
       findsNothing,

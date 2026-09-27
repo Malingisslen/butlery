@@ -9,32 +9,12 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 /// SnackbarWidgets - Snackbar utility widgets
 /// Provides consistent snackbar implementations for different message types.
 class SnackbarWidgets {
-  /// Show success snackbar
+  /// A confirmation: the ink snackbar with "Stäng" that closes by itself
+  /// ([SnackBarUtils.showSuccess]; Q4-01 = B, produktbeslut 2026-09-24;
+  /// content-style-guide.md:97). It used to be a green status fill, which
+  /// Komponentark v1:300 rules out ("Aldrig fylld yta i statusfärg").
   static void showSuccessSnackbar(BuildContext context, String message) {
-    final cs = Theme.of(context).colorScheme;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: cs.surfaceContainerHighest,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Text(
-                message,
-                style: AppTextStyles.bodyLargeLight,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: context.butleryColors.success,
-        behavior: SnackBarBehavior.floating,
-        duration: AppDimensions.snackbarDuration,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, message);
   }
 
   /// Show error snackbar: the ink failure snackbar with "Stäng"

@@ -18163,4 +18163,32 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeSuggestionLoading => 'Hämtar förslaget …';
+
+  @override
+  String recipeAddCountToShoppingList(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lägg $count varor i inköpslistan',
+      one: 'Lägg 1 vara i inköpslistan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuOverflowDiscardAction => 'Släng resten';
+
+  @override
+  String weeklyMenuOverflowDiscarded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter slängdes ur brickan',
+      one: '1 rätt slängdes ur brickan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pantryItemAmountUnknown => 'har hemma';
 }

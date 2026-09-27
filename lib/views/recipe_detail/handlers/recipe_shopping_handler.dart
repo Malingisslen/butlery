@@ -14,25 +14,69 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/shopping/recipe_pantry_check.dart';
 
 /// Recipe shopping list action handler
 /// Handles shopping list generation from recipe ingredients with portion scaling.
 class RecipeShoppingHandler {
+  /// Q4-03 = A (produktbeslut 2026-09-24): the items the button adds, at
+  /// [portions]. With a known [pantry], what it covers is left off or
+  /// lessened ([RecipePantryCheck.toBuy]); the button's count is the
+  /// length of this list. With no pantry, or when the pantry covers
+  /// everything, every ingredient is added, as before, and the button says
+  /// "Lägg i inköpslistan" (interpretation: the decision names no text for
+  /// zero, and nothing is left off on a guess).
+  static List<UnifiedShoppingItem> itemsToAdd(
+    Recipe recipe, {
+    required int portions,
+    List<PantryItem>? pantry,
+  }) {
+    final all = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+      recipe,
+      portions: portions,
+    );
+    if (pantry == null) return all;
+    final toBuy = RecipePantryCheck.toBuy(all, pantry);
+    return toBuy.isEmpty ? all : toBuy;
+  }
+
+  /// Q4-03: how many items the button adds, or null when the pantry is not
+  /// known or covers everything (the button then says "Lägg i
+  /// inköpslistan").
+  static int? countToBuy(
+    Recipe recipe, {
+    required int portions,
+    List<PantryItem>? pantry,
+  }) {
+    if (pantry == null) return null;
+    final all = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+      recipe,
+      portions: portions,
+    );
+    final count = RecipePantryCheck.toBuy(all, pantry).length;
+    return count == 0 ? null : count;
+  }
+
   /// Show confirmation dialog with ingredient preview before adding to shopping list.
   /// UI Redesign: FAB triggers this dialog first to show what will be added.
   static Future<void> showAddToCartConfirmation(
     BuildContext context, {
     required int currentPortions,
+    List<PantryItem>? pantry,
   }) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
     final recipe = viewModel.recipe;
 
-    // Generate shopping items from recipe
-    final shoppingItems = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+    // The items the button counted (Q4-03).
+    final shoppingItems = itemsToAdd(
       recipe,
       portions: currentPortions,
+      pantry: pantry,
     );
 
     if (shoppingItems.isEmpty) {
@@ -119,6 +163,7 @@ class RecipeShoppingHandler {
     await generateShoppingListFromRecipe(
       context,
       currentPortions: currentPortions,
+      pantry: pantry,
     );
   }
 
@@ -141,6 +186,7 @@ class RecipeShoppingHandler {
   static Future<void> generateShoppingListFromRecipe(
     BuildContext context, {
     required int currentPortions,
+    List<PantryItem>? pantry,
   }) async {
     if (!context.mounted) return;
 
@@ -149,12 +195,12 @@ class RecipeShoppingHandler {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
       final recipe = viewModel.recipe;
 
-      // Generate shopping items from recipe using current portions
-      final shoppingItems =
-          ShoppingListGenerator.generateShoppingItemsFromRecipe(
-            recipe,
-            portions: currentPortions,
-          );
+      // The items the button counted (Q4-03), at the current portions.
+      final shoppingItems = itemsToAdd(
+        recipe,
+        portions: currentPortions,
+        pantry: pantry,
+      );
 
       if (shoppingItems.isEmpty) {
         if (!context.mounted) return;

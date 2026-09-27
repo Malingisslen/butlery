@@ -279,7 +279,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         if (!_disposed) {
           // BUT-1138: await the draft cleanup so the delete completes
           // before any follow-up scheduled save can race against it.
-          await _state.clearCurrentDraft();
+          // BUT-2161: the recipe is saved; a failed cleanup never turns
+          // that into a failure.
+          await _clearDraftAfterSave();
           AppLogger.info(
             '✅ Save operation completed successfully: ${result.id}',
           );
@@ -309,6 +311,26 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       }
 
       AppLogger.info('🔓 Atomic save operation completed and lock released');
+    }
+  }
+
+  /// BUT-2161: clears the draft once the recipe is written. The write has
+  /// landed, so a cleanup that throws (a SharedPreferences failure on a real
+  /// device) is logged and left: reporting "Kunde inte spara recept" for a
+  /// recipe that exists invites "Försök igen" and a duplicate. The draft left
+  /// behind is removed at the next clean save or expires after its 30 days
+  /// (produktregler.md:170, D-01).
+  Future<void> _clearDraftAfterSave() async {
+    try {
+      await _state.clearCurrentDraft();
+    } catch (e, st) {
+      AppLogger.error(
+        'Recipe saved, but its draft could not be cleared; it expires '
+        'after 30 days',
+        e,
+        null,
+        st,
+      );
     }
   }
 
@@ -354,7 +376,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       } else {
         if (!_disposed) {
           // BUT-1138: await draft cleanup — same race as the save path.
-          await _state.clearCurrentDraft();
+          await _clearDraftAfterSave();
         }
       }
 

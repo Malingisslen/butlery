@@ -49,23 +49,38 @@ class ShoppingCheckoffPantryService {
     // Dedup: aggregate into an existing pantry item with the same ingredient
     // name (case-insensitive) + unit, instead of creating a duplicate entry.
     final existing = await _pantryService.getAll(userId);
-    final match = existing.firstWhereOrNull(
-      (p) =>
-          p.ingredientName.toLowerCase() == item.name.toLowerCase() &&
-          p.unit == item.unit,
-    );
+    final name = item.name.toLowerCase();
+    final sameName = existing
+        .where((p) => p.ingredientName.toLowerCase() == name)
+        .toList();
+    final match = sameName.firstWhereOrNull((p) => p.unit == item.unit);
 
-    if (match != null) {
+    if (match != null && match.quantity != null) {
       // What was bought is added as a relative change, never as a new total
-      // computed here (produktregler.md:146): a tick on another device in the
-      // meantime is kept. A match without an amount ("har hemma") stays
-      // without one and the bought amount is dropped. Interim interpretation:
-      // produktregler.md:148 only says null never overwrites a known amount;
-      // whether a known bought amount should replace "har hemma" is an open
-      // product question.
+      // computed here (produktregler.md:146): a tick on another device in
+      // the meantime is kept.
       await _pantryService.adjustQuantity(userId, match, item.amount);
-    } else {
-      await _pantryService.addFromShoppingItem(userId, item);
+      return;
     }
+
+    // A row without an amount ("har hemma", produktregler.md:148) has
+    // nothing to add to. Q5-02 = A (produktbeslut 2026-09-24): it takes the
+    // bought amount, in the bought unit, since "har hemma" named no unit to
+    // keep. Interpretation: that holds for a same-name row in any unit; a
+    // row with a known amount in another unit is still a row of its own.
+    final unknown =
+        match ?? sameName.firstWhereOrNull((p) => p.quantity == null);
+    if (unknown != null) {
+      // Nothing known was bought: "har hemma" stays as it is.
+      if (item.amount <= 0) return;
+      await _pantryService.updateItem(
+        userId,
+        unknown.copyWith(quantity: item.amount, unit: item.unit),
+        previous: unknown,
+      );
+      return;
+    }
+
+    await _pantryService.addFromShoppingItem(userId, item);
   }
 }

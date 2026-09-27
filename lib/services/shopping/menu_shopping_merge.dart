@@ -262,6 +262,40 @@ class MenuShoppingMergePlanner {
     mark: mark,
   );
 
+  /// Q4-03: the same deduction for one row outside a merge (the recipe's
+  /// "Lägg {n} varor i inköpslistan"), so a recipe and a week count against
+  /// the pantry by one rule. [pantry] is the whole pantry; the rows are
+  /// matched by normalised name as in [preview]. Returns the amount still
+  /// to buy: null when enough is at home, [amount] unchanged when nothing
+  /// can be subtracted (no match, an unknown amount, another unit family,
+  /// past its date), else the difference.
+  static ({bool covered, double? amount}) toBuy({
+    required String name,
+    required double? amount,
+    required String unit,
+    required List<PantryItem> pantry,
+  }) {
+    final key = SwedishCharacterNormalizer.normalize(name);
+    final matches = [
+      for (final item in pantry)
+        if (SwedishCharacterNormalizer.normalize(item.ingredientName) == key)
+          item,
+    ];
+    if (matches.isEmpty) return (covered: false, amount: amount);
+    final row = AggregatedShoppingItem(
+      name: name,
+      amount: amount,
+      unit: unit.toLowerCase().trim(),
+      category: '',
+      sourceCount: 1,
+    );
+    return switch (_deduct(row, matches)) {
+      _Covered() => (covered: true, amount: null),
+      _Remaining(:final amount) => (covered: false, amount: amount),
+      _Marked() => (covered: false, amount: amount),
+    };
+  }
+
   /// produktregler.md:224-234 (§ 4.2): a known amount at home is subtracted
   /// and only the difference goes on the list; enough at home leaves the row
   /// off; an unknown amount, a unit that cannot be converted, or a row

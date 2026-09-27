@@ -185,6 +185,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             onPlaceInNextWeek: vm.canPlaceOverflowInNextWeek
                 ? () => _onPlaceOverflowInNextWeek(context, vm)
                 : null,
+            onDiscard: () => _onDiscardOverflow(context, vm),
           ),
         // BUT-1611: "vem är hemma?" overview — only for a household with family,
         // and never while multi-select is active (that owns the header row).
@@ -263,6 +264,18 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     SnackBarUtils.showSuccess(
       context,
       context.l10n.weeklyMenuCopyToNextResult(copied),
+    );
+  }
+
+  /// Q5-01: "Släng resten" empties the tray at once, with the 7 s Ångra of
+  /// a class-1 delete (produktregler.md:131-132).
+  void _onDiscardOverflow(BuildContext context, WeeklyMenuPlanViewModel vm) {
+    final discarded = vm.discardOverflow();
+    if (discarded == null) return;
+    SnackBarUtils.showUndo(
+      context,
+      context.l10n.weeklyMenuOverflowDiscarded(discarded.count),
+      onUndo: () => vm.undoDiscardOverflow(discarded),
     );
   }
 

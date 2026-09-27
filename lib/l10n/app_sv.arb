@@ -13816,5 +13816,31 @@
   "recipeSuggestionLoading": "Hämtar förslaget …",
   "@recipeSuggestionLoading": {
     "description": "P5-U27b: plate line text while the suggestion is compared with the recipe (content-style-guide.md:63)."
+  },
+  "recipeAddCountToShoppingList": "{count, plural, =1{Lägg 1 vara i inköpslistan} other{Lägg {count} varor i inköpslistan}}",
+  "@recipeAddCountToShoppingList": {
+    "description": "Q4-03 = A: the recipe's add-to-shopping-list button, counting the ingredients the pantry does not already cover (content-style-guide.md:76).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowDiscardAction": "Släng resten",
+  "@weeklyMenuOverflowDiscardAction": {
+    "description": "Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131)."
+  },
+  "weeklyMenuOverflowDiscarded": "{count, plural, =1{1 rätt slängdes ur brickan} other{{count} rätter slängdes ur brickan}}",
+  "@weeklyMenuOverflowDiscarded": {
+    "description": "Q5-01 = A: undo snackbar after Släng resten.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantryItemAmountUnknown": "har hemma",
+  "@pantryItemAmountUnknown": {
+    "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
   }
 }

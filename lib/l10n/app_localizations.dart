@@ -29938,6 +29938,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar förslaget …'**
   String get recipeSuggestionLoading;
+
+  /// Q4-03 = A: the recipe's add-to-shopping-list button, counting the ingredients the pantry does not already cover (content-style-guide.md:76).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lägg 1 vara i inköpslistan} other{Lägg {count} varor i inköpslistan}}'**
+  String recipeAddCountToShoppingList(int count);
+
+  /// Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng resten'**
+  String get weeklyMenuOverflowDiscardAction;
+
+  /// Q5-01 = A: undo snackbar after Släng resten.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt slängdes ur brickan} other{{count} rätter slängdes ur brickan}}'**
+  String weeklyMenuOverflowDiscarded(int count);
+
+  /// Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148).
+  ///
+  /// In sv, this message translates to:
+  /// **'har hemma'**
+  String get pantryItemAmountUnknown;
 }
 
 class _AppLocalizationsDelegate

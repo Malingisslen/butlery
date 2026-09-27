@@ -128,6 +128,11 @@ void main() {
     );
     expect(find.text('våra riktlinjer'), findsOneWidget);
     expect(find.textContaining('bekräftar', findRichText: true), findsNothing);
+    // Q5-04 = B (produktbeslut 2026-09-24): no response-time promise. The
+    // drawing's "Vi svarar inom ett dygn" is left out until the team knows
+    // it can keep it.
+    expect(find.textContaining('dygn', findRichText: true), findsNothing);
+    expect(find.textContaining('Vi svarar', findRichText: true), findsNothing);
   });
 
   testWidgets('Annat says the description is required', (tester) async {
