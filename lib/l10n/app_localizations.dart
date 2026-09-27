@@ -14152,13 +14152,13 @@ abstract class AppLocalizations {
   /// No description provided for @navigationMenu.
   ///
   /// In sv, this message translates to:
-  /// **'meny'**
+  /// **'Meny'**
   String get navigationMenu;
 
   /// No description provided for @navigationShopping.
   ///
   /// In sv, this message translates to:
-  /// **'inköp'**
+  /// **'Inköp'**
   String get navigationShopping;
 
   /// No description provided for @navigationAddNew.
@@ -29990,13 +29990,13 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055).
   ///
   /// In sv, this message translates to:
-  /// **'hem'**
+  /// **'Hem'**
   String get navigationHome;
 
   /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer).
   ///
   /// In sv, this message translates to:
-  /// **'mer'**
+  /// **'Mer'**
   String get navigationMore;
 
   /// P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält).
@@ -30400,6 +30400,174 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.'**
   String get cookingNoStepsBodyOthersNoIngredients;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'God morgon'**
+  String get hemGreetingMorning;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hej'**
+  String get hemGreetingDay;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'God kväll'**
+  String get hemGreetingEvening;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278).
+  ///
+  /// In sv, this message translates to:
+  /// **'God natt'**
+  String get hemGreetingNight;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välkommen'**
+  String get hemGreetingWelcome;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.
+  ///
+  /// In sv, this message translates to:
+  /// **'{greeting}, {name}'**
+  String hemGreetingWithName(String greeting, String name);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ikväll'**
+  String get hemTonight;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String hemMetaMinutes(int minutes);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} port.'**
+  String hemMetaPortions(int count);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja laga'**
+  String get hemStartCooking;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt rätt'**
+  String get hemSwapDish;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'allt i skafferiet'**
+  String get hemAllInPantry;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar veckans plan …'**
+  String get hemLoadingPlan;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckans plan kunde inte hämtas. Servern svarade inte.'**
+  String get hemPlanErrorWhat;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din plan är sparad och ligger kvar – det är hämtningen som misslyckades, inte planen.'**
+  String get hemPlanErrorPreserved;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa sparad plan'**
+  String get hemShowSavedPlan;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).
+  ///
+  /// In sv, this message translates to:
+  /// **'Planen hämtades {time} – kan ha ändrats av någon annan sedan dess.'**
+  String hemPlanFetchedAt(String time);
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery blir användbar med ett recept'**
+  String get hemEmptyTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg in något du redan lagar ofta. Sedan kan Butlery planera veckan, räkna om portioner och skriva inköpslistan åt dig.'**
+  String get hemEmptyBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbaste vägarna'**
+  String get hemEmptyShortcuts;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in en länk'**
+  String get hemEmptyLinkTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'från en receptsida, YouTube eller Instagram'**
+  String get hemEmptyLinkBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Fota en receptsida'**
+  String get hemEmptyPhotoTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'ur en kokbok eller ett urklipp'**
+  String get hemEmptyPhotoBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv själv'**
+  String get hemEmptyWriteTitle;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'för det du lagar utan recept'**
+  String get hemEmptyWriteBody;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288).
+  ///
+  /// In sv, this message translates to:
+  /// **'Har hushållet allergier? Ställ in dem först – då planerar Butlery aldrig något osäkert.'**
+  String get hemEmptyAllergyNote;
+
+  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in allergener'**
+  String get hemEmptyAllergyLink;
 }
 
 class _AppLocalizationsDelegate

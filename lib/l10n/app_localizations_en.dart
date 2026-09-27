@@ -8425,10 +8425,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navigationRecipes => 'recipes';
 
   @override
-  String get navigationMenu => 'menu';
+  String get navigationMenu => 'Menu';
 
   @override
-  String get navigationShopping => 'shopping';
+  String get navigationShopping => 'Shopping';
 
   @override
   String get navigationAddNew => 'add new';
@@ -18179,10 +18179,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get navigationHome => 'home';
+  String get navigationHome => 'Home';
 
   @override
-  String get navigationMore => 'more';
+  String get navigationMore => 'More';
 
   @override
   String get navigationAddAction => 'Add';
@@ -18443,4 +18443,100 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cookingNoStepsBodyOthersNoIngredients =>
       'Nobody has written how to make it yet. Save your own copy and write the steps there.';
+
+  @override
+  String get hemGreetingMorning => 'Good morning';
+
+  @override
+  String get hemGreetingDay => 'Hi';
+
+  @override
+  String get hemGreetingEvening => 'Good evening';
+
+  @override
+  String get hemGreetingNight => 'Good night';
+
+  @override
+  String get hemGreetingWelcome => 'Welcome';
+
+  @override
+  String hemGreetingWithName(String greeting, String name) {
+    return '$greeting, $name';
+  }
+
+  @override
+  String get hemTonight => 'Tonight';
+
+  @override
+  String hemMetaMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String hemMetaPortions(int count) {
+    return '$count serv.';
+  }
+
+  @override
+  String get hemStartCooking => 'Start cooking';
+
+  @override
+  String get hemSwapDish => 'Change dish';
+
+  @override
+  String get hemAllInPantry => 'all in the pantry';
+
+  @override
+  String get hemLoadingPlan => 'Fetching this week\'s plan …';
+
+  @override
+  String get hemPlanErrorWhat =>
+      'This week\'s plan could not be fetched. The server did not answer.';
+
+  @override
+  String get hemPlanErrorPreserved =>
+      'Your plan is saved and still there – it was the fetch that failed, not the plan.';
+
+  @override
+  String get hemShowSavedPlan => 'Show saved plan';
+
+  @override
+  String hemPlanFetchedAt(String time) {
+    return 'The plan was fetched at $time – someone else may have changed it since.';
+  }
+
+  @override
+  String get hemEmptyTitle => 'Butlery becomes useful with one recipe';
+
+  @override
+  String get hemEmptyBody =>
+      'Add something you already cook often. Then Butlery can plan the week, scale portions and write the shopping list for you.';
+
+  @override
+  String get hemEmptyShortcuts => 'Quickest ways';
+
+  @override
+  String get hemEmptyLinkTitle => 'Paste a link';
+
+  @override
+  String get hemEmptyLinkBody => 'from a recipe page, YouTube or Instagram';
+
+  @override
+  String get hemEmptyPhotoTitle => 'Photograph a recipe page';
+
+  @override
+  String get hemEmptyPhotoBody => 'from a cookbook or a clipping';
+
+  @override
+  String get hemEmptyWriteTitle => 'Write it yourself';
+
+  @override
+  String get hemEmptyWriteBody => 'for what you cook without a recipe';
+
+  @override
+  String get hemEmptyAllergyNote =>
+      'Does the household have allergies? Set them first – then Butlery never plans anything unsafe.';
+
+  @override
+  String get hemEmptyAllergyLink => 'Set allergens';
 }

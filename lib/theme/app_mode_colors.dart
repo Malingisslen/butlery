@@ -88,4 +88,19 @@ abstract final class AppModeColors {
   static Color paperWash(Brightness brightness) => _isDark(brightness)
       ? AppColorsDark.overlayWhite40
       : AppColors.overlayWhite40;
+
+  // On surface.ink. The ink surface is #24382C in both modes
+  // (tokens.json:112-115), so what stands on it takes one value in both
+  // modes, whatever the page's brightness.
+
+  /// semantic text.secondary (dark) #93A48D, delivered as the generated dark
+  /// member greenMuted ("Nav ovald"), in both modes. The unchosen tabs of
+  /// the ink bar (Komponentark v1:663-666) and quiet text on an ink card
+  /// (Skarmar v12 del 1 #hemrecept :137). 4.73:1 on #24382C.
+  static Color textSecondaryOnInk() => AppColorsDark.greenMuted;
+
+  /// palette.saffronLight #E09D50, the generated member textAccentOnInk, in
+  /// both modes: the accent text on ink (Komponentark v1:747; Skarmar v12
+  /// del 1 #hemrecept :134, the card's eyebrow). 5.43:1 on #24382C.
+  static Color textAccentOnInk() => AppColors.textAccentOnInk;
 }

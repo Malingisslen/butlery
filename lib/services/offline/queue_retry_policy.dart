@@ -1,15 +1,15 @@
 // lib/services/offline/queue_retry_policy.dart
 //
-// P6-U08b: the offline queue's retry rules (produktregler.md:183-189, § 3.1),
+// P6-U08b: the offline queue's retry rules (produktregler.md:182-188, § 3.1),
 // as pure functions the sync manager and the queue view share.
 //
-//   :186  "FIFO per entitet, parallellt mellan entiteter."
-//   :187  "En post kan deklarera `dependsOn: [opId]` … Om beroendet permanent
+//   :185  "FIFO per entitet, parallellt mellan entiteter."
+//   :186  "En post kan deklarera `dependsOn: [opId]` … Om beroendet permanent
 //          misslyckas markeras hela kedjan som misslyckad — aldrig halvvägs."
-//   :188  "Exponentiell backoff 2 s → 4 s → 8 s → 30 s → 2 min → 10 min, med
+//   :187  "Exponentiell backoff 2 s → 4 s → 8 s → 30 s → 2 min → 10 min, med
 //          jitter. Max 24 h, därefter permanent fel. Ingen omförsöksstorm vid
 //          återkommande nät."
-//   :189  "4xx utom 408/429 försöks aldrig igen."
+//   :188  "4xx utom 408/429 försöks aldrig igen."
 library;
 
 import 'dart:math';
@@ -65,16 +65,18 @@ final Random _random = Random();
 /// * invalid-argument, failed-precondition, out-of-range, already-exists
 ///   (400/409) → [QueuedChangeReason.unknown] ("Servern tog inte emot
 ///   ändringen")
-/// * unauthenticated (401) → [QueuedChangeReason.unknown]: permanent, as
-///   "4xx utom 408/429 försöks aldrig igen" says (produktregler.md:188).
-///   Interpretation: its cause reads "Servern tog inte emot ändringen", not
-///   "Du har inte längre behörighet", since a 401 for the signed-in user
-///   is usually a token being renewed. Whether a 401 should instead be
-///   retried within the 24 h is a product-owner question (open, P6-U08b).
+/// * unauthenticated (401) is NOT permanent — the one exception to
+///   "4xx utom 408/429 försöks aldrig igen" (produktregler.md:188). For the
+///   signed-in user a 401 means the ID token is being refreshed, and the
+///   next attempt carries the new token. It is retried like any transient
+///   failure and still becomes a permanent failure when the 24 h run out
+///   (produktregler.md:187, [queueRetriesExhausted]). Decided by the package
+///   6 lead (track P6-W4, QUEUE-401); permission-denied (403) stays
+///   permanent.
 ///
-/// Transient: unavailable, deadline-exceeded (408), resource-exhausted and
-/// quota-exceeded (429), aborted, internal, unknown, cancelled, and every
-/// error that is not a FirebaseException (a socket that closed, a timeout).
+/// Transient: unauthenticated (401, above), unavailable, deadline-exceeded
+/// (408), resource-exhausted and quota-exceeded (429), aborted, internal,
+/// unknown, cancelled, and every error that is not a FirebaseException (a socket that closed, a timeout).
 QueuedChangeReason? permanentFailureReason(Object error) {
   if (error is! FirebaseException) return null;
   return switch (error.code) {
@@ -87,8 +89,7 @@ QueuedChangeReason? permanentFailureReason(Object error) {
     'invalid-argument' ||
     'failed-precondition' ||
     'out-of-range' ||
-    'already-exists' ||
-    'unauthenticated' => QueuedChangeReason.unknown,
+    'already-exists' => QueuedChangeReason.unknown,
     _ => null,
   };
 }

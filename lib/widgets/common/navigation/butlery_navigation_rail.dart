@@ -4,6 +4,10 @@
 // Skarmar v12 etapp 10 #bredskal). "Skenan bär bottenradens vokabulär: samma
 // botten, gemena etiketter, och rostmarkeringen — liggande som en list till
 // vänster om vald post", and "lägg till" is a round saffron button at the top.
+//
+// NAV-INK: the same ink surface as the bottom row in both modes (#bredskal
+// :72 `background:#24382c`; Komponentark v1:662), and the bottom row's
+// capitalised labels (see butlery_bottom_navigation.dart).
 library;
 
 import 'package:flutter/material.dart';
@@ -39,11 +43,12 @@ class ButleryNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final ink = NavInkColors.of(context);
     Widget entry(int index) => _RailTab(
       item: items[index],
       isSelected: currentIndex != null && index == currentIndex,
       onTap: () => onTap(index),
+      ink: ink,
     );
     // #bredskal: every destination but the last at the top, the last ("mer")
     // at the foot of the rail.
@@ -52,78 +57,86 @@ class ButleryNavigationRail extends StatelessWidget {
     return navigationLandmark(
       context: context,
       child: ColoredBox(
+        key: inkSurfaceKey,
         // The same bottom as the bottom row ("samma botten",
-        // produktregler.md:1055), which is kept on paper here. Unresolved:
-        // #bredskal (Skarmar v12 etapp 10 :72) draws the rail on surface.ink
-        // #24382c, and Komponentark v1:662 draws the bottom row on ink too;
-        // no rule line names surfaceContainerLow. Open for the product owner.
-        color: cs.surfaceContainerLow,
-        child: SafeArea(
-          right: false,
-          child: SizedBox(
-            width: width,
-            child: Column(
-              children: [
-                const SizedBox(height: AppDimensions.spacingMd),
-                Semantics(
-                  sortKey: const OrdinalSortKey(0),
-                  child: ButleryAddButton(
-                    ring: false,
-                    onPressed: onAdd ?? () => showButleryAddSheet(context),
-                  ),
-                ),
-                // #bredskal draws border.onInk #3f5145 on ink. While the rail
-                // stays on paper (open, see the surface above) the divider is
-                // border.subtle, colorScheme.outlineVariant.
-                Container(
-                  width: AppDimensions.minTouchTarget,
-                  height: 1,
-                  margin: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingMd,
-                  ),
-                  color: cs.outlineVariant,
-                ),
-                Expanded(
-                  child: navigationTabList(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < last; i++) entry(i),
-                        const Spacer(),
-                        if (last >= 0) entry(last),
-                        const SizedBox(height: AppDimensions.spacingMd),
-                      ],
+        // produktregler.md:1055): surface.ink (#bredskal :72).
+        color: ink.surface,
+        child: onInkSurface(
+          child: SafeArea(
+            right: false,
+            child: SizedBox(
+              width: width,
+              child: Column(
+                children: [
+                  const SizedBox(height: AppDimensions.spacingMd),
+                  Semantics(
+                    sortKey: const OrdinalSortKey(0),
+                    child: ButleryAddButton(
+                      ring: false,
+                      onPressed: onAdd ?? () => showButleryAddSheet(context),
                     ),
                   ),
-                ),
-              ],
+                  // #bredskal :74 draws border.onInk #3f5145 on ink, 48 × 1 px
+                  // (NavInkColors.divider says what stands in for it).
+                  Container(
+                    width: AppDimensions.minTouchTarget,
+                    height: 1,
+                    margin: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.spacingMd,
+                    ),
+                    color: ink.divider,
+                  ),
+                  Expanded(
+                    child: navigationTabList(
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < last; i++) entry(i),
+                          const Spacer(),
+                          if (last >= 0) entry(last),
+                          const SizedBox(height: AppDimensions.spacingMd),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  /// The ink surface, for tests.
+  static const Key inkSurfaceKey = ValueKey<String>('test-rail-ink-surface');
 }
 
-/// One destination in the rail: icon over the lowercase label, 64 dp tall,
-/// the saffron strip at its start when chosen (#bredskal).
+/// One destination in the rail: icon over the label, 64 dp tall, the saffron
+/// strip at its start when chosen (#bredskal).
+///
+/// Interpretation: #bredskal draws the unchosen entries in #c9d3c4 at weight
+/// 400 with 1 px tracking. The rail takes the bottom row's vocabulary
+/// ("samma vokabulär", produktregler.md:1055): #93A48D and navLabel 11/700
+/// (Komponentark v1:663; Grafisk manual v6:244 "Aldrig 400 under 12 px").
 class _RailTab extends StatelessWidget {
   const _RailTab({
     required this.item,
     required this.isSelected,
     required this.onTap,
+    required this.ink,
   });
 
   final AdaptiveNavigationItem item;
   final bool isSelected;
   final VoidCallback onTap;
+  final NavInkColors ink;
 
   static const double _minHeight = 64;
   static const double _stripWidth = 4;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final color = isSelected ? cs.onSurface : cs.onSurfaceVariant;
+    final color = isSelected ? ink.selected : ink.unselected;
     return Semantics(
       container: true,
       role: SemanticsRole.tab,
@@ -148,7 +161,7 @@ class _RailTab extends StatelessWidget {
                       top: AppDimensions.spacingSm,
                       bottom: AppDimensions.spacingSm,
                       width: _stripWidth,
-                      child: ColoredBox(color: cs.secondary),
+                      child: ColoredBox(color: ink.marker),
                     ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -165,10 +178,9 @@ class _RailTab extends StatelessWidget {
                           ),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(
-                            item.label.toLowerCase(),
+                            item.label,
                             style: AppTextStyles.navLabel.copyWith(
                               color: color,
-                              letterSpacing: 1,
                             ),
                             textAlign: TextAlign.center,
                           ),

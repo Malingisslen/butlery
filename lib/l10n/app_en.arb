@@ -5887,8 +5887,8 @@
   "messagingCancelReply": "Cancel reply",
   "messagingImagePreview": "Image",
   "navigationRecipes": "recipes",
-  "navigationMenu": "menu",
-  "navigationShopping": "shopping",
+  "navigationMenu": "Menu",
+  "navigationShopping": "Shopping",
   "navigationAddNew": "add new",
   "recipeRecipe": "Recipe",
   "recipeSharedFromApp": "Shared from another app",
@@ -13539,11 +13539,11 @@
   },
   "recipePantryAllAtHome": "Everything is at home in full, so nothing is added to the shopping list: {names}",
   "recipePantryLessened": "Less than the recipe, since some is at home: {names}",
-  "navigationHome": "home",
+  "navigationHome": "Home",
   "@navigationHome": {
     "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055)."
   },
-  "navigationMore": "more",
+  "navigationMore": "More",
   "@navigationMore": {
     "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer)."
   },
@@ -13907,5 +13907,140 @@
   "cookingNoStepsBodyOthersNoIngredients": "Nobody has written how to make it yet. Save your own copy and write the steps there.",
   "@cookingNoStepsBodyOthersNoIngredients": {
     "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
+  },
+  "hemGreetingMorning": "Good morning",
+  "@hemGreetingMorning": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278)."
+  },
+  "hemGreetingDay": "Hi",
+  "@hemGreetingDay": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278)."
+  },
+  "hemGreetingEvening": "Good evening",
+  "@hemGreetingEvening": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278)."
+  },
+  "hemGreetingNight": "Good night",
+  "@hemGreetingNight": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278)."
+  },
+  "hemGreetingWelcome": "Welcome",
+  "@hemGreetingWelcome": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom)."
+  },
+  "hemGreetingWithName": "{greeting}, {name}",
+  "@hemGreetingWithName": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hemTonight": "Tonight",
+  "@hemTonight": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268)."
+  },
+  "hemMetaMinutes": "{minutes} min",
+  "@hemMetaMinutes": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hemMetaPortions": "{count} serv.",
+  "@hemMetaPortions": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hemStartCooking": "Start cooking",
+  "@hemStartCooking": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+  },
+  "hemSwapDish": "Change dish",
+  "@hemSwapDish": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish."
+  },
+  "hemAllInPantry": "all in the pantry",
+  "@hemAllInPantry": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry."
+  },
+  "hemLoadingPlan": "Fetching this week's plan …",
+  "@hemLoadingPlan": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar)."
+  },
+  "hemPlanErrorWhat": "This week's plan could not be fetched. The server did not answer.",
+  "@hemPlanErrorWhat": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel)."
+  },
+  "hemPlanErrorPreserved": "Your plan is saved and still there – it was the fetch that failed, not the plan.",
+  "@hemPlanErrorPreserved": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what was kept (#hemfel; produktregler.md:293)."
+  },
+  "hemShowSavedPlan": "Show saved plan",
+  "@hemShowSavedPlan": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel)."
+  },
+  "hemPlanFetchedAt": "The plan was fetched at {time} – someone else may have changed it since.",
+  "@hemPlanFetchedAt": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "hemEmptyTitle": "Butlery becomes useful with one recipe",
+  "@hemEmptyTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom)."
+  },
+  "hemEmptyBody": "Add something you already cook often. Then Butlery can plan the week, scale portions and write the shopping list for you.",
+  "@hemEmptyBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom)."
+  },
+  "hemEmptyShortcuts": "Quickest ways",
+  "@hemEmptyShortcuts": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom)."
+  },
+  "hemEmptyLinkTitle": "Paste a link",
+  "@hemEmptyLinkTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyLinkBody": "from a recipe page, YouTube or Instagram",
+  "@hemEmptyLinkBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyPhotoTitle": "Photograph a recipe page",
+  "@hemEmptyPhotoTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyPhotoBody": "from a cookbook or a clipping",
+  "@hemEmptyPhotoBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyWriteTitle": "Write it yourself",
+  "@hemEmptyWriteTitle": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+  },
+  "hemEmptyWriteBody": "for what you cook without a recipe",
+  "@hemEmptyWriteBody": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+  },
+  "hemEmptyAllergyNote": "Does the household have allergies? Set them first – then Butlery never plans anything unsafe.",
+  "@hemEmptyAllergyNote": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288)."
+  },
+  "hemEmptyAllergyLink": "Set allergens",
+  "@hemEmptyAllergyLink": {
+    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
   }
 }

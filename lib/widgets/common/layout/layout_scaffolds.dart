@@ -249,13 +249,6 @@ class _SimpleLayout extends StatelessWidget {
           ? ButleryBottomNavigation(
               currentIndex: bottomNavIndex,
               items: ButleryAdaptiveNavigation.getNavigationItems(context),
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest,
-              selectedItemColor: Theme.of(context).colorScheme.primaryContainer,
-              unselectedItemColor: Theme.of(
-                context,
-              ).colorScheme.onSurfaceVariant,
               onTap: (index) {
                 final route = ButleryAdaptiveNavigation.getNavigationItems(
                   context,

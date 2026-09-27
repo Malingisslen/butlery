@@ -52,8 +52,6 @@ void main() {
         'failed-precondition',
         'out-of-range',
         'already-exists',
-        // 401: "4xx utom 408/429 försöks aldrig igen" (produktregler.md:188).
-        'unauthenticated',
       ]) {
         expect(
           permanentFailureReason(_error(code)),
@@ -61,6 +59,16 @@ void main() {
           reason: code,
         );
       }
+    });
+
+    test('401 for the signed-in user is retried: the token refreshes', () {
+      // QUEUE-401: the one exception to "4xx utom 408/429"
+      // (produktregler.md:188); the 24 h limit still applies (:187).
+      expect(permanentFailureReason(_error('unauthenticated')), isNull);
+      expect(
+        permanentFailureReason(_error('permission-denied')),
+        QueuedChangeReason.permissionDenied,
+      );
     });
 
     test('408, 429 and server trouble are retried', () {
@@ -138,6 +146,39 @@ void main() {
       expect(q.sent, isEmpty);
       expect(await q.rows(), contains('op-1'));
     });
+
+    test('a 401 is retried within the 24 h and sent once the token is '
+        'fresh', () async {
+      await q.queueRecipe('op-1', 'r1');
+      q.failWith['r1'] = _error('unauthenticated');
+
+      await q.pass();
+
+      final row = (await q.rows())['op-1']!;
+      expect(row.permanentlyFailed, isFalse);
+
+      q.failWith.remove('r1');
+      await q.pass(at: QueueHarness.t0.add(const Duration(hours: 1)));
+      expect(q.sent, ['r1']);
+    });
+
+    test(
+      'a 401 that lasts past the 24 h becomes a permanent failure',
+      () async {
+        await q.queueRecipe('op-1', 'r1');
+        q.failWith['r1'] = _error('unauthenticated');
+
+        await q.pass();
+        await q.pass(at: QueueHarness.t0.add(const Duration(hours: 25)));
+
+        final row = (await q.rows())['op-1']!;
+        expect(row.permanentlyFailed, isTrue);
+        expect(
+          QueuedChangeReason.parse(row.lastError),
+          QueuedChangeReason.retriesExhausted,
+        );
+      },
+    );
 
     test('"Försök synka nu" does not call a refused change saved', () async {
       await q.queueRecipe('op-1', 'r1');

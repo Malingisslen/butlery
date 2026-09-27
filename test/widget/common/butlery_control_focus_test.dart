@@ -92,7 +92,12 @@ Future<void> _tabInto(WidgetTester tester) async {
 }
 
 class _Case {
-  const _Case(this.build, this.box);
+  const _Case(this.build, this.box, {this.onInk = false});
+
+  /// The control stands on surface.ink in both modes (NAV-INK: the bottom
+  /// row, Komponentark v1:662), so its ring is paper in both ("papper på
+  /// mörkt", Komponentark v1:657).
+  final bool onInk;
 
   /// The control, as a view would place it.
   final Widget Function() build;
@@ -167,6 +172,7 @@ final _cases = <String, _Case>{
       ),
     ),
     () => find.byType(ButleryControlFocus).first,
+    onInk: true,
   ),
   'view tab': _Case(
     () => SizedBox(
@@ -212,8 +218,9 @@ void main() {
         final rect = tester.getRect(c.box());
         expect(rect.width, greaterThanOrEqualTo(48), reason: 'hit width');
         expect(rect.height, greaterThanOrEqualTo(48), reason: 'hit height');
+        final expected = c.onInk ? AppColorsDark.focusRing : ring;
         for (final p in _ringPoints(rect)) {
-          expect(await _pixel(tester, p), ring, reason: '$name at $p');
+          expect(await _pixel(tester, p), expected, reason: '$name at $p');
         }
       });
     }
@@ -221,16 +228,19 @@ void main() {
     testWidgets('$name: touch focus draws no ring', (tester) async {
       FocusManager.instance.highlightStrategy =
           FocusHighlightStrategy.alwaysTouch;
-      await _pump(tester, c.build());
+      // On ink the ring would be paper; the dark page keeps a paper pixel
+      // from reading as the page itself.
+      await _pump(
+        tester,
+        c.build(),
+        theme: c.onInk ? AppTheme.darkTheme : null,
+      );
       await _tabInto(tester);
 
       final rect = tester.getRect(c.box());
+      final ring = c.onInk ? AppColorsDark.focusRing : AppColors.focusRing;
       for (final p in _ringPoints(rect)) {
-        expect(
-          await _pixel(tester, p),
-          isNot(AppColors.focusRing),
-          reason: '$name at $p',
-        );
+        expect(await _pixel(tester, p), isNot(ring), reason: '$name at $p');
       }
     });
   }

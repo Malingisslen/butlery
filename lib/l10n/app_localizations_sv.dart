@@ -8438,10 +8438,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get navigationRecipes => 'recept';
 
   @override
-  String get navigationMenu => 'meny';
+  String get navigationMenu => 'Meny';
 
   @override
-  String get navigationShopping => 'inköp';
+  String get navigationShopping => 'Inköp';
 
   @override
   String get navigationAddNew => 'lägg till';
@@ -18212,10 +18212,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get navigationHome => 'hem';
+  String get navigationHome => 'Hem';
 
   @override
-  String get navigationMore => 'mer';
+  String get navigationMore => 'Mer';
 
   @override
   String get navigationAddAction => 'Lägg till';
@@ -18474,4 +18474,100 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get cookingNoStepsBodyOthersNoIngredients =>
       'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.';
+
+  @override
+  String get hemGreetingMorning => 'God morgon';
+
+  @override
+  String get hemGreetingDay => 'Hej';
+
+  @override
+  String get hemGreetingEvening => 'God kväll';
+
+  @override
+  String get hemGreetingNight => 'God natt';
+
+  @override
+  String get hemGreetingWelcome => 'Välkommen';
+
+  @override
+  String hemGreetingWithName(String greeting, String name) {
+    return '$greeting, $name';
+  }
+
+  @override
+  String get hemTonight => 'Ikväll';
+
+  @override
+  String hemMetaMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String hemMetaPortions(int count) {
+    return '$count port.';
+  }
+
+  @override
+  String get hemStartCooking => 'Börja laga';
+
+  @override
+  String get hemSwapDish => 'Byt rätt';
+
+  @override
+  String get hemAllInPantry => 'allt i skafferiet';
+
+  @override
+  String get hemLoadingPlan => 'Hämtar veckans plan …';
+
+  @override
+  String get hemPlanErrorWhat =>
+      'Veckans plan kunde inte hämtas. Servern svarade inte.';
+
+  @override
+  String get hemPlanErrorPreserved =>
+      'Din plan är sparad och ligger kvar – det är hämtningen som misslyckades, inte planen.';
+
+  @override
+  String get hemShowSavedPlan => 'Visa sparad plan';
+
+  @override
+  String hemPlanFetchedAt(String time) {
+    return 'Planen hämtades $time – kan ha ändrats av någon annan sedan dess.';
+  }
+
+  @override
+  String get hemEmptyTitle => 'Butlery blir användbar med ett recept';
+
+  @override
+  String get hemEmptyBody =>
+      'Lägg in något du redan lagar ofta. Sedan kan Butlery planera veckan, räkna om portioner och skriva inköpslistan åt dig.';
+
+  @override
+  String get hemEmptyShortcuts => 'Snabbaste vägarna';
+
+  @override
+  String get hemEmptyLinkTitle => 'Klistra in en länk';
+
+  @override
+  String get hemEmptyLinkBody => 'från en receptsida, YouTube eller Instagram';
+
+  @override
+  String get hemEmptyPhotoTitle => 'Fota en receptsida';
+
+  @override
+  String get hemEmptyPhotoBody => 'ur en kokbok eller ett urklipp';
+
+  @override
+  String get hemEmptyWriteTitle => 'Skriv själv';
+
+  @override
+  String get hemEmptyWriteBody => 'för det du lagar utan recept';
+
+  @override
+  String get hemEmptyAllergyNote =>
+      'Har hushållet allergier? Ställ in dem först – då planerar Butlery aldrig något osäkert.';
+
+  @override
+  String get hemEmptyAllergyLink => 'Ställ in allergener';
 }
