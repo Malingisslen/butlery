@@ -29981,6 +29981,12 @@ abstract class AppLocalizations {
   /// **'Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}'**
   String recipePantryAllAtHome(String names);
 
+  /// Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt finns hemma'**
+  String get recipeAllAtHome;
+
   /// Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).
   ///
   /// In sv, this message translates to:

@@ -239,6 +239,16 @@ class RecipeDetailActions {
         pantry: pantry,
       );
 
+  /// Q6-09 = C: whether the pantry covers every ingredient at the current
+  /// portions, so the recipe says "Allt finns hemma" instead of offering to
+  /// add anything.
+  bool pantryCoversAll(Recipe recipe, List<PantryItem>? pantry) =>
+      RecipeShoppingHandler.coversEverything(
+        recipe,
+        portions: _currentPortions,
+        pantry: pantry,
+      );
+
   /// BUT-999: add the recipe to one or more weekly-menu day/slot targets.
   Future<void> addToMenu(BuildContext context) async {
     await RecipeMenuHandler.addToMenu(context);

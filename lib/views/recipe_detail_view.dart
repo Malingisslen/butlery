@@ -31,6 +31,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -250,9 +251,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   /// Q4-03 = A (produktbeslut 2026-09-24; content-style-guide.md:76,
   /// "Lägg 2 varor i inköpslistan"): the button names how many items it
   /// adds, counting only what the pantry does not already cover. While the
-  /// pantry is loading or cannot be read, and when it covers everything, it
-  /// says "Lägg i inköpslistan".
+  /// pantry is loading or cannot be read it says "Lägg i inköpslistan".
+  /// Q6-09 = C (produktbeslut 2026-09-27b): when the pantry covers
+  /// everything there is no button; the recipe says "Allt finns hemma", and
+  /// the photo's shopping button (someone else's recipe) is named so too.
   String _addToListLabel(BuildContext context, Recipe recipe) {
+    if (_actions.pantryCoversAll(recipe, _pantry.pantry)) {
+      return context.l10n.recipeAllAtHome;
+    }
     final count = _actions.countToBuy(recipe, _pantry.pantry);
     return count == null
         ? context.l10n.recipeAddToShoppingList
@@ -312,8 +318,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         );
         final ownsMenu = !widget.readOnly && menuRole == RecipeMenuRole.owner;
         // Q4-03: "Lägg {n} varor i inköpslistan", counted against the
-        // pantry.
+        // pantry. Q6-09 = C: "Allt finns hemma" when it covers everything.
         final addToListLabel = _addToListLabel(context, recipe);
+        final allAtHome = _actions.pantryCoversAll(recipe, _pantry.pantry);
         Future<void> startCooking() async {
           final exit = await Navigator.pushNamed<Object?>(
             context,
@@ -391,6 +398,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   pantry: _pantry.pantry,
                 ),
                 addToShoppingListLabel: addToListLabel,
+                allAtHome: allAtHome,
               ),
               ButleryBottomNavigation(
                 currentIndex: 0,
@@ -1433,6 +1441,7 @@ class _RecipeActionBar extends StatelessWidget {
     required this.onSaveToMyKitchen,
     required this.onAddToShoppingList,
     required this.addToShoppingListLabel,
+    this.allAtHome = false,
   });
 
   final bool isOthersRecipe;
@@ -1442,6 +1451,12 @@ class _RecipeActionBar extends StatelessWidget {
 
   /// "Lägg {n} varor i inköpslistan" or "Lägg i inköpslistan" (Q4-03).
   final String addToShoppingListLabel;
+
+  /// Q6-09 = C: the pantry covers every ingredient, so the shopping button
+  /// is replaced by the text "Allt finns hemma".
+  final bool allAtHome;
+
+  static const allAtHomeKey = ValueKey('test-recipe-detail-all-at-home');
 
   static const double _stackBelow = 360;
 
@@ -1494,12 +1509,35 @@ class _RecipeActionBar extends StatelessWidget {
       second = startCooking;
     } else {
       first = startCooking;
-      second = FilledButton(
-        key: const ValueKey('test-recipe-detail-add-to-list'),
-        style: inkStyle,
-        onPressed: onAddToShoppingList,
-        child: Text(addToShoppingListLabel),
-      );
+      second = allAtHome
+          // Q6-09 = C (produktbeslut 2026-09-27b): text, not a button, and
+          // not focusable as one: a button here would promise to add
+          // something and add nothing. Not drawn; interpretation: centred
+          // in the button's place at its 48 dp height (the bar does not
+          // jump when the pantry loads), in the button's type and
+          // text.secondary (#627061 light, #93A48D dark; tokens.json:62-65,
+          // colorScheme.onSurfaceVariant).
+          ? ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
+              ),
+              child: Center(
+                child: Text(
+                  l10n.recipeAllAtHome,
+                  key: allAtHomeKey,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.buttonText.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          : FilledButton(
+              key: const ValueKey('test-recipe-detail-add-to-list'),
+              style: inkStyle,
+              onPressed: onAddToShoppingList,
+              child: Text(addToShoppingListLabel),
+            );
     }
 
     return DecoratedBox(

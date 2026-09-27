@@ -13865,6 +13865,10 @@
       }
     }
   },
+  "recipeAllAtHome": "Allt finns hemma",
+  "@recipeAllAtHome": {
+    "description": "Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then."
+  },
   "recipePantryLessened": "Mindre än i receptet, eftersom en del finns hemma: {names}",
   "@recipePantryLessened": {
     "description": "Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).",

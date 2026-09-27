@@ -59,9 +59,26 @@ class RecipeShoppingHandler {
         portions: portions,
       );
 
+  /// Q6-09 = C (produktbeslut 2026-09-27b): whether the known pantry covers
+  /// every ingredient at [portions], so nothing would be added
+  /// (produktregler.md:228). The recipe then says "Allt finns hemma" in
+  /// place of its add-to-shopping-list button. False while the pantry is not
+  /// known.
+  static bool coversEverything(
+    Recipe recipe, {
+    required int portions,
+    List<PantryItem>? pantry,
+  }) {
+    final check = pantryCheck(recipe, portions: portions, pantry: pantry);
+    return check != null &&
+        check.toBuy.isEmpty &&
+        check.coveredAtHome.isNotEmpty;
+  }
+
   /// Q4-03: how many items the button adds, or null when the pantry is not
   /// known or covers everything (the button then says "Lägg i
-  /// inköpslistan"; the text for zero is open with the product owner).
+  /// inköpslistan"; when it covers everything the button is replaced,
+  /// [coversEverything]).
   static int? countToBuy(
     Recipe recipe, {
     required int portions,

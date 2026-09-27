@@ -465,6 +465,85 @@ void main() {
       );
     });
 
+    // Q6-09 = C (produktbeslut 2026-09-27b): when the pantry covers every
+    // ingredient, the button is replaced by the text "Allt finns hemma".
+    void pantryCovering(List<String> names) {
+      final pantry = _MockPantryService();
+      final auth = _MockAuthRepository();
+      when(() => auth.currentUserId).thenReturn(_testUserId);
+      when(() => pantry.watchAll(_testUserId)).thenAnswer(
+        (_) => Stream.value([
+          for (final name in names)
+            PantryItem(
+              id: 'p-$name',
+              ingredientName: name,
+              quantity: 10,
+              unit: '',
+              location: PantryLocation.pantry,
+              addedAt: DateTime(2026, 1, 1),
+            ),
+        ]),
+      );
+      TestServiceLocator.registerMock<PantryService>(pantry);
+      TestServiceLocator.registerMock<AuthRepository>(auth);
+    }
+
+    for (final (mode, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('Q6-09: everything at home replaces the button with text '
+          '($mode)', (tester) async {
+        pantryCovering(['mjöl', 'mjölk', 'ägg']);
+        final semantics = tester.ensureSemantics();
+
+        await pumpView(
+          tester,
+          RecipeDetailView(recipe: ownedRecipe),
+          theme: theme,
+        );
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        final note = find.byKey(
+          const ValueKey('test-recipe-detail-all-at-home'),
+        );
+        expect(note, findsOneWidget);
+        expect(tester.widget<Text>(note).data, 'Allt finns hemma');
+        // text.secondary in both modes (tokens.json:62-65).
+        expect(
+          tester.widget<Text>(note).style?.color,
+          theme.colorScheme.onSurfaceVariant,
+        );
+        expect(
+          find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          findsNothing,
+        );
+        expect(
+          find.ancestor(of: note, matching: find.byType(ButtonStyleButton)),
+          findsNothing,
+        );
+        expect(
+          tester.getSemantics(note).flagsCollection.isButton,
+          isFalse,
+          reason: 'not focusable as a button',
+        );
+        semantics.dispose();
+      });
+    }
+
+    testWidgets("Q6-09: on a friend's recipe the photo's shopping button is "
+        'named Allt finns hemma', (tester) async {
+      pantryCovering(['pasta', 'tomatsås', 'ost']);
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      await tester.pump();
+      expect(find.byTooltip('Allt finns hemma'), findsOneWidget);
+      expect(find.byTooltip('Lägg i inköpslistan'), findsNothing);
+    });
+
     // Skarmar v12 del 1 'Receptdetalj' draws the shopping-list action with
     // an ink fill; 'Receptdetalj — mörkt läge' draws it with no fill, a
     // 1.5 px paper outline and paper text.

@@ -14135,5 +14135,9 @@
   "hemEmptyAllergyLink": "Set allergens",
   "@hemEmptyAllergyLink": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
+  },
+  "recipeAllAtHome": "Everything is at home",
+  "@recipeAllAtHome": {
+    "description": "Q6-09 = C (produktbeslut 2026-09-27b): shown in place of the recipe's add-to-shopping-list button when the pantry covers every ingredient; text, not a button. Also the name of the photo's shopping button on someone else's recipe then."
   }
 }
