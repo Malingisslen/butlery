@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:a66474dba4e16f9f864277f40b031fc81ef70f3566022e5e07e3648c420c78b4 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:db3f96414ab96e72d0bcbe905900265d30063da4df67b6bd5a07e869d4efa539 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -191,13 +191,13 @@ class AppColorsDark {
   /// Saffranstonad yta (BUT-2191): vald plats, i dag, pagaende. Bar text.primary och text.accent.onRaised; text.accent (#A15A0A, 4,38:1) ar forbjuden har. · semantic.surface.tint.accent (dark)
   static const Color surfaceTintAccent = Color(0xFF2F4437);
 
-  /// Lerrod statusyta (BUT-2191). Bar text.danger och ink. · semantic.surface.tint.danger (dark)
+  /// Lerrod statusyta (BUT-2191). Bar text.danger.onRaised och ink. · semantic.surface.tint.danger (dark)
   static const Color surfaceTintDanger = Color(0xFF2F4437);
 
   /// Gron statusyta (BUT-2191). Bar text.success och ink. · semantic.surface.tint.success (dark)
   static const Color surfaceTintSuccess = Color(0xFF2F4437);
 
-  /// Varm notisyta pa papper (BUT-2191): upplysningar och kvar-att-losa-rutor. Bar text.body, ink, text.accent.onRaised och text.danger. · semantic.surface.tint.warning (dark)
+  /// Varm notisyta pa papper (BUT-2191): upplysningar och kvar-att-losa-rutor. Bar text.body, ink, text.accent.onRaised och text.danger.onRaised. · semantic.surface.tint.warning (dark)
   static const Color surfaceTintWarning = Color(0xFF2F4437);
 
   /// Ifylld kryssruta och radio (BUT-2191). Bar control.checked.foreground (textOnPrimary), 11,36:1 i bada lagena. · semantic.control.checked.background (dark)
