@@ -264,7 +264,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/block287k-population.json` | `8afb1e3f586da54bc22e0e87c7c6cb3d3a98be1e133beae37e68bc485c4d7853` |
 | `fas2/block287k-skrivplan.json` | `ab9bcc062504f9e0cb62919108e2b0b6259a78f1c3f525a1e722583a7c3a5bf1` |
 | `fas2/block288-uxfrysning.json` | `663e5c449d0e4b76ad1c0d70eb5357c64e588645e8fc0a712cc1195261aa8c37` |
-| `fas2/block289-visuell-leverans.json` | `9b14776f4f0386aa7531864f91b46cdde8e023a17d47b10342453ef6a172df6b` |
+| `fas2/block289-visuell-leverans.json` | `7fdc1f8107b08befa0250a28fc8c612808aee41ce5b37a4b0bd5ae1529d9eb60` |
 | `fas2/carrier-adjudikering-a2.json` | `09e8791b187948ead5fd95980919549758738fb8f29e631411fbe7879bdc2a55` |
 | `fas2/carrier-korrigering-a4.json` | `9776cb3a558e0578fecf1f1ec934a5d2d4e37ca4cf17a06dd0d2322e8499a969` |
 | `fas2/effect-registry.json` | `3cc0615e726cd8e15eeec0c7b3bbbfb09f723d7c9b070e8a13682d15c5ef2fab` |
@@ -541,7 +541,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `icons.json` | `fa46237fdc7ef51b4f46885144e1480504bc65230c63bf484b669975355f0cc9` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `d8b9683b373a3e142456890d177285c52307ccd433908f30c8e0592b35648431` |
-| `legacy-api-contract.json` | `35d37ab9722badd11a9f6a3f4304d6b9da8561510dfd615a593a0925a37be027` |
+| `legacy-api-contract.json` | `0d16c2b3bc4f1ed548864b4f18ded6c00f6d4a5e01d4e8196fc84bd1efda54bc` |
 | `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
@@ -552,9 +552,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `e64eab8074c980e0d75ad418098d7a9a01f7e4194bdb980d6a41b454f85f873f` |
-| `lib/theme/app_colors_dark.dart` | `3f7a76ca107cbaee564d5fa0a469ae1fc4cbb90eeaf90104ab74222267e24fd4` |
-| `lib/theme/app_text_styles.dart` | `bb72e5bd697228640daf3ff8dec42d993d7b5da055f1978fe23233d7aa02b9bb` |
+| `lib/theme/app_colors.dart` | `73e4fc9b1d91cd14a1e6ecaec73be4677b3a0ac7209493c2478ffb12ae522a63` |
+| `lib/theme/app_colors_dark.dart` | `7c6345f818fb504b7833494a1763057ccdf2f7c4f7b239f5c91b94c29bd986f0` |
+| `lib/theme/app_text_styles.dart` | `91c47861ccfc758b2ebaaeaa6c8e1c8856cb4ae3f3b0ee50d933805f5776be79` |
 | `lib/theme/butlery_tokens.dart` | `e47640ea1c649694e04752043d78b6db9b9bd17da3aba4c4cf55d848b17f2fb7` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
@@ -573,7 +573,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/affordance-negatives.mjs` | `c9aac4b95f54c244de296e2784ee1aa5dfbf27bc1f4838b41412be87b1b68831` |
 | `tools/animation-freeze-fixtures.mjs` | `67ed58276c190e7cacec41d96ab9602e84d8fac3137c8a892d6580b1eaefbcf3` |
 | `tools/animation-freeze.mjs` | `6205431fc2506b8dafbd44e14aabf1894f9f1d55ef2bae3aa8ce60a403b24014` |
-| `tools/app-theme-map.json` | `e082dace6cf054db42b215d7b7034182a2ef2f4a2753d6799a8a447996f6323f` |
+| `tools/app-theme-map.json` | `8452ba494a2f997d1b2b19919797c6ca0ebc01c9dbf13da8f285a23bf0f23a8b` |
 | `tools/app-theme-map.schema.json` | `540c09035681771786f7884abb098468e3382682f1e5dde6e98b9e2a829fd387` |
 | `tools/applicability-fixtures.mjs` | `7d6308092307738f80f89dd3bb96238c6f4e1362a235b8fa0db2b770b1545fc6` |
 | `tools/applicability-planner.mjs` | `593b1407c81730418c13de8516a43090ca6d4e4bbccb0bc76722b2c8806d6600` |
@@ -622,7 +622,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/block287/slutfrysning.mjs` | `04b76abaf7e0cbf192ca485fadcd345eafa75f7dbadfe3d5deeb14e13ef1bf6c` |
 | `tools/block288/uxfrysning.mjs` | `79e27eeabf12bfc06e9fc4e918af2bdea74eb0c251116c8f408e401ad17e7944` |
 | `tools/block288/uxprov.mjs` | `8e160724d5f5205ac4441f0ae6e790587375c558752292ecc51342b7c8b3bc75` |
-| `tools/block289/visuellfrysning.mjs` | `452c9445e454a1bcdbf305fd8b4eef6ace24a3368774d5ab0dfdad51da16ed58` |
+| `tools/block289/visuellfrysning.mjs` | `4fc6d0d0b0be22d6e0d823880a5296b4c323afb0cc6897ca3e789c08a7ccc3c2` |
 | `tools/block289/visuellprov.mjs` | `09be22f4d3104cb086becad67d7d4bb4caa7c5ee727d459f370980b24b2b06ce` |
 | `tools/box-graphics-fixtures.mjs` | `a95e370c6e800a2e73c53f4495a7248f81503f847c8e7f4eaa6d21fdeb98a44f` |
 | `tools/box-graphics.mjs` | `82764c68d7538f1a0c752332a6ba67efe856bc1e67d6a9b3ab562e72f19184bb` |
