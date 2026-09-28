@@ -79,7 +79,7 @@ Required: 33; MISSING 1, PARTIAL 5, TESTED 27. Unspecified in block 288 (not tes
 
 ## Contrast pairs
 
-Declared pairs: 36. Measured in both modes: 20; unmeasurable (no generated member): 16. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green.
+Declared pairs: 35. Measured in both modes: 19; unmeasurable (no generated member): 16. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
@@ -109,7 +109,7 @@ Known findings: 216 (ceiling 216) in 180 cases (view, state, mode, width, text s
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `b53ccacfac72856ef17d510d3aa0cd8005c462d44858e764b85aa87d09abba11`); generated files say tokens 1.13 (light) and 1.13 (dark).
+tokens.json 1.13 (sha256 `c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c`); generated files say tokens 1.13 (light) and 1.13 (dark).
 - Semantic keys: 46; with a generated member: 36
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 

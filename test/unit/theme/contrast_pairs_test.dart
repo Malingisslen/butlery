@@ -1,7 +1,7 @@
 /// P8-U02: every declared contrast pair, measured on the colours the app
 /// was generated with, in light and in dark.
 ///
-/// Source: tokens.json contrastPairs (36 pairs) and contrastPolicy, vendored
+/// Source: tokens.json contrastPairs (35 pairs) and contrastPolicy, vendored
 /// in test/fixtures/design/contrast_pairs.json with the file's sha256. Each
 /// token is resolved to the generated member whose doc line names it
 /// ("· semantic.text.primary", "(dark)" in app_colors_dark.dart), so the
@@ -40,7 +40,7 @@ const knownContrastGaps = <String, String>{
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    'b53ccacfac72856ef17d510d3aa0cd8005c462d44858e764b85aa87d09abba11';
+    'c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',
@@ -109,9 +109,9 @@ void main() {
     'dark': _tokenValues('lib/theme/app_colors_dark.dart', dark: true),
   };
 
-  test('the fixture is tokens.json as vendored, 36 pairs', () {
+  test('the fixture is tokens.json as vendored, 35 pairs', () {
     expect((fixture['source'] as Map)['sha256'], _tokensSha256);
-    expect(pairs, hasLength(36));
+    expect(pairs, hasLength(35));
     final policy = fixture['contrastPolicy'] as Map<String, dynamic>;
     expect((policy['floors'] as Map)['smallText'], 4.5);
   });
