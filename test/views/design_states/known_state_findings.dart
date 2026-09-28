@@ -329,7 +329,7 @@ const Map<String, String> registeredTickets = {
       'Add members shows the empty state, not loading, while the friends service is still loading',
   'BUT-2190': 'Member management dialog overflows by 68 px at 360 dp',
   'BUT-2191':
-      'Contrast pairs in tokens.json with no generated app member (text.accent, text.disabled, surface.tint.*, control.checked.background, dataScale.*)',
+      'Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered)',
   'BUT-2192':
       'Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu)',
   'BUT-2193':
@@ -340,4 +340,6 @@ const Map<String, String> registeredTickets = {
       'Tap targets without a label (smart import full-page tap area, add-members checkboxes)',
   'BUT-2196':
       'Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark',
+  'BUT-2200':
+      'text.danger under its contrast floor on surface.tint.danger and surface.tint.warning in dark (#DE9078 on #2F4437, 4.18:1)',
 };

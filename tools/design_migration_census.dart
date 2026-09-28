@@ -807,6 +807,16 @@ Map<String, Object?> _contrast(CensusSource src, List<_Finding> out) {
   for (final g in list) {
     out.add(_Finding('contrast', g['pair']!, g['ticket']));
   }
+  // Measured pairs under their floor in at least one mode, each with its
+  // ticket; the contrast test keeps this list honest (shrink-only).
+  final failing = _collection(src.read(_contrastTest), 'knownContrastFailures');
+  final under = [
+    for (final g in failing.entries)
+      {'pair': g.key, 'ticket': g.values.isEmpty ? null : g.values.first},
+  ]..sort((a, b) => a['pair']!.compareTo(b['pair']!));
+  for (final g in under) {
+    out.add(_Finding('contrast', g['pair']!, g['ticket']));
+  }
   return {
     'status': present,
     'file': _contrastFixture,
@@ -814,9 +824,11 @@ Map<String, Object?> _contrast(CensusSource src, List<_Finding> out) {
     'pairs': pairs,
     'measured_in_both_modes': pairs - list.length,
     'unmeasurable': list,
+    'under_floor': under,
     'rule':
         'a measured pair meets its floor in light and dark whenever '
-        'test/unit/theme/contrast_pairs_test.dart is green',
+        'test/unit/theme/contrast_pairs_test.dart is green, except the '
+        'pairs listed under their floor',
   };
 }
 
@@ -1308,8 +1320,9 @@ String renderMarkdown(Map<String, Object?> census) {
     b
       ..writeln(
         'Declared pairs: ${c['pairs']}. Measured in both modes: '
-        '${c['measured_in_both_modes']}; unmeasurable (no generated member): '
-        '${(c['unmeasurable']! as List).length}. ${c['rule']}.',
+        '${c['measured_in_both_modes']}, of which under their floor: '
+        '${(c['under_floor']! as List).length}; unmeasurable (no generated '
+        'member): ${(c['unmeasurable']! as List).length}. ${c['rule']}.',
       )
       ..writeln()
       ..writeln('| Unmeasurable pair | Ticket |')
@@ -1317,6 +1330,16 @@ String renderMarkdown(Map<String, Object?> census) {
     for (final e in c['unmeasurable']! as List) {
       final m = e as Map;
       b.writeln('| `${m['pair']}` | ${m['ticket'] ?? '—'} |');
+    }
+    if ((c['under_floor']! as List).isNotEmpty) {
+      b
+        ..writeln()
+        ..writeln('| Measured pair under its floor | Ticket |')
+        ..writeln('| --- | --- |');
+      for (final e in c['under_floor']! as List) {
+        final m = e as Map;
+        b.writeln('| `${m['pair']}` | ${m['ticket'] ?? '—'} |');
+      }
     }
   }
 
