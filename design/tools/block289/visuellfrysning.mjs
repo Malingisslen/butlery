@@ -102,7 +102,10 @@ export function bygg(rot) {
     { NAMN: 'textDisabled', KRAV: 3.0, SLAG: 'DISABLED' },
     // Paket 3. textWarning bar offlinebannerns varningsglyf och kontur och ar
     // lika ytblind som de andra textkonstanterna.
-    { NAMN: 'textWarning', KRAV: 4.5, SLAG: 'READABLE' }
+    { NAMN: 'textWarning', KRAV: 4.5, SLAG: 'READABLE' },
+    // BUT-2159. textBodyMuted ar text.bodyMuted och klarar bada ytorna i
+    // bada lagena (minst 6,79:1, morkt pa surface.raised), sa den ar ytblind.
+    { NAMN: 'textBodyMuted', KRAV: 4.5, SLAG: 'READABLE' }
   ];
   const morkFarg = (() => {
     const ut = {};
@@ -147,7 +150,15 @@ export function bygg(rot) {
     // #dca968); i ljust lage ritar samma rad #e09d50, textAccentOnInk, eftersom
     // #A15A0A ger 2,37:1 pa ink. Den raden provas darfor bara i morkt lage.
     { NAMN: 'textAccent', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
-    { NAMN: 'textAccent', YTA: 'surface.ink', LAGEN: ['dark'], KRAV: 4.5, SLAG: 'READABLE' }
+    { NAMN: 'textAccent', YTA: 'surface.ink', LAGEN: ['dark'], KRAV: 4.5, SLAG: 'READABLE' },
+    // BUT-2191. textDisabledOnBase ar text.disabled och bunden till
+    // surface.base: golvet ar 3:1 (contrastPolicy disabled) och nas dar (3,32:1
+    // ljust, 3,04:1 morkt) men inte pa surface.raised (2,98:1 ljust, 2,00:1
+    // morkt), dar textDisabled (text.disabled.onRaised) galler.
+    { NAMN: 'textDisabledOnBase', YTA: 'surface.base', KRAV: 3.0, SLAG: 'DISABLED' },
+    // BUT-2147. textCompleted ar text.completed och bunden till surface.base:
+    // det morka #93A48D ger 6,02:1 dar men 3,96:1 pa surface.raised.
+    { NAMN: 'textCompleted', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' }
   ];
   const ytbunden = YTBUNDNA.map(({ NAMN: namn, YTA: yta, LAGEN: lagen, KRAV: krav, SLAG: slag }) => {
     const ljus = flutterFarg[namn];
