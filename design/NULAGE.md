@@ -4,7 +4,7 @@ Den här filen säger var arbetet står **i dag**. Den är kort med avsikt: om d
 läser äldre sessioner, arbetsplaner eller granskningsanteckningar först får du
 en föråldrad bild.
 
-Senast uppdaterad: 2026-09-27.
+Senast uppdaterad: 2026-09-28.
 
 ---
 
@@ -50,7 +50,7 @@ Migrationen är **82 enheter i 8 paket**, mekaniskt härledda.
 | 5 | tillstånd: 22 ändrade + 7 nya | **klar och på main** (PR #264, rättad i #265) |
 | 6 | flödena | **klar och på main** (PR #269) — tvåstegsverifiering byggd men dold (BUT-2142); offlinekön byggd men inte inkopplad (BUT-2162); regler måste driftsättas (BUT-2164) |
 | 7 | bortstädning av gammal yta och gammal UX | **klar och på main** (PR #270) — inkl. typografi, mått, radier och ikoner (Q7-02 = B); 392 ikonanvändningar väntar på ritade glyfer (BUT-2166) |
-| 8 | verifiering | pågår |
+| 8 | verifiering | **klar och på main** (PR #274, `7c2faf8`) — varje känd brist har en biljett i Linear (BUT-2140…2199); Linux-jämförelsebilder av nyckelvyerna jämförs i CI |
 
 Ordningen är bunden. Paket 2 börjar inte förrän paket 1 är oberoende granskat.
 
@@ -58,11 +58,14 @@ Ordningen är bunden. Paket 2 börjar inte förrän paket 1 är oberoende gransk
 
 ## Vad appen klarar i dag
 
-Mätt mot den frysta beteendemodellen, i en läsande kopia av appen:
+Räknat i appen av `tools/design_migration_census.dart`; hela listan står i
+appens `docs/design-migration/census.md` (genereras, redigeras aldrig för hand).
 
-- **44 av 81** krävda flödesövergångar finns i appens källa. 37 saknas — tyngst i offline/synk (10), konto (9) och behörigheter (5).
-- **75 av 82** vytillstånd har en motsvarighet i koden. Sju saknas helt.
-- **Noll** av dem är bevisade att bete sig som designen kräver. Källkod kan visa att ett läge *hanteras*, inte att det gör rätt. Den bevisningen ligger i paket 8.
+- **Paket 8 klart** (Q8-01 = A): testerna är gröna och varje känd brist har en registrerad biljett. Ingen brist saknar biljett.
+- **Migrationen är inte klar:** 367 kända brister (tillgänglighet 216, vytillstånd 72, flödesövergångar 32, kontrast 18, interaktion 18, tokens 11) och 398 ikonanvändningar utan ritad glyf (BUT-2166).
+- **49 av 81** flödesövergångar är testade. 10 är halvfärdiga, 17 är byggda men går inte att nå (tvåstegsverifiering BUT-2142, offlinekö BUT-2162, realtidssynk BUT-2151) och 5 saknas.
+- **27 av 53** rent visuella vytillstånd klarar både ljust och mörkt läge.
+- Migrationen är klar först när listorna över kända brister är tomma.
 
 ---
 
