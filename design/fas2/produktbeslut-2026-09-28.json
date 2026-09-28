@@ -15,6 +15,13 @@
    "beslut": "A",
    "innebord": "De genomskinlighetsvärden som tokens.json redan använder utanför opacityLadder (0.10, 0.20, 0.40, 0.54 för overlay.*, elevation.shadow och scrim) läggs till som steg i skalan. Inget ändras för ögat; allt blir kontrollerbart.",
    "not": "Malin skrev 'R6-06'; frågan på sidan hette R6-02 och svaret återger alternativ A ordagrant."
+  },
+  {
+   "id": "Q-2200",
+   "beslut": "A",
+   "biljett": "BUT-2200",
+   "innebord": "Paren 'text.danger on surface.tint.danger' och 'on surface.tint.warning' bärs av text.danger.onRaised, som R6-01 för text.accent: på upphöjd eller tonad yta används .onRaised-varianten. Mörkt #E5A08A på #2F4437 = 4,86:1 (text.danger #DE9078 gav 4,18); ljust oförändrat #9C3B23.",
+   "not": "Fattat på BUT-2200-beslut.html; svaret 'BUT-2200 Q-2200: A'."
   }
  ]
 }
