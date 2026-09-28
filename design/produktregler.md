@@ -1052,7 +1052,7 @@ Läst ur `core/responsive/breakpoints.dart`, `responsive_builder.dart`, `common/
 ### 21.2 Navigationens form
 
 - **Skena vid bredd ≥ 768 OCH höjd ≥ 500.** Under 500 px höjd gäller en spalt och bottenrad oavsett bredd — systemets enda höjdregel, och den finns för köket.
-- **Skenan bär bottenradens vokabulär:** samma botten, gemena etiketter, och **rostmarkeringen** — liggande som en list till vänster om vald post. En orörd Material-`NavigationRail` byter appens identitet vid rotation.
+- **Skenan bär bottenradens vokabulär:** samma botten, samma etiketter med versal begynnelsebokstav (Hem, Meny, Inköp, Mer — Komponentark v1:663–666), och **rostmarkeringen** — liggande som en list till vänster om vald post. En orörd Material-`NavigationRail` byter appens identitet vid rotation.
 - **`lägg till` är ingen destination.** Den är en handling: rund saffransknapp överst i skenan, avskild från platserna. (Gäller även bottenraden, där den redan är ritad så.)
 - Den utfällda skenan visar **ordmärket som vektor**, aldrig `Text('Butlery')`.
 - Destinationsbyte får inte kasta historik: `pushReplacementNamed` raderar skrollposition och öppet filter, vilket en synlig skena gör påtagligt.
