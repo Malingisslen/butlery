@@ -16,7 +16,7 @@ Underlaget är fryst i tre skilda lager. De räknar aldrig om varandra.
 |---|---|---|---|
 | **Krav** (Block 287) | skärmkorpusens element och de 772 produktkraven | `04f7f59` | `fas2/block287k-frysning.json` |
 | **Beteende** (Block 288) | 82 tillämpliga vytillstånd, 81 krävda övergångar i åtta flöden, 33 krävda interaktionstillstånd | `b5fcf5c` | `fas2/block288-uxfrysning.json` |
-| **Leverans** (Block 289) | tokens, mappning, generatorer och de genererade Flutter-filerna, plus kontrastkontraktet | `2c5da67` | `fas2/block289-visuell-leverans.json` |
+| **Leverans** (Block 289) | tokens, mappning, generatorer och de genererade Flutter-filerna, plus kontrastkontraktet | `3f38556` (omfryst runda 6) | `fas2/block289-visuell-leverans.json` |
 
 Alla tre reproducerar byteidentiskt ur en ren utcheckning. Kör proven med:
 
@@ -62,7 +62,7 @@ Räknat i appen av `tools/design_migration_census.dart`; hela listan står i
 appens `docs/design-migration/census.md` (genereras, redigeras aldrig för hand).
 
 - **Paket 8 klart** (Q8-01 = A): testerna är gröna och varje känd brist har en registrerad biljett. Ingen brist saknar biljett.
-- **Migrationen är inte klar:** 367 kända brister (tillgänglighet 216, vytillstånd 72, flödesövergångar 32, kontrast 18, interaktion 18, tokens 11) och 398 ikonanvändningar utan ritad glyf (BUT-2166).
+- **Migrationen är inte klar:** 362 kända brister (tillgänglighet 216, vytillstånd 70, flödesövergångar 32, kontrast 16, interaktion 18, tokens 10; PR #278, runda 6) och 398 ikonanvändningar utan ritad glyf (BUT-2166).
 - **49 av 81** flödesövergångar är testade. 10 är halvfärdiga, 17 är byggda men går inte att nå (tvåstegsverifiering BUT-2142, offlinekö BUT-2162, realtidssynk BUT-2151) och 5 saknas.
 - **27 av 53** rent visuella vytillstånd klarar både ljust och mörkt läge.
 - Migrationen är klar först när listorna över kända brister är tomma.
