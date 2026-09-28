@@ -403,7 +403,7 @@
     {
       "id": "TR::FLOW::04::avslutat::klart",
       "flow": "04",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/views/flows/flow_04_transitions_test.dart",
       "test_name": "Klart returns to the recipe and counts it as cooked once",
       "tests": [
@@ -413,20 +413,17 @@
           "group": "TR::FLOW::04::avslutat::klart"
         },
         {
+          "file": "test/views/flows/flow_04_transitions_test.dart",
+          "name": "the chip counts up as Lagat N gånger",
+          "group": "TR::FLOW::04::avslutat::klart"
+        },
+        {
           "file": "test/views/cooking_mode_flow04_test.dart",
           "name": "the last step carries Klart, which returns finished"
         }
       ],
       "ticket": null,
-      "reason": "New test for what the recipe does with Klart; the existing test proves Klart returns finished.",
-      "known_gap": {
-        "ticket": "BUT-2164",
-        "reason": "flows-roles-budget.md:72 counts up \"Lagat N gånger\", as drawn in Butlery Skarmar v12 del 1 recept och veckomeny.dc.html:316/:375/:437 and written in content-style-guide.md:54. The chip says \"Lagat idag\" and \"Lagat idag (1)\" (lib/views/recipe_detail/recipe_detail_metadata.dart:212-235). The count is proven; the wording is not the drawn one.",
-        "test": {
-          "file": "test/views/flows/flow_04_transitions_test.dart",
-          "name": "known gap: the chip says Lagat idag (1), not the drawn Lagat N gånger"
-        }
-      }
+      "reason": "New test for what the recipe does with Klart; the existing test proves Klart returns finished."
     },
     {
       "id": "TR::FLOW::04::receptdetalj::börja-laga",

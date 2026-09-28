@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 325 known failures and 2 residue lists are not empty
-- Known failures: 325 (a11y 208, contrast 5, interaction_checks 12, interactions 6, states53 62, transitions 32)
+- **Migration complete:** NO: 324 known failures and 2 residue lists are not empty
+- Known failures: 324 (a11y 208, contrast 5, interaction_checks 12, interactions 6, states53 62, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 37 registered in Linear
+- Tickets: 36 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
@@ -18,7 +18,7 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 17, MISSING 5, PARTIAL 10, TESTED 49.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 17, MISSING 5, PARTIAL 9, TESTED 50.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
@@ -32,7 +32,6 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::03::hämtar::betalvägg` | BUILT_NOT_REACHABLE | BUT-2168 |
 | `TR::FLOW::03::hämtar::privat-trasig-länk` | PARTIAL | BUT-2168 |
 | `TR::FLOW::03::hämtar::sidan-har-inget-recept` | BUILT_NOT_REACHABLE | BUT-2168 |
-| `TR::FLOW::04::avslutat::klart` | PARTIAL | BUT-2164 |
 | `TR::FLOW::05::person::blockerad` | PARTIAL | BUT-2169 |
 | `TR::FLOW::06::aterstall::satt-nytt` | MISSING | BUT-2170 |
 | `TR::FLOW::06::byt-epost::omverifiering-bada` | MISSING | BUT-2171 |
@@ -124,7 +123,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2160 | transitions 2 |  |
 | BUT-2162 | transitions 8 |  |
 | BUT-2163 | transitions 1 |  |
-| BUT-2164 | transitions 1 |  |
 | BUT-2168 | transitions 3 |  |
 | BUT-2169 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |

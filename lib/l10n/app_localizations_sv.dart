@@ -1054,6 +1054,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeCookedToday => 'Lagat idag';
 
   @override
+  String recipeCookedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lagat $count gånger',
+      one: 'Lagat 1 gång',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get recipeNoInstructions => 'Inga instruktioner angivna.';
 
   @override

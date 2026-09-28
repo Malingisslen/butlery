@@ -793,6 +793,14 @@
   "recipePortionSingular": "serving",
   "recipePortionsPlural": "servings",
   "recipeCookedToday": "Cooked today",
+  "recipeCookedCount": "{count, plural, =1{Cooked once} other{Cooked {count} times}}",
+  "@recipeCookedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recipeNoInstructions": "No instructions provided.",
   "recipeTags": "Tags",
   "recipeImagesTitle": "Images",

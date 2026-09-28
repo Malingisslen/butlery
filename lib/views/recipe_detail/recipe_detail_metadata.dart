@@ -230,7 +230,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           ),
           label: Text(
             cookCount > 0
-                ? '${context.l10n.recipeCookedToday} ($cookCount)'
+                ? context.l10n.recipeCookedCount(cookCount)
                 : context.l10n.recipeCookedToday,
             style: AppTextStyles.labelSmall,
           ),

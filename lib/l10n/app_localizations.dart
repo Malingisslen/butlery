@@ -1832,6 +1832,12 @@ abstract class AppLocalizations {
   /// **'Lagat idag'**
   String get recipeCookedToday;
 
+  /// No description provided for @recipeCookedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lagat 1 gång} other{Lagat {count} gånger}}'**
+  String recipeCookedCount(int count);
+
   /// No description provided for @recipeNoInstructions.
   ///
   /// In sv, this message translates to:

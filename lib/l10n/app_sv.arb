@@ -799,6 +799,14 @@
   "recipePortionSingular": "portion",
   "recipePortionsPlural": "portioner",
   "recipeCookedToday": "Lagat idag",
+  "recipeCookedCount": "{count, plural, =1{Lagat 1 gång} other{Lagat {count} gånger}}",
+  "@recipeCookedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recipeNoInstructions": "Inga instruktioner angivna.",
   "recipeTags": "Taggar",
   "recipeImagesTitle": "Bilder",
