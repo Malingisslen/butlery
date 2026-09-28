@@ -1,0 +1,20 @@
+{
+ "$om": "Malins beslut runda 6, fattade 2026-09-28 på 2026-09-28-migrering-slutrapport.html och 2026-09-28-prototyp-ikvall-farg.html.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-28",
+ "princip": "Malin vill ha så mycket 'samma' som möjligt i appen, eftersom det blir mer aptitligt för ögat. Gemensamma tokens och mönster går före lokala specialvärden.",
+ "rader": [
+  {
+   "id": "R6-01",
+   "beslut": "A",
+   "biljett": "BUT-2197",
+   "innebord": "Hem-kortets 'Ikväll'-rubrik tar text.accent (#DCA968 i mörkt läge), som ritningen Skärmar v12 del 1 och all annan accenttext; paletteens saffronLight #E09D50 används inte som textfärg."
+  },
+  {
+   "id": "R6-02",
+   "beslut": "A",
+   "innebord": "De genomskinlighetsvärden som tokens.json redan använder utanför opacityLadder (0.10, 0.20, 0.40, 0.54 för overlay.*, elevation.shadow och scrim) läggs till som steg i skalan. Inget ändras för ögat; allt blir kontrollerbart.",
+   "not": "Malin skrev 'R6-06'; frågan på sidan hette R6-02 och svaret återger alternativ A ordagrant."
+  }
+ ]
+}
