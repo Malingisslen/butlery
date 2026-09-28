@@ -1568,7 +1568,7 @@ group('M-29', () => {
     ['darkOverride', s2 => s2.replace(/(darkColorScheme[\s\S]*?onError: )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF040506)'), 'colors'],
     ['varumärkesfärg', s2 => s2.replace(/(static const Color brand[A-Z]\w* = )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF00FF00)'), 'colors'],
     ['aliasmål', s2 => s2.replace(/(static const Color textSecondary = )\w+;/, '$1textDark;'), 'colors'],
-    ['typroll', s2 => s2.replace(/(get bodyLarge => TextStyle\(\n\s*fontFamily: family,\n\s*fontSize: )[\d.]+/, '$199'), 'text'],
+    ['typroll', s2 => s2.replace(/(get bodyLarge => (?:const )?TextStyle\(\n\s*fontFamily: family,\n\s*fontSize: )[\d.]+/, '$199'), 'text'],
     ['typalias', s2 => s2.replace(/(get buttonText => )\w+;/, '$1labelMedium;'), 'text'],
     ['semantisk variant', s2 => s2.replace(/(get errorText => \w+\.copyWith\(color: )AppColors\.\w+/, '$1AppColors.success'), 'text'],
     // BÅDA riktningarna av mängdlikheten. Fas 1 (femte vändan): sviten provade

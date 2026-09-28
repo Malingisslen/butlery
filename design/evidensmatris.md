@@ -193,7 +193,7 @@ Valideras av **T-14**. En rad som står `implementerad` eller `verifierad` måst
 | T-01 | Hitbox ≥ 48 × 48 dp, deklarerad i koden | alla | <!--n:frames-->280<!--/n--> ramar | **T-08** (källa) ✅ + browserprob ✅ 0 under 48 | Accessibility Scanner | design | implementerad |
 | T-02 | Kontrast mäts mot **deklarerade par** i tokens **och** mot varje par som bara finns i renderad markup | alla | samtliga tio skärmfiler | **T-02** ✅ + **renderad mätning** ✅ 3 017 par, 0 under golvet | — | design | **verifierad** — mätt 2026-07-29, lägsta icke-avstängda kvot 4,73 |
 | T-03 | Fokusram runt hitboxen, aldrig runt glyfen | kryssruta · radio · reglage | komponentark 15 | — ❌ | manuell tabbning | design | implementerad |
-| T-04 | Varje interaktiv kontroll har roll, namn och tillstånd | alla | <!--n:controls-->1376<!--/n--> märkta kontroller, alla med roll | T-08 ✅ + browserprob ✅ | **TalkBack + VoiceOver** | dev | implementerad |
+| T-04 | Varje interaktiv kontroll har roll, namn och tillstånd | alla | <!--n:controls-->1404<!--/n--> märkta kontroller, alla med roll | T-08 ✅ + browserprob ✅ | **TalkBack + VoiceOver** | dev | implementerad |
 | T-04b | **Ingen interaktiv `div`/`span` utan roll.** Maskinell genomgång av alla fjorton delfiler: kontrollhöjd + handlingsetikett utan `data-a11y-role` ska ge 0 | alla | samtliga skärmfiler | **browserprob** (testmatris § 4) | — | design | **verifierad** — 2026-07-30 — 22 hittade i del 1 och del 2, alla märkta; 0 kvar av 1 372 roller |
 | T-05 | Fokusordning följer läsordning | alla | — | — ❌ | manuell tabbning | dev | beslutad |
 | AU-14 | OTP läses som **ett** fält | auth | `#mfa` (inskrivning) · `#authmfa` (utmaning) | — ❌ | TalkBack rad 2 | dev | beslutad |
