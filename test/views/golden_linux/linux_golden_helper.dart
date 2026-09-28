@@ -57,15 +57,26 @@ void refuseUpdateOffLinux() {
 /// not the test font's boxes.
 Future<void> loadGoldenFonts() async {
   await loadButlerySans();
+  // The icon font is vendored with the tests (test/fixtures/fonts, Apache
+  // 2.0, licence alongside) so a golden never depends on what a runner's
+  // Flutter cache happens to hold: ubuntu-latest's hosted Flutter had no
+  // material_fonts artifact and failed the first render. The SDK copy is
+  // only the fallback.
+  final vendored = File('test/fixtures/fonts/materialicons-regular.otf');
   final root = Platform.environment['FLUTTER_ROOT'];
-  final icons = root == null
+  final icons = vendored.existsSync()
+      ? vendored
+      : root == null
       ? null
       : File(
           '$root/bin/cache/artifacts/material_fonts/materialicons-regular.otf',
         );
   if (icons == null || !icons.existsSync()) {
     if (linuxGoldensCompareHere) {
-      throw StateError('MaterialIcons not found under FLUTTER_ROOT=$root');
+      throw StateError(
+        'MaterialIcons not found in test/fixtures/fonts or under '
+        'FLUTTER_ROOT=$root',
+      );
     }
     return;
   }
