@@ -123,6 +123,7 @@
    "surfaceDark",
    "surfaceDisabled",
    "surfaceVariant",
+   "textAccent",
    "textAccentOnInk",
    "textDark",
    "textDisabled",
@@ -280,6 +281,7 @@
    "success",
    "successContainer",
    "surfaceDisabled",
+   "textAccent",
    "textDark",
    "textDisabled",
    "textLight",
@@ -343,6 +345,7 @@
    "surface.disabled",
    "surface.ink",
    "surface.raised",
+   "text.accent",
    "text.accent.onRaised",
    "text.body",
    "text.danger",
@@ -713,6 +716,13 @@
     "FLUTTER_MEMBER": "textWarning",
     "SEMANTIC_TOKEN": "text.warning",
     "TOKENS_JSON_PATH": "semantic[\"text.warning\"].dark",
+    "DARK_VALUE": "#DCA968",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "textAccent",
+    "SEMANTIC_TOKEN": "text.accent",
+    "TOKENS_JSON_PATH": "semantic[\"text.accent\"].dark",
     "DARK_VALUE": "#DCA968",
     "KIND": "CANONICAL"
    },

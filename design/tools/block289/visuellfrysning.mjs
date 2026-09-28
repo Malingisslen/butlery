@@ -138,23 +138,36 @@ export function bygg(rot) {
    * ar inte ytblind: pa papper vore den 2,1:1, och den far darfor aldrig sta
    * dar. */
   const YTBUNDNA = [
-    { NAMN: 'textAccentOnInk', YTA: 'surface.ink', KRAV: 4.5, SLAG: 'READABLE' }
+    { NAMN: 'textAccentOnInk', YTA: 'surface.ink', KRAV: 4.5, SLAG: 'READABLE' },
+    // Produktbeslut R6-01 = A. textAccent ar text.accent och bunden till
+    // surface.base i bada lagena: det ljusa #A15A0A ger 4,30:1 pa
+    // surface.raised (dar galler text.accent.onRaised) och ar darfor inte
+    // ytblind. Hem-kortets Ikvall-rubrik star pa surface.ink och tar
+    // text.accent bara i morkt lage (Skarmar v12 del 1:47, --r04slot-765
+    // #dca968); i ljust lage ritar samma rad #e09d50, textAccentOnInk, eftersom
+    // #A15A0A ger 2,37:1 pa ink. Den raden provas darfor bara i morkt lage.
+    { NAMN: 'textAccent', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textAccent', YTA: 'surface.ink', LAGEN: ['dark'], KRAV: 4.5, SLAG: 'READABLE' }
   ];
-  const ytbunden = YTBUNDNA.map(({ NAMN: namn, YTA: yta, KRAV: krav, SLAG: slag }) => {
+  const ytbunden = YTBUNDNA.map(({ NAMN: namn, YTA: yta, LAGEN: lagen, KRAV: krav, SLAG: slag }) => {
     const ljus = flutterFarg[namn];
     if (!ljus) throw new Error('okand Flutter-konstant: ' + namn);
     const mork = morkFarg[namn] || ljus;
     const ytaLjus = s[yta] && s[yta].light;
     const ytaMork = s[yta] && s[yta].dark;
     if (!ytaLjus || !ytaMork) throw new Error('saknad yta: ' + yta);
-    const kvotLjus = kvot(ljus, ytaLjus);
-    const kvotMork = kvot(mork, ytaMork);
-    const min = Math.min(kvotLjus, kvotMork);
+    // LAGEN begransar raden till de lagen konstanten faktiskt star pa ytan i.
+    // Utan LAGEN provas bada lagena, som forr.
+    const provas = lage => !lagen || lagen.includes(lage);
+    const kvotLjus = provas('light') ? kvot(ljus, ytaLjus) : null;
+    const kvotMork = provas('dark') ? kvot(mork, ytaMork) : null;
+    const min = Math.min(...[kvotLjus, kvotMork].filter(v => v !== null));
     return {
       NAMN: namn, VARDE: ljus, VARDE_MORKT: mork,
       HAR_EGET_MORKT: Boolean(morkFarg[namn]),
       KALLA: (map.colors[namn] || [])[1] || null,
       YTA: yta, YTVARDE: ytaLjus, YTVARDE_MORKT: ytaMork,
+      ...(lagen ? { LAGEN: lagen } : {}),
       KVOT_LJUST: kvotLjus, KVOT_MORKT: kvotMork,
       MIN_KVOT: min, KRAV: krav, SLAG: slag, PASS: min >= krav
     };
@@ -168,7 +181,7 @@ export function bygg(rot) {
   const fel = [];
   for (const r of kontrast) if (!r.PASS) fel.push('TOKEN_KONTRAST:' + r.TOKEN + '/' + r.LAGE);
   for (const r of ytblind) if (!r.PASS) fel.push('YTBLIND_KONTRAST:' + r.NAMN);
-  for (const r of ytbunden) if (!r.PASS) fel.push('YTBUNDEN_KONTRAST:' + r.NAMN);
+  for (const r of ytbunden) if (!r.PASS) fel.push('YTBUNDEN_KONTRAST:' + r.NAMN + '/' + r.YTA);
   const typ = las('lib/theme/app_text_styles.dart');
   const utanConst = (typ.match(/=> TextStyle\(/g) || []).length;
   if (utanConst) fel.push('GENERATOR_CONST_DEFEKT:' + utanConst);
