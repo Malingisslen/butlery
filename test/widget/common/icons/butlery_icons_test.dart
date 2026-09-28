@@ -273,6 +273,53 @@ void main() {
       );
     });
 
+    testWidgets('keeps its size inside a larger forced box, as Icon does', (
+      tester,
+    ) async {
+      // A forced 48 x 48 box (what InputDecoration gives a prefix icon) must
+      // not stretch the painted glyph.
+      await tester.pumpWidget(
+        host(
+          const SizedBox.square(
+            dimension: 48,
+            child: ButleryIcon(ButleryIcons.pencil),
+          ),
+        ),
+      );
+      final paint = find.descendant(
+        of: find.byType(ButleryIcon),
+        matching: find.byType(CustomPaint),
+      );
+      expect(tester.getSize(paint), const Size(24, 24));
+    });
+
+    testWidgets('a text field prefix and suffix glyph render at 24 px', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          const SizedBox(
+            width: 320,
+            child: TextField(
+              decoration: InputDecoration(
+                prefixIcon: ButleryIcon(ButleryIcons.pencil),
+                suffixIcon: ButleryIcon(ButleryIcons.search),
+              ),
+            ),
+          ),
+        ),
+      );
+      for (final glyph in [ButleryIcons.pencil, ButleryIcons.search]) {
+        final paint = find.descendant(
+          of: find.byWidgetPredicate(
+            (w) => w is ButleryIcon && w.icon == glyph,
+          ),
+          matching: find.byType(CustomPaint),
+        );
+        expect(tester.getSize(paint), const Size(24, 24), reason: '$glyph');
+      }
+    });
+
     testWidgets('every glyph paints without error at 12, 14, 24 and 56 px', (
       tester,
     ) async {

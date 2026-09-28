@@ -47,9 +47,40 @@ class WeekNavHeader extends StatelessWidget {
     this.onSelectMode,
   });
 
+  /// Key of the week label.
+  static const Key labelKey = ValueKey('week-nav-label');
+
+  /// Key of the second row that holds the week actions when they do not fit
+  /// beside the label.
+  static const Key actionsRowKey = ValueKey('week-nav-actions-row');
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final style = AppTextStyles.titleSmall.copyWith(color: cs.onSurface);
+    final actions = <Widget>[
+      if (onSelectMode != null)
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.listCheck),
+          color: cs.onPrimaryContainer,
+          onPressed: onSelectMode,
+          tooltip: context.l10n.weeklyMenuSelectAction,
+        ),
+      if (onCopyWeek != null)
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.copy),
+          color: cs.onPrimaryContainer,
+          onPressed: onCopyWeek,
+          tooltip: context.l10n.weeklyMenuCopyToNextAction,
+        ),
+      if (onClearWeek != null)
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.trash2),
+          color: cs.onPrimaryContainer,
+          onPressed: onClearWeek,
+          tooltip: context.l10n.weeklyMenuClearWeekAction,
+        ),
+    ];
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
@@ -61,51 +92,71 @@ class WeekNavHeader extends StatelessWidget {
           bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
       ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.chevronLeft),
-            color: cs.onPrimaryContainer,
-            onPressed: onPrev,
-            tooltip: context.l10n.weeklyMenuPrevWeek,
-          ),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.titleSmall.copyWith(
-                color: cs.onSurface,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The drawing (Skarmar v12 etapp 2, #kalender) puts the week
+          // actions on the label's row. On a narrow phone or with large text
+          // that leaves the label too little room and it breaks letter by
+          // letter, so the actions then move to a second row and the label
+          // keeps the full width between the chevrons.
+          final painter = TextPainter(
+            text: TextSpan(
+              text: label,
+              style: DefaultTextStyle.of(context).style.merge(style),
+            ),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          final labelWidth = painter.width;
+          painter.dispose();
+          final buttonsInline = 2 + actions.length;
+          final roomInline =
+              constraints.maxWidth -
+              buttonsInline * AppDimensions.minTouchTarget;
+          final inline = actions.isEmpty || roomInline >= labelWidth;
+
+          final navRow = Row(
+            children: [
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.chevronLeft),
+                color: cs.onPrimaryContainer,
+                onPressed: onPrev,
+                tooltip: context.l10n.weeklyMenuPrevWeek,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          if (onSelectMode != null)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.listCheck),
-              color: cs.onPrimaryContainer,
-              onPressed: onSelectMode,
-              tooltip: context.l10n.weeklyMenuSelectAction,
-            ),
-          if (onCopyWeek != null)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.copy),
-              color: cs.onPrimaryContainer,
-              onPressed: onCopyWeek,
-              tooltip: context.l10n.weeklyMenuCopyToNextAction,
-            ),
-          if (onClearWeek != null)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.trash2),
-              color: cs.onPrimaryContainer,
-              onPressed: onClearWeek,
-              tooltip: context.l10n.weeklyMenuClearWeekAction,
-            ),
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.chevronRight),
-            color: cs.onPrimaryContainer,
-            onPressed: onNext,
-            tooltip: context.l10n.weeklyMenuNextWeek,
-          ),
-        ],
+              Expanded(
+                child: Text(
+                  label,
+                  key: labelKey,
+                  style: style,
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (inline) ...actions,
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.chevronRight),
+                color: cs.onPrimaryContainer,
+                onPressed: onNext,
+                tooltip: context.l10n.weeklyMenuNextWeek,
+              ),
+            ],
+          );
+          if (inline) return navRow;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              navRow,
+              Row(
+                key: actionsRowKey,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions,
+              ),
+            ],
+          );
+        },
       ),
     );
   }

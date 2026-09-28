@@ -94,14 +94,23 @@ class ButleryIcon extends Icon {
       iconColor = iconColor.withValues(alpha: iconColor.a * opacity);
     }
 
+    // Like [Icon], the glyph keeps its size when the parent forces a larger
+    // box: InputDecoration wraps a prefix or suffix icon in a 48 x 48 minimum,
+    // and a bare CustomPaint would stretch to fill it. The outer box takes
+    // the parent's constraints, the centred inner box keeps the icon size.
     return Semantics(
       label: semanticLabel,
       child: ExcludeSemantics(
         child: SizedBox(
           width: iconSize,
           height: iconSize,
-          child: CustomPaint(
-            painter: ButleryGlyphPainter(glyph, iconColor),
+          child: Center(
+            child: SizedBox.square(
+              dimension: iconSize,
+              child: CustomPaint(
+                painter: ButleryGlyphPainter(glyph, iconColor),
+              ),
+            ),
           ),
         ),
       ),
