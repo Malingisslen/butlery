@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:73ab669133076042c911957e542f86df0e92cc0e898a0a807ff0a7d51f409eb5 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:fcd2c72fad37ff4e28a0482599cc334417f11aedf169b6ae9d9a032fe7d2bf83 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -164,6 +164,26 @@ class AppColors {
   static const Color textAccent = Color(0xFFA15A0A);
   /// Snackbarens atgard pa surface.ink (Komponentark v1:747, #E09D50; produktbeslut PQ-09 = A). Palettfarg utan lagesberoende, eftersom ytan ar surface.ink i bada lagena. Star bara pa surface.ink: 5,43:1 dar. · palette.saffronLight
   static const Color textAccentOnInk = Color(0xFFE09D50);
+  /// Avstangd text pa papper (BUT-2191). Ytbunden till surface.base: golvet ar 3:1 (contrastPolicy disabled), och det nas dar (3,32:1 ljust, 3,04:1 morkt) men inte pa surface.raised (2,98:1 ljust, 2,00:1 morkt; dar galler textDisabled, som ar text.disabled.onRaised). Namnet textDisabled ar upptaget i det frysta kontraktet. Aldrig via opacitet. · semantic.text.disabled
+  static const Color textDisabledOnBase = Color(0xFF7D897C);
+  /// Avklarad rad (BUT-2147): genomstrykningen bar betydelsen, completed ar inte disabled. Ytbunden till surface.base: morkt #93A48D ger 6,02:1 dar men 3,96:1 pa surface.raised. · semantic.text.completed
+  static const Color textCompleted = Color(0xFF37453A);
+  /// Sekundar brodtext (BUT-2159): behorighetsforklaringen, matlagningslaget utan steg och fotoimportens hjalptext. Ytblind: minst 6,79:1 (morkt pa surface.raised). · semantic.text.bodyMuted
+  static const Color textBodyMuted = Color(0xFF37453A);
+  /// Vald yta (BUT-2198). Yta, inte text. · semantic.surface.selected
+  static const Color surfaceSelected = Color(0xFFE6EAD9);
+  /// Avgransning mellan ytor pa ink och inkRaised (BUT-2198). Dekorativ linje utan kontrastgolv, bar aldrig information. Anvands den som yta galler inkRaised #2F4437 i stallet. · semantic.border.onInk
+  static const Color borderOnInk = Color(0xFF3F5145);
+  /// Saffranstonad yta (BUT-2191): vald plats, i dag, pagaende. Bar text.primary och text.accent.onRaised; text.accent (#A15A0A, 4,38:1) ar forbjuden har. · semantic.surface.tint.accent
+  static const Color surfaceTintAccent = Color(0xFFF7E8D2);
+  /// Lerrod statusyta (BUT-2191). Bar text.danger och ink. · semantic.surface.tint.danger
+  static const Color surfaceTintDanger = Color(0xFFF2DDD6);
+  /// Gron statusyta (BUT-2191). Bar text.success och ink. · semantic.surface.tint.success
+  static const Color surfaceTintSuccess = Color(0xFFDFE8DC);
+  /// Varm notisyta pa papper (BUT-2191): upplysningar och kvar-att-losa-rutor. Bar text.body, ink, text.accent.onRaised och text.danger. · semantic.surface.tint.warning
+  static const Color surfaceTintWarning = Color(0xFFF0EEE2);
+  /// Ifylld kryssruta och radio (BUT-2191). Bar control.checked.foreground (textOnPrimary), 11,36:1 i bada lagena. · semantic.control.checked.background
+  static const Color controlCheckedBackground = Color(0xFF24382C);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.
