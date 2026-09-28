@@ -121,17 +121,9 @@ void main() {
       v['known_failures'],
     );
     for (final e in tickets.entries) {
-      expect(e.key, matches(RegExp(r'^(BUT-\d+|NY-P8-\d+)$')));
-      final m = e.value! as Map;
-      expect(m['filed'], e.key.startsWith('BUT-'));
-      if (m['filed'] != true) {
-        expect(m['title'], isNotNull, reason: '${e.key} has no proposed title');
-      }
+      expect(e.key, matches(RegExp(r'^BUT-\d+$')));
     }
-    expect(
-      (v['tickets_filed']! as int) + (v['tickets_proposed']! as int),
-      tickets.length,
-    );
+    expect(v['tickets_registered'], tickets.length);
   });
 
   test('the verdict follows Q8-01 = A from the counts', () {
@@ -141,13 +133,30 @@ void main() {
         (v['residue_lists_not_empty']! as List).isEmpty;
     expect(v['migration_complete'], empty ? 'YES' : startsWith('NO: '));
     final done = v['package8_done']! as String;
-    if ((v['failures_without_ticket']! as List).isNotEmpty ||
-        (v['tickets_proposed']! as int) > 0) {
+    if ((v['failures_without_ticket']! as List).isNotEmpty) {
       expect(done, startsWith('NOT_YET: '));
     }
     final md = renderMarkdown(census);
     expect(md, contains('**Package 8 done:** $done'));
     expect(md, contains('**Migration complete:** ${v['migration_complete']}'));
+  });
+
+  test('a known failure without a registered BUT ticket keeps package 8 '
+      'NOT_YET', () {
+    const file = 'test/views/design_states/known_state_findings.dart';
+    final source = CensusSource('.').read(file)!;
+    final unregistered = source.replaceFirst(
+      RegExp(r"KnownFinding\(\s*'BUT-\d+'"),
+      "KnownFinding('PROPOSED-1'",
+    );
+    expect(unregistered, isNot(source));
+    final v =
+        buildCensus(
+              CensusSource('.', overrides: {file: unregistered}),
+            )['verdict']!
+            as Map;
+    expect(v['failures_without_ticket'], hasLength(1));
+    expect(v['package8_done'], startsWith('NOT_YET: 1 known failures'));
   });
 
   test('two runs give byte-identical output', () {

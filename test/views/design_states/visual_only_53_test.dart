@@ -115,17 +115,10 @@ void main() {
         expect(parts, hasLength(4), reason: entry.key);
         expect(ids, contains(parts.take(3).join('::')), reason: entry.key);
         expect(
-          RegExp(r'^(BUT-\d+|NY-P8-\d\d)$').hasMatch(entry.value.ticket),
+          RegExp(r'^BUT-\d+$').hasMatch(entry.value.ticket),
           isTrue,
-          reason: '${entry.key} has no ticket',
+          reason: '${entry.key} needs a registered BUT ticket',
         );
-        if (entry.value.ticket.startsWith('NY-')) {
-          expect(
-            proposedTickets,
-            contains(entry.value.ticket),
-            reason: 'a proposed ticket needs its title in proposedTickets',
-          );
-        }
       }
       expect(
         knownStateFindings.length,

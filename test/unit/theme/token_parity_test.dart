@@ -24,23 +24,23 @@ import 'package:flutter_test/flutter_test.dart';
 /// key gets a member but its entry is still here, and when a key without a
 /// member is missing here.
 const semanticKeysWithoutMember = <String, String>{
-  'border.onInk': 'NY-P8-20',
-  'control.checked.background': 'NY-P8-12',
-  'surface.selected': 'NY-P8-20',
-  'surface.tint.accent': 'NY-P8-12',
-  'surface.tint.danger': 'NY-P8-12',
-  'surface.tint.success': 'NY-P8-12',
-  'surface.tint.warning': 'NY-P8-12',
-  'text.accent': 'NY-P8-12',
+  'border.onInk': 'BUT-2198',
+  'control.checked.background': 'BUT-2191',
+  'surface.selected': 'BUT-2198',
+  'surface.tint.accent': 'BUT-2191',
+  'surface.tint.danger': 'BUT-2191',
+  'surface.tint.success': 'BUT-2191',
+  'surface.tint.warning': 'BUT-2191',
+  'text.accent': 'BUT-2191',
   'text.bodyMuted': 'BUT-2159',
   'text.completed': 'BUT-2147',
-  'text.disabled': 'NY-P8-12',
+  'text.disabled': 'BUT-2191',
 };
 
-/// Tickets this file proposes, not yet filed (Linear's issue limit): title
-/// in one line. NY-P8-12 is proposed in known_state_findings.dart.
-const tokenProposedTickets = <String, String>{
-  'NY-P8-20':
+/// The package 8 ticket this file registered in Linear: title in one line.
+/// BUT-2191's title is in known_state_findings.dart (registeredTickets).
+const tokenRegisteredTickets = <String, String>{
+  'BUT-2198':
       'Semantic tokens with no generated app member outside the contrast pairs (surface.selected, border.onInk)',
 };
 
@@ -273,7 +273,7 @@ void main() {
       reason: 'these keys have a member now: remove their entries',
     );
     for (final ticket in semanticKeysWithoutMember.values) {
-      expect(ticket, matches(RegExp(r'^(BUT-\d+|NY-P8-\d+)$')));
+      expect(ticket, matches(RegExp(r'^BUT-\d+$')));
     }
   });
 

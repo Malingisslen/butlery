@@ -28,7 +28,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'known_a11y_findings.dart';
-import 'known_state_findings.dart';
 import 'state_harness.dart';
 import 'state_hosts.dart';
 import 'state_rules.dart';
@@ -217,13 +216,10 @@ void main() {
     );
     for (final entry in knownA11yFindings.entries) {
       expect(
-        RegExp(r'^(BUT-\d+|NY-P8-\d\d)$').hasMatch(entry.value),
+        RegExp(r'^BUT-\d+$').hasMatch(entry.value),
         isTrue,
-        reason: entry.key,
+        reason: '${entry.key} needs a registered BUT ticket',
       );
-      if (entry.value.startsWith('NY-')) {
-        expect(proposedTickets, contains(entry.value), reason: entry.key);
-      }
     }
     expect(stateHosts, isNotEmpty);
   });

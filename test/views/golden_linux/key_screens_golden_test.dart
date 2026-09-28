@@ -55,12 +55,12 @@ final _screens = <_KeyScreen>[
     row: 'veckogenerering::LOADING',
     after: Duration(seconds: 6),
   ),
-  // The open list's header fails its layout today (NY-P8-07); a picture of
+  // The open list's header fails its layout today (BUT-2186); a picture of
   // that would lock the failure in as the baseline.
   const _KeyScreen(
     'inkopslista',
     row: 'inköpslista::DEFAULT',
-    blockedBy: 'NY-P8-07',
+    blockedBy: 'BUT-2186',
   ),
   const _KeyScreen('receptdetalj', row: 'receptdetalj::DEFAULT'),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
@@ -81,13 +81,13 @@ void main() {
   });
 
   test('every key screen names a harness row or a host, and a block is '
-      'a proposed ticket', () {
+      'a registered package 8 ticket', () {
     expect(_screens, hasLength(11));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);
       if (s.blockedBy != null) {
-        expect(proposedTickets, contains(s.blockedBy), reason: s.name);
+        expect(registeredTickets, contains(s.blockedBy), reason: s.name);
       }
     }
   });
@@ -95,18 +95,25 @@ void main() {
   test(
     'the Linux baselines are committed',
     () => expect(linuxBaselinesMissing, isFalse),
-    skip: !Platform.isLinux
-        ? 'compared on Linux only'
-        : linuxBaselinesMissing
-        ? 'NY-P8-18: no PNGs in $linuxGoldenDir yet; the key-screen '
-              'comparisons are skipped until they are committed (README.md)'
-        : false,
+    skip: Platform.isLinux ? false : 'compared on Linux only',
   );
 
   for (final screen in _screens) {
     for (final mode in [Brightness.light, Brightness.dark]) {
       final modeName = mode == Brightness.dark ? 'dark' : 'light';
       final file = 'goldens/${screen.name}_$modeName.png';
+      // A blocked screen is reported as skipped with its ticket as the
+      // reason (testWidgets takes no skip reason).
+      if (screen.blockedBy != null) {
+        test(
+          '${screen.name} ($modeName)',
+          () {},
+          skip:
+              '${screen.blockedBy}: no stable picture until it is fixed '
+              '(README.md, Blocked screens)',
+        );
+        continue;
+      }
       testWidgets(
         '${screen.name} ($modeName)',
         (tester) async {
@@ -146,9 +153,7 @@ void main() {
             },
           );
         },
-        skip:
-            screen.blockedBy != null ||
-            !(linuxGoldensCompareHere || goldenSmokeRun),
+        skip: !(linuxGoldensCompareHere || goldenSmokeRun),
       );
     }
   }

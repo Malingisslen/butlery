@@ -8,18 +8,12 @@ and macOS the tests report as skipped, and `--update-goldens` refuses to run.
 The ten older Windows-pinned PNGs under `test/widget/` are separate and
 unchanged (`test/widget/golden/golden_helper.dart`).
 
-## First landing (NY-P8-18)
+## Landed
 
-GitHub runs a `workflow_dispatch` workflow only once its file is on the
-default branch, so the PNGs cannot be made before
-`.github/workflows/goldens-linux-update.yml` is on `main`. Until
-`goldens/` exists the comparisons are skipped (`linuxBaselinesMissing`) and
-the test `the Linux baselines are committed` reports as skipped with
-NY-P8-18, so `views (ubuntu)` stays green. Order:
-
-1. Land the workflow file on `main` (with the tests, which skip).
-2. On a new branch, follow "Regenerate" below and commit `goldens/`.
-3. From then on a missing or changed PNG fails `views (ubuntu)`.
+The 20 PNGs in `goldens/` were made by the `goldens-linux-update` workflow
+(run 36387805864) and committed in package 8. A missing or changed PNG now
+fails `views (ubuntu)`, and so does a missing `goldens/` directory (the
+test `the Linux baselines are committed`).
 
 ## Regenerate
 
@@ -44,5 +38,7 @@ screen without taking a picture, to see that the hosts still build.
 
 ## Blocked screens
 
-`inkopslista` is skipped until NY-P8-07 is fixed: the open list's header
-fails its layout, and a picture of that would become the baseline.
+`inkopslista` is skipped, with BUT-2186 as the reason, until that ticket
+is fixed: the open list's header fails its layout, and a picture of that
+would become the baseline. When it is fixed, remove `blockedBy`, run the
+workflow and commit `inkopslista_light.png` and `inkopslista_dark.png`.

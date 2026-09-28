@@ -647,7 +647,9 @@ Map<String, int> _countBy(Iterable<String> values) {
   return out;
 }
 
-final _ticketPattern = RegExp(r'^(BUT-\d+|NY-P8-\d+)$');
+/// A registered Linear issue. Anything else (a proposed id, a free-text
+/// note) counts as no ticket.
+final _ticketPattern = RegExp(r'^BUT-\d+$');
 
 /// A known failure, for the ticket index.
 class _Finding {
@@ -690,7 +692,10 @@ Map<String, Object?> _states(CensusSource src, List<_Finding> out) {
   if (fixture == null) return {'status': notPresent, 'file': _statesFixture};
   final rows = (fixture['rows'] as List).cast<Map<String, dynamic>>();
   final findings = _collection(src.read(_stateFindings), 'knownStateFindings');
-  final proposed = _collection(src.read(_stateFindings), 'proposedTickets');
+  final registered = _collection(
+    src.read(_stateFindings),
+    'registeredTickets',
+  );
   final byCase = <String, List<_Entry>>{};
   for (final f in findings.entries) {
     final parts = f.key.split('::');
@@ -749,7 +754,7 @@ Map<String, Object?> _states(CensusSource src, List<_Finding> out) {
       findings.entries.map((f) => f.key.split('::').last),
     ),
     'findings_not_matching_a_state': unmatched,
-    'proposed_ticket_count': proposed.entries.length,
+    'registered_ticket_titles': registered.entries.length,
   };
 }
 
@@ -1016,7 +1021,7 @@ String _stripComments(String? source) {
 
 Map<String, Object?> _ticketIndex(
   List<_Finding> findings,
-  Map<String, String> proposedTitles,
+  Map<String, String> titles,
 ) {
   final byTicket = <String, Map<String, int>>{};
   final untracked = <String>[];
@@ -1032,8 +1037,7 @@ Map<String, Object?> _ticketIndex(
   final tickets = <String, Object?>{};
   for (final t in byTicket.keys.toList()..sort()) {
     tickets[t] = {
-      'filed': t.startsWith('BUT-'),
-      'title': proposedTitles[t],
+      'title': titles[t],
       'findings': byTicket[t],
     };
   }
@@ -1061,25 +1065,21 @@ Map<String, Object?> buildCensus(CensusSource src) {
   };
   final ratchets = _ratchets(src);
 
-  final proposedTitles = <String, String>{
+  final titles = <String, String>{
     for (final e in _collection(
       src.read(_stateFindings),
-      'proposedTickets',
+      'registeredTickets',
     ).entries)
       e.key: e.values.join(),
     for (final e in _collection(
       src.read(_tokenTest),
-      'tokenProposedTickets',
+      'tokenRegisteredTickets',
     ).entries)
       e.key: e.values.join(),
   };
-  final index = _ticketIndex(findings, proposedTitles);
+  final index = _ticketIndex(findings, titles);
   final tickets = index['tickets']! as Map<String, Object?>;
   final untracked = index['untracked']! as List<String>;
-  final proposed = tickets.entries
-      .where((e) => !((e.value! as Map)['filed'] as bool))
-      .map((e) => e.key)
-      .toList();
 
   final byList = _countBy(findings.map((f) => f.list));
   final residue = [
@@ -1096,15 +1096,14 @@ Map<String, Object?> buildCensus(CensusSource src) {
   if (missingInputs.isNotEmpty) {
     package8 = 'NOT_YET: inputs not present: ${missingInputs.join(', ')}';
   } else if (untracked.isNotEmpty) {
-    package8 = 'NOT_YET: ${untracked.length} known failures have no ticket';
-  } else if (proposed.isNotEmpty) {
     package8 =
-        'NOT_YET: every known failure has a ticket, but ${proposed.length} '
-        'tickets are only proposed (NY-P8-nn) and not filed in Linear';
+        'NOT_YET: ${untracked.length} known failures have no registered '
+        'ticket (BUT-nnnn)';
   } else {
     package8 =
-        'YES_WHEN_CI_IS_GREEN: every known failure has a filed ticket; '
-        'green tests are shown by CI, not by this census';
+        'YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket '
+        '(BUT-nnnn in Linear); green tests are shown by CI, not by this '
+        'census';
   }
   final complete = findings.isEmpty && residue.isEmpty;
 
@@ -1123,8 +1122,7 @@ Map<String, Object?> buildCensus(CensusSource src) {
                 'residue lists are not empty',
       'known_failures': findings.length,
       'known_failures_by_list': byList,
-      'tickets_filed': tickets.length - proposed.length,
-      'tickets_proposed': proposed.length,
+      'tickets_registered': tickets.length,
       'failures_without_ticket': untracked,
       'residue_lists_not_empty': residue,
     },
@@ -1182,8 +1180,7 @@ String renderMarkdown(Map<String, Object?> census) {
       'a check, a view case), so one cause can appear in more than one list.',
     )
     ..writeln(
-      '- Tickets: ${v['tickets_filed']} filed, '
-      '${v['tickets_proposed']} proposed and not yet filed',
+      '- Tickets: ${v['tickets_registered']} registered in Linear',
     )
     ..writeln(
       '- Failures without a ticket: '
@@ -1390,18 +1387,18 @@ String renderMarkdown(Map<String, Object?> census) {
     ..writeln('## Known failures by ticket')
     ..writeln()
     ..writeln(
-      'A ticket NY-P8-nn is proposed and not yet filed: the Linear '
-      "workspace has reached its plan's issue limit.",
+      'Every ticket is a registered Linear issue. A failure whose ticket '
+      'is not a BUT-nnnn id is listed above as without a ticket. Titles '
+      'are given for the tickets package 8 registered.',
     )
     ..writeln()
-    ..writeln('| Ticket | Filed | Findings | Title (proposed only) |')
-    ..writeln('| --- | --- | --- | --- |');
+    ..writeln('| Ticket | Findings | Title (package 8 tickets) |')
+    ..writeln('| --- | --- | --- |');
   final tickets = census['tickets']! as Map<String, Object?>;
   for (final e in tickets.entries) {
     final m = e.value! as Map;
     b.writeln(
-      '| ${e.key} | ${m['filed'] == true ? 'yes' : 'no'} | '
-      '${counts(m['findings'])} | ${m['title'] ?? ''} |',
+      '| ${e.key} | ${counts(m['findings'])} | ${m['title'] ?? ''} |',
     );
   }
 

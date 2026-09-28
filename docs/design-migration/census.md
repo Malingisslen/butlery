@@ -6,11 +6,11 @@
 
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
-- **Package 8 done:** NOT_YET: every known failure has a ticket, but 19 tickets are only proposed (NY-P8-nn) and not filed in Linear
+- **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
 - **Migration complete:** NO: 365 known failures and 2 residue lists are not empty
 - Known failures: 365 (a11y 214, contrast 18, interaction_checks 12, interactions 6, states53 72, tokens 11, transitions 32)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 22 filed, 19 proposed and not yet filed
+- Tickets: 41 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
@@ -83,24 +83,24 @@ Declared pairs: 36. Measured in both modes: 18; unmeasurable (no generated membe
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
-| `control.checked.foreground on control.checked.background` | NY-P8-12 |
-| `dataScale.onFill.step1 on dataScale.sequential[0]` | NY-P8-12 |
-| `dataScale.onFill.step2 on dataScale.sequential[1]` | NY-P8-12 |
-| `dataScale.onFill.step3 on dataScale.sequential[2]` | NY-P8-12 |
-| `dataScale.onFill.step4 on dataScale.sequential[3]` | NY-P8-12 |
-| `dataScale.onFill.step5 on dataScale.sequential[4]` | NY-P8-12 |
-| `text.accent on surface.base` | NY-P8-12 |
-| `text.accent on surface.raised` | NY-P8-12 |
-| `text.accent.onRaised on surface.tint.accent` | NY-P8-12 |
-| `text.accent.onRaised on surface.tint.warning` | NY-P8-12 |
-| `text.body on surface.tint.warning` | NY-P8-12 |
+| `control.checked.foreground on control.checked.background` | BUT-2191 |
+| `dataScale.onFill.step1 on dataScale.sequential[0]` | BUT-2191 |
+| `dataScale.onFill.step2 on dataScale.sequential[1]` | BUT-2191 |
+| `dataScale.onFill.step3 on dataScale.sequential[2]` | BUT-2191 |
+| `dataScale.onFill.step4 on dataScale.sequential[3]` | BUT-2191 |
+| `dataScale.onFill.step5 on dataScale.sequential[4]` | BUT-2191 |
+| `text.accent on surface.base` | BUT-2191 |
+| `text.accent on surface.raised` | BUT-2191 |
+| `text.accent.onRaised on surface.tint.accent` | BUT-2191 |
+| `text.accent.onRaised on surface.tint.warning` | BUT-2191 |
+| `text.body on surface.tint.warning` | BUT-2191 |
 | `text.bodyMuted on surface.base` | BUT-2159 |
 | `text.completed on surface.base` | BUT-2147 |
-| `text.danger on surface.tint.danger` | NY-P8-12 |
-| `text.danger on surface.tint.warning` | NY-P8-12 |
-| `text.disabled on surface.base` | NY-P8-12 |
-| `text.primary on surface.tint.accent` | NY-P8-12 |
-| `text.success on surface.tint.success` | NY-P8-12 |
+| `text.danger on surface.tint.danger` | BUT-2191 |
+| `text.danger on surface.tint.warning` | BUT-2191 |
+| `text.disabled on surface.base` | BUT-2191 |
+| `text.primary on surface.tint.accent` | BUT-2191 |
+| `text.success on surface.tint.success` | BUT-2191 |
 
 ## Accessibility matrix
 
@@ -116,17 +116,17 @@ tokens.json 1.13 (sha256 `444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec
 
 | Semantic key without a member | Ticket |
 | --- | --- |
-| `border.onInk` | NY-P8-20 |
-| `control.checked.background` | NY-P8-12 |
-| `surface.selected` | NY-P8-20 |
-| `surface.tint.accent` | NY-P8-12 |
-| `surface.tint.danger` | NY-P8-12 |
-| `surface.tint.success` | NY-P8-12 |
-| `surface.tint.warning` | NY-P8-12 |
-| `text.accent` | NY-P8-12 |
+| `border.onInk` | BUT-2198 |
+| `control.checked.background` | BUT-2191 |
+| `surface.selected` | BUT-2198 |
+| `surface.tint.accent` | BUT-2191 |
+| `surface.tint.danger` | BUT-2191 |
+| `surface.tint.success` | BUT-2191 |
+| `surface.tint.warning` | BUT-2191 |
+| `text.accent` | BUT-2191 |
 | `text.bodyMuted` | BUT-2159 |
 | `text.completed` | BUT-2147 |
-| `text.disabled` | NY-P8-12 |
+| `text.disabled` | BUT-2191 |
 
 ## Icon residue
 
@@ -135,51 +135,51 @@ Rows still listed for files that are deleted (not counted): `lib/widgets/common/
 
 ## Known failures by ticket
 
-A ticket NY-P8-nn is proposed and not yet filed: the Linear workspace has reached its plan's issue limit.
+Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-nnnn id is listed above as without a ticket. Titles are given for the tickets package 8 registered.
 
-| Ticket | Filed | Findings | Title (proposed only) |
-| --- | --- | --- | --- |
-| BUT-2140 | yes | transitions 1 |  |
-| BUT-2142 | yes | transitions 5 |  |
-| BUT-2147 | yes | contrast 1, tokens 1 |  |
-| BUT-2148 | yes | interaction_checks 4, interactions 2 |  |
-| BUT-2151 | yes | transitions 1 |  |
-| BUT-2158 | yes | transitions 2 |  |
-| BUT-2159 | yes | contrast 1, tokens 1 |  |
-| BUT-2160 | yes | transitions 2 |  |
-| BUT-2162 | yes | transitions 8 |  |
-| BUT-2163 | yes | transitions 1 |  |
-| BUT-2164 | yes | transitions 1 |  |
-| BUT-2168 | yes | transitions 3 |  |
-| BUT-2169 | yes | transitions 1 |  |
-| BUT-2170 | yes | transitions 1 |  |
-| BUT-2171 | yes | transitions 1 |  |
-| BUT-2172 | yes | transitions 1 |  |
-| BUT-2173 | yes | transitions 1 |  |
-| BUT-2174 | yes | transitions 1 |  |
-| BUT-2175 | yes | transitions 2 |  |
-| BUT-2176 | yes | interaction_checks 2, interactions 1 |  |
-| BUT-2177 | yes | interaction_checks 4, interactions 2 |  |
-| BUT-2178 | yes | interaction_checks 2, interactions 1 |  |
-| NY-P8-01 | no | a11y 18, states53 4 | Admin: the top bar filter row overflows by 8 px (butlery_top_bar.dart undersida bottom, 56 px row) |
-| NY-P8-02 | no | states53 8 | Dialogs and sheets dim with Flutter black54, not semantic.scrim |
-| NY-P8-03 | no | states53 8 | No offline banner ("Ingen anslutning") on this view |
-| NY-P8-04 | no | states53 24 | Opacity used as decoration or state, off the opacityLadder |
-| NY-P8-05 | no | states53 4 | Disabled fields and buttons use Material default opacity (0.38/0.5), not text.disabled/surface.disabled |
-| NY-P8-06 | no | states53 8 | Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens |
-| NY-P8-07 | no | a11y 22, states53 6 | Shopping list header: "Sortera kategorier" OutlinedButton gets infinite width in a Row (theme minimumSize width infinity), layout fails on every open list |
-| NY-P8-08 | no | states53 2 | Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101) |
-| NY-P8-09 | no | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
-| NY-P8-10 | no | states53 2 | Add members shows the empty state, not loading, while the friends service is still loading |
-| NY-P8-11 | no | states53 2 | Member management dialog overflows by 68 px at 360 dp |
-| NY-P8-12 | no | contrast 16, tokens 7 | Contrast pairs in tokens.json with no generated app member (text.accent, text.disabled, surface.tint.*, control.checked.background, dataScale.*) |
-| NY-P8-13 | no | a11y 28 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
-| NY-P8-14 | no | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
-| NY-P8-15 | no | a11y 42 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp, shared list button 40 dp) |
-| NY-P8-16 | no | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
-| NY-P8-17 | no | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
-| NY-P8-19 | no | states53 2 | Hem tonight card eyebrow draws palette.saffronLight #E09D50 in dark; Skarmar v12 del 1:47 (--r04slot-765) draws #DCA968 in dark |
-| NY-P8-20 | no | tokens 2 | Semantic tokens with no generated app member outside the contrast pairs (surface.selected, border.onInk) |
+| Ticket | Findings | Title (package 8 tickets) |
+| --- | --- | --- |
+| BUT-2140 | transitions 1 |  |
+| BUT-2142 | transitions 5 |  |
+| BUT-2147 | contrast 1, tokens 1 |  |
+| BUT-2148 | interaction_checks 4, interactions 2 |  |
+| BUT-2151 | transitions 1 |  |
+| BUT-2158 | transitions 2 |  |
+| BUT-2159 | contrast 1, tokens 1 |  |
+| BUT-2160 | transitions 2 |  |
+| BUT-2162 | transitions 8 |  |
+| BUT-2163 | transitions 1 |  |
+| BUT-2164 | transitions 1 |  |
+| BUT-2168 | transitions 3 |  |
+| BUT-2169 | transitions 1 |  |
+| BUT-2170 | transitions 1 |  |
+| BUT-2171 | transitions 1 |  |
+| BUT-2172 | transitions 1 |  |
+| BUT-2173 | transitions 1 |  |
+| BUT-2174 | transitions 1 |  |
+| BUT-2175 | transitions 2 |  |
+| BUT-2176 | interaction_checks 2, interactions 1 |  |
+| BUT-2177 | interaction_checks 4, interactions 2 |  |
+| BUT-2178 | interaction_checks 2, interactions 1 |  |
+| BUT-2180 | a11y 18, states53 4 | Admin: the top bar filter row overflows by 8 px (butlery_top_bar.dart undersida bottom, 56 px row) |
+| BUT-2181 | states53 8 | Dialogs and sheets dim with Flutter black54, not semantic.scrim |
+| BUT-2182 | states53 8 | No offline banner ("Ingen anslutning") on this view |
+| BUT-2183 | states53 24 | Opacity used as decoration or state, off the opacityLadder |
+| BUT-2184 | states53 4 | Disabled fields and buttons use Material default opacity (0.38/0.5), not text.disabled/surface.disabled |
+| BUT-2185 | states53 8 | Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens |
+| BUT-2186 | a11y 22, states53 6 | Shopping list header: "Sortera kategorier" OutlinedButton gets infinite width in a Row (theme minimumSize width infinity), layout fails on every open list |
+| BUT-2187 | states53 2 | Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101) |
+| BUT-2189 | states53 2 | Add members shows the empty state, not loading, while the friends service is still loading |
+| BUT-2190 | states53 2 | Member management dialog overflows by 68 px at 360 dp |
+| BUT-2191 | contrast 16, tokens 7 | Contrast pairs in tokens.json with no generated app member (text.accent, text.disabled, surface.tint.*, control.checked.background, dataScale.*) |
+| BUT-2192 | a11y 28 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
+| BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
+| BUT-2194 | a11y 42 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp, shared list button 40 dp) |
+| BUT-2195 | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
+| BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
+| BUT-2197 | states53 2 | Hem tonight card eyebrow draws palette.saffronLight #E09D50 in dark; Skarmar v12 del 1:47 (--r04slot-765) draws #DCA968 in dark |
+| BUT-2198 | tokens 2 | Semantic tokens with no generated app member outside the contrast pairs (surface.selected, border.onInk) |
+| BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
 
 ## Ratchets and adoption lists
 

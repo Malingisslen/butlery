@@ -24,13 +24,13 @@ import '../design_states/state_harness.dart';
 /// Where the Linux PNGs live, from the package root.
 const linuxGoldenDir = 'test/views/golden_linux/goldens';
 
-/// No PNGs committed yet, and this is not the run that makes them.
+/// No PNGs in [linuxGoldenDir], and this is not the run that makes them.
 ///
-/// The PNGs can only be made by the goldens-linux-update workflow, and
-/// GitHub runs a workflow_dispatch workflow only once its file is on the
-/// default branch. Until the PNGs are committed (NY-P8-18) the comparison
-/// is skipped rather than failing views (ubuntu) on files that cannot exist
-/// yet. Once goldens/ exists, a missing or changed PNG fails as usual.
+/// The PNGs are committed (made by the goldens-linux-update workflow), so
+/// on Linux this is false and a missing or changed PNG fails as usual. If
+/// goldens/ were deleted, the comparisons would skip, but the test "the
+/// Linux baselines are committed" fails on Linux, so views (ubuntu) goes
+/// red rather than silently green.
 bool get linuxBaselinesMissing =>
     !autoUpdateGoldenFiles && !Directory(linuxGoldenDir).existsSync();
 
