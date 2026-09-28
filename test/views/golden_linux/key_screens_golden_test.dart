@@ -17,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../design_states/hosts/shopping_hosts.dart' show pantryWithItemsHost;
-import '../design_states/known_state_findings.dart';
 import '../design_states/state_harness.dart';
 import '../design_states/state_host.dart';
 import '../design_states/state_hosts.dart';
@@ -33,16 +32,12 @@ class _KeyScreen {
     this.row,
     this.host,
     this.after = Duration.zero,
-    this.blockedBy,
   });
 
   final String name;
   final String? row;
   final StateHost? host;
   final Duration after;
-
-  /// A known finding that keeps this screen from a stable picture.
-  final String? blockedBy;
 }
 
 final _screens = <_KeyScreen>[
@@ -55,13 +50,7 @@ final _screens = <_KeyScreen>[
     row: 'veckogenerering::LOADING',
     after: Duration(seconds: 6),
   ),
-  // The open list's header fails its layout today (BUT-2186); a picture of
-  // that would lock the failure in as the baseline.
-  const _KeyScreen(
-    'inkopslista',
-    row: 'inköpslista::DEFAULT',
-    blockedBy: 'BUT-2186',
-  ),
+  const _KeyScreen('inkopslista', row: 'inköpslista::DEFAULT'),
   const _KeyScreen('receptdetalj', row: 'receptdetalj::DEFAULT'),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
   const _KeyScreen('matlagningslage', row: 'matlagningsläge::DEFAULT'),
@@ -80,15 +69,11 @@ void main() {
     await loadGoldenFonts();
   });
 
-  test('every key screen names a harness row or a host, and a block is '
-      'a registered package 8 ticket', () {
+  test('every key screen names a harness row or a host', () {
     expect(_screens, hasLength(11));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);
-      if (s.blockedBy != null) {
-        expect(registeredTickets, contains(s.blockedBy), reason: s.name);
-      }
     }
   });
 
@@ -102,18 +87,6 @@ void main() {
     for (final mode in [Brightness.light, Brightness.dark]) {
       final modeName = mode == Brightness.dark ? 'dark' : 'light';
       final file = 'goldens/${screen.name}_$modeName.png';
-      // A blocked screen is reported as skipped with its ticket as the
-      // reason (testWidgets takes no skip reason).
-      if (screen.blockedBy != null) {
-        test(
-          '${screen.name} ($modeName)',
-          () {},
-          skip:
-              '${screen.blockedBy}: no stable picture until it is fixed '
-              '(README.md, Blocked screens)',
-        );
-        continue;
-      }
       testWidgets(
         '${screen.name} ($modeName)',
         (tester) async {

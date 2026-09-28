@@ -191,25 +191,27 @@ class ShoppingListHeader {
       children: [
         // Sort categories button
         if (onSortCategories != null)
-          OutlinedButton.icon(
-            onPressed: onSortCategories,
-            style: OutlinedButton.styleFrom(
-              padding: AppDimensions.paddingVertical8,
-              side: BorderSide(
-                color: cs.onSurfaceVariant.withValues(
-                  alpha: AppDimensions.opacityHalf,
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: onSortCategories,
+              style: OutlinedButton.styleFrom(
+                padding: AppDimensions.paddingVertical8,
+                side: BorderSide(
+                  color: cs.onSurfaceVariant.withValues(
+                    alpha: AppDimensions.opacityHalf,
+                  ),
                 ),
               ),
-            ),
-            icon: ButleryIcon(
-              ButleryIcons.arrowUpDown,
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant,
-            ),
-            label: Text(
-              context.l10n.shoppingSortCategories,
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              icon: ButleryIcon(
+                ButleryIcons.arrowUpDown,
+                size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
+              ),
+              label: Text(
+                context.l10n.shoppingSortCategories,
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ),

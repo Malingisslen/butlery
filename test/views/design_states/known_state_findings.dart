@@ -140,26 +140,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2183',
     'DecoratedBox #1ADCA968',
   ),
-  'inköpslista::DEFAULT::light::EXCEPTION': KnownFinding(
-    'BUT-2186',
-    'BoxConstraints forces an infinite width.',
-  ),
-  'inköpslista::DEFAULT::dark::EXCEPTION': KnownFinding(
-    'BUT-2186',
-    'BoxConstraints forces an infinite width.',
-  ),
-  'inköpslista::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#99FFFFFF ("Välj inköpslista")',
-  ),
-  'inköpslista::EMPTY::light::EXCEPTION': KnownFinding(
-    'BUT-2186',
-    'BoxConstraints forces an infinite width.',
-  ),
-  'inköpslista::EMPTY::dark::EXCEPTION': KnownFinding(
-    'BUT-2186',
-    'BoxConstraints forces an infinite width.',
-  ),
   'inköpslista::LOADING::light::OVERFLOW': KnownFinding(
     'BUT-2190',
     'A RenderFlex overflowed by 68 pixels on the right.',
@@ -183,18 +163,6 @@ const Map<String, KnownFinding> knownStateFindings = {
   'inköpslista::LOADING::dark::COLOUR_FILL': KnownFinding(
     'BUT-2181',
     'ColoredBox #8A000000, DecoratedBox #1AF5F4ED',
-  ),
-  'inköpslista::OFFLINE::light::EXCEPTION': KnownFinding(
-    'BUT-2186',
-    'BoxConstraints forces an infinite width.',
-  ),
-  'inköpslista::OFFLINE::dark::EXCEPTION': KnownFinding(
-    'BUT-2186',
-    'BoxConstraints forces an infinite width.',
-  ),
-  'inköpslista::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#99FFFFFF ("Välj inköpslista")',
   ),
   'profil-inställningar::OFFLINE::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
@@ -307,7 +275,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 70;
+const int knownStateFindingsCeiling = 62;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {
@@ -320,8 +288,8 @@ const Map<String, String> registeredTickets = {
       'Disabled fields and buttons use Material default opacity (0.38/0.5), not text.disabled/surface.disabled',
   'BUT-2185':
       'Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens',
-  'BUT-2186':
-      'Shopping list header: "Sortera kategorier" OutlinedButton gets infinite width in a Row (theme minimumSize width infinity), layout fails on every open list',
+  'BUT-2201':
+      'Shopping list header: three buttons in one row do not fit at 320 dp or 150/200 % text, and the 104 dp Sortera kategorier fails text contrast at 360 dp; the design puts Rensa köpta in the Köpt heading',
   'BUT-2187':
       'Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101)',
   'BUT-2199': 'Shared list header draws light text.body (#37453A) in dark mode',
