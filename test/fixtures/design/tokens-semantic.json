@@ -3,19 +3,24 @@
   "source": {
     "file": "tokens.json",
     "repo": "Butlery design system",
-    "commit": "2d237c8",
-    "sha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02"
+    "commit": "fbf13b7",
+    "sha256": "b53ccacfac72856ef17d510d3aa0cd8005c462d44858e764b85aa87d09abba11"
   },
   "version": "1.13",
   "date": "2026-08-05",
   "opacityLadder": {
     "onPaper": [
       0.02,
-      0.04
+      0.04,
+      0.1,
+      0.2,
+      0.4
     ],
     "onInk": [
       0.18,
       0.35,
+      0.4,
+      0.54,
       0.6
     ]
   },

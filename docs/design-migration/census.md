@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 367 known failures and 2 residue lists are not empty
-- Known failures: 367 (a11y 216, contrast 18, interaction_checks 12, interactions 6, states53 72, tokens 11, transitions 32)
+- **Migration complete:** NO: 362 known failures and 2 residue lists are not empty
+- Known failures: 362 (a11y 216, contrast 16, interaction_checks 12, interactions 6, states53 70, tokens 10, transitions 32)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 41 registered in Linear
+- Tickets: 40 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
@@ -60,9 +60,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 56; cases with a known finding: 50
-- States passing in both modes: 27 of 53
-- Known findings: 72 (ceiling 72); by rule: COLOUR_FILL 26, COLOUR_TEXT 22, EXCEPTION 6, NO_OFFLINE_BANNER 8, NO_PLATE_LINE 2, NO_UPDATED_BY_NOTICE 2, OVERFLOW 6
+- Cases passing: 58; cases with a known finding: 48
+- States passing in both modes: 29 of 53
+- Known findings: 70 (ceiling 70); by rule: COLOUR_FILL 26, COLOUR_TEXT 20, EXCEPTION 6, NO_OFFLINE_BANNER 8, NO_PLATE_LINE 2, NO_UPDATED_BY_NOTICE 2, OVERFLOW 6
 
 ## Required control states
 
@@ -79,7 +79,7 @@ Required: 33; MISSING 1, PARTIAL 5, TESTED 27. Unspecified in block 288 (not tes
 
 ## Contrast pairs
 
-Declared pairs: 36. Measured in both modes: 18; unmeasurable (no generated member): 18. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green.
+Declared pairs: 36. Measured in both modes: 20; unmeasurable (no generated member): 16. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
@@ -89,8 +89,6 @@ Declared pairs: 36. Measured in both modes: 18; unmeasurable (no generated membe
 | `dataScale.onFill.step3 on dataScale.sequential[2]` | BUT-2191 |
 | `dataScale.onFill.step4 on dataScale.sequential[3]` | BUT-2191 |
 | `dataScale.onFill.step5 on dataScale.sequential[4]` | BUT-2191 |
-| `text.accent on surface.base` | BUT-2191 |
-| `text.accent on surface.raised` | BUT-2191 |
 | `text.accent.onRaised on surface.tint.accent` | BUT-2191 |
 | `text.accent.onRaised on surface.tint.warning` | BUT-2191 |
 | `text.body on surface.tint.warning` | BUT-2191 |
@@ -111,9 +109,9 @@ Known findings: 216 (ceiling 216) in 180 cases (view, state, mode, width, text s
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02`); generated files say tokens 1.13 (light) and 1.13 (dark).
-- Semantic keys: 46; with a generated member: 35
-- Translucent semantic values on the opacityLadder: 6; off it: 13 (elevation.shadow dark 0.10; elevation.shadow light 0.10; overlay.inkLight dark 0.20; overlay.inkLight light 0.20; overlay.inkMedium dark 0.40; overlay.inkMedium light 0.40; overlay.inkSubtle dark 0.10; overlay.inkSubtle light 0.10; overlay.paperCard dark 0.54; overlay.paperCard light 0.54; overlay.paperWash dark 0.40; overlay.paperWash light 0.40; scrim light 0.40)
+tokens.json 1.13 (sha256 `b53ccacfac72856ef17d510d3aa0cd8005c462d44858e764b85aa87d09abba11`); generated files say tokens 1.13 (light) and 1.13 (dark).
+- Semantic keys: 46; with a generated member: 36
+- Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
 | Semantic key without a member | Ticket |
 | --- | --- |
@@ -124,7 +122,6 @@ tokens.json 1.13 (sha256 `444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec
 | `surface.tint.danger` | BUT-2191 |
 | `surface.tint.success` | BUT-2191 |
 | `surface.tint.warning` | BUT-2191 |
-| `text.accent` | BUT-2191 |
 | `text.bodyMuted` | BUT-2159 |
 | `text.completed` | BUT-2147 |
 | `text.disabled` | BUT-2191 |
@@ -172,13 +169,12 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2187 | states53 2 | Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101) |
 | BUT-2189 | states53 2 | Add members shows the empty state, not loading, while the friends service is still loading |
 | BUT-2190 | states53 2 | Member management dialog overflows by 68 px at 360 dp |
-| BUT-2191 | contrast 16, tokens 7 | Contrast pairs in tokens.json with no generated app member (text.accent, text.disabled, surface.tint.*, control.checked.background, dataScale.*) |
+| BUT-2191 | contrast 14, tokens 6 | Contrast pairs in tokens.json with no generated app member (text.accent, text.disabled, surface.tint.*, control.checked.background, dataScale.*) |
 | BUT-2192 | a11y 28 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 42 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp, shared list button 40 dp) |
 | BUT-2195 | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
 | BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
-| BUT-2197 | states53 2 | Hem tonight card eyebrow draws palette.saffronLight #E09D50 in dark; Skarmar v12 del 1:47 (--r04slot-765) draws #DCA968 in dark |
 | BUT-2198 | tokens 2 | Semantic tokens with no generated app member outside the contrast pairs (surface.selected, border.onInk) |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
 

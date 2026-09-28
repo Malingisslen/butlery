@@ -3,8 +3,8 @@
  "source": {
   "file": "tokens.json",
   "repo": "Butlery design system",
-  "commit": "b6ea27d (unchanged at 1f0105a)",
-  "sha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02",
+  "commit": "fbf13b7",
+  "sha256": "b53ccacfac72856ef17d510d3aa0cd8005c462d44858e764b85aa87d09abba11",
   "tokens_version": "1.13",
   "tokens_date": "2026-08-05"
  },
@@ -180,10 +180,10 @@
    "floor": 4.5
   },
   {
-   "fg": "text.accent",
+   "fg": "text.accent.onRaised",
    "bg": "surface.raised",
    "floor": 4.5,
-   "note": "Mörkt läge: #DCA968 mot #2F4437 = 4,95. Aldrig mot border.onInk."
+   "note": "Mörkt läge: #DCA968 mot #2F4437 = 4,95. Aldrig mot border.onInk. Paret hette tidigare text.accent; ljust #A15A0A ger bara 4,30 mot #E6EAD9 och gäller enligt text.accent.onRaised bara på papper, så paret bärs av text.accent.onRaised (#8A5212, 5,20). Rättat 2026-09-28 med Malins godkännande (runda 6)."
   },
   {
    "fg": "text.link",

@@ -187,7 +187,15 @@ void main() {
         final eyebrow = tester.widget<Text>(
           find.text('IKVÄLL · 45 MIN · 4 PORT.'),
         );
-        expect(eyebrow.style?.color, AppModeColors.textAccentOnInk());
+        // Skarmar v12 del 1:47 (--r04slot-765): #e09d50 light, #dca968
+        // dark, which is text.accent (produktbeslut R6-01 = A, BUT-2197).
+        expect(
+          eyebrow.style?.color,
+          b == Brightness.dark
+              ? const Color(0xFFDCA968)
+              : const Color(0xFFE09D50),
+        );
+        expect(eyebrow.style?.color, ModeColors.of(b).accentOnInk);
 
         // "allt i skafferiet" only because every ingredient is at home.
         final pantry = tester.widget<Text>(

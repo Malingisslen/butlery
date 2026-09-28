@@ -22,7 +22,6 @@ import 'package:flutter_test/flutter_test.dart';
 const knownContrastGaps = <String, String>{
   'text.bodyMuted on surface.base': 'BUT-2159',
   'text.completed on surface.base': 'BUT-2147',
-  'text.accent on surface.base': 'BUT-2191',
   'text.disabled on surface.base': 'BUT-2191',
   'control.checked.foreground on control.checked.background': 'BUT-2191',
   'dataScale.onFill.step1 on dataScale.sequential[0]': 'BUT-2191',
@@ -37,12 +36,11 @@ const knownContrastGaps = <String, String>{
   'text.accent.onRaised on surface.tint.accent': 'BUT-2191',
   'text.success on surface.tint.success': 'BUT-2191',
   'text.danger on surface.tint.danger': 'BUT-2191',
-  'text.accent on surface.raised': 'BUT-2191',
 };
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    '444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02';
+    'b53ccacfac72856ef17d510d3aa0cd8005c462d44858e764b85aa87d09abba11';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',

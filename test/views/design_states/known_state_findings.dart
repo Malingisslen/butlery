@@ -88,14 +88,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2181',
     'ColoredBox #8A000000',
   ),
-  'hem::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2197',
-    '#FFE09D50 ("IKVÄLL · 45 MIN · 4 PORT…")',
-  ),
-  'hem::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2197',
-    '#FFE09D50 ("IKVÄLL · 45 MIN · 4 PORT…")',
-  ),
   'import-av-recept::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2184',
     '#6124382C ("https://www.koket.se/kra…")',
@@ -315,7 +307,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 72;
+const int knownStateFindingsCeiling = 70;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {
@@ -348,6 +340,4 @@ const Map<String, String> registeredTickets = {
       'Tap targets without a label (smart import full-page tap area, add-members checkboxes)',
   'BUT-2196':
       'Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark',
-  'BUT-2197':
-      'Hem tonight card eyebrow draws palette.saffronLight #E09D50 in dark; Skarmar v12 del 1:47 (--r04slot-765) draws #DCA968 in dark',
 };
