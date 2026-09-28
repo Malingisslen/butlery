@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 362 known failures and 2 residue lists are not empty
-- Known failures: 362 (a11y 216, contrast 16, interaction_checks 12, interactions 6, states53 70, tokens 10, transitions 32)
+- **Migration complete:** NO: 343 known failures and 2 residue lists are not empty
+- Known failures: 343 (a11y 216, contrast 7, interaction_checks 12, interactions 6, states53 70, transitions 32)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 40 registered in Linear
+- Tickets: 38 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
@@ -79,26 +79,20 @@ Required: 33; MISSING 1, PARTIAL 5, TESTED 27. Unspecified in block 288 (not tes
 
 ## Contrast pairs
 
-Declared pairs: 35. Measured in both modes: 19; unmeasurable (no generated member): 16. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green.
+Declared pairs: 35. Measured in both modes: 30, of which under their floor: 2; unmeasurable (no generated member): 5. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
-| `control.checked.foreground on control.checked.background` | BUT-2191 |
 | `dataScale.onFill.step1 on dataScale.sequential[0]` | BUT-2191 |
 | `dataScale.onFill.step2 on dataScale.sequential[1]` | BUT-2191 |
 | `dataScale.onFill.step3 on dataScale.sequential[2]` | BUT-2191 |
 | `dataScale.onFill.step4 on dataScale.sequential[3]` | BUT-2191 |
 | `dataScale.onFill.step5 on dataScale.sequential[4]` | BUT-2191 |
-| `text.accent.onRaised on surface.tint.accent` | BUT-2191 |
-| `text.accent.onRaised on surface.tint.warning` | BUT-2191 |
-| `text.body on surface.tint.warning` | BUT-2191 |
-| `text.bodyMuted on surface.base` | BUT-2159 |
-| `text.completed on surface.base` | BUT-2147 |
-| `text.danger on surface.tint.danger` | BUT-2191 |
-| `text.danger on surface.tint.warning` | BUT-2191 |
-| `text.disabled on surface.base` | BUT-2191 |
-| `text.primary on surface.tint.accent` | BUT-2191 |
-| `text.success on surface.tint.success` | BUT-2191 |
+
+| Measured pair under its floor | Ticket |
+| --- | --- |
+| `text.danger on surface.tint.danger` | BUT-2200 |
+| `text.danger on surface.tint.warning` | BUT-2200 |
 
 ## Accessibility matrix
 
@@ -110,21 +104,11 @@ Known findings: 216 (ceiling 216) in 180 cases (view, state, mode, width, text s
 ## Token parity
 
 tokens.json 1.13 (sha256 `c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c`); generated files say tokens 1.13 (light) and 1.13 (dark).
-- Semantic keys: 46; with a generated member: 36
+- Semantic keys: 46; with a generated member: 46
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
 | Semantic key without a member | Ticket |
 | --- | --- |
-| `border.onInk` | BUT-2198 |
-| `control.checked.background` | BUT-2191 |
-| `surface.selected` | BUT-2198 |
-| `surface.tint.accent` | BUT-2191 |
-| `surface.tint.danger` | BUT-2191 |
-| `surface.tint.success` | BUT-2191 |
-| `surface.tint.warning` | BUT-2191 |
-| `text.bodyMuted` | BUT-2159 |
-| `text.completed` | BUT-2147 |
-| `text.disabled` | BUT-2191 |
 
 ## Icon residue
 
@@ -139,11 +123,9 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | --- | --- | --- |
 | BUT-2140 | transitions 1 |  |
 | BUT-2142 | transitions 5 |  |
-| BUT-2147 | contrast 1, tokens 1 |  |
 | BUT-2148 | interaction_checks 4, interactions 2 |  |
 | BUT-2151 | transitions 1 |  |
 | BUT-2158 | transitions 2 |  |
-| BUT-2159 | contrast 1, tokens 1 |  |
 | BUT-2160 | transitions 2 |  |
 | BUT-2162 | transitions 8 |  |
 | BUT-2163 | transitions 1 |  |
@@ -169,14 +151,14 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2187 | states53 2 | Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101) |
 | BUT-2189 | states53 2 | Add members shows the empty state, not loading, while the friends service is still loading |
 | BUT-2190 | states53 2 | Member management dialog overflows by 68 px at 360 dp |
-| BUT-2191 | contrast 14, tokens 6 | Contrast pairs in tokens.json with no generated app member (text.accent, text.disabled, surface.tint.*, control.checked.background, dataScale.*) |
+| BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
 | BUT-2192 | a11y 28 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 42 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp, shared list button 40 dp) |
 | BUT-2195 | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
 | BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
-| BUT-2198 | tokens 2 | Semantic tokens with no generated app member outside the contrast pairs (surface.selected, border.onInk) |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
+| BUT-2200 | contrast 2 | text.danger under its contrast floor on surface.tint.danger and surface.tint.warning in dark (#DE9078 on #2F4437, 4.18:1) |
 
 ## Ratchets and adoption lists
 
