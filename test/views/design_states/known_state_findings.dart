@@ -308,6 +308,4 @@ const Map<String, String> registeredTickets = {
       'Tap targets without a label (smart import full-page tap area, add-members checkboxes)',
   'BUT-2196':
       'Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark',
-  'BUT-2200':
-      'text.danger under its contrast floor on surface.tint.danger and surface.tint.warning in dark (#DE9078 on #2F4437, 4.18:1)',
 };

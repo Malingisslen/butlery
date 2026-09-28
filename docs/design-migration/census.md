@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 327 known failures and 2 residue lists are not empty
-- Known failures: 327 (a11y 208, contrast 7, interaction_checks 12, interactions 6, states53 62, transitions 32)
+- **Migration complete:** NO: 325 known failures and 2 residue lists are not empty
+- Known failures: 325 (a11y 208, contrast 5, interaction_checks 12, interactions 6, states53 62, transitions 32)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 38 registered in Linear
+- Tickets: 37 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
@@ -79,7 +79,7 @@ Required: 33; MISSING 1, PARTIAL 5, TESTED 27. Unspecified in block 288 (not tes
 
 ## Contrast pairs
 
-Declared pairs: 35. Measured in both modes: 30, of which under their floor: 2; unmeasurable (no generated member): 5. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
+Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; unmeasurable (no generated member): 5. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
@@ -88,11 +88,6 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 2; u
 | `dataScale.onFill.step3 on dataScale.sequential[2]` | BUT-2191 |
 | `dataScale.onFill.step4 on dataScale.sequential[3]` | BUT-2191 |
 | `dataScale.onFill.step5 on dataScale.sequential[4]` | BUT-2191 |
-
-| Measured pair under its floor | Ticket |
-| --- | --- |
-| `text.danger on surface.tint.danger` | BUT-2200 |
-| `text.danger on surface.tint.warning` | BUT-2200 |
 
 ## Accessibility matrix
 
@@ -103,7 +98,7 @@ Known findings: 208 (ceiling 208) in 174 cases (view, state, mode, width, text s
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c`); generated files say tokens 1.13 (light) and 1.13 (dark).
+tokens.json 1.13 (sha256 `44c86b645d23225f3e528120f278cd7e58b65b9803cfc6f558ca785998ff5688`); generated files say tokens 1.13 (light) and 1.13 (dark).
 - Semantic keys: 46; with a generated member: 46
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
@@ -157,7 +152,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2195 | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
 | BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
-| BUT-2200 | contrast 2 | text.danger under its contrast floor on surface.tint.danger and surface.tint.warning in dark (#DE9078 on #2F4437, 4.18:1) |
 | BUT-2201 | a11y 14 | Shopping list header: three buttons in one row do not fit at 320 dp or 150/200 % text, and the 104 dp Sortera kategorier fails text contrast at 360 dp; the design puts Rensa köpta in the Köpt heading |
 
 ## Ratchets and adoption lists

@@ -35,15 +35,11 @@ const knownContrastGaps = <String, String>{
 /// by "fg on bg", with their ticket. Shrink-only: the test fails when such a
 /// pair reaches its floor in both modes and its entry is still here. Fixing
 /// one is a design decision in tokens.json, never an edit here.
-const knownContrastFailures = <String, String>{
-  // Dark: text.danger #DE9078 on surface.tint.* #2F4437, 4.18:1.
-  'text.danger on surface.tint.danger': 'BUT-2200',
-  'text.danger on surface.tint.warning': 'BUT-2200',
-};
+const knownContrastFailures = <String, String>{};
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    'c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c';
+    '44c86b645d23225f3e528120f278cd7e58b65b9803cfc6f558ca785998ff5688';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',
