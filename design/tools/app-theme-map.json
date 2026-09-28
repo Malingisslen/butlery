@@ -402,7 +402,7 @@
   "surfaceTintDanger": [
    "semantic",
    "surface.tint.danger",
-   "Lerrod statusyta (BUT-2191). Bar text.danger och ink."
+   "Lerrod statusyta (BUT-2191). Bar text.danger.onRaised och ink."
   ],
   "surfaceTintSuccess": [
    "semantic",
@@ -412,7 +412,7 @@
   "surfaceTintWarning": [
    "semantic",
    "surface.tint.warning",
-   "Varm notisyta pa papper (BUT-2191): upplysningar och kvar-att-losa-rutor. Bar text.body, ink, text.accent.onRaised och text.danger."
+   "Varm notisyta pa papper (BUT-2191): upplysningar och kvar-att-losa-rutor. Bar text.body, ink, text.accent.onRaised och text.danger.onRaised."
   ],
   "controlCheckedBackground": [
    "semantic",
