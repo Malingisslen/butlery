@@ -1,0 +1,1479 @@
+
+── Rapportschema ur källan (tools/gen-schema.mjs)
+✔ fas0/verify-report.schema.json genererad ur REPORT_SCHEMA (butlery-verify-report/2)
+
+── Preflight: incheckad genererad kod (tools/preflight.mjs)
+✔ GEN-02  assets/generated/tokens.css · tokens 1.13 · generator tools/gen-css.mjs · fingeravtryck 5e423f8605df… oförändrat
+✔ GEN-02  lib/theme/butlery_tokens.dart · tokens 1.13 · generator tools/gen-flutter.mjs · fingeravtryck f5957e59f8e5… oförändrat
+✔ GEN-02  lib/theme/app_colors.dart · tokens 1.13 · generator tools/gen-app-theme.mjs · fingeravtryck 3ed8bfa7d6eb… oförändrat
+✔ GEN-02  lib/theme/app_text_styles.dart · tokens 1.13 · generator tools/gen-app-theme.mjs · fingeravtryck 3ed8bfa7d6eb… oförändrat
+✔ GEN-02  tools/gen-app-theme.mjs --check · kroppen är byteidentisk med generatorns resultat
+✔ GEN-02  tools/gen-css.mjs --check · kroppen är byteidentisk med generatorns resultat
+✔ GEN-02  tools/gen-flutter.mjs --check · kroppen är byteidentisk med generatorns resultat
+PREFLIGHT-SUMMARY checked=4 stale=0 fingerprint_drift=0 body_drift=0 generators=3 tokens=1.13
+
+── Ikonräkning (tools/gen-icons.mjs)
+usages uppdaterade för 78 glyfer · okända: inga · icons.json oförändrad — byteidentisk
+
+── Ram- och kontrollräkning (tools/gen-counts.mjs)
+COUNT-SUMMARY frames=279 items=328 controls=1372 roles=1372 hits=526
+räknat: frames 279 · items 328 · controls 1372 · roles 1372 · hits 526
+0 fil(er) uppdaterade
+
+── CSS ur tokens (tools/gen-css.mjs)
+tokens.css skriven · 198 variabelreferenser
+
+── Flutter-tema ur tokens (tools/gen-flutter.mjs)
+butlery_tokens.dart skriven · 272 rader
+
+── App-tema ur tokens (tools/gen-app-theme.mjs)
+app_colors.dart och app_text_styles.dart skrivna ur tokens 1.13
+
+── Källauktoritetsregister ur source-authority.json (tools/gen-authority.mjs)
+kallauktoritetsregister.md skrivet · 23 domäner · 7 genererade artefakter · 8 superseded · 20 indexrader generatorägda
+
+── Artefaktförslag ur registret (tools/gen-artifact-proposal.mjs)
+PROPOSE-SUMMARY undecided=29 proposed=29 exceptions=0 files=4 out=fas0/artefaktforslag.md
+
+── Manifestet mot enumeratorn (tools/gen-manifest.mjs --check)
+GEN-CHECK ok fas0/andrade-filer.md
+GEN-CHECK-SUMMARY generator=gen-manifest checked=1 drift=0
+
+── Genererad kod (tools/test-generated.mjs)
+CSS: 147 variabler, 4 block
+Dart: 8 klasser, 131 färger
+app_colors.dart: 120 medlemmar (61 mappade + 21 varumärken + 37 alias)
+app_text_styles.dart: 76 medlemmar, 16 stilar
+app-temat: 452 jämförda värden · colors 61 · aliases 37 · brands 21 · scheme 56 · typeRoles 16 · typeAliases 39 · typeSemantic 21 · legacy 201
+
+Genererad kod OK — fyra filer, genereringskontrakt uppfyllt.
+
+── Kontrollgeometri (tools/lint-controls.mjs)
+LC-COVERAGE unmarked_toggle=0 unmarked_chip=1 covered_toggle=34 covered_chip=44 covered_checkbox=145
+✖ LC-01 täckning · chip: 1 omärkta kandidater
+LC-SUMMARY deviations=307 coverage_errors=1 unmarked_toggle=0 unmarked_chip=1 covered_toggle=34 covered_chip=44 covered_checkbox=145
+✖ 307 avvikelse(r) mot tokens.controls och typskalan:
+
+  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html:737 [receptkommentarer] pill/badge padding 3 × 8 — pill 3 × 9, badge 2 × 7
+  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html:1090 [betygsammanslaget] chip padding 6 × 12 — ska vara 7 × 13 (kompakt 6 × 11)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:48 [bredbrytpunkter] radie 20 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:53 [bredbrytpunkter] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:76 [bredskal] 11 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:77 [bredskal] 11 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:79 [bredskal] 11 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:82 [bredskal] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:82 [bredskal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:108 [bredlandskap] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:110 [bredlandskap] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:111 [bredlandskap] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:120 [bredlandskap] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:121 [bredlandskap] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:122 [bredlandskap] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:124 [bredlandskap] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:124 [bredlandskap] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:134 [bredrecept] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:135 [bredrecept] textstorlek 30 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:138 [bredrecept] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:140 [bredrecept] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:147 [bredrecept] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:153 [bredrecept] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:154 [bredrecept] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:155 [bredrecept] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:156 [bredrecept] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:168 [bredmeny] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:168 [bredmeny] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:182 [bredmeny] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:184 [bredmeny] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:185 [bredmeny] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:186 [bredmeny] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:187 [bredmeny] 10.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:193 [bredmeny] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:197 [bredmeny] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:208 [bredinkop] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:213 [bredinkop] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:213 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:214 [bredinkop] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:214 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:215 [bredinkop] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:219 [bredinkop] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:219 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:226 [bredinkop] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:226 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:227 [bredinkop] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:227 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:228 [bredinkop] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:228 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:236 [bredinkop] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:249 [bredgrid] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:249 [bredgrid] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:250 [bredgrid] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:250 [bredgrid] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:259 [bredgrid] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:259 [bredgrid] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:260 [bredgrid] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:260 [bredgrid] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:261 [bredgrid] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:261 [bredgrid] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:271 [bredgrans] radie 20 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:291 [bredgrans] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:293 [bredgrans] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:298 [bredgrans] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:302 [bredgrans] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 10 bred layout.dc.html:309 [bredarbete] radie 20 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:59 [vmbnormal] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:63 [vmbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:64 [vmbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:65 [vmbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:65 [vmbnormal] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:91 [vmbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:91 [vmbnormal] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:95 [vmbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:95 [vmbnormal] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:107 [vmbtom] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:113 [vmbtom] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:114 [vmbtom] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:134 [vmbtom] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:134 [vmbtom] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:143 [vmbgenererar] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:143 [vmbgenererar] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:154 [vmbgenererar] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:154 [vmbgenererar] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:155 [vmbgenererar] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:171 [vmbgenererar] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:171 [vmbgenererar] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:181 [vmbomrostning] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:196 [vmbomrostning] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:196 [vmbomrostning] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:204 [vmbkonflikt] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:226 [vmbkonflikt] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:226 [vmbkonflikt] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:257 [vmbdelvis] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:257 [vmbdelvis] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:266 [vmboffline] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:271 [vmboffline] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:272 [vmboffline] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:272 [vmboffline] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:288 [vmboffline] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:288 [vmboffline] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:313 [vmbflytta] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:313 [vmbflytta] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:331 [rcbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:335 [rcbnormal] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:337 [rcbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:345 [rcbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:351 [rcbnormal] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:352 [rcbnormal] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:353 [rcbnormal] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:354 [rcbnormal] textstorlek 14.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:369 [rcbportion] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:371 [rcbportion] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:372 [rcbportion] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:372 [rcbportion] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:373 [rcbportion] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:373 [rcbportion] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:374 [rcbportion] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:374 [rcbportion] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:376 [rcbportion] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:376 [rcbportion] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:402 [rcbofullstandigt] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:426 [rcblaser] avatar 34 px — skalan är 26 / 32 / 40 / 54 / 72
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:426 [rcblaser] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:426 [rcblaser] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:429 [rcblaser] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:431 [rcblaser] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:436 [rcblaser] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:461 [rcbarvegods] pill/badge padding 2 × 5 — pill 3 × 9, badge 2 × 7
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:462 [rcbarvegods] pill/badge padding 2 × 5 — pill 3 × 9, badge 2 × 7
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:463 [rcbarvegods] pill/badge padding 2 × 5 — pill 3 × 9, badge 2 × 7
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:473 [rcbarvegods] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:473 [rcbarvegods] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:477 [rcbarvegods] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:483 [rcbarvegods] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:485 [rcbarvegods] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:500 [rcbkommentar] avatar 36 px — skalan är 26 / 32 / 40 / 54 / 72
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:501 [rcbkommentar] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:521 [rcboffline] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:524 [rcboffline] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:526 [rcboffline] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:531 [rcboffline] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:531 [rcboffline] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:558 [ikbnormal] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:563 [ikbnormal] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:563 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:564 [ikbnormal] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:564 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:565 [ikbnormal] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:569 [ikbnormal] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:569 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:570 [ikbnormal] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:570 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:576 [ikbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:576 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:577 [ikbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:577 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:578 [ikbnormal] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:578 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:586 [ikbnormal] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:595 [ikbtom] textstorlek 24 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:602 [ikbtom] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:613 [ikbdelad] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:613 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:618 [ikbdelad] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:618 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:619 [ikbdelad] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:619 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:620 [ikbdelad] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:620 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:626 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:627 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:630 [ikbdelad] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:630 [ikbdelad] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:640 [ikboffline] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:645 [ikboffline] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:646 [ikboffline] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:646 [ikboffline] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:647 [ikboffline] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:647 [ikboffline] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:652 [ikboffline] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:652 [ikboffline] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:719 [lgbgester] 11 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:733 [lgbgester] textstorlek 11.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:733 [lgbgester] 11.5 px i vikt 400 — under 12 px krävs 600, och 10,5 px endast 700
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:781 [lgbutan] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:784 [lgbutan] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 11 breda vyer.dc.html:785 [lgbutan] textstorlek 13.5 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 2.dc.html:455 [veckodolda] pill/badge padding 4 × 8 — pill 3 × 9, badge 2 × 7
+  Butlery Skarmar v12 etapp 2.dc.html:603 [veckokalender] pill/badge padding 4 × 4 — pill 3 × 9, badge 2 × 7
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:585 [behlarmnekat] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:607 [lagatimerlofte] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:611 [lagatimerlofte] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:624 [lagatimernotis] textstorlek 44 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:629 [lagatimernotis] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:629 [lagatimernotis] textstorlek 10 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:652 [lagatimerutgangen] textstorlek 44 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:657 [lagatimerutgangen] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:657 [lagatimerutgangen] textstorlek 10 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)
+  Butlery Skarmar v12 etapp 3 onboarding.dc.html:669 [lagatimerutgangen] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999
+  … och 107 fler
+
+0 element hoppade över via data-lint-exempt.
+
+── Spec-lint (tools/spec-lint.mjs)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+KÖRDA: A11Y-01 A11Y-02 T-01 T-02 T-03 T-04 T-05 T-06a T-06b T-07 T-08 T-09 T-10 T-11 T-12 T-14 T-15 T-16 T-17 T-18a T-18b T-19 T-20 T-21
+
+138 fel · 4 varningar
+◐ T-21  beslutade men ej aktiverade: 289 artefakter i draft — familj, hemrecept, installningar, laga, lagamorkt, lagastaende, notiser, offline, plussheet, skafferi, smartimport, snabbspara, sortera, start, tomtrecept, adminmorkt, allergener, arkivimport, chatt, chatt320, chattmorkt, dataexport, delatlista, delatmedmig, familjebetyg, fotoimport, grupp, inkopmerge, inkopmergeoppen, inloggning, inloggningmorkt, juridikmorkt, kalender, kontosakerhet, lagastaende320, meddelanden, menysmak, mer, onboarding, placera, skrivsjalv, statistik, taggar, vanner, vemat, admin, aldersgrans, betygsoversikt, delaark, delatlistor, dialogosparat, dialogradera, dialogratelimit, dialogsparameny, dialogvara, epostverif, familjeform, faq, forfragningar, hem360, ingredienssok, juridik, juridik412, konflikt, kontextmeny, lagaliggande, laggtillmedlemmar, langavarden, menyforhands, mfa, notisinstallningar, nydelatlista, nygruppchatt, onboardingimport, profil, publikprofil, rapporter, rapporter412, redigera, samtycke, skafferivara, snackbars, statefel, statefel412, stateladdar, stateladdar412, statetom, statetom412, storsttext, tadelning, taggdetalj, tangentbord, vanprofil, arkmorkt, betygperperson, betygsammanslaget, betygvemarket, betygvemat, chattmeny, chattredigerat, familjmedlemsamtycke, formularmorkt, hem, hemfel, hemladdar, hemmorkt, hemoffline, hemtom, lagasubst, lagatimers, okandingrediens, receptbildfel, receptcooksnap, receptdelningsstatus, receptkommentarer, safeareaandroid, safeareaios, synkko, utloggningko, utloggningtom, veckoallergi, vmbdelvis, vmbflytta, vmbgenererar, vmbkonflikt, vmbnormal, vmboffline, vmbomrostning, vmbtom, inkopbockad, inkopflerval, inkopgenererad, inkopkategoribyte, inkopkategoriordning, inkoputeslutna, skafferibas, skafferiflerval, skafferilagg, skafferivyn, delatclaimkonflikt, delatinkorg, delatlamna, delatlamnaagare, delatlasare, delatlistaaktiv, delatmindel, delatnarvaro, delatvidare, veckoautoplacerad, veckobyt, veckochips, veckodolda, veckofel, veckoflytta, veckogenererar, veckoinkop, veckokalender, veckonarvaro, veckonarvarooversikt, veckooverflow, veckoplacering, veckoplaceringavbryt, veckoplaceringvald, veckoprompt, veckoresultat, veckorostavgor, veckorosthistorik, veckorostlagg, veckorostning, veckorostutgang, veckoskrivover, authepost, authepostklar, authglomt, authlogga, authmfa, authskapa, behfoton, behkamera, behlarm, behlarmnekat, behnotiser, lagatimerlofte, lagatimernotis, lagatimerutgangen, onbalder, onbalderblock, onbaldermorkt, onbaldrefel, onballergi, onballergimorkt, onbateruppta, onbfel, onbfelmorkt, onbhoppa, onbimport, onbimportklar, onbklar, onbsenare, onbvalkommen, editorutkast, editorutkastval, imp1kalla, imp2hamtar, imp3granska, imp4sparad, imparkiv, impassist1, impassist2, impassist3, impassistavbryt, impcache, impdelning, impdelningsocial, impdubblett, impfil, impfoto, impgrans, impgransai, impinget, impoffline, impsocial, impurl, adminej, adminskal, cooksnapgalleri, cooksnapsynlighet, kontodelvis, kontoradera, kontoreauth, kontovantan, moddolj, modminderarig, modradera, modrapporter, modtom, taggexklusiv, taggkalla, taggregel, taggvillkor, vanprofildelning, dataexportfel, kontodataexport, kontojuridik, kontonotiser, kontosakerhetsvy, kontosamtycke, kontostatistik, mfaaktiv, mfalagg, minaanmalningar, notiscentral, notisertyp, notisrensa, samtyckeai, samtyckefornya, statistikfullstandighet, fbanmal, fbblockerade, fbformular, fbinkorgvy, fbknapp, flerbar, flergrupp, flermeny, flertagg, flertaggsam, flervalingang, globceremoni, globinstallera, globsession, globsessiontyst, globunderhall, insthushall, jurriktlinjer, kompkalla, komprost, kompsason, socbegar, socdelatvan, socflode, socgruppinfo, socintegritet, socknuff, socomrostning, socoverlat, soctomtingavanner, soctomttyst, sokpanel · aktiveras när deras activationBlockers är avklarade
+◐ T-04  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: opacitet 0.14 (1×) utanför opacityLadder
+◐ T-04  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: opacitet 0.12 (1×) utanför opacityLadder
+◐ T-11  00-spec-index.md: ”372 märkta kontroller” är handskriven — ankra den med <!--n:...--> eller märk raden <!--hist-->
+✖ T-21  obeslutat: 318 av 328 artefakter saknar klassificeringsbeslut — fördelat på del 3 sok och skalbevis 48, etapp 2 32, del 2 familj och socialt 30, etapp 3 onboarding 29 m.fl. · det är ett ofattat beslut, inte ett datafel
+✖ T-02  okänd token i contrastPairs: dataScale.onFill.step1 / dataScale.sequential[0]
+✖ T-02  okänd token i contrastPairs: dataScale.onFill.step2 / dataScale.sequential[1]
+✖ T-02  okänd token i contrastPairs: dataScale.onFill.step3 / dataScale.sequential[2]
+✖ T-02  okänd token i contrastPairs: dataScale.onFill.step4 / dataScale.sequential[3]
+✖ T-02  okänd token i contrastPairs: dataScale.onFill.step5 / dataScale.sequential[4]
+✖ T-02  text.danger mot surface.tint.warning (dark) = 4.18:1, golv 4.5
+✖ T-02  text.danger mot surface.tint.danger (dark) = 4.18:1, golv 4.5
+✖ T-02  text.accent mot surface.raised (light) = 4.30:1, golv 4.5
+✖ T-08  Butlery Skarmar v12 del 3 sok och skalbevis.dc.html: "Verifieringskod, sex siffror" deklarerar data-hit="behållaren 54 (rutorna 42 är visuella)" — 42 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html: "Bocka av pasta" deklarerar data-hit="raden 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html: "Bocka av kantareller" deklarerar data-hit="raden 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html: "Bocka av grädde" deklarerar data-hit="raden 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html: "Bocka av gul lök" deklarerar data-hit="raden 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html: "Bocka av pasta" deklarerar data-hit="raden 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html: "Bocka av kantareller" deklarerar data-hit="raden 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 10 bred layout.dc.html: "Lägg till" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 10 bred layout.dc.html: "Färre portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 10 bred layout.dc.html: "Fler portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Visa som lista" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Visa som vecka" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Rösta på torsdag middag" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Avgör fredag middag" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Behåll min version, Ärtsoppa" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Ugnspannkaka, placera" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Ärtsoppa, placera" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Rotsakslåda, placera" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Färre portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Fler portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Färre portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Fler portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Återställ till fyra portioner" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Mängd smör saknas. Fyll i" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Mängd kanel saknas. Fyll i" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Färre portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Fler portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Ändra sidordningen" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Gillar, 3, du har reagerat" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Reagera" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Börja laga" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Färre portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Fler portioner" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Ändra textstorlek" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Föregående steg" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Nästa steg" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Ändra textstorlek" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Stäng matlagningsläget" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Färre" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Fler" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Byt ut blandfärs" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Byt ut mjölk" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Byt ut ströbröd" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 11 breda vyer.dc.html: "Starta timer tio minuter" deklarerar data-hit="44" — 44 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av gul lök" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av potatis, bockad av Per" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av champinjoner" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av grädde, bockad av Anna" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av smör" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av champinjoner" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av grädde" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av pasta" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av smör" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av vitlök" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av champinjoner" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av potatis" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av grädde" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av smör" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av champinjoner" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 2.dc.html: "Bocka av grädde" deklarerar data-hit="wrapper 48 (rutan 24 är visuell)" — 24 dp är under golvet 48
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 3 onboarding.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 6 konto och integritet.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 6 konto och integritet.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 6 konto och integritet.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 6 konto och integritet.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: "Visa alla" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: "Visa nya" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: "Visa triagerade" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: "Visa lösta" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: "Status: ny. Ändra status" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "menuitem" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "menuitem" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "menuitem" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html: ogiltig roll "combobox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Gillar, 3, du har reagerat" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Mums, 1" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Reagera" deklarerar 44/44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Utan nötter" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Utan gluten" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Utan laktos" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Under 30 minuter" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "30 till 60 minuter" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Över en timme" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Med taggen Vardag" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Utan taggen Sött" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "Mormors" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: "arla.se, 89 procent, fastnar på portioner. Visa importerna" deklarerar 44px utan data-hit
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: ogiltig roll "searchbox" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-08  Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html: ogiltig roll "link" — tillåtna är button, tab, switch, radio, checkbox, textbox
+✖ T-14  K-01 (rad 59) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  K-02 (rad 60) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  K-07 (rad 67) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  K-08 (rad 68) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  T-01 (rad 75) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  T-04 (rad 78) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  S-01 (rad 101) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  S-02 (rad 102) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  S-07 (rad 105) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  S-05 (rad 106) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  Y-02 (rad 139) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  Y-03 (rad 140) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  P-01 (rad 424) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  P-02 (rad 425) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  P-03 (rad 426) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  P-04 (rad 427) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  P-05 (rad 428) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  T-14 (rad 550) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  T-15 (rad 551) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  T-16 (rad 552) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  BV-01 (rad 718) står "implementerad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  Y-07 (rad 749) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ T-14  Y-09 (rad 751) står "verifierad" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:"sökväg" · scope:all-screens · n/a: motivering
+✖ A11Y-01  Butlery Skarmar v12 del 1 recept och veckomeny.dc.html:1125 tillstånd "disabled" utan roll — ett halvt kontrakt granskas av ingen kontroll
+✖ A11Y-02  245 kontroller med inneboende tillstånd saknar data-a11y-state (switch 19 · tab 101 · radio 48 · checkbox 77) — kontraktet i Fas 3 gör fältet obligatoriskt
+
+── Verifierarens egna mutationsprov (tools/selftest.mjs)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+SELFTEST-BASELINE errors=138 warnings=4
+· FIXTUR assets/generated/tokens.css → tokens 1.13
+· FIXTUR lib/theme/butlery_tokens.dart → tokens 1.13
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ A11Y-01 · borttaget tillgängligt namn → A11Y-01 · nya diagnostiker: 4 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ A11Y-01 · state utan roll och namn → A11Y-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ A11Y-02 · borttaget tillstånd på en MÄRKT stateful kontroll → A11Y-02 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-15 field · tokensversion i indexet → T-15 · nya diagnostiker: 3 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-15 filename · komponentarkets version → T-15 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-15 dated · grundgranskningens datum → T-15 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 460 legacy · 24 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 · borttaget skärmbevis på bevisad rad → T-14 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 · screen-bevis som pekar på en ram som inte finns → T-14 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 1 typade · 460 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 · component-bevis mot avsnitt som inte finns → T-14 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 1 typade · 460 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 · manual-bevis mot kapitel som inte finns → T-14 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-15 manual-linked · handoffens manualversion → T-15 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-15 active-release · fontversionen → T-15 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-15 generated-header · versionen i headerraden → T-15 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-16 · dubblett-id över filgräns → T-16 · nya diagnostiker: 3 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-17 · intern länk till en ram i en annan fil → T-17 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-12 · citerat ankare utan ram → T-12 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-02 · kontrastpar under golvet → T-02 · nya diagnostiker: 3 (3 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-08 · deklarerad träffyta under golvet → T-08 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-10 · versionsrad i indexet motsäger filens egen version → T-10 · nya diagnostiker: 3 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 22 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-18a · kravrad med fel kolumnantal → T-18a · nya diagnostiker: 3 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 22 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-18b · okänd status i statuskolumnen → T-18b · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-19 · två tabellrader på samma källrad → T-19 · nya diagnostiker: 5 (5 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · negativt mått → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · okänd toppnyckel → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · chip.paddingY som text → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · button.iconSize som tal → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · button.iconSize med negativ post → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · lines.hairline negativ → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · labelWeight som ord → T-01 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · felstavat fältnamn → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · checkbox utan checkStroke → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · maxFaces = 0 → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · maxFaces som decimal → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · toggle.knob som sträng → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · okänd komponent i controls → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · statusPill.radius som boolean → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · tom avatarskala → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · emptyStateGlyph utan fullscreen → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · okänt fält i glyfen → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · app-theme-map med felaktig boldWeight → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · app-theme-map med okänd toppnyckel → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · rå färg i scheme.darkOverrides → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · typeSemantic.color mot en AppColors-medlem som inte finns → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  24 domäner (23 obligatoriska) · 23 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · två aktiva auktoriteter för samma domän → T-20 · nya diagnostiker: 4 (3 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · filversionen och självposten säger olika (F1-H01) → T-20 · nya diagnostiker: 3 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  22 domäner (23 obligatoriska) · 21 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · hela domänen Designvärden struken ur registret (F1-H04) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  24 domäner (23 obligatoriska) · 23 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · okänd domän tillagd i registret (F1-H04) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · content-style-guide.md deklarerad som 9.9 (F1-H05) → T-20 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 6 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · borttagen rad ur generatedArtifacts (F1-H06) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 8 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · extra rad i generatedArtifacts (F1-H06) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · extern auktoritet konsekvent omdöpt till en fil som inte finns (F1-H07) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · blocked och not run ihopslagna i statusordboken → T-20 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · deklarerad version som inte stämmer med filen → T-20 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  24 domäner (23 obligatoriska) · 22 active · 2 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · samma domän både active och planned (F1-H02) → T-20 · nya diagnostiker: 5 (3 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · historisk post satt som aktuell (F1-H02) → T-20 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · supersededBy som pekar i en cykel → T-20 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  19 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  28 datarader i versionstabellen · 32 filreferenser · 32 mätta
+✔ T-10 · obligatorisk auth:-rad struken ur versionstabellen (F1-U02) → T-10 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-10 · filkolumnen ändrad, version och status orörda (F1-U02) → T-10 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  19 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-10 · markören borttagen men raden kvar (F1-U02) → T-10 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  21 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-10 · okänd auth:-markör tillagd (F1-U02) → T-10 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  21 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-10 · dubblerad auth:-markör (F1-U02) → T-10 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · fel version i styrdokumentets auktoritetspost (F1-U06) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · titel och versionsplakett säger olika (F1-U06) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · två olika versionsvärden i headerregionen (F1-U06) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-20 · rätt filnamn men fel generator i generatedArtifacts (F1-U03) → T-20 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 327 artefakter · 278 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · registerfel: artefakt borttagen ur skärmfilen → T-21 · nya diagnostiker: 9 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 319 obeslutade · registret 329 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · registerfel: extra post i registret → T-21 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 329 artefakter · 280 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · registerfel: dubblerat käll-id i skärmfilerna → T-21 · nya diagnostiker: 10 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · datafel: okänd vokabulär → T-21 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 2 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · två aktiva varianter i samma fullständiga variantnyckel → T-21 · nya diagnostiker: 4 (4 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 2 aktiva vyer, 6 aktiva bord, 316 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · oselektiv variant plus platform=ios i samma bas → T-21 · nya diagnostiker: 4 (4 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 2 aktiva vyer, 6 aktiva bord, 316 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · platform=ios plus cohort=a i samma bas → T-21 · nya diagnostiker: 5 (5 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 1 aktiva vyer, 6 aktiva bord, 317 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · ömsesidigt uteslutande varianter lämnar en kontext otäckt → T-21 · nya diagnostiker: 3 (3 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 1 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · draft får inte bära normativ auktoritet → T-21 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 2 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · två olika variantId i samma logiska slot → T-21 · nya diagnostiker: 6 (6 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 1 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · ogiltig urvalsdimension → T-21 · nya diagnostiker: 3 (3 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 278 aktiva vyer, 0 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-21 · obeslutat: post utan klassificeringsbeslut → T-21 · nya diagnostiker: 644 (644 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · tomt legacy-API-kontrakt → T-01 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · varumärkesfärg utan giltig hex → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · tom typography.roles (minProperties) → T-01 · nya diagnostiker: 17 (17 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-01 · tom brands (minProperties) → T-01 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · status "att rita" på en ikon som finns på disk → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · icke-kanonisk ikonstatus → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-10 · genererad kodfil med fel tokenversion i headern → T-10 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · fel stroke-width i en ikonmaster → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · title matchar inte ikonens id → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · saknad title → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · fel viewBox → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · fyllning i en strecksymbol → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · inline style i mastern → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · undantag utan motivering → T-05 · nya diagnostiker: 2 (2 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · undantag för en ikon som inte finns → T-05 · nya diagnostiker: 1 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-05 · okänt ikonnamn → T-05 · nya diagnostiker: 2 (1 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 · komponentarket utan kNN ger hårt fel → T-14 · nya diagnostiker: 6 (6 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 · manualen utan sNN ger hårt fel → T-14 · nya diagnostiker: 3 (3 med rätt id)
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-07 · föråldrad versionsreferens i en SKÄRMFIL (varning) → T-07 · nya varningar: 2
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-11 · handskriven kontrolltotal i prosan (varning) → T-11 · nya varningar: 2
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 0 typade · 463 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-19 + · A || B inne i en kodcell fälls inte → inga nya T-19-fel, giltigt bevis accepteras
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 1 typade · 460 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 + · giltigt screen-bevis accepteras → inga nya T-14-fel, giltigt bevis accepteras
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 1 typade · 460 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 + · giltigt component-bevis accepteras → inga nya T-14-fel, giltigt bevis accepteras
+· T-01  tokens.json validerar mot hela schemat (16 obligatoriska toppnycklar)
+· T-01  assets/brand-colors.json validerar mot assets/brand-colors.schema.json
+· T-01  tools/app-theme-map.json validerar mot tools/app-theme-map.schema.json
+· T-01  legacy-api-contract.json validerar mot legacy-api-contract.schema.json
+· T-20  23 domäner (23 obligatoriska) · 22 active · 1 planned · 7 genererade artefakter · 8 superseded · registret genereras av tools/gen-authority.mjs
+· T-21  observerat 328 artefakter · 279 enhetsramar · beslutat: 0 aktiva vyer, 6 aktiva bord, 318 obeslutade · registret 328 poster
+· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna
+· T-14  429 kravrader (gemensam parser) · 1 typade · 460 legacy · 23 utan bevis
+· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta
+✔ T-14 + · giltigt manual-bevis accepteras → inga nya T-14-fel, giltigt bevis accepteras
+
+SELFTEST-SUMMARY pass=101 fail=0 skipped=0 fixture_fail=0 baseline_errors=138
+· UNDANTAG T-03 — råfärgslint rapporterar bara varningar; ST-01 kräver fällande diagnostik och kan därför inte pröva den. Varningsräkningen prövas av M-01 (◐ räknas aldrig som fel)
+· UNDANTAG T-04 — opacitetslint delar kodväg med T-03 (samma stilattributsläsning) och har ingen egen fällande gren utanför den
+· UNDANTAG T-06a — kaskadberoende: mutationen skulle döljas av blocked-omklassningen. Kodvägen prövas av metatest M-06 (T-06a blocked, T-06b självständig)
+· UNDANTAG T-06b — samma som T-06a — provas av M-06
+· UNDANTAG T-09 — id-format: samma reguljära uttryck och samma insamling som T-16, vars dubblett-id-prov går genom exakt den koden
+SELFTEST-COVERAGE runtime=24 proven_negative=19 exempt=5 uncovered=0 sum=24
+
+── Metatester för verktygskedjan (tools/metatest.mjs)
+✔ M-01 · diagnostik på stderr + exit 0 fäller steget
+✔ M-02 · failed kontroll trots passed steg ger overallResult failed — kontroll failed · pipeline passed · total failed
+✔ M-03 · täckningsfel och fällt självtest kan inte ge passed — LC-01 failed · ST-01 failed
+✔ M-04 · GEN-01 ensam ger overallResult failed och exit 1
+✔ M-05 · konsument blir blocked trots passed, och blocked fäller totalen — TG-01 blocked
+✔ M-06 · T-06a blocked av gen-icons, T-06b självständigt failed — T-06a blocked · T-06b failed
+✔ M-06b · beroendegrafen pekar bara på usages-delen (CHK-form)
+✔ M-07a · noll poster fäller MED rätt orsak — exit 1
+✔ M-07b · fel hash fäller MED hashdiagnostik — exit 1
+✔ M-07c · saknad files-deklaration fäller MED rätt orsak — exit 1
+✔ M-07d · krasch av annan orsak ger ingen MANIFEST-SUMMARY — exit 1
+✔ M-08 · not run i fasens scope fäller grinden, senare fas gör det inte
+✔ M-09 · manifest not run ger overallResult failed
+✔ M-10 · kravstatus räknas maskinellt, hoppar historik och klarar det VERKLIGA formatet — syntetisk true · verklig: 429 rader · 0 strukturproblem · {"implementerad":211,"verifierad":85,"beslutad":132,"ersatt":1}
+✔ M-11 · wrappern kör utan förinställd miljö och har inga odeklarerade variabler — väger true · datum true · export true · unbound nej
+✔ M-12 · ingen runtimekontroll har hårdkodad status
+✔ M-13 · tabellstyrd invariant för overallResult (8 fall + not run-avgränsning)
+✔ M-14 · manifestintegritet fäller parsed 0, delivery med saknad fil och parsed≠expected — [false,false,true,false]
+✔ M-15 · schemat fäller dubblett-id, okänd status och n/a utan motivering; tally måste summera — [true,false,false,false,true,false]
+✔ M-16 · hist utanför historikavsnitt, statusstavfel och dubblett-id fälls; hist i historikavsnitt gör det inte — ok 0 · hist 1 · typo 1 · dup 1 · inHist 0
+✔ M-17 · CI-beviset binds till paket och levande körning (16 fall: 1 positivt, 1 saknat, 14 ogiltiga)
+✔ M-18 · GEN-01-registret täcker samtliga generatorers skrivmål — register 12 · generatorer 7 · skrivmål 6
+✔ M-19 · preflight mäter incheckad drift och T-15:s headerparser är ankrad till header-raden — ankrad: true · delad läsare: true
+✔ M-20 · CHK- och REQ-prefix gör mängderna disjunkta även vid samma rå-id — []
+✔ M-21 · rapportschemat godkänner en komplett rapport och fäller fem trasiga — giltig true · trasiga fällda true
+✔ M-22 · odeklarerad fil i BÅDA ytorna, byggkatalog, symlänkar, saknad leveransfil och fel läge (19 fall) — komplett 0 · odeklarerade: zip:/extra.md=1, zip:/uploads/v99-undeclared.json=1, zip:/uploads/v99-undeclared.log=1, zip:/uploads/v22-second-verify.log=1, zip:/surprise.png=1, zip:/uploads/scraps/undeclared.json=1, zip:/exports/oanmald.bin=1, zip:/node_modules/surprise.png=1, surprise.png=1, assets/scraps/undeclared.json=1 · djupt nedgrävda: repo:14 nivåer=1, zip:14 nivåer=1 · symlänkar: reporot/sneaky.bin → utanför=fällde, reporot/tools/link.mjs → x.md=fällde · återställd 0 · en saknad 1 · alla saknade 2 · auto utan markör 0 (därför kräver leveranskontrollen --mode=delivery) · fel läge 2
+✔ M-23 · gate.mjs är fail-closed (28 fall, kör verkligt)
+✔ M-24 · finaliseringen och grinden prövade som riktiga processer (10 fall)
+✔ M-33 · vakuösa prov underkänns — sex felklasser prövade som kod, inte som mönster (15 domslut)
+✔ M-35 · ett symlänksprov som inte kunde skapas gör metatestet icke godkänt (8 domslut, varav ett i riktig process)
+✔ M-34 · dokumenterade grindtal stämmer med controls.mjs (Fas 0: 8 · Fas 1: 18)
+✔ M-36 · zip:/-posterna härleds ur Git · ändrad hash fälls · manifestet byggs från noll byteidentiskt (10 domslut)
+✔ M-37 · pipad stdout dräneras och kedjan avslutar med exitCode (6 domslut)
+✔ M-38 · byggaren avvisar förbjudna kataloger och --force är säkert (11 domslut)
+✔ M-39 · CI-jobbets körordning är fail-closed (20 domslut)
+✔ M-25 · schemat godkänner en komplett rapport och fäller 17 trasiga
+✔ M-26 · CHK-SC-01 kan inte passera med fallen producent eller driftande artefakt (6 fall)
+✔ M-27 · registertäckning kräver exakt set-likhet och stabil metadata — full true · beskuren false (32 fel) · extra false · metadata false
+✔ M-28 · pipes i scope, why och name escapas i den genererade rapporten
+✔ M-29 · TG-01 fäller ändrade FÄRGVÄRDEN, schemaslottar, aliasmål och typroller — baslinje 0 fel · 12/12 mutationer fällda
+✔ M-30 · GEN-02 fäller kroppsdrift trots korrekt header och fingeravtryck — ren 0 · css 1 · dart 1 · mutationer true,true · kroppsdiagnostik true
+✔ M-31 · källmutationer i mappningen fälls efter regenerering (rå kind, okänd medlem, borttaget legacy-alias) — 4 fall: orörd grön, tre mutationer fällda
+✔ M-32 · processprovens miljö bär bara uttryckligen tillåtna värden — bas: {"m":null,"p":null,"x":null} · tillåtet: {"p":"1","x":null} · barnet såg: {"m":null,"p":"1","x":null,"g":"12345678901"}
+
+METATEST-SUMMARY pass=43 fail=0 total=43
+
+Rapport: fas0/verify-report.json · fas0/kontrollstatus.md · schema butlery-verify-report/2 · runId 857d728a485d5e06
+Kedjan: failed · kontrollerna: failed · Fas 1-grinden: failed · TOTALT: failed
+Manifest: passed · läge repo · parsed 253/253 · verified 244
+Spec-fel: 138 · spec-varningar: 4 · geometriavvikelser: 307  (tre skilda mätklasser, summeras inte)
+Räknade kontroller i ritningarna: 1372 (gen-counts.mjs · COUNT-SUMMARY)
+
+✖ Första fällande steg: Kontrollgeometri — hela kedjan kördes ändå.
+
+✖ Totalt: failed — steg: Kontrollgeometri · steg: Spec-lint · Fas 1-grinden: CHK-CI-01(not run) · kontroller: CHK-T-02(failed), CHK-T-08(failed), CHK-T-13(not run), CHK-T-14(failed), CHK-T-21(failed), CHK-LC-01(failed), CHK-A11Y-01(failed), CHK-A11Y-02(failed), CHK-R-01(not run), CHK-R-02(not run), CHK-R-03(not run), CHK-R-04(not run), CHK-K-01(not run), CHK-K-02(not run), CHK-CI-01(not run)

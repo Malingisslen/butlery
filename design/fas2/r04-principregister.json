@@ -1,0 +1,91 @@
+{
+  "$schema": "butlery-r04-principregister/1",
+  "$datum": "2026-08-13",
+  "$regel": "Detta ar ett PRINCIPLAGER, inte ett fargbeslutsregister. En princip ar aldrig en fargmappning, okar aldrig resolved-decision count och ger aldrig R-04 coverage credit.",
+  "$lasesAv": [
+    "beslutsanalys",
+    "kandidatbehorighet",
+    "previewverktyg och planerare"
+  ],
+  "principer": [
+    {
+      "id": "P-SURFACE-APP",
+      "roll": "yta-app",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-beslutspaket.json",
+      "implementerad": "tools/palette-registry.mjs · behorighet()"
+    },
+    {
+      "id": "P-SURFACE-ELEVATED",
+      "roll": "yta-upphojd",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-beslutspaket.json",
+      "implementerad": "tools/palette-registry.mjs · behorighet()"
+    },
+    {
+      "id": "P-SURFACE-CONTROL",
+      "roll": "yta-kontroll",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-beslutspaket.json",
+      "implementerad": "tools/palette-registry.mjs · behorighet()"
+    },
+    {
+      "id": "P-TEXT-CONTENT",
+      "roll": "text-innehall",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-beslutspaket.json",
+      "implementerad": "tools/palette-registry.mjs · behorighet()"
+    },
+    {
+      "id": "P-TEXT-SEMANTIC",
+      "roll": "text-kontroll",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-beslutspaket.json",
+      "implementerad": "tools/palette-registry.mjs · behorighet()"
+    },
+    {
+      "id": "P-GRAPHIC",
+      "roll": "ikon-fristaende, ikon-kontroll",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-beslutspaket.json",
+      "implementerad": "tools/palette-registry.mjs · behorighet()"
+    },
+    {
+      "id": "P-TEXT-BRAND",
+      "roll": "BRAND_SUPPORTING_TEXT",
+      "status": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+      "provenance": "fas2/r04-taxonomi.json",
+      "beslutsdatum": "2026-08-12",
+      "auktoritet": "Malin Gisslen",
+      "implementerad": null,
+      "$ejImplementerad": "behorighet() kanner an inte P-TEXT-BRAND. Tills reglerna finns far ingen kandidatanalys goras — att kora den mot P-TEXT-CONTENT vore precis den ateranvandning principen forbjuder.",
+      "regler": [
+        "brand-supporting text ska bevara sin relation till wordmark och brand lockup",
+        "den ska vara lasbar enligt tillampligt textkrav",
+        "den far vara visuellt mer identitetspraglad an neutral brodtext",
+        "neutrala brodtextmappningar far inte automatiskt ateranvandas",
+        "semantisk eller accentpalett far anvandas bara om det faktiskt ligger i brandrollen, aldrig som kontrastworkaround",
+        "samma raa ljusfarg i BRAND_SUPPORTING_TEXT och BODY_TEXT ar inte evidens for mappningsekvivalens",
+        "faktiskt morkervarde beslutas per beslutsenhet"
+      ]
+    }
+  ],
+  "roller": [
+    {
+      "id": "BRAND_SUPPORTING_TEXT",
+      "princip": "P-TEXT-BRAND",
+      "status": "HUMAN_APPROVED_TAXONOMY_DECISION",
+      "provenance": "fas2/r04-taxonomi.json",
+      "definition": [
+        "direkt knuten till wordmark, logotyp eller brand lockup",
+        "uttrycker varumarkesidentitet eller tagline",
+        "ar inte lopande produktinnehall",
+        "har egen visuell hierarki relativt wordmark och ovrig innehallstext"
+      ]
+    }
+  ],
+  "$intePavarkat": {
+    "resolvedDecisionCount": "oforandrad",
+    "coverageCredit": 0
+  }
+}

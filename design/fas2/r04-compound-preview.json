@@ -1,0 +1,875 @@
+{
+ "$schema": "butlery-r04-compound-preview/1",
+ "$datum": "2026-08-13",
+ "$status": "BESLUTSUNDERLAG. 0 registerwrites, 0 produktwrites, 0 coverage credit.",
+ "A_metod": {
+  "typ": "COMPOUND_DECISION_PREVIEW",
+  "skal": "Knappytans giltighet beror pa appbakgrunden — varje kandidat kollapsar mot exakt en av de tre. Ingen arlig envariabelpreview finns.",
+  "malmangd": [
+   "APP_BACKGROUND",
+   "BUTTON_SURFACE"
+  ],
+  "jamforelseenhet": "hela skarmen per tuppel",
+  "ingenGallring": "samtliga 8 tekniskt giltiga tupplar renderade, ingen bortvald pa smak"
+ },
+ "B_lastaVarden": {
+  "$regel": "Endast APP_BACKGROUND och BUTTON_SURFACE far variera.",
+  "poster": [
+   {
+    "ordinal": 0,
+    "egenskap": "border-top-color",
+    "vad": "appram top",
+    "varde": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-right-color",
+    "vad": "appram right",
+    "varde": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-bottom-color",
+    "vad": "appram bottom",
+    "varde": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-left-color",
+    "vad": "appram left",
+    "varde": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED"
+   },
+   {
+    "ordinal": 3,
+    "egenskap": "color",
+    "vad": "rubrik",
+    "varde": "#f5f4ed",
+    "status": "TEMP"
+   },
+   {
+    "ordinal": 4,
+    "egenskap": "color",
+    "vad": "underrubrik",
+    "varde": "#c9d3c4",
+    "status": "TEMP"
+   },
+   {
+    "ordinal": 5,
+    "egenskap": "color",
+    "vad": "brodtext fet",
+    "varde": "#f5f4ed",
+    "status": "TEMP"
+   },
+   {
+    "ordinal": 6,
+    "egenskap": "color",
+    "vad": "knapptext",
+    "varde": "#c9d3c4",
+    "status": "VERIFIED"
+   },
+   {
+    "ordinal": 7,
+    "egenskap": "background-color",
+    "vad": "nedrakningsspar",
+    "varde": "rgba(245,244,237,0.18)",
+    "status": "TEMP"
+   },
+   {
+    "ordinal": 8,
+    "egenskap": "background-color",
+    "vad": "nedrakningsfyllning",
+    "varde": "#17251d",
+    "status": "TEMP"
+   },
+   {
+    "ordinal": 9,
+    "egenskap": "color",
+    "vad": "hjalptext",
+    "varde": "#c9d3c4",
+    "status": "TEMP"
+   }
+  ],
+  "geometri": {
+   "x": 36,
+   "y": 5512,
+   "width": 430,
+   "height": 638
+  },
+  "viewport": "compact-390",
+  "deviceScaleFactor": 2,
+  "innehall": "oforandrat",
+  "state": "oforandrat",
+  "animationer": 0,
+  "$animationsgrind": "Scenen har 0 animationer. Animationsgrinden ar darfor inte tillamplig och ingen frysning behovs. Layoutgrinden anvandes."
+ },
+ "C_integritetsgrindar": {
+  "kallgrind": true,
+  "geometriStabil": true,
+  "perBild": [
+   {
+    "tuppel": 1,
+    "fil": "tuppel-1-A.png",
+    "bytes": 165447,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5512,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 2,
+    "fil": "tuppel-2-A.png",
+    "bytes": 153741,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 3,
+    "fil": "tuppel-3-A.png",
+    "bytes": 153624,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 4,
+    "fil": "tuppel-4-B.png",
+    "bytes": 153906,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 5,
+    "fil": "tuppel-5-B.png",
+    "bytes": 153594,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 6,
+    "fil": "tuppel-6-B.png",
+    "bytes": 153669,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 7,
+    "fil": "tuppel-7-C.png",
+    "bytes": 151404,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "tuppel": 8,
+    "fil": "tuppel-8-C.png",
+    "bytes": 151311,
+    "bildOk": true,
+    "ruta": {
+     "x": 36,
+     "y": 5473,
+     "width": 430,
+     "height": 638
+    },
+    "kanalvis": {
+     "avsedda": 4,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   }
+  ],
+  "kollateralTotalt": 0,
+  "okandTotalt": 0,
+  "okandSemantiskRoll": 0,
+  "olostKallagare": 0,
+  "identiskaMatt": true,
+  "textkravGrona": true,
+  "kravdaIckeTextrelationer": {
+   "$vad": "nedrakningsfyllning mot spar, med de temporara varden previewn anvander",
+   "perGrupp": [
+    {
+     "grupp": "A",
+     "kvot": 1.72
+    },
+    {
+     "grupp": "B",
+     "kvot": 2.17
+    },
+    {
+     "grupp": "C",
+     "kvot": 3.35
+    }
+   ],
+   "$not": "Detta ar previewvardenas relation, inte den ljusa produktens. Se avsnitt F."
+  }
+ },
+ "D_parvisDiff": {
+  "par": 28,
+  "ordinalerSomNagonsinSkiljer": [
+   0,
+   6
+  ],
+  "inomSammaAppbakgrund": [
+   6
+  ],
+  "mellanAppbakgrunder": [
+   0,
+   6
+  ],
+  "$bevis": "Av 10 produktelement skiljer sig bara ordinal 0 (appytan) och ordinal 6 (knappytan) mellan nagra tva bilder. Inom en och samma appbakgrund skiljer sig bara ordinal 6.",
+  "$arligNotering": "Nedrakningssparet ar deklarerat rgba(245,244,237,0.18) i alla 8. Dess DEKLARERADE varde ar identiskt overallt, men eftersom vardet ar genomskinligt foljer dess RENDERADE farg appbakgrunden. Det ar en konsekvens av malet, inte en extra variabel, och det ar identiskt inom varje grupp.",
+  "komponeratPerGrupp": [
+   {
+    "grupp": "A",
+    "appbakgrund": "#17251d",
+    "spar": "rgb(63, 74, 66)",
+    "fyllning": "rgb(23, 37, 29)"
+   },
+   {
+    "grupp": "B",
+    "appbakgrund": "#24382c",
+    "spar": "rgb(74, 90, 79)",
+    "fyllning": "rgb(23, 37, 29)"
+   },
+   {
+    "grupp": "C",
+    "appbakgrund": "#4a5c43",
+    "spar": "rgb(105, 119, 98)",
+    "fyllning": "rgb(23, 37, 29)"
+   }
+  ]
+ },
+ "E_tupplar": [
+  {
+   "nr": 1,
+   "grupp": "A",
+   "APP_BACKGROUND": "#17251d",
+   "BUTTON_SURFACE": "rgba(245,244,237,0.18)",
+   "komponeradKnappyta": "rgb(63, 74, 66)",
+   "fil": "tuppel-1-A.png",
+   "kontrast": {
+    "knapptext": 5.99,
+    "rubrik": 14.44,
+    "underrubrik": 10.31,
+    "hjalptext": 10.31,
+    "knappytaMotApp": 1.72,
+    "fyllningMotSpar": 1.72
+   }
+  },
+  {
+   "nr": 2,
+   "grupp": "A",
+   "APP_BACKGROUND": "#17251d",
+   "BUTTON_SURFACE": "#24382c",
+   "komponeradKnappyta": "rgb(36, 56, 44)",
+   "fil": "tuppel-2-A.png",
+   "kontrast": {
+    "knapptext": 8.11,
+    "rubrik": 14.44,
+    "underrubrik": 10.31,
+    "hjalptext": 10.31,
+    "knappytaMotApp": 1.27,
+    "fyllningMotSpar": 1.72
+   }
+  },
+  {
+   "nr": 3,
+   "grupp": "A",
+   "APP_BACKGROUND": "#17251d",
+   "BUTTON_SURFACE": "#4a5c43",
+   "komponeradKnappyta": "rgb(74, 92, 67)",
+   "fil": "tuppel-3-A.png",
+   "kontrast": {
+    "knapptext": 4.68,
+    "rubrik": 14.44,
+    "underrubrik": 10.31,
+    "hjalptext": 10.31,
+    "knappytaMotApp": 2.2,
+    "fyllningMotSpar": 1.72
+   }
+  },
+  {
+   "nr": 4,
+   "grupp": "B",
+   "APP_BACKGROUND": "#24382c",
+   "BUTTON_SURFACE": "#17251d",
+   "komponeradKnappyta": "rgb(23, 37, 29)",
+   "fil": "tuppel-4-B.png",
+   "kontrast": {
+    "knapptext": 10.31,
+    "rubrik": 11.36,
+    "underrubrik": 8.11,
+    "hjalptext": 8.11,
+    "knappytaMotApp": 1.27,
+    "fyllningMotSpar": 2.17
+   }
+  },
+  {
+   "nr": 5,
+   "grupp": "B",
+   "APP_BACKGROUND": "#24382c",
+   "BUTTON_SURFACE": "rgba(245,244,237,0.18)",
+   "komponeradKnappyta": "rgb(74, 90, 79)",
+   "fil": "tuppel-5-B.png",
+   "kontrast": {
+    "knapptext": 4.74,
+    "rubrik": 11.36,
+    "underrubrik": 8.11,
+    "hjalptext": 8.11,
+    "knappytaMotApp": 1.71,
+    "fyllningMotSpar": 2.17
+   }
+  },
+  {
+   "nr": 6,
+   "grupp": "B",
+   "APP_BACKGROUND": "#24382c",
+   "BUTTON_SURFACE": "#4a5c43",
+   "komponeradKnappyta": "rgb(74, 92, 67)",
+   "fil": "tuppel-6-B.png",
+   "kontrast": {
+    "knapptext": 4.68,
+    "rubrik": 11.36,
+    "underrubrik": 8.11,
+    "hjalptext": 8.11,
+    "knappytaMotApp": 1.73,
+    "fyllningMotSpar": 2.17
+   }
+  },
+  {
+   "nr": 7,
+   "grupp": "C",
+   "APP_BACKGROUND": "#4a5c43",
+   "BUTTON_SURFACE": "#17251d",
+   "komponeradKnappyta": "rgb(23, 37, 29)",
+   "fil": "tuppel-7-C.png",
+   "kontrast": {
+    "knapptext": 10.31,
+    "rubrik": 6.56,
+    "underrubrik": 4.68,
+    "hjalptext": 4.68,
+    "knappytaMotApp": 2.2,
+    "fyllningMotSpar": 3.35
+   }
+  },
+  {
+   "nr": 8,
+   "grupp": "C",
+   "APP_BACKGROUND": "#4a5c43",
+   "BUTTON_SURFACE": "#24382c",
+   "komponeradKnappyta": "rgb(36, 56, 44)",
+   "fil": "tuppel-8-C.png",
+   "kontrast": {
+    "knapptext": 8.11,
+    "rubrik": 6.56,
+    "underrubrik": 4.68,
+    "hjalptext": 4.68,
+    "knappytaMotApp": 1.73,
+    "fyllningMotSpar": 3.35
+   }
+  }
+ ],
+ "F_ljusfynd": {
+  "$separation": "Detta ar ett LJUST PRODUKTFYND. Det andrar ingen mork kandidats behorighet och blockerar inte previewn.",
+  "A_relationen": {
+   "bekraftad": true,
+   "$vad": "Fyllningen ligger inuti sparet och ar smalare an det. Den angransande fargen ar sparets.",
+   "matt": {
+    "spar": "120x2 px",
+    "fyllning": "64x2 px",
+    "andel": "53 %"
+   }
+  },
+  "B_informationsbarande": {
+   "bekraftad": true,
+   "bevis": "Produkttexten i samma skarm: \"Stangs av sig sjalv om ett par sekunder — strecket visar hur lange.\" Texten anger ett ungefar; strecket anger proportionen. Informationen ar inte fullt redundant.",
+   "$not": "Elementet saknar data-graphic-role. Enligt projektets egen regel ar en odeklarerad grafik \"unknown\", och unknown far aldrig behandlas som decorative."
+  },
+  "C_tillamplighet": {
+   "kontraktetsRegel": "WCAG 1.4.11, 3:1 for grafiska objekt som kravs for att forsta innehallet",
+   "instrumentetsUrval": "tools/graphic-objects.mjs valjer svg, [data-icon], [data-illustration]",
+   "traffas": false,
+   "$slutsats": "Regeln galler relationen. Instrumentet nar den inte. Det ar en tackningslucka i matningen, inte en lucka i regeln."
+  },
+  "D_iFrystPopulation": {
+   "fanns": false,
+   "historiskPopulation": 542,
+   "historiskaFynd": 0,
+   "historiskaUnknown": 0
+  },
+  "E_klassificering": "NEWLY_SURFACED_POPULATION_COVERAGE",
+  "F_metoddefekt": {
+   "historisktFelaktigtGodkand": false,
+   "$skal": "Relationen mattes aldrig. Den kan darfor inte ha godkants felaktigt. Defekten ligger i populationsurvalet, inte i bedomningen."
+  },
+  "nyttSvep": {
+   "traffar": 28,
+   "artefakter": 21,
+   "fangadeAvSvgPopulationen": 0,
+   "utanGrafikroll": 28,
+   "under3": 17,
+   "rader": [
+    {
+     "art": "profil",
+     "ordinal": 38,
+     "spar": "rgb(204, 209, 194)",
+     "fyllning": "rgb(245, 244, 237)",
+     "matt": {
+      "w": 34,
+      "h": 20
+     },
+     "andel": 47,
+     "kvot": 1.41,
+     "grafikroll": null
+    },
+    {
+     "art": "statistik",
+     "ordinal": 50,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(180, 191, 166)",
+     "matt": {
+      "w": 242,
+      "h": 8
+     },
+     "andel": 7,
+     "kvot": 1.57,
+     "grafikroll": null
+    },
+    {
+     "art": "lagatimers",
+     "ordinal": 22,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(220, 169, 104)",
+     "matt": {
+      "w": 238,
+      "h": 3
+     },
+     "andel": 22,
+     "kvot": 1.92,
+     "grafikroll": null
+    },
+    {
+     "art": "chattmorkt",
+     "ordinal": 30,
+     "spar": "rgb(47, 68, 55)",
+     "fyllning": "rgb(98, 112, 97)",
+     "matt": {
+      "w": 43,
+      "h": 17
+     },
+     "andel": 12,
+     "kvot": 2,
+     "grafikroll": null
+    },
+    {
+     "art": "smartimport",
+     "ordinal": 31,
+     "spar": "rgb(204, 209, 194)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 177,
+      "h": 4
+     },
+     "andel": 62,
+     "kvot": 2.06,
+     "grafikroll": null
+    },
+    {
+     "art": "vmbgenererar",
+     "ordinal": 50,
+     "spar": "rgb(204, 209, 194)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 74,
+      "h": 2
+     },
+     "andel": 60,
+     "kvot": 2.06,
+     "grafikroll": null
+    },
+    {
+     "art": "smartimport",
+     "ordinal": 19,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 44,
+      "h": 3
+     },
+     "andel": 42,
+     "kvot": 2.63,
+     "grafikroll": null
+    },
+    {
+     "art": "delatlistor",
+     "ordinal": 13,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 364,
+      "h": 4
+     },
+     "andel": 65,
+     "kvot": 2.63,
+     "grafikroll": null
+    },
+    {
+     "art": "hemladdar",
+     "ordinal": 12,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 120,
+      "h": 3
+     },
+     "andel": 44,
+     "kvot": 2.63,
+     "grafikroll": null
+    },
+    {
+     "art": "imp2hamtar",
+     "ordinal": 25,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 348,
+      "h": 4
+     },
+     "andel": 62,
+     "kvot": 2.63,
+     "grafikroll": null
+    },
+    {
+     "art": "globceremoni",
+     "ordinal": 7,
+     "spar": "rgb(63, 81, 69)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 120,
+      "h": 2
+     },
+     "andel": 53,
+     "kvot": 2.64,
+     "grafikroll": null
+    },
+    {
+     "art": "start",
+     "ordinal": 18,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 120,
+      "h": 3
+     },
+     "andel": 46,
+     "kvot": 2.92,
+     "grafikroll": null
+    },
+    {
+     "art": "lagastaende",
+     "ordinal": 46,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 282,
+      "h": 4
+     },
+     "andel": 33,
+     "kvot": 2.92,
+     "grafikroll": null
+    },
+    {
+     "art": "lagamorkt",
+     "ordinal": 46,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 248,
+      "h": 4
+     },
+     "andel": 33,
+     "kvot": 2.92,
+     "grafikroll": null
+    },
+    {
+     "art": "lagastaende320",
+     "ordinal": 27,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 190,
+      "h": 4
+     },
+     "andel": 33,
+     "kvot": 2.92,
+     "grafikroll": null
+    },
+    {
+     "art": "snackbars",
+     "ordinal": 23,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 36,
+      "h": 4
+     },
+     "andel": 55,
+     "kvot": 2.92,
+     "grafikroll": null
+    },
+    {
+     "art": "lagatimers",
+     "ordinal": 13,
+     "spar": "rgba(245, 244, 237, 0.18)",
+     "fyllning": "rgb(206, 124, 30)",
+     "matt": {
+      "w": 238,
+      "h": 3
+     },
+     "andel": 58,
+     "kvot": 2.92,
+     "grafikroll": null
+    },
+    {
+     "art": "statistik",
+     "ordinal": 45,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(98, 112, 97)",
+     "matt": {
+      "w": 242,
+      "h": 8
+     },
+     "andel": 17,
+     "kvot": 4.27,
+     "grafikroll": null
+    },
+    {
+     "art": "chatt",
+     "ordinal": 30,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(98, 112, 97)",
+     "matt": {
+      "w": 43,
+      "h": 17
+     },
+     "andel": 12,
+     "kvot": 4.27,
+     "grafikroll": null
+    },
+    {
+     "art": "chatt320",
+     "ordinal": 30,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(98, 112, 97)",
+     "matt": {
+      "w": 43,
+      "h": 17
+     },
+     "andel": 12,
+     "kvot": 4.27,
+     "grafikroll": null
+    },
+    {
+     "art": "statistik",
+     "ordinal": 40,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(74, 92, 67)",
+     "matt": {
+      "w": 242,
+      "h": 8
+     },
+     "andel": 24,
+     "kvot": 5.9,
+     "grafikroll": null
+    },
+    {
+     "art": "vmbgenererar",
+     "ordinal": 22,
+     "spar": "rgb(204, 209, 194)",
+     "fyllning": "rgb(36, 56, 44)",
+     "matt": {
+      "w": 203,
+      "h": 2
+     },
+     "andel": 57,
+     "kvot": 8.03,
+     "grafikroll": null
+    },
+    {
+     "art": "kompbild",
+     "ordinal": 9,
+     "spar": "rgb(204, 209, 194)",
+     "fyllning": "rgb(36, 56, 44)",
+     "matt": {
+      "w": 71,
+      "h": 3
+     },
+     "andel": 62,
+     "kvot": 8.03,
+     "grafikroll": null
+    },
+    {
+     "art": "safeareaios",
+     "ordinal": 31,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(36, 56, 44)",
+     "matt": {
+      "w": 412,
+      "h": 32
+     },
+     "andel": 33,
+     "kvot": 10.22,
+     "grafikroll": null
+    },
+    {
+     "art": "kontovantan",
+     "ordinal": 28,
+     "spar": "rgb(230, 234, 217)",
+     "fyllning": "rgb(36, 56, 44)",
+     "matt": {
+      "w": 380,
+      "h": 4
+     },
+     "andel": 40,
+     "kvot": 10.22,
+     "grafikroll": null
+    },
+    {
+     "art": "profil",
+     "ordinal": 34,
+     "spar": "rgb(36, 56, 44)",
+     "fyllning": "rgb(245, 244, 237)",
+     "matt": {
+      "w": 34,
+      "h": 20
+     },
+     "andel": 47,
+     "kvot": 11.36,
+     "grafikroll": null
+    },
+    {
+     "art": "taggdetalj",
+     "ordinal": 25,
+     "spar": "rgb(36, 56, 44)",
+     "fyllning": "rgb(245, 244, 237)",
+     "matt": {
+      "w": 30,
+      "h": 18
+     },
+     "andel": 47,
+     "kvot": 11.36,
+     "grafikroll": null
+    },
+    {
+     "art": "taggdetalj",
+     "ordinal": 31,
+     "spar": "rgb(36, 56, 44)",
+     "fyllning": "rgb(245, 244, 237)",
+     "matt": {
+      "w": 30,
+      "h": 18
+     },
+     "andel": 47,
+     "kvot": 11.36,
+     "grafikroll": null
+    }
+   ]
+  },
+  "PRODUKTSTATUS": "NEW_PRODUCT_FINDING",
+  "$motivering": "Relationen omfattas av regeln, ar positivt klassad som informationsbarande i globceremoni, och ligger pa 2.64 mot kravet 3.0. Svepet visar dessutom 28 likadana relationer i 21 artefakter som ingen av dem finns i den matta populationen, varav 17 under 3.0. Fyndet ar nytt, inte ett omtolkat historiskt resultat.",
+  "baslinjeintegritet": {
+   "HISTORISKT_FRYST_RESULTAT": "OFORANDRAT",
+   "$regel": "Den frysta baslinjen skrivs inte om. Det nya redovisas vid sidan av den."
+  },
+  "atgardEjUtford": "Ingen produktwrite, ingen data-graphic-role satt, ingen fargandring."
+ },
+ "G_ingaBeslut": {
+  "registreradeFarger": 0,
+  "$regel": "De 8 bilderna ar beslutsunderlag. APP_BACKGROUND och BUTTON_SURFACE registreras forst efter manskligt val, och da som TVA skilda beslut med varsin tokenidentitet — samma visuella tuppel ar inte en sammanslagen beslutsidentitet.",
+  "coverageCredit": 0
+ },
+ "ejGjort": [
+  "ingen registerwrite",
+  "ingen produktwrite",
+  "ingen rekommendation utpekad",
+  "ingen tuppel bortgallrad",
+  "ingen baslinje omskriven"
+ ]
+}

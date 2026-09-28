@@ -1,0 +1,1040 @@
+{
+ "$schema": "butlery-r04-supersede/1",
+ "$datum": "2026-08-12",
+ "$status": "REGISTRY-ONLY. Tre tidigare stoppade beslut registrerade, provisoriska overlapp markta superseded. 0 produktwrites, 0 kallmarkningar, 0 tokenwrites.",
+ "A_registrerade": [
+  {
+   "beslutsId": "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "tokenNamn": "--yta-kontroll-d11",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#4a5c43",
+   "instanserIScope": 30,
+   "familjer": 29,
+   "utanforScope": null,
+   "supersederar": null
+  },
+  {
+   "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "tokenNamn": "--text-kontroll-d5",
+   "roll": "text-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#c9d3c4",
+   "instanserIScope": 30,
+   "familjer": 29,
+   "utanforScope": null,
+   "supersederar": null
+  },
+  {
+   "beslutsId": "CAND-text-innehall-#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "tokenNamn": "--text-innehall-d8",
+   "roll": "text-innehall",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#8fb89a",
+   "instanserIScope": 791,
+   "familjer": 205,
+   "utanforScope": {
+    "antal": 45,
+    "familjer": 30,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "supersederar": {
+    "instanser": 96,
+    "matchesApproved": 0,
+    "superseded": 96,
+    "pilottokens": [
+     "--text-innehall-b = #c9d3c4"
+    ]
+   }
+  },
+  {
+   "beslutsId": "CAND-text-innehall-#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "tokenNamn": "--text-innehall-d9",
+   "roll": "text-innehall",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#93a48d",
+   "instanserIScope": 198,
+   "familjer": 81,
+   "utanforScope": {
+    "antal": 113,
+    "familjer": 84,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "supersederar": {
+    "instanser": 40,
+    "matchesApproved": 34,
+    "superseded": 6,
+    "pilottokens": [
+     "--text-innehall-c = #93a48d"
+    ]
+   }
+  },
+  {
+   "beslutsId": "CAND-ikon-fristaende-#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "tokenNamn": "--ikon-fristaende-d1",
+   "roll": "ikon-fristaende",
+   "ljusvarde": "#7d897c",
+   "morkvarde": "rgba(245,244,237,0.4)",
+   "instanserIScope": 2,
+   "familjer": 2,
+   "utanforScope": {
+    "antal": 0,
+    "familjer": 0,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "supersederar": {
+    "instanser": 1,
+    "matchesApproved": 0,
+    "superseded": 1,
+    "pilottokens": []
+   }
+  }
+ ],
+ "registerEfter": {
+  "beslut": 47,
+  "aktiva": 45,
+  "ersatta": 2
+ },
+ "B_statusmodell": {
+  "$datum": "2026-08-12",
+  "HUMAN_APPROVED": "ett registrerat designbeslut. Auktoritet.",
+  "VERIFIED_EXISTING_MAPPING": "en uppmatt ljus->mork-mappning i artefakter med authored dark, buren av ett bastoken (--surface-app, --border-app, --text-app). Ger beslutskredit.",
+  "PROVISIONAL": "ett pilottokenvarde markt provisorisk_variant i fas2/r04-pilottokens.json. Ger ALDRIG beslutskredit och far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope.",
+  "SUPERSEDED_PROVISIONAL": "ett provisoriskt varde som ligger inom ett registrerat besluts exakta scope och darmed ersatts av beslutet. Historiken behalls; pilottokenfilen skrivs inte om.",
+  "UNDECIDED": "inget varde ur nagon av ovanstaende kallor.",
+  "$kreditregel": "Endast HUMAN_APPROVED och VERIFIED_EXISTING_MAPPING ger completeness-kredit."
+ },
+ "C_visuellForandring": {
+  "$regel": "PROVISIONAL_OVERLAP ar inte samma sak som visuell forandring. En instans vars provisoriska varde redan ar lika med beslutet andras inte.",
+  "PROVISIONAL_OVERLAP": 137,
+  "MATCHES_APPROVED": 34,
+  "TOTAL_ACTUAL_VISUAL_CHANGES": 103,
+  "perBeslut": [
+   {
+    "beslut": "rubrik",
+    "ljus": "#24382c",
+    "mork": "#8fb89a",
+    "instanserIScope": 791,
+    "provisorisktOverlapp": 96,
+    "matchesApproved": 0,
+    "faktiskForandring": 96,
+    "blastRadius": {
+     "familjer": 39,
+     "artefakter": 39
+    }
+   },
+   {
+    "beslut": "brodtext",
+    "ljus": "#37453a",
+    "mork": "#93a48d",
+    "instanserIScope": 198,
+    "provisorisktOverlapp": 40,
+    "matchesApproved": 34,
+    "faktiskForandring": 6,
+    "blastRadius": {
+     "familjer": 1,
+     "artefakter": 1
+    }
+   },
+   {
+    "beslut": "ikonlinje",
+    "ljus": "#7d897c",
+    "mork": "rgba(245,244,237,0.4)",
+    "instanserIScope": 2,
+    "provisorisktOverlapp": 1,
+    "matchesApproved": 0,
+    "faktiskForandring": 1,
+    "blastRadius": {
+     "familjer": 1,
+     "artefakter": 1
+    }
+   }
+  ],
+  "detaljPerInstans": "fas2/r04-designbeslut.json · varje besluts supersederar.instanser"
+ },
+ "D_completenessOmraknat": {
+  "$regel": "Endast DECIDED och VERIFIED_EXISTING_MAPPING ger completeness-kredit. PROVISIONAL ger ingen.",
+  "$rattelse": {
+   "tidigare": "5 artefakter rapporterades som kompletta",
+   "fel": "De raknade provisoriska pilottokenvarden som beslutade. arkivimport hade 25 av 40 varden provisoriska.",
+   "nu": 1,
+   "enda": [
+    "soctomtingavanner"
+   ]
+  },
+  "$rattelse2": {
+   "vad": "Appytan raknades som verifierad enbart for att den ar appytan.",
+   "ratt": "Den uppmatta mappningen galler ljusvardet #f5f4ed. En appyta med #24382c eller #17251d ar obeslutad som alla andra."
+  },
+  "HONEST_DECISION_COMPLETE": [
+   "soctomtingavanner"
+  ],
+  "artefakterTotalt": 324,
+  "utanProvisoriskaBeroenden": 20,
+  "exempel": [
+   {
+    "art": "arkivimport",
+    "malade": 40,
+    "DECIDED": 7,
+    "VERIFIED": 5,
+    "PROVISIONAL": 25,
+    "UNDECIDED": 3
+   },
+   {
+    "art": "epostverif",
+    "malade": 15,
+    "DECIDED": 2,
+    "VERIFIED": 5,
+    "PROVISIONAL": 8,
+    "UNDECIDED": 0
+   },
+   {
+    "art": "stateladdar",
+    "malade": 18,
+    "DECIDED": 0,
+    "VERIFIED": 5,
+    "PROVISIONAL": 3,
+    "UNDECIDED": 10
+   },
+   {
+    "art": "authepost",
+    "malade": 18,
+    "DECIDED": 4,
+    "VERIFIED": 5,
+    "PROVISIONAL": 8,
+    "UNDECIDED": 1
+   },
+   {
+    "art": "soctomtingavanner",
+    "malade": 10,
+    "DECIDED": 5,
+    "VERIFIED": 5,
+    "PROVISIONAL": 0,
+    "UNDECIDED": 0
+   },
+   {
+    "art": "onbhoppa",
+    "malade": 17,
+    "DECIDED": 0,
+    "VERIFIED": 6,
+    "PROVISIONAL": 9,
+    "UNDECIDED": 2
+   }
+  ]
+ },
+ "E_planerare": {
+  "beslutsenheter": {
+   "UNDECIDED": 90,
+   "DECIDED": 1
+  },
+  "previewbaraEnheter": {
+   "fore": 31,
+   "efter": 31,
+   "$not": "Oforandrat. De tre nya besluten galler forgrunder, inte ytor, och loser darfor ingen annan enhets previewkontext."
+  },
+  "aktivaBeslut": 45
+ },
+ "F_onbhoppa": {
+  "fraga": "Uppfyller onbhoppa kravet for nasta honest preview?",
+  "svar": "NEJ",
+  "maladeVarden": 17,
+  "DECIDED": 0,
+  "VERIFIED": 6,
+  "PROVISIONAL": 9,
+  "UNDECIDED": 2,
+  "genuintObeslutade": [
+   [
+    "yta-upphojd rgba(36,56,44,0.35)",
+    1
+   ],
+   [
+    "yta-upphojd #f5f4ed",
+    1
+   ]
+  ],
+  "provisoriskaBeroenden": [
+   [
+    "text-innehall #37453a",
+    1
+   ],
+   [
+    "text-innehall #627061",
+    2
+   ],
+   [
+    "text-kontroll #24382c",
+    1
+   ],
+   [
+    "ram-kontroll #24382c",
+    4
+   ],
+   [
+    "text-kontroll #9c3b23",
+    1
+   ]
+  ],
+  "verkligFoundationkostnad": "De 2 genuint obeslutade ar bara halva sanningen. Scenen har dessutom 9 varden i 5 fargtyper som vilar pa provisoriska pilottokens. En arlig preview dar kraver att aven de adjudiceras — alltsa 7 fargtyper, inte 2."
+ },
+ "G_nastaMal": {
+  "$kriterium": "Previewbar, fortfarande obeslutad enhet, i en scen med 0 provisoriska beroenden. Havstang bryter lika.",
+  "rekommenderat": {
+   "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "princip": "P-SURFACE-APP",
+   "ljus": "#24382c",
+   "familjer": 10,
+   "instanser": 10,
+   "kandidater": 2,
+   "scen": "start",
+   "maladeVarden": 9,
+   "DECIDED": 0,
+   "VERIFIED": 4,
+   "PROVISIONAL": 0,
+   "UNDECIDED": 5,
+   "foundationkostnad": [
+    [
+     "yta-app #24382c",
+     1
+    ],
+    [
+     "text-innehall #dca968",
+     1
+    ],
+    [
+     "yta-upphojd rgba(245,244,237,0.18)",
+     1
+    ],
+    [
+     "yta-upphojd #ce7c1e",
+     1
+    ],
+    [
+     "text-innehall #c9d3c4",
+     1
+    ]
+   ],
+   "skal": "Enda previewbara enheten vars basta scen har NOLL provisoriska beroenden. 10 familjers havstang. Foundationkostnaden ar 5 varden i en scen med 9 malade varden."
+  },
+  "scenerUtanProvisoriskaBeroenden": [
+   {
+    "art": "start",
+    "malade": 9,
+    "obeslutade": 5,
+    "saknas": [
+     [
+      "yta-app #24382c",
+      1
+     ],
+     [
+      "text-innehall #dca968",
+      1
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.18)",
+      1
+     ],
+     [
+      "yta-upphojd #ce7c1e",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ]
+    ]
+   },
+   {
+    "art": "juridikmorkt",
+    "malade": 17,
+    "obeslutade": 17,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-app rgba(245,244,237,0.18)",
+      4
+     ],
+     [
+      "yta-upphojd #24382c",
+      2
+     ],
+     [
+      "ikon-fristaende #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      7
+     ],
+     [
+      "text-innehall #93a48d",
+      1
+     ],
+     [
+      "yta-upphojd #ce7c1e",
+      1
+     ]
+    ]
+   },
+   {
+    "art": "komprost",
+    "malade": 22,
+    "obeslutade": 17,
+    "saknas": [
+     [
+      "yta-app #24382c",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      3
+     ],
+     [
+      "yta-upphojd #2f4437",
+      1
+     ],
+     [
+      "ikon-fristaende #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #dca968",
+      1
+     ],
+     [
+      "yta-upphojd #f5f4ed",
+      1
+     ],
+     [
+      "yta-kontroll #9c3b23",
+      1
+     ],
+     [
+      "ikon-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "yta-upphojd #3f5145",
+      1
+     ],
+     [
+      "text-innehall #e6ead9",
+      5
+     ]
+    ]
+   },
+   {
+    "art": "onbfelmorkt",
+    "malade": 20,
+    "obeslutade": 20,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-app rgba(245,244,237,0.18)",
+      4
+     ],
+     [
+      "ikon-fristaende #de9078",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ],
+     [
+      "yta-upphojd #2f4437",
+      1
+     ],
+     [
+      "ikon-fristaende #e5a08a",
+      1
+     ],
+     [
+      "text-innehall #e5a08a",
+      1
+     ],
+     [
+      "yta-kontroll #ce7c1e",
+      1
+     ],
+     [
+      "text-kontroll #17251d",
+      1
+     ],
+     [
+      "ikon-kontroll #17251d",
+      1
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.35)",
+      4
+     ],
+     [
+      "text-innehall #93a48d",
+      1
+     ]
+    ]
+   },
+   {
+    "art": "onbaldermorkt",
+    "malade": 26,
+    "obeslutade": 25,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-app rgba(245,244,237,0.18)",
+      4
+     ],
+     [
+      "text-innehall #93a48d",
+      3
+     ],
+     [
+      "text-innehall #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.35)",
+      8
+     ],
+     [
+      "text-kontroll #93a48d",
+      2
+     ],
+     [
+      "ikon-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "yta-upphojd #f5f4ed",
+      1
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.18)",
+      3
+     ]
+    ]
+   },
+   {
+    "art": "arkmorkt",
+    "malade": 27,
+    "obeslutade": 27,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-app rgba(245,244,237,0.18)",
+      4
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ],
+     [
+      "yta-upphojd #24382c",
+      4
+     ],
+     [
+      "yta-upphojd rgba(23,37,29,0.6)",
+      1
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.18)",
+      2
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.35)",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #93a48d",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.4)",
+      4
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "ikon-kontroll #dca968",
+      1
+     ],
+     [
+      "text-kontroll #c9d3c4",
+      3
+     ],
+     [
+      "yta-kontroll #ce7c1e",
+      1
+     ],
+     [
+      "text-kontroll #17251d",
+      1
+     ]
+    ]
+   },
+   {
+    "art": "inloggningmorkt",
+    "malade": 33,
+    "obeslutade": 33,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-app rgba(245,244,237,0.18)",
+      4
+     ],
+     [
+      "text-innehall #93a48d",
+      3
+     ],
+     [
+      "text-innehall #f5f4ed",
+      5
+     ],
+     [
+      "yta-upphojd #17251d",
+      2
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.35)",
+      12
+     ],
+     [
+      "ikon-fristaende #93a48d",
+      1
+     ],
+     [
+      "text-innehall #dca968",
+      1
+     ],
+     [
+      "yta-upphojd #ce7c1e",
+      1
+     ],
+     [
+      "text-innehall #17251d",
+      1
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.18)",
+      2
+     ]
+    ]
+   },
+   {
+    "art": "lagaliggande",
+    "malade": 37,
+    "obeslutade": 33,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.18)",
+      6
+     ],
+     [
+      "ikon-kontroll #f5f4ed",
+      2
+     ],
+     [
+      "text-innehall #93a48d",
+      2
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      4
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.35)",
+      8
+     ],
+     [
+      "ikon-kontroll #dca968",
+      1
+     ],
+     [
+      "text-kontroll #dca968",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      3
+     ],
+     [
+      "yta-upphojd #17251d",
+      1
+     ],
+     [
+      "yta-kontroll #ce7c1e",
+      1
+     ],
+     [
+      "text-kontroll #17251d",
+      1
+     ],
+     [
+      "ikon-kontroll #17251d",
+      1
+     ]
+    ]
+   },
+   {
+    "art": "formularmorkt",
+    "malade": 49,
+    "obeslutade": 42,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-app rgba(245,244,237,0.18)",
+      4
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.18)",
+      1
+     ],
+     [
+      "ikon-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      4
+     ],
+     [
+      "text-kontroll #93a48d",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      3
+     ],
+     [
+      "yta-upphojd #24382c",
+      3
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.35)",
+      4
+     ],
+     [
+      "ram-behallare #f5f4ed",
+      4
+     ],
+     [
+      "text-innehall #93a48d",
+      3
+     ],
+     [
+      "ram-behallare #de9078",
+      4
+     ],
+     [
+      "ikon-fristaende #de9078",
+      1
+     ],
+     [
+      "text-innehall #de9078",
+      1
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "yta-kontroll #ce7c1e",
+      1
+     ],
+     [
+      "yta-kontroll #2f4437",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.18)",
+      4
+     ]
+    ]
+   },
+   {
+    "art": "safeareaandroid",
+    "malade": 49,
+    "obeslutade": 43,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "yta-upphojd #24382c",
+      4
+     ],
+     [
+      "text-innehall #f5f4ed",
+      2
+     ],
+     [
+      "yta-upphojd #17251d",
+      1
+     ],
+     [
+      "text-innehall #93a48d",
+      4
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.18)",
+      3
+     ],
+     [
+      "yta-upphojd #de9078",
+      4
+     ],
+     [
+      "text-innehall #de9078",
+      2
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.18)",
+      3
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.4)",
+      12
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      6
+     ]
+    ]
+   },
+   {
+    "art": "lagastaende320",
+    "malade": 50,
+    "obeslutade": 46,
+    "saknas": [
+     [
+      "yta-app #24382c",
+      1
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.18)",
+      3
+     ],
+     [
+      "text-innehall #f5f4ed",
+      5
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.35)",
+      13
+     ],
+     [
+      "ikon-kontroll #f5f4ed",
+      3
+     ],
+     [
+      "text-innehall #93a48d",
+      4
+     ],
+     [
+      "yta-upphojd #2f4437",
+      1
+     ],
+     [
+      "yta-upphojd #17251d",
+      1
+     ],
+     [
+      "text-innehall #8fb89a",
+      1
+     ],
+     [
+      "ikon-fristaende #8fb89a",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.18)",
+      1
+     ],
+     [
+      "text-kontroll #93a48d",
+      1
+     ],
+     [
+      "text-kontroll #c9d3c4",
+      1
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.35)",
+      1
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.18)",
+      1
+     ],
+     [
+      "yta-upphojd #ce7c1e",
+      3
+     ],
+     [
+      "text-innehall #17251d",
+      2
+     ],
+     [
+      "ikon-fristaende #17251d",
+      2
+     ]
+    ]
+   },
+   {
+    "art": "lagatimers",
+    "malade": 50,
+    "obeslutade": 46,
+    "saknas": [
+     [
+      "yta-app #17251d",
+      1
+     ],
+     [
+      "ram-behallare rgba(245,244,237,0.18)",
+      3
+     ],
+     [
+      "ikon-kontroll #f5f4ed",
+      4
+     ],
+     [
+      "text-innehall #93a48d",
+      1
+     ],
+     [
+      "text-kontroll #f5f4ed",
+      1
+     ],
+     [
+      "yta-upphojd #2f4437",
+      2
+     ],
+     [
+      "text-innehall #a9b2a0",
+      1
+     ],
+     [
+      "text-innehall #f5f4ed",
+      5
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.18)",
+      2
+     ],
+     [
+      "yta-upphojd #ce7c1e",
+      1
+     ],
+     [
+      "ram-kontroll rgba(245,244,237,0.35)",
+      16
+     ],
+     [
+      "yta-upphojd #dca968",
+      1
+     ],
+     [
+      "ikon-kontroll #dca968",
+      1
+     ],
+     [
+      "text-kontroll #dca968",
+      1
+     ],
+     [
+      "ikon-fristaende #c9d3c4",
+      1
+     ],
+     [
+      "text-innehall #c9d3c4",
+      1
+     ],
+     [
+      "text-innehall #dca968",
+      1
+     ],
+     [
+      "yta-kontroll #ce7c1e",
+      1
+     ],
+     [
+      "text-kontroll #17251d",
+      1
+     ],
+     [
+      "ikon-kontroll #17251d",
+      1
+     ]
+    ]
+   }
+  ]
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen kallmarkning",
+  "ingen tokenwrite",
+  "ingen omskrivning av fas2/r04-pilottokens.json",
+  "ingen ny preview renderad",
+  "ingen auditfil omskriven"
+ ]
+}

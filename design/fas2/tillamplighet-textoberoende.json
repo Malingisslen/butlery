@@ -1,0 +1,1809 @@
+{
+ "$schema": "butlery-tillamplighet-textoberoende/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "4f4199b",
+ "$typ": "METHOD + APPLICABILITY RECONCILIATION. Inga produktskrivningar, inga fargskrivningar, inga designbeslut, inga registerskrivningar.",
+ "$produktfilerOrorda": true,
+ "A_borttagenTextregel": {
+  "hittadeKodvagar": [
+   {
+    "fil": "tools/nontext-measure.mjs",
+    "vad": "matningen grindades av bararhinken; hinken sattes bland annat av \"kontrollen har egen synlig text\", sa en malad del blev omatt och i praktiken ej kravd nar det stod ett ord bredvid",
+    "atgard": "grinden borttagen — allt som gar att mata mats; hinken ar nu uttryckligen teknisk och besvarar inte fragan om kravet"
+   },
+   {
+    "fil": "tools/nontext-measure.mjs",
+    "vad": "motiveringstexter formulerade som domar: \"kontrollen identifieras av sin synliga text; ramen forstarker\" och \"kontrollen har ingen synlig text — glyfen ar det enda som identifierar den\"",
+    "atgard": "omskrivna till observationer"
+   },
+   {
+    "fil": "tools/surface-constraints.mjs",
+    "vad": "ytanIdentifierar = arKontroll && (valkontroll || !el.harEgenText) — franvaro av text gav automatiskt REQUIRED, narvaro gav automatiskt inget krav",
+    "atgard": "textvillkoret borttaget; for icke-valkontroller ar fragan OAVGJORD och avgors per forekomst"
+   }
+  ],
+  "redanTextoberoende": [
+   "tools/nontext-applicability.mjs (holistisk sedan 06790ec)",
+   "tools/graphic-part-requirement.mjs (textagarskap ar icke-grundande sedan bbd2fe0)"
+  ],
+  "nyModul": "tools/part-relation.mjs",
+  "pensioneradeProv": {
+   "NT-01": "RETIRED_TEXT_HEURISTIC_REMOVED — lydelse bevarad",
+   "NT-06": "RETIRED_TEXT_HEURISTIC_REMOVED — lydelse bevarad",
+   "SC-01": "RETIRED_TEXT_HEURISTIC_REMOVED — lydelse bevarad",
+   "SC-02": "RETIRED_TEXT_HEURISTIC_REMOVED — lydelse bevarad"
+  },
+  "$regel": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, aldrig domar. ACCESSIBLE_NAME ar inte visuell evidens. Kvot, kontrollroll och fargpar far aldrig avgora eller propagera. UNKNOWN ar legitimt och faller stangt."
+ },
+ "B_relationsmodell": {
+  "modul": "tools/part-relation.mjs",
+  "matning": [
+   "PART_DETECTED",
+   "PART_IDENTITY",
+   "CONTROL_IDENTITY",
+   "PAINT_SOURCE",
+   "OUTSIDE_ADJACENT_SURFACE",
+   "MEASURED_RATIO"
+  ],
+  "observationer": [
+   "VISIBLE_TEXT_PRESENT",
+   "VISIBLE_ICON_PRESENT",
+   "OTHER_VISUAL_CUES",
+   "STATE_RELEVANCE",
+   "CONTEXT_DESCRIPTION",
+   "ACCESSIBLE_NAME"
+  ],
+  "APPLICABILITY_VERDICT": [
+   "REQUIRED",
+   "SUPPLEMENTAL_NOT_REQUIRED",
+   "UNKNOWN"
+  ],
+  "CONFORMANCE_VERDICT": [
+   "REQUIRED_PASS",
+   "REQUIRED_FAIL",
+   "NOT_APPLICABLE",
+   "UNKNOWN"
+  ],
+  "tekniskStatus": [
+   "TECHNICALLY_PASSES_IF_REQUIRED",
+   "TECHNICALLY_FAILS_IF_REQUIRED",
+   "NOT_MEASURED"
+  ],
+  "$regel": "Kvot >= 3.0 ar inte REQUIRED_PASS. Kvot < 3.0 ar inte REQUIRED_FAIL. Konformans finns bara nar tillampligheten ar REQUIRED."
+ },
+ "C_prov": {
+  "fil": "tools/applicability-fixtures.mjs",
+  "id": [
+   "AP-01",
+   "AP-02",
+   "AP-03",
+   "AP-04",
+   "AP-05",
+   "AP-06",
+   "AP-07",
+   "AP-08",
+   "AP-09",
+   "AP-10",
+   "AP-11",
+   "AP-12"
+  ],
+  "godkanda": 12,
+  "av": 12,
+  "heleSviter": {
+   "antal": 41,
+   "godkanda": 41,
+   "fallda": 0
+  }
+ },
+ "D_de68": {
+  "antal": 68,
+  "unikaIdentiteter": 68,
+  "delning": {
+   "dagsrutorUnder3": 15,
+   "andraCcd1c2Under3": 3,
+   "morkaYtorUnder3": 16,
+   "over3": 34
+  },
+  "$avvikelseMotArbetsordern": "Arbetsordern raknade 18 dagsrutor. Kallan visar 15 dagsrutor och 3 andra kontroller som rakar dela ramfargen #ccd1c2: rcbkommentar|15 (Reagera), socreaktion|15 (Reagera), kompbild|16 (Lägg till bilder). Att binda dessa tre till dagsrutebeslutet vore propagering pa fargpar, vilket ar forbjudet. De star darfor kvar som UNKNOWN.",
+  "grupp1_dagsrutor": {
+   "antal": 15,
+   "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+   "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+   "evidenskalla": "HUMAN_OCCURRENCE_DECISION",
+   "beslut": "DAY_SLOT_BORDER_APPLICABILITY (e7346ae) · DAY_SLOT_CONTROL_BORDER_LIGHT #ccd1c2 · write scope 0",
+   "$ejOmprovat": "Beslutet oppnas inte. Ingen preview, ingen fargandring, ingen ny bedomning.",
+   "poster": [
+    {
+     "id": "bredmeny|25",
+     "namn": "Tisdag middag är tom. Lägg något här",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredmeny|52",
+     "namn": "Söndag middag är tom. Lägg något här",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredmeny|59",
+     "namn": "Måndag lunch är tom",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredmeny|65",
+     "namn": "Onsdag lunch är tom",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredmeny|69",
+     "namn": "Torsdag lunch är tom",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredmeny|73",
+     "namn": "Fredag lunch är tom",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredmeny|79",
+     "namn": "Söndag lunch är tom",
+     "skarm": "Veckomenyn brett",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "vmbnormal|71",
+     "namn": "Fredag middag är tom. Lägg något här",
+     "skarm": "Veckan brett — normalläget",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbnormal|94",
+     "namn": "Måndag lunch är tom",
+     "skarm": "Veckan brett — normalläget",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbnormal|100",
+     "namn": "Onsdag lunch är tom",
+     "skarm": "Veckan brett — normalläget",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbnormal|104",
+     "namn": "Torsdag lunch är tom",
+     "skarm": "Veckan brett — normalläget",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbnormal|108",
+     "namn": "Fredag lunch är tom",
+     "skarm": "Veckan brett — normalläget",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbnormal|114",
+     "namn": "Söndag lunch är tom",
+     "skarm": "Veckan brett — normalläget",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbomrostning|52",
+     "namn": "Söndag middag är tom",
+     "skarm": "Veckan brett — aktiv omröstning",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "vmbkonflikt|44",
+     "namn": "Söndag middag är tom",
+     "skarm": "Veckan brett — konflikt i en cell",
+     "ram": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    }
+   ]
+  },
+  "grupp1b_ejDagsrutor": {
+   "antal": 3,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "$skal": "Samma ramfarg och samma kvot som dagsrutorna, men en annan kontrollfunktion. Ingen occurrence-specifik evidens finns. Fail closed.",
+   "poster": [
+    {
+     "id": "rcbkommentar|15",
+     "namn": "Reagera",
+     "skarm": "Receptet brett — kommentarsbandet",
+     "ikoner": [
+      "reaction-add"
+     ],
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "socreaktion|15",
+     "namn": "Reagera",
+     "skarm": "Emoji-reaktioner — regeln skrivs om",
+     "ikoner": [
+      "reaction-add"
+     ],
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+    },
+    {
+     "id": "kompbild|16",
+     "namn": "Lägg till bilder",
+     "skarm": "Bilduppladdning med förlopp",
+     "ikoner": [
+      "plus"
+     ],
+     "kvot": 1.414,
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+    }
+   ]
+  },
+  "grupp2_morka": {
+   "antal": 16,
+   "$seAvsnitt": "E_morkaDomar"
+  },
+  "grupp3_over3": {
+   "antal": 34,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_PASSES_IF_REQUIRED",
+   "$regel": "Ingen ny manuell semantikbatch gors for dessa. De far INTE kallas REQUIRED_PASS enbart for att talet ar >= 3.0.",
+   "aterbrukadEvidens": 0,
+   "$aterbruk": "Ingen av de 34 bar occurrence-specifik tillamplighetsevidens som kan aterbrukas. De 6 saffransikonknapparnas kant har en konformansdom i saffranssparet men den domen galler den kanten som del av primaraktionsremedieringen, inte som egen occurrence-adjudicerad tillamplighet, och aterbrukas darfor inte har.",
+   "poster": [
+    {
+     "id": "hem360|15",
+     "namn": "Byt förslag",
+     "skarm": "Hem · 360",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "id": "hem360|60",
+     "namn": "Lägg till",
+     "skarm": "Hem · 360",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "id": "tangentbord|19",
+     "namn": "Skicka",
+     "skarm": "Chatt · tangentbord öppet",
+     "ram": "rgb(63, 81, 69)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 7.698,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "id": "langavarden|53",
+     "namn": "Lägg till",
+     "skarm": "Långa värden",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "id": "chattredigerat|42",
+     "namn": "Skicka",
+     "skarm": "Chatt — redigerat och borttaget",
+     "ram": "rgb(63, 81, 69)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 7.698,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "chattmeny|27",
+     "namn": "Skicka",
+     "skarm": "Chatt — avsändarens meddelandemeny",
+     "ram": "rgb(63, 81, 69)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 7.698,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hem|23",
+     "namn": "Byt förslag",
+     "skarm": "Hem · 412 · ljust",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hem|83",
+     "namn": "Lägg till",
+     "skarm": "Hem · 412 · ljust",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hemtom|74",
+     "namn": "Lägg till",
+     "skarm": "Hem · tomt (ny användare)",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hemladdar|53",
+     "namn": "Lägg till",
+     "skarm": "Hem · laddar",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hemoffline|32",
+     "namn": "Byt förslag",
+     "skarm": "Hem · offline",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hemoffline|84",
+     "namn": "Lägg till",
+     "skarm": "Hem · offline",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "hemfel|65",
+     "namn": "Lägg till",
+     "skarm": "Hem · fel",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "receptkommentarer|46",
+     "namn": "Skicka kommentaren",
+     "skarm": "Receptdetalj — kommentarer",
+     "ram": "rgb(63, 81, 69)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 7.698,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+    },
+    {
+     "id": "bredlandskap|28",
+     "namn": "Lägg till",
+     "skarm": "Liggande telefon behåller bottenraden",
+     "ram": "rgb(63, 81, 69)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 7.698,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredrecept|12",
+     "namn": "Färre portioner",
+     "skarm": "Receptet brett",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "bredrecept|18",
+     "namn": "Fler portioner",
+     "skarm": "Receptet brett",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+    },
+    {
+     "id": "rcbnormal|22",
+     "namn": "Färre portioner",
+     "skarm": "Receptet brett — normalläget",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcbnormal|28",
+     "namn": "Fler portioner",
+     "skarm": "Receptet brett — normalläget",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcbportion|4",
+     "namn": "Färre portioner",
+     "skarm": "Receptet brett — skalningen syns",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcbportion|10",
+     "namn": "Fler portioner",
+     "skarm": "Receptet brett — skalningen syns",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcblaser|13",
+     "namn": "Färre portioner",
+     "skarm": "Receptet brett — någon annans",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcblaser|19",
+     "namn": "Fler portioner",
+     "skarm": "Receptet brett — någon annans",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcboffline|14",
+     "namn": "Färre portioner",
+     "skarm": "Receptet brett — frånkopplat",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "rcboffline|20",
+     "namn": "Fler portioner",
+     "skarm": "Receptet brett — frånkopplat",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "lgbrotation|38",
+     "namn": "Färre",
+     "skarm": "Matlagningsläget — rotation och skala",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "lgbrotation|42",
+     "namn": "Fler",
+     "skarm": "Matlagningsläget — rotation och skala",
+     "ram": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "lgbgester|15",
+     "namn": "Byt ut mjölk",
+     "skarm": "Matlagningsläget — de två gesterna",
+     "ram": "rgb(220, 169, 104)",
+     "angransande": "rgb(47, 68, 55)",
+     "kvot": 4.952,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+    },
+    {
+     "id": "globinstallera|38",
+     "namn": "Lägg till",
+     "skarm": "Globalt — installationsbannern",
+     "ram": "rgb(63, 81, 69)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 7.698,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+    },
+    {
+     "id": "fbinkorgvy|15",
+     "namn": "Öppna skärmdumpen",
+     "skarm": "Admin — feedbackinkorgen (sidnivå)",
+     "ram": "rgb(125, 137, 124)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 3.317,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+    },
+    {
+     "id": "insthushall|19",
+     "namn": "Färre",
+     "skarm": "Hushållsstorlek",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+    },
+    {
+     "id": "insthushall|23",
+     "namn": "Fler",
+     "skarm": "Hushållsstorlek",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+    },
+    {
+     "id": "instportion|2",
+     "namn": "Färre portioner",
+     "skarm": "Portionsskalning",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+    },
+    {
+     "id": "instportion|8",
+     "namn": "Fler portioner",
+     "skarm": "Portionsskalning",
+     "ram": "rgb(36, 56, 44)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 11.357,
+     "tema": "light",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+    }
+   ]
+  }
+ },
+ "E_morkaDomar": {
+  "antal": 16,
+  "metod": "occurrence-level review, ingen gruppering fore review",
+  "kontrafaktisktProv": {
+   "mal": 16,
+   "filer": 5,
+   "kallfilerOforandrade": true,
+   "aterstalldaEfterVarjeRender": true,
+   "kollateralaAndringar": 0,
+   "$metod": "gransen gjord visuellt oskiljbar genom att fa exakt den angransande ytans farg, med bibehallen bredd. Ingen kandidatfarg. Ingen permanent skrivning."
+  },
+  "fordelning": {
+   "REQUIRED": 15,
+   "SUPPLEMENTAL_NOT_REQUIRED": 1,
+   "UNKNOWN": 0
+  },
+  "konformans": {
+   "REQUIRED_FAIL": 15,
+   "NOT_APPLICABLE": 1
+  },
+  "$ingenRemediering": "Inga fynd remedieras. Ingen mekanism och ingen farg valjs. REQUIRED_FAIL registreras som separat framtida remediation dependency.",
+  "poster": [
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagastaende|4",
+    "CONTROL_IDENTITY": "lagastaende|4",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 2.783,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Avsluta matlagningsläget",
+    "OTHER_VISUAL_CUES": [
+     "check",
+     "refresh-cw",
+     "clock",
+     "chevron-right"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Krämig svamppasta med timjan A+ Portioner−4+ Allt i skafferiet Ingredienser 5 rader 400 gfärska champinjoner 3 dlgrädde ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläge — stående",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "x"
+    ],
+    "ram": "rgb(109, 122, 112)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "932",
+      "data-hit": "self",
+      "data-a11y-name": "Avsluta matlagningsläget",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 6,
+    "operation": "Avsluta matlagningsläget",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 4 st (check, refresh-cw, clock, chevron-right) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 2 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagastaende|55",
+    "CONTROL_IDENTITY": "lagastaende|55",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 2.783,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Föregående steg",
+    "OTHER_VISUAL_CUES": [
+     "check",
+     "refresh-cw",
+     "clock",
+     "chevron-right"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Krämig svamppasta med timjan A+ Portioner−4+ Allt i skafferiet Ingredienser 5 rader 400 gfärska champinjoner 3 dlgrädde ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläge — stående",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "arrow-left"
+    ],
+    "ram": "rgb(109, 122, 112)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "983",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 57,
+    "operation": "Föregående steg",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 4 st (check, refresh-cw, clock, chevron-right) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 1 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagamorkt|4",
+    "CONTROL_IDENTITY": "lagamorkt|4",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(23, 37, 29)",
+    "MEASURED_RATIO": 2.982,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Avsluta matlagningsläget",
+    "OTHER_VISUAL_CUES": [
+     "check",
+     "refresh-cw",
+     "clock",
+     "chevron-right"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Krämig svamppasta med timjan A+ Portioner−4+ Allt i skafferiet Ingredienser 5 rader 400 gfärska champinjoner 3 dlgrädde ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläge — mörkt läge",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "tema": "dark",
+    "roll": "button",
+    "ikoner": [
+     "x"
+    ],
+    "ram": "rgb(101, 109, 102)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "996",
+      "data-hit": "self",
+      "data-a11y-name": "Avsluta matlagningsläget",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 6,
+    "operation": "Avsluta matlagningsläget",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 4 st (check, refresh-cw, clock, chevron-right) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 2 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(23, 37, 29) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagamorkt|55",
+    "CONTROL_IDENTITY": "lagamorkt|55",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(23, 37, 29)",
+    "MEASURED_RATIO": 2.982,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Föregående steg",
+    "OTHER_VISUAL_CUES": [
+     "check",
+     "refresh-cw",
+     "clock",
+     "chevron-right"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Krämig svamppasta med timjan A+ Portioner−4+ Allt i skafferiet Ingredienser 5 rader 400 gfärska champinjoner 3 dlgrädde ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläge — mörkt läge",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "tema": "dark",
+    "roll": "button",
+    "ikoner": [
+     "arrow-left"
+    ],
+    "ram": "rgb(101, 109, 102)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1047",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 57,
+    "operation": "Föregående steg",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 4 st (check, refresh-cw, clock, chevron-right) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 1 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(23, 37, 29) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagastaende320|4",
+    "CONTROL_IDENTITY": "lagastaende320|4",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 2.783,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Avsluta matlagningsläget",
+    "OTHER_VISUAL_CUES": [
+     "check",
+     "clock",
+     "chevron-right"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Krämig svamppasta med timjan A+ Portioner−4+ Allt i skafferiet Ingredienser 5 rader Under 360 px kollapsar ingrediensern",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläge — stående · 320",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "x"
+    ],
+    "ram": "rgb(109, 122, 112)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1778",
+      "data-hit": "self",
+      "data-a11y-name": "Avsluta matlagningsläget",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 6,
+    "operation": "Avsluta matlagningsläget",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 3 st (check, clock, chevron-right) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 2 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagastaende320|36",
+    "CONTROL_IDENTITY": "lagastaende320|36",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 2.783,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Föregående steg",
+    "OTHER_VISUAL_CUES": [
+     "check",
+     "clock",
+     "chevron-right"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Krämig svamppasta med timjan A+ Portioner−4+ Allt i skafferiet Ingredienser 5 rader Under 360 px kollapsar ingrediensern",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläge — stående · 320",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "arrow-left"
+    ],
+    "ram": "rgb(109, 122, 112)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1810",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 38,
+    "operation": "Föregående steg",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 3 st (check, clock, chevron-right) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 1 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagaliggande|28",
+    "CONTROL_IDENTITY": "lagaliggande|28",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(23, 37, 29)",
+    "MEASURED_RATIO": 2.982,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Föregående steg",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Steg 3 av 7 · Krämig svamppasta A+ Fräs kantarellerna i het panna tills all vätska kokat bort, salta först därefter Star",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagning · landskap",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "arrow-left"
+    ],
+    "ram": "rgb(101, 109, 102)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1746",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 30,
+    "operation": "Föregående steg",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 1 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(23, 37, 29) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@hemmorkt|23",
+    "CONTROL_IDENTITY": "hemmorkt|23",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(23, 37, 29)",
+    "MEASURED_RATIO": 2.982,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Byt förslag",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "IKVÄLL Ugnsbakad rotselleri med brynt smör 45 min4 port.Allt finns hemma Laga nu",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Hem · mörkt läge",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "tema": "dark",
+    "roll": "button",
+    "ikoner": [
+     "refresh-cw"
+    ],
+    "ram": "rgb(101, 109, 102)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "633",
+      "data-hit": "self",
+      "data-a11y-name": "Byt förslag",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 26,
+    "operation": "Byt förslag",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 1 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(23, 37, 29) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@hemmorkt|83",
+    "CONTROL_IDENTITY": "hemmorkt|83",
+    "PAINT_SOURCE": "border-top-color rgb(23, 37, 29) 3px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 1.272,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Lägg till",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Torsdag 9 juli God kväll, Maja IKVÄLL Ugnsbakad rotselleri med brynt smör 45 min4 port.Allt finns hemma Laga nu Veckan S",
+    "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Kontrollen bar en egen malad saffransfyllning i full cirkel mot den morka nedre listen. Nar gransen gors oskiljbar star fyllningen kvar och bade kontrollens existens och dess operation (lagg till) ar fortfarande tydliga. Gransen ar en avskiljande ring, inte det som identifierar kontrollen.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Hem · mörkt läge",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "tema": "dark",
+    "roll": "button",
+    "ikoner": [
+     "nav-add"
+    ],
+    "ram": "rgb(23, 37, 29)",
+    "rambredd": "3px",
+    "egenFyllning": "rgb(206, 124, 30)",
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "693",
+      "data-hit": "self",
+      "data-a11y-name": "Lägg till",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 86,
+    "operation": "Lägg till",
+    "evidens": [
+     "EGEN_MALAD_FYLLNING rgb(206, 124, 30) — kontrollen har en egen malad yta utover gransen",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen ar fortfarande tydlig — fyllningen bar identiteten"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagatimers|16",
+    "CONTROL_IDENTITY": "lagatimers|16",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(47, 68, 55)",
+    "MEASURED_RATIO": 2.597,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Pausa timern Pastan",
+    "OTHER_VISUAL_CUES": [
+     "info"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Steg 4 av 6 A+ Två timers går Pastan 04:12 Svampen 01:47 Koka pastan al dente. Spara 1 dl av kokvattnet innan du häller ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagning — flera timers",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "pause"
+    ],
+    "ram": "rgb(116, 130, 119)",
+    "rambredd": "1px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1412",
+      "data-hit": "self",
+      "data-a11y-name": "Pausa timern Pastan",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 20,
+    "operation": "Pausa timern Pastan",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 1 st (info) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(47, 68, 55) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagatimers|25",
+    "CONTROL_IDENTITY": "lagatimers|25",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(47, 68, 55)",
+    "MEASURED_RATIO": 2.597,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Pausa timern Svampen",
+    "OTHER_VISUAL_CUES": [
+     "info"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Steg 4 av 6 A+ Två timers går Pastan 04:12 Svampen 01:47 Koka pastan al dente. Spara 1 dl av kokvattnet innan du häller ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagning — flera timers",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "pause"
+    ],
+    "ram": "rgb(116, 130, 119)",
+    "rambredd": "1px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1421",
+      "data-hit": "self",
+      "data-a11y-name": "Pausa timern Svampen",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 29,
+    "operation": "Pausa timern Svampen",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 1 st (info) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(47, 68, 55) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lagatimers|43",
+    "CONTROL_IDENTITY": "lagatimers|43",
+    "PAINT_SOURCE": "border-top-color rgba(245, 244, 237, 0.35) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(23, 37, 29)",
+    "MEASURED_RATIO": 2.982,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Föregående steg",
+    "OTHER_VISUAL_CUES": [
+     "info"
+    ],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "Steg 4 av 6 A+ Två timers går Pastan 04:12 Svampen 01:47 Koka pastan al dente. Spara 1 dl av kokvattnet innan du häller ",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagning — flera timers",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "arrow-left"
+    ],
+    "ram": "rgb(101, 109, 102)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1439",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 47,
+    "operation": "Föregående steg",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "SCENEN_ANVANDER_BARA_GLYFER_FOR_ICKE_KONTROLLER: 1 st (info) — en bar glyf skiljer sig darfor inte fran scenens dekor- och statusmarken",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 1 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(23, 37, 29) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lgbgester|8",
+    "CONTROL_IDENTITY": "lgbgester|8",
+    "PAINT_SOURCE": "border-top-color rgb(63, 81, 69) 1px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 1.475,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Byt ut blandfärs",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "INGREDIENSER 900 g blandfärs 2¼ dl mjölk 1,5 dl ströbröd Ikonen syns alltid — i ett kök finns ingen hovring.",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläget — de två gesterna",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "swap-horizontal"
+    ],
+    "ram": "rgb(63, 81, 69)",
+    "rambredd": "1px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1682",
+      "data-hit": "self",
+      "data-a11y-name": "Byt ut blandfärs",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 33,
+    "operation": "Byt ut blandfärs",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 2 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lgbgester|22",
+    "CONTROL_IDENTITY": "lgbgester|22",
+    "PAINT_SOURCE": "border-top-color rgb(63, 81, 69) 1px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 1.475,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Byt ut ströbröd",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "INGREDIENSER 900 g blandfärs 2¼ dl mjölk 1,5 dl ströbröd Ikonen syns alltid — i ett kök finns ingen hovring.",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläget — de två gesterna",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "swap-horizontal"
+    ],
+    "ram": "rgb(63, 81, 69)",
+    "rambredd": "1px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1696",
+      "data-hit": "self",
+      "data-a11y-name": "Byt ut ströbröd",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 47,
+    "operation": "Byt ut ströbröd",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 2 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lgbtimer|16",
+    "CONTROL_IDENTITY": "lgbtimer|16",
+    "PAINT_SOURCE": "border-top-color rgb(63, 81, 69) 1.5px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 1.475,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Föregående steg",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "INGREDIENSER · 6 PORT 900 g blandfärs 1,5 st gul lök 2¼ dl mjölk Steg 3 av 7 3Rör ihop färs, lök och ströbrödsblandning.",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläget — timrar och röst",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "arrow-left"
+    ],
+    "ram": "rgb(63, 81, 69)",
+    "rambredd": "1.5px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1768",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button",
+      "data-hit": "self"
+     },
+     "text": ""
+    },
+    "descendantordinal": 40,
+    "operation": "Föregående steg",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 1 av 2 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   },
+   {
+    "PART_DETECTED": true,
+    "PART_IDENTITY": "ram@lgbtimer|43",
+    "CONTROL_IDENTITY": "lgbtimer|43",
+    "PAINT_SOURCE": "border-top-color rgb(63, 81, 69) 1px solid",
+    "OUTSIDE_ADJACENT_SURFACE": "rgb(36, 56, 44)",
+    "MEASURED_RATIO": 1.475,
+    "VISIBLE_TEXT_PRESENT": false,
+    "VISIBLE_ICON_PRESENT": true,
+    "ACCESSIBLE_NAME": "Tysta uppläsningen",
+    "OTHER_VISUAL_CUES": [],
+    "STATE_RELEVANCE": null,
+    "CONTEXT_DESCRIPTION": "INGREDIENSER · 6 PORT 900 g blandfärs 1,5 st gul lök 2¼ dl mjölk Steg 3 av 7 3Rör ihop färs, lök och ströbrödsblandning.",
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "APPLICABILITY_EVIDENCE": "COUNTERFACTUAL_SCENE_REVIEW",
+    "APPLICABILITY_REASON": "Nar gransen gors oskiljbar aterstar bara glyfen. Kontrollen har ingen egen malad yta, och i scenen anvands likadana bara glyfer for dekor, status eller instruktion samtidigt som malets funktionella grannar behaller sin egen fyllning eller ram. Scenen som helhet gor da varken kontrollens existens eller dess operation tydlig.",
+    "TECHNICAL_MEASUREMENT_STATUS": "TECHNICALLY_FAILS_IF_REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "$regler": {
+     "textArObservation": "VISIBLE_TEXT_PRESENT och VISIBLE_TEXT_ABSENT ar fakta, inte domar",
+     "accessibleName": "ACCESSIBLE_NAME ar inte visuell evidens for SC 1.4.11",
+     "kvotenAvgorInte": "MEASURED_RATIO paverkar aldrig APPLICABILITY_VERDICT",
+     "ingenPropagering": "roll, fargpar och kvot far aldrig propagera en dom"
+    },
+    "skarm": "Matlagningsläget — timrar och röst",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "tema": "light",
+    "roll": "button",
+    "ikoner": [
+     "volume"
+    ],
+    "ram": "rgb(63, 81, 69)",
+    "rambredd": "1px",
+    "egenFyllning": null,
+    "ankare": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1795",
+      "data-a11y-name": "Tysta uppläsningen",
+      "data-a11y-role": "button",
+      "data-hit": "self"
+     },
+     "text": ""
+    },
+    "descendantordinal": 67,
+    "operation": "Tysta uppläsningen",
+    "evidens": [
+     "INGEN_EGEN_MALAD_YTA — gransen ar kontrollens enda egna malning",
+     "FUNKTIONELL_GRANNE_MED_EGEN_YTA: 3 av 5 syskon behaller en egen fyllning eller ram — utan gransen ar malet visuellt olikt sin egen funktionella jamlike",
+     "KONTRAFAKTISK_RENDER: gransen gjord oskiljbar mot rgb(36, 56, 44) med bibehallen bredd; scenen granskad i faktisk render"
+    ],
+    "kontrafaktisktUtfall": "kontrollen blir en bar glyf och gar inte att skilja fran scenens dekor och status"
+   }
+  ]
+ },
+ "F_gruppering": {
+  "$regel": "Gruppering sker FORST efter att varje forekomst fatt individuell dom. Samma kvot, farg, knappstil eller morkt tema racker aldrig.",
+  "grupper": [
+   {
+    "kontrollfunktion": "Avsluta matlagningsläget",
+    "scenhierarki": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "medlemmar": [
+     "lagastaende|4",
+     "lagamorkt|4"
+    ],
+    "antal": 2
+   },
+   {
+    "kontrollfunktion": "Föregående steg",
+    "scenhierarki": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "medlemmar": [
+     "lagastaende|55",
+     "lagamorkt|55"
+    ],
+    "antal": 2
+   },
+   {
+    "kontrollfunktion": "Avsluta matlagningsläget",
+    "scenhierarki": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "medlemmar": [
+     "lagastaende320|4"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Föregående steg",
+    "scenhierarki": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "medlemmar": [
+     "lagastaende320|36"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Föregående steg",
+    "scenhierarki": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "medlemmar": [
+     "lagaliggande|28"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Byt förslag",
+    "scenhierarki": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "medlemmar": [
+     "hemmorkt|23"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Lägg till",
+    "scenhierarki": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "medlemmar": [
+     "hemmorkt|83"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Pausa timern Pastan",
+    "scenhierarki": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "medlemmar": [
+     "lagatimers|16"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Pausa timern Svampen",
+    "scenhierarki": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "medlemmar": [
+     "lagatimers|25"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Föregående steg",
+    "scenhierarki": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "medlemmar": [
+     "lagatimers|43"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Byt ut blandfärs",
+    "scenhierarki": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "medlemmar": [
+     "lgbgester|8"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Byt ut ströbröd",
+    "scenhierarki": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "medlemmar": [
+     "lgbgester|22"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Föregående steg",
+    "scenhierarki": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "medlemmar": [
+     "lgbtimer|16"
+    ],
+    "antal": 1
+   },
+   {
+    "kontrollfunktion": "Tysta uppläsningen",
+    "scenhierarki": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "medlemmar": [
+     "lgbtimer|43"
+    ],
+    "antal": 1
+   }
+  ],
+  "antalGrupper": 14,
+  "$utfall": "14 applicability-identiteter ur 16 forekomster. Sammanslagning skedde bara dar kontrollfunktion, tillstandsfunktion, typ av visuella cues, scenhierarki och kontrafaktiskt utfall alla var bevisat lika."
+ },
+ "G_bevaradEvidens": {
+  "PREVIOUS_EXISTING_UNKNOWN": 997,
+  "PREVIOUS_EXISTING_UNKNOWN_CHANGED": 0,
+  "$bevis": "Registret i fas2/migration24-closure.json ar orort. Ingen kod i detta block raknar om historiska tillamplighetsdomar, och AP-11 laser att en battre extraktion inte far andra ett befintligt UNKNOWN.",
+  "historisktRegister": {
+   "SUPPLEMENTAL": 8,
+   "REQUIRED_PASS": 15,
+   "REQUIRED_FAIL": 5,
+   "UNKNOWN": 997,
+   "summa": 1025,
+   "$villkor": "Unionen galler eftersom samtliga 24 nya grafiska delar landade i exakt samma tekniska hink som baslinjens population — nt:supplemental gick 1001 → 1025, +24, medan de tva ovriga hinkarna ar oforandrade. Populationerna ar alltsa samma matmangd.",
+   "stammer": true
+  },
+  "$skillnad": "\"de tidigare 997 UNKNOWN ar oforandrade\" ar inte samma sak som \"current UNKNOWN total maste vara 997\". Nar de 68 nya gransdelarna fors in i den normativa redovisningen andras current totals legitimt."
+ },
+ "H_populationsrekonciliation": {
+  "stabilt": {
+   "deklareradeKontroller": [
+    1375,
+    1375
+   ],
+   "R02": {
+    "fore": {
+     "measured": 1375,
+     "pass": 1375,
+     "fail": 0,
+     "unknown": 40,
+     "kontroller": 1407,
+     "produktnamnare": 1375,
+     "fel": []
+    },
+    "efter": {
+     "measured": 1375,
+     "pass": 1375,
+     "fail": 0,
+     "unknown": 40,
+     "kontroller": 1407,
+     "produktnamnare": 1375,
+     "fel": []
+    }
+   },
+   "grafiskaDelarIKontroller": [
+    1806,
+    1806
+   ],
+   "gransdelar": [
+    689,
+    689
+   ],
+   "fristaendeGrafik": [
+    32,
+    32
+   ],
+   "produktelement": [
+    13898,
+    13898
+   ],
+   "artefakter": [
+    329,
+    329
+   ],
+   "textkorningar": [
+    4496,
+    4496
+   ],
+   "produktfilerAndrade": 0,
+   "R04credit": 0,
+   "R04registerskrivningar": 0
+  },
+  "forklaradForandring": {
+   "matstatus": {
+    "fore": {
+     "ejKravd": 1155,
+     "matt": 651
+    },
+    "efter": {
+     "matt": 1806
+    }
+   },
+   "$varfor": "Matningen grindades tidigare av bararhinken. Efter borttagningen mats alla 1806 delar. Antalet delar ar oforandrat; det ar TACKNINGEN som andrats.",
+   "matningarUnder3": {
+    "fore": 6,
+    "efter": 502
+   },
+   "$varfor2": "Detta ar INTE 502 fynd. Det ar 502 uppmatta relationer med kvot under 3.0 vars tillamplighet i de allra flesta fall ar UNKNOWN. En relation blir REQUIRED_FAIL bara nar tillampligheten ar REQUIRED.",
+   "$ingaNyaFynd": "De enda nya konformansdomarna i detta block ar de 15 REQUIRED_FAIL bland de 16 morka granserna."
+  },
+  "R01": {
+   "textkorningar": 4496,
+   "pass": 4496,
+   "fail": 0,
+   "unknown": 0
+  },
+  "overlapp": 0,
+  "klipp": 0,
+  "andradeSkarmmatt": 0
+ },
+ "I_status": {
+  "saffran": {
+   "rubrik": "SAFFRON PRIMARY-ACTION DEFAULT-STATE REMEDIATION",
+   "PRODUCT": "CLOSED / VERIFIED",
+   "METHOD_ACCOUNTING": "CLOSED / VERIFIED",
+   "R04_CREDIT": 0,
+   "PRESSED": "UNTESTED",
+   "INACTIVE": "UNTESTED",
+   "FOCUS": "UNTESTED"
+  },
+  "dettaBlock": "TEXT-INDEPENDENT APPLICABILITY MODEL · CLOSED / VERIFIED",
+  "villkor": {
+   "textheuristikBorttagen": true,
+   "provGrona": true,
+   "de68Rekoncilierade": true,
+   "dagsruteBeslutBundet": 15,
+   "morkaOccurrenceDomar": 16,
+   "tidigare997Oforandrade": true,
+   "produktfilerAndrade": 0,
+   "R04bitIdentiskt": true,
+   "oforkladePopulationsskiften": 0
+  },
+  "nyaBeroenden": [
+   {
+    "typ": "FUTURE_REMEDIATION_DEPENDENCY",
+    "vad": "15 REQUIRED_FAIL bland matlagningslagets ikonknappar",
+    "$ingenMekanism": "Ingen mekanism och ingen farg ar vald. Endast fyndet och dess evidens ar registrerade."
+   },
+   {
+    "typ": "UNADJUDICATED",
+    "vad": "34 gransrelationer med kvot >= 3.0 och UNKNOWN tillamplighet, plus 3 med #ccd1c2 som inte ar dagsrutor"
+   }
+  ]
+ }
+}

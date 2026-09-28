@@ -1,0 +1,50 @@
+{
+ "BL": "BL-14",
+ "nuvarandeNamn": "profil-integritetsreglage",
+ "ratificerat": false,
+ "kalla": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html rad 240, 244 (kandidat = HEAD, raden oforandrad av pf-a)",
+ "ankarordning": [
+  {
+   "steg": 1,
+   "typ": "binding",
+   "resultat": "INGET",
+   "bevis": "inga data-bind/-setting/-key/-field/-model-attribut pa raderna; ingen rad i evidensmatris/produktregler binder #profil-reglagen till en datanyckel"
+  },
+  {
+   "steg": 2,
+   "typ": "action semantics",
+   "resultat": "INGET FORFATTAT",
+   "bevis": "tva olika handlingar (vanners sokbarhet; publik synlighet for recept). Inget forfattat handlings-id. Gemensam innebord (synlighet/integritet) vore en tolkning, inte ett ankare."
+  },
+  {
+   "steg": 3,
+   "typ": "kallforfattad kontext",
+   "resultat": "FLERA",
+   "kandidater": [
+    {
+     "ankare": "ram-id",
+     "varde": "profil",
+     "ger": "endast forsta ledet (70/70-konventionen)"
+    },
+    {
+     "ankare": "sektionsrubrik",
+     "varde": "Integritet",
+     "ger": "integritet… — men rubriken ar synlig text, och sektionsregeln holl i 0 av 7 switchgrupper (STOPP-3)"
+    },
+    {
+     "ankare": "systerkonvention",
+     "varde": "socintegritet-integritetsreglage",
+     "ger": "integritetsreglage — etikettlikhet, uttryckligen forbjuden i STOPP-3"
+    },
+    {
+     "ankare": "prejudikat synlighetsval",
+     "varde": "cooksnapsynlighet-synlighetsval",
+     "ger": "synlighet… — annan kontroll, annan skarm"
+    }
+   ]
+  }
+ ],
+ "ersattningsId": "EJ HARLETT",
+ "utfall": "STOP — flera kallankare, inget unikt; inget skrivet",
+ "beslut": "HUMAN_DECISION_REQUIRED: valj komponentledet (eller ratificera integritetsreglage med skriven grund)"
+}

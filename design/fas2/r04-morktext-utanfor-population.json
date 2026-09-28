@@ -1,0 +1,179 @@
+{
+ "$regel": "R-01 mater kontroller. Text som inte ligger i nagon kontroll ingar inte i den frysta populationen och kan darfor falla utan att ge R-01-fynd. Detta ar ingen R-01-brist — det ar en populationsgrans som maste redovisas separat.",
+ "morkrenderadeSkarmar": 64,
+ "fynd_st": 11,
+ "iKontrollpopulationen": 0,
+ "utanforKontrollpopulationen": 11,
+ "grupper": [
+  {
+   "relation": "rgb(55, 69, 58) pa rgb(23, 37, 29)",
+   "instanser": 6,
+   "lagsta": 1.57,
+   "skarmar": [
+    "dataexport"
+   ]
+  },
+  {
+   "relation": "rgb(98, 112, 97) pa rgb(23, 37, 29)",
+   "instanser": 3,
+   "lagsta": 3.04,
+   "skarmar": [
+    "samtycke"
+   ]
+  },
+  {
+   "relation": "rgb(138, 82, 18) pa rgb(23, 37, 29)",
+   "instanser": 2,
+   "lagsta": 2.5,
+   "skarmar": [
+    "notiscentral",
+    "kontojuridik"
+   ]
+  }
+ ],
+ "fynd": [
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "ordinal": 26,
+   "farg": "rgb(55, 69, 58)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 1.57,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "ordinal": 27,
+   "farg": "rgb(55, 69, 58)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 1.57,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "ordinal": 28,
+   "farg": "rgb(55, 69, 58)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 1.57,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "ordinal": 29,
+   "farg": "rgb(55, 69, 58)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 1.57,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "ordinal": 30,
+   "farg": "rgb(55, 69, 58)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 1.57,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "ordinal": 31,
+   "farg": "rgb(55, 69, 58)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 1.57,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "ordinal": 32,
+   "farg": "rgb(98, 112, 97)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 3.04,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "ordinal": 33,
+   "farg": "rgb(98, 112, 97)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 3.04,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "ordinal": 34,
+   "farg": "rgb(98, 112, 97)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 3.04,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "notiscentral",
+   "familj": "notiscentral-414",
+   "ordinal": 54,
+   "farg": "rgb(138, 82, 18)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 2.5,
+   "troskel": 4.5,
+   "storlek": 12,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  },
+  {
+   "art": "kontojuridik",
+   "familj": "kontojuridik-414",
+   "ordinal": 29,
+   "farg": "rgb(138, 82, 18)",
+   "bakgrund": "rgb(23, 37, 29)",
+   "kvot": 2.5,
+   "troskel": 4.5,
+   "storlek": 16,
+   "vikt": "400",
+   "iKontroll": false,
+   "a11yRoll": null
+  }
+ ]
+}

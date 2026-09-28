@@ -35,6 +35,8 @@
 | `source-authority` | Källauktoritet | `source-authority.json` | 2.0 | gällande (`active`) | underhålls | DS | den här filen. `fas0/kallauktoritetsregister.md` genereras ur den; T-20 validerar den. Filens `version` och den här postens `version` är samma värde — avvikelse fälls av T-20 (F1-H01). |
 | `governance` | Styrning, fasmodell och grindar | `Butlery styrdokument modulart designsystem.dc.html` | 2.6 | gällande (`active`) | underhålls | DS | ligger i leveransroten (`zip:/`), men källan är versionshanterad i `leverans/` sedan F1-U01 — T-20 läser och jämför dess verkliga version. Definierar faserna, grindarna, statusordboken och §§ 9A–9E. **2.6**: § 18.4 skriven mot den tvådimensionella modellen (F1-U07). |
 | `document-runtime` | Dokumentruntime (dc-runtime) | `support.js` | — | gällande (`active`) | fryst | DEV | genererad körtidsfil för `.dc.html`-dokumenten — `// GENERATED from dc-runtime/src/*.ts`. Den bär ingen egen version. **Två byggen finns i leveransen** och de är avsiktligt olika, se `runtimeInstances`. Ingen av dem får skrivas över eller slås ihop utan att relationen omprövas (F1-H07). |
+| `selection-contexts` | Urvalsdimensioner och runtimeadapter | `selection-contexts.json` | 1.1 | gällande (`active`) | underhålls | DEV | F2-A04: vokabulär, giltiga urvalskontexter och runtimeadapter. plattformsmatris.md är dokumentation och genereras härifrån — en Markdown-tabell kan inte vara maskinkälla. En dimension får aktiveras först när den har både dokumentationskälla och en deterministisk runtimeadapter med verkliga användningsställen i appkoden. |
+| `layout-contract` | Layoutlagen, viewportprofiler och prober | `layout-contract.json` | 1.3 | planerad (`planned`) | underhålls | DS | F2-L01: tre lagen (compact/medium/expanded), fyra profiler och sex prober. DRAFT - contractState draft och activationBlockers i filen. Appens brytpunktskod far inte andras forran 72-anropsinventeringen och R-01…R-04 ar granskade. Kolumntrappan med steg vid 1920 ar en oloest parallell modell, se parallelModels. |
 
 ## Dokumentruntime
 
@@ -57,6 +59,7 @@ Tabellen nedan räknas ur den här filens `generatedArtifacts` och headerns egen
 | `lib/theme/app_colors.dart` | `tools/gen-app-theme.mjs` | 1.13 | **ja** |
 | `lib/theme/app_text_styles.dart` | `tools/gen-app-theme.mjs` | 1.13 | **ja** |
 | `fas0/kallauktoritetsregister.md` | `tools/gen-authority.mjs` | — | ingen tokenrad (renderas ur annan källa) |
+| `fas0/artefaktforslag.md` | `tools/gen-artifact-proposal.mjs` | — | ingen tokenrad (renderas ur annan källa) |
 
 ## Superseded och frysta
 

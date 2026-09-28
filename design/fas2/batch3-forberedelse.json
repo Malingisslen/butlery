@@ -1,0 +1,1349 @@
+{
+ "$schema": "butlery-batch3-forberedelse/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "bee4b6c",
+ "$status": "PRE-WRITE-PAKET KLART — 19 kontroller, alla roller avgjorda, inget skrivet",
+ "$typ": "ANALYSIS + DESIGN DECISION PREPARATION ONLY.",
+ "A_klassificering": {
+  "fynd": "NEW_PRODUCT_FINDING: 19 established controls below current 48x48 hit-area contract",
+  "formulering": "Fyndet formuleras som \"finding in newly discovered control population, not yet migrated into the frozen declared-control measurement population\" — inte som \"prospective finding\", eftersom kontrollstatusen redan ar etablerad.",
+  "$ejProspektivt": "Kontrollstatusen ar etablerad, sa 48x48-kontraktet galler redan semantiskt. Ordet \"prospective\" anvands inte om dessa 19."
+ },
+ "B_dubblettkontroll": {
+  "dubblettIdentiteter": [],
+  "antal": 0,
+  "dubbelavbildning": {
+   "fall": "inloggning (del 2) och authlogga (etapp 3) ar tva avbildningar av samma vy — bada citerar auth_view.dart i sin egen prosa.",
+   "authlogga": {
+    "deklarerade": 8,
+    "inklusive": "button \"Skapa konto\""
+   },
+   "inloggning": {
+    "deklarerade": 0
+   },
+   "inloggningmorkt": {
+    "deklarerade": 0
+   },
+   "$slutsats": "Ingen identitetskollision: identiteter ar per artefakt och ingen av de 19 bar redan en deklarerad kontrollidentitet. Men den kanoniska deklarationen for samma funktion ligger pa authlogga, och det maste in i migrationsplanen sa att samma kontroll inte raknas som tva olika kontroller i censusen."
+  }
+ },
+ "C_inventarium": [
+  {
+   "identitet": "arkivimport|29",
+   "skarm": "Från arkiv",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "arkivimport",
+    "produktordinal": 29,
+    "outerHTMLHash": "b52c08f1",
+    "outerHTMLLangd": 187,
+    "inlineStil": "border: 1.5px solid var(--ram-behallare-a); text-align: center; font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px;",
+    "synligText": "+ Ladda upp fil",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 364,
+   "hojd": 45,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 3,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 63,
+    "slack": 0,
+    "antalBarn": 1,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "A_TARGET_BEFINTLIG_WRAPPER"
+  },
+  {
+   "identitet": "epostverif|8",
+   "skarm": "E-postverifiering",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "epostverif",
+    "produktordinal": 8,
+    "outerHTMLHash": "2e23f3cc",
+    "outerHTMLLangd": 231,
+    "inlineStil": "width: 100%; margin-top: 26px; border: 1.5px solid var(--ram-behallare-a); color: var(--text-innehall-a); font-size: 14px; font-weight: 600; padding: 12px; border-radius: 8px;",
+    "synligText": "Skicka igen (42 s)",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 375,
+   "hojd": 47,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 1,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 793,
+    "slack": 605.7,
+    "antalBarn": 5,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "C_VAX_INOM_SLACK"
+  },
+  {
+   "identitet": "forfragningar|16",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 16,
+    "outerHTMLHash": "88a24f95",
+    "outerHTMLLangd": 206,
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center; color: rgb(36, 56, 44);",
+    "synligText": "Avböj",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 179.5,
+   "hojd": 39,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 9,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 39,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": false,
+    "tight": true,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Acceptera",
+    "w": 176.5,
+    "h": 39,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  },
+  {
+   "identitet": "forfragningar|26",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 26,
+    "outerHTMLHash": "238b0c56",
+    "outerHTMLLangd": 206,
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center; color: rgb(36, 56, 44);",
+    "synligText": "Avböj",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 179.5,
+   "hojd": 39,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 9,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 39,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": false,
+    "tight": true,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Acceptera",
+    "w": 176.5,
+    "h": 39,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  },
+  {
+   "identitet": "grupp|48",
+   "skarm": "Gruppdetalj",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "grupp",
+    "produktordinal": 48,
+    "outerHTMLHash": "e8facddb",
+    "outerHTMLLangd": 194,
+    "inlineStil": "border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 10px; border-radius: 8px;",
+    "synligText": "Dela recept, meny eller lista",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 364,
+   "hojd": 43,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 5,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 125,
+    "slack": 8,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "C_VAX_INOM_SLACK"
+  },
+  {
+   "identitet": "inloggning|19",
+   "skarm": "Inloggning",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "inloggning",
+    "produktordinal": 19,
+    "outerHTMLHash": "5600524c",
+    "outerHTMLLangd": 194,
+    "inlineStil": "margin-top: 14px; border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 12px; border-radius: 8px;",
+    "synligText": "Skapa konto",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 364,
+   "hojd": 47,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 1,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 355,
+    "slack": 276,
+    "antalBarn": 8,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "C_VAX_INOM_SLACK"
+  },
+  {
+   "identitet": "onboarding|39",
+   "skarm": "Onboarding — allergener",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "onboarding",
+    "produktordinal": 39,
+    "outerHTMLHash": "c49474b0",
+    "outerHTMLLangd": 166,
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 12px;",
+    "synligText": "Tillbaka",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 179.5,
+   "hojd": 47,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 1,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 47,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": false,
+    "tight": true,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Nästa",
+    "w": 176.5,
+    "h": 47,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  },
+  {
+   "identitet": "placera|17",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 17,
+    "outerHTMLHash": "3eef16dd",
+    "outerHTMLLangd": 224,
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text-align: center;",
+    "synligText": "Ledig — tryck för att placera",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 320,
+   "hojd": 35,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 13,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 54,
+    "slack": 1,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "A_TARGET_BEFINTLIG_WRAPPER"
+  },
+  {
+   "identitet": "placera|29",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 29,
+    "outerHTMLHash": "645f89ce",
+    "outerHTMLLangd": 200,
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text-align: center;",
+    "synligText": "Ledig",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 320,
+   "hojd": 35,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 13,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 54,
+    "slack": 1,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "A_TARGET_BEFINTLIG_WRAPPER"
+  },
+  {
+   "identitet": "placera|35",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 35,
+    "outerHTMLHash": "d3bafd29",
+    "outerHTMLLangd": 200,
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text-align: center;",
+    "synligText": "Ledig",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 320,
+   "hojd": 35,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 13,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 54,
+    "slack": 1,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "A_TARGET_BEFINTLIG_WRAPPER"
+  },
+  {
+   "identitet": "placera|38",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 38,
+    "outerHTMLHash": "8ac5266c",
+    "outerHTMLLangd": 200,
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text-align: center;",
+    "synligText": "Ledig",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 320,
+   "hojd": 35,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 13,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 54,
+    "slack": 1,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "A_TARGET_BEFINTLIG_WRAPPER"
+  },
+  {
+   "identitet": "placera|41",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 41,
+    "outerHTMLHash": "41cf4faf",
+    "outerHTMLLangd": 200,
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text-align: center;",
+    "synligText": "Ledig",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 320,
+   "hojd": 35,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 13,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 53,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "A_TARGET_BEFINTLIG_WRAPPER"
+  },
+  {
+   "identitet": "placera|49",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 49,
+    "outerHTMLHash": "47a9adc3",
+    "outerHTMLLangd": 204,
+    "inlineStil": "flex: 3 1 0%; border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 10px; border-radius: 8px;",
+    "synligText": "Placera resten automatiskt",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 210.8,
+   "hojd": 43,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 5,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 43,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": false,
+    "tight": true,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Klar",
+    "w": 145.2,
+    "h": 43,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  },
+  {
+   "identitet": "smartimport|29",
+   "skarm": "Importera länk",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "smartimport",
+    "produktordinal": 29,
+    "outerHTMLHash": "737e6995",
+    "outerHTMLLangd": 217,
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(125, 137, 124); text-align: center; font-size: 14px; font-weight: 600; padding: 12px; border-radius: 8px; color: rgb(98, 112, 97);",
+    "synligText": "Klistra in",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 179.5,
+   "hojd": 47,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 1,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 79,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Importerar …",
+    "w": 176.5,
+    "h": 47,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  },
+  {
+   "identitet": "statefel412|15",
+   "skarm": "State — fel + offline · 412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "statefel412",
+    "produktordinal": 15,
+    "outerHTMLHash": "6ebbf71c",
+    "outerHTMLLangd": 217,
+    "inlineStil": "margin-top: 20px; border: 1.5px solid var(--ram-behallare-a); color: var(--text-innehall-b); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: 8px;",
+    "synligText": "Försök igen",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 130.8,
+   "hojd": 43,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 5,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 863,
+    "slack": 711.2,
+    "antalBarn": 4,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "C_VAX_INOM_SLACK"
+  },
+  {
+   "identitet": "statefel|15",
+   "skarm": "State — fel + offline",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "statefel",
+    "produktordinal": 15,
+    "outerHTMLHash": "b9520844",
+    "outerHTMLLangd": 217,
+    "inlineStil": "margin-top: 20px; border: 1.5px solid var(--ram-behallare-a); color: var(--text-innehall-b); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: 8px;",
+    "synligText": "Försök igen",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 130.8,
+   "hojd": 43,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 5,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 320,
+    "h": 442,
+    "slack": 290.2,
+    "antalBarn": 4,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "C_VAX_INOM_SLACK"
+  },
+  {
+   "identitet": "taggdetalj|34",
+   "skarm": "Taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "taggdetalj",
+    "produktordinal": 34,
+    "outerHTMLHash": "3726aad2",
+    "outerHTMLLangd": 219,
+    "inlineStil": "margin-top: 8px; text-align: center; font-size: 12px; font-weight: 700; color: rgb(36, 56, 44); border: 1.5px solid rgb(36, 56, 44); border-radius: 8px; padding: 8px;",
+    "synligText": "Kör reglerna nu",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 364,
+   "hojd": 36,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 12,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 412,
+    "h": 243,
+    "slack": 191,
+    "antalBarn": 4,
+    "duger": true,
+    "tight": false,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": null,
+   "naraDeklarerade": 0,
+   "grupp": "C_VAX_INOM_SLACK"
+  },
+  {
+   "identitet": "tomtrecept|17",
+   "skarm": "Tomt läge — recept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "tomtrecept",
+    "produktordinal": 17,
+    "outerHTMLHash": "e1c586ce",
+    "outerHTMLLangd": 186,
+    "inlineStil": "border: 1.5px solid rgb(36, 56, 44); color: rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 8px;",
+    "synligText": "Importera länk",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 138.8,
+   "hojd": 43,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 5,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 284,
+    "h": 43,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": false,
+    "tight": true,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Lägg till recept",
+    "w": 137.2,
+    "h": 43,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  },
+  {
+   "identitet": "vanprofil|34",
+   "skarm": "Vänprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "vanprofil",
+    "produktordinal": 34,
+    "outerHTMLHash": "3b50a6e8",
+    "outerHTMLLangd": 213,
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; text-align: center; color: rgb(36, 56, 44);",
+    "synligText": "Dela recept",
+    "$regel": "Fail-closed. Ankaret ar fil + skarm-id + produktordinal + hash av elementets outerHTML. Stammer inte hashen vid skrivtillfallet far ingenting skrivas. Raa teckenoffset anvands aldrig som identitet."
+   },
+   "bredd": 179.5,
+   "hojd": 45,
+   "krav": 48,
+   "prospektivR02": "FAIL",
+   "behovsExtraHojd": 3,
+   "behovsExtraBredd": 0,
+   "nuvarandeHitAgare": "ingen deklaration (ingen deklaration)",
+   "foralder": {
+    "tagg": "div",
+    "w": 364,
+    "h": 45,
+    "slack": 0,
+    "antalBarn": 2,
+    "duger": false,
+    "tight": true,
+    "barRedanTraffytemarke": false
+   },
+   "sidoliggandeSyskon": {
+    "text": "Skicka meddelande",
+    "w": 176.5,
+    "h": 45,
+    "deklarerad": false
+   },
+   "naraDeklarerade": 0,
+   "grupp": "B_VAX_EGEN_BOX"
+  }
+ ],
+ "D_rollbeslut": {
+  "smartimport|29": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"Klistra in\" utfor en operation pa skarmens egen inmatning.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "placera|49": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"Placera resten automatiskt\" opererar pa veckans redan valda ratter.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "onboarding|39": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"Tillbaka\" flyttar guidens steg i samma vy.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "arkivimport|29": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"+ Ladda upp fil\" oppnar filvaljaren.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "forfragningar|16": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"Avböj\" utfor en handling pa just det kortets forfragan.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "forfragningar|26": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "Samma, bedomt pa sitt eget kort.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "vanprofil|34": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "Prosan sager ordagrant \"dela-KNAPPAR\".",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "taggdetalj|34": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "Prosan sager ordagrant \"kör-KNAPP\".",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "epostverif|8": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"Skicka igen\" utfor om utskicket.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "statefel|15": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "\"Försök igen\" gor om den misslyckade hamtningen.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "statefel412|15": {
+   "roll": "button",
+   "grunder": [
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "Samma, i egen skarm och egen referensbredd.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "placera|17": {
+   "roll": "button",
+   "grunder": [
+    "NOT_MUTUALLY_EXCLUSIVE_MEASURED",
+    "PRESS_COMMITS_ACTION_MEASURED"
+   ],
+   "skal": "Trycket genomfor placeringen. Rutorna ar inte omsesidigt uteslutande — tva dagar ar fyllda samtidigt. Det persistenta valet ligger i brickan, inte i dagsrutan.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "placera|29": {
+   "roll": "button",
+   "grunder": [
+    "NOT_MUTUALLY_EXCLUSIVE_MEASURED",
+    "PRESS_COMMITS_ACTION_MEASURED"
+   ],
+   "skal": "Trycket genomfor placeringen. Rutorna ar inte omsesidigt uteslutande — tva dagar ar fyllda samtidigt. Det persistenta valet ligger i brickan, inte i dagsrutan.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "placera|35": {
+   "roll": "button",
+   "grunder": [
+    "NOT_MUTUALLY_EXCLUSIVE_MEASURED",
+    "PRESS_COMMITS_ACTION_MEASURED"
+   ],
+   "skal": "Trycket genomfor placeringen. Rutorna ar inte omsesidigt uteslutande — tva dagar ar fyllda samtidigt. Det persistenta valet ligger i brickan, inte i dagsrutan.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "placera|38": {
+   "roll": "button",
+   "grunder": [
+    "NOT_MUTUALLY_EXCLUSIVE_MEASURED",
+    "PRESS_COMMITS_ACTION_MEASURED"
+   ],
+   "skal": "Trycket genomfor placeringen. Rutorna ar inte omsesidigt uteslutande — tva dagar ar fyllda samtidigt. Det persistenta valet ligger i brickan, inte i dagsrutan.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "placera|41": {
+   "roll": "button",
+   "grunder": [
+    "NOT_MUTUALLY_EXCLUSIVE_MEASURED",
+    "PRESS_COMMITS_ACTION_MEASURED"
+   ],
+   "skal": "Trycket genomfor placeringen. Rutorna ar inte omsesidigt uteslutande — tva dagar ar fyllda samtidigt. Det persistenta valet ligger i brickan, inte i dagsrutan.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "tomtrecept|17": {
+   "roll": "button",
+   "grunder": [
+    "STARTS_WORKFLOW"
+   ],
+   "skal": "\"Importera länk\" startar importarbetsflodet. Malskarmen ar sjalv ett trestegsforlopp (Hämtar → Analyserar → Skapar), inte ett dokument eller en resurs. Korpusens 14 deklarerade link-roller ar uteslutande dokument, avsnittsankare och externa resurser.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": false
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "grupp|48": {
+   "roll": "button",
+   "grunder": [
+    "OPENS_MODAL_OR_PICKER"
+   ],
+   "skal": "\"Dela recept, meny eller lista\" oppnar en delningsvaljare. Att oppna modal eller valjare ar button enligt kontraktet.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": false
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  },
+  "inloggning|19": {
+   "roll": "button",
+   "grunder": [
+    "AUTHORED_PROSE_STATES_ROLE"
+   ],
+   "skal": "Den kanoniska avbildningen av samma vy, authlogga, sager i sin egen prosa att laget vaxlas av \"en KONTURKNAPP under en eller-avdelare\". inloggning|19 ar precis den: en ramad kontroll direkt under syskonet \"eller\". Detta ar prosans egen rollangivelse for samma vy — inte formpropagering och inte etiketten.",
+   "kontroll": {
+    "ejNavigationTillResurs": true,
+    "ejValUrOmsesidigGrupp": true,
+    "handlingPaPlats": true
+   },
+   "status": "READY_FOR_IMPLEMENTATION"
+  }
+ },
+ "D2_rollTotaler": {
+  "button": 19,
+  "link": 0,
+  "radio": 0,
+  "ROLE_UNKNOWN": 0
+ },
+ "E_dagsrutornasEvidens": {
+  "A_valetLiggerIBrickan": "Kikärtscurry vald — tryck på en ledig plats. Middag är dagens standard",
+  "B_brickansObjekt": "3 kvar att placera Kikärtscurry Ugnsrotfrukter Tacos Placera resten au",
+  "C_flerDagarSamtidigtFyllda": [
+   "TisLunchRester · LaxpuddingMiddagLaxpudd",
+   "TorsKrämig svamppasta"
+  ],
+  "D_ingenDagsrutaBarTillstand": true,
+  "E_fylldRutaVisarRatten": "En placerad dag visar rattens namn i stallet for \"Ledig\" — trycket har alltsa bytt innehall, inte satt ett urvalsmarke.",
+  "$slutsats": "Dagsrutorna ar INTE omsesidigt uteslutande: Tis och Tors ar bada fyllda samtidigt. Ett val i en radiogrupp skulle avmarkera det andra. Det persistenta omsesidigt uteslutande valet ligger i BRICKAN — \"Kikärtscurry vald\". Dagsrutan tar emot trycket och GENOMFOR placeringen.",
+  "$ejAnvant": "Att fem alternativ star bredvid varandra. Att korpusen deklarerar en liknande ruta som button pa en annan skarm. Formen."
+ },
+ "F_namnstrategier": [
+  {
+   "identitet": "placera|17",
+   "grupp": "A dagsrutor",
+   "nuvarandeSynligText": "Ledig — tryck för att placera",
+   "roll": "button",
+   "mall": "\"<Veckodag>, ledig. Placera här\"",
+   "foreslagetNamn": "Måndag, ledig. Placera här",
+   "datakalla": "dagetiketten \"Mån\" i samma rad, plus tillstandsordet ur rutans egen text",
+   "precedens": "vmbflytta|27 ar deklarerad button med namnet \"Torsdag middag, ledig. Släpp här\" — samma mall, samma produkt.",
+   "oppetInnehallsbeslut": "Ska forkortningen \"Mån\" skrivas ut som \"Måndag\"? Precedensen skriver ut hela veckodagen. Ingen maltid laggs till: de tomma raderna ar dagsniva, till skillnad fran de fyllda som har Lunch/Middag-underrader.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "placera|29",
+   "grupp": "A dagsrutor",
+   "nuvarandeSynligText": "Ledig",
+   "roll": "button",
+   "mall": "\"<Veckodag>, ledig. Placera här\"",
+   "foreslagetNamn": "Onsdag, ledig. Placera här",
+   "datakalla": "dagetiketten \"Ons\" i samma rad, plus tillstandsordet ur rutans egen text",
+   "precedens": "vmbflytta|27 ar deklarerad button med namnet \"Torsdag middag, ledig. Släpp här\" — samma mall, samma produkt.",
+   "oppetInnehallsbeslut": "Ska forkortningen \"Ons\" skrivas ut som \"Onsdag\"? Precedensen skriver ut hela veckodagen. Ingen maltid laggs till: de tomma raderna ar dagsniva, till skillnad fran de fyllda som har Lunch/Middag-underrader.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "placera|35",
+   "grupp": "A dagsrutor",
+   "nuvarandeSynligText": "Ledig",
+   "roll": "button",
+   "mall": "\"<Veckodag>, ledig. Placera här\"",
+   "foreslagetNamn": "Fredag, ledig. Placera här",
+   "datakalla": "dagetiketten \"Fre\" i samma rad, plus tillstandsordet ur rutans egen text",
+   "precedens": "vmbflytta|27 ar deklarerad button med namnet \"Torsdag middag, ledig. Släpp här\" — samma mall, samma produkt.",
+   "oppetInnehallsbeslut": "Ska forkortningen \"Fre\" skrivas ut som \"Fredag\"? Precedensen skriver ut hela veckodagen. Ingen maltid laggs till: de tomma raderna ar dagsniva, till skillnad fran de fyllda som har Lunch/Middag-underrader.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "placera|38",
+   "grupp": "A dagsrutor",
+   "nuvarandeSynligText": "Ledig",
+   "roll": "button",
+   "mall": "\"<Veckodag>, ledig. Placera här\"",
+   "foreslagetNamn": "Lördag, ledig. Placera här",
+   "datakalla": "dagetiketten \"Lör\" i samma rad, plus tillstandsordet ur rutans egen text",
+   "precedens": "vmbflytta|27 ar deklarerad button med namnet \"Torsdag middag, ledig. Släpp här\" — samma mall, samma produkt.",
+   "oppetInnehallsbeslut": "Ska forkortningen \"Lör\" skrivas ut som \"Lördag\"? Precedensen skriver ut hela veckodagen. Ingen maltid laggs till: de tomma raderna ar dagsniva, till skillnad fran de fyllda som har Lunch/Middag-underrader.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "placera|41",
+   "grupp": "A dagsrutor",
+   "nuvarandeSynligText": "Ledig",
+   "roll": "button",
+   "mall": "\"<Veckodag>, ledig. Placera här\"",
+   "foreslagetNamn": "Söndag, ledig. Placera här",
+   "datakalla": "dagetiketten \"Sön\" i samma rad, plus tillstandsordet ur rutans egen text",
+   "precedens": "vmbflytta|27 ar deklarerad button med namnet \"Torsdag middag, ledig. Släpp här\" — samma mall, samma produkt.",
+   "oppetInnehallsbeslut": "Ska forkortningen \"Sön\" skrivas ut som \"Söndag\"? Precedensen skriver ut hela veckodagen. Ingen maltid laggs till: de tomma raderna ar dagsniva, till skillnad fran de fyllda som har Lunch/Middag-underrader.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "forfragningar|16",
+   "grupp": "B tva Avböj",
+   "nuvarandeSynligText": "Avböj",
+   "roll": "button",
+   "mall": "\"Avböj <person>\"",
+   "foreslagetNamn": "Avböj Erik Sandell",
+   "datakalla": "personnamnet star i samma kort: \"Erik Sandell\"",
+   "precedens": "betygperperson deklarerar \"3 av 5 för Maja\" — personen hamtas ur samma kort.",
+   "oppetInnehallsbeslut": "Ska hela namnet anvandas eller fornamnet? Precedensen anvander fornamn (\"för Maja\"). Kortet bar hela namnet.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "forfragningar|26",
+   "grupp": "B tva Avböj",
+   "nuvarandeSynligText": "Avböj",
+   "roll": "button",
+   "mall": "\"Avböj <person>\"",
+   "foreslagetNamn": "Avböj Hanna Vik",
+   "datakalla": "personnamnet star i samma kort: \"Hanna Vik\"",
+   "precedens": "betygperperson deklarerar \"3 av 5 för Maja\" — personen hamtas ur samma kort.",
+   "oppetInnehallsbeslut": "Ska hela namnet anvandas eller fornamnet? Precedensen anvander fornamn (\"för Maja\"). Kortet bar hela namnet.",
+   "skrivsNu": false
+  },
+  {
+   "identitet": "epostverif|8",
+   "grupp": "C nedrakning",
+   "nuvarandeSynligText": "Skicka igen (42 s)",
+   "roll": "button",
+   "mall": "\"Skicka igen\"",
+   "foreslagetNamn": "Skicka igen",
+   "datakalla": "handlingsdelen av den synliga texten, utan nedrakningen",
+   "precedens": "Ingen deklarerad \"Skicka igen\" finns. Mallen foljer korpusens ovriga handlingsnamn: verb utan varierande varde.",
+   "nedrakningsmekanism": {
+    "vald": "data-a11y-state=\"disabled\" medan nedrakningen loper",
+    "varfor": "disabled ar redan i korpusens tillstandsvokabular med 18 forekomster. Ingen ny runtime-a11y-modell infors.",
+    "kvarstaende": "Korpusen har inga beskrivnings- eller live-region-attribut — bara data-a11y-role, -name, -state och -disabled. Den aterstaende sekundtiden formedlas darfor av synlig text. Om den ska formedlas programmatiskt kravs ett arkitekturbeslut som ligger utanfor detta paket."
+   },
+   "oppetInnehallsbeslut": "Ska knappen bara disabled under hela nedrakningen, eller bara markeras som otillganglig? Bada finns i vokabularet.",
+   "skrivsNu": false
+  }
+ ],
+ "G_traffyteMekanism": {
+  "krav": 48,
+  "perSubgrupp": {
+   "A_TARGET_BEFINTLIG_WRAPPER": {
+    "mekanism": "data-hit=\"target:<id>\" pa den befintliga radwrappern, som redan mater >= 48x48.",
+    "stodIProjektet": "48 forekomster av data-hit-target finns redan i korpusen.",
+    "geometriandring": "INGEN. Enbart tva attribut per kontroll.",
+    "blastRadius": "Noll pixlar flyttas.",
+    "skiljerBodyFranHit": "JA — VISUAL_BODY_SIZE forblir 320x35 respektive 364x45, EFFECTIVE_HIT_AREA blir wrapperns."
+   },
+   "B_VAX_EGEN_BOX": {
+    "mekanism": "Kontrollens egen box maste na 48 px hojd. Foraldern ar en tight wrapper som vaxer med den.",
+    "stodIProjektet": "data-hit=\"self\" ar korpusens vanligaste form (1583 forekomster) och forblir korrekt — men den kraver att den egna boxen ar stor nog.",
+    "geometriandring": "JA. Innehallet under kontrollen i samma skarm skjuts ned med deltat.",
+    "blastRadius": "Per kontroll: 1-9 px vertikal forskjutning nedanfor. Sex av sju sitter sida vid sida med ett OADJUDICERAT syskon av samma hojd — det syskonet maste andras samtidigt for att raden inte ska bli ojamn. Det ar ett beroende, inte en fri atgard.",
+    "skiljerBodyFranHit": "NEJ — body och hit sammanfaller."
+   },
+   "C_VAX_INOM_SLACK": {
+    "mekanism": "Kontrollens egen box vaxer till 48 px. Foraldern har ledigt utrymme som absorberar deltat.",
+    "stodIProjektet": "data-hit=\"self\".",
+    "geometriandring": "JA, men innesluten. Foraldern har mer slack an det behovda deltat.",
+    "blastRadius": "Fem av sex ar sista barnet i sin foralder — ingenting nedanfor flyttas. epostverif|8 har ett efterfoljande syskon som skjuts ned 1 px.",
+    "skiljerBodyFranHit": "NEJ."
+   }
+  },
+  "medlemmar": {
+   "A_TARGET_BEFINTLIG_WRAPPER": [
+    "arkivimport|29",
+    "placera|17",
+    "placera|29",
+    "placera|35",
+    "placera|38",
+    "placera|41"
+   ],
+   "C_VAX_INOM_SLACK": [
+    "epostverif|8",
+    "grupp|48",
+    "inloggning|19",
+    "statefel412|15",
+    "statefel|15",
+    "taggdetalj|34"
+   ],
+   "B_VAX_EGEN_BOX": [
+    "forfragningar|16",
+    "forfragningar|26",
+    "onboarding|39",
+    "placera|49",
+    "smartimport|29",
+    "tomtrecept|17",
+    "vanprofil|34"
+   ]
+  },
+  "utfall": {
+   "FAIL": 19
+  }
+ },
+ "H_blastRadius": {
+  "A_noll": "Sex kontroller kraver noll pixlars forandring.",
+  "B_kopplat": "Sju kontroller kraver att den egna boxen vaxer 1-9 px. Sex av dem sitter sida vid sida med ett oadjudicerat syskon som maste folja med.",
+  "C_absorberat": "Sex kontroller vaxer 1-12 px inom foralderns lediga utrymme. Bara epostverif|8 flyttar ett syskon, och da 1 px.",
+  "naraDeklareradeKontroller": 0,
+  "overlapp": "Noll deklarerade kontroller ligger inom 60 px av nagon av de 19. Ingen overlappsrisk mot den befintliga deklarerade populationen."
+ },
+ "I_ickeText": {
+  "forekomster": [
+   "placera|17",
+   "placera|29",
+   "placera|35",
+   "placera|38",
+   "placera|41"
+  ],
+  "klass": "NEW_PRODUCT_FINDING / CONTROL_NON_TEXT",
+  "forgrund": {
+   "deklaration": "border:1.5px dashed #ccd1c2",
+   "kalla": "literal hex, inline"
+  },
+  "angransandeBakgrund": {
+   "varde": "#f5f4ed",
+   "kalla": "skarmens basyta, semantic.surface.base.light"
+  },
+  "nuvarandeKvot": 1.414,
+  "kravdRelation": ">= 3.0, componentIdentityCarrier — ramen ar det enda som avgransar den tomma platsen",
+  "deladEllerSeparat": {
+   "utfall": "SEPARATA. Fem sjalvstandiga literala deklarationer, en per rad. Ingen token, ingen CSS-variabel, ingen delad klass.",
+   "varning": "Samma literal #ccd1c2 anvands ocksa for radernas border-bottom-avdelare i samma skarm, och for tva andra strackade ramar i samma fil (skrivsjalv|23 och fotoimport|23) som INTE ingar i denna batch. En textersattning skulle traffa 8 stallen i stallet for 5.",
+   "ovrigaStrackade": [
+    {
+     "id": "skrivsjalv|23",
+     "skarm": "Skriv själv",
+     "farg": "rgb(204, 209, 194)"
+    },
+    {
+     "id": "fotoimport|23",
+     "skarm": "Från bild",
+     "farg": "rgb(204, 209, 194)"
+    },
+    {
+     "id": "grupp|31",
+     "skarm": "Gruppdetalj",
+     "farg": "rgb(98, 112, 97)"
+    }
+   ]
+  },
+  "rollberoende": "Rollbeslutet button andrar INTE kravet pa den synliga kontrollformen. Ramen ar componentIdentityCarrier oavsett om rollen ar button eller radio.",
+  "kandidatpaket": [
+   {
+    "token": "semantic.border.control.light",
+    "hex": "#7D897C",
+    "rekommenderad": true,
+    "varfor": "Redan namngiven for exakt detta andamal i den ljusa paletten. Ingen ny farg, ingen accent. Samma varde som redan beslutats for profilens av-reglage.",
+    "kvotMotYta": 3.317,
+    "klarar": true
+   },
+   {
+    "token": "semantic.text.secondary.light",
+    "hex": "#627061",
+    "rekommenderad": false,
+    "varfor": "Storre marginal, men det ar rutans TEXTFARG. Ram och text skulle bli samma varde och den tomma rutan skulle narma sig en fylld i tyngd.",
+    "kvotMotYta": 4.75,
+    "klarar": true
+   }
+  ],
+  "tillstandsseparation": {
+   "tomRuta": "strackad ram, ingen fyllning, text #627061",
+   "fylldRuta": "fyllning #e6ead9, ingen ram, text #37453a",
+   "bevaras": "JA. Den tomma rutan behaller ram-utan-fyllning, den fyllda behaller fyllning-utan-ram. Skillnaden blir tydligare, inte svagare."
+  },
+  "$regel": "Ingen farg valjs och ingen skrivs. Kandidatpaketet kraver ett separat manskligt beslut. 0 R-04-kredit. Inga morka mappningar harleds."
+ },
+ "J_morkaBeroendet": {
+  "identitet": "inloggningmorkt|19",
+  "status": "REVIEWED_UNKNOWN — orord",
+  "fynd": "2.98 mot sin bakgrund",
+  "klass": "DEPENDENCY_BLOCKED — raknas INTE bland etablerade kontrollfynd",
+  "nyttUnderlagUpptackt": {
+   "vad": "authlogga, den kanoniska avbildningen av samma vy, sager i sin egen prosa att laget vaxlas av \"en konturknapp under en eller-avdelare\". Det etablerade rollen for inloggning|19 i ljust lage. Samma prosa skulle sannolikt etablera bade kontrollstatus och roll for den morka tvillingen.",
+   "hittatUnder": "rollutredningen av inloggning|19 i §6, oberoende av morka forekomsten",
+   "atgard": "INGEN. Verdiktet ar oforandrat. Detta ar registrerat NEW_EVIDENCE och kraver explicit omprovningsauktorisation med dependency-redovisning innan det far anvandas."
+  }
+ },
+ "K_migration": {
+  "historiskFrusenBaslinje": {
+   "deklarerade": 1351,
+   "r02": {
+    "measured": 1351,
+    "pass": 1351,
+    "fail": 0,
+    "unknown": 0
+   },
+   "$regel": "Skrivs ALDRIG om retroaktivt."
+  },
+  "nyaKontroller": 19,
+  "forvantadUtvidgadPopulation": 1370,
+  "steg": [
+   "1  Skriv data-a11y-role och data-a11y-name for de 19. Varje ny identitet bar en sparbar hanvisning till sitt batch-3-verdikt och sitt kallankare.",
+   "2  Mat om R-02 pa den UTVIDGADE populationen. Den historiska 1351-baslinjen star kvar orord bredvid; en ny current/extended-baslinje skapas.",
+   "3  Forvantat FORE traffyteatgard: 19 nya traffytefynd. Det ar en forvantan, ingen siffra som far framtvingas.",
+   "4  Utfor traffyteatgarden per strukturell subgrupp A/B/C.",
+   "5  Forvantat EFTER korrekt atgard: 0 nya traffytefynd.",
+   "6  Stam av grafiska delar separat. De 19 ramarna blir control non-text och maste reconcileras mot den befintliga populationen pa 1652 grafiska delar — inte adderas blint.",
+   "7  Sarskild post: inloggning|19 ar samma kontroll som authlogga|25 avbildad en gang till. Censusen far inte rakna den som tva olika kontroller i produkten."
+  ],
+  "$sprak": "Fyndet formuleras som \"finding in newly discovered control population, not yet migrated into the frozen declared-control measurement population\" — inte som \"prospective finding\", eftersom kontrollstatusen redan ar etablerad."
+ },
+ "L_sprak": {
+  "tillatet": [
+   "undeclared in the audited control/accessibility model",
+   "odeklarerad i den granskade kontroll- och tillganglighetsmodellen"
+  ],
+  "ejTillatet": [
+   "invisible to screen readers",
+   "screen reader cannot reach it",
+   "not exposed in accessibility tree"
+  ],
+  "$krav": "Runtime-pastaenden kraver separat runtime-evidens. Sadan finns inte i detta arbete."
+ },
+ "M_treOkanda": [
+  {
+   "identitet": "familj|39",
+   "status": "REVIEWED_UNKNOWN — orord i detta block",
+   "fardAterupptagning": [
+    "NEW_EVIDENCE",
+    "RESOLVED_DEPENDENCY",
+    "EXPLICIT_REVIEW_AUTHORIZATION"
+   ]
+  },
+  {
+   "identitet": "impdelningsocial|16",
+   "status": "REVIEWED_UNKNOWN — orord i detta block",
+   "fardAterupptagning": [
+    "NEW_EVIDENCE",
+    "RESOLVED_DEPENDENCY",
+    "EXPLICIT_REVIEW_AUTHORIZATION"
+   ]
+  },
+  {
+   "identitet": "inloggningmorkt|19",
+   "status": "REVIEWED_UNKNOWN — orord i detta block",
+   "fardAterupptagning": [
+    "NEW_EVIDENCE",
+    "RESOLVED_DEPENDENCY",
+    "EXPLICIT_REVIEW_AUTHORIZATION"
+   ]
+  }
+ ],
+ "N_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "bitIdentisk": true
+  },
+  "granskning": {
+   "UNREVIEWED": 2475,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 93,
+   "unresolved": 2591,
+   "raw": 2700
+  },
+  "produktskrivningar": 0,
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "a11ySkrivningar": 0
+ },
+ "O_produktskrivningar": 0,
+ "stopp": []
+}

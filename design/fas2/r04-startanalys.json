@@ -1,0 +1,922 @@
+{
+ "$schema": "butlery-r04-startanalys/1",
+ "$datum": "2026-08-12",
+ "$status": "STOPP. Ingen preview renderad. Scenen start faller pa omkontrollen. Ingen registry-write, ingen produktwrite.",
+ "A_reconciliation": {
+  "$krav": "ingen denominator ambiguity",
+  "aktivaRegisterbeslut": 45,
+  "traffarNagonAvDe91": 1,
+  "utanforDe91": 44,
+  "summerar": true,
+  "de91": {
+   "DECIDED": 1,
+   "UNDECIDED": 90,
+   "stabilaId": [
+    "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande"
+   ]
+  },
+  "inneDetalj": [
+   {
+    "beslutsId": "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--yta-kontroll-d11",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "mork": "#4a5c43",
+    "traffar": [
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande"
+    ]
+   }
+  ],
+  "uteSammanfattning": "44 aktiva beslut ligger helt utanfor de 91 prioriterade enheterna. Deras roll och ljusvarde ingar inte i den populationen. Registrets totalsumma far darfor aldrig lasas som resolved count inom de 91.",
+  "ute": [
+   {
+    "beslutsId": "CAND-ram-kontroll-#3f6b4f",
+    "tokenNamn": "--ram-kontroll-d1"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#17251d",
+    "tokenNamn": "--yta-kontroll-d1"
+   },
+   {
+    "beslutsId": "CAND-text-kontroll-#a9b2a0",
+    "tokenNamn": "--text-kontroll-d1"
+   },
+   {
+    "beslutsId": "CAND-ram-kontroll-#de9078",
+    "tokenNamn": "--ram-kontroll-d2"
+   },
+   {
+    "beslutsId": "CAND-text-kontroll-#de9078",
+    "tokenNamn": "--text-kontroll-d2"
+   },
+   {
+    "beslutsId": "CAND-text-kontroll-#8fb89a",
+    "tokenNamn": "--text-kontroll-d3"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#93a48d",
+    "tokenNamn": "--yta-kontroll-d2"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#37453a",
+    "tokenNamn": "--yta-kontroll-d3"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-b3"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+    "tokenNamn": "--yta-upphojd-b4"
+   },
+   {
+    "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
+    "tokenNamn": "--text-kontroll-d4"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d1"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d2"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d4"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d5"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d3"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d4"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d5"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d6"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d7"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d8"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d6"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d7"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d9"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d10"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d8"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d11"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d9"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d12"
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:radio · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-kontroll-d10"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-D01",
+    "tokenNamn": "--text-innehall-d1"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-D02",
+    "tokenNamn": "--text-innehall-d2"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-D03",
+    "tokenNamn": "--text-innehall-d3"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-D04",
+    "tokenNamn": "--text-innehall-d4"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-L01",
+    "tokenNamn": "--text-innehall-d5"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-L02",
+    "tokenNamn": "--text-innehall-d6"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+    "tokenNamn": "--yta-upphojd-d14"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-L05",
+    "tokenNamn": "--text-innehall-d7"
+   },
+   {
+    "beslutsId": "TEXTRC ‖ RC-TX-L06",
+    "tokenNamn": "--yta-upphojd-d15"
+   },
+   {
+    "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "tokenNamn": "--yta-upphojd-d16"
+   },
+   {
+    "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--text-kontroll-d5"
+   },
+   {
+    "beslutsId": "CAND-text-innehall-#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--text-innehall-d8"
+   },
+   {
+    "beslutsId": "CAND-text-innehall-#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--text-innehall-d9"
+   },
+   {
+    "beslutsId": "CAND-ikon-fristaende-#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+    "tokenNamn": "--ikon-fristaende-d1"
+   }
+  ]
+ },
+ "B_stabilaId": {
+  "A": {
+   "ordinal": 0,
+   "egenskap": "background-color",
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "ug": "utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "uid": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "arAppytan": true,
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "grafikroll": null,
+   "barText": false,
+   "barIkon": true,
+   "text": null,
+   "foralder": [],
+   "iDe91": true
+  },
+  "B": {
+   "ordinal": 18,
+   "egenskap": "background-color",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(245,244,237,0.18)",
+   "ug": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "uid": "yta-upphojd|rgba(245,244,237,0.18) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "arAppytan": false,
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "grafikroll": null,
+   "barText": false,
+   "barIkon": false,
+   "text": null,
+   "foralder": [
+    "start|0"
+   ],
+   "iDe91": false
+  },
+  "C": {
+   "ordinal": 19,
+   "egenskap": "background-color",
+   "roll": "yta-upphojd",
+   "ljus": "#ce7c1e",
+   "ug": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "uid": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "arAppytan": false,
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "grafikroll": null,
+   "barText": false,
+   "barIkon": false,
+   "text": null,
+   "foralder": [
+    "start|18",
+    "start|0"
+   ],
+   "iDe91": false
+  },
+  "D": {
+   "ordinal": 16,
+   "egenskap": "color",
+   "roll": "text-innehall",
+   "ljus": "#dca968",
+   "ug": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "uid": "text-innehall|#dca968 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "arAppytan": false,
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "grafikroll": null,
+   "barText": true,
+   "barIkon": false,
+   "text": {
+    "fontSize": 12,
+    "fontWeight": 600,
+    "stor": false,
+    "krav": 4.5,
+    "bakgrund": "rgb(36, 56, 44)",
+    "kvot": 5.91
+   },
+   "foralder": [
+    "start|0"
+   ],
+   "iDe91": false
+  },
+  "E": {
+   "ordinal": 20,
+   "egenskap": "color",
+   "roll": "text-innehall",
+   "ljus": "#c9d3c4",
+   "ug": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "uid": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "arAppytan": false,
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "grafikroll": null,
+   "barText": true,
+   "barIkon": false,
+   "text": {
+    "fontSize": 12,
+    "fontWeight": 400,
+    "stor": false,
+    "krav": 4.5,
+    "bakgrund": "rgb(36, 56, 44)",
+    "kvot": 8.11
+   },
+   "foralder": [
+    "start|0"
+   ],
+   "iDe91": false
+  }
+ },
+ "C_semantik": {
+  "A": {
+   "klass": "BASE_CANVAS",
+   "grund": "appytan sjalv — storsta malade produktytan i artefakten",
+   "princip": "P-SURFACE-APP"
+  },
+  "B": {
+   "klass": "OTHER_EXPLICIT_ROLE",
+   "vad": "sparet i en forloppsindikator",
+   "grund": "120×3 px, border-radius 999, overflow hidden, innehaller ett barn med bredd 46 % — det ar en progress track, inte en generisk upphojd yta. Rollkartan sager yta-upphojd; det ar en grovhet i rollmodellen, inte i markupen.",
+   "princip": "P-SURFACE-ELEVATED",
+   "barare": false
+  },
+  "C": {
+   "klass": "OTHER_EXPLICIT_ROLE",
+   "vad": "fyllningen i samma forloppsindikator",
+   "grund": "barnet med bredd 46 % inuti sparet. Fyllningen ar den enda bararen av hur langt forloppet gatt.",
+   "princip": "P-SURFACE-ELEVATED",
+   "barare": true,
+   "$viktigt": "Har ar fyllningen REQUIRED CARRIER. En exakt 1:1-relation mot sparet ar darfor underkand."
+  },
+  "D": {
+   "klass": "UNRESOLVED",
+   "vad": "varumarkesraden \"Din butler i koket\"",
+   "grund": "Authored evidens sager NEUTRAL_CONTENT: roll text-innehall, ingen kontroll, inget state, ingen komponent. Men elementet ar versalt, sparrat, halvfett och satt direkt under ordbilden — en varumarkesrad, inte brodtext. Rollmodellen skiljer inte de tva.",
+   "stopp": "Klassificeringen kraver ett taxonomibeslut som inte ar fattat. Enheten stoppas enligt regeln om att inte klassa accent ur rafarg.",
+   "princip": null
+  },
+  "E": {
+   "klass": "NEUTRAL_CONTENT",
+   "vad": "statusraden \"Dukar upp ditt kok…\"",
+   "grund": "roll text-innehall, ingen kontroll, inget state, ingen komponent. 12 px normal vikt.",
+   "princip": "P-TEXT-CONTENT"
+  }
+ },
+ "D_finalistsetA": {
+  "princip": "P-SURFACE-APP",
+  "OBSERVED_MAPPING_EVIDENCE": "NONE. Den verifierade mappningen #f5f4ed -> #17251d galler INTE #24382c. Samma semantiska roll ar inte observationsevidens.",
+  "DESIGN_PRINCIPLE_ELIGIBILITY": [
+   {
+    "varde": "#17251d",
+    "behorig": true,
+    "klass": "ELIGIBLE_AND_TESTED",
+    "skal": null,
+    "genomskinlig": false,
+    "ytkapabel": true,
+    "accent": false
+   },
+   {
+    "varde": "rgba(245,244,237,0.18)",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "genomskinligt varde kan inte vara temabasens lagsta yta",
+    "genomskinlig": true,
+    "ytkapabel": true,
+    "accent": false
+   },
+   {
+    "varde": "#93a48d",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "anvands aldrig som malad yta",
+    "genomskinlig": false,
+    "ytkapabel": false,
+    "accent": false
+   },
+   {
+    "varde": "#24382c",
+    "behorig": true,
+    "klass": "ELIGIBLE_AND_TESTED",
+    "skal": null,
+    "genomskinlig": false,
+    "ytkapabel": true,
+    "accent": false
+   },
+   {
+    "varde": "#c9d3c4",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "anvands aldrig som malad yta",
+    "genomskinlig": false,
+    "ytkapabel": false,
+    "accent": false
+   },
+   {
+    "varde": "rgba(245,244,237,0.4)",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "anvands aldrig som malad yta · genomskinligt varde kan inte vara temabasens lagsta yta",
+    "genomskinlig": true,
+    "ytkapabel": false,
+    "accent": false
+   },
+   {
+    "varde": "#8fb89a",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "anvands aldrig som malad yta",
+    "genomskinlig": false,
+    "ytkapabel": false,
+    "accent": false
+   },
+   {
+    "varde": "#de9078",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "anvands aldrig som malad yta · semantisk accent kan inte bara appytans canvasfunktion",
+    "genomskinlig": false,
+    "ytkapabel": false,
+    "accent": true
+   },
+   {
+    "varde": "#dca968",
+    "behorig": false,
+    "klass": "INELIGIBLE_WITH_REASON",
+    "skal": "anvands aldrig som malad yta · semantisk accent kan inte bara appytans canvasfunktion",
+    "genomskinlig": false,
+    "ytkapabel": false,
+    "accent": true
+   },
+   {
+    "varde": "#4a5c43",
+    "behorig": true,
+    "klass": "ELIGIBLE_AND_TESTED",
+    "skal": null,
+    "genomskinlig": false,
+    "ytkapabel": true,
+    "accent": false
+   }
+  ],
+  "finalister": [
+   "#17251d",
+   "#24382c",
+   "#4a5c43"
+  ],
+  "$not": "#17251d far vara kandidat men ar inte en verifierad mappning for #24382c. Genomskinliga varden ar inte appytekandidater."
+ },
+ "E_matriser": {
+  "B": {
+   "namn": "B",
+   "princip": "P-SURFACE-ELEVATED",
+   "behoriga": 4,
+   "rader": [
+    {
+     "kandidat": "#17251d",
+     "per": {
+      "#17251d": {
+       "kvot": 1,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1.27,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 2.2,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": true
+    },
+    {
+     "kandidat": "rgba(245,244,237,0.18)",
+     "per": {
+      "#17251d": {
+       "kvot": 1.72,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1.71,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 1.52,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": true
+    },
+    {
+     "kandidat": "#24382c",
+     "per": {
+      "#17251d": {
+       "kvot": 1.27,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 1.73,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": true
+    },
+    {
+     "kandidat": "#4a5c43",
+     "per": {
+      "#17251d": {
+       "kvot": 2.2,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1.73,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 1,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": true
+    }
+   ],
+   "commonPass": [
+    "#17251d",
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ]
+  },
+  "C_mot_appytan_FELAKTIG": {
+   "namn": "C",
+   "princip": "P-SURFACE-ELEVATED",
+   "behoriga": 4,
+   "rader": [
+    {
+     "kandidat": "#17251d",
+     "per": {
+      "#17251d": {
+       "kvot": 1,
+       "utfall": "FAIL_1TILL1"
+      },
+      "#24382c": {
+       "kvot": 1.27,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 2.2,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": false
+    },
+    {
+     "kandidat": "rgba(245,244,237,0.18)",
+     "per": {
+      "#17251d": {
+       "kvot": 1.72,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1.71,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 1.52,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": true
+    },
+    {
+     "kandidat": "#24382c",
+     "per": {
+      "#17251d": {
+       "kvot": 1.27,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1,
+       "utfall": "FAIL_1TILL1"
+      },
+      "#4a5c43": {
+       "kvot": 1.73,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": false
+    },
+    {
+     "kandidat": "#4a5c43",
+     "per": {
+      "#17251d": {
+       "kvot": 2.2,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 1.73,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 1,
+       "utfall": "FAIL_1TILL1"
+      }
+     },
+     "passarAlla": false
+    }
+   ],
+   "commonPass": [
+    "rgba(245,244,237,0.18)"
+   ]
+  },
+  "C_rattad": {
+   "$rattelse": "Forsta matrisen testade fyllningen mot appytan. Fyllningens faktiska foralder ar sparet. Testet ar omgjort mot ratt foralder.",
+   "rader": [
+    {
+     "kandidat": "#17251d",
+     "passarAlla": false,
+     "antalFel": 3,
+     "felKombinationer": [
+      "A=#17251d B=#17251d",
+      "A=#24382c B=#17251d",
+      "A=#4a5c43 B=#17251d"
+     ]
+    },
+    {
+     "kandidat": "rgba(245,244,237,0.18)",
+     "passarAlla": true,
+     "antalFel": 0,
+     "felKombinationer": []
+    },
+    {
+     "kandidat": "#24382c",
+     "passarAlla": false,
+     "antalFel": 3,
+     "felKombinationer": [
+      "A=#17251d B=#24382c",
+      "A=#24382c B=#24382c",
+      "A=#4a5c43 B=#24382c"
+     ]
+    },
+    {
+     "kandidat": "#4a5c43",
+     "passarAlla": false,
+     "antalFel": 4,
+     "felKombinationer": [
+      "A=#17251d B=#4a5c43",
+      "A=#24382c B=rgba(245,244,237,0.18)",
+      "A=#24382c B=#4a5c43",
+      "A=#4a5c43 B=#4a5c43"
+     ]
+    }
+   ],
+   "commonPass": [
+    "rgba(245,244,237,0.18)"
+   ]
+  },
+  "D": {
+   "namn": "D",
+   "princip": null,
+   "stoppad": true,
+   "rader": [],
+   "commonPass": null
+  },
+  "E": {
+   "namn": "E",
+   "princip": "P-TEXT-CONTENT",
+   "behoriga": 3,
+   "rader": [
+    {
+     "kandidat": "#93a48d",
+     "per": {
+      "#17251d": {
+       "kvot": 6.02,
+       "krav": 4.5,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 4.73,
+       "krav": 4.5,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 2.73,
+       "krav": 4.5,
+       "utfall": "FAIL"
+      }
+     },
+     "passarAlla": false
+    },
+    {
+     "kandidat": "#c9d3c4",
+     "per": {
+      "#17251d": {
+       "kvot": 10.31,
+       "krav": 4.5,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 8.11,
+       "krav": 4.5,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 4.68,
+       "krav": 4.5,
+       "utfall": "PASS"
+      }
+     },
+     "passarAlla": true
+    },
+    {
+     "kandidat": "#8fb89a",
+     "per": {
+      "#17251d": {
+       "kvot": 7.2,
+       "krav": 4.5,
+       "utfall": "PASS"
+      },
+      "#24382c": {
+       "kvot": 5.66,
+       "krav": 4.5,
+       "utfall": "PASS"
+      },
+      "#4a5c43": {
+       "kvot": 3.27,
+       "krav": 4.5,
+       "utfall": "FAIL"
+      }
+     },
+     "passarAlla": false
+    }
+   ],
+   "commonPass": [
+    "#c9d3c4"
+   ]
+  }
+ },
+ "F_commonPass": {
+  "COMMON_PASS_B": [
+   "#17251d",
+   "rgba(245,244,237,0.18)",
+   "#24382c",
+   "#4a5c43"
+  ],
+  "COMMON_PASS_C": [
+   "rgba(245,244,237,0.18)"
+  ],
+  "COMMON_PASS_D": null,
+  "COMMON_PASS_E": [
+   "#c9d3c4"
+  ],
+  "tolkning": {
+   "B": "4 gemensamma varden. Kan hallas konstant, men valet ar inte bevisat irrelevant for bedomningen av A — sparets kontrast mot appytan varierar 1.00 till 2.20 beroende pa vilket varde som valjs.",
+   "C": "exakt ett varde: rgba(245,244,237,0.18). Duger som TEMPORARY_PREVIEW_CONTROL. Kopplingen ar till B, inte till A — varje kandidat faller exakt nar den ar identisk med sparet.",
+   "D": "ingen matris byggd. Enheten ar stoppad pa semantisk klassificering.",
+   "E": "exakt ett varde: #c9d3c4. Duger som TEMPORARY_PREVIEW_CONTROL. De tva andra neutralerna faller mot appbakgrund #4a5c43."
+  },
+  "$regel": "TEMPORARY_PREVIEW_CONTROL ar aldrig ett HUMAN_APPROVED beslut."
+ },
+ "G_stoppgate": {
+  "$krav": "punkt 17 — bekrafta maskinellt fore rendering",
+  "kontroller": [
+   {
+    "vad": "start har 0 provisoriska beroenden",
+    "utfall": "JA",
+    "varde": 0
+   },
+   {
+    "vad": "exakt 5 obeslutade fargtyper",
+    "utfall": "NEJ",
+    "varde": "5 uppmatta + 8 OMATTA i samma scen",
+    "$skal": "matningen registrerar fill och stroke ENDAST pa <svg>-elementet, aldrig pa dess barn. Illustrationen i start malar per path och ar osynlig for matningen."
+   },
+   {
+    "vad": "ingen dold kall- eller proveniensblockerare",
+    "utfall": "NEJ",
+    "$skal": "samma matningshal"
+   },
+   {
+    "vad": "malenhet A ar en av de 31 previewbara",
+    "utfall": "JA",
+    "varde": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande"
+   }
+  ],
+  "slutsats": "TVA AV FYRA FALLER. Scenen start far inte anvandas som previewscen."
+ },
+ "H_matningshal": {
+  "vad": "tools/semantic-units.mjs registrerar fill och stroke bara nar elementet SJALVT ar <svg>. Barn som <path>, <circle> och <rect> med egen fill eller stroke registreras aldrig.",
+  "omfattning": {
+   "totaltPaSvgBarn": 2383,
+   "ARVDA_fran_svgroten": 2286,
+   "EGNA_pa_barnet": 97,
+   "artefakterMedEgna": 34,
+   "markta_required": 0
+  },
+  "$viktigt": "De 2286 arvda ar ofarliga — de foljer med nar svg-rotens varde andras, vilket ar precis vad som hande i soctomtingavanner-previewn. De 97 egna ar verkliga omatta malade varden.",
+  "iStart": {
+   "antal": 8,
+   "alla_decorative": true,
+   "varden": [
+    {
+     "tagg": "path",
+     "egenskap": "stroke",
+     "varde": "rgb(245, 244, 237)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "path",
+     "egenskap": "stroke",
+     "varde": "rgb(147, 164, 141)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "path",
+     "egenskap": "stroke",
+     "varde": "rgb(147, 164, 141)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "path",
+     "egenskap": "fill",
+     "varde": "rgb(206, 124, 30)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "path",
+     "egenskap": "fill",
+     "varde": "rgb(161, 90, 10)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "path",
+     "egenskap": "stroke",
+     "varde": "rgb(245, 244, 237)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "path",
+     "egenskap": "stroke",
+     "varde": "rgb(206, 124, 30)",
+     "grafikroll": "decorative"
+    },
+    {
+     "tagg": "rect",
+     "egenskap": "fill",
+     "varde": "rgb(206, 124, 30)",
+     "grafikroll": "decorative"
+    }
+   ]
+  },
+  "paverkarForstaPreviewn": "NEJ. soctomtingavanner har 4 omatta varden och alla ar ARVDA fran svg-roten, vars stroke injicerades. De andrades med. Previewn star.",
+  "atgard": "Matningen maste utvidgas till svg-barn med egen fill eller stroke, och de berorda scenernas inventering raknas om. Det ar ett verktygsblock, inte ett designblock."
+ },
+ "I_minstaVerkligaBeslut": {
+  "forEnArligPreviewAvA": [
+   {
+    "post": "A · appbakgrund #24382c",
+    "typ": "PREVIEWMALET",
+    "status": "3 finalister"
+   },
+   {
+    "post": "D · varumarkesraden #dca968",
+    "typ": "BLOCKERAD",
+    "status": "kraver ett taxonomibeslut: ar en varumarkesrad neutral innehallstext eller en egen semantisk roll?"
+   },
+   {
+    "post": "B · forloppsindikatorns spar",
+    "typ": "VAL KRAVS",
+    "status": "4 gemensamma varden; valet maste bevisas irrelevant for bedomningen av A, annars ar det ett eget beslut"
+   },
+   {
+    "post": "illustrationens 8 farger",
+    "typ": "OMATTA",
+    "status": "kan inte beslutas fore matningen ar utvidgad"
+   }
+  ],
+  "kanHallasKonstantUtanBeslut": [
+   {
+    "post": "C · forloppsindikatorns fyllning",
+    "varde": "rgba(245,244,237,0.18)",
+    "typ": "TEMPORARY_PREVIEW_CONTROL"
+   },
+   {
+    "post": "E · statusraden",
+    "varde": "#c9d3c4",
+    "typ": "TEMPORARY_PREVIEW_CONTROL"
+   }
+  ],
+  "minstaCompoundPaket": "Inget compound-paket foreslas an. Tva av fyra stoppgrindar faller, och den ena orsaken ar ett matningshal som maste stangas forst. Att bygga compound-alternativ pa en ofullstandig inventering vore samma fel som att kalla 5 scener kompletta."
+ },
+ "J_nastaScenerEfterKorrigering": {
+  "$kriterium": "0 provisoriska beroenden OCH 0 egna omatta svg-varden",
+  "antal": 17,
+  "$varning": "De scener som klarar bada kontrollerna ar overvagande morka ritningar med mycket hog obeslutad andel. Den billigaste av dem kraver 17 fargbeslut, inte 5."
+ },
+ "ejGjort": [
+  "ingen preview renderad",
+  "ingen registry-write",
+  "ingen produktwrite",
+  "inget taxonomibeslut",
+  "inget compound-paket foreslaget",
+  "ingen matningsutvidgning gjord"
+ ]
+}

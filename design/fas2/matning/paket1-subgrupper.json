@@ -1,0 +1,1033 @@
+{
+ "rader": [
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::hemrecept::19",
+   "familj": "G9",
+   "sub": "SG-CHIP-HEMFILTER",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "hemrecept"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::hemrecept::20",
+   "familj": "G3",
+   "sub": "SG-CHIP-HEMFILTER",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "hemrecept"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::laga::37",
+   "familj": "G11",
+   "sub": "SG-CHIP-TIMER",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "laga"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::snabbspara::10",
+   "familj": "G9",
+   "sub": "SG-CHIP-MALTIDSVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "snabbspara"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::snabbspara::11",
+   "familj": "G3",
+   "sub": "SG-CHIP-MALTIDSVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "snabbspara"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::snabbspara::12",
+   "familj": "G3",
+   "sub": "SG-CHIP-MALTIDSVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "snabbspara"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::snabbspara::13",
+   "familj": "G3",
+   "sub": "SG-CHIP-MALTIDSVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "snabbspara"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::11",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::15",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::19",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::21",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::23",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::25",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::29",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::33",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::allergener::35",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "allergener"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::delatlista::26",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INKOPSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::delatlista::30",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INKOPSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::delatlista::34",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INKOPSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::delatlista::39",
+   "familj": "G2",
+   "sub": "SG-KRYSS-INKOPSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::delatlista::45",
+   "familj": "G2",
+   "sub": "SG-KRYSS-INKOPSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::15",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::19",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::23",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::25",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::29",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::31",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::menysmak::33",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "menysmak"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::11",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::15",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::17",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::21",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::23",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::25",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::27",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::onboarding::29",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "onboarding"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::taggar::57",
+   "familj": "G3",
+   "sub": "SG-CHIP-TAGGLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "taggar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::taggar::58",
+   "familj": "G3",
+   "sub": "SG-CHIP-TAGGLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "taggar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::taggar::59",
+   "familj": "G3",
+   "sub": "SG-CHIP-TAGGLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "taggar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::vemat::18",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "vemat"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::vemat::26",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "vemat"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::vemat::34",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "vemat"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::betygsoversikt::13",
+   "familj": "G9",
+   "sub": "SG-CHIP-OVRIGT",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "betygsoversikt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::delaark::10",
+   "familj": "G4",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delaark"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::delaark::16",
+   "familj": "G6",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delaark"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::delaark::22",
+   "familj": "G6",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delaark"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::29",
+   "familj": "G4",
+   "sub": "SG-KRYSS-SAMTYCKE",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::39",
+   "familj": "G4",
+   "sub": "SG-KRYSS-SAMTYCKE",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::45",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::49",
+   "familj": "G2",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::53",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::55",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::57",
+   "familj": "G1",
+   "sub": "SG-KRYSS-VALLISTA",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::ingredienssok::10",
+   "familj": "G7",
+   "sub": "SG-CHIP-BORTTAGBAR",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "ingredienssok"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::ingredienssok::14",
+   "familj": "G7",
+   "sub": "SG-CHIP-BORTTAGBAR",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "ingredienssok"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::ingredienssok::27",
+   "familj": "G3",
+   "sub": "SG-CHIP-RESULTATKORT",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "ingredienssok"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::ingredienssok::34",
+   "familj": "G3",
+   "sub": "SG-CHIP-RESULTATKORT",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "ingredienssok"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::ingredienssok::43",
+   "familj": "G3",
+   "sub": "SG-CHIP-RESULTATKORT",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "ingredienssok"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::ingredienssok::6",
+   "familj": "G7",
+   "sub": "SG-CHIP-BORTTAGBAR",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "ingredienssok"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::laggtillmedlemmar::15",
+   "familj": "G4",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "laggtillmedlemmar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::laggtillmedlemmar::21",
+   "familj": "G6",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "laggtillmedlemmar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::laggtillmedlemmar::29",
+   "familj": "G6",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "laggtillmedlemmar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::langavarden::22",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INGREDIENSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "langavarden"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::langavarden::26",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INGREDIENSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "langavarden"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nydelatlista::13",
+   "familj": "G4",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nydelatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nydelatlista::20",
+   "familj": "G4",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nydelatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nydelatlista::26",
+   "familj": "G6",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nydelatlista"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::11",
+   "familj": "G7",
+   "sub": "SG-CHIP-BORTTAGBAR",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nygruppchatt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::14",
+   "familj": "G7",
+   "sub": "SG-CHIP-BORTTAGBAR",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nygruppchatt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::21",
+   "familj": "G4",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nygruppchatt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::27",
+   "familj": "G4",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nygruppchatt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::33",
+   "familj": "G6",
+   "sub": "SG-KRYSS-PERSONVAL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "nygruppchatt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::storsttext::23",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INGREDIENSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "storsttext"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::storsttext::27",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INGREDIENSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "storsttext"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::storsttext::31",
+   "familj": "G1",
+   "sub": "SG-KRYSS-INGREDIENSRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "storsttext"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::taggdetalj::25",
+   "familj": "G10",
+   "sub": "SG-REGLAGE-TAGGREGEL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "taggdetalj"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::taggdetalj::31",
+   "familj": "G10",
+   "sub": "SG-REGLAGE-TAGGREGEL",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "taggdetalj"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::familjeform::12",
+   "familj": "SWATCH2",
+   "sub": "SG-FARGVAL",
+   "klass": "KNOWN_CONTROL",
+   "art": "familjeform"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatclaimkonflikt::15",
+   "familj": "G1",
+   "sub": "SG-KRYSS-DELAD-LISTRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatclaimkonflikt"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatmindel::41",
+   "familj": "G1",
+   "sub": "SG-KRYSS-DELAD-LISTRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatmindel"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatmindel::48",
+   "familj": "G1",
+   "sub": "SG-KRYSS-DELAD-LISTRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatmindel"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatnarvaro::25",
+   "familj": "G1",
+   "sub": "SG-KRYSS-DELAD-LISTRAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "delatnarvaro"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::imp2hamtar::14",
+   "familj": "G2",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "imp2hamtar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::imp2hamtar::19",
+   "familj": "G5",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "imp2hamtar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::imp2hamtar::23",
+   "familj": "G5",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "imp2hamtar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::imp2hamtar::9",
+   "familj": "G2",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "imp2hamtar"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::16",
+   "familj": "G5",
+   "sub": "SG-KRYSS-BREDVID-DEKLARERAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "impassist2"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::19",
+   "familj": "G5",
+   "sub": "SG-KRYSS-BREDVID-DEKLARERAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "impassist2"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::22",
+   "familj": "G5",
+   "sub": "SG-KRYSS-BREDVID-DEKLARERAD",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "impassist2"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::kontovantan::14",
+   "familj": "G2",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "kontovantan"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::kontovantan::19",
+   "familj": "G5",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "kontovantan"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::kontovantan::23",
+   "familj": "G5",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "kontovantan"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::kontovantan::26",
+   "familj": "G5",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "kontovantan"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::kontovantan::9",
+   "familj": "G2",
+   "sub": "SG-KRYSS-PROGRESS",
+   "klass": "UNKNOWN_SEMANTICS",
+   "art": "kontovantan"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::jurriktlinjer::18",
+   "familj": "G8",
+   "sub": "SG-LANK-TOC",
+   "klass": "KNOWN_CONTROL",
+   "art": "jurriktlinjer"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::jurriktlinjer::19",
+   "familj": "G8",
+   "sub": "SG-LANK-TOC",
+   "klass": "KNOWN_CONTROL",
+   "art": "jurriktlinjer"
+  },
+  {
+   "occId": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::jurriktlinjer::20",
+   "familj": "G8",
+   "sub": "SG-LANK-TOC",
+   "klass": "KNOWN_CONTROL",
+   "art": "jurriktlinjer"
+  }
+ ],
+ "subgrupper": [
+  {
+   "SUBGROUP_ID": "SG-KRYSS-VALLISTA",
+   "OCCURRENCE_COUNT": 32,
+   "ramar": [
+    "allergener",
+    "menysmak",
+    "onboarding",
+    "vemat",
+    "familjeform"
+   ],
+   "familjer": [
+    "G2",
+    "G1"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "kryssruta i vallista (allergener, kost, menysmak, vem at)",
+   "agare": [],
+   "FRAME_COUNT": 5,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-PERSONVAL",
+   "OCCURRENCE_COUNT": 12,
+   "ramar": [
+    "delaark",
+    "laggtillmedlemmar",
+    "nydelatlista",
+    "nygruppchatt"
+   ],
+   "familjer": [
+    "G4",
+    "G6"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "kryssruta per person i delnings-/medlemsval; ramen har 0 deklarerade kontroller",
+   "agare": [],
+   "FRAME_COUNT": 4,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-PROGRESS",
+   "OCCURRENCE_COUNT": 9,
+   "ramar": [
+    "imp2hamtar",
+    "kontovantan"
+   ],
+   "familjer": [
+    "G2",
+    "G5"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "kryssruteform i statuslista (Hamtar sidan… / pagar) — trolig statusgrafik, men ingen kallregel sager det",
+   "agare": [],
+   "FRAME_COUNT": 2,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-INKOPSRAD",
+   "OCCURRENCE_COUNT": 5,
+   "ramar": [
+    "delatlista"
+   ],
+   "familjer": [
+    "G1",
+    "G2"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "avbockningsruta i delad inkopslista; ramen har 0 deklarerade kontroller",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-BORTTAGBAR",
+   "OCCURRENCE_COUNT": 5,
+   "ramar": [
+    "ingredienssok",
+    "nygruppchatt"
+   ],
+   "familjer": [
+    "G7"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "chip med × (sokord / vald deltagare): × ar trolig barnatgard, chippet sjalvt en token",
+   "agare": [],
+   "FRAME_COUNT": 2,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-INGREDIENSRAD",
+   "OCCURRENCE_COUNT": 5,
+   "ramar": [
+    "langavarden",
+    "storsttext"
+   ],
+   "familjer": [
+    "G1"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "ruta i ingredienslista i receptvy",
+   "agare": [],
+   "FRAME_COUNT": 2,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-MALTIDSVAL",
+   "OCCURRENCE_COUNT": 4,
+   "ramar": [
+    "snabbspara"
+   ],
+   "familjer": [
+    "G9",
+    "G3"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "chip-alternativ Maltid (Middag/Lunch/Frukost) utan roll",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-DELAD-LISTRAD",
+   "OCCURRENCE_COUNT": 4,
+   "ramar": [
+    "delatclaimkonflikt",
+    "delatmindel",
+    "delatnarvaro"
+   ],
+   "familjer": [
+    "G1"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "ruta i delad inkopsrad dar raden har en deklarerad knapp (Anna tar …)",
+   "agare": [],
+   "FRAME_COUNT": 3,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-TAGGLISTA",
+   "OCCURRENCE_COUNT": 3,
+   "ramar": [
+    "taggar"
+   ],
+   "familjer": [
+    "G3"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "taggchip i lista Oanvanda",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-RESULTATKORT",
+   "OCCURRENCE_COUNT": 3,
+   "ramar": [
+    "ingredienssok"
+   ],
+   "familjer": [
+    "G3"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "chip i sokresultatkort (matchning)",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-BREDVID-DEKLARERAD",
+   "OCCURRENCE_COUNT": 3,
+   "ramar": [
+    "impassist2"
+   ],
+   "familjer": [
+    "G5"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "ruta bredvid (inte inuti) deklarerad checkbox-rad i samma ram — kan vara radens visuella ruta",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-LANK-TOC",
+   "OCCURRENCE_COUNT": 3,
+   "ramar": [
+    "jurriktlinjer"
+   ],
+   "familjer": [
+    "G8"
+   ],
+   "PROPOSED_CLASS": "KNOWN_CONTROL",
+   "TYP": "AUTO",
+   "SOURCE_SIGNAL": "href=\"#jurriktlinjer\" pa <a> i innehallsforteckning (Villkoren/Integritet/Kontakt) — navigation",
+   "agare": [
+    "OWNER::jurriktlinjer::link::villkoren",
+    "OWNER::jurriktlinjer::link::integritet",
+    "OWNER::jurriktlinjer::link::kontakt"
+   ],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 3,
+   "CONFIDENCE": "HOG",
+   "EVIDENCE_SUFFICIENT": true
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-HEMFILTER",
+   "OCCURRENCE_COUNT": 2,
+   "ramar": [
+    "hemrecept"
+   ],
+   "familjer": [
+    "G9",
+    "G3"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "chip bredvid deklarerad knapp Fler filter",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-KRYSS-SAMTYCKE",
+   "OCCURRENCE_COUNT": 2,
+   "ramar": [
+    "familjeform"
+   ],
+   "familjer": [
+    "G4"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "samtyckesruta (Vardnadshavarsamtycke / halsouppgift) — formularkontroll utan roll",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-REGLAGE-TAGGREGEL",
+   "OCCURRENCE_COUNT": 2,
+   "ramar": [
+    "taggdetalj"
+   ],
+   "familjer": [
+    "G10"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "piller med knopp per taggregel, utan roll",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-TIMER",
+   "OCCURRENCE_COUNT": 1,
+   "ramar": [
+    "laga"
+   ],
+   "familjer": [
+    "G11"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "tidschip (15 min) i matlagningssteg",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-CHIP-OVRIGT",
+   "OCCURRENCE_COUNT": 1,
+   "ramar": [
+    "betygsoversikt"
+   ],
+   "familjer": [
+    "G9"
+   ],
+   "PROPOSED_CLASS": "UNKNOWN_SEMANTICS",
+   "TYP": "MANSKLIG",
+   "SOURCE_SIGNAL": "chip i betygsoversikt",
+   "agare": [],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 0,
+   "CONFIDENCE": "OTILLRACKLIG",
+   "EVIDENCE_SUFFICIENT": false
+  },
+  {
+   "SUBGROUP_ID": "SG-FARGVAL",
+   "OCCURRENCE_COUNT": 1,
+   "ramar": [
+    "familjeform"
+   ],
+   "familjer": [
+    "SWATCH2"
+   ],
+   "PROPOSED_CLASS": "KNOWN_CONTROL",
+   "TYP": "AUTO",
+   "SOURCE_SIGNAL": "samma kallforfattade alternativmaskineri som de fem granskade syskonen (mall 210–215, egen data-occurrence occ-mjvjsgekzreo) + vald-markering (outline) — eget alternativ i fargvaljaren",
+   "agare": [
+    "OWNER::familjeform::occ::occ-mjvjsgekzreo"
+   ],
+   "FRAME_COUNT": 1,
+   "SEMANTIC_OWNER_COUNT": 1,
+   "CONFIDENCE": "HOG",
+   "EVIDENCE_SUFFICIENT": true
+  }
+ ]
+}

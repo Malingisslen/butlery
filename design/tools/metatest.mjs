@@ -1568,7 +1568,7 @@ group('M-29', () => {
     ['darkOverride', s2 => s2.replace(/(darkColorScheme[\s\S]*?onError: )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF040506)'), 'colors'],
     ['varumärkesfärg', s2 => s2.replace(/(static const Color brand[A-Z]\w* = )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF00FF00)'), 'colors'],
     ['aliasmål', s2 => s2.replace(/(static const Color textSecondary = )\w+;/, '$1textDark;'), 'colors'],
-    ['typroll', s2 => s2.replace(/(get bodyLarge => TextStyle\(\n\s*fontFamily: family,\n\s*fontSize: )[\d.]+/, '$199'), 'text'],
+    ['typroll', s2 => s2.replace(/(get bodyLarge => (?:const )?TextStyle\(\n\s*fontFamily: family,\n\s*fontSize: )[\d.]+/, '$199'), 'text'],
     ['typalias', s2 => s2.replace(/(get buttonText => )\w+;/, '$1labelMedium;'), 'text'],
     ['semantisk variant', s2 => s2.replace(/(get errorText => \w+\.copyWith\(color: )AppColors\.\w+/, '$1AppColors.success'), 'text'],
     // BÅDA riktningarna av mängdlikheten. Fas 1 (femte vändan): sviten provade
@@ -1729,6 +1729,33 @@ group('M-32', () => {
     'bas: ' + JSON.stringify({ m: bare.BUTLERY_MANIFEST_MODE ?? null, p: bare.BUTLERY_PHASE ?? null, x: bare.BUTLERY_PAHITT ?? null }) +
     ' · tillåtet: ' + JSON.stringify({ p: withCi.BUTLERY_PHASE, x: withCi.BUTLERY_PAHITT ?? null }) +
     ' · barnet såg: ' + JSON.stringify(child));
+});
+
+/* M-40 · FAIL-CLOSED för obligatoriskt rapporterande kontroller.
+ *
+ * CHK-T-21 kunde stå "not run" i en fullständig körning, och "not run" läses
+ * som att kontrollen ännu inte är aktuell. En aktiverad grindkontroll är alltid
+ * aktuell: att den inte lämnade något utlåtande är i sig ett resultat. Provet
+ * kräver att mustReport ger BLOCKED, att en kontroll UTAN flaggan behåller
+ * "not run", och att "not run" på en grindkontroll ändå fäller fasgrinden. */
+group('M-40', () => {
+  const t21 = CONTROLS.find(c => c.legacyId === 'T-21');
+  const utanFlagga = ctrl('T-99', 'spec-lint');
+  const ctx = { ...base, ranControls: [], steps: [step('spec-lint', 'passed', { specErrors: 3 })] };
+  const medFlagga = reduceControls([{ ...t21 }], ctx)[0];
+  const utan = reduceControls([utanFlagga], ctx)[0];
+  const kord = reduceControls([{ ...t21 }],
+    { ...ctx, ranControls: ['T-21'], perControl: { 'T-21': { errors: 0, warnings: 0 } } })[0];
+  // Även om något annat ändå skulle sätta "not run" måste grinden bli röd.
+  const tot = computeTotals({ steps: [], controls: [{ ...t21, status: 'not run' }],
+    manifest: okManifest, generatedDrift: [], currentPhase: 2 });
+  t('M-40 · CHK-T-21 bär mustReport och kan inte stå not run',
+    !!t21 && t21.mustReport === true && medFlagga.status === 'blocked' &&
+    utan.status === 'not run' && kord.status === 'passed' &&
+    tot.phaseGateResult === 'failed' && tot.gateBlockers.length === 1,
+    'mustReport ' + (t21 || {}).mustReport + ' · utan körbevis ' + medFlagga.status +
+    ' · utan flagga ' + utan.status + ' · med körbevis ' + kord.status +
+    ' · grind ' + tot.phaseGateResult + ' ' + JSON.stringify(tot.gateBlockers));
 });
 
 const fail = results.filter(r => !r.ok).length;

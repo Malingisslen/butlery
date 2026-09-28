@@ -912,7 +912,7 @@ Läst ur `mina_recept/selection_app_bar.dart`, `widgets/common/selection_bulk_ba
 
 ## 18 · Feedback och rapportering
 
-Läst ur `feedback_fab.dart`, `feedback_form_dialog.dart`, `feedback_service.dart`, `interaction_logger.dart`, `admin/feedback_inbox_view.dart`, `report_content_dialog.dart`, `settings/blocked_users_section.dart`. Ramar: `#fbknapp` `#fbformular` `#fbinkorg` `#fbanmal` `#fbblockerade`.
+Läst ur `feedback_fab.dart`, `feedback_form_dialog.dart`, `feedback_service.dart`, `interaction_logger.dart`, `admin/feedback_inbox_view.dart`, `report_content_dialog.dart`, `settings/blocked_users_section.dart`. Ramar: `#fbknapp` `#fbformular` `#fbinkorgvy` `#fbkortmonster` `#fbanmal` `#fbblockerade`.
 
 ### 18.1 Feedbackknappen
 
@@ -951,7 +951,7 @@ Läst ur `feedback_fab.dart`, `feedback_form_dialog.dart`, `feedback_service.dar
 
 ## 19 · Aktivitet, chatt och grupper
 
-Läst ur `friends_list/feed_tab.dart`, `user_profile_edit/privacy_section.dart`, `poll_creation_dialog.dart`, `poll_message_widget.dart`, `emoji_reaction_picker.dart`, `emoji_reaction_display.dart`, `groups/ownership_transfer_dialog.dart`, `messaging/group_detail_view.dart`, `shared_recipes_by_friend_view.dart`. Ramar: `#socflode` `#soctomt` `#socbegar` `#socintegritet` `#socomrostning` `#socreaktion` `#socgruppinfo` `#socoverlat` `#socdelatvan`.
+Läst ur `friends_list/feed_tab.dart`, `user_profile_edit/privacy_section.dart`, `poll_creation_dialog.dart`, `poll_message_widget.dart`, `emoji_reaction_picker.dart`, `emoji_reaction_display.dart`, `groups/ownership_transfer_dialog.dart`, `messaging/group_detail_view.dart`, `shared_recipes_by_friend_view.dart`. Ramar: `#socflode` `#soctomtingavanner` `#soctomttyst` `#socbegar` `#socintegritet` `#socomrostning` `#socreaktion` `#socgruppinfo` `#socoverlat` `#socdelatvan`.
 
 ### 19.1 Flödet
 

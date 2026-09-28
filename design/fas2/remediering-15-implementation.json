@@ -1,0 +1,647 @@
+{
+ "$schema": "butlery-remediering-15-implementation/1",
+ "$datum": "2026-08-17",
+ "$franCommit": "bffb1d3",
+ "$typ": "EXAKT SCOPAD IMPLEMENTATION av de 15 verifierade REQUIRED_FAIL. Endast gransfarg. Inga andra andringar.",
+ "A_beslut": {
+  "$status": "HUMAN_APPROVED DESIGN DECISIONS",
+  "enheter": [
+   {
+    "DECISION_UNIT": "DU-01",
+    "beslutsidentitet": "COOKING_EXIT_BOUNDARY_DARK",
+    "varde": "rgba(245, 244, 237, 0.6)",
+    "antal": 3,
+    "medlemmar": [
+     "lagastaende|4",
+     "lagamorkt|4",
+     "lagastaende320|4"
+    ]
+   },
+   {
+    "DECISION_UNIT": "DU-02",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_PORTRAIT_DARK",
+    "varde": "rgba(245, 244, 237, 0.6)",
+    "antal": 5,
+    "medlemmar": [
+     "lagastaende|55",
+     "lagamorkt|55",
+     "lagastaende320|36",
+     "lagaliggande|28",
+     "lagatimers|43"
+    ]
+   },
+   {
+    "DECISION_UNIT": "DU-03",
+    "beslutsidentitet": "HOME_REFRESH_BOUNDARY_DARK",
+    "varde": "rgba(245, 244, 237, 0.6)",
+    "antal": 1,
+    "medlemmar": [
+     "hemmorkt|23"
+    ]
+   },
+   {
+    "DECISION_UNIT": "DU-04",
+    "beslutsidentitet": "TIMER_PAUSE_BOUNDARY_DARK",
+    "varde": "rgba(245, 244, 237, 0.6)",
+    "antal": 2,
+    "medlemmar": [
+     "lagatimers|16",
+     "lagatimers|25"
+    ]
+   },
+   {
+    "DECISION_UNIT": "DU-05",
+    "beslutsidentitet": "INGREDIENT_SWAP_BOUNDARY_LANDSCAPE_DARK",
+    "varde": "#788477",
+    "antal": 2,
+    "medlemmar": [
+     "lgbgester|8",
+     "lgbgester|22"
+    ]
+   },
+   {
+    "DECISION_UNIT": "DU-06",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_LANDSCAPE_DARK",
+    "varde": "#788477",
+    "antal": 1,
+    "medlemmar": [
+     "lgbtimer|16"
+    ]
+   },
+   {
+    "DECISION_UNIT": "DU-07",
+    "beslutsidentitet": "VOICE_MUTE_BOUNDARY_LANDSCAPE_DARK",
+    "varde": "#788477",
+    "antal": 1,
+    "medlemmar": [
+     "lgbtimer|43"
+    ]
+   }
+  ],
+  "$sjuIdentiteter": "De sju beslutsenheterna forblir SJU separata identiteter aven dar samma numeriska varde valts. Samma varde ar inte mappningsevidens, inte samma token och inte ett sammanslaget beslut.",
+  "R04_CREDIT": 0,
+  "$R04": "Besluten ger 0 R-04-credit och far inte registreras som verifierad light-till-dark-mappning."
+ },
+ "B_skrivning": {
+  "A_PRODUCT_FILES_CHANGED": 5,
+  "B_SOURCE_ELEMENTS_CHANGED": 15,
+  "C_SOURCE_WRITE_SITES": 15,
+  "D_ATTRIBUTE_MUTATIONS": 0,
+  "E_STYLE_PROPERTY_MUTATIONS": 15,
+  "perFalt": {
+   "style:border-color": 15
+  },
+  "gitRader": {
+   "plus": 15,
+   "minus": 15
+  },
+  "perFil": [
+   {
+    "plus": 4,
+    "minus": 4,
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+   },
+   {
+    "plus": 2,
+    "minus": 2,
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+   },
+   {
+    "plus": 1,
+    "minus": 1,
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+   },
+   {
+    "plus": 4,
+    "minus": 4,
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+   },
+   {
+    "plus": 4,
+    "minus": 4,
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+   }
+  ],
+  "mekanism": "border-color skrivs som EGEN deklaration efter den befintliga border-kortformen. Bredd och stil ror sig aldrig; bara fargkomponenten vinner.",
+  "ankarmetod": "taggnamn + kallans attribut som delmangd av DOM-ognonblickets + egen omedelbar text, pa elementets descendantordinal i artefakten",
+  "utfall": {
+   "SKRIVEN": 15
+  },
+  "$ingenGlobalErsattning": "Ingen global fargersattning. Varje skrivning ar ankrad pa sin egen forekomst."
+ },
+ "C_de15": {
+  "antal": 15,
+  "allaREQUIRED_PASS": true,
+  "allaYtorOforandrade": true,
+  "bredderOchStilar": [
+   "1.5px solid · 4 sidor",
+   "1px solid · 4 sidor"
+  ],
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende|4",
+    "PART_ID": "lagastaende|4#ram#0",
+    "DECISION_UNIT": "DU-01",
+    "beslutsidentitet": "COOKING_EXIT_BOUNDARY_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_OPERATION": "Avsluta matlagningsläget",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(109, 122, 112)",
+    "fargEfter": "rgb(161, 169, 160)",
+    "kvotFore": 2.78,
+    "kvotEfter": 5.19,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagastaende|55",
+    "PART_ID": "lagastaende|55#ram#0",
+    "DECISION_UNIT": "DU-02",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_PORTRAIT_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_OPERATION": "Föregående steg",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(109, 122, 112)",
+    "fargEfter": "rgb(161, 169, 160)",
+    "kvotFore": 2.78,
+    "kvotEfter": 5.19,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagamorkt|4",
+    "PART_ID": "lagamorkt|4#ram#0",
+    "DECISION_UNIT": "DU-01",
+    "beslutsidentitet": "COOKING_EXIT_BOUNDARY_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_OPERATION": "Avsluta matlagningsläget",
+    "yta": "rgb(23, 37, 29)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(101, 109, 102)",
+    "fargEfter": "rgb(156, 161, 154)",
+    "kvotFore": 2.98,
+    "kvotEfter": 6.05,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagamorkt|55",
+    "PART_ID": "lagamorkt|55#ram#0",
+    "DECISION_UNIT": "DU-02",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_PORTRAIT_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_OPERATION": "Föregående steg",
+    "yta": "rgb(23, 37, 29)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(101, 109, 102)",
+    "fargEfter": "rgb(156, 161, 154)",
+    "kvotFore": 2.98,
+    "kvotEfter": 6.05,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagastaende320|4",
+    "PART_ID": "lagastaende320|4#ram#0",
+    "DECISION_UNIT": "DU-01",
+    "beslutsidentitet": "COOKING_EXIT_BOUNDARY_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_OPERATION": "Avsluta matlagningsläget",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(109, 122, 112)",
+    "fargEfter": "rgb(161, 169, 160)",
+    "kvotFore": 2.78,
+    "kvotEfter": 5.19,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagastaende320|36",
+    "PART_ID": "lagastaende320|36#ram#0",
+    "DECISION_UNIT": "DU-02",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_PORTRAIT_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_OPERATION": "Föregående steg",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(109, 122, 112)",
+    "fargEfter": "rgb(161, 169, 160)",
+    "kvotFore": 2.78,
+    "kvotEfter": 5.19,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagaliggande|28",
+    "PART_ID": "lagaliggande|28#ram#0",
+    "DECISION_UNIT": "DU-02",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_PORTRAIT_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagning · landskap",
+    "CONTROL_OPERATION": "Föregående steg",
+    "yta": "rgb(23, 37, 29)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(101, 109, 102)",
+    "fargEfter": "rgb(156, 161, 154)",
+    "kvotFore": 2.98,
+    "kvotEfter": 6.05,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "hemmorkt|23",
+    "PART_ID": "hemmorkt|23#ram#0",
+    "DECISION_UNIT": "DU-03",
+    "beslutsidentitet": "HOME_REFRESH_BOUNDARY_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Hem · mörkt läge",
+    "CONTROL_OPERATION": "Byt förslag",
+    "yta": "rgb(23, 37, 29)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(101, 109, 102)",
+    "fargEfter": "rgb(156, 161, 154)",
+    "kvotFore": 2.98,
+    "kvotEfter": 6.05,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagatimers|16",
+    "PART_ID": "lagatimers|16#ram#0",
+    "DECISION_UNIT": "DU-04",
+    "beslutsidentitet": "TIMER_PAUSE_BOUNDARY_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_OPERATION": "Pausa timern Pastan",
+    "yta": "rgb(47, 68, 55)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(116, 130, 119)",
+    "fargEfter": "rgb(166, 174, 164)",
+    "kvotFore": 2.6,
+    "kvotEfter": 4.6,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagatimers|25",
+    "PART_ID": "lagatimers|25#ram#0",
+    "DECISION_UNIT": "DU-04",
+    "beslutsidentitet": "TIMER_PAUSE_BOUNDARY_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_OPERATION": "Pausa timern Svampen",
+    "yta": "rgb(47, 68, 55)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(116, 130, 119)",
+    "fargEfter": "rgb(166, 174, 164)",
+    "kvotFore": 2.6,
+    "kvotEfter": 4.6,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagatimers|43",
+    "PART_ID": "lagatimers|43#ram#0",
+    "DECISION_UNIT": "DU-02",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_PORTRAIT_DARK",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_OPERATION": "Föregående steg",
+    "yta": "rgb(23, 37, 29)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(101, 109, 102)",
+    "fargEfter": "rgb(156, 161, 154)",
+    "kvotFore": 2.98,
+    "kvotEfter": 6.05,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lgbgester|8",
+    "PART_ID": "lgbgester|8#ram#0",
+    "DECISION_UNIT": "DU-05",
+    "beslutsidentitet": "INGREDIENT_SWAP_BOUNDARY_LANDSCAPE_DARK",
+    "beslutsvarde": "#788477",
+    "SCREEN": "Matlagningsläget — de två gesterna",
+    "CONTROL_OPERATION": "Byt ut blandfärs",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(63, 81, 69)",
+    "fargEfter": "rgb(120, 132, 119)",
+    "kvotFore": 1.48,
+    "kvotEfter": 3.2,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lgbgester|22",
+    "PART_ID": "lgbgester|22#ram#0",
+    "DECISION_UNIT": "DU-05",
+    "beslutsidentitet": "INGREDIENT_SWAP_BOUNDARY_LANDSCAPE_DARK",
+    "beslutsvarde": "#788477",
+    "SCREEN": "Matlagningsläget — de två gesterna",
+    "CONTROL_OPERATION": "Byt ut ströbröd",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(63, 81, 69)",
+    "fargEfter": "rgb(120, 132, 119)",
+    "kvotFore": 1.48,
+    "kvotEfter": 3.2,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lgbtimer|16",
+    "PART_ID": "lgbtimer|16#ram#0",
+    "DECISION_UNIT": "DU-06",
+    "beslutsidentitet": "COOKING_PREV_STEP_BOUNDARY_LANDSCAPE_DARK",
+    "beslutsvarde": "#788477",
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_OPERATION": "Föregående steg",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(63, 81, 69)",
+    "fargEfter": "rgb(120, 132, 119)",
+    "kvotFore": 1.48,
+    "kvotEfter": 3.2,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lgbtimer|43",
+    "PART_ID": "lgbtimer|43#ram#0",
+    "DECISION_UNIT": "DU-07",
+    "beslutsidentitet": "VOICE_MUTE_BOUNDARY_LANDSCAPE_DARK",
+    "beslutsvarde": "#788477",
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_OPERATION": "Tysta uppläsningen",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(63, 81, 69)",
+    "fargEfter": "rgb(120, 132, 119)",
+    "kvotFore": 1.48,
+    "kvotEfter": 3.2,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1px",
+    "stil": "solid",
+    "sidor": 4
+   }
+  ]
+ },
+ "D_avgransning": {
+  "andradeGrafiskaDelar": 15,
+  "varavMal": 15,
+  "varavIckeMal": 0,
+  "grannarUtanforScopet": {
+   "antal": 7,
+   "allaOforandrade": true,
+   "$status": "UNKNOWN_APPLICABILITY — orord. Ingen farg andrad for visuell symmetri, ingen tillamplighetsdom skapad genom narhet, samma farg, samma bakgrund eller samma rad. Den mojliga visuella skillnaden ar en godkand, kand och tillfallig konsekvens av korrekt scope.",
+   "poster": [
+    {
+     "CONTROL_ID": "lagastaende|3",
+     "namn": "Textstorlek",
+     "fargFore": "rgb(109, 122, 112)",
+     "fargEfter": "rgb(109, 122, 112)",
+     "kvotFore": 2.78,
+     "kvotEfter": 2.78,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    },
+    {
+     "CONTROL_ID": "lagamorkt|3",
+     "namn": "Textstorlek",
+     "fargFore": "rgb(101, 109, 102)",
+     "fargEfter": "rgb(101, 109, 102)",
+     "kvotFore": 2.98,
+     "kvotEfter": 2.98,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    },
+    {
+     "CONTROL_ID": "lagastaende320|3",
+     "namn": "Textstorlek",
+     "fargFore": "rgb(109, 122, 112)",
+     "fargEfter": "rgb(109, 122, 112)",
+     "kvotFore": 2.78,
+     "kvotEfter": 2.78,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    },
+    {
+     "CONTROL_ID": "lagastaende320|18",
+     "namn": "Visa ingredienser, 5 rader",
+     "fargFore": "rgb(109, 122, 112)",
+     "fargEfter": "rgb(109, 122, 112)",
+     "kvotFore": 2.78,
+     "kvotEfter": 2.78,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    },
+    {
+     "CONTROL_ID": "lagaliggande|11",
+     "namn": "Starta timer 8 minuter",
+     "fargFore": "rgb(101, 109, 102)",
+     "fargEfter": "rgb(101, 109, 102)",
+     "kvotFore": 2.98,
+     "kvotEfter": 2.98,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    },
+    {
+     "CONTROL_ID": "lagatimers|30",
+     "namn": "Starta timer för det här steget, 9 minuter",
+     "fargFore": "rgb(101, 109, 102)",
+     "fargEfter": "rgb(101, 109, 102)",
+     "kvotFore": 2.98,
+     "kvotEfter": 2.98,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    },
+    {
+     "CONTROL_ID": "lgbtimer|37",
+     "namn": "Timer steg 4, 12 minuter kvar",
+     "fargFore": "rgb(63, 81, 69)",
+     "fargEfter": "rgb(63, 81, 69)",
+     "kvotFore": 1.48,
+     "kvotEfter": 1.48,
+     "oforandrad": true,
+     "APPLICABILITY": "UNKNOWN"
+    }
+   ]
+  },
+  "fargliteraler": {
+   "fore": {
+    "rgba(245,244,237,.35)": 60,
+    "rgba(245,244,237,.6)": 3,
+    "#3F5145": 96,
+    "#788477": 24,
+    "#CE7C1E": 444
+   },
+   "efter": {
+    "rgba(245,244,237,.35)": 60,
+    "rgba(245,244,237,.6)": 14,
+    "#3F5145": 96,
+    "#788477": 28,
+    "#CE7C1E": 444
+   },
+   "$tolkning": "Kortformens rgba(245, 244, 237, .35) ar OFORANDRAD i antal — den rors aldrig. Det nya vardet .6 okar med 11 och #788477 med 4: tillsammans exakt 15. #3F5145 och #CE7C1E ar oforandrade."
+  }
+ },
+ "E_oforandratRunt": {
+  "geometriandringar": 0,
+  "nyaKlipp": 0,
+  "fyllningsandringar": 0,
+  "andradeRadbrytningar": 0,
+  "artefaktmatt": 0,
+  "dokumentmatt": 0,
+  "textposterMedAndratVarde": 0,
+  "produktelement": [
+   13898,
+   13898
+  ],
+  "ikonerOchOvrigGrafik": "oforandrade — endast 15 gransdelar bytte farg"
+ },
+ "F_population": {
+  "grafiskaDelarFore": 1879,
+  "grafiskaDelarEfter": 1879,
+  "perTypFore": {
+   "fyllning": 474,
+   "ram": 689,
+   "ikon": 605,
+   "thumb": 43,
+   "bock": 53,
+   "glyf": 15
+  },
+  "perTypEfter": {
+   "fyllning": 474,
+   "ram": 689,
+   "ikon": 605,
+   "thumb": 43,
+   "bock": 53,
+   "glyf": 15
+  },
+  "perTypOforandrad": true,
+  "R02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "R01fynd": 0,
+  "fristaende": 32,
+  "maladeKontrollytor": 420
+ },
+ "G_korstab": {
+  "fore": {
+   "LT3_REQUIRED": 15,
+   "LT3_SUPPLEMENTAL": 21,
+   "LT3_UNKNOWN": 525,
+   "GE3_REQUIRED": 93,
+   "GE3_SUPPLEMENTAL": 7,
+   "GE3_UNKNOWN": 1218,
+   "OMATT": 0,
+   "SUMMA": 1879,
+   "$slutenhet": true,
+   "$forvantatAvArbetsordern": {
+    "LT3": 560
+   },
+   "$faktisktLT3": 561,
+   "KNOWN_REQUIRED_FAIL": 15,
+   "$formulering": "Nuvarande verifierade produktbrister i hela den aktuella non-text-matpopulationen = 15. Detta loser INTE de 1743 relationer som fortfarande har okand tillamplighet."
+  },
+  "efter": {
+   "LT3_REQUIRED": 0,
+   "LT3_SUPPLEMENTAL": 21,
+   "LT3_UNKNOWN": 525,
+   "GE3_REQUIRED": 108,
+   "GE3_SUPPLEMENTAL": 7,
+   "GE3_UNKNOWN": 1218,
+   "SUMMA": 1879
+  },
+  "$forandring": "LT3_REQUIRED 15 -> 0, GE3_REQUIRED 93 -> 108. Ovriga celler oforandrade.",
+  "$slutenhet": true
+ },
+ "H_status": {
+  "15-BOUNDARY REMEDIATION": "CLOSED / VERIFIED",
+  "KNOWN_REQUIRED_FAIL": 0,
+  "CURRENT_NON_TEXT_CONTRAST": "OPEN",
+  "UNKNOWN_APPLICABILITY": 1743,
+  "$skuld": "De 1743 relationerna med okand tillamplighet ligger utanfor detta scope och ar fortsatt en separat skuld. Att KNOWN_REQUIRED_FAIL nu ar 0 betyder INTE att hela icke-textsparet ar stangt.",
+  "SAFFRON_REMEDIATION": "CLOSED / VERIFIED",
+  "PRESSED": "UNTESTED",
+  "INACTIVE": "UNTESTED",
+  "FOCUS": "UNTESTED",
+  "R04_CREDIT": 0,
+  "R04_WRITES": 0
+ }
+}

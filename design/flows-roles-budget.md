@@ -85,7 +85,15 @@ Merge-ordning: dubbletter slås samman → enheter konverteras inom samma varuty
 
 ## 06 · Konto
 
-`skapa konto → verifiera e-post → klart` · verifieringslänk utgången → `begär ny` · glömt lösenord → `återställ` → `sätt nytt` · byt e-post kräver omverifiering av båda adresserna · MFA-återställning via engångskoder · sessionsutgång → `logga in igen` med returväg · radera konto → `bekräfta med lösenord` → 30 dagars återkallningsfönster → permanent.
+`skapa konto → verifiera e-post → klart` · verifieringslänk utgången → `begär ny` · glömt lösenord → `återställ` → `sätt nytt` · byt e-post kräver omverifiering av båda adresserna · MFA-återställning via engångskoder · sessionsutgång → `logga in igen` med returväg · radera konto → `skäl` → `bekräfta med lösenord` → kaskad → permanent.
+
+**Det finns inget återkallningsfönster.** Raden ovan lovade tidigare trettio
+dagar. Det gör koden inte: fyndet ur `account_deletion_service.dart` togs upp
+2026-07-27 och står i `produktregler.md` § 11, i `arbetsplan.md` och i
+`00-spec-index.md`. Raderingen är omedelbar och oåterkallelig, vyn säger det
+*före* handlingen, skälet frågas före, och kaskaden kan lyckas delvis — delvis
+är ett eget utfall med ett revisions-id, aldrig ett misslyckande. Den gamla
+formuleringen ströks 2026-09-22 (Block 288, dokumentdefekt).
 
 ## 07 · Behörigheter (kamera, foto, notiser)
 

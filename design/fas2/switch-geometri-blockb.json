@@ -1,0 +1,580 @@
+{
+ "$schema": "butlery-switch-geometri-blockb/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "cabdef5",
+ "$metodCommit": "bcb0a23",
+ "$status": "BLOCK B GRONT · metodfix klar, syntetiskt par bevisat",
+ "$produktandring": "INGEN. Samtliga 27 produktfiler bit-identiska med HEAD.",
+ "A_rotorsak": {
+  "gammalSignal": "getComputedStyle(bararEl).justifyContent",
+  "varforFel": "justify-content ar en av flera mojliga implementationer av samma visuella sak. Profilens reglage placerar knoppen absolut; da star egenskapen pa \"normal\" i BADA tillstanden. Verktyget sag ingen rorelse trots att knoppen flyttar sig over hela sparet. METHOD COVERAGE ERROR, inte PRODUCT ERROR.",
+  "bevis": "SG-01: gamla signalen ger \"normal mot normal\" for ett par som faktiskt star nX +0.778 mot −0.778."
+ },
+ "B_nyAlgoritm": {
+  "var": "nontext-measure lamnar ra geometri; colour-only klassificerar",
+  "agarskap": "spar = form.identitet, knopp = form.tillstand, bada ur den strukturella agarskapsanalysen. bararEl anvands INTE — den faller tillbaka pa agaren och da vore sparet hela listraden.",
+  "matt": "n = (knoppens mitt − sparets mitt) / ((sparets matt − knoppens matt) / 2), per axel",
+  "egenskaper": [
+   "dimensionslos — oberoende av sparets och knoppens storlek",
+   "oberoende av layoutmekanism: flex, absolut, transform, grid",
+   "bada axlarna klassificeras, sa ingen axel behover valjas",
+   "justify-content, left/right och transform finns kvar men BARA som diagnostik"
+  ],
+  "tolerans": {
+   "varde": 0.05,
+   "kalla": "ANDEL_TOLERANS i tools/box-graphics.mjs",
+   "motivering": "samma andelstolerans som redan anvands nar uppmatt geometri jamfors i verktygskedjan. Inget nytt designtroskelvarde infors."
+  },
+  "failClosed": [
+   "spar eller knopp saknas i agarskapsanalysen",
+   "nagot matt ar inte ett stabilt positivt tal",
+   "knoppen ryms inte i sparet",
+   "knoppens mitt hamnar utanfor sparets resa"
+  ],
+  "okandRegel": "OKAND far aldrig bli PASS. Star en signal pa okant for nagot av tillstanden raknas den inte som den icke-fargbaserade skillnad som friar paret. Par klassas som exakt en av NON_COLOR_STATE_DIFFERENCE, UNKNOWN eller COLOR_ONLY, med parinvariant."
+ },
+ "C_prov": {
+  "fil": "tools/switch-geometry-fixtures.mjs",
+  "resultat": [
+   {
+    "id": "SG-01",
+    "vad": "absolut placerad knopp 16/2 mot 2/16 ger NON_COLOR_STATE_DIFFERENCE",
+    "ok": true,
+    "diag": "NON_COLOR_STATE_DIFFERENCE · lage hoger|mitten mot vanster|mitten · nX 0.778/-0.778 · gamla signalen justify-content: normal mot normal (identiska — den hade missat detta)"
+   },
+   {
+    "id": "SG-02",
+    "vad": "flexplacerad knopp ger fortfarande NON_COLOR_STATE_DIFFERENCE",
+    "ok": true,
+    "diag": "NON_COLOR_STATE_DIFFERENCE · lage hoger|mitten mot vanster|mitten"
+   },
+   {
+    "id": "SG-03",
+    "vad": "identisk renderad geometri men olika farg forblir COLOR_ONLY",
+    "ok": true,
+    "diag": "COLOR_ONLY · lage vanster|mitten mot vanster|mitten · signaler []"
+   },
+   {
+    "id": "SG-04",
+    "vad": "olika CSS-teknik men identisk renderad geometri raknas INTE som skillnad",
+    "ok": true,
+    "diag": "absolut vanster|mitten (nX -0.778) mot flex vanster|mitten (nX -0.778) · klass COLOR_ONLY"
+   },
+   {
+    "id": "SG-05",
+    "vad": "samma CSS-egenskap men olika renderad geometri raknas SOM skillnad",
+    "ok": true,
+    "diag": "bada anvander transform:translateX · lage hoger|mitten mot vanster|mitten · klass NON_COLOR_STATE_DIFFERENCE"
+   },
+   {
+    "id": "SG-06",
+    "vad": "tvetydigt sparagarskap ger okant lage och paret blir UNKNOWN, aldrig godkant",
+    "ok": true,
+    "diag": "lage okant · klass UNKNOWN · colorOnly false · skal: sparets agarskap gar inte att avgora: tva avgransade former som syskon i behallaren — vilk"
+   },
+   {
+    "id": "SG-07",
+    "vad": "tvetydigt knoppagarskap ger okant lage och paret blir UNKNOWN, aldrig godkant",
+    "ok": true,
+    "diag": "sparet ar kant, knoppen inte · lage okant · klass UNKNOWN · colorOnly false · skal: knoppens agarskap gar inte att avgora: exakt ett element i kontrollens subtrad ar deklarer"
+   },
+   {
+    "id": "SG-08",
+    "vad": "rorelsen mats mot sparet, aldrig mot radens box",
+    "ok": true,
+    "diag": "kontrollen ar en 340 px bred listrad; den uppmatta sparbredden ar 34 px — alltsa reglaget, inte raden · lage hoger|mitten mot vanster|mitten · klass NON_COLOR_STATE_DIFFERENCE"
+   },
+   {
+    "id": "SG-09",
+    "vad": "metoden ger identiskt utfall over tva korningar",
+    "ok": true,
+    "diag": "16 kontroller och 8 par identiska i bada korningarna"
+   },
+   {
+    "id": "SG-10",
+    "vad": "tacknings- och parinvarianten haller — ingen familj och inget par faller mellan",
+    "ok": true,
+    "diag": "par 8 = ickefarg 4 + okant 2 + color-only 2 · saknade familjer inga · singelState 0"
+   }
+  ],
+  "godkanda": 10,
+  "av": 10,
+  "ovrigaSviter": {
+   "colour-only": "13/13",
+   "nontext": "11/11",
+   "descent": "9/9",
+   "yta": "14/14"
+  },
+  "$not": "NT-08 laste den borttagna signalen och ar omskriven till den nya — samma pastaende, ny kalla. Provet var 11/11 fore andringen och ar 11/11 efter."
+ },
+ "D_corpusReconciliation": {
+  "FORE": {
+   "kontrollerMedTillstand": 136,
+   "saknarFamilj": 1,
+   "familjer": 70,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 20,
+   "parIckefarg": 20,
+   "parOkantLage": "(fanns inte)",
+   "colorOnly": 0,
+   "tackningsinvariant": true
+  },
+  "EFTER": {
+   "kontrollerMedTillstand": 136,
+   "saknarFamilj": 1,
+   "familjer": 70,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 20,
+   "parIckefarg": 20,
+   "parOkantLage": 0,
+   "colorOnly": 0,
+   "tackningsinvariant": true
+  },
+  "regression": {
+   "A_grafiskaDelar": {
+    "fore": 1644,
+    "efter": 1644
+   },
+   "A_fynd": {
+    "fore": 0,
+    "efter": 0
+   },
+   "A_unknownDelar": {
+    "fore": 0,
+    "efter": 0
+   },
+   "A_barare": {
+    "fore": 643,
+    "efter": 643
+   },
+   "C_objekt": {
+    "fore": 542,
+    "efter": 542
+   },
+   "C_required": {
+    "fore": 266,
+    "efter": 266
+   },
+   "C_fynd": {
+    "fore": 0,
+    "efter": 0
+   },
+   "population": {
+    "fore": {
+     "artefakter_st": 251,
+     "kontroller_st": 1346,
+     "grafiskaDelar_st": 1644,
+     "grafiskaObjekt_st": 542
+    },
+    "efter": {
+     "artefakter_st": 251,
+     "kontroller_st": 1346,
+     "grafiskaDelar_st": 1644,
+     "grafiskaObjekt_st": 542
+    }
+   }
+  }
+ },
+ "E_andradeForekomster": {
+  "parSomByttKlassificering_st": 0,
+  "parDarLagessignalensVardeBytte_st": 1,
+  "detaljer": [
+   {
+    "par": "socintegritet-integritetsreglage¦off¦on¦socintegritet¦socintegritet¦Sökbar via e-post¦Andra får hitta mig",
+    "klassFore": "NON_COLOR_STATE_DIFFERENCE",
+    "klassEfter": "NON_COLOR_STATE_DIFFERENCE",
+    "signalerFore": "thumbLage",
+    "signalerEfter": "thumbLage",
+    "lagevardeFore": "normal mot flex-end",
+    "lagevardeEfter": "vanster|mitten mot hoger|mitten",
+    "renderadGeometri": {
+     "a": {
+      "klass": "vanster|mitten",
+      "nX": -0.769,
+      "nY": 0,
+      "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+     },
+     "b": {
+      "klass": "hoger|mitten",
+      "nX": 0.769,
+      "nY": 0,
+      "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+     }
+    }
+   }
+  ],
+  "$bedomning": "Noll par bytte klassificering. Ett par bytte lagessignalens VARDE utan att byta klass: socintegritet-integritetsreglage gick fran \"normal mot flex-end\" till \"vanster|mitten mot hoger|mitten\". Samma slutsats, nu av ratt skal — den gamla signalen hade rakat ha ratt for just den implementationen."
+ },
+ "F_consumerAudit": {
+  "radtraffar_st": 58,
+  "lasarrader_st": 24,
+  "konsumentfiler_st": 13,
+  "oinventeradeFiler": [],
+  "vokabularberoendeMonster": [
+   {
+    "id": "disabled-familjen",
+    "varden": "disabled · inaktiv · avstängd",
+    "traffar": {
+     "checked": false,
+     "unchecked": false,
+     "on": false,
+     "off": false,
+     "selected": false,
+     "disabled": true,
+     "collapsed": false,
+     "expanded": false,
+     "pressed": false,
+     "unselected": false,
+     "invalid": false,
+     "grabbed": false,
+     "busy": false
+    },
+    "checkedOchOnBehandlasLika": true,
+    "offBehandlasSomIngetTillstand": true
+   },
+   {
+    "id": "suspenderad-familjen",
+    "varden": "suspended · blocked · inert · bakom · overlay-blocked",
+    "traffar": {
+     "checked": false,
+     "unchecked": false,
+     "on": false,
+     "off": false,
+     "selected": false,
+     "disabled": false,
+     "collapsed": false,
+     "expanded": false,
+     "pressed": false,
+     "unselected": false,
+     "invalid": false,
+     "grabbed": false,
+     "busy": false
+    },
+    "checkedOchOnBehandlasLika": true,
+    "offBehandlasSomIngetTillstand": true
+   }
+  ],
+  "konsumenter": [
+   {
+    "fil": "tools/lint-core.mjs",
+    "rader": [
+     1433,
+     1458,
+     1447,
+     1462
+    ],
+    "vad": "A11Y-01 kraver att ett element med state ocksa har roll och namn. A11Y-02 kraver att kontroller med inneboende tillstand HAR ett icke-tomt state.",
+    "accepterade": "valfritt icke-tomt varde",
+    "rollspecifikt": "ja — A11Y-02 galler bara checkbox/radio/switch/tab/toggle/menuitemcheckbox/menuitemradio",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej — ingen vokabular alls",
+    "anvands_till": "rapportering (lintkontrakt)"
+   },
+   {
+    "fil": "tools/nontext-measure.mjs",
+    "rader": [
+     188,
+     189
+    ],
+    "vad": "Baar vardet vidare oforandrat som state, och provar det separat mot disabled-familjen for att undanta avstangda kontroller fran kontrastkravet.",
+    "accepterade": "valfritt varde; bara disabled-familjen tolkas",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "state comparison + undantag"
+   },
+   {
+    "fil": "tools/colour-only.mjs",
+    "rader": [
+     22
+    ],
+    "vad": "Kraver att en state-group forekommer i minst tva OLIKA state-varden. Vardena jamfors bara med varandra.",
+    "accepterade": "valfritt varde",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej — vardet ar en etikett, aldrig ett nyckelord",
+    "anvands_till": "state comparison"
+   },
+   {
+    "fil": "tools/render-measure.mjs",
+    "rader": [
+     101,
+     105,
+     281
+    ],
+    "vad": "Undantar avstangda kontroller fran textkontrastkravet, och rapporterar vardet.",
+    "accepterade": "valfritt varde; bara disabled-familjen tolkas",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "undantag + rapportering"
+   },
+   {
+    "fil": "tools/product-text.mjs",
+    "rader": [
+     102,
+     105
+    ],
+    "vad": "Samma disabled-undantag som render-measure.",
+    "accepterade": "valfritt varde; bara disabled-familjen tolkas",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "undantag"
+   },
+   {
+    "fil": "tools/text-population.mjs",
+    "rader": [
+     117,
+     120
+    ],
+    "vad": "Samma disabled-undantag.",
+    "accepterade": "valfritt varde; bara disabled-familjen tolkas",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "undantag"
+   },
+   {
+    "fil": "tools/hit-overlap-audit.mjs",
+    "rader": [
+     80,
+     81
+    ],
+    "vad": "Avgor om en kontroll ar suspenderad bakom ett overlager och darfor inte konkurrerar om traffytan.",
+    "accepterade": "valfritt varde; bara suspenderad-familjen tolkas",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "undantag"
+   },
+   {
+    "fil": "tools/box-graphics.mjs",
+    "rader": [
+     133
+    ],
+    "vad": "Bar vardet vidare pa en boxritad grafisk relation, for sparbarhet.",
+    "accepterade": "valfritt varde",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "rapportering"
+   },
+   {
+    "fil": "tools/semantic-units.mjs",
+    "rader": [
+     78
+    ],
+    "vad": "Bar vardet vidare pa den semantiska enheten.",
+    "accepterade": "valfritt varde",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "rapportering"
+   },
+   {
+    "fil": "tools/render-neutrality.mjs",
+    "rader": [
+     51
+    ],
+    "vad": "Bar vardet vidare i neutralitetsjamforelsen mellan korningar.",
+    "accepterade": "valfritt varde",
+    "rollspecifikt": "nej",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "rapportering"
+   },
+   {
+    "fil": "tools/preview-affordance.mjs",
+    "rader": [
+     103,
+     107
+    ],
+    "vad": "Kraver att en knapp HAR ett state (bara narvaro), och rapporterar vardet.",
+    "accepterade": "valfritt icke-tomt varde",
+    "rollspecifikt": "ja — kravet galler bara data-a11y-role=\"button\"",
+    "switchOnOff": "stods",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "rapportering"
+   },
+   {
+    "fil": "tools/affordance-negatives.mjs",
+    "rader": [
+     23,
+     26
+    ],
+    "vad": "Negativt prov: tar bort ett collapsed-state ur sin EGEN provdata for att visa att kontrollen da faller.",
+    "accepterade": "provdata, inte produktion",
+    "rollspecifikt": "nej",
+    "switchOnOff": "ej tillampligt",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "prov"
+   },
+   {
+    "fil": "tools/selftest.mjs",
+    "rader": [
+     57,
+     63,
+     64,
+     65
+    ],
+    "vad": "Mutationsprov: satter in disabled respektive tar bort state ur en kopia for att visa att kontrollerna reagerar.",
+    "accepterade": "valfritt varde; matchar roll checkbox|radio|switch|tab",
+    "rollspecifikt": "ja",
+    "switchOnOff": "stods — regexen matchar rollen, inte vardet",
+    "checkedSarbetydelse": "nej",
+    "anvands_till": "prov"
+   }
+  ]
+ },
+ "G_stodForOnOff": {
+  "blockerare": [],
+  "slutsats": "Ingen aktiv konsument kraver \"checked\" for switchsemantik och ingen andrar betydelse nar checked byts mot on. De enda vokabularberoende monstren i hela verktygsladan ar disabled-familjen (disabled/inaktiv/avstangd) och suspenderad-familjen (suspended/blocked/inert/bakom/overlay-blocked). Varken \"checked\" eller \"on\" traffar nagon av dem, och inte heller \"off\". Alla ovriga konsumenter kraver bara att attributet finns, jamfor vardet med andra varden, eller bar det vidare oforandrat."
+ },
+ "H_syntetisktPar": {
+  "grupp": "profil-integritetsreglage",
+  "ON": {
+   "kontroll": "Sökbar för vänner",
+   "state": "on"
+  },
+  "OFF": {
+   "kontroll": "Visa mina recept publikt",
+   "state": "off"
+  },
+  "utforande": "git worktree pa HEAD. Repots produktfil aldrig rord.",
+  "worktreeDiff": {
+   "filer": [
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+   ],
+   "numstat": "2\t2\tButlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "taggar": [
+    {
+     "kontroll": "Sökbar för vänner",
+     "fore": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ccd1c2;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Sökbar för vänner\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"checked\">",
+     "efter": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ccd1c2;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Sökbar för vänner\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"on\" data-state-group=\"profil-integritetsreglage\">"
+    },
+    {
+     "kontroll": "Visa mina recept publikt",
+     "fore": "<div style=\"margin-top:0;display:flex;justify-content:space-between;align-items:center;padding:8px 0;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Visa mina recept publikt\" data-a11y-role=\"switch\" data-hit=\"self\">",
+     "efter": "<div style=\"margin-top:0;display:flex;justify-content:space-between;align-items:center;padding:8px 0;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Visa mina recept publikt\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"off\" data-state-group=\"profil-integritetsreglage\">"
+    }
+   ],
+   "fargdiff": []
+  },
+  "par": {
+   "familj": "profil-integritetsreglage",
+   "stateA": "off",
+   "stateB": "on",
+   "artA": "profil",
+   "artB": "profil",
+   "namnA": "Visa mina recept publikt",
+   "namnB": "Sökbar för vänner",
+   "ickeFargSignaler": [
+    {
+     "nyckel": "thumbLage",
+     "slag": "form",
+     "text": "knoppens lage skiljer",
+     "a": "vanster|mitten",
+     "b": "hoger|mitten"
+    }
+   ],
+   "okandaSignaler": [],
+   "klassificering": "NON_COLOR_STATE_DIFFERENCE",
+   "colorOnly": false,
+   "lage": {
+    "a": {
+     "klass": "vanster|mitten",
+     "nX": -0.778,
+     "nY": 0,
+     "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+    },
+    "b": {
+     "klass": "hoger|mitten",
+     "nX": 0.778,
+     "nY": 0,
+     "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+    }
+   }
+  },
+  "nyaPar": 1,
+  "bortaPar": 0,
+  "nyaSingletons": 0,
+  "tvaKontrollidentiteter": true
+ },
+ "I_totalerForeEfterSyntetisktPar": {
+  "FORE": {
+   "kontrollerMedTillstand": 136,
+   "saknarFamilj": 1,
+   "familjer": 70,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 20,
+   "parIckefarg": 20,
+   "parOkantLage": 0,
+   "colorOnly": 0,
+   "tackningsinvariant": true,
+   "parinvariant": true
+  },
+  "EFTER": {
+   "kontrollerMedTillstand": 137,
+   "saknarFamilj": 0,
+   "familjer": 71,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 21,
+   "parIckefarg": 21,
+   "parOkantLage": 0,
+   "colorOnly": 0,
+   "tackningsinvariant": true,
+   "parinvariant": true
+  }
+ },
+ "J_bevisIckeFargmassigSkillnad": {
+  "signal": "thumbLage",
+  "bararen": "reglagets knopp",
+  "lagePA": {
+   "klass": "hoger|mitten",
+   "nX": 0.778,
+   "nY": 0,
+   "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+  },
+  "lageOFF": {
+   "klass": "vanster|mitten",
+   "nX": -0.778,
+   "nY": 0,
+   "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+  },
+  "tolkning": "Knoppen star 77,8 % at hoger i pa-laget och 77,8 % at vanster i av-laget, raknat som andel av sin tillgangliga resa i sparet. Det ar en synlig skillnad som inte ar en fargskillnad, och den ar det som hindrar paret fran att bli color-only."
+ },
+ "K_ingaProduktwrites": {
+  "produktfiler_st": 27,
+  "allaBitIdentiskaMedHEAD": true,
+  "profilfilSha": "cd0561fff127fafa",
+  "profilfilShaHEAD": "cd0561fff127fafa",
+  "fargbokforingIWorktreen": "0 skillnader"
+ },
+ "L_ingenFargGeometriEllerR04": {
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "r04RegisterSha": "b89f4dcdef34031c",
+  "r04RegisterShaHEAD": "b89f4dcdef34031c",
+  "r04BitIdentisk": true,
+  "morkaVarden": 0,
+  "mappningsevidens": 0,
+  "kredit": 0,
+  "$not": "on/off ar tillstandsetiketter for jamforelse. De ar inte fargbeslut, inte mappningsevidens och inte R-04-evidens."
+ },
+ "M_orordaSpar": [
+  "108 undeclared-component UNKNOWN",
+  "21 prioriterade UNKNOWN",
+  "52 single-state-familjer",
+  "R-04",
+  "farger",
+  "traffytor",
+  "kontrollidentiteter"
+ ],
+ "N_stoppvillkor": [],
+ "O_nastaSteg": "Den faktiska metadataandringen ar INTE gjord och kraver separat klartecken: ON checked → on + data-state-group, OFF + off + data-state-group."
+}

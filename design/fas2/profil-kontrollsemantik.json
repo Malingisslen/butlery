@@ -1,0 +1,430 @@
+{
+ "$schema": "butlery-profil-kontrollsemantik/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "0c35b01",
+ "$status": "ANALYS. 0 produktwrites, 0 fargbeslut, 0 R-04-paverkan.",
+ "A_profilInventering": {
+  "antal": 2,
+  "objekt": [
+   {
+    "stabilRenderIdentitet": "profil|34",
+    "relationsIdentitet": "profil|34→35",
+    "kallidentitetSpar": "profil|34|background-color",
+    "kallidentitetKnopp": "profil|35|background-color",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "tagg": "div",
+    "komponentdeklaration": "toggle",
+    "synligEtikett": "Sökbar för vänner",
+    "etikettOrdinal": 33,
+    "sektionsrubrik": "Integritet",
+    "radOrdinal": 32,
+    "radRect": {
+     "x": 69,
+     "y": 3726.3,
+     "w": 364,
+     "h": 37
+    },
+    "radMinHojd": "0px",
+    "radBakgrund": "rgba(0, 0, 0, 0)",
+    "faktiskTraffyta": null,
+    "$traffyta": "Ingen data-hit deklarerad nagonstans i raden. Enligt hit-contract ar formen \"undeclared\" och traffytan darfor INTE matbar. Radens renderade matt redovisas separat som villkorat utfall.",
+    "interaktionsdeklaration": {
+     "handlare": [],
+     "tabindex": null,
+     "pointerEvents": "auto",
+     "cursor": "auto"
+    },
+    "tangentbordOchFokus": {
+     "tabindex": null,
+     "fokuserbar": false,
+     "$not": "Ingen artefakt i korpusen deklarerar tabindex eller handlare — interaktion uttrycks som authored deklaration, inte som DOM-beteende."
+    },
+    "nativeKontrolltyp": null,
+    "metadata": {
+     "dataA11yRole": null,
+     "dataA11yName": null,
+     "dataHit": null,
+     "dataA11yState": null,
+     "role": null,
+     "aria": [],
+     "dataComponent": "toggle"
+    },
+    "spar": {
+     "rect": {
+      "x": 399,
+      "y": 3734.3,
+      "w": 34,
+      "h": 20
+     },
+     "deklarerad": "rgb(36, 56, 44)",
+     "malad": "rgb(36, 56, 44)"
+    },
+    "knopp": {
+     "rect": {
+      "x": 415,
+      "y": 3736.3,
+      "w": 16,
+      "h": 16
+     },
+     "deklarerad": "rgb(245, 244, 237)",
+     "malad": "rgb(245, 244, 237)"
+    },
+    "faktisktMaladAngransandeYta": "rgb(245, 244, 237)",
+    "tillstandUrRendering": "PA (knopp till hoger)",
+    "tillstandsdeklaration": null,
+    "kallprovenans": "inline style per instans, ingen tokenreferens",
+    "kvotKnoppMotSpar": 11.36,
+    "kvotSparMotYta": 11.36,
+    "arBG020": false
+   },
+   {
+    "stabilRenderIdentitet": "profil|38",
+    "relationsIdentitet": "profil|38→39",
+    "kallidentitetSpar": "profil|38|background-color",
+    "kallidentitetKnopp": "profil|39|background-color",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "tagg": "div",
+    "komponentdeklaration": "toggle",
+    "synligEtikett": "Visa mina recept publikt",
+    "etikettOrdinal": 37,
+    "sektionsrubrik": "Integritet",
+    "radOrdinal": 36,
+    "radRect": {
+     "x": 69,
+     "y": 3763.3,
+     "w": 364,
+     "h": 36
+    },
+    "radMinHojd": "0px",
+    "radBakgrund": "rgba(0, 0, 0, 0)",
+    "faktiskTraffyta": null,
+    "$traffyta": "Ingen data-hit deklarerad nagonstans i raden. Enligt hit-contract ar formen \"undeclared\" och traffytan darfor INTE matbar. Radens renderade matt redovisas separat som villkorat utfall.",
+    "interaktionsdeklaration": {
+     "handlare": [],
+     "tabindex": null,
+     "pointerEvents": "auto",
+     "cursor": "auto"
+    },
+    "tangentbordOchFokus": {
+     "tabindex": null,
+     "fokuserbar": false,
+     "$not": "Ingen artefakt i korpusen deklarerar tabindex eller handlare — interaktion uttrycks som authored deklaration, inte som DOM-beteende."
+    },
+    "nativeKontrolltyp": null,
+    "metadata": {
+     "dataA11yRole": null,
+     "dataA11yName": null,
+     "dataHit": null,
+     "dataA11yState": null,
+     "role": null,
+     "aria": [],
+     "dataComponent": "toggle"
+    },
+    "spar": {
+     "rect": {
+      "x": 399,
+      "y": 3771.3,
+      "w": 34,
+      "h": 20
+     },
+     "deklarerad": "rgb(204, 209, 194)",
+     "malad": "rgb(204, 209, 194)"
+    },
+    "knopp": {
+     "rect": {
+      "x": 401,
+      "y": 3773.3,
+      "w": 16,
+      "h": 16
+     },
+     "deklarerad": "rgb(245, 244, 237)",
+     "malad": "rgb(245, 244, 237)"
+    },
+    "faktisktMaladAngransandeYta": "rgb(245, 244, 237)",
+    "tillstandUrRendering": "AV (knopp till vanster)",
+    "tillstandsdeklaration": null,
+    "kallprovenans": "inline style per instans, ingen tokenreferens",
+    "kvotKnoppMotSpar": 1.41,
+    "kvotSparMotYta": 1.41,
+    "arBG020": true
+   }
+  ],
+  "$metod": "Faktisk markup och rendering vid HEAD. Inget harlett ur hur objektet ser ut."
+ },
+ "B_interaktionsbevis": {
+  "iDOM": {
+   "handlare": 0,
+   "tabindex": 0,
+   "role": 0,
+   "aria": 0,
+   "dataHit": 0,
+   "cursorPointer": 0,
+   "$not": "Galler aven de 32 korrekt deklarerade reglagen — korpusen uttrycker interaktion som authored deklaration, aldrig som DOM-beteende. Franvaro av handlare ar darfor inte bevis for icke-interaktivitet."
+  },
+  "korpuskonvention": {
+   "deklareradeSwitchar": 41,
+   "medPillerstruktur": 32,
+   "utanPillerstruktur": 9,
+   "$utan": "socintegritet 7, instportion 1, installergen 1 — deklarerade switchar utan nagon pillergrafik alls.",
+   "allaMedRoll": "switch",
+   "allaMedDataHit": "self",
+   "allaMedNamn": 32,
+   "radhojdMin": 48,
+   "$slutsats": "32 av 32 pillergrafiker i korpusen sitter inuti en rad som ar deklarerad data-a11y-role=\"switch\" med data-a11y-name och data-hit=\"self\". Det ar en authored konvention, inte en visuell likhet."
+  }
+ },
+ "C_klassificering": [
+  {
+   "objekt": "profil|34 (Sokbar for vanner)",
+   "klass": "INTERACTIVE_CONTROL",
+   "kontrolltyp": "switch",
+   "bevis": [
+    "authored data-component=\"toggle\"",
+    "korpuskonvention: 32 av 32 andra data-component=\"toggle\" ar den visuella delen av en rad deklarerad som switch",
+    "raden innehaller en synlig etikett i ett syskonelement, samma struktur som de 32 korrekta raderna",
+    "ligger i en installningssektion med rubriken \"Integritet\""
+   ],
+   "$ejBevis": [
+    "pillerform",
+    "geometri",
+    "skarmnamn"
+   ]
+  },
+  {
+   "objekt": "profil|38 (Visa mina recept publikt)",
+   "klass": "INTERACTIVE_CONTROL",
+   "kontrolltyp": "switch",
+   "bevis": [
+    "samma bevis som profil|34",
+    "detta ar barargruppen bakom BG-020"
+   ],
+   "$ejBevis": [
+    "pillerform",
+    "geometri",
+    "skarmnamn"
+   ]
+  },
+  {
+   "objekt": "taggdetalj|25 (Innehåller \"rester\")",
+   "klass": "UNKNOWN",
+   "kontrolltyp": null,
+   "bevis": [
+    "ingen data-component",
+    "ingen a11y-roll nagonstans i kedjan",
+    "ingen deklaration som skiljer en kontroll fran en tillstandsgrafik"
+   ],
+   "$failClosed": "Rollen far inte harledas ur pillerformen. Objektet forblir UNKNOWN tills det adjudiceras."
+  },
+  {
+   "objekt": "taggdetalj|31 (Ingrediens: kokt ris)",
+   "klass": "UNKNOWN",
+   "kontrolltyp": null,
+   "bevis": [
+    "ingen data-component",
+    "ingen a11y-roll nagonstans i kedjan",
+    "ingen deklaration som skiljer en kontroll fran en tillstandsgrafik"
+   ],
+   "$failClosed": "Rollen far inte harledas ur pillerformen. Objektet forblir UNKNOWN tills det adjudiceras."
+  }
+ ],
+ "D_etikettNamnTillstand": {
+  "tillgangligtNamnKanHarledas": true,
+  "$hur": "Den synliga etiketten ligger som syskonelement i samma rad-wrapper, exakt som i de 32 korrekta raderna. Inget namn behover konstrueras.",
+  "saknadMetadata": [
+   "data-a11y-role=\"switch\"",
+   "data-a11y-name",
+   "data-hit=\"self\"",
+   "data-a11y-state (endast for det passlagna)"
+  ],
+  "strukturklass": "A. KORREKT STRUKTUR MEN SAKNAD METADATA",
+  "$menDock": "Strukturklassen ar inte hela sanningen. Radhojden ar 37 respektive 36 px medan korpusens 32 korrekta switchrader alla renderar minst 48 px. Metadata ensam skulle inte gora traffytan giltig.",
+  "tillstandIdag": "uttrycks bara av knoppens lage och sparets farg, inte av nagon deklaration",
+  "tillstandsvokabularIKorpusen": {
+   "checked": 10,
+   "disabled": 3,
+   "ingen": 19,
+   "on_off": "socintegritet anvander on/off i stallet",
+   "$obs": "Korpusen anvander tva olika tillstandsvokabularer. Redovisas som observation, inte som fynd i detta block."
+  }
+ },
+ "E_populationsavstamning": {
+  "HISTORICAL_VERIFIED_CONTROL_POPULATION": {
+   "kalldeklarationerDataA11yRole": 1376,
+   "renderadeIArtefakt": 1344,
+   "renderadeUtanforArtefakt": 32,
+   "NT_baslinjeKontroller": 1344,
+   "$avstamning": "1376 = 1344 + 32, och NT-baslinjens kontrollantal 1344 ar identiskt med de renderade i artefakt.",
+   "$orord": "Historiska frusna totalsiffror ar inte omskrivna."
+  },
+  "CURRENT_EXTENDED_CONTROL_POPULATION": {
+   "verifierade": 1344,
+   "nyaKlassificeradeKontroller": 2,
+   "summaKandidatpopulation": 1346,
+   "unknownKvar": 108,
+   "$unknown": "2 taggdetalj-pillerstrukturer, 78 checkbox-komponenter och 28 chip-komponenter utan a11y-roll nagonstans. Unknown forblir legitimt.",
+   "$regel": "De tva profilkontrollerna raknas som kandidater. De blir inte en del av den verifierade populationen forran produkten deklarerar dem."
+  },
+  "varforCensusenMissadeDem": {
+   "regel": "Kontrollpopulationen definieras av authored deklaration: elementet maste bara data-a11y-role. Samma krav som data-hit i R-02.",
+   "utfall": "Profilraderna deklarerar ingenting, sa de ar per definition osynliga for censusen.",
+   "metodgap": "Ingen befintlig kontroll listar systematiskt authored komponenter (data-component) eller reglagestrukturer som saknar a11y-roll. Grafikspåret fangade BG-020 med bifyndet, men det var en sidoeffekt, inte en riktad kontroll."
+  }
+ },
+ "F_korpusfullstandighet": {
+  "kontrollikaObjektRenderade": 208,
+  "egenA11yRoll": 13,
+  "rollPaForfader": 85,
+  "heltUtanRoll": 110,
+  "perKomponent": [
+   {
+    "komponent": "chip",
+    "totalt": 41,
+    "egen": 13,
+    "forfader": 0,
+    "utan": 28,
+    "medKnopp": 0
+   },
+   {
+    "komponent": "toggle",
+    "totalt": 34,
+    "egen": 0,
+    "forfader": 32,
+    "utan": 2,
+    "medKnopp": 34
+   },
+   {
+    "komponent": "checkbox",
+    "totalt": 131,
+    "egen": 0,
+    "forfader": 53,
+    "utan": 78,
+    "medKnopp": 0
+   },
+   {
+    "komponent": "(odeklarerad reglagestruktur)",
+    "totalt": 2,
+    "egen": 0,
+    "forfader": 0,
+    "utan": 2,
+    "medKnopp": 2
+   }
+  ],
+  "reglagestrukturer": {
+   "totalt": 36,
+   "deklarerade": 32,
+   "odeklarerade": 4,
+   "$odeklarerade": [
+    "profil|34 toggle",
+    "profil|38 toggle",
+    "taggdetalj|25 (odeklarerad)",
+    "taggdetalj|31 (odeklarerad)"
+   ]
+  },
+  "nyaMattaKontroller": 2,
+  "nyaMattaIckeTextRelationer": 4,
+  "sannaKontroller": 2,
+  "ickeKontroller": 0,
+  "unknown": 108,
+  "falsktLarmSomAvvisades": {
+   "vad": "tre deklarerade switchar i behnotiser mater 1.99 med kontrollmetoden",
+   "varforInteFynd": "de bar data-a11y-state=\"disabled\" och deras namn sager \"avstangd i systemet\". NT-baslinjen undantar exakt 6 grafiska delar som disabled — 3 reglage x 2 delar. Kontrollerat, inte antaget.",
+   "NT_undantagna_disabled": 6
+  },
+  "$ingenFix": "Ingen atgard i detta block."
+ },
+ "G_R02": {
+  "kontrakt": "48 x 48 CSS-px, tools/hit-contract.mjs",
+  "historiskt": {
+   "$orord": "Det historiska R-02-resultatet star kvar for sin frusna population.",
+   "frusnaKalldeklarationer": 1376
+  },
+  "nyaKontroller": [
+   {
+    "objekt": "profil|34",
+    "dataHitIdag": null,
+    "form": "undeclared",
+    "matbar": false,
+    "utfall": "UNKNOWN",
+    "$villkorat": "Om raden deklarerades data-hit=\"self\" enligt korpuskonventionen skulle traffytan vara 364 x 37 px, alltsa 11.0 px under hojdkravet 48.",
+    "overlapp": "ej provat — kraver deklarerad traffyta",
+    "traffbarhet": "ej provbar utan deklaration"
+   },
+   {
+    "objekt": "profil|38",
+    "dataHitIdag": null,
+    "form": "undeclared",
+    "matbar": false,
+    "utfall": "UNKNOWN",
+    "$villkorat": "Om raden deklarerades data-hit=\"self\" enligt korpuskonventionen skulle traffytan vara 364 x 36 px, alltsa 12.0 px under hojdkravet 48.",
+    "overlapp": "ej provat — kraver deklarerad traffyta",
+    "traffbarhet": "ej provbar utan deklaration"
+   }
+  ],
+  "$slutsats": "Current overall R-02 far INTE kallas verifierad. Den utokade populationen har tva kontroller vars traffyta ar odeklarerad och vars rad i dag ar under 48 px."
+ },
+ "H_ickeTextAgarskap": {
+  "fraga": "Ska BG-020 normativt agas av CONTROL_NON_TEXT eller av STANDALONE/CSS_BOX_GRAPHIC?",
+  "svar": "CONTROL_NON_TEXT — men forst nar kontrollen faktiskt ar deklarerad.",
+  "kontrollmetodensMatning": {
+   "objekt": "profil|38 switch (Visa mina recept publikt)",
+   "faktiskSpar": "rgb(204, 209, 194)",
+   "faktiskKnopp": "rgb(245, 244, 237)",
+   "faktisktMaladAngransandeYta": "rgb(245, 244, 237)",
+   "$ytkontroll": "Raden har genomskinlig bakgrund. Den angransande ytan loses till narmaste ogenomskinliga forfader, som ar sidytan #f5f4ed. Den gamla felklassen — radagda reglage matta mot fel spar eller fel yta — ar darmed inte aterinford.",
+   "relevantTillstand": "AV (knopp till vanster)",
+   "kvotKnoppMotSpar": 1.41,
+   "kvotSparMotAngransandeYta": 1.41,
+   "krav": 3,
+   "utfall": "BADA UNDER KRAVET"
+  },
+  "$slutsats": "Samma visuella fel finns kvar aven nar det mats med kontrollmetoden. Det ar fortfarande ett PRODUCT_ERROR, bara i ratt population nar flytten kan goras."
+ },
+ "I_identitetsmigration": {
+  "utford": false,
+  "$varfor": "Malidentiteten finns inte an. En kontrollidentitet skapas av en authored deklaration, och profilraden deklarerar ingenting. Att flytta BG-020 nu vore att uppfinna malet.",
+  "OLD": {
+   "id": "BG-020",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "relationsidentitet": "profil|38→39",
+   "bararidentitet": "profil|38|background-color",
+   "vardeidentitet": "profil|39|background-color",
+   "kvot": 1.41,
+   "status": "BLOCKED, kvar i grafikpopulationen"
+  },
+  "NEW": {
+   "kontrollidentitet": "FINNS INTE AN — kraver data-a11y-role=\"switch\" pa profil|32",
+   "relationsidentitet": "skapas forst vid deklaration",
+   "sammaVisuellaBarare": "JA — samma spar profil|38 och samma knopp profil|39",
+   "omraknadKvot": 1.41,
+   "status": "PRODUCT_ERROR aven i kontrollpopulationen"
+  },
+  "$forbud": "Det ar forbjudet att rapportera grafikfynd 1 → 0. BG-020 ligger kvar och grafikbaslinjen ar oforandrad 34 / 0 / 1."
+ },
+ "J_verdikt": {
+  "klass": "D. COMPOUND_ERROR",
+  "produktdel": [
+   "tva verkliga switchar saknar data-a11y-role, data-a11y-name, data-hit och tillstandsdeklaration",
+   "radhojden ar 37 och 36 px mot korpusens 48 px for samtliga 32 korrekt deklarerade switchrader",
+   "BG-020:s kontrastfel kvarstar oavsett vilken population det bokfors i"
+  ],
+  "metoddel": [
+   "kontrollcensusen kan per konstruktion inte se en odeklarerad kontroll",
+   "ingen riktad kontroll listar authored komponenter eller reglagestrukturer utan a11y-roll",
+   "110 kontrollika objekt i korpusen saknar roll helt; 108 av dem ar fortfarande UNKNOWN"
+  ],
+  "$ordning": "Strukturell och semantisk rattelse forst, metodfix darefter, fargremediering av BG-020 sist."
+ },
+ "K_baslinje": {
+  "grafikpopulation": 34,
+  "UNKNOWN": 0,
+  "findings": 1,
+  "fyndlista": [
+   "BG-020"
+  ],
+  "produktfilerAndrade": 0,
+  "fargbeslut": 0,
+  "R04_registretBitIdentiskt": true,
+  "R04_COVERAGE_CREDIT": 0,
+  "profilOrord": true
+ }
+}

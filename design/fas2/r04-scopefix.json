@@ -1,0 +1,198 @@
+{
+ "$schema": "butlery-r04-scopefix/1",
+ "$datum": "2026-08-11",
+ "A_betygsammanslaget": {
+  "fel": "Bottenradens knappbalk lag utanfor .sc-phone i DOM:en.",
+  "rotorsak": "Rad 1125 i kallan slutade med tva </div> i rad. Den forsta stangde textrutan \"Ingen historik per tillfalle\", den andra stangde skrollytan for tidigt. Foljden blev att nasta </div> stangde .sc-phone, och knappbalken hamnade som syskon till ramen.",
+  "atgard": "Ett enda </div> borttaget i slutet av rad 1125. Ingen annan markupomstrukturering.",
+  "metadataSkriven": "ingen — balken arver nu korrekt produktscope genom legacy-roten .sc-phone",
+  "ancestry": {
+   "fore": {
+    "Andra betygen": [
+     "div",
+     "span"
+    ],
+    "Planera in igen": [
+     "div",
+     "span"
+    ],
+    "iPhone": false,
+    "not": ".sc-phone hade 66 descendanter; knapparna lag utanfor"
+   },
+   "efter": {
+    "Andra betygen": [
+     "sc-phone",
+     "div",
+     "span"
+    ],
+    "Planera in igen": [
+     "sc-phone",
+     "div",
+     "span"
+    ],
+    "iPhone": true
+   }
+  },
+  "efterKontroll": [
+   {
+    "text": "Ändra",
+    "klass": "PRODUCT_CONTROL_TEXT",
+    "bakgrund": "rgb(245, 244, 237)",
+    "ratio": 11.36,
+    "threshold": 4.5,
+    "godkand": true
+   },
+   {
+    "text": "Planera igen",
+    "klass": "PRODUCT_CONTROL_TEXT",
+    "bakgrund": "rgb(206, 124, 30)",
+    "ratio": 4.95,
+    "threshold": 4.5,
+    "godkand": true
+   }
+  ]
+ },
+ "B_layoutverifiering": {
+  "andradeMatningar": [
+   {
+    "matning": "compact-390|betygsammanslaget",
+    "andradeElement": 4
+   },
+   {
+    "matning": "compact-390|betygvemarket",
+    "andradeElement": 69
+   },
+   {
+    "matning": "compact-390|familjmedlemsamtycke",
+    "andradeElement": 81
+   },
+   {
+    "matning": "expanded-1180|betygsammanslaget",
+    "andradeElement": 4
+   },
+   {
+    "matning": "expanded-1180|betygvemarket",
+    "andradeElement": 69
+   },
+   {
+    "matning": "expanded-1180|familjmedlemsamtycke",
+    "andradeElement": 81
+   }
+  ],
+  "avsiktligRegion": {
+   "artefakt": "betygsammanslaget",
+   "andradeElement": 4,
+   "vad": "skrollytan kortas 609 -> 530 px, knappbalken flyttas 89 px upp in i ramen, de tva knapparna foljer med"
+  },
+  "foljdforflyttning": {
+   "artefakter": [
+    "betygvemarket",
+    "familjmedlemsamtycke"
+   ],
+   "vad": "flyttade 88 px uppat i sidflodet. ENDAST y-koordinaten andrades — farg, ram, typografi, bredd och hojd ar bit-identiska.",
+   "varfor": "artefakten blev 88 px kortare nar knappbalken flyttade in i den fasta 700 px-ramen"
+  },
+  "ovrigaArtefakter": "oforandrade — inga orelaterade geometriandringar",
+  "clipping": {
+   "textfragmentTotalt": 8095,
+   "fore": 8095,
+   "efter": 8095,
+   "slutsats": "inget fragment forsvann — ingen klippning"
+  },
+  "traffytor": {
+   "Tillbaka till receptet": "48x48 -> 48x48 oforandrad",
+   "Andra betygen": "180x48 -> 179x48",
+   "Planera in igen": "178x48 -> 177x48",
+   "not": "Bredden minskade 1 px per knapp eftersom balken nu begransas av ramens 412 px i stallet for artefaktens 414 px. Den bindande dimensionen — 48 px hojd — ar oforandrad. R-02-baslinjen ar godkand med 0 fynd."
+  },
+  "regressioner": {
+   "R01_frozen": "population 319 · fynd 0 · status godkand",
+   "R02_hit": "0 verifierade fynd · status godkand",
+   "nontext": "266 grafiska objekt matta · 0 fynd under 3:1 · status godkand",
+   "effekter": "detected 6 · adjudicated 4 · productErrors 0 · status godkand",
+   "identitet": "oforandrad — inget verifierat elementfynd paverkas"
+  }
+ },
+ "C_bredgrid": {
+  "produktgranser": 2,
+  "annotationsgranser": 4,
+  "ankare": {
+   "product": [
+    19,
+    34
+   ],
+   "annotation": [
+    18,
+    33,
+    31,
+    51
+   ]
+  },
+  "utfall": {
+   "UTANFOR_PRODUKTROT": 12,
+   "ANNOTATION_TEXT": 5,
+   "PRODUCT_STANDALONE_TEXT": 10
+  },
+  "idempotens": "0 skrivningar vid andra korningen"
+ },
+ "D_full_light_reconciliation": {
+  "fragmentTotalt": 8095,
+  "identisktVidBadaViewport": true,
+  "klasser": {
+   "UTANFOR_PRODUKTROT": 2733,
+   "PRODUCT_STANDALONE_TEXT": 3871,
+   "PRODUCT_CONTROL_TEXT": 1270,
+   "ANNOTATION_TEXT": 221
+  },
+  "PRODUCT_CONTROL_TEXT": 1270,
+  "PRODUCT_STANDALONE_TEXT": 3871,
+  "LIGHT_PRODUCT_TEXT_TOTAL": 5141,
+  "forvantat": 5141,
+  "stammer": true,
+  "unknown": 0,
+  "fynd": 0,
+  "utanBestambarBakgrund": 0,
+  "scopeConflicts": 0,
+  "UNRESOLVED": 0,
+  "varjeIdentitetExaktEnGang": true,
+  "annotationUtanforNamnaren": 221,
+  "utanforProduktrot": 2733
+ },
+ "D_status": {
+  "LIGHT_PRODUCT_TEXT_CONTRAST": "CLOSED / VERIFIED",
+  "OVERALL_DARK_PRODUCT_TEXT": "OPEN — R-04-tackning saknas fortfarande for produktfamiljerna"
+ },
+ "F_R01_enhetsavstamning": {
+  "$problem": "Foregaende rapport stallde 997 mot 1041 bredvid COMMON 1441 och CURRENT_ONLY 66. Det ar tva olika matenheter i samma mening.",
+  "enhet_1": {
+   "namn": "ALLA artefakt-kontroll-viewportmatningar",
+   "BASELINE": 1441,
+   "CURRENT": 1507,
+   "COMMON": 1441,
+   "CURRENT_ONLY": 66,
+   "BASELINE_ONLY": 0,
+   "invariant": true
+  },
+  "enhet_2": {
+   "namn": "darav status=measured",
+   "BASELINE": 997,
+   "CURRENT": 1041,
+   "COMMON": 997,
+   "CURRENT_ONLY": 44,
+   "BASELINE_ONLY": 0,
+   "invariant": true
+  },
+  "enhet_3": {
+   "namn": "darav notApplicable",
+   "BASELINE": 444,
+   "CURRENT": 466,
+   "COMMON": 444,
+   "CURRENT_ONLY": 22,
+   "BASELINE_ONLY": 0,
+   "invariant": true
+  },
+  "omrakning": "44. measured + 22 notApplicable = 66 alla matningar",
+  "korrektFormulering": "997 och 1041 ar MATTA matningar. 1441 och 1507 ar ALLA matningar. Setdiffen kordes i enheten ALLA. I den mattA enheten ar COMMON 997, CURRENT_ONLY 44, BASELINE_ONLY 0.",
+  "nyBaslinjeSkriven": false
+ }
+}

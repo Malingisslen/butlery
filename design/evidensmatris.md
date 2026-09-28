@@ -19,6 +19,124 @@ Den giltiga proben är:
 
 Avsiktlig `-webkit-line-clamp` räknas inte som klippning och filtreras bort separat. **Senaste körning: 1 träff, och den är en avsiktlig clamp** (recepttiteln i `#langavarden`).
 
+### Normativt scrollbeslut · `#synkko` (2026-08-07)
+
+| Fält | Värde |
+|---|---|
+| artifact | `synkko` |
+| runtimeMappingStatus | **unmapped** — ingen belagd Flutter-motsvarighet finns, och ingen har antagits |
+| scrollIntent | **vertical when overflowing** |
+| skäl | Variabel action-kö. Varje post bär en handling, och alla poster och deras handlingar ska vara nåbara. |
+
+**Innehållskolumnen ska vara vertikalt scrollbar när innehållet överstiger
+tillgänglig höjd. Alla poster i kön och deras handlingar ska vara nåbara.**
+
+Detta är ett DESIGNBESLUT, inte en infererad runtimemappning. Ingen Flutter-fil
+ligger till grund för det, och inget filnamn skrivs in här förrän en
+motsvarighet är belagd.
+
+Samma SRC-01-konstruktion är belagd i fyra ritningar. Två av dem —
+`#betygperperson` och `#veckoallergi` — rättades på runtimebevis.
+`#synkko` rättas på detta beslut. `#flergrupp` är fortfarande obeslutad och
+rörs inte.
+
+### Normativt affordansbeslut · begränsad källförhandsvisning (2026-08-07)
+
+**Ett källblock får visas som en begränsad förhandsvisning, men dolt innehåll
+måste ha en explicit och direkt synlig väg till fulltexten. För `#kompkalla`
+ska förhandsvisningen kunna expanderas med en synlig kontroll, exempelvis
+"Visa hela", och därefter kunna minimeras igen. Tyst `max-height` +
+`overflow:hidden` utan affordans är inte tillåtet.**
+
+| Fält | Värde |
+|---|---|
+| artifact | `kompkalla` |
+| sourceRootCause | `SRC-02` |
+| previewAllowed | **true** |
+| hiddenContentRequiresAffordance | **true** |
+| preferredAffordance | **expand/collapse** |
+| currentAffordance | **none** |
+
+`max-height: 150px` är **befintlig implementation, inte en beslutad
+designparameter**. Beslutet godkänner inte den höjden som normativ. Intern
+vertikal scroll i ett litet källblock är inte förstahandslösningen — den
+föredragna interaktionen är expandera och minimera, och allt innehåll ska bli
+faktiskt nåbart efter aktivering.
+
+Följden för adjudiceringen: `EFF-05 · kompkalla` går från `undecided` till
+`unintended`. 52 px av 226 px innehåll är dolt utan någon väg till resten,
+vilket nu strider mot ett uttryckligt beslut.
+
+#### Utfall efter rättningen (2026-08-07)
+
+Beslutets tabell ovan beskriver läget **när beslutet fattades** och skrivs
+aldrig om. Det här stycket redovisar vad rättningen gjorde med det läget.
+
+Förhandsvisningen är kvar, men den har fått den väg vidare som beslutet krävde.
+Tillståndsparet depikteras som **två statiska artefakter** — `receptkalla /
+kollapsad` och `receptkalla / expanderad` — utan `<details>`, utan
+`:checked`-mekanik och utan JavaScript. Arkets kropp är delad i en scrollande
+del och en fast åtgärdsrad, så kontrollen "Visa hela" ligger helt inom
+scrollporten redan vid `scrollTop 0`. Previewhöjden är **115 px**. Det är
+prototypens uppmätta övre gräns för att kontrollen ska rymmas, inte en token
+och inte en beslutad designparameter.
+
+| Fält | Vid beslutet | Efter rättningen |
+|---|---|---|
+| currentAffordance | none | expand/collapse |
+| effectClass | `innehall-dolt-utan-affordans` | `begransad-preview-med-affordans` |
+| effectId | `EFF-05 · kompkalla` | `EFF-08 · kompkalla` |
+| adjudicationStatus | unintended | intentional |
+
+`EFF-08` är ett **nytt** nummer därför att effektens semantik ändrades, inte
+därför att artefakten fick ett `stateId`. Ordinal 5 är frigjord och
+återanvänds aldrig; den ligger kvar i `fas2/effect-registry.json` som en
+förbrukad tilldelning.
+
+Alla åtta affordansled är **mätta**, inte påstådda:
+`fas2/affordansbevis.json` (CHK-R-AFF-01, 8 av 8) med
+`fas2/affordans-negativa-prov.json` som visar att varje led faktiskt kan
+fällas (8 av 8 mutationer). Nyckeltalen: kontrollen har `0.000 px` marginal
+i scrollporten vid `scrollTop 0` — den ryms alltså precis — och det
+expanderade källblocket mäter `scrollH 226 = clientH 226` med `overflow-y:
+visible`, alltså ingen kvarvarande klippning.
+
+### Normativt beslut · R-01:s tillämplighetsmodell (2026-08-08)
+
+R-01 mäter **textkontrast**. Beslutet nedan säger vad som räknas som ett
+R-01-produktfel, inte hur mätningen går till.
+
+**Positivt verifierade inaktiva kontroller är undantagna från
+R-01-conformancebedömningen.** De ska ändå mätas när mätning är möjlig,
+redovisas med sin kvot, gå att filtrera och räknas separat som
+`exemptDisabled`. Undantaget är ingen ursäkt för att sluta mäta.
+
+Inaktivitet kräver **positiv semantisk evidens**: `disabled` som attribut eller
+egenskap, `aria-disabled="true"`, eller ett etablerat `data-a11y-state`. Färg
+och `opacity` är presentationsval och bevisar ingenting — en kontroll får aldrig
+bli undantagen för att den råkar se dämpad ut.
+
+| applicability | Betydelse | Räknas som produktfel |
+|---|---|---|
+| `applicable` | synlig text finns och kvoten kunde mätas | ja, om under tröskel |
+| `notApplicable:noVisibleText` | kontrollen målar ingen synlig text | nej |
+| `unknown` | synlig text finns men kvoten kan inte reduceras | nej — men inte heller godkänd |
+| `exempt:disabled` | positivt verifierat inaktiv | nej |
+
+`data-a11y-name` är ett **tillgängligt namn, inte synlig text**. En ikonkontroll
+med ett namn men utan målad text är `notApplicable:noVisibleText`.
+
+**Avgränsning som inte får läsas som ett godkännande:** en kontroll som är
+`notApplicable` för R-01 är inte därmed prövad. Ikonernas och de grafiska
+komponenternas egen kontrast mot sitt underlag — WCAG 1.4.11, icke-textuell
+kontrast — mäts inte av R-01 och är fortfarande **oprövad**. Reglaget
+`#socintegritet` är ett konkret exempel: det målar ingen egen text och faller
+därför utanför R-01, men frågan om reglagets synlighet är inte besvarad.
+
+Tröskeln följer WCAG: 4,5 för normal text, 3,0 för stor text, där stor text är
+minst 24 px eller minst 18,66 px vid vikt 700 eller mer. Tröskeln avgörs per
+text-run, av den typografi som faktiskt målar fragmentet.
+
 ### Grundningsregel
 
 **Produktlogik för en funktion som redan finns i koden skrivs inte — den läses.** En rad får statusen `implementerad` bara om de datamodeller och juridiska dokument den vilar på är lästa, och kolumnen `Skärmbevis` säger vilka. Etapp 1 bröt mot detta: fyra av fyra påståenden om befintliga modeller var fel, och ett rörde barns personuppgifter i en DPIA-granskad funktion (`produktregler.md` § 7.7).
@@ -72,10 +190,10 @@ Valideras av **T-14**. En rad som står `implementerad` eller `verifierad` måst
 
 | Krav-ID | Normativ regel | Berörd vy | Skärmbevis | Automatiskt test | Manuellt test | Ägare | Status |
 |---|---|---|---|---|---|---|---|
-| T-01 | Hitbox ≥ 48 × 48 dp, deklarerad i koden | alla | <!--n:frames-->279<!--/n--> ramar | **T-08** (källa) ✅ + browserprob ✅ 0 under 48 | Accessibility Scanner | design | implementerad |
+| T-01 | Hitbox ≥ 48 × 48 dp, deklarerad i koden | alla | <!--n:frames-->280<!--/n--> ramar | **T-08** (källa) ✅ + browserprob ✅ 0 under 48 | Accessibility Scanner | design | implementerad |
 | T-02 | Kontrast mäts mot **deklarerade par** i tokens **och** mot varje par som bara finns i renderad markup | alla | samtliga tio skärmfiler | **T-02** ✅ + **renderad mätning** ✅ 3 017 par, 0 under golvet | — | design | **verifierad** — mätt 2026-07-29, lägsta icke-avstängda kvot 4,73 |
 | T-03 | Fokusram runt hitboxen, aldrig runt glyfen | kryssruta · radio · reglage | komponentark 15 | — ❌ | manuell tabbning | design | implementerad |
-| T-04 | Varje interaktiv kontroll har roll, namn och tillstånd | alla | <!--n:controls-->1372<!--/n--> märkta kontroller, alla med roll | T-08 ✅ + browserprob ✅ | **TalkBack + VoiceOver** | dev | implementerad |
+| T-04 | Varje interaktiv kontroll har roll, namn och tillstånd | alla | <!--n:controls-->1404<!--/n--> märkta kontroller, alla med roll | T-08 ✅ + browserprob ✅ | **TalkBack + VoiceOver** | dev | implementerad |
 | T-04b | **Ingen interaktiv `div`/`span` utan roll.** Maskinell genomgång av alla fjorton delfiler: kontrollhöjd + handlingsetikett utan `data-a11y-role` ska ge 0 | alla | samtliga skärmfiler | **browserprob** (testmatris § 4) | — | design | **verifierad** — 2026-07-30 — 22 hittade i del 1 och del 2, alla märkta; 0 kvar av 1 372 roller |
 | T-05 | Fokusordning följer läsordning | alla | — | — ❌ | manuell tabbning | dev | beslutad |
 | AU-14 | OTP läses som **ett** fält | auth | `#mfa` (inskrivning) · `#authmfa` (utmaning) | — ❌ | TalkBack rad 2 | dev | beslutad |
@@ -98,7 +216,7 @@ Valideras av **T-14**. En rad som står `implementerad` eller `verifierad` måst
 
 | Krav-ID | Normativ regel | Berörd vy | Skärmbevis | Automatiskt test | Manuellt test | Ägare | Status |
 |---|---|---|---|---|---|---|---|
-| S-01 | Tillstånd per vy enligt `testmatris.md` § 1 — inte sex överallt | alla | <!--n:frames-->279<!--/n--> ramar | — ❌ inget test | — | design | implementerad |
+| S-01 | Tillstånd per vy enligt `testmatris.md` § 1 — inte sex överallt | alla | <!--n:frames-->280<!--/n--> ramar | — ❌ inget test | — | design | implementerad |
 | S-02 | Mörkt läge ritat för kärnvyer, auth, social, juridik, admin | — | 5 vyfamiljer | — ❌ | enhet i mörkt läge | design | implementerad |
 | S-03 | Mörkt läge för formulär och ark | formulär · ark | `#formularmorkt` `#arkmorkt` | — ❌ | — | design | implementerad |
 | S-04 | Laddning: tallrikslinje + text. Ingen spinner, ingen shimmer | alla | `#stateladdar` `#stateladdar412` `#veckogenererar` | — ❌ | — | design | implementerad |
@@ -625,9 +743,9 @@ Kedjan körd över tretton dokument (tio skärmfiler, komponentarket, manualen, 
 | FB-05 | Skärmvägen visas med faktiska skärmnamn, utfällbar till alla tjugo | feedback | `#fbformular` | — | — | dev | beslutad |
 | FB-06 | Tom beskrivning ger fel vid fältet, inte i snackbar | feedback | `#fbformular` | — | — | dev | beslutad |
 | FB-07 | Kvittot skiljer skickat med bild från skickat utan bild | feedback | `#fbformular` | — | — | dev | **beslutad · tyst förlust** |
-| FB-08 | Kopieringsknappen innehåller inte e-post, redovisar sitt innehåll och heter *Kopiera felsökningstext* | admin | `#fbinkorg` | — | — | design | implementerad |
-| FB-09 | **Varje kopiering loggas i `ops_log`** | admin | `#fbinkorg` · `#admdrift` | — | Verifieringsprotokoll § 6 | dev | **beslutad · blockerande** |
-| FB-10 | Filter är chips, status är rullgardin per kort | admin | `#fbinkorg` | — | — | design | implementerad |
+| FB-08 | Kopieringsknappen innehåller inte e-post, redovisar sitt innehåll och heter *Kopiera felsökningstext* | admin | `#fbinkorgvy` | — | — | design | implementerad |
+| FB-09 | **Varje kopiering loggas i `ops_log`** | admin | `#fbinkorgvy` · `#admdrift` | — | Verifieringsprotokoll § 6 | dev | **beslutad · blockerande** |
+| FB-10 | Filter är chips, status är rullgardin per kort | admin | `#fbinkorgvy` | — | — | design | implementerad |
 | FB-11 | Anmälans kvitto säger vem, när och att innehållet syns kvar | anmälan | `#fbanmal` | — | — | design | implementerad |
 | FB-12 | Blockera samtidigt erbjuds som eget val i anmälan | anmälan | `#fbanmal` | — | — | dev | beslutad |
 | FB-13 | Blockeringssektionen är utfälld och säger vad blockeringen **inte** gör; raderat konto visas som text | integritet | `#fbblockerade` | — | — | design | implementerad |
@@ -640,7 +758,7 @@ Kedjan körd över tretton dokument (tio skärmfiler, komponentarket, manualen, 
 | SO-02 | Receptets titel skrivs som den heter — `toLowerCase()` utgår | flödet | `#socflode` | — | — | dev | beslutad |
 | SO-03 | Ett kort bär en färgad kant; den dekorativa rostkanten utgår | flödet | `#socflode` | — | — | design | implementerad |
 | SO-04 | **Knuffar utgår som händelsetyp**, inte bara som funktion | flödet | `#socflode` · `#socintegritet` | — | — | dev | beslutad |
-| SO-05 | Tre tomma lägen: inga vänner · tyst · filtret tomt | flödet | `#soctomt` | — | — | design | implementerad |
+| SO-05 | Tre tomma lägen: inga vänner · tyst · filtret tomt | flödet | `#soctomtingavanner` · `#soctomttyst` | — | — | design | implementerad |
 | SO-06 | Oändlig skroll ligger i en skrollyssnare, inte i `itemBuilder` | flödet | `#socflode` | — | — | dev | beslutad |
 | SO-07 | Kortet säger före trycket att receptet inte är delat | flödet | `#socbegar` | — | — | design | implementerad |
 | SO-08 | Efter skickad förfrågan visas *Efterfrågat* med tid; ingen upprepning | flödet | `#socbegar` | — | — | dev | beslutad |
@@ -747,6 +865,6 @@ Kedjan körd över tretton dokument (tio skärmfiler, komponentarket, manualen, 
 | BV-27 | Ingrediensbytet har alltid synlig ikon och frågar **i dag eller receptet**, med *bara i dag* som förval | matlagning | `#lgbgester` | — | — | dev | **beslutad · tyst ändring** |
 | BV-28 | Timrarna i egen list med stegnummer; **utgången timer står kvar tills den kvitteras**; tomt recept broadcastar inte *lagar just nu* | matlagning | `#lgbtimer` · `#lgbutan` | — | — | dev | beslutad |
 | Y-07 | **Reträtten vänster, följden höger** i varje bekräftelse — betydelse, inte ordet *Avbryt* | alla | 18 handlingsrader | — | — | design | verifierad |
-| Y-08 | Tomlägesglyfen: **2× rubrikgraden** i vyn, fast **64** i helskärmsavbrott, streck 1,4 | alla | `#vmbtom` `#ikbtom` `#soctomt` `#globunderhall` `#authepost` | — | — | design | verifierad |
+| Y-08 | Tomlägesglyfen: **2× rubrikgraden** i vyn, fast **64** i helskärmsavbrott, streck 1,4 | alla | `#vmbtom` `#ikbtom` `#soctomtingavanner` `#globunderhall` `#authepost` | — | — | design | verifierad |
 | Y-09 | Offline är **en** form: banner på `surface.raised` med `wifi-off` i `#8A5212` — aldrig ink, aldrig illustration | alla | 12 banderoller | — | — | design | verifierad |
 | Y-10 | **Hushåll, aldrig familj** i systemtext; *rätt* om maten, *måltid* om platsen i veckan | alla | alla ramar — ingen enskild ram bevisar en term (rättat 2026-07-31: pekade på ram-id morkform, som aldrig funnits) | — | Innehållsgranskning | design | verifierad |

@@ -284,6 +284,28 @@
       "changePolicy": "frozen",
       "owner": "DEV",
       "note": "genererad körtidsfil för `.dc.html`-dokumenten — `// GENERATED from dc-runtime/src/*.ts`. Den bär ingen egen version. **Två byggen finns i leveransen** och de är avsiktligt olika, se `runtimeInstances`. Ingen av dem får skrivas över eller slås ihop utan att relationen omprövas (F1-H07)."
+    },
+    {
+      "domainId": "selection-contexts",
+      "domain": "Urvalsdimensioner och runtimeadapter",
+      "sourceId": "selection-contexts",
+      "file": "selection-contexts.json",
+      "version": "1.1",
+      "authorityState": "active",
+      "changePolicy": "maintained",
+      "owner": "DEV",
+      "note": "F2-A04: vokabulär, giltiga urvalskontexter och runtimeadapter. plattformsmatris.md är dokumentation och genereras härifrån — en Markdown-tabell kan inte vara maskinkälla. En dimension får aktiveras först när den har både dokumentationskälla och en deterministisk runtimeadapter med verkliga användningsställen i appkoden."
+    },
+    {
+      "domainId": "layout-contract",
+      "domain": "Layoutlagen, viewportprofiler och prober",
+      "sourceId": "layout-contract",
+      "file": "layout-contract.json",
+      "version": "1.3",
+      "authorityState": "planned",
+      "changePolicy": "maintained",
+      "owner": "DS",
+      "note": "F2-L01: tre lagen (compact/medium/expanded), fyra profiler och sex prober. DRAFT - contractState draft och activationBlockers i filen. Appens brytpunktskod far inte andras forran 72-anropsinventeringen och R-01…R-04 ar granskade. Kolumntrappan med steg vid 1920 ar en oloest parallell modell, se parallelModels."
     }
   ],
   "generatedArtifacts": [
@@ -310,6 +332,10 @@
     {
       "file": "fas0/kallauktoritetsregister.md",
       "generator": "tools/gen-authority.mjs"
+    },
+    {
+      "file": "fas0/artefaktforslag.md",
+      "generator": "tools/gen-artifact-proposal.mjs"
     }
   ],
   "superseded": [

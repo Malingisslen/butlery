@@ -1,0 +1,2611 @@
+{
+ "$regel": "Förslag, inte beslut. Ingen post här ändrar artifacts.json. Filnamn och rubrik används inte som evidens.",
+ "$luminansregel": "luminansklass är en OBSERVATION av den största ogenomskinliga ytans luminans (mörk om L < 0.18). Den är inte ett tema. Mörka dialoger och lägestemat laga mäter också mörkt.",
+ "underlag": {
+  "renderkälla": "C:/Users/malla/butlery-render/repro-a/render-raw.json",
+  "artefaktregister": "artifacts.json v2.3",
+  "layoutkontrakt": "layout-contract.json v1.3"
+ },
+ "universum": {
+  "viewportartefakter_st": 309,
+  "luminansmörka_kandidater_st": 39,
+  "luminansljusa_st": 270
+ },
+ "entydiga_kandidatpar_st": 6,
+ "luminansmörka_utan_ljus_motpart_st": 31,
+ "luminansmörka_med_flera_motparter_st": 2,
+ "ljusa_utan_luminansmörk_kandidat_st": 264,
+ "kandidatparningstäckning": {
+  "$benämning": "kandidatparningstäckning — INTE mörklägestäckning och INTE R-04-täckning. Ett kandidatpar är ett förslag byggt på struktur och luminans, inte ett verifierat temapar.",
+  "enhet": "andel registrerade produktartefakter som ingår i ett entydigt kandidatpar",
+  "entydiga_par_st": 6,
+  "parade_artefakter_st": 12,
+  "nämnare_produktartefakter_st": 309,
+  "parade_artefakter_andel_procent": 3.9
+ },
+ "R04_status": {
+  "status": "blocked",
+  "failClosed": true,
+  "skäl": "Ingen artefakt bär explicit theme-metadata. Den normativa temadimensionen kan därför inte verifieras. Kandidatparningen är ett UNDERLAG, aldrig ett godkänt R-04-resultat.",
+  "blockerare": [
+   "explicit selectors.theme saknas på samtliga 309 produktartefakter",
+   "temadimensionen är inte öppnad som aktiv selektor",
+   "264 ljusa produktartefakter saknar mörk kandidat"
+  ],
+  "upplåses_av": "uttryckliga temabeslut på BÅDA sidor, därefter verifiering av att exakt en aktiv variant matchar varje obligatorisk temakontext.",
+  "får_inte": "redovisas som passerad kontroll, och luckan får inte fyllas med antagna registerposter. De mörka ritningar som finns är inte bevis för de ljusa som saknar motpart."
+ },
+ "entydiga_kandidatpar": [
+  {
+   "mörk": "inloggningmorkt",
+   "artifactId": "del-2-familj-och-socialt:inloggningmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 0,
+   "noder": 23,
+   "kandidater": [
+    {
+     "ljus": "inloggning",
+     "artifactId": "del-2-familj-och-socialt:inloggning",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 23
+    }
+   ],
+   "evidens": "roll- och skelettfingeravtryck identiska; motsatt uppmätt luminans (0.0159 mot 0.9023); samma viewportklass, layoutläge och build target"
+  },
+  {
+   "mörk": "adminmorkt",
+   "artifactId": "del-2-familj-och-socialt:adminmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 0,
+   "noder": 50,
+   "kandidater": [
+    {
+     "ljus": "admin",
+     "artifactId": "del-3-sok-och-skalbevis:admin",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 50
+    }
+   ],
+   "evidens": "roll- och skelettfingeravtryck identiska; motsatt uppmätt luminans (0.0159 mot 0.9023); samma viewportklass, layoutläge och build target"
+  },
+  {
+   "mörk": "hemmorkt",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:hemmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 13,
+   "noder": 101,
+   "kandidater": [
+    {
+     "ljus": "hem",
+     "artifactId": "del-4-morkt-lage-och-etapp-0-1:hem",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 101
+    }
+   ],
+   "evidens": "rollfingeravtryck identiskt (13 kontroller), skelettet skiljer; motsatt uppmätt luminans (0.0159 mot 0.9023); samma viewportklass, layoutläge och build target"
+  },
+  {
+   "mörk": "onbaldermorkt",
+   "artifactId": "etapp-3-onboarding:onbaldermorkt",
+   "sourceFile": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 2,
+   "noder": 32,
+   "kandidater": [
+    {
+     "ljus": "onbalder",
+     "artifactId": "etapp-3-onboarding:onbalder",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 32
+    }
+   ],
+   "evidens": "rollfingeravtryck identiskt (2 kontroller), skelettet skiljer; motsatt uppmätt luminans (0.0159 mot 0.9023); samma viewportklass, layoutläge och build target"
+  },
+  {
+   "mörk": "onballergimorkt",
+   "artifactId": "etapp-3-onboarding:onballergimorkt",
+   "sourceFile": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 12,
+   "noder": 50,
+   "kandidater": [
+    {
+     "ljus": "onballergi",
+     "artifactId": "etapp-3-onboarding:onballergi",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 51
+    }
+   ],
+   "evidens": "rollfingeravtryck identiskt (12 kontroller), skelettet skiljer; motsatt uppmätt luminans (0.0159 mot 0.9023); samma viewportklass, layoutläge och build target"
+  },
+  {
+   "mörk": "onbfelmorkt",
+   "artifactId": "etapp-3-onboarding:onbfelmorkt",
+   "sourceFile": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 2,
+   "noder": 29,
+   "kandidater": [
+    {
+     "ljus": "onbfel",
+     "artifactId": "etapp-3-onboarding:onbfel",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 25
+    }
+   ],
+   "evidens": "rollfingeravtryck identiskt (2 kontroller), skelettet skiljer; motsatt uppmätt luminans (0.0159 mot 0.9023); samma viewportklass, layoutläge och build target"
+  }
+ ],
+ "mörka_utan_ljus_motpart": [
+  {
+   "mörk": "start",
+   "artifactId": "del-1-recept-och-veckomeny:start",
+   "sourceFile": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 23,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "laga",
+   "artifactId": "del-1-recept-och-veckomeny:laga",
+   "sourceFile": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 2,
+   "noder": 52,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagastaende",
+   "artifactId": "del-1-recept-och-veckomeny:lagastaende",
+   "sourceFile": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 3,
+   "noder": 63,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagamorkt",
+   "artifactId": "del-1-recept-och-veckomeny:lagamorkt",
+   "sourceFile": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 3,
+   "noder": 63,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagastaende320",
+   "artifactId": "del-2-familj-och-socialt:lagastaende320",
+   "sourceFile": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 4,
+   "noder": 44,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "skafferivara",
+   "artifactId": "del-3-sok-och-skalbevis:skafferivara",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 30,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "dialogradera",
+   "artifactId": "del-3-sok-och-skalbevis:dialogradera",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 1,
+   "noder": 10,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "dialogosparat",
+   "artifactId": "del-3-sok-och-skalbevis:dialogosparat",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 11,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "dialogratelimit",
+   "artifactId": "del-3-sok-och-skalbevis:dialogratelimit",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 11,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "delaark",
+   "artifactId": "del-3-sok-och-skalbevis:delaark",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 32,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "dialogvara",
+   "artifactId": "del-3-sok-och-skalbevis:dialogvara",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 30,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "dialogsparameny",
+   "artifactId": "del-3-sok-och-skalbevis:dialogsparameny",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 0,
+   "noder": 15,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagaliggande",
+   "artifactId": "del-3-sok-och-skalbevis:lagaliggande",
+   "sourceFile": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 5,
+   "noder": 36,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "formularmorkt",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:formularmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 5,
+   "noder": 35,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "arkmorkt",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:arkmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 5,
+   "noder": 32,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "utloggningko",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:utloggningko",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 3,
+   "noder": 27,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "utloggningtom",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:utloggningtom",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 2,
+   "noder": 10,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "safeareaandroid",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:safeareaandroid",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 4,
+   "noder": 37,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagasubst",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:lagasubst",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 9,
+   "noder": 62,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagatimers",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:lagatimers",
+   "sourceFile": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 7,
+   "noder": 53,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lgbrotation",
+   "artifactId": "etapp-11-breda-vyer:lgbrotation",
+   "sourceFile": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "expanded",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 7,
+   "noder": 88,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lgbgester",
+   "artifactId": "etapp-11-breda-vyer:lgbgester",
+   "sourceFile": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "expanded",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 8,
+   "noder": 77,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lgbtimer",
+   "artifactId": "etapp-11-breda-vyer:lgbtimer",
+   "sourceFile": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "expanded",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 7,
+   "noder": 74,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lgbutan",
+   "artifactId": "etapp-11-breda-vyer:lgbutan",
+   "sourceFile": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "expanded",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 2,
+   "noder": 34,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "delatlamna",
+   "artifactId": "etapp-2:delatlamna",
+   "sourceFile": "Butlery Skarmar v12 etapp 2.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 2,
+   "noder": 31,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "delatlamnaagare",
+   "artifactId": "etapp-2:delatlamnaagare",
+   "sourceFile": "Butlery Skarmar v12 etapp 2.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 2,
+   "noder": 20,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagatimernotis",
+   "artifactId": "etapp-3-onboarding:lagatimernotis",
+   "sourceFile": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 2,
+   "noder": 34,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "lagatimerutgangen",
+   "artifactId": "etapp-3-onboarding:lagatimerutgangen",
+   "sourceFile": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 1,
+   "noder": 30,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "globunderhall",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:globunderhall",
+   "sourceFile": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 3,
+   "noder": 46,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "globceremoni",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:globceremoni",
+   "sourceFile": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 1,
+   "noder": 29,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  },
+  {
+   "mörk": "komprost",
+   "artifactId": "etapp-9-socialt-och-komponenter:komprost",
+   "sourceFile": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0339,
+   "rollantal": 1,
+   "noder": 43,
+   "kandidater": [],
+   "evidens": "ingen ljus artefakt delar rollfingeravtryck inom samma viewportklass och build target"
+  }
+ ],
+ "mörka_med_flera_motparter": [
+  {
+   "mörk": "chattmorkt",
+   "artifactId": "del-2-familj-och-socialt:chattmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 0,
+   "noder": 47,
+   "kandidater": [
+    {
+     "ljus": "chatt",
+     "artifactId": "del-2-familj-och-socialt:chatt",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 47
+    },
+    {
+     "ljus": "chatt320",
+     "artifactId": "del-2-familj-och-socialt:chatt320",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 47
+    }
+   ],
+   "evidens": "roll- och skelettfingeravtryck identiska; motsatt uppmätt luminans (0.0159 mot 0.9023/0.9023); samma viewportklass, layoutläge och build target"
+  },
+  {
+   "mörk": "juridikmorkt",
+   "artifactId": "del-2-familj-och-socialt:juridikmorkt",
+   "sourceFile": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "screenId": null,
+   "stateId": null,
+   "layoutläge": "compact",
+   "buildTarget": null,
+   "övrigaSelektorer": {},
+   "classificationState": "draft",
+   "luminans": 0.0159,
+   "rollantal": 0,
+   "noder": 18,
+   "kandidater": [
+    {
+     "ljus": "juridik",
+     "artifactId": "del-3-sok-och-skalbevis:juridik",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 18
+    },
+    {
+     "ljus": "juridik412",
+     "artifactId": "del-3-sok-och-skalbevis:juridik412",
+     "luminans": 0.9023,
+     "screenId": null,
+     "stateId": null,
+     "noder": 18
+    }
+   ],
+   "evidens": "roll- och skelettfingeravtryck identiska; motsatt uppmätt luminans (0.0159 mot 0.9023/0.9023); samma viewportklass, layoutläge och build target"
+  }
+ ],
+ "ljusa_utan_mörk_kandidat": [
+  {
+   "ljus": "tomtrecept",
+   "artifactId": "del-1-recept-och-veckomeny:tomtrecept",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "offline",
+   "artifactId": "del-1-recept-och-veckomeny:offline",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "hemrecept",
+   "artifactId": "del-1-recept-och-veckomeny:hemrecept",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "sortera",
+   "artifactId": "del-1-recept-och-veckomeny:sortera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "plussheet",
+   "artifactId": "del-1-recept-och-veckomeny:plussheet",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "snabbspara",
+   "artifactId": "del-1-recept-och-veckomeny:snabbspara",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "smartimport",
+   "artifactId": "del-1-recept-och-veckomeny:smartimport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "skafferi",
+   "artifactId": "del-1-recept-och-veckomeny:skafferi",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "familj",
+   "artifactId": "del-1-recept-och-veckomeny:familj",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "installningar",
+   "artifactId": "del-1-recept-och-veckomeny:installningar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "notiser",
+   "artifactId": "del-1-recept-och-veckomeny:notiser",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vemat",
+   "artifactId": "del-2-familj-och-socialt:vemat",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "familjebetyg",
+   "artifactId": "del-2-familj-och-socialt:familjebetyg",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "placera",
+   "artifactId": "del-2-familj-och-socialt:placera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kalender",
+   "artifactId": "del-2-familj-och-socialt:kalender",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopmerge",
+   "artifactId": "del-2-familj-och-socialt:inkopmerge",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopmergeoppen",
+   "artifactId": "del-2-familj-och-socialt:inkopmergeoppen",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onboarding",
+   "artifactId": "del-2-familj-och-socialt:onboarding",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "mer",
+   "artifactId": "del-2-familj-och-socialt:mer",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vanner",
+   "artifactId": "del-2-familj-och-socialt:vanner",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "meddelanden",
+   "artifactId": "del-2-familj-och-socialt:meddelanden",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "menysmak",
+   "artifactId": "del-2-familj-och-socialt:menysmak",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "statistik",
+   "artifactId": "del-2-familj-och-socialt:statistik",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "skrivsjalv",
+   "artifactId": "del-2-familj-och-socialt:skrivsjalv",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "fotoimport",
+   "artifactId": "del-2-familj-och-socialt:fotoimport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "arkivimport",
+   "artifactId": "del-2-familj-och-socialt:arkivimport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "taggar",
+   "artifactId": "del-2-familj-och-socialt:taggar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "allergener",
+   "artifactId": "del-2-familj-och-socialt:allergener",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatlista",
+   "artifactId": "del-2-familj-och-socialt:delatlista",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatmedmig",
+   "artifactId": "del-2-familj-och-socialt:delatmedmig",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "chatt",
+   "artifactId": "del-2-familj-och-socialt:chatt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "chatt320",
+   "artifactId": "del-2-familj-och-socialt:chatt320",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontosakerhet",
+   "artifactId": "del-2-familj-och-socialt:kontosakerhet",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "grupp",
+   "artifactId": "del-2-familj-och-socialt:grupp",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "dataexport",
+   "artifactId": "del-2-familj-och-socialt:dataexport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "ingredienssok",
+   "artifactId": "del-3-sok-och-skalbevis:ingredienssok",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "notisinstallningar",
+   "artifactId": "del-3-sok-och-skalbevis:notisinstallningar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "faq",
+   "artifactId": "del-3-sok-och-skalbevis:faq",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "profil",
+   "artifactId": "del-3-sok-och-skalbevis:profil",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "familjeform",
+   "artifactId": "del-3-sok-och-skalbevis:familjeform",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "betygsoversikt",
+   "artifactId": "del-3-sok-och-skalbevis:betygsoversikt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "forfragningar",
+   "artifactId": "del-3-sok-och-skalbevis:forfragningar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vanprofil",
+   "artifactId": "del-3-sok-och-skalbevis:vanprofil",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "publikprofil",
+   "artifactId": "del-3-sok-och-skalbevis:publikprofil",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "laggtillmedlemmar",
+   "artifactId": "del-3-sok-och-skalbevis:laggtillmedlemmar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "nygruppchatt",
+   "artifactId": "del-3-sok-och-skalbevis:nygruppchatt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "menyforhands",
+   "artifactId": "del-3-sok-och-skalbevis:menyforhands",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "tadelning",
+   "artifactId": "del-3-sok-och-skalbevis:tadelning",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "nydelatlista",
+   "artifactId": "del-3-sok-och-skalbevis:nydelatlista",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatlistor",
+   "artifactId": "del-3-sok-och-skalbevis:delatlistor",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "redigera",
+   "artifactId": "del-3-sok-och-skalbevis:redigera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "taggdetalj",
+   "artifactId": "del-3-sok-och-skalbevis:taggdetalj",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "aldersgrans",
+   "artifactId": "del-3-sok-och-skalbevis:aldersgrans",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onboardingimport",
+   "artifactId": "del-3-sok-och-skalbevis:onboardingimport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "epostverif",
+   "artifactId": "del-3-sok-och-skalbevis:epostverif",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "mfa",
+   "artifactId": "del-3-sok-och-skalbevis:mfa",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "samtycke",
+   "artifactId": "del-3-sok-och-skalbevis:samtycke",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rapporter",
+   "artifactId": "del-3-sok-och-skalbevis:rapporter",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rapporter412",
+   "artifactId": "del-3-sok-och-skalbevis:rapporter412",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "juridik",
+   "artifactId": "del-3-sok-och-skalbevis:juridik",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "juridik412",
+   "artifactId": "del-3-sok-och-skalbevis:juridik412",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "konflikt",
+   "artifactId": "del-3-sok-och-skalbevis:konflikt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "statetom",
+   "artifactId": "del-3-sok-och-skalbevis:statetom",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "statetom412",
+   "artifactId": "del-3-sok-och-skalbevis:statetom412",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "stateladdar",
+   "artifactId": "del-3-sok-och-skalbevis:stateladdar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "stateladdar412",
+   "artifactId": "del-3-sok-och-skalbevis:stateladdar412",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "statefel",
+   "artifactId": "del-3-sok-och-skalbevis:statefel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "statefel412",
+   "artifactId": "del-3-sok-och-skalbevis:statefel412",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "snackbars",
+   "artifactId": "del-3-sok-och-skalbevis:snackbars",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontextmeny",
+   "artifactId": "del-3-sok-och-skalbevis:kontextmeny",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "hem360",
+   "artifactId": "del-3-sok-och-skalbevis:hem360",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "storsttext",
+   "artifactId": "del-3-sok-och-skalbevis:storsttext",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "tangentbord",
+   "artifactId": "del-3-sok-och-skalbevis:tangentbord",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "langavarden",
+   "artifactId": "del-3-sok-och-skalbevis:langavarden",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "okandingrediens",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:okandingrediens",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoallergi",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:veckoallergi",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "synkko",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:synkko",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "chattredigerat",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:chattredigerat",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "chattmeny",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:chattmeny",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "safeareaios",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:safeareaios",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "hemtom",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:hemtom",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "hemladdar",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:hemladdar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "hemoffline",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:hemoffline",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "hemfel",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:hemfel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "receptkommentarer",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:receptkommentarer",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "receptcooksnap",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:receptcooksnap",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "receptdelningsstatus",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:receptdelningsstatus",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "receptbildfel",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:receptbildfel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "betygvemat",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:betygvemat",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "betygperperson",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:betygperperson",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "betygsammanslaget",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:betygsammanslaget",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "betygvemarket",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:betygvemarket",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "familjmedlemsamtycke",
+   "artifactId": "del-4-morkt-lage-och-etapp-0-1:familjmedlemsamtycke",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "bredskal",
+   "artifactId": "etapp-10-bred-layout:bredskal",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "bredlandskap",
+   "artifactId": "etapp-10-bred-layout:bredlandskap",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "bredrecept",
+   "artifactId": "etapp-10-bred-layout:bredrecept",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "bredmeny",
+   "artifactId": "etapp-10-bred-layout:bredmeny",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "bredinkop",
+   "artifactId": "etapp-10-bred-layout:bredinkop",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "bredgrans",
+   "artifactId": "etapp-10-bred-layout:bredgrans",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbnormal",
+   "artifactId": "etapp-11-breda-vyer:vmbnormal",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbtom",
+   "artifactId": "etapp-11-breda-vyer:vmbtom",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbgenererar",
+   "artifactId": "etapp-11-breda-vyer:vmbgenererar",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbomrostning",
+   "artifactId": "etapp-11-breda-vyer:vmbomrostning",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbkonflikt",
+   "artifactId": "etapp-11-breda-vyer:vmbkonflikt",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbdelvis",
+   "artifactId": "etapp-11-breda-vyer:vmbdelvis",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmboffline",
+   "artifactId": "etapp-11-breda-vyer:vmboffline",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vmbflytta",
+   "artifactId": "etapp-11-breda-vyer:vmbflytta",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcbnormal",
+   "artifactId": "etapp-11-breda-vyer:rcbnormal",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcbportion",
+   "artifactId": "etapp-11-breda-vyer:rcbportion",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcbofullstandigt",
+   "artifactId": "etapp-11-breda-vyer:rcbofullstandigt",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcblaser",
+   "artifactId": "etapp-11-breda-vyer:rcblaser",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcbarvegods",
+   "artifactId": "etapp-11-breda-vyer:rcbarvegods",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcbkommentar",
+   "artifactId": "etapp-11-breda-vyer:rcbkommentar",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "rcboffline",
+   "artifactId": "etapp-11-breda-vyer:rcboffline",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "ikbnormal",
+   "artifactId": "etapp-11-breda-vyer:ikbnormal",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "ikbtom",
+   "artifactId": "etapp-11-breda-vyer:ikbtom",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "ikbdelad",
+   "artifactId": "etapp-11-breda-vyer:ikbdelad",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "ikboffline",
+   "artifactId": "etapp-11-breda-vyer:ikboffline",
+   "viewportClass": "wide",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopkategoriordning",
+   "artifactId": "etapp-2-inkop-och-skafferi:inkopkategoriordning",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopflerval",
+   "artifactId": "etapp-2-inkop-och-skafferi:inkopflerval",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopkategoribyte",
+   "artifactId": "etapp-2-inkop-och-skafferi:inkopkategoribyte",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopbockad",
+   "artifactId": "etapp-2-inkop-och-skafferi:inkopbockad",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkoputeslutna",
+   "artifactId": "etapp-2-inkop-och-skafferi:inkoputeslutna",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "inkopgenererad",
+   "artifactId": "etapp-2-inkop-och-skafferi:inkopgenererad",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "skafferivyn",
+   "artifactId": "etapp-2-inkop-och-skafferi:skafferivyn",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "skafferiflerval",
+   "artifactId": "etapp-2-inkop-och-skafferi:skafferiflerval",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "skafferilagg",
+   "artifactId": "etapp-2-inkop-och-skafferi:skafferilagg",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "skafferibas",
+   "artifactId": "etapp-2-inkop-och-skafferi:skafferibas",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatinkorg",
+   "artifactId": "etapp-2:delatinkorg",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatvidare",
+   "artifactId": "etapp-2:delatvidare",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatlistaaktiv",
+   "artifactId": "etapp-2:delatlistaaktiv",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatmindel",
+   "artifactId": "etapp-2:delatmindel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatnarvaro",
+   "artifactId": "etapp-2:delatnarvaro",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatclaimkonflikt",
+   "artifactId": "etapp-2:delatclaimkonflikt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "delatlasare",
+   "artifactId": "etapp-2:delatlasare",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoprompt",
+   "artifactId": "etapp-2:veckoprompt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckogenererar",
+   "artifactId": "etapp-2:veckogenererar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckochips",
+   "artifactId": "etapp-2:veckochips",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoresultat",
+   "artifactId": "etapp-2:veckoresultat",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckodolda",
+   "artifactId": "etapp-2:veckodolda",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckofel",
+   "artifactId": "etapp-2:veckofel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckobyt",
+   "artifactId": "etapp-2:veckobyt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoplacering",
+   "artifactId": "etapp-2:veckoplacering",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoplaceringvald",
+   "artifactId": "etapp-2:veckoplaceringvald",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoplaceringavbryt",
+   "artifactId": "etapp-2:veckoplaceringavbryt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoautoplacerad",
+   "artifactId": "etapp-2:veckoautoplacerad",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckokalender",
+   "artifactId": "etapp-2:veckokalender",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckonarvaro",
+   "artifactId": "etapp-2:veckonarvaro",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckonarvarooversikt",
+   "artifactId": "etapp-2:veckonarvarooversikt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckooverflow",
+   "artifactId": "etapp-2:veckooverflow",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoflytta",
+   "artifactId": "etapp-2:veckoflytta",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoskrivover",
+   "artifactId": "etapp-2:veckoskrivover",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckoinkop",
+   "artifactId": "etapp-2:veckoinkop",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckorostning",
+   "artifactId": "etapp-2:veckorostning",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckorostlagg",
+   "artifactId": "etapp-2:veckorostlagg",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckorostavgor",
+   "artifactId": "etapp-2:veckorostavgor",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckorostutgang",
+   "artifactId": "etapp-2:veckorostutgang",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "veckorosthistorik",
+   "artifactId": "etapp-2:veckorosthistorik",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "authlogga",
+   "artifactId": "etapp-3-onboarding:authlogga",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "authskapa",
+   "artifactId": "etapp-3-onboarding:authskapa",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "authglomt",
+   "artifactId": "etapp-3-onboarding:authglomt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "authepost",
+   "artifactId": "etapp-3-onboarding:authepost",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "authepostklar",
+   "artifactId": "etapp-3-onboarding:authepostklar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "authmfa",
+   "artifactId": "etapp-3-onboarding:authmfa",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbalderblock",
+   "artifactId": "etapp-3-onboarding:onbalderblock",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbaldrefel",
+   "artifactId": "etapp-3-onboarding:onbaldrefel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbvalkommen",
+   "artifactId": "etapp-3-onboarding:onbvalkommen",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbimport",
+   "artifactId": "etapp-3-onboarding:onbimport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbimportklar",
+   "artifactId": "etapp-3-onboarding:onbimportklar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbhoppa",
+   "artifactId": "etapp-3-onboarding:onbhoppa",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbklar",
+   "artifactId": "etapp-3-onboarding:onbklar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbateruppta",
+   "artifactId": "etapp-3-onboarding:onbateruppta",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "onbsenare",
+   "artifactId": "etapp-3-onboarding:onbsenare",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "behkamera",
+   "artifactId": "etapp-3-onboarding:behkamera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "behfoton",
+   "artifactId": "etapp-3-onboarding:behfoton",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "behnotiser",
+   "artifactId": "etapp-3-onboarding:behnotiser",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "behlarm",
+   "artifactId": "etapp-3-onboarding:behlarm",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "behlarmnekat",
+   "artifactId": "etapp-3-onboarding:behlarmnekat",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "lagatimerlofte",
+   "artifactId": "etapp-3-onboarding:lagatimerlofte",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "imp1kalla",
+   "artifactId": "etapp-4-import:imp1kalla",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "imp2hamtar",
+   "artifactId": "etapp-4-import:imp2hamtar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "imp3granska",
+   "artifactId": "etapp-4-import:imp3granska",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "imp4sparad",
+   "artifactId": "etapp-4-import:imp4sparad",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impassist1",
+   "artifactId": "etapp-4-import:impassist1",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impassist2",
+   "artifactId": "etapp-4-import:impassist2",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impassist3",
+   "artifactId": "etapp-4-import:impassist3",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impassistavbryt",
+   "artifactId": "etapp-4-import:impassistavbryt",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impurl",
+   "artifactId": "etapp-4-import:impurl",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impsocial",
+   "artifactId": "etapp-4-import:impsocial",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impfoto",
+   "artifactId": "etapp-4-import:impfoto",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impfil",
+   "artifactId": "etapp-4-import:impfil",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impgrans",
+   "artifactId": "etapp-4-import:impgrans",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impgransai",
+   "artifactId": "etapp-4-import:impgransai",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impoffline",
+   "artifactId": "etapp-4-import:impoffline",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impdubblett",
+   "artifactId": "etapp-4-import:impdubblett",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impinget",
+   "artifactId": "etapp-4-import:impinget",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impcache",
+   "artifactId": "etapp-4-import:impcache",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impdelning",
+   "artifactId": "etapp-4-import:impdelning",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "impdelningsocial",
+   "artifactId": "etapp-4-import:impdelningsocial",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "imparkiv",
+   "artifactId": "etapp-4-import:imparkiv",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "editorutkast",
+   "artifactId": "etapp-4-import:editorutkast",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "editorutkastval",
+   "artifactId": "etapp-4-import:editorutkastval",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "taggregel",
+   "artifactId": "etapp-5-7:taggregel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "taggvillkor",
+   "artifactId": "etapp-5-7:taggvillkor",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "taggkalla",
+   "artifactId": "etapp-5-7:taggkalla",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "taggexklusiv",
+   "artifactId": "etapp-5-7:taggexklusiv",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontoradera",
+   "artifactId": "etapp-5-7:kontoradera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontoreauth",
+   "artifactId": "etapp-5-7:kontoreauth",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontovantan",
+   "artifactId": "etapp-5-7:kontovantan",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontodelvis",
+   "artifactId": "etapp-5-7:kontodelvis",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "adminskal",
+   "artifactId": "etapp-5-7:adminskal",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "adminej",
+   "artifactId": "etapp-5-7:adminej",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "modrapporter",
+   "artifactId": "etapp-5-7:modrapporter",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "modminderarig",
+   "artifactId": "etapp-5-7:modminderarig",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "moddolj",
+   "artifactId": "etapp-5-7:moddolj",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "modradera",
+   "artifactId": "etapp-5-7:modradera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "modtom",
+   "artifactId": "etapp-5-7:modtom",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "cooksnapsynlighet",
+   "artifactId": "etapp-5-7:cooksnapsynlighet",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "cooksnapgalleri",
+   "artifactId": "etapp-5-7:cooksnapgalleri",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "vanprofildelning",
+   "artifactId": "etapp-5-7:vanprofildelning",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontosamtycke",
+   "artifactId": "etapp-6-konto-och-integritet:kontosamtycke",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "samtyckeai",
+   "artifactId": "etapp-6-konto-och-integritet:samtyckeai",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "samtyckefornya",
+   "artifactId": "etapp-6-konto-och-integritet:samtyckefornya",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontodataexport",
+   "artifactId": "etapp-6-konto-och-integritet:kontodataexport",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "dataexportfel",
+   "artifactId": "etapp-6-konto-och-integritet:dataexportfel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontosakerhetsvy",
+   "artifactId": "etapp-6-konto-och-integritet:kontosakerhetsvy",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontonotiser",
+   "artifactId": "etapp-6-konto-och-integritet:kontonotiser",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "notisertyp",
+   "artifactId": "etapp-6-konto-och-integritet:notisertyp",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "mfalagg",
+   "artifactId": "etapp-6-konto-och-integritet:mfalagg",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "mfaaktiv",
+   "artifactId": "etapp-6-konto-och-integritet:mfaaktiv",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "notiscentral",
+   "artifactId": "etapp-6-konto-och-integritet:notiscentral",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "notisrensa",
+   "artifactId": "etapp-6-konto-och-integritet:notisrensa",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "minaanmalningar",
+   "artifactId": "etapp-6-konto-och-integritet:minaanmalningar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontojuridik",
+   "artifactId": "etapp-6-konto-och-integritet:kontojuridik",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kontostatistik",
+   "artifactId": "etapp-6-konto-och-integritet:kontostatistik",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "statistikfullstandighet",
+   "artifactId": "etapp-6-konto-och-integritet:statistikfullstandighet",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "globsession",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:globsession",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "globsessiontyst",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:globsessiontyst",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "globinstallera",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:globinstallera",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "flervalingang",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:flervalingang",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "flerbar",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:flerbar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "flertagg",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:flertagg",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "flermeny",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:flermeny",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "flertaggsam",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:flertaggsam",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "flergrupp",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:flergrupp",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "fbknapp",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:fbknapp",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "fbformular",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:fbformular",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "fbanmal",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:fbanmal",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "fbblockerade",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:fbblockerade",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "fbinkorgvy",
+   "artifactId": "etapp-9-globala-tillstand-och-flerval:fbinkorgvy",
+   "viewportClass": "expanded",
+   "layoutläge": "expanded",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socflode",
+   "artifactId": "etapp-9-socialt-och-komponenter:socflode",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "soctomtingavanner",
+   "artifactId": "etapp-9-socialt-och-komponenter:soctomtingavanner",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "soctomttyst",
+   "artifactId": "etapp-9-socialt-och-komponenter:soctomttyst",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socknuff",
+   "artifactId": "etapp-9-socialt-och-komponenter:socknuff",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socbegar",
+   "artifactId": "etapp-9-socialt-och-komponenter:socbegar",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socintegritet",
+   "artifactId": "etapp-9-socialt-och-komponenter:socintegritet",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socomrostning",
+   "artifactId": "etapp-9-socialt-och-komponenter:socomrostning",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socgruppinfo",
+   "artifactId": "etapp-9-socialt-och-komponenter:socgruppinfo",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socoverlat",
+   "artifactId": "etapp-9-socialt-och-komponenter:socoverlat",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "socdelatvan",
+   "artifactId": "etapp-9-socialt-och-komponenter:socdelatvan",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "insthushall",
+   "artifactId": "etapp-9-socialt-och-komponenter:insthushall",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "jurriktlinjer",
+   "artifactId": "etapp-9-socialt-och-komponenter:jurriktlinjer",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "sokpanel",
+   "artifactId": "etapp-9-socialt-och-komponenter:sokpanel",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  },
+  {
+   "ljus": "kompkalla",
+   "artifactId": "etapp-9-socialt-och-komponenter:kompkalla",
+   "viewportClass": "phone",
+   "layoutläge": "compact",
+   "luminans": 0.9023
+  }
+ ],
+ "selektorspärr": {
+  "theme_får_aktiveras": false,
+  "skäl": "En ljus artefakt utan uttryckligt selectors.theme är OSELEKTIV och matchar både light och dark. Den skulle överlappa varje mörk variant i samma bassplats. Dimensionen får öppnas först när båda sidor bär ett uttryckligt beslut.",
+  "artefakter_med_beslutat_theme_st": 0
+ }
+}

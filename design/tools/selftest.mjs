@@ -516,6 +516,239 @@ const cases = [
     row.generator = 'tools/gen-flutter.mjs';   // finns, men är fel generator för filen
     return { [p]: JSON.stringify(a, null, 2) };
   }],
+  // ── F2-A01 · artefaktklassificeringen ────────────────────────────────────
+  // Sex fall, tre felklasser. Registerfel, datafel och obeslutat ska aldrig
+  // kunna maskera varandra.
+  ['T-21 · registerfel: artefakt borttagen ur skärmfilen', 'T-21', () => {
+    const f = SCREEN_FILES[0];
+    const t = read(f);
+    if (!t) return null;
+    const parts = t.split(/(?=<[a-z]+[^>]*class="sc-item")/);
+    if (parts.length < 3) return null;
+    parts.splice(1, 1);                      // ta bort den första artefakten
+    return { [f]: parts.join('') };
+  }],
+  ['T-21 · registerfel: extra post i registret', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    R.artifacts = [...R.artifacts, { ...R.artifacts[0], artifactId: 'hittepa-fil:hittepa-id',
+      sourceFile: 'Butlery Skarmar v12 hittepa.dc.html', sourceElementId: 'hittepa-id' }];
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · registerfel: dubblerat käll-id i skärmfilerna', 'T-21', () => {
+    const f = SCREEN_FILES[0];
+    const t = read(f);
+    if (!t) return null;
+    const parts = t.split(/(?=<[a-z]+[^>]*class="sc-item")/);
+    if (parts.length < 2) return null;
+    parts.splice(2, 0, parts[1]);            // samma artefakt två gånger
+    return { [f]: parts.join('') };
+  }],
+  // F2-T21 · Åtta mutationer till, en per krav i arbetsordern. En kontroll som
+  // inte kan fällas av just det fel den påstår sig mäta, mäter ingenting.
+  ['T-21 · saknad artifactKind där klass krävs', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    R.artifacts = R.artifacts.map((a, i) => { if (i !== 0) return a; const b = { ...a }; delete b.artifactKind; return b; });
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · dubblerat artifactId i registret', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R || R.artifacts.length < 2) return null;
+    R.artifacts = [...R.artifacts, { ...R.artifacts[0] }];
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · motstridig klassificering på samma identitet', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R || R.artifacts.length < 2) return null;
+    const a = R.artifacts[0];
+    // Samma sourceFile + sourceElementId, annat artifactId, motsatt beslut.
+    R.artifacts = [...R.artifacts, { ...a, artifactId: a.artifactId + '-dubblett',
+      artifactKind: a.artifactKind === 'viewport' ? 'component' : 'viewport',
+      authorityState: 'active', classificationState: 'decided' }];
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · viewport utan renderingsprofil', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    const i = R.artifacts.findIndex(a => a.artifactKind === 'viewport' && a.viewportClass !== 'none' && a.viewportProfile);
+    if (i < 0) return null;
+    R.artifacts = R.artifacts.map((a, j) => j === i ? { ...a, viewportProfile: null } : a);
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · referens till obefintlig artefakt', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    R.artifacts = R.artifacts.map((a, i) => i === 0
+      ? { ...a, authorityState: 'superseded', supersededBy: 'finns-inte:alls' } : a);
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · ogiltig selection-context: schemaavvikelse', 'T-21', () => {
+    const p = 'selection-contexts.json';
+    const S = JSON.parse(read(p) || 'null');
+    if (!S) return null;
+    // enabled måste vara boolesk enligt schemat.
+    S.dimensions = S.dimensions.map((d, i) => i === 0 ? { ...d, enabled: 'ja' } : d);
+    return { [p]: JSON.stringify(S, null, 2) };
+  }],
+  ['T-21 · viewportklass utan bindning till kanoniskt register', 'T-21', () => {
+    const p = 'layout-contract.json';
+    const L = JSON.parse(read(p) || 'null');
+    if (!L || !L.viewportClassMap) return null;
+    const K = { ...L.viewportClassMap };
+    delete K.phone;                          // 279 poster tappar sin bindning
+    return { [p]: JSON.stringify({ ...L, viewportClassMap: K }, null, 2) };
+  }],
+  ['T-21 · okänd kontraktsversion', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    return { [p]: JSON.stringify({ ...R, version: 'senaste' }, null, 2) };
+  }],
+  ['T-21 · datafel: okänd vokabulär', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    R.artifacts = R.artifacts.map((a, i) => i === 0 ? { ...a, artifactKind: 'skärmdump' } : a);
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · två aktiva varianter i samma fullständiga variantnyckel', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R || R.artifacts.length < 2) return null;
+    const decided = {
+      screenId: 'recept', stateId: 'normal', variantId: null,
+      artifactKind: 'viewport', viewportClass: 'phone', authorityState: 'active',
+      supersededBy: null, classificationBasis: 'device-frame-evidence', note: ''
+    };
+    // Två artefakter som BÅDA bär enhetsram får samma nyckel — det ska fällas.
+    const framed = R.artifacts.filter(a => a.observed && a.observed.hasDeviceFrame).slice(0, 2);
+    if (framed.length < 2) return null;
+    const ids = new Set(framed.map(a => a.artifactId));
+    R.artifacts = R.artifacts.map(a => ids.has(a.artifactId) ? { ...a, ...decided } : a);
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  // F2-A03 · SELEKTOROVERLAPP. Att jämföra nycklar räcker inte: en oselektiv
+  // variant gäller ALLA kontexter och krockar därför med varje selektiv.
+  ['T-21 · oselektiv variant plus platform=ios i samma bas', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    const framed = R.artifacts.filter(a => a.observed && a.observed.deviceFrames === 1).slice(0, 2);
+    if (framed.length < 2) return null;
+    const dec = {
+      screenId: 'recept', stateId: 'normal', artifactKind: 'viewport', viewportClass: 'phone',
+      authorityState: 'active', classificationState: 'decided', activationBlockers: [],
+      classificationBasis: 'device-frame-evidence', viewportProfile: null
+    };
+    const ids = framed.map(a => a.artifactId);
+    R.artifacts = R.artifacts.map(a =>
+      a.artifactId === ids[0] ? { ...a, ...dec, selectors: {} } :
+      a.artifactId === ids[1] ? { ...a, ...dec, selectors: { platform: 'ios' } } : a);
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · platform=ios plus cohort=a i samma bas', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    const framed = R.artifacts.filter(a => a.observed && a.observed.deviceFrames === 1).slice(0, 2);
+    if (framed.length < 2) return null;
+    const dec = {
+      screenId: 'recept', stateId: 'normal', artifactKind: 'viewport', viewportClass: 'phone',
+      authorityState: 'active', classificationState: 'decided', activationBlockers: [],
+      classificationBasis: 'device-frame-evidence', viewportProfile: null
+    };
+    const ids = framed.map(a => a.artifactId);
+    R.artifacts = R.artifacts.map(a =>
+      a.artifactId === ids[0] ? { ...a, ...dec, selectors: { platform: 'ios' } } :
+      a.artifactId === ids[1] ? { ...a, ...dec, selectors: { cohort: 'a' } } : a);
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · ömsesidigt uteslutande varianter lämnar en kontext otäckt', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    // Bara iOS täcks. Android-kontexten står utan matchande aktiv variant.
+    const one = R.artifacts.find(a => a.observed && a.observed.deviceFrames === 1);
+    if (!one) return null;
+    R.artifacts = R.artifacts.map(a => a.artifactId !== one.artifactId ? a : ({
+      ...a, screenId: 'recept', stateId: 'normal', artifactKind: 'viewport', viewportClass: 'phone',
+      authorityState: 'active', classificationState: 'decided', activationBlockers: [],
+      classificationBasis: 'device-frame-evidence', viewportProfile: null,
+      selectors: { platform: 'ios' }
+    }));
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · draft får inte bära normativ auktoritet', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    const d = R.artifacts.find(a => a.classificationState === 'draft');
+    if (!d) return null;
+    R.artifacts = R.artifacts.map(a => a.artifactId !== d.artifactId ? a : { ...a, authorityState: 'active' });
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  // F2-A02 · Två poster i samma logiska slot får INTE passera bara för att de
+  // heter olika. `variantId` namnger varianten; den väljer ingenting.
+  ['T-21 · två olika variantId i samma logiska slot', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    const framed = R.artifacts.filter(a => a.observed && a.observed.hasDeviceFrame).slice(0, 2);
+    if (framed.length < 2) return null;
+    const ids = new Set(framed.map(a => a.artifactId));
+    let n = 0;
+    R.artifacts = R.artifacts.map(a => !ids.has(a.artifactId) ? a : ({
+      ...a,
+      screenId: 'recept', stateId: 'normal',
+      variantId: 'variant-' + (++n),     // OLIKA namn …
+      selectors: {},                     // … men ingen urvalsdimension
+      artifactKind: 'viewport', viewportClass: 'phone', viewportProfile: null,
+      authorityState: 'active', activationBlockers: [],
+      classificationBasis: 'device-frame-evidence'
+    }));
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  // Motprovet: samma slot MEN med en äkta urvalsdimension ska INTE fällas för
+  // slotkollision. Utan det hade regeln kunnat vara för hård utan att synas.
+  ['T-21 · ogiltig urvalsdimension', 'T-21', () => {
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R) return null;
+    const one = R.artifacts.find(a => a.observed && a.observed.hasDeviceFrame);
+    if (!one) return null;
+    R.artifacts = R.artifacts.map(a => a.artifactId !== one.artifactId ? a : ({
+      ...a, screenId: 'recept', stateId: 'normal', variantId: null,
+      selectors: { plattform: 'ios' },   // fel dimensionsnamn
+      artifactKind: 'viewport', viewportClass: 'phone', viewportProfile: null,
+      authorityState: 'active', activationBlockers: [], classificationBasis: 'device-frame-evidence'
+    }));
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
+  ['T-21 · obeslutat: post utan klassificeringsbeslut', 'T-21', () => {
+    // Baslinjen är redan helt obeslutad, så mutationen måste gå åt andra
+    // hållet: besluta ALLT utom en post, och visa att den enda kvarvarande
+    // fortfarande fäller. Annars hade provet inte skilt "obeslutat" från
+    // "råkade vara rött ändå".
+    const p = 'artifacts.json';
+    const R = JSON.parse(read(p) || 'null');
+    if (!R || R.artifacts.length < 2) return null;
+    R.artifacts = R.artifacts.map((a, i) => i === 0 ? a : {
+      ...a,
+      screenId: 'skarm-' + i, stateId: 'normal', variantId: null,
+      artifactKind: a.observed && a.observed.hasDeviceFrame ? 'viewport' : 'annotation',
+      viewportClass: a.observed && a.observed.hasDeviceFrame ? 'phone' : 'none',
+      authorityState: 'active',
+      classificationBasis: a.observed && a.observed.hasDeviceFrame ? 'device-frame-evidence' : 'author-decision'
+    });
+    return { [p]: JSON.stringify(R, null, 2) };
+  }],
   ['T-01 · tomt legacy-API-kontrakt', 'T-01', () => {
     const p = 'legacy-api-contract.json';
     const c = JSON.parse(read(p) || 'null');
@@ -813,7 +1046,7 @@ const EXEMPT = {
 };
 // Endast kontroller som FAKTISKT körs i lint-core. T-13 är renderad och statisk.
 const RUNTIME = ['T-01', 'T-02', 'T-03', 'T-04', 'T-05', 'T-06a', 'T-06b', 'T-07', 'T-08', 'T-09',
-  'T-10', 'T-11', 'T-12', 'T-14', 'T-15', 'T-16', 'T-17', 'T-18a', 'T-18b', 'T-19', 'T-20', 'A11Y-01', 'A11Y-02'];
+  'T-10', 'T-11', 'T-12', 'T-14', 'T-15', 'T-16', 'T-17', 'T-18a', 'T-18b', 'T-19', 'T-20', 'T-21', 'A11Y-01', 'A11Y-02'];
 let uncovered = 0;
 for (const id of RUNTIME) {
   if (COVERED.has(id)) continue;

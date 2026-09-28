@@ -1,0 +1,75 @@
+{
+ "$schema": "butlery-nontextprov/1",
+ "kontroll": "CHK-NT-01",
+ "godkanda": 11,
+ "total": 11,
+ "status": "godkand",
+ "prov": [
+  {
+   "id": "NT-01",
+   "vad": "textknapp med svag fyllning: fyllningen ar supplemental",
+   "ok": true,
+   "diag": "supplemental · kvot null"
+  },
+  {
+   "id": "NT-02",
+   "vad": "ikonknapp: glyfen ar componentIdentityCarrier och mats",
+   "ok": true,
+   "diag": "componentIdentityCarrier · kvot 12.52"
+  },
+  {
+   "id": "NT-03",
+   "vad": "ramen identifierar kryssrutan och maste klara 3:1",
+   "ok": true,
+   "diag": "componentIdentityCarrier · kvot 12.52"
+  },
+  {
+   "id": "NT-04",
+   "vad": "ram med kvot 1,00 forblir carrier — kvoten far inte omklassificera den",
+   "ok": true,
+   "diag": "componentIdentityCarrier · kvot 1"
+  },
+  {
+   "id": "NT-05",
+   "vad": "ikryssad ruta: ramen bar identiteten, bocken bar tillstandet",
+   "ok": true,
+   "diag": "ram 12.52 mot ytan utanfor kontrollen · bock 11.36 mot kontrollens inre yta"
+  },
+  {
+   "id": "NT-06",
+   "vad": "textmarkt kontroll med ikon utan egen funktion: supplemental",
+   "ok": true,
+   "diag": "supplemental · kvot null"
+  },
+  {
+   "id": "NT-07",
+   "vad": "chevron som bar oppet/stangt ar stateCarrier trots att kontrollen har text",
+   "ok": true,
+   "diag": "stateCarrier · kvot 12.52"
+  },
+  {
+   "id": "NT-08",
+   "vad": "reglagets knopplage skiljer on fran off — icke-fargbaserad signal",
+   "ok": true,
+   "diag": "flex-end mot flex-start"
+  },
+  {
+   "id": "NT-09",
+   "vad": "reglagets knopp ar stateCarrier och mats mot banan",
+   "ok": true,
+   "diag": "stateCarrier · kvot 5.56 mot kontrollens inre yta"
+  },
+  {
+   "id": "NT-10",
+   "vad": "oreducerbar angransande farg ger unknown, aldrig ett fabricerat tal",
+   "ok": true,
+   "diag": "unknown · oreducerbar angransande farg: linear-gradient(90deg, rgb(0, 0, 0), rgb(255, 255, 255))"
+  },
+  {
+   "id": "NT-11",
+   "vad": "avstangd kontroll: matvardet bevaras och disabled redovisas",
+   "ok": true,
+   "diag": "disabled true · kvot 1.37"
+  }
+ ]
+}

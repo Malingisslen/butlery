@@ -1,0 +1,692 @@
+{
+ "$schema": "butlery-nt-batch02-preview/1",
+ "$datum": "2026-08-14",
+ "$status": "PREVIEWPAKET. 0 produktwrites, 0 registerwrites, 0 fargval, profil oror d.",
+ "A_bokforing": {
+  "PRE_SPLIT_DECISION_IDENTITIES": 2,
+  "$vad": "De tio forloppsfynden bar fore split tva beslutsidentiteter: den stora forloppsfyllningen och lagatimers egen enhet.",
+  "POST_SPLIT_REMEDIATION_DECISION_UNITS": 6,
+  "enheter": [
+   {
+    "id": "DU-01-A",
+    "faktisktSpar": "rgb(83, 100, 88)",
+    "medlemmar": [
+     "BG-027"
+    ],
+    "skarmar": [
+     "lagatimers"
+    ]
+   },
+   {
+    "id": "DU-01-B",
+    "faktisktSpar": "rgb(204, 209, 194)",
+    "medlemmar": [
+     "BG-005",
+     "BG-030"
+    ],
+    "skarmar": [
+     "smartimport",
+     "vmbgenererar"
+    ]
+   },
+   {
+    "id": "DU-01-C",
+    "faktisktSpar": "rgb(74, 90, 79)",
+    "medlemmar": [
+     "BG-001",
+     "BG-024"
+    ],
+    "skarmar": [
+     "start",
+     "snackbars"
+    ]
+   },
+   {
+    "id": "DU-01-D",
+    "faktisktSpar": "rgb(230, 234, 217)",
+    "medlemmar": [
+     "BG-004",
+     "BG-026",
+     "BG-031"
+    ],
+    "skarmar": [
+     "smartimport",
+     "hemladdar",
+     "imp2hamtar"
+    ]
+   },
+   {
+    "id": "DU-01-E",
+    "faktisktSpar": "rgb(63, 81, 69)",
+    "medlemmar": [
+     "BG-033"
+    ],
+    "skarmar": [
+     "globceremoni"
+    ]
+   },
+   {
+    "id": "DU-02",
+    "faktisktSpar": "lagatimers eget spar",
+    "medlemmar": [
+     "BG-028"
+    ],
+    "skarmar": [
+     "lagatimers"
+    ]
+   }
+  ],
+  "$regel": "Splitten foljer den FAKTISKA track som vardet ligger pa. Radata ar oforandrad — pre-split och post-split redovisas var for sig."
+ },
+ "B_omfattning": {
+  "batch": "BATCH-02",
+  "enhet": "DU-01-C",
+  "fynd": [
+   "BG-001",
+   "BG-024"
+  ],
+  "skarmar": [
+   "start",
+   "snackbars"
+  ],
+  "faktiskTrackIBada": "rgb(74, 90, 79)",
+  "kandidater": 10
+ },
+ "C_kandidater": {
+  "antal": 10,
+  "$ingenGallring": "Ingen smakbaserad gallring fore preview. Samtliga tekniskt och semantiskt giltiga kandidater ar renderade.",
+  "$accentUtesluten": "Den elfte tekniskt giltiga kandidaten #dca968 ar en registrerad semantisk accent och ingar inte.",
+  "rader": [
+   {
+    "varde": "#f5f4ed",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(245, 244, 237)",
+     "kvot": 6.64,
+     "pass": true,
+     "fil": "start-f5f4ed.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(245, 244, 237)",
+     "kvot": 6.64,
+     "pass": true,
+     "fil": "snackbars-f5f4ed.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 306,
+    "evidenskalla": "uppmatt i ljust lage: 306 forekomster i 163 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#f0eee2",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(240, 238, 226)",
+     "kvot": 6.29,
+     "pass": true,
+     "fil": "start-f0eee2.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(240, 238, 226)",
+     "kvot": 6.29,
+     "pass": true,
+     "fil": "snackbars-f0eee2.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 19,
+    "evidenskalla": "uppmatt i ljust lage: 19 forekomster i 16 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#f7e8d2",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(247, 232, 210)",
+     "kvot": 6.08,
+     "pass": true,
+     "fil": "start-f7e8d2.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(247, 232, 210)",
+     "kvot": 6.08,
+     "pass": true,
+     "fil": "snackbars-f7e8d2.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 11,
+    "evidenskalla": "uppmatt i ljust lage: 11 forekomster i 9 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#e6ead9",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(230, 234, 217)",
+     "kvot": 5.98,
+     "pass": true,
+     "fil": "start-e6ead9.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(230, 234, 217)",
+     "kvot": 5.98,
+     "pass": true,
+     "fil": "snackbars-e6ead9.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 367,
+    "evidenskalla": "uppmatt i ljust lage: 367 forekomster i 194 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#dfe0d6",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(223, 224, 214)",
+     "kvot": 5.5,
+     "pass": true,
+     "fil": "start-dfe0d6.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(223, 224, 214)",
+     "kvot": 5.5,
+     "pass": true,
+     "fil": "snackbars-dfe0d6.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 2,
+    "evidenskalla": "uppmatt i ljust lage: 2 forekomster i 2 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#ccd1c2",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(204, 209, 194)",
+     "kvot": 4.7,
+     "pass": true,
+     "fil": "start-ccd1c2.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(204, 209, 194)",
+     "kvot": 4.7,
+     "pass": true,
+     "fil": "snackbars-ccd1c2.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 107,
+    "evidenskalla": "uppmatt i ljust lage: 107 forekomster i 47 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#c3c6ba",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(195, 198, 186)",
+     "kvot": 4.22,
+     "pass": true,
+     "fil": "start-c3c6ba.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(195, 198, 186)",
+     "kvot": 4.22,
+     "pass": true,
+     "fil": "snackbars-c3c6ba.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 2,
+    "evidenskalla": "uppmatt i ljust lage: 2 forekomster i 1 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#d8b784",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(216, 183, 132)",
+     "kvot": 3.85,
+     "pass": true,
+     "fil": "start-d8b784.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(216, 183, 132)",
+     "kvot": 3.85,
+     "pass": true,
+     "fil": "snackbars-d8b784.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 2,
+    "evidenskalla": "uppmatt i ljust lage: 2 forekomster i 1 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#b4bfa6",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(180, 191, 166)",
+     "kvot": 3.82,
+     "pass": true,
+     "fil": "start-b4bfa6.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(180, 191, 166)",
+     "kvot": 3.82,
+     "pass": true,
+     "fil": "snackbars-b4bfa6.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 5,
+    "evidenskalla": "uppmatt i ljust lage: 5 forekomster i 4 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   },
+   {
+    "varde": "#a9b2a0",
+    "semantiskBehorighet": {
+     "roll": "yta-upphojd",
+     "accent": false,
+     "$regel": "kandidaten anvands redan i samma roll i ljust lage; palettmedlemskap ensamt ar ingen evidens"
+    },
+    "start": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(169, 178, 160)",
+     "kvot": 3.34,
+     "pass": true,
+     "fil": "start-a9b2a0.png"
+    },
+    "snackbars": {
+     "renderadTrack": "rgb(74, 90, 79)",
+     "renderadFill": "rgb(169, 178, 160)",
+     "kvot": 3.34,
+     "pass": true,
+     "fil": "snackbars-a9b2a0.png"
+    },
+    "badaPass": true,
+    "OBSERVED_SAME_ROLE_EVIDENCE": 2,
+    "evidenskalla": "uppmatt i ljust lage: 2 forekomster i 2 artefakter i rollen yta-upphojd",
+    "status": "OBSERVED_IN_SAME_ROLE (ljust) — men inget valt varde och ingen mappningsevidens"
+   }
+  ]
+ },
+ "D_previewupplagg": {
+  "jamforelseenhet": "kandidat X = start med X + snackbars med X",
+  "malrenderingar": 20,
+  "forvantat": 20,
+  "sammaKandidatIBada": true,
+  "andradKanal": "endast progress fill",
+  "fixerat": [
+   "track",
+   "omgivande ytor",
+   "text",
+   "grafik",
+   "ovriga farger",
+   "layout",
+   "state"
+  ]
+ },
+ "E_integritet": {
+  "kallgrind": {
+   "start": true,
+   "snackbars": true
+  },
+  "allaOver3": true,
+  "kollateralTotalt": 0,
+  "okandTotalt": 0,
+  "identiskaMatt": {
+   "start": [
+    "180x63"
+   ],
+   "snackbars": [
+    "96x64"
+   ]
+  },
+  "unikaRenderade": 20,
+  "failClosed": "GRON — ingen kandidat foll i faktisk rendering",
+  "rader": [
+   {
+    "kandidat": "#f5f4ed",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(245, 244, 237)",
+    "kvot": 6.64,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#f0eee2",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(240, 238, 226)",
+    "kvot": 6.29,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#f7e8d2",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(247, 232, 210)",
+    "kvot": 6.08,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#e6ead9",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(230, 234, 217)",
+    "kvot": 5.98,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#dfe0d6",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(223, 224, 214)",
+    "kvot": 5.5,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#ccd1c2",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(204, 209, 194)",
+    "kvot": 4.7,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#c3c6ba",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(195, 198, 186)",
+    "kvot": 4.22,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#d8b784",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(216, 183, 132)",
+    "kvot": 3.85,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#b4bfa6",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(180, 191, 166)",
+    "kvot": 3.82,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#a9b2a0",
+    "skarm": "start",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(169, 178, 160)",
+    "kvot": 3.34,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#f5f4ed",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(245, 244, 237)",
+    "kvot": 6.64,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#f0eee2",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(240, 238, 226)",
+    "kvot": 6.29,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#f7e8d2",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(247, 232, 210)",
+    "kvot": 6.08,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#e6ead9",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(230, 234, 217)",
+    "kvot": 5.98,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#dfe0d6",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(223, 224, 214)",
+    "kvot": 5.5,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#ccd1c2",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(204, 209, 194)",
+    "kvot": 4.7,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#c3c6ba",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(195, 198, 186)",
+    "kvot": 4.22,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#d8b784",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(216, 183, 132)",
+    "kvot": 3.85,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#b4bfa6",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(180, 191, 166)",
+    "kvot": 3.82,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   },
+   {
+    "kandidat": "#a9b2a0",
+    "skarm": "snackbars",
+    "renderadTrack": "rgb(74, 90, 79)",
+    "renderadFill": "rgb(169, 178, 160)",
+    "kvot": 3.34,
+    "pass": true,
+    "kollaterala": 0,
+    "okanda": 0,
+    "entydigtScope": true
+   }
+  ]
+ },
+ "F_morkKontroll": {
+  "$vad": "En enda fast mork referensrendering for start, med de redan godkanda morka vardena.",
+  "varden": {
+   "track": "rgba(245,244,237,0.18)",
+   "fill": "rgba(245,244,237,0.18)",
+   "appyta": "#24382c",
+   "fil": "start-mork-referens.png"
+  },
+  "bitIdentiskForeOchEfterAllaInjektioner": true,
+  "$bevis": "Previewinjektionen paverkar bara den ljusa sidan. Referensen ar oforandrad efter samtliga tjugo injektioner.",
+  "$ejGjort": [
+   "morkt varde som kandidatdimension",
+   "omvardering av det morka utfallet",
+   "ny observerad evidens for morkt",
+   "R-04-credit"
+  ]
+ },
+ "G_reconciliationForberedd": {
+  "$status": "FORBEREDD, INTE SKRIVEN",
+  "berordEnhet": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+  "fill": {
+   "token": "--yta-upphojd-d18",
+   "OLD_light_value": "#ce7c1e",
+   "NEW_light_value": "FYLLS I FORST NAR DU VALT — en av de tio kandidaterna",
+   "dark_HUMAN_APPROVED_value": "rgba(245,244,237,0.18)",
+   "dark_status": "OFORANDRAT",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "klassificering": "VISUAL_CHOICE_REQUIRED"
+  },
+  "track": {
+   "token": "--yta-upphojd-d17",
+   "light_value": "rgba(245,244,237,0.18)",
+   "dark_value": "rgba(245,244,237,0.18)",
+   "status": "OFORANDRAT — sparet ingar inte i atgarden"
+  },
+  "bevaras": [
+   "samma semantiska start-enhet om identiteten fortfarande ar densamma",
+   "tidigare human provenance for det morka vardet",
+   "mapping evidence-status",
+   "0 R-04 coverage fran atgarden"
+  ],
+  "$mappningstyp": "Harleds INTE ur att varden rakar vara lika eller olika. Faltet ror inte.",
+  "$villkor": "Om det nya ljusvardet flyttar posten till en annan semantisk undergrupp ar det en enhetsdelning och ska redovisas som sadan, inte som en tyst omskrivning."
+ },
+ "H_manskligBeslutspunkt": {
+  "fraga": "Finns det EN och samma fyllfarg som fungerar visuellt som forlopps- och tillstandsbarare i bade start och snackbars?",
+  "omJA": {
+   "utfall": "DU-01-C forblir en gemensam beslutsenhet",
+   "nasta": "kandidaten rapporteras for human approval — fortfarande inga produktwrites"
+  },
+  "omNEJ": {
+   "utfall": "DU-01-C delas i DU-01-C-START och DU-01-C-SNACKBARS",
+   "nasta": "tva separata manskliga visuella beslut — inga farger valjs automatiskt"
+  },
+  "$regel": "Samma spar och samma kandidatmangd tvingar inte fram gemensam designidentitet.",
+  "$tekniskNotering": "Kvoterna ar identiska i bada skarmarna eftersom det renderade sparet ar samma farg. Den tekniska dimensionen skiljer dem alltsa inte at — bara den visuella."
+ },
+ "I_stopp": {
+  "produktandring": "INGEN",
+  "registerandringAvValtLjusvarde": "INGEN",
+  "profil": "OFORANDRAD OCH BLOCKERAD",
+  "R04credit": 0,
+  "R04implementation": "INGEN"
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen registerwrite",
+  "ingen kandidat vald",
+  "ingen profilandring",
+  "ingen omvardering av det morka beslutet",
+  "ingen smakbaserad gallring",
+  "ingen mappningstyp harledd"
+ ]
+}

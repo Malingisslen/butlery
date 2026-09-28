@@ -1,0 +1,5622 @@
+{
+ "$schema": "butlery-lagkontrast-register-pilot3/1",
+ "$datum": "2026-08-17",
+ "$franCommit": "d36a31a",
+ "$typ": "REGISTRERING av pilot 3: 50 fill-relations som APPLICABILITY UNKNOWN med REVIEW_STATUS REVIEWED_UNKNOWN och explicita blocker relation IDs. Inga produktskrivningar, inga fargskrivningar, inga designbeslut, ingen remediering, ingen R-04-write, ingen R-04-credit.",
+ "$humanJudgment": "HUMAN_APPROVED for commit d36a31a.",
+ "$produktfilerOrorda": true,
+ "A_registrering": {
+  "REGISTERED_OCCURRENCES": 50,
+  "NEW_REVIEWED_UNKNOWN": 50,
+  "NEW_SUPPLEMENTAL": 0,
+  "NEW_REQUIRED": 0,
+  "DUPLICATES": 0,
+  "OMITTED": 0,
+  "OUT_OF_SCOPE": 0,
+  "ANDRADE_ANDRA_RECORDS": 0,
+  "APPLICABILITY": "UNKNOWN",
+  "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+  "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+  "MOTIVERING": [
+   "target fill ar visuellt urskiljbar",
+   "target-neutralisering andrar actual scene",
+   "requiredness kan inte avgoras utan ytterligare carrier-evidens",
+   "blockerande boundary/icon ar identifierad men sjalv inte adjudicerad"
+  ],
+  "blockerfordelning": {
+   "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED": 27,
+   "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED": 23
+  },
+  "UNIKA_BLOCKER_RELATIONER": 66
+ },
+ "B_reviewGroups": {
+  "ANTAL": 6,
+  "ROLL": "PRESENTATION_ONLY",
+  "GRUPPER_MED_DOM": 0,
+  "VERDICT_PROPAGATION": 0,
+  "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED"
+ },
+ "C_grindar": [
+  {
+   "namn": "pilot 3 ar exakt 50 forekomster",
+   "ok": true,
+   "diag": "50"
+  },
+  {
+   "namn": "samtliga foreslogs PROPOSED_UNKNOWN",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga ar fyllningsrelationer",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga star UNREVIEWED_UNKNOWN fore registreringen",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga har en ren sond",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga ar visuellt urskiljbara",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga har minst en identifierad blockerare",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "ingen ligger i pressed / inactive / focus",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga finns i den kanoniska matningen",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "REGISTERED_OCCURRENCES = 50",
+   "ok": true,
+   "diag": "50"
+  },
+  {
+   "namn": "DUPLICATES = 0",
+   "ok": true,
+   "diag": "0"
+  },
+  {
+   "namn": "OMITTED = 0",
+   "ok": true,
+   "diag": "0"
+  },
+  {
+   "namn": "ingen blev REQUIRED eller SUPPLEMENTAL",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "samtliga bar explicita blocker relation IDs",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "ingen ar behorig for mekanisk pilot",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "ingen record bar en gruppdom",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "ingen record andrar nagon annan barare",
+   "ok": true,
+   "diag": "ok"
+  },
+  {
+   "namn": "inga produktfiler andrade",
+   "ok": true,
+   "diag": ""
+  }
+ ],
+ "D_records": [
+  {
+   "RELATION_ID": "vmbtom|27#fyllning#0",
+   "PART_ID": "vmbtom|27#fyllning#0",
+   "CONTROL_ID": "vmbtom|27",
+   "SCREEN": "Veckan brett — tom",
+   "FAMILY": "vmbtom",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "I dag, onsdag middag. Lägg något här",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "228",
+     "data-hit": "self",
+     "class": "empty",
+     "data-a11y-name": "I dag, onsdag middag. Lägg något här",
+     "data-a11y-role": "button"
+    },
+    "text": ""
+   },
+   "descendantordinal": 40,
+   "CURRENT_RATIO": 1.09,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "vmbtom|27#ikon#0",
+    "vmbtom|27#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "vmbtom|27#ikon#0",
+     "typ": "ikon",
+     "kvot": 5.78,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "vmbtom|27#ram#0",
+     "typ": "ram",
+     "kvot": 2.92,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.09,
+    "TARGET_PAINT": "rgb(247, 232, 210)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(247, 232, 210)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "4c6d60c1cd372894",
+    "RENDERING_SHA_NEUTRALIZED": "030319aa2d53e332",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 1219,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "vmbtom|27#ikon#0",
+     "typ": "ikon",
+     "kvot": 5.78,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "vmbtom|27#ram#0",
+     "typ": "ram",
+     "kvot": 2.92,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0de2747229",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkopkategoriordning|11#fyllning#0",
+   "PART_ID": "inkopkategoriordning|11#fyllning#0",
+   "CONTROL_ID": "inkopkategoriordning|11",
+   "SCREEN": "Inköp — kategoriordningen",
+   "FAMILY": "inkopkategoriordning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Frukt och grönt, plats 1 av 9",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "82",
+     "data-a11y-name": "Frukt och grönt, plats 1 av 9",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 20,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkopkategoriordning|11#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkopkategoriordning|11#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "224e98cdaf48326d",
+    "RENDERING_SHA_NEUTRALIZED": "1a7a8a8252aa6436",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkopkategoriordning|11#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkopkategoriordning|17#fyllning#0",
+   "PART_ID": "inkopkategoriordning|17#fyllning#0",
+   "CONTROL_ID": "inkopkategoriordning|17",
+   "SCREEN": "Inköp — kategoriordningen",
+   "FAMILY": "inkopkategoriordning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Bröd, plats 2 av 9",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "88",
+     "data-a11y-name": "Bröd, plats 2 av 9",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 26,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkopkategoriordning|17#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkopkategoriordning|17#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "224e98cdaf48326d",
+    "RENDERING_SHA_NEUTRALIZED": "5f443a4c5e06f7a6",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkopkategoriordning|17#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkopkategoriordning|29#fyllning#0",
+   "PART_ID": "inkopkategoriordning|29#fyllning#0",
+   "CONTROL_ID": "inkopkategoriordning|29",
+   "SCREEN": "Inköp — kategoriordningen",
+   "FAMILY": "inkopkategoriordning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Kött och fisk, plats 4 av 9",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "100",
+     "data-a11y-name": "Kött och fisk, plats 4 av 9",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 38,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkopkategoriordning|29#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkopkategoriordning|29#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "224e98cdaf48326d",
+    "RENDERING_SHA_NEUTRALIZED": "d651e2d6696a5b28",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkopkategoriordning|29#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkopkategoriordning|35#fyllning#0",
+   "PART_ID": "inkopkategoriordning|35#fyllning#0",
+   "CONTROL_ID": "inkopkategoriordning|35",
+   "SCREEN": "Inköp — kategoriordningen",
+   "FAMILY": "inkopkategoriordning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Torrvaror, plats 5 av 9",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "106",
+     "data-a11y-name": "Torrvaror, plats 5 av 9",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 44,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkopkategoriordning|35#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkopkategoriordning|35#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "224e98cdaf48326d",
+    "RENDERING_SHA_NEUTRALIZED": "8227414c83dd5bfa",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkopkategoriordning|35#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkopkategoriordning|41#fyllning#0",
+   "PART_ID": "inkopkategoriordning|41#fyllning#0",
+   "CONTROL_ID": "inkopkategoriordning|41",
+   "SCREEN": "Inköp — kategoriordningen",
+   "FAMILY": "inkopkategoriordning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Frys, plats 6 av 9",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "112",
+     "data-a11y-name": "Frys, plats 6 av 9",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 50,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkopkategoriordning|41#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkopkategoriordning|41#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "224e98cdaf48326d",
+    "RENDERING_SHA_NEUTRALIZED": "40b3986e873cfc84",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkopkategoriordning|41#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkopkategoriordning|47#fyllning#0",
+   "PART_ID": "inkopkategoriordning|47#fyllning#0",
+   "CONTROL_ID": "inkopkategoriordning|47",
+   "SCREEN": "Inköp — kategoriordningen",
+   "FAMILY": "inkopkategoriordning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Övrigt, plats 7 av 9",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "118",
+     "data-a11y-name": "Övrigt, plats 7 av 9",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 56,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkopkategoriordning|47#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkopkategoriordning|47#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "224e98cdaf48326d",
+    "RENDERING_SHA_NEUTRALIZED": "9447a7b46346b43a",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkopkategoriordning|47#ikon#0",
+     "typ": "ikon",
+     "kvot": 4.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkoputeslutna|8#fyllning#0",
+   "PART_ID": "inkoputeslutna|8#fyllning#0",
+   "CONTROL_ID": "inkoputeslutna|8",
+   "SCREEN": "Inköp — uteslutna basvaror",
+   "FAMILY": "inkoputeslutna",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Tre basvaror uteslutna, visa vilka",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "303",
+     "data-a11y-name": "Tre basvaror uteslutna, visa vilka",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 18,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkoputeslutna|8#ikon#0",
+    "inkoputeslutna|8#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkoputeslutna|8#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "inkoputeslutna|8#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "a6d937c2490815ad",
+    "RENDERING_SHA_NEUTRALIZED": "c53b2e89a1477c7e",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkoputeslutna|8#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "inkoputeslutna|8#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "inkoputeslutna|20#fyllning#0",
+   "PART_ID": "inkoputeslutna|20#fyllning#0",
+   "CONTROL_ID": "inkoputeslutna|20",
+   "SCREEN": "Inköp — uteslutna basvaror",
+   "FAMILY": "inkoputeslutna",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Fyra måltider omräknade efter närvaro, visa vilka",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "315",
+     "data-a11y-name": "Fyra måltider omräknade efter närvaro, visa vilka",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 30,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "inkoputeslutna|20#ikon#0",
+    "inkoputeslutna|20#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "inkoputeslutna|20#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "inkoputeslutna|20#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "a6d937c2490815ad",
+    "RENDERING_SHA_NEUTRALIZED": "b048fb25911175b3",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "inkoputeslutna|20#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "inkoputeslutna|20#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "skafferilagg|8#fyllning#0",
+   "PART_ID": "skafferilagg|8#fyllning#0",
+   "CONTROL_ID": "skafferilagg|8",
+   "SCREEN": "Skafferiet — lägg till eller ändra",
+   "FAMILY": "skafferilagg",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "textbox",
+   "CONTROL_OPERATION": "Ingrediens",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "538",
+     "data-a11y-name": "Ingrediens",
+     "data-a11y-role": "textbox",
+     "data-hit": "self"
+    },
+    "text": "grädd"
+   },
+   "descendantordinal": 18,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "skafferilagg|8#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "skafferilagg|8#ram#0",
+     "typ": "ram",
+     "kvot": 11.36,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "524c82caf9dbc979",
+    "RENDERING_SHA_NEUTRALIZED": "180256cdfe716f7e",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 437,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "skafferilagg|8#ram#0",
+     "typ": "ram",
+     "kvot": 11.36,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-4855b92723",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "veckoplacering|72#fyllning#0",
+   "PART_ID": "veckoplacering|72#fyllning#0",
+   "CONTROL_ID": "veckoplacering|72",
+   "SCREEN": "Veckomeny — placera själv",
+   "FAMILY": "veckoplacering",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Välj Tacos med svartbönor att placera",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "952",
+     "data-hit": "self",
+     "data-a11y-name": "Välj Tacos med svartbönor att placera",
+     "data-a11y-role": "button"
+    },
+    "text": "Tacos med svartbönor"
+   },
+   "descendantordinal": 78,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "veckoplacering|72#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "veckoplacering|72#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(245, 244, 237)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(230, 234, 217)",
+    "NEUTRALIZED_TO": "rgb(230, 234, 217)",
+    "COMPUTED_BEFORE": "rgb(245, 244, 237)",
+    "COMPUTED_AFTER": "rgb(230, 234, 217)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "b10bf8111dde528c",
+    "RENDERING_SHA_NEUTRALIZED": "c43025d1f79c23fd",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 1706,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "veckoplacering|72#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-27caff2547",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "veckoplacering|73#fyllning#0",
+   "PART_ID": "veckoplacering|73#fyllning#0",
+   "CONTROL_ID": "veckoplacering|73",
+   "SCREEN": "Veckomeny — placera själv",
+   "FAMILY": "veckoplacering",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Välj Ugnslax att placera",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "953",
+     "data-hit": "self",
+     "data-a11y-name": "Välj Ugnslax att placera",
+     "data-a11y-role": "button"
+    },
+    "text": "Ugnslax"
+   },
+   "descendantordinal": 79,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "veckoplacering|73#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "veckoplacering|73#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(245, 244, 237)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(230, 234, 217)",
+    "NEUTRALIZED_TO": "rgb(230, 234, 217)",
+    "COMPUTED_BEFORE": "rgb(245, 244, 237)",
+    "COMPUTED_AFTER": "rgb(230, 234, 217)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "b10bf8111dde528c",
+    "RENDERING_SHA_NEUTRALIZED": "f8206633f08a33e0",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 1706,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "veckoplacering|73#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-27caff2547",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "veckoplacering|74#fyllning#0",
+   "PART_ID": "veckoplacering|74#fyllning#0",
+   "CONTROL_ID": "veckoplacering|74",
+   "SCREEN": "Veckomeny — placera själv",
+   "FAMILY": "veckoplacering",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Välj Räkmacka att placera",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "954",
+     "data-hit": "self",
+     "data-a11y-name": "Välj Räkmacka att placera",
+     "data-a11y-role": "button"
+    },
+    "text": "Räkmacka"
+   },
+   "descendantordinal": 80,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "veckoplacering|74#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "veckoplacering|74#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(245, 244, 237)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(230, 234, 217)",
+    "NEUTRALIZED_TO": "rgb(230, 234, 217)",
+    "COMPUTED_BEFORE": "rgb(245, 244, 237)",
+    "COMPUTED_AFTER": "rgb(230, 234, 217)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "b10bf8111dde528c",
+    "RENDERING_SHA_NEUTRALIZED": "9d7e3555b8351eed",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 1706,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "veckoplacering|74#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-27caff2547",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "veckoplaceringvald|46#fyllning#0",
+   "PART_ID": "veckoplaceringvald|46#fyllning#0",
+   "CONTROL_ID": "veckoplaceringvald|46",
+   "SCREEN": "Veckomeny — rätt vald för placering",
+   "FAMILY": "veckoplaceringvald",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Välj Ugnslax",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "1020",
+     "data-hit": "self",
+     "data-a11y-name": "Välj Ugnslax",
+     "data-a11y-role": "button"
+    },
+    "text": "Ugnslax"
+   },
+   "descendantordinal": 54,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "veckoplaceringvald|46#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "veckoplaceringvald|46#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(245, 244, 237)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(230, 234, 217)",
+    "NEUTRALIZED_TO": "rgb(230, 234, 217)",
+    "COMPUTED_BEFORE": "rgb(245, 244, 237)",
+    "COMPUTED_AFTER": "rgb(230, 234, 217)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "e19fc44b14ef7c70",
+    "RENDERING_SHA_NEUTRALIZED": "e7ba8af0619ee224",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 1706,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "veckoplaceringvald|46#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-27caff2547",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "veckoplaceringvald|47#fyllning#0",
+   "PART_ID": "veckoplaceringvald|47#fyllning#0",
+   "CONTROL_ID": "veckoplaceringvald|47",
+   "SCREEN": "Veckomeny — rätt vald för placering",
+   "FAMILY": "veckoplaceringvald",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 2.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Välj Räkmacka",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "1021",
+     "data-hit": "self",
+     "data-a11y-name": "Välj Räkmacka",
+     "data-a11y-role": "button"
+    },
+    "text": "Räkmacka"
+   },
+   "descendantordinal": 55,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "veckoplaceringvald|47#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "veckoplaceringvald|47#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(245, 244, 237)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(230, 234, 217)",
+    "NEUTRALIZED_TO": "rgb(230, 234, 217)",
+    "COMPUTED_BEFORE": "rgb(245, 244, 237)",
+    "COMPUTED_AFTER": "rgb(230, 234, 217)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "e19fc44b14ef7c70",
+    "RENDERING_SHA_NEUTRALIZED": "a2c5ed57f9d091e6",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 1706,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "veckoplaceringvald|47#ram#0",
+     "typ": "ram",
+     "kvot": 1.27,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-27caff2547",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|9#fyllning#0",
+   "PART_ID": "imp1kalla|9#fyllning#0",
+   "CONTROL_ID": "imp1kalla|9",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Länk",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "55",
+     "data-a11y-name": "Importera från Länk",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 23,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|9#ikon#0",
+    "imp1kalla|9#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|9#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|9#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "fd2512873902adae",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|9#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|9#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|19#fyllning#0",
+   "PART_ID": "imp1kalla|19#fyllning#0",
+   "CONTROL_ID": "imp1kalla|19",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Text",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "65",
+     "data-a11y-name": "Importera från Text",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 33,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|19#ikon#0",
+    "imp1kalla|19#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|19#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|19#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "8b9be77f0d4b2acc",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|19#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|19#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|29#fyllning#0",
+   "PART_ID": "imp1kalla|29#fyllning#0",
+   "CONTROL_ID": "imp1kalla|29",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Instagram eller TikTok",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "75",
+     "data-a11y-name": "Importera från Instagram eller TikTok",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 43,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|29#ikon#0",
+    "imp1kalla|29#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|29#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|29#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "6c0ffff14422dd29",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|29#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|29#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|40#fyllning#0",
+   "PART_ID": "imp1kalla|40#fyllning#0",
+   "CONTROL_ID": "imp1kalla|40",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från YouTube",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "86",
+     "data-a11y-name": "Importera från YouTube",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 54,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|40#ikon#0",
+    "imp1kalla|40#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|40#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|40#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "ba3f49d6f8c4e058",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|40#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|40#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|51#fyllning#0",
+   "PART_ID": "imp1kalla|51#fyllning#0",
+   "CONTROL_ID": "imp1kalla|51",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Foto",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "97",
+     "data-a11y-name": "Importera från Foto",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 65,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|51#ikon#0",
+    "imp1kalla|51#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|51#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|51#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "dd03af330a4042af",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|51#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|51#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|61#fyllning#0",
+   "PART_ID": "imp1kalla|61#fyllning#0",
+   "CONTROL_ID": "imp1kalla|61",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Röst",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "107",
+     "data-a11y-name": "Importera från Röst",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 75,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|61#ikon#0",
+    "imp1kalla|61#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|61#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|61#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "766017ec291dce57",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|61#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|61#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|71#fyllning#0",
+   "PART_ID": "imp1kalla|71#fyllning#0",
+   "CONTROL_ID": "imp1kalla|71",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Fil",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "117",
+     "data-a11y-name": "Importera från Fil",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 85,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|71#ikon#0",
+    "imp1kalla|71#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|71#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|71#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "2fe91b137b2f57f3",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|71#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|71#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "imp1kalla|81#fyllning#0",
+   "PART_ID": "imp1kalla|81#fyllning#0",
+   "CONTROL_ID": "imp1kalla|81",
+   "SCREEN": "Import — steg 1, varifrån",
+   "FAMILY": "imp1kalla",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Arkiv",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "127",
+     "data-a11y-name": "Importera från Arkiv",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 95,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "imp1kalla|81#ikon#0",
+    "imp1kalla|81#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "imp1kalla|81#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "imp1kalla|81#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "3231a04f6aaa2b0b",
+    "RENDERING_SHA_NEUTRALIZED": "c9670666617cd388",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "imp1kalla|81#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "imp1kalla|81#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-0ec0b200e3",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "impoffline|17#fyllning#0",
+   "PART_ID": "impoffline|17#fyllning#0",
+   "CONTROL_ID": "impoffline|17",
+   "SCREEN": "Import — offline",
+   "FAMILY": "impoffline",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Text",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "713",
+     "data-a11y-name": "Importera från Text",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 24,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "impoffline|17#ikon#0",
+    "impoffline|17#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "impoffline|17#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "impoffline|17#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "5778d322c478fd6c",
+    "RENDERING_SHA_NEUTRALIZED": "8e82da19766c09c1",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "impoffline|17#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "impoffline|17#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "impoffline|24#fyllning#0",
+   "PART_ID": "impoffline|24#fyllning#0",
+   "CONTROL_ID": "impoffline|24",
+   "SCREEN": "Import — offline",
+   "FAMILY": "impoffline",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Foto",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "720",
+     "data-a11y-name": "Importera från Foto",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 31,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "impoffline|24#ikon#0",
+    "impoffline|24#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "impoffline|24#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "impoffline|24#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "5778d322c478fd6c",
+    "RENDERING_SHA_NEUTRALIZED": "00df02d564038732",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "impoffline|24#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "impoffline|24#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "impoffline|31#fyllning#0",
+   "PART_ID": "impoffline|31#fyllning#0",
+   "CONTROL_ID": "impoffline|31",
+   "SCREEN": "Import — offline",
+   "FAMILY": "impoffline",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Röst",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "727",
+     "data-a11y-name": "Importera från Röst",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 38,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "impoffline|31#ikon#0",
+    "impoffline|31#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "impoffline|31#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "impoffline|31#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "5778d322c478fd6c",
+    "RENDERING_SHA_NEUTRALIZED": "aafb2ca8181a890c",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "impoffline|31#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "impoffline|31#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "impoffline|39#fyllning#0",
+   "PART_ID": "impoffline|39#fyllning#0",
+   "CONTROL_ID": "impoffline|39",
+   "SCREEN": "Import — offline",
+   "FAMILY": "impoffline",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Fil",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "735",
+     "data-a11y-name": "Importera från Fil",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 46,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "impoffline|39#ikon#0",
+    "impoffline|39#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "impoffline|39#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "impoffline|39#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "5778d322c478fd6c",
+    "RENDERING_SHA_NEUTRALIZED": "b291640cbee061e4",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "impoffline|39#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "impoffline|39#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "impoffline|47#fyllning#0",
+   "PART_ID": "impoffline|47#fyllning#0",
+   "CONTROL_ID": "impoffline|47",
+   "SCREEN": "Import — offline",
+   "FAMILY": "impoffline",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Importera från Arkiv",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "743",
+     "data-a11y-name": "Importera från Arkiv",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 54,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "impoffline|47#ikon#0",
+    "impoffline|47#ikon#1"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "impoffline|47#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    },
+    {
+     "PART_ID": "impoffline|47#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "5778d322c478fd6c",
+    "RENDERING_SHA_NEUTRALIZED": "6ce16529288a4751",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 865,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "impoffline|47#ikon#0",
+     "typ": "ikon",
+     "kvot": 10.22,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    },
+    {
+     "PART_ID": "impoffline|47#ikon#1",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|9#fyllning#0",
+   "PART_ID": "taggvillkor|9#fyllning#0",
+   "CONTROL_ID": "taggvillkor|9",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Ingrediens",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "126",
+     "data-a11y-name": "Villkor: Ingrediens",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 20,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|9#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|9#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "fc5f9efa1e98d886",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|9#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|15#fyllning#0",
+   "PART_ID": "taggvillkor|15#fyllning#0",
+   "CONTROL_ID": "taggvillkor|15",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Egenskap",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "132",
+     "data-a11y-name": "Villkor: Egenskap",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 26,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|15#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|15#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "9eae9801b095752f",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|15#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|21#fyllning#0",
+   "PART_ID": "taggvillkor|21#fyllning#0",
+   "CONTROL_ID": "taggvillkor|21",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Ord",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "138",
+     "data-a11y-name": "Villkor: Ord",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 32,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|21#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|21#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "2c1d1ed45405c87e",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|21#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|27#fyllning#0",
+   "PART_ID": "taggvillkor|27#fyllning#0",
+   "CONTROL_ID": "taggvillkor|27",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Kök",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "144",
+     "data-a11y-name": "Villkor: Kök",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 38,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|27#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|27#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "a21da7a5af00e1a3",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|27#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|33#fyllning#0",
+   "PART_ID": "taggvillkor|33#fyllning#0",
+   "CONTROL_ID": "taggvillkor|33",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Kost",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "150",
+     "data-a11y-name": "Villkor: Kost",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 44,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|33#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|33#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "44694434db7ac786",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|33#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|42#fyllning#0",
+   "PART_ID": "taggvillkor|42#fyllning#0",
+   "CONTROL_ID": "taggvillkor|42",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Tid",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "159",
+     "data-a11y-name": "Villkor: Tid",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 53,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|42#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|42#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "fe34ee435ffe7608",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|42#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|48#fyllning#0",
+   "PART_ID": "taggvillkor|48#fyllning#0",
+   "CONTROL_ID": "taggvillkor|48",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Betyg",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "165",
+     "data-a11y-name": "Villkor: Betyg",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 59,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|48#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|48#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "7fa8094b54742669",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|48#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|54#fyllning#0",
+   "PART_ID": "taggvillkor|54#fyllning#0",
+   "CONTROL_ID": "taggvillkor|54",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Ålder",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "171",
+     "data-a11y-name": "Villkor: Ålder",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 65,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|54#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|54#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "1153a84a3c03fe5e",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|54#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|60#fyllning#0",
+   "PART_ID": "taggvillkor|60#fyllning#0",
+   "CONTROL_ID": "taggvillkor|60",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Senast lagad",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "177",
+     "data-a11y-name": "Villkor: Senast lagad",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 71,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|60#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|60#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "4ff268de3f65f80c",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|60#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|69#fyllning#0",
+   "PART_ID": "taggvillkor|69#fyllning#0",
+   "CONTROL_ID": "taggvillkor|69",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Ursprung",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "186",
+     "data-a11y-name": "Villkor: Ursprung",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 80,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|69#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|69#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "a25d2b1ba330a1ad",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|69#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|75#fyllning#0",
+   "PART_ID": "taggvillkor|75#fyllning#0",
+   "CONTROL_ID": "taggvillkor|75",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Har bild",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "192",
+     "data-a11y-name": "Villkor: Har bild",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 86,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|75#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|75#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "6260cc131b744f95",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|75#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|81#fyllning#0",
+   "PART_ID": "taggvillkor|81#fyllning#0",
+   "CONTROL_ID": "taggvillkor|81",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Fullständighet",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "198",
+     "data-a11y-name": "Villkor: Fullständighet",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 92,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|81#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|81#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "8b2a7c159bbbca9f",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|81#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "taggvillkor|87#fyllning#0",
+   "PART_ID": "taggvillkor|87#fyllning#0",
+   "CONTROL_ID": "taggvillkor|87",
+   "SCREEN": "Taggregel — villkorets typ",
+   "FAMILY": "taggvillkor",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": null,
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Villkor: Källa",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "204",
+     "data-a11y-name": "Villkor: Källa",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 98,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "taggvillkor|87#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "taggvillkor|87#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "06b62c3b6fc21b4c",
+    "RENDERING_SHA_NEUTRALIZED": "eedccf768e18c919",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "taggvillkor|87#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-ffd6965b4b",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "vanprofildelning|25#fyllning#0",
+   "PART_ID": "vanprofildelning|25#fyllning#0",
+   "CONTROL_ID": "vanprofildelning|25",
+   "SCREEN": "Vänprofil — delningslagret i två riktningar",
+   "FAMILY": "vanprofildelning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Sex recept som Anna delat med dig",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "888",
+     "data-a11y-name": "Sex recept som Anna delat med dig",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 38,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "vanprofildelning|25#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "vanprofildelning|25#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "b31b034aab770afe",
+    "RENDERING_SHA_NEUTRALIZED": "2a647a99796f3e5f",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "vanprofildelning|25#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "vanprofildelning|32#fyllning#0",
+   "PART_ID": "vanprofildelning|32#fyllning#0",
+   "CONTROL_ID": "vanprofildelning|32",
+   "SCREEN": "Vänprofil — delningslagret i två riktningar",
+   "FAMILY": "vanprofildelning",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Fyra recept du delat med Anna, med möjlighet att återkalla",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "895",
+     "data-a11y-name": "Fyra recept du delat med Anna, med möjlighet att återkalla",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 45,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "vanprofildelning|32#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "vanprofildelning|32#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "b31b034aab770afe",
+    "RENDERING_SHA_NEUTRALIZED": "ee40bcd628da5dcc",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 745,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "vanprofildelning|32#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "kontosakerhetsvy|19#fyllning#0",
+   "PART_ID": "kontosakerhetsvy|19#fyllning#0",
+   "CONTROL_ID": "kontosakerhetsvy|19",
+   "SCREEN": "Kontosäkerhet — fyra avsnitt",
+   "FAMILY": "kontosakerhetsvy",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "textbox",
+   "CONTROL_OPERATION": "Nytt lösenord",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "311",
+     "data-a11y-name": "Nytt lösenord",
+     "data-a11y-role": "textbox",
+     "data-hit": "self"
+    },
+    "text": "Nytt lösenord"
+   },
+   "descendantordinal": 28,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "kontosakerhetsvy|19#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "kontosakerhetsvy|19#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "a202ada8fcde506c",
+    "RENDERING_SHA_NEUTRALIZED": "b881445487211b26",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "kontosakerhetsvy|19#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-4855b92723",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "kontosakerhetsvy|20#fyllning#0",
+   "PART_ID": "kontosakerhetsvy|20#fyllning#0",
+   "CONTROL_ID": "kontosakerhetsvy|20",
+   "SCREEN": "Kontosäkerhet — fyra avsnitt",
+   "FAMILY": "kontosakerhetsvy",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "textbox",
+   "CONTROL_OPERATION": "Upprepa nytt lösenord",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "312",
+     "data-a11y-name": "Upprepa nytt lösenord",
+     "data-a11y-role": "textbox",
+     "data-hit": "self"
+    },
+    "text": "Upprepa nytt"
+   },
+   "descendantordinal": 29,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "kontosakerhetsvy|20#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "kontosakerhetsvy|20#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "a202ada8fcde506c",
+    "RENDERING_SHA_NEUTRALIZED": "e72175e69768eaae",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "kontosakerhetsvy|20#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-4855b92723",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "kontosakerhetsvy|30#fyllning#0",
+   "PART_ID": "kontosakerhetsvy|30#fyllning#0",
+   "CONTROL_ID": "kontosakerhetsvy|30",
+   "SCREEN": "Kontosäkerhet — fyra avsnitt",
+   "FAMILY": "kontosakerhetsvy",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "textbox",
+   "CONTROL_OPERATION": "Nuvarande lösenord för e-postbyte",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "322",
+     "data-a11y-name": "Nuvarande lösenord för e-postbyte",
+     "data-a11y-role": "textbox",
+     "data-hit": "self"
+    },
+    "text": "Nuvarande lösenord"
+   },
+   "descendantordinal": 39,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "kontosakerhetsvy|30#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "kontosakerhetsvy|30#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "a202ada8fcde506c",
+    "RENDERING_SHA_NEUTRALIZED": "d4f06d6ef0e6c277",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "kontosakerhetsvy|30#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-4855b92723",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "kontosakerhetsvy|31#fyllning#0",
+   "PART_ID": "kontosakerhetsvy|31#fyllning#0",
+   "CONTROL_ID": "kontosakerhetsvy|31",
+   "SCREEN": "Kontosäkerhet — fyra avsnitt",
+   "FAMILY": "kontosakerhetsvy",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "textbox",
+   "CONTROL_OPERATION": "Ny e-postadress",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "323",
+     "data-a11y-name": "Ny e-postadress",
+     "data-a11y-role": "textbox",
+     "data-hit": "self"
+    },
+    "text": "Ny adress"
+   },
+   "descendantordinal": 40,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED",
+   "BLOCKER_RELATION_IDS": [
+    "kontosakerhetsvy|31#ram#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "kontosakerhetsvy|31#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "a202ada8fcde506c",
+    "RENDERING_SHA_NEUTRALIZED": "a096c2bf9ccdf1c0",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "kontosakerhetsvy|31#ram#0",
+     "typ": "ram",
+     "kvot": 3.32,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "GE_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-4855b92723",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "statistikfullstandighet|28#fyllning#0",
+   "PART_ID": "statistikfullstandighet|28#fyllning#0",
+   "CONTROL_ID": "statistikfullstandighet|28",
+   "SCREEN": "Samlingsstatistik — fullständighet",
+   "FAMILY": "statistikfullstandighet",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Fyll i tid på 34 recept",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "899",
+     "data-a11y-name": "Fyll i tid på 34 recept",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 38,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "statistikfullstandighet|28#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "statistikfullstandighet|28#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "0a2c4cc7435d6eb1",
+    "RENDERING_SHA_NEUTRALIZED": "3b79b71d90d6cd0d",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "statistikfullstandighet|28#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "statistikfullstandighet|35#fyllning#0",
+   "PART_ID": "statistikfullstandighet|35#fyllning#0",
+   "CONTROL_ID": "statistikfullstandighet|35",
+   "SCREEN": "Samlingsstatistik — fullständighet",
+   "FAMILY": "statistikfullstandighet",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Lägg till bild på 34 recept",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "906",
+     "data-a11y-name": "Lägg till bild på 34 recept",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 45,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "statistikfullstandighet|35#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "statistikfullstandighet|35#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "0a2c4cc7435d6eb1",
+    "RENDERING_SHA_NEUTRALIZED": "4438f1d58b636b42",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "statistikfullstandighet|35#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  },
+  {
+   "RELATION_ID": "statistikfullstandighet|42#fyllning#0",
+   "PART_ID": "statistikfullstandighet|42#fyllning#0",
+   "CONTROL_ID": "statistikfullstandighet|42",
+   "SCREEN": "Samlingsstatistik — fullständighet",
+   "FAMILY": "statistikfullstandighet",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "THEME": "light",
+   "TARGET": "FILL_RELATION",
+   "GRAPHICAL_PART_TYPE": "fyllning",
+   "CONTROL_ROLE": "button",
+   "CONTROL_OPERATION": "Nio recept har bara en titel",
+   "STATE": null,
+   "STATE_UNDER_TEST": "STATIC_DEFAULT",
+   "SOURCE_ANCHOR": {
+    "tagg": "span",
+    "attribut": {
+     "data-dc-tpl": "913",
+     "data-a11y-name": "Nio recept har bara en titel",
+     "data-a11y-role": "button",
+     "data-hit": "self"
+    },
+    "text": ""
+   },
+   "descendantordinal": 52,
+   "CURRENT_RATIO": 1.11,
+   "APPLICABILITY_VERDICT": "UNKNOWN",
+   "REVIEW_STATUS": "REVIEWED_UNKNOWN",
+   "BLOCKER": "ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED",
+   "BLOCKER_RELATION_IDS": [
+    "statistikfullstandighet|42#ikon#0"
+   ],
+   "BLOCKING_CARRIERS": [
+    {
+     "PART_ID": "statistikfullstandighet|42#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3"
+    }
+   ],
+   "REOPEN_REQUIRES_ANY_OF": [
+    "NEW_ACTUAL_EVIDENCE",
+    "BLOCKING_CARRIER_ADJUDICATED",
+    "OTHER_DEPENDENCY_RESOLVED",
+    "EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION"
+   ],
+   "ELIGIBLE_FOR_MECHANICAL_PILOT": false,
+   "VERDICT_PROVENANCE": "HUMAN_OCCURRENCE_REVIEW_WITHOUT_VERDICT",
+   "EVIDENCE_ID": "LOW_CONTRAST_PILOT_3 (d36a31a)",
+   "EVIDENCE_SOURCE": "ACTUAL_SCENE_PROBE",
+   "EVIDENCE": {
+    "OPERATION": "TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT",
+    "CANONICAL_CURRENT_RATIO": 1.11,
+    "TARGET_PAINT": "rgb(230, 234, 217)",
+    "EFFECTIVE_SURROUNDING_PAINT": "rgb(245, 244, 237)",
+    "NEUTRALIZED_TO": "rgb(245, 244, 237)",
+    "COMPUTED_BEFORE": "rgb(230, 234, 217)",
+    "COMPUTED_AFTER": "rgb(245, 244, 237)",
+    "VISUAL_DIFFERENCE": "PRESENT",
+    "VISUAL_DIFFERENCE_SOURCE": "BITJAMFORELSE_AV_RENDRING",
+    "RENDERING_BIT_IDENTICAL": false,
+    "RENDERING_SHA": "0a2c4cc7435d6eb1",
+    "RENDERING_SHA_NEUTRALIZED": "d7274f21f91848d2",
+    "GEOMETRY_DELTA": 0,
+    "CLIPPING_DELTA": 0,
+    "COLLATERAL_CHANGES": 0,
+    "CLEAN_RESTORATION": true,
+    "COMPARED_ELEMENTS": 709,
+    "ISOLATION_GATE": "PASSED",
+    "ISOLERING_ANVAND": true
+   },
+   "TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION": "YES",
+   "MOTIVERING": "target fill ar visuellt urskiljbar; target-neutralisering andrar actual scene; requiredness kan inte avgoras utan ytterligare carrier-evidens; blockerande boundary/icon ar identifierad men sjalv inte adjudicerad",
+   "DOES_NOT_IMPLY": [
+    "BOUNDARY_REQUIRED",
+    "ICON_REQUIRED",
+    "TEXT_SUFFICIENT",
+    "CONTROL_CONFORMING",
+    "ANY_OTHER_CARRIER_VERDICT",
+    "GROUP_VERDICT",
+    "R04_EVIDENCE"
+   ],
+   "$intePropagerat": "Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.",
+   "OTHER_CARRIERS_UNCHANGED": [
+    {
+     "PART_ID": "statistikfullstandighet|42#ikon#0",
+     "typ": "ikon",
+     "kvot": 2.98,
+     "APPLICABILITY": "UNKNOWN",
+     "REVIEW_STATUS": "UNREVIEWED_UNKNOWN",
+     "band": "LT_3",
+     "CHANGED_BY_THIS_RECORD": false
+    }
+   ],
+   "REVIEW_GROUP_ID": "RG-563dd50e97",
+   "REVIEW_GROUP_ROLE": "PRESENTATION_ONLY",
+   "GROUP_VERDICT": null,
+   "HUMAN_EQUIVALENCE_GATE": "NOT_PASSED",
+   "PERSISTENT_SEMANTIC_DECISION_IDENTITY": null,
+   "R04_CREDIT": 0,
+   "R04_WRITES": 0
+  }
+ ]
+}

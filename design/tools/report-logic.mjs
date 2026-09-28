@@ -184,10 +184,18 @@ export function reduceControl(c, ctx) {
     if (!(ctx.ranControls || []).includes(c.legacyId || c.id)) {
       const s = stepOf('spec-lint');
       const crashed = s && s.status === 'failed' && !s.specErrors;
-      return { ...out, status: crashed ? 'failed' : 'not run',
-        why: crashed
-          ? 'spec-lint kraschade utan parsad diagnostik — utfallet är okänt och räknas som fel'
-          : 'kontrollen registrerade inget körbevis i lint-core' };
+      if (crashed)
+        return { ...out, status: 'failed',
+          why: 'spec-lint kraschade utan parsad diagnostik — utfallet är okänt och räknas som fel' };
+      // FAIL-CLOSED. En kontroll med mustReport måste lämna ett uttryckligt
+      // utlåtande. Att den inte lämnade något är i sig ett resultat — verktyget
+      // svarade inte — och det är BLOCKED, aldrig 'not run'. 'not run' läses som
+      // "ännu inte aktuell", och en aktiverad grindkontroll är alltid aktuell.
+      if (c.mustReport)
+        return { ...out, status: 'blocked',
+          why: 'kontrollen är obligatoriskt rapporterande men registrerade inget körbevis i lint-core — ' +
+               'verktygsstatus okänd, vilket aldrig får läsas som "ännu inte körd"' };
+      return { ...out, status: 'not run', why: 'kontrollen registrerade inget körbevis i lint-core' };
     }
     return { ...out, status: out.errors ? 'failed' : 'passed' };
   }
@@ -617,10 +625,22 @@ export function walkSchema(value, schema, path, p) {
     if (okCount === 0) p.push(path + ' matchar ingen av ' + key + '-grenarna (' + branches[0].slice(0, 1).join('') + ')');
     else if (key === 'oneOf' && okCount > 1) p.push(path + ' matchar ' + okCount + ' oneOf-grenar, exakt en krävs');
   }
+  // KRÄVDA NYCKLAR. `required` handlar om att nyckeln FINNS, inte om att den
+  // bär ett värde. Att räkna null som frånvarande gjorde varje fält som
+  // schemat självt deklarerar som nullbart OMÖJLIGT att uppfylla:
+  // selection-contexts.schema.json kräver runtimeAdapter och documentation och
+  // deklarerar båda som ["object","null"] respektive ["string","null"], så en
+  // spärrad dimension kunde aldrig validera. Null godtas därför när — och bara
+  // när — schemat uttryckligen tillåter null för just den nyckeln. Tom sträng
+  // och saknad nyckel fälls som förut.
   if (Array.isArray(schema.required) && value && typeof value === 'object')
-    for (const k of schema.required)
-      if (value[k] === undefined || value[k] === null || value[k] === '')
+    for (const k of schema.required) {
+      const sub = (schema.properties || {})[k];
+      const t = sub && sub.type;
+      const nullTillåts = t === 'null' || (Array.isArray(t) && t.includes('null'));
+      if (value[k] === undefined || value[k] === '' || (value[k] === null && !nullTillåts))
         p.push(path + ' saknar "' + k + '"');
+    }
   if (schema.properties && value && typeof value === 'object' && !Array.isArray(value)) {
     for (const [k, sub] of Object.entries(schema.properties))
       if (value[k] !== undefined) walkSchema(value[k], sub, path + '.' + k, p);

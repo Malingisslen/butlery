@@ -1,0 +1,6337 @@
+{
+ "$om": "D/H · ankarmalens union efter dedup pa semantiskt objekt",
+ "M1_REQUIREMENT_COUNT": 24,
+ "M1_SEMANTIC_OBJECTS": 24,
+ "M1_NEW_ANCHORS_REQUIRED": 0,
+ "M1_REQUIREMENTS_REUSING_OWNER_ANCHOR": 24,
+ "COLLISION_REQUIREMENT_COUNT": 16,
+ "COLLISION_ELEMENTS": 42,
+ "M7_REQUIREMENT_COUNT": 289,
+ "PRELIMINARA_KRAV": 355,
+ "REQUIREMENTS_REQUIRING_STRONGER_IDENTITY": 331,
+ "M1_UNIQUE_TARGETS": 0,
+ "COLLISION_UNIQUE_TARGETS": 35,
+ "M7_UNIQUE_TARGETS": 285,
+ "CROSS_SET_SHARED_TARGETS": 0,
+ "UNIQUE_ANCHOR_TARGETS": 320,
+ "REDAN_ANKRADE_MAL": 0,
+ "FINAL_NEW_ANCHOR_COUNT": 320,
+ "OBJEKTANKARE_SOM_TACKER_FLERA_KRAV": 9,
+ "REQUIREMENTS_RESOLVED_PER_ANCHOR": {
+  "1": 311,
+  "2": 7,
+  "3": 2
+ },
+ "M1_AGARE": [
+  {
+   "AGARE": "inkoputeslutna#8",
+   "ROLL": "button",
+   "NAMN": "Tre basvaror uteslutna, visa vilka",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "inkoputeslutna#20",
+   "ROLL": "button",
+   "NAMN": "Fyra måltider omräknade efter närvaro, visa vilka",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#9",
+   "ROLL": "button",
+   "NAMN": "Importera från Länk",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#19",
+   "ROLL": "button",
+   "NAMN": "Importera från Text",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#29",
+   "ROLL": "button",
+   "NAMN": "Importera från Instagram eller TikTok",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#40",
+   "ROLL": "button",
+   "NAMN": "Importera från YouTube",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#51",
+   "ROLL": "button",
+   "NAMN": "Importera från Foto",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#61",
+   "ROLL": "button",
+   "NAMN": "Importera från Röst",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#71",
+   "ROLL": "button",
+   "NAMN": "Importera från Fil",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "imp1kalla#81",
+   "ROLL": "button",
+   "NAMN": "Importera från Arkiv",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#9",
+   "ROLL": "button",
+   "NAMN": "Villkor: Ingrediens",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#15",
+   "ROLL": "button",
+   "NAMN": "Villkor: Egenskap",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#21",
+   "ROLL": "button",
+   "NAMN": "Villkor: Ord",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#27",
+   "ROLL": "button",
+   "NAMN": "Villkor: Kök",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#33",
+   "ROLL": "button",
+   "NAMN": "Villkor: Kost",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#42",
+   "ROLL": "button",
+   "NAMN": "Villkor: Tid",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#48",
+   "ROLL": "button",
+   "NAMN": "Villkor: Betyg",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#54",
+   "ROLL": "button",
+   "NAMN": "Villkor: Ålder",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#60",
+   "ROLL": "button",
+   "NAMN": "Villkor: Senast lagad",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#69",
+   "ROLL": "button",
+   "NAMN": "Villkor: Ursprung",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#75",
+   "ROLL": "button",
+   "NAMN": "Villkor: Har bild",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#81",
+   "ROLL": "button",
+   "NAMN": "Villkor: Fullständighet",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "taggvillkor#87",
+   "ROLL": "button",
+   "NAMN": "Villkor: Källa",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  },
+  {
+   "AGARE": "notiscentral#7",
+   "ROLL": "button",
+   "NAMN": "Markera alla tre olästa som lästa",
+   "DELAR": 1,
+   "ANKARE": null,
+   "NYCKELGRUND": "roll och namn"
+  }
+ ],
+ "rader": [
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#14",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 14,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 16,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 18,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#20",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 20,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 30,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#32",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 32,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#34",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 34,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#47",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 47,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#49",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 49,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#51",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 51,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#53",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 53,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#55",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 55,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjmedlemsamtycke#9",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "familjmedlemsamtycke",
+   "ordProd": 9,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"0–2\"",
+   "SEMANTIC_OBJECT": "radio \"0 till 2 år\" i familjmedlemsamtycke",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjmedlemsamtycke#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "familjmedlemsamtycke",
+   "ordProd": 10,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"3–6\"",
+   "SEMANTIC_OBJECT": "radio \"3 till 6 år\" i familjmedlemsamtycke",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjmedlemsamtycke#12",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "familjmedlemsamtycke",
+   "ordProd": 12,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"13–17\"",
+   "SEMANTIC_OBJECT": "radio \"13 till 17 år\" i familjmedlemsamtycke",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbarvegods#15",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbarvegods",
+   "ordProd": 15,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"2\"",
+   "SEMANTIC_OBJECT": "button \"Sida 2\" i rcbarvegods",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 11 breda vyer::rcbarvegods::roll::button::sida"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbarvegods#17",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbarvegods",
+   "ordProd": 17,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"3\"",
+   "SEMANTIC_OBJECT": "button \"Sida 3\" i rcbarvegods",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 11 breda vyer::rcbarvegods::roll::button::sida"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoplacering#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoplacering",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoplacering",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoplacering#46",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoplacering",
+   "ordProd": 46,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"lunch+middag+övrigt+\"",
+   "SEMANTIC_OBJECT": "\"lunch+middag+övrigt+\" i veckoplacering",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 3,
+   "DELNYCKLAR": [
+    "button-lagg-till-ovrigt",
+    "button-lagg-till-lunch",
+    "button-lagg-till-middag"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt",
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-lunch",
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-middag"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoplacering#59",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoplacering",
+   "ordProd": 59,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"lunch+middag+övrigt+\"",
+   "SEMANTIC_OBJECT": "\"lunch+middag+övrigt+\" i veckoplacering",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 3,
+   "DELNYCKLAR": [
+    "button-lagg-till-ovrigt",
+    "button-lagg-till-lunch",
+    "button-lagg-till-middag"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt",
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-lunch",
+    "EL::etapp 2::veckoplacering::roll::button::lagg-till-middag"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoplaceringvald#13",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoplaceringvald",
+   "ordProd": 13,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"lunch+middag+övrigt+\"",
+   "SEMANTIC_OBJECT": "\"lunch+middag+övrigt+\" i veckoplaceringvald",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "button-lagg-till-lunch",
+    "button-lagg-till-middag"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-lunch",
+    "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-middag"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoplaceringvald#26",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoplaceringvald",
+   "ordProd": 26,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"lunch+middag+övrigtKanelbullar\"",
+   "SEMANTIC_OBJECT": "\"lunch+middag+övrigtKanelbullar\" i veckoplaceringvald",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "button-lagg-till-lunch",
+    "button-lagg-till-middag"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-lunch",
+    "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-middag"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoautoplacerad#36",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoautoplacerad",
+   "ordProd": 36,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoautoplacerad",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoautoplacerad::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoautoplacerad#56",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoautoplacerad",
+   "ordProd": 56,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoautoplacerad",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoautoplacerad::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckokalender#56",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckokalender",
+   "ordProd": 56,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckokalender",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckokalender#62",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckokalender",
+   "ordProd": 62,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"lunch+middagUgnslax med potatisövrigt+\"",
+   "SEMANTIC_OBJECT": "\"lunch+middagUgnslax med potatisövrigt+\" i veckokalender",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "button-lagg-till-ovrigt",
+    "button-lagg-till-lunch"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt",
+    "EL::etapp 2::veckokalender::roll::button::lagg-till-lunch"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckokalender#94",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckokalender",
+   "ordProd": 94,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckokalender",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckokalender#101",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckokalender",
+   "ordProd": 101,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"lunch+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till lunch\" i veckokalender",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckokalender::roll::button::lagg-till-lunch"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckonarvaro#34",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckonarvaro",
+   "ordProd": 34,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckonarvaro",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckonarvaro::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckonarvaro#70",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckonarvaro",
+   "ordProd": 70,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckonarvaro",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckonarvaro::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoflytta#43",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoflytta",
+   "ordProd": 43,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoflytta",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoflytta#63",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoflytta",
+   "ordProd": 63,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoflytta",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoflytta#85",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "veckoflytta",
+   "ordProd": 85,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"övrigt+\"",
+   "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoflytta",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socreaktion#12",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socreaktion",
+   "ordProd": 12,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"😋1\"",
+   "SEMANTIC_OBJECT": "button \"Mums, 1\" i socreaktion",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 9 socialt och komponenter::socreaktion::roll::button::mums"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socreaktion#28",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socreaktion",
+   "ordProd": 28,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"😋\"",
+   "SEMANTIC_OBJECT": "button \"Mums\" i socreaktion",
+   "REASONS": [
+    "WRITE_KEY_COLLISION"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 9 socialt och komponenter::socreaktion::roll::button::mums"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tomtrecept#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "tomtrecept",
+   "ordProd": 7,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök bland dina recept\"",
+   "SEMANTIC_OBJECT": "\"Sök bland dina recept\" i tomtrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "searchbox \"Sök bland dina recept\" i tomtrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tomtrecept#28",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "tomtrecept",
+   "ordProd": 28,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i tomtrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i tomtrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tomtrecept#41",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "tomtrecept",
+   "ordProd": 41,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i tomtrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i tomtrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tomtrecept#48",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "tomtrecept",
+   "ordProd": 48,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Mer\"",
+   "SEMANTIC_OBJECT": "\"Mer\" i tomtrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Mer\" i tomtrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tomtrecept#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "tomtrecept",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i tomtrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i tomtrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "offline#20",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "offline",
+   "ordProd": 20,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Försök igen\"",
+   "SEMANTIC_OBJECT": "\"Försök igen\" i offline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Försök igen\" i offline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "offline#36",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "offline",
+   "ordProd": 36,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i offline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i offline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "offline#49",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "offline",
+   "ordProd": 49,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i offline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i offline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "offline#56",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "offline",
+   "ordProd": 56,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Mer\"",
+   "SEMANTIC_OBJECT": "\"Mer\" i offline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Mer\" i offline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "offline#48",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "offline",
+   "ordProd": 48,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i offline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i offline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 10,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Börja laga\"",
+   "SEMANTIC_OBJECT": "\"Börja laga\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Börja laga\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 11,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Byt rätt\"",
+   "SEMANTIC_OBJECT": "\"Byt rätt\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Byt rätt\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#13",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 13,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök bland 128 recept …\"",
+   "SEMANTIC_OBJECT": "\"Sök bland 128 recept …\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "searchbox \"Sök bland 128 recept …\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#68",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 68,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#81",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 81,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#88",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 88,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Mer\"",
+   "SEMANTIC_OBJECT": "\"Mer\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Mer\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemrecept#80",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "hemrecept",
+   "ordProd": 80,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i hemrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i hemrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "sortera#4",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "sortera",
+   "ordProd": 4,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök recept, ingrediens …\"",
+   "SEMANTIC_OBJECT": "\"Sök recept, ingrediens …\" i sortera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "searchbox \"Sök recept, ingrediens …\" i sortera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "laga#37",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "laga",
+   "ordProd": 37,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SEMANTIC_OBJECT": "\"15 min\" i laga",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"15 min\" i laga"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "laga#44",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "laga",
+   "ordProd": 44,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Steg 2 av 6\"",
+   "SEMANTIC_OBJECT": "\"Steg 2 av 6\" i laga",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "glyf-arrow-left",
+    "glyf-chevron-right"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i laga"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagastaende",
+   "ordProd": 10,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−4+\"",
+   "SEMANTIC_OBJECT": "\"−4+\" i lagastaende",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "spinbutton \"−4+\" i lagastaende"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagastaende",
+   "ordProd": 11,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−\"",
+   "SEMANTIC_OBJECT": "\"−\" i lagastaende",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"−\" i lagastaende"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende#13",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagastaende",
+   "ordProd": 13,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i lagastaende",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i lagastaende"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagastaende",
+   "ordProd": 18,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Ingredienser 5 rader\"",
+   "SEMANTIC_OBJECT": "\"Ingredienser 5 rader\" i lagastaende",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Ingredienser 5 rader\" i lagastaende"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende#49",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagastaende",
+   "ordProd": 49,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SEMANTIC_OBJECT": "\"15 min\" i lagastaende",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"15 min\" i lagastaende"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagamorkt#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagamorkt",
+   "ordProd": 10,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−4+\"",
+   "SEMANTIC_OBJECT": "\"−4+\" i lagamorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "spinbutton \"−4+\" i lagamorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagamorkt#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagamorkt",
+   "ordProd": 11,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−\"",
+   "SEMANTIC_OBJECT": "\"−\" i lagamorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"−\" i lagamorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagamorkt#13",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagamorkt",
+   "ordProd": 13,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i lagamorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i lagamorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagamorkt#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagamorkt",
+   "ordProd": 18,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Ingredienser 5 rader\"",
+   "SEMANTIC_OBJECT": "\"Ingredienser 5 rader\" i lagamorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Ingredienser 5 rader\" i lagamorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagamorkt#49",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "lagamorkt",
+   "ordProd": 49,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SEMANTIC_OBJECT": "\"15 min\" i lagamorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"15 min\" i lagamorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "plussheet#5",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "plussheet",
+   "ordProd": 5,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Lägg till recept Snabbspara Bara namn och måltid — impo\"",
+   "SEMANTIC_OBJECT": "\"Lägg till recept Snabbspara Bara namn och mål\" i plussheet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "dialog \"Lägg till recept Snabbspara Bara namn oc\" i plussheet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "plussheet#15",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "plussheet",
+   "ordProd": 15,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Importera länk\"",
+   "SEMANTIC_OBJECT": "\"Importera länk\" i plussheet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Importera länk\" i plussheet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "plussheet#21",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "plussheet",
+   "ordProd": 21,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skriv manuellt\"",
+   "SEMANTIC_OBJECT": "\"Skriv manuellt\" i plussheet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Skriv manuellt\" i plussheet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "plussheet#27",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "plussheet",
+   "ordProd": 27,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Från bild\"",
+   "SEMANTIC_OBJECT": "\"Från bild\" i plussheet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Från bild\" i plussheet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "plussheet#33",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "plussheet",
+   "ordProd": 33,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Från arkiv\"",
+   "SEMANTIC_OBJECT": "\"Från arkiv\" i plussheet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Från arkiv\" i plussheet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snabbspara#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "snabbspara",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i snabbspara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i snabbspara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snabbspara#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "snabbspara",
+   "ordProd": 10,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Middag\"",
+   "SEMANTIC_OBJECT": "\"Middag\" i snabbspara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Middag\" i snabbspara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snabbspara#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "snabbspara",
+   "ordProd": 11,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Lunch\"",
+   "SEMANTIC_OBJECT": "\"Lunch\" i snabbspara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Lunch\" i snabbspara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snabbspara#12",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "snabbspara",
+   "ordProd": 12,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Frukost\"",
+   "SEMANTIC_OBJECT": "\"Frukost\" i snabbspara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Frukost\" i snabbspara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snabbspara#13",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "snabbspara",
+   "ordProd": 13,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Efterrätt\"",
+   "SEMANTIC_OBJECT": "\"Efterrätt\" i snabbspara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Efterrätt\" i snabbspara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snabbspara#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "snabbspara",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara\"",
+   "SEMANTIC_OBJECT": "\"Spara\" i snabbspara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara\" i snabbspara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "smartimport#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "smartimport",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i smartimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i smartimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferi#52",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "skafferi",
+   "ordProd": 52,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i skafferi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i skafferi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferi#60",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "skafferi",
+   "ordProd": 60,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i skafferi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i skafferi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferi#81",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "skafferi",
+   "ordProd": 81,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Mer\"",
+   "SEMANTIC_OBJECT": "\"Mer\" i skafferi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Mer\" i skafferi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferi#72",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "skafferi",
+   "ordProd": 72,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i skafferi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i skafferi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familj#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "familj",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i familj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familj#39",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "familj",
+   "ordProd": 39,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till familjemedlem\"",
+   "SEMANTIC_OBJECT": "\"+ Lägg till familjemedlem\" i familj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+ Lägg till familjemedlem\" i familj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familj#41",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "familj",
+   "ordProd": 41,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i familj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i familj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familj#49",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "familj",
+   "ordProd": 49,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i familj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i familj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familj#62",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "familj",
+   "ordProd": 62,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i familj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i familj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familj#61",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "familj",
+   "ordProd": 61,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i familj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i familj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Min familj\"",
+   "SEMANTIC_OBJECT": "\"Min familj\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Min familj\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 10,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Allergener & kost\"",
+   "SEMANTIC_OBJECT": "\"Allergener & kost\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Allergener & kost\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#14",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 14,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Menysmak\"",
+   "SEMANTIC_OBJECT": "\"Menysmak\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Menysmak\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 18,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Egna taggar\"",
+   "SEMANTIC_OBJECT": "\"Egna taggar\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Egna taggar\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 30,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Notisinställningar\"",
+   "SEMANTIC_OBJECT": "\"Notisinställningar\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Notisinställningar\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#35",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 35,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Kontosäkerhet\"",
+   "SEMANTIC_OBJECT": "\"Kontosäkerhet\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Kontosäkerhet\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#39",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 39,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Dataexport\"",
+   "SEMANTIC_OBJECT": "\"Dataexport\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Dataexport\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#43",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 43,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Logga ut\"",
+   "SEMANTIC_OBJECT": "\"Logga ut\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Logga ut\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#47",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 47,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Radera konto\"",
+   "SEMANTIC_OBJECT": "\"Radera konto\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Radera konto\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#52",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 52,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Om ButleryVersion 1.0 · villkor & licenser\"",
+   "SEMANTIC_OBJECT": "\"Om ButleryVersion 1.0 · villkor & licenser\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Om ButleryVersion 1.0 · villkor & licens\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#69",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 69,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Vanliga frågor\"",
+   "SEMANTIC_OBJECT": "\"Vanliga frågor\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Vanliga frågor\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#74",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 74,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#82",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 82,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#95",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 95,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "installningar#94",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "installningar",
+   "ordProd": 94,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i installningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i installningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notiser#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "notiser",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i notiser",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i notiser"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notiser#5",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "notiser",
+   "ordProd": 5,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i notiser",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i notiser"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notiser#58",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "notiser",
+   "ordProd": 58,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i notiser",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i notiser"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notiser#66",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "notiser",
+   "ordProd": 66,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i notiser",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i notiser"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notiser#79",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "notiser",
+   "ordProd": 79,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i notiser",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i notiser"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notiser#78",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "FRAME": "notiser",
+   "ordProd": 78,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i notiser",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i notiser"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vemat#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vemat",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i vemat",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i vemat"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vemat#35",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vemat",
+   "ordProd": 35,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Klar — 2 åt\"",
+   "SEMANTIC_OBJECT": "\"Klar — 2 åt\" i vemat",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Klar — 2 åt\" i vemat"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i familjebetyg"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjebetyg#63",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "familjebetyg",
+   "ordProd": 63,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara betygen\"",
+   "SEMANTIC_OBJECT": "\"Spara betygen\" i familjebetyg",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara betygen\" i familjebetyg"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "placera#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "placera",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i placera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i placera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "placera#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "placera",
+   "ordProd": 7,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i placera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i placera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "placera#26",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "placera",
+   "ordProd": 26,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Laxpudding med dill\"",
+   "SEMANTIC_OBJECT": "\"Laxpudding med dill\" i placera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Laxpudding med dill\" i placera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "placera#32",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "placera",
+   "ordProd": 32,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Krämig svamppasta\"",
+   "SEMANTIC_OBJECT": "\"Krämig svamppasta\" i placera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Krämig svamppasta\" i placera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "placera#50",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "placera",
+   "ordProd": 50,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Klar\"",
+   "SEMANTIC_OBJECT": "\"Klar\" i placera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Klar\" i placera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kalender#144",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kalender",
+   "ordProd": 144,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i kalender",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i kalender"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kalender#168",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kalender",
+   "ordProd": 168,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i kalender",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i kalender"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kalender#175",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kalender",
+   "ordProd": 175,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Mer\"",
+   "SEMANTIC_OBJECT": "\"Mer\" i kalender",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Mer\" i kalender"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inkopmerge#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inkopmerge",
+   "ordProd": 2,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Till inköpslistan 5 rätter ger 24 rader. Efter sammansl\"",
+   "SEMANTIC_OBJECT": "\"Till inköpslistan 5 rätter ger 24 rader. Efte\" i inkopmerge",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Till inköpslistan 5 rätter ger 24 rader.\" i inkopmerge"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Min familj\"",
+   "SEMANTIC_OBJECT": "\"Min familj\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Min familj\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#21",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 21,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Delat med mig\"",
+   "SEMANTIC_OBJECT": "\"Delat med mig\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Delat med mig\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#25",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 25,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Egna taggar\"",
+   "SEMANTIC_OBJECT": "\"Egna taggar\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Egna taggar\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#29",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 29,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Samlingsstatistik\"",
+   "SEMANTIC_OBJECT": "\"Samlingsstatistik\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Samlingsstatistik\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#39",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 39,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inställningar\"",
+   "SEMANTIC_OBJECT": "\"Inställningar\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Inställningar\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#44",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 44,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#52",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 52,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#65",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 65,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mer#64",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "mer",
+   "ordProd": 64,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i mer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i mer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanner#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vanner",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i vanner",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i vanner"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanner#29",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vanner",
+   "ordProd": 29,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Svara Erik\"",
+   "SEMANTIC_OBJECT": "\"Svara Erik\" i vanner",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 2 familj och socialt::objekt::occ-cfjppeihbrmj::del::etikett-svara-erik"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanner#67",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vanner",
+   "ordProd": 67,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i vanner",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i vanner"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanner#75",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vanner",
+   "ordProd": 75,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i vanner",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i vanner"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanner#88",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vanner",
+   "ordProd": 88,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i vanner",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i vanner"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanner#87",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "vanner",
+   "ordProd": 87,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i vanner",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i vanner"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "meddelanden#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "meddelanden",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i meddelanden",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i meddelanden"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "meddelanden#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "meddelanden",
+   "ordProd": 7,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök konversationer …\"",
+   "SEMANTIC_OBJECT": "\"Sök konversationer …\" i meddelanden",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "searchbox \"Sök konversationer …\" i meddelanden"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "meddelanden#59",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "meddelanden",
+   "ordProd": 59,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hem\"",
+   "SEMANTIC_OBJECT": "\"Hem\" i meddelanden",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Hem\" i meddelanden"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "meddelanden#67",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "meddelanden",
+   "ordProd": 67,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Meny\"",
+   "SEMANTIC_OBJECT": "\"Meny\" i meddelanden",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Meny\" i meddelanden"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "meddelanden#80",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "meddelanden",
+   "ordProd": 80,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i meddelanden",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i meddelanden"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "meddelanden#79",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "meddelanden",
+   "ordProd": 79,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i meddelanden",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i meddelanden"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "menysmak#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "menysmak",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i menysmak",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i menysmak"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "menysmak#43",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "menysmak",
+   "ordProd": 43,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara\"",
+   "SEMANTIC_OBJECT": "\"Spara\" i menysmak",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara\" i menysmak"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "statistik#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "statistik",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i statistik",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i statistik"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skrivsjalv#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "skrivsjalv",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i skrivsjalv",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i skrivsjalv"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skrivsjalv#9",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "skrivsjalv",
+   "ordProd": 9,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Middag\"",
+   "SEMANTIC_OBJECT": "\"Middag\" i skrivsjalv",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "combobox \"Middag\" i skrivsjalv"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skrivsjalv#17",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "skrivsjalv",
+   "ordProd": 17,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i skrivsjalv",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i skrivsjalv"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skrivsjalv#80",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "skrivsjalv",
+   "ordProd": 80,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara receptet\"",
+   "SEMANTIC_OBJECT": "\"Spara receptet\" i skrivsjalv",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara receptet\" i skrivsjalv"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "fotoimport#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "fotoimport",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i fotoimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i fotoimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "fotoimport#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "fotoimport",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Fota nu\"",
+   "SEMANTIC_OBJECT": "\"Fota nu\" i fotoimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Fota nu\" i fotoimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "fotoimport#26",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "fotoimport",
+   "ordProd": 26,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Läs av 2 sidor\"",
+   "SEMANTIC_OBJECT": "\"Läs av 2 sidor\" i fotoimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Läs av 2 sidor\" i fotoimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "arkivimport#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "arkivimport",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i arkivimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i arkivimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "taggar#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "taggar",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i taggar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i taggar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "allergener#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "allergener",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i allergener",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i allergener"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "allergener#52",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "allergener",
+   "ordProd": 52,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Uppdatera alla recept\"",
+   "SEMANTIC_OBJECT": "\"Uppdatera alla recept\" i allergener",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Uppdatera alla recept\" i allergener"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatlista#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "delatlista",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i delatlista",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i delatlista"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatlista#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "delatlista",
+   "ordProd": 10,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i delatlista",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i delatlista"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatlista#22",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "delatlista",
+   "ordProd": 22,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Lägg till vara …\"",
+   "SEMANTIC_OBJECT": "\"Lägg till vara …\" i delatlista",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Lägg till vara …\" i delatlista"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatmedmig#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "delatmedmig",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i delatmedmig",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i delatmedmig"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatmedmig#4",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "delatmedmig",
+   "ordProd": 4,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök delat innehåll …\"",
+   "SEMANTIC_OBJECT": "\"Sök delat innehåll …\" i delatmedmig",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "searchbox \"Sök delat innehåll …\" i delatmedmig"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt#1",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt",
+   "ordProd": 1,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"SM Söndagsmiddag 4 medlemmar · Per skriver …\"",
+   "SEMANTIC_OBJECT": "\"SM Söndagsmiddag 4 medlemmar · Per skriver …\" i chatt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "glyf-arrow-left",
+    "glyf-more-vertical"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chatt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt#35",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt",
+   "ordProd": 35,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i chatt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chatt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skriv ett meddelande …\"",
+   "SEMANTIC_OBJECT": "\"Skriv ett meddelande …\" i chatt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Skriv ett meddelande …\" i chatt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt#41",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt",
+   "ordProd": 41,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i chatt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chatt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggningmorkt#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggningmorkt",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"malin@butlery.se\"",
+   "SEMANTIC_OBJECT": "\"malin@butlery.se\" i inloggningmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"malin@butlery.se\" i inloggningmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggningmorkt#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggningmorkt",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"••••••••\"",
+   "SEMANTIC_OBJECT": "\"••••••••\" i inloggningmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"••••••••\" i inloggningmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggningmorkt#14",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggningmorkt",
+   "ordProd": 14,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Logga in\"",
+   "SEMANTIC_OBJECT": "\"Logga in\" i inloggningmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Logga in\" i inloggningmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggningmorkt#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggningmorkt",
+   "ordProd": 10,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i inloggningmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i inloggningmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chattmorkt#1",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chattmorkt",
+   "ordProd": 1,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"SM Söndagsmiddag 4 medlemmar · Per skriver …\"",
+   "SEMANTIC_OBJECT": "\"SM Söndagsmiddag 4 medlemmar · Per skriver …\" i chattmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "glyf-arrow-left",
+    "glyf-more-vertical"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chattmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chattmorkt#35",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chattmorkt",
+   "ordProd": 35,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i chattmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chattmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chattmorkt#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chattmorkt",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skriv ett meddelande …\"",
+   "SEMANTIC_OBJECT": "\"Skriv ett meddelande …\" i chattmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Skriv ett meddelande …\" i chattmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chattmorkt#41",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chattmorkt",
+   "ordProd": 41,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i chattmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chattmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "juridikmorkt#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "juridikmorkt",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i juridikmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i juridikmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende320#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "lagastaende320",
+   "ordProd": 10,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−4+\"",
+   "SEMANTIC_OBJECT": "\"−4+\" i lagastaende320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "spinbutton \"−4+\" i lagastaende320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende320#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "lagastaende320",
+   "ordProd": 11,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−\"",
+   "SEMANTIC_OBJECT": "\"−\" i lagastaende320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"−\" i lagastaende320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende320#13",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "lagastaende320",
+   "ordProd": 13,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i lagastaende320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i lagastaende320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "lagastaende320#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "lagastaende320",
+   "ordProd": 30,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SEMANTIC_OBJECT": "\"15 min\" i lagastaende320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"15 min\" i lagastaende320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt320#1",
+   "TYP": "OBJEKT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt320",
+   "ordProd": 1,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"SM Söndagsmiddag 4 medlemmar · Per skriver …\"",
+   "SEMANTIC_OBJECT": "\"SM Söndagsmiddag 4 medlemmar · Per skriver …\" i chatt320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 2,
+   "DELNYCKLAR": [
+    "glyf-arrow-left",
+    "glyf-more-vertical"
+   ],
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chatt320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt320#35",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt320",
+   "ordProd": 35,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i chatt320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chatt320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt320#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt320",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skriv ett meddelande …\"",
+   "SEMANTIC_OBJECT": "\"Skriv ett meddelande …\" i chatt320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Skriv ett meddelande …\" i chatt320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "chatt320#41",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "chatt320",
+   "ordProd": 41,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i chatt320",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i chatt320"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Nuvarande lösenord\"",
+   "SEMANTIC_OBJECT": "\"Nuvarande lösenord\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Nuvarande lösenord\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 11,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Nytt lösenord\"",
+   "SEMANTIC_OBJECT": "\"Nytt lösenord\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Nytt lösenord\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#12",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 12,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Bekräfta nytt lösenord\"",
+   "SEMANTIC_OBJECT": "\"Bekräfta nytt lösenord\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Bekräfta nytt lösenord\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Ny e-postadress\"",
+   "SEMANTIC_OBJECT": "\"Ny e-postadress\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Ny e-postadress\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#25",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 25,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Användarvillkor\"",
+   "SEMANTIC_OBJECT": "\"Användarvillkor\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Användarvillkor\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#29",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 29,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Communityriktlinjer\"",
+   "SEMANTIC_OBJECT": "\"Communityriktlinjer\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Communityriktlinjer\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#33",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 33,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Mina rapporter\"",
+   "SEMANTIC_OBJECT": "\"Mina rapporter\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Mina rapporter\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontosakerhet#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "kontosakerhet",
+   "ordProd": 8,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i kontosakerhet",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i kontosakerhet"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggning#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggning",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"••••••••\"",
+   "SEMANTIC_OBJECT": "\"••••••••\" i inloggning",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"••••••••\" i inloggning"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggning#14",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggning",
+   "ordProd": 14,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Logga in\"",
+   "SEMANTIC_OBJECT": "\"Logga in\" i inloggning",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Logga in\" i inloggning"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "inloggning#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "inloggning",
+   "ordProd": 10,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i inloggning",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i inloggning"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "grupp#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "grupp",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i grupp",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i grupp"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "grupp#5",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "grupp",
+   "ordProd": 5,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i grupp",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i grupp"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "grupp#47",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "grupp",
+   "ordProd": 47,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Vad ska vi äta? — starta omröstning\"",
+   "SEMANTIC_OBJECT": "\"Vad ska vi äta? — starta omröstning\" i grupp",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Vad ska vi äta? — starta omröstning\" i grupp"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dataexport#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "dataexport",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i dataexport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i dataexport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dataexport#21",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "dataexport",
+   "ordProd": 21,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara fil\"",
+   "SEMANTIC_OBJECT": "\"Spara fil\" i dataexport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara fil\" i dataexport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dataexport#22",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "FRAME": "dataexport",
+   "ordProd": 22,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Dela\"",
+   "SEMANTIC_OBJECT": "\"Dela\" i dataexport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Dela\" i dataexport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "ingredienssok#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "ingredienssok",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i ingredienssok",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i ingredienssok"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "ingredienssok#19",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "ingredienssok",
+   "ordProd": 19,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök recept\"",
+   "SEMANTIC_OBJECT": "\"Sök recept\" i ingredienssok",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Sök recept\" i ingredienssok"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "notisinstallningar#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "notisinstallningar",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i notisinstallningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i notisinstallningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "faq#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "faq",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i faq",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i faq"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "faq#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "faq",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Kan hela familjen betygsätta maten?\"",
+   "SEMANTIC_OBJECT": "\"Kan hela familjen betygsätta maten?\" i faq",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Kan hela familjen betygsätta maten?\" i faq"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "faq#21",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "faq",
+   "ordProd": 21,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hur delar jag en inköpslista?\"",
+   "SEMANTIC_OBJECT": "\"Hur delar jag en inköpslista?\" i faq",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Hur delar jag en inköpslista?\" i faq"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "faq#26",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "faq",
+   "ordProd": 26,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Vad gör menygeneratorn?\"",
+   "SEMANTIC_OBJECT": "\"Vad gör menygeneratorn?\" i faq",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Vad gör menygeneratorn?\" i faq"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "faq#31",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "faq",
+   "ordProd": 31,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Hur raderar jag mitt konto?\"",
+   "SEMANTIC_OBJECT": "\"Hur raderar jag mitt konto?\" i faq",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Hur raderar jag mitt konto?\" i faq"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "profil#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "profil",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i profil",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i profil"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "profil#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "profil",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara ändringar\"",
+   "SEMANTIC_OBJECT": "\"Spara ändringar\" i profil",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara ändringar\" i profil"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjeform#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "familjeform",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i familjeform",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i familjeform"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "familjeform#60",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "familjeform",
+   "ordProd": 60,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara\"",
+   "SEMANTIC_OBJECT": "\"Spara\" i familjeform",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara\" i familjeform"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "betygsoversikt#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "betygsoversikt",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i betygsoversikt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i betygsoversikt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "forfragningar#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "forfragningar",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i forfragningar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i forfragningar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "vanprofil#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "vanprofil",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i vanprofil",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i vanprofil"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "publikprofil#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "publikprofil",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i publikprofil",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i publikprofil"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "publikprofil#17",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "publikprofil",
+   "ordProd": 17,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till vän\"",
+   "SEMANTIC_OBJECT": "\"+ Lägg till vän\" i publikprofil",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+ Lägg till vän\" i publikprofil"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "laggtillmedlemmar#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "laggtillmedlemmar",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i laggtillmedlemmar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i laggtillmedlemmar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "laggtillmedlemmar#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "laggtillmedlemmar",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Sök bland vänner …\"",
+   "SEMANTIC_OBJECT": "\"Sök bland vänner …\" i laggtillmedlemmar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "searchbox \"Sök bland vänner …\" i laggtillmedlemmar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "laggtillmedlemmar#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "laggtillmedlemmar",
+   "ordProd": 30,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Bjud in 1 vald\"",
+   "SEMANTIC_OBJECT": "\"Bjud in 1 vald\" i laggtillmedlemmar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Bjud in 1 vald\" i laggtillmedlemmar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "nygruppchatt#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "nygruppchatt",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i nygruppchatt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i nygruppchatt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "nygruppchatt#34",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "nygruppchatt",
+   "ordProd": 34,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skapa konversation\"",
+   "SEMANTIC_OBJECT": "\"Skapa konversation\" i nygruppchatt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Skapa konversation\" i nygruppchatt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "menyforhands#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "menyforhands",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i menyforhands",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i menyforhands"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "menyforhands#35",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "menyforhands",
+   "ordProd": 35,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara till mina menyer\"",
+   "SEMANTIC_OBJECT": "\"Spara till mina menyer\" i menyforhands",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara till mina menyer\" i menyforhands"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tadelning#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "tadelning",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i tadelning",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i tadelning"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tadelning#21",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "tadelning",
+   "ordProd": 21,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Acceptera\"",
+   "SEMANTIC_OBJECT": "\"Acceptera\" i tadelning",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Acceptera\" i tadelning"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "nydelatlista#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "nydelatlista",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i nydelatlista",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i nydelatlista"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "nydelatlista#33",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "nydelatlista",
+   "ordProd": 33,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skapa och dela\"",
+   "SEMANTIC_OBJECT": "\"Skapa och dela\" i nydelatlista",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Skapa och dela\" i nydelatlista"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatlistor#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "delatlistor",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i delatlistor",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i delatlistor"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferivara#27",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "skafferivara",
+   "ordProd": 27,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Lägg till\"",
+   "SEMANTIC_OBJECT": "\"Lägg till\" i skafferivara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-uvkguxfcmbhy::del::etikett-lagg-till"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "redigera#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "redigera",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i redigera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i redigera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "redigera#26",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "redigera",
+   "ordProd": 26,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"− 4 +\"",
+   "SEMANTIC_OBJECT": "\"− 4 +\" i redigera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "spinbutton \"− 4 +\" i redigera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "redigera#27",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "redigera",
+   "ordProd": 27,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"−\"",
+   "SEMANTIC_OBJECT": "\"−\" i redigera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"−\" i redigera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "redigera#29",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "redigera",
+   "ordProd": 29,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"+\"",
+   "SEMANTIC_OBJECT": "\"+\" i redigera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+\" i redigera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "redigera#53",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "redigera",
+   "ordProd": 53,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara ändringar\"",
+   "SEMANTIC_OBJECT": "\"Spara ändringar\" i redigera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Spara ändringar\" i redigera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "taggdetalj#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "taggdetalj",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i taggdetalj",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i taggdetalj"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "aldersgrans#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "aldersgrans",
+   "ordProd": 7,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Logga ut\"",
+   "SEMANTIC_OBJECT": "\"Logga ut\" i aldersgrans",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Logga ut\" i aldersgrans"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "onboardingimport#15",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "onboardingimport",
+   "ordProd": 15,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Klistra in en länkYouTube, Instagram, TikTok eller webb\"",
+   "SEMANTIC_OBJECT": "\"Klistra in en länkYouTube, Instagram, TikTok \" i onboardingimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Klistra in en länkYouTube, Instagram, Ti\" i onboardingimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "onboardingimport#23",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "onboardingimport",
+   "ordProd": 23,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Fota ett receptT.ex. mormors handskrivna kort\"",
+   "SEMANTIC_OBJECT": "\"Fota ett receptT.ex. mormors handskrivna kort\" i onboardingimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Fota ett receptT.ex. mormors handskrivna\" i onboardingimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "onboardingimport#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "onboardingimport",
+   "ordProd": 30,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skriv självSnabbspara bara namnet om du vill\"",
+   "SEMANTIC_OBJECT": "\"Skriv självSnabbspara bara namnet om du vill\" i onboardingimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Skriv självSnabbspara bara namnet om du \" i onboardingimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "onboardingimport#39",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "onboardingimport",
+   "ordProd": 39,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Klar\"",
+   "SEMANTIC_OBJECT": "\"Klar\" i onboardingimport",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Klar\" i onboardingimport"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mfa#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "mfa",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i mfa",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i mfa"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "mfa#29",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "mfa",
+   "ordProd": 29,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Verifiera\"",
+   "SEMANTIC_OBJECT": "\"Verifiera\" i mfa",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Verifiera\" i mfa"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "samtycke#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "samtycke",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i samtycke",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i samtycke"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rapporter#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "rapporter",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i rapporter",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i rapporter"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rapporter412#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "rapporter412",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i rapporter412",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i rapporter412"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "juridik#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "juridik",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i juridik",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i juridik"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "juridik412#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "juridik412",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i juridik412",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i juridik412"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "konflikt#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "konflikt",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i konflikt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i konflikt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "konflikt#31",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "konflikt",
+   "ordProd": 31,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Behåll min version\"",
+   "SEMANTIC_OBJECT": "\"Behåll min version\" i konflikt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Behåll min version\" i konflikt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "statetom#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "statetom",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till ditt första recept\"",
+   "SEMANTIC_OBJECT": "\"+ Lägg till ditt första recept\" i statetom",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+ Lägg till ditt första recept\" i statetom"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "statetom412#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "statetom412",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till ditt första recept\"",
+   "SEMANTIC_OBJECT": "\"+ Lägg till ditt första recept\" i statetom412",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"+ Lägg till ditt första recept\" i statetom412"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogradera#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogradera",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Avbryt\"",
+   "SEMANTIC_OBJECT": "\"Avbryt\" i dialogradera",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Avbryt\" i dialogradera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogosparat#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogosparat",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Spara och lämna\"",
+   "SEMANTIC_OBJECT": "\"Spara och lämna\" i dialogosparat",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-prkshjjgwxgq::del::etikett-spara-och-lamna"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogosparat#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogosparat",
+   "ordProd": 7,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Fortsätt redigera\"",
+   "SEMANTIC_OBJECT": "\"Fortsätt redigera\" i dialogosparat",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-prkshjjgwxgq::del::etikett-fortsatt-redigera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogosparat#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogosparat",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Lämna utan att spara\"",
+   "SEMANTIC_OBJECT": "\"Lämna utan att spara\" i dialogosparat",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-prkshjjgwxgq::del::etikett-lamna-utan-att-spara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogratelimit#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogratelimit",
+   "ordProd": 7,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Klistra in recepttext\"",
+   "SEMANTIC_OBJECT": "\"Klistra in recepttext\" i dialogratelimit",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Klistra in recepttext\" i dialogratelimit"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogratelimit#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogratelimit",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Skriv själv\"",
+   "SEMANTIC_OBJECT": "\"Skriv själv\" i dialogratelimit",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Skriv själv\" i dialogratelimit"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delaark#28",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "delaark",
+   "ordProd": 28,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Dela med 1 vald\"",
+   "SEMANTIC_OBJECT": "\"Dela med 1 vald\" i delaark",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-hegwuenawnhq::del::etikett-dela-med-vald"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogvara#14",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogvara",
+   "ordProd": 14,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"dl\"",
+   "SEMANTIC_OBJECT": "\"dl\" i dialogvara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "combobox \"dl\" i dialogvara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogvara#23",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogvara",
+   "ordProd": 23,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Grönsaker\"",
+   "SEMANTIC_OBJECT": "\"Grönsaker\" i dialogvara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Grönsaker\" i dialogvara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogvara#24",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogvara",
+   "ordProd": 24,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Torrvaror\"",
+   "SEMANTIC_OBJECT": "\"Torrvaror\" i dialogvara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Torrvaror\" i dialogvara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogvara#25",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogvara",
+   "ordProd": 25,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Fryst\"",
+   "SEMANTIC_OBJECT": "\"Fryst\" i dialogvara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Fryst\" i dialogvara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogvara#26",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogvara",
+   "ordProd": 26,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Övrigt\"",
+   "SEMANTIC_OBJECT": "\"Övrigt\" i dialogvara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "radio \"Övrigt\" i dialogvara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "dialogvara#27",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "dialogvara",
+   "ordProd": 27,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Lägg till\"",
+   "SEMANTIC_OBJECT": "\"Lägg till\" i dialogvara",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Lägg till\" i dialogvara"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "snackbars#7",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "snackbars",
+   "ordProd": 7,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i snackbars",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i snackbars"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontextmeny#3",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "kontextmeny",
+   "ordProd": 3,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i kontextmeny",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i kontextmeny"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontextmeny#28",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "kontextmeny",
+   "ordProd": 28,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Duplicera\"",
+   "SEMANTIC_OBJECT": "\"Duplicera\" i kontextmeny",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-wzfgayhjvfpp::del::etikett-duplicera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontextmeny#32",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "kontextmeny",
+   "ordProd": 32,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Exportera\"",
+   "SEMANTIC_OBJECT": "\"Exportera\" i kontextmeny",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::del 3 sok och skalbevis::objekt::occ-wzfgayhjvfpp::del::etikett-exportera"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "tangentbord#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "tangentbord",
+   "ordProd": 2,
+   "TAGG": "svg",
+   "SOURCE_ELEMENT": "<svg> \"\"",
+   "SEMANTIC_OBJECT": "\"\" i tangentbord",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"\" i tangentbord"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "formularmorkt#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "formularmorkt",
+   "ordProd": 10,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Krämig svamppasta\"",
+   "SEMANTIC_OBJECT": "\"Krämig svamppasta\" i formularmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Krämig svamppasta\" i formularmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoallergi#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "veckoallergi",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"TorsKrämig svamppasta\"",
+   "SEMANTIC_OBJECT": "\"TorsKrämig svamppasta\" i veckoallergi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"TorsKrämig svamppasta\" i veckoallergi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoallergi#19",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "veckoallergi",
+   "ordProd": 19,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"FreUgnsbakad rotselleri\"",
+   "SEMANTIC_OBJECT": "\"FreUgnsbakad rotselleri\" i veckoallergi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"FreUgnsbakad rotselleri\" i veckoallergi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "veckoallergi#22",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "veckoallergi",
+   "ordProd": 22,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"SönLinsgryta med spetskål\"",
+   "SEMANTIC_OBJECT": "\"SönLinsgryta med spetskål\" i veckoallergi",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"SönLinsgryta med spetskål\" i veckoallergi"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hem#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hem",
+   "ordProd": 30,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Veckan Se hela veckan\"",
+   "SEMANTIC_OBJECT": "\"Veckan Se hela veckan\" i hem",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Veckan Se hela veckan\" i hem"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hem#52",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hem",
+   "ordProd": 52,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i hem",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i hem"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemmorkt#30",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hemmorkt",
+   "ordProd": 30,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Veckan Se hela veckan\"",
+   "SEMANTIC_OBJECT": "\"Veckan Se hela veckan\" i hemmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Veckan Se hela veckan\" i hemmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemmorkt#52",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hemmorkt",
+   "ordProd": 52,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i hemmorkt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i hemmorkt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemoffline#40",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hemoffline",
+   "ordProd": 40,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Veckan\"",
+   "SEMANTIC_OBJECT": "\"Veckan\" i hemoffline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Veckan\" i hemoffline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemoffline#55",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hemoffline",
+   "ordProd": 55,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i hemoffline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i hemoffline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "hemoffline#57",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "FRAME": "hemoffline",
+   "ordProd": 57,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"6 varor kvar3 bockningar väntar på synk\"",
+   "SEMANTIC_OBJECT": "\"6 varor kvar3 bockningar väntar på synk\" i hemoffline",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"6 varor kvar3 bockningar väntar på synk\" i hemoffline"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "bredrecept#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 10 bred layout",
+   "FRAME": "bredrecept",
+   "ordProd": 8,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Mormors köttbullar\"",
+   "SEMANTIC_OBJECT": "\"Mormors köttbullar\" i bredrecept",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Mormors köttbullar\" i bredrecept"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "bredgrans#20",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 10 bred layout",
+   "FRAME": "bredgrans",
+   "ordProd": 20,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"visa\"",
+   "SEMANTIC_OBJECT": "\"visa\" i bredgrans",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"visa\" i bredgrans"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbnormal#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbnormal",
+   "ordProd": 18,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Mormors köttbullar\"",
+   "SEMANTIC_OBJECT": "\"Mormors köttbullar\" i rcbnormal",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "textbox \"Mormors köttbullar\" i rcbnormal"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbofullstandigt#9",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbofullstandigt",
+   "ordProd": 9,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"smör\"",
+   "SEMANTIC_OBJECT": "\"smör\" i rcbofullstandigt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"smör\" i rcbofullstandigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbofullstandigt#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbofullstandigt",
+   "ordProd": 10,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"kanel\"",
+   "SEMANTIC_OBJECT": "\"kanel\" i rcbofullstandigt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"kanel\" i rcbofullstandigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbofullstandigt#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbofullstandigt",
+   "ordProd": 11,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"tid i ugnen\"",
+   "SEMANTIC_OBJECT": "\"tid i ugnen\" i rcbofullstandigt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"tid i ugnen\" i rcbofullstandigt"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "rcbkommentar#34",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "FRAME": "rcbkommentar",
+   "ordProd": 34,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"Ändra\"",
+   "SEMANTIC_OBJECT": "\"Ändra\" i rcbkommentar",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"Ändra\" i rcbkommentar"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferivyn#1",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2 inkop och skafferi",
+   "FRAME": "skafferivyn",
+   "ordProd": 1,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i skafferivyn",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i skafferivyn"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "skafferiflerval#1",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2 inkop och skafferi",
+   "FRAME": "skafferiflerval",
+   "ordProd": 1,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SEMANTIC_OBJECT": "\"Inköp\" i skafferiflerval",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tab \"Inköp\" i skafferiflerval"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatlasare#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "delatlasare",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Du kan läsa listan · Anna kan ge dig redigeringsrätt\"",
+   "SEMANTIC_OBJECT": "\"Du kan läsa listan · Anna kan ge dig redigeri\" i delatlasare",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Du kan läsa listan · Anna kan ge dig red\" i delatlasare"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "impassist2#15",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 4 import",
+   "FRAME": "impassist2",
+   "ordProd": 15,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"500 g blandfärs\"",
+   "SEMANTIC_OBJECT": "\"500 g blandfärs\" i impassist2",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "checkbox \"500 g blandfärs\" i impassist2"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "impassist2#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 4 import",
+   "FRAME": "impassist2",
+   "ordProd": 18,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"1 gul lök\"",
+   "SEMANTIC_OBJECT": "\"1 gul lök\" i impassist2",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "checkbox \"1 gul lök\" i impassist2"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "impassist2#21",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 4 import",
+   "FRAME": "impassist2",
+   "ordProd": 21,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"3 dl grädde\"",
+   "SEMANTIC_OBJECT": "\"3 dl grädde\" i impassist2",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "checkbox \"3 dl grädde\" i impassist2"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "editorutkastval#2",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 4 import",
+   "FRAME": "editorutkastval",
+   "ordProd": 2,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Fortsätta på något? Utkast du börjat på i den här telef\"",
+   "SEMANTIC_OBJECT": "\"Fortsätta på något? Utkast du börjat på i den\" i editorutkastval",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Fortsätta på något? Utkast du börjat på \" i editorutkastval"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "taggkalla#9",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "taggkalla",
+   "ordProd": 9,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Snabbtregel: Snabbt på vardagar\"",
+   "SEMANTIC_OBJECT": "\"Snabbtregel: Snabbt på vardagar\" i taggkalla",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Snabbtregel: Snabbt på vardagar\" i taggkalla"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "taggkalla#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "taggkalla",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Vegetarisktautogenererad\"",
+   "SEMANTIC_OBJECT": "\"Vegetarisktautogenererad\" i taggkalla",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Vegetarisktautogenererad\" i taggkalla"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "taggkalla#23",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "taggkalla",
+   "ordProd": 23,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Barnfavoritsatt av dig\"",
+   "SEMANTIC_OBJECT": "\"Barnfavoritsatt av dig\" i taggkalla",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Barnfavoritsatt av dig\" i taggkalla"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "taggexklusiv#8",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "taggexklusiv",
+   "ordProd": 8,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Vardagsmatregel: Snabbt på vardagar\"",
+   "SEMANTIC_OBJECT": "\"Vardagsmatregel: Snabbt på vardagar\" i taggexklusiv",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Vardagsmatregel: Snabbt på vardagar\" i taggexklusiv"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "modrapporter#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "modrapporter",
+   "ordProd": 11,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"granskas\"",
+   "SEMANTIC_OBJECT": "\"granskas\" i modrapporter",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 5-7::objekt::occ-idnsubneoyuk::del::etikett-granskas"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "modrapporter#27",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "modrapporter",
+   "ordProd": 27,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"ny\"",
+   "SEMANTIC_OBJECT": "\"ny\" i modrapporter",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 5-7::objekt::occ-yvgjtgeesqcl::del::etikett-ny"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "modrapporter#42",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "modrapporter",
+   "ordProd": 42,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"ny\"",
+   "SEMANTIC_OBJECT": "\"ny\" i modrapporter",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 5-7::objekt::occ-avtjqdkxkdwl::del::etikett-ny"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "modminderarig#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 5-7",
+   "FRAME": "modminderarig",
+   "ordProd": 11,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"ny\"",
+   "SEMANTIC_OBJECT": "\"ny\" i modminderarig",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "combobox \"ny\" i modminderarig"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "kontojuridik#29",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 6 konto och integritet",
+   "FRAME": "kontojuridik",
+   "ordProd": 29,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"samma regel som för delade listor\"",
+   "SEMANTIC_OBJECT": "\"samma regel som för delade listor\" i kontojuridik",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"samma regel som för delade listor\" i kontojuridik"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "fbanmal#23",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 globala tillstand och flerval",
+   "FRAME": "fbanmal",
+   "ordProd": 23,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"våra riktlinjer\"",
+   "SEMANTIC_OBJECT": "\"våra riktlinjer\" i fbanmal",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "EL::etapp 9 globala tillstand och flerval::objekt::occ-mabdhbksgjro::del::etikett-vara-riktlinjer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "fbblockerade#19",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 globala tillstand och flerval",
+   "FRAME": "fbblockerade",
+   "ordProd": 19,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"Delat av mig\"",
+   "SEMANTIC_OBJECT": "\"Delat av mig\" i fbblockerade",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"Delat av mig\" i fbblockerade"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socknuff#9",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socknuff",
+   "ordProd": 9,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"M Malin 4 av 5\"",
+   "SEMANTIC_OBJECT": "\"M Malin 4 av 5\" i socknuff",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"M Malin 4 av 5\" i socknuff"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socknuff#13",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socknuff",
+   "ordProd": 13,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"I Ida 5 av 5\"",
+   "SEMANTIC_OBJECT": "\"I Ida 5 av 5\" i socknuff",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"I Ida 5 av 5\" i socknuff"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socknuff#17",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socknuff",
+   "ordProd": 17,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"A Anna hoppade över\"",
+   "SEMANTIC_OBJECT": "\"A Anna hoppade över\" i socknuff",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"A Anna hoppade över\" i socknuff"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socgruppinfo#15",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socgruppinfo",
+   "ordProd": 15,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Lägg till någon\"",
+   "SEMANTIC_OBJECT": "\"Lägg till någon\" i socgruppinfo",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Lägg till någon\" i socgruppinfo"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "socgruppinfo#20",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "socgruppinfo",
+   "ordProd": 20,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"MGMalin Gisslén · du JLJohan LindTa bort\"",
+   "SEMANTIC_OBJECT": "\"MGMalin Gisslén · du JLJohan LindTa bort\" i socgruppinfo",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"MGMalin Gisslén · du JLJohan LindTa bort\" i socgruppinfo"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "jurriktlinjer#18",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "jurriktlinjer",
+   "ordProd": 18,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"Villkoren\"",
+   "SEMANTIC_OBJECT": "\"Villkoren\" i jurriktlinjer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"Villkoren\" i jurriktlinjer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "jurriktlinjer#19",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "jurriktlinjer",
+   "ordProd": 19,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"Integritet\"",
+   "SEMANTIC_OBJECT": "\"Integritet\" i jurriktlinjer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"Integritet\" i jurriktlinjer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "jurriktlinjer#20",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "jurriktlinjer",
+   "ordProd": 20,
+   "TAGG": "a",
+   "SOURCE_ELEMENT": "<a> \"Kontakt\"",
+   "SEMANTIC_OBJECT": "\"Kontakt\" i jurriktlinjer",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "link \"Kontakt\" i jurriktlinjer"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "komprost#10",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "FRAME": "komprost",
+   "ordProd": 10,
+   "TAGG": "span",
+   "SOURCE_ELEMENT": "<span> \"Starta\"",
+   "SEMANTIC_OBJECT": "\"Starta\" i komprost",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "button \"Starta\" i komprost"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "storsttext#16",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "FRAME": "storsttext",
+   "ordProd": 16,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"Ingredienser Gör så här Betyg\"",
+   "SEMANTIC_OBJECT": "\"Ingredienser Gör så här Betyg\" i storsttext",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tablist \"Ingredienser Gör så här Betyg\" i storsttext"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatmindel#11",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "delatmindel",
+   "ordProd": 11,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"AlltMin delAvdelning\"",
+   "SEMANTIC_OBJECT": "\"AlltMin delAvdelning\" i delatmindel",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tablist \"AlltMin delAvdelning\" i delatmindel"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatnarvaro#14",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "delatnarvaro",
+   "ordProd": 14,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"AlltMin delAvdelning\"",
+   "SEMANTIC_OBJECT": "\"AlltMin delAvdelning\" i delatnarvaro",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tablist \"AlltMin delAvdelning\" i delatnarvaro"
+   ],
+   "REDAN_ANKRAD": null
+  },
+  {
+   "ANCHOR_TARGET_ID": "delatclaimkonflikt#6",
+   "TYP": "ELEMENT",
+   "SOURCE_FILE": "etapp 2",
+   "FRAME": "delatclaimkonflikt",
+   "ordProd": 6,
+   "TAGG": "div",
+   "SOURCE_ELEMENT": "<div> \"AlltMin delAvdelning\"",
+   "SEMANTIC_OBJECT": "\"AlltMin delAvdelning\" i delatclaimkonflikt",
+   "REASONS": [
+    "M7"
+   ],
+   "BARN": 1,
+   "DELNYCKLAR": null,
+   "DEPENDENT_OWNER_IDS": [
+    "tablist \"AlltMin delAvdelning\" i delatclaimkonflikt"
+   ],
+   "REDAN_ANKRAD": null
+  }
+ ]
+}

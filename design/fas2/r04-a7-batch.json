@@ -1,0 +1,233 @@
+{
+ "$regel": "A-batchen ar ren PURE_REUSE. Inga nya fargvarden, inga nya mappningar, inga nya roller.",
+ "familjer": [
+  "aldersgrans",
+  "epostverif",
+  "rapporter",
+  "rapporter412",
+  "authepostklar",
+  "onbalderblock",
+  "soctomttyst"
+ ],
+ "tokens": [
+  {
+   "namn": "--ikon-fristaende-a",
+   "roll": "ikon-fristaende",
+   "ljus": "#24382c",
+   "mork": "#c9d3c4",
+   "deklarationer": 5,
+   "artefakter": 5,
+   "ateranvand": true
+  },
+  {
+   "namn": "--text-innehall-a",
+   "roll": "text-innehall",
+   "ljus": "#627061",
+   "mork": "#93a48d",
+   "deklarationer": 52,
+   "artefakter": 24,
+   "ateranvand": true
+  },
+  {
+   "namn": "--yta-upphojd-b2",
+   "roll": "yta-upphojd",
+   "ljus": "#24382c",
+   "mork": "#17251d",
+   "deklarationer": 37,
+   "artefakter": 32,
+   "ateranvand": false
+  },
+  {
+   "namn": "--text-innehall-b4",
+   "roll": "text-innehall",
+   "ljus": "#f5f4ed",
+   "mork": "#f5f4ed",
+   "deklarationer": 37,
+   "artefakter": 32,
+   "ateranvand": false
+  },
+  {
+   "namn": "--text-innehall-g",
+   "roll": "text-innehall",
+   "ljus": "#a15a0a",
+   "mork": "#dca968",
+   "deklarationer": 1,
+   "artefakter": 13,
+   "evidens": "2 befintliga morka par stodjer mappningen",
+   "provisorisk_variant": true,
+   "normaliseringsgrupp": "text-innehall"
+  },
+  {
+   "namn": "--text-innehall-b",
+   "roll": "text-innehall",
+   "ljus": "#24382c",
+   "mork": "#c9d3c4",
+   "deklarationer": 46,
+   "artefakter": 21,
+   "ateranvand": true
+  },
+  {
+   "namn": "--ram-behallare-a",
+   "roll": "ram-behallare",
+   "ljus": "#24382c",
+   "mork": "rgba(245,244,237,.4)",
+   "deklarationer": 28,
+   "artefakter": 8,
+   "ateranvand": true,
+   "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+  },
+  {
+   "namn": "--ikon-fristaende-b6",
+   "roll": "ikon-fristaende",
+   "ljus": "#f5f4ed",
+   "mork": "#f5f4ed",
+   "deklarationer": 2,
+   "artefakter": 1,
+   "ateranvand": false
+  },
+  {
+   "namn": "--ram-behallare-c",
+   "roll": "ram-behallare",
+   "ljus": "#ccd1c2",
+   "mork": "rgba(245,244,237,.18)",
+   "deklarationer": 61,
+   "artefakter": 32,
+   "ateranvand": true
+  },
+  {
+   "namn": "--ikon-fristaende-f",
+   "roll": "ikon-fristaende",
+   "ljus": "#627061",
+   "mork": "#93a48d",
+   "deklarationer": 5,
+   "artefakter": 5,
+   "ateranvand": true
+  },
+  {
+   "namn": "--ram-behallare-b3",
+   "roll": "ram-behallare",
+   "ljus": "#d8b784",
+   "mork": "rgba(245,244,237,.4)",
+   "deklarationer": 24,
+   "artefakter": 6,
+   "ateranvand": false,
+   "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+  },
+  {
+   "namn": "--text-innehall-e",
+   "roll": "text-innehall",
+   "ljus": "#8a5212",
+   "mork": "#dca968",
+   "deklarationer": 16,
+   "artefakter": 7,
+   "ateranvand": true
+  },
+  {
+   "namn": "--text-innehall-b8",
+   "roll": "text-innehall",
+   "ljus": "#3f6b4f",
+   "mork": "#8fb89a",
+   "deklarationer": 1,
+   "artefakter": 1,
+   "ateranvand": false
+  },
+  {
+   "namn": "--ikon-fristaende-b5",
+   "roll": "ikon-fristaende",
+   "ljus": "#3f6b4f",
+   "mork": "#8fb89a",
+   "deklarationer": 3,
+   "artefakter": 3,
+   "ateranvand": false
+  },
+  {
+   "namn": "--text-innehall-c",
+   "roll": "text-innehall",
+   "ljus": "#37453a",
+   "mork": "#93a48d",
+   "deklarationer": 78,
+   "artefakter": 27,
+   "ateranvand": true
+  },
+  {
+   "namn": "--yta-kontroll-b2",
+   "roll": "yta-kontroll",
+   "ljus": "#24382c",
+   "mork": "#17251d",
+   "deklarationer": 17,
+   "artefakter": 14,
+   "ateranvand": false
+  },
+  {
+   "namn": "--text-kontroll-b4",
+   "roll": "text-kontroll",
+   "ljus": "#f5f4ed",
+   "mork": "#f5f4ed",
+   "deklarationer": 13,
+   "artefakter": 13,
+   "ateranvand": false
+  },
+  {
+   "namn": "--text-kontroll-a",
+   "roll": "text-kontroll",
+   "ljus": "#24382c",
+   "mork": "#c9d3c4",
+   "deklarationer": 92,
+   "artefakter": 27,
+   "ateranvand": true
+  },
+  {
+   "namn": "--ikon-fristaende-b7",
+   "roll": "ikon-fristaende",
+   "ljus": "#7d897c",
+   "mork": "#c9d3c4",
+   "deklarationer": 1,
+   "artefakter": 1,
+   "ateranvand": false
+  }
+ ],
+ "kallreconciliation": {
+  "painted": 135,
+  "writable": 85,
+  "resolved": 64,
+  "covered": 21,
+  "tokenHook": 35,
+  "inherited": 15,
+  "unresolved": 0,
+  "skips": 0,
+  "konflikter": 0
+ },
+ "ljusgrind": {
+  "artefakter": 329,
+  "element": 17342,
+  "fargavvikelser": 0,
+  "geometriavvikelser": 2,
+  "geometrinot": "de tva ligger i artefakten start i en oberord fil och aterkommer mellan tva korningar av identisk kalla"
+ },
+ "mork": {
+  "kallor": 52,
+  "kontroller": 181,
+  "grafiskaDelar": 231,
+  "barare": 86,
+  "ickeTextFynd": 0,
+  "textFynd": 0,
+  "unknown": 0,
+  "reproducerbar": true
+ },
+ "regression": {
+  "R01_population": 319,
+  "R01_fynd": 0,
+  "R02": "godkand",
+  "nonText": "godkand",
+  "R03": "10/6/6/4",
+  "effekter": "6/4/0",
+  "identitet": {
+   "unika": 1377,
+   "kolliderande": 374,
+   "berorda": 1460,
+   "verifierade": 0,
+   "fore": "identisk"
+  }
+ },
+ "metodprov": 165
+}
