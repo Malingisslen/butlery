@@ -1,0 +1,54 @@
+name: Goldens (Linux) update
+
+# P8-U04: makes the key-screen golden PNGs (test/views/golden_linux) on the
+# same runner image and Flutter as the views (ubuntu) job that compares
+# them, and uploads them as an artifact. It never commits or pushes: a push
+# made with GITHUB_TOKEN starts no workflow runs, so the PR's views job would
+# never re-run against the new PNGs. Fetch the artifact with
+# `gh run download`, look at every PNG, and commit them with a normal push
+# (test/views/golden_linux/README.md).
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or SHA to render'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with test.yml, so the PNGs match what suite-tests compares.
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  render:
+    name: render goldens (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Render the key-screen goldens
+        run: flutter test --update-goldens test/views/golden_linux --reporter=expanded
+
+      - name: Upload the PNGs
+        uses: actions/upload-artifact@v7
+        with:
+          name: goldens-linux-${{ github.run_id }}
+          path: test/views/golden_linux/goldens/
+          if-no-files-found: error
