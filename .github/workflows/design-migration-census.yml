@@ -1,0 +1,60 @@
+name: Design migration census
+
+# P8-U05: generates the design migration census from the code
+# (tools/design_migration_census.dart) and shows it in the run summary. It
+# is read-only: it never commits or pushes. The JSON and Markdown are
+# uploaded as an artifact; the committed snapshot in
+# docs/design-migration/census.md is refreshed by re-running the tool and
+# committing with a normal push.
+#
+# The consistency of the census is checked by
+# test/architecture/design_migration_census_test.dart in the architecture
+# job; this workflow only reports.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-migration-census-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep in step with test.yml.
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  census:
+    name: census
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Generate the census
+        run: dart run tools/design_migration_census.dart --out=build/design-migration-census
+
+      - name: Show it in the run summary
+        run: cat build/design-migration-census/census.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the census
+        uses: actions/upload-artifact@v7
+        with:
+          name: design-migration-census-${{ github.run_id }}
+          path: build/design-migration-census/
+          if-no-files-found: error

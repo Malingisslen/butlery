@@ -1,0 +1,241 @@
+{
+  "$om": "P8-U07: the colour tokens of the design system (tokens.json semantic, palette and opacityLadder, values only). token_parity_test checks every colour in lib/theme/app_colors.dart and app_colors_dark.dart against the token its doc line names. Refresh with tools/vendor_design_tokens.dart, never by hand.",
+  "source": {
+    "file": "tokens.json",
+    "repo": "Butlery design system",
+    "commit": "2d237c8",
+    "sha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02"
+  },
+  "version": "1.13",
+  "date": "2026-08-05",
+  "opacityLadder": {
+    "onPaper": [
+      0.02,
+      0.04
+    ],
+    "onInk": [
+      0.18,
+      0.35,
+      0.6
+    ]
+  },
+  "palette": {
+    "ink": "#24382C",
+    "inkDeep": "#17251D",
+    "inkRaised": "#2F4437",
+    "paper": "#F5F4ED",
+    "paperSoft": "#E6EAD9",
+    "saffron": "#CE7C1E",
+    "saffronPressed": "#9A5C14",
+    "saffronLight": "#E09D50",
+    "saffronPale": "#DCA968",
+    "saffronDeep": "#8A5212",
+    "saffronLink": "#A15A0A",
+    "sage": "#93A48D",
+    "sageDeep": "#627061",
+    "sagePale": "#B4BFA6",
+    "sageMuted": "#A9B2A0",
+    "green": "#3F6B4F",
+    "greenDark": "#4A5C43",
+    "greenLight": "#8FB89A",
+    "clay": "#9C3B23",
+    "clayLight": "#DE9078",
+    "wheat": "#D8B784",
+    "lineSubtle": "#CCD1C2",
+    "lineControl": "#7D897C",
+    "body": "#37453A",
+    "muted": "#627061",
+    "inkSurfaceDark": "#4A5C50",
+    "bodyOnDark": "#C9D3C4",
+    "accentOnRaised": "#8A5212",
+    "secondaryOnRaised": "#5B6959",
+    "dangerOnRaisedDark": "#E5A08A",
+    "secondaryOnRaisedDark": "#A9B2A0"
+  },
+  "semantic": {
+    "text.primary": {
+      "light": "#24382C",
+      "dark": "#F5F4ED"
+    },
+    "text.body": {
+      "light": "#37453A",
+      "dark": "#F5F4ED"
+    },
+    "text.secondary": {
+      "light": "#627061",
+      "dark": "#93A48D"
+    },
+    "text.completed": {
+      "light": "#37453A",
+      "dark": "#93A48D"
+    },
+    "text.disabled": {
+      "light": "#7D897C",
+      "dark": "#627061"
+    },
+    "text.accent": {
+      "light": "#A15A0A",
+      "dark": "#DCA968"
+    },
+    "text.onActionPrimary": {
+      "light": "#17251D",
+      "dark": "#17251D"
+    },
+    "text.onActionPrimaryPressed": {
+      "light": "#F5F4ED",
+      "dark": "#F5F4ED"
+    },
+    "text.warning": {
+      "light": "#8A5212",
+      "dark": "#DCA968"
+    },
+    "text.danger": {
+      "light": "#9C3B23",
+      "dark": "#DE9078"
+    },
+    "text.success": {
+      "light": "#3F6B4F",
+      "dark": "#8FB89A"
+    },
+    "surface.base": {
+      "light": "#F5F4ED",
+      "dark": "#17251D"
+    },
+    "surface.raised": {
+      "light": "#E6EAD9",
+      "dark": "#2F4437"
+    },
+    "surface.ink": {
+      "light": "#24382C",
+      "dark": "#24382C"
+    },
+    "surface.selected": {
+      "light": "#E6EAD9",
+      "dark": "#2F4437"
+    },
+    "surface.disabled": {
+      "light": "#A9B2A0",
+      "dark": "#4A5C50"
+    },
+    "border.subtle": {
+      "light": "#CCD1C2",
+      "dark": "rgba(245,244,237,0.18)"
+    },
+    "border.control": {
+      "light": "#7D897C",
+      "dark": "rgba(245,244,237,0.35)"
+    },
+    "border.statusWarning": {
+      "light": "#D8B784",
+      "dark": "#DCA968"
+    },
+    "action.primary": {
+      "light": "#CE7C1E",
+      "dark": "#CE7C1E"
+    },
+    "action.primaryPressed": {
+      "light": "#9A5C14",
+      "dark": "#9A5C14"
+    },
+    "control.checked.background": {
+      "light": "#24382C",
+      "dark": "#24382C"
+    },
+    "control.checked.foreground": {
+      "light": "#F5F4ED",
+      "dark": "#F5F4ED"
+    },
+    "focusRing": {
+      "light": "#24382C",
+      "dark": "#F5F4ED"
+    },
+    "progressTrack": {
+      "light": "#E6EAD9",
+      "dark": "rgba(245,244,237,0.18)"
+    },
+    "progressIndicator": {
+      "light": "#CE7C1E",
+      "dark": "#CE7C1E"
+    },
+    "scrim": {
+      "light": "rgba(36,56,44,0.40)",
+      "dark": "rgba(23,37,29,0.60)"
+    },
+    "text.bodyMuted": {
+      "light": "#37453A",
+      "dark": "#C9D3C4"
+    },
+    "text.accent.onRaised": {
+      "light": "#8A5212",
+      "dark": "#DCA968"
+    },
+    "text.secondary.onRaised": {
+      "light": "#5B6959",
+      "dark": "#A9B2A0"
+    },
+    "text.danger.onRaised": {
+      "light": "#9C3B23",
+      "dark": "#E5A08A"
+    },
+    "text.success.onRaised": {
+      "light": "#3F6B4F",
+      "dark": "#8FB89A"
+    },
+    "text.disabled.onRaised": {
+      "light": "#788477",
+      "dark": "#93A48D"
+    },
+    "surface.tint.warning": {
+      "light": "#F0EEE2",
+      "dark": "#2F4437"
+    },
+    "surface.tint.accent": {
+      "light": "#F7E8D2",
+      "dark": "#2F4437"
+    },
+    "surface.tint.success": {
+      "light": "#DFE8DC",
+      "dark": "#2F4437"
+    },
+    "surface.tint.danger": {
+      "light": "#F2DDD6",
+      "dark": "#2F4437"
+    },
+    "border.onInk": {
+      "light": "#3F5145",
+      "dark": "#3F5145"
+    },
+    "text.link": {
+      "light": "#8A5212",
+      "dark": "#DCA968"
+    },
+    "elevation.shadow": {
+      "light": "rgba(23,37,29,0.10)",
+      "dark": "rgba(23,37,29,0.10)"
+    },
+    "overlay.inkSubtle": {
+      "light": "rgba(23,37,29,0.10)",
+      "dark": "rgba(23,37,29,0.10)"
+    },
+    "overlay.inkLight": {
+      "light": "rgba(23,37,29,0.20)",
+      "dark": "rgba(23,37,29,0.20)"
+    },
+    "overlay.inkMedium": {
+      "light": "rgba(23,37,29,0.40)",
+      "dark": "rgba(23,37,29,0.40)"
+    },
+    "overlay.inkStrong": {
+      "light": "rgba(23,37,29,0.60)",
+      "dark": "rgba(23,37,29,0.60)"
+    },
+    "overlay.paperCard": {
+      "light": "rgba(245,244,237,0.54)",
+      "dark": "rgba(245,244,237,0.54)"
+    },
+    "overlay.paperWash": {
+      "light": "rgba(245,244,237,0.40)",
+      "dark": "rgba(245,244,237,0.40)"
+    }
+  }
+}
