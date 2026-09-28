@@ -1,0 +1,269 @@
+{
+ "$om": "P8-U02: the declared contrast pairs, the contrast policy and the touch target, vendored from the design system tokens.json. The pairs are checked against the generated app colours (lib/theme/app_colors.dart, app_colors_dark.dart). Refresh by re-vendoring, never by hand.",
+ "source": {
+  "file": "tokens.json",
+  "repo": "Butlery design system",
+  "commit": "b6ea27d (unchanged at 1f0105a)",
+  "sha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02",
+  "tokens_version": "1.13",
+  "tokens_date": "2026-08-05"
+ },
+ "contrastPairs": [
+  {
+   "fg": "text.primary",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.body",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.bodyMuted",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.secondary",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.completed",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.accent",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.warning",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.danger",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.success",
+   "bg": "surface.base",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.disabled",
+   "bg": "surface.base",
+   "floor": 3
+  },
+  {
+   "fg": "text.onActionPrimary",
+   "bg": "action.primary",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.onActionPrimaryPressed",
+   "bg": "action.primaryPressed",
+   "floor": 4.5
+  },
+  {
+   "fg": "control.checked.foreground",
+   "bg": "control.checked.background",
+   "floor": 4.5
+  },
+  {
+   "fg": "focusRing",
+   "bg": "surface.base",
+   "floor": 3
+  },
+  {
+   "fg": "text.primary",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.body",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.secondary.onRaised",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.accent.onRaised",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.warning",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.danger.onRaised",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.success.onRaised",
+   "bg": "surface.raised",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.disabled.onRaised",
+   "bg": "surface.raised",
+   "floor": 3
+  },
+  {
+   "fg": "dataScale.onFill.step1",
+   "bg": "dataScale.sequential[0]",
+   "floor": 4.5
+  },
+  {
+   "fg": "dataScale.onFill.step2",
+   "bg": "dataScale.sequential[1]",
+   "floor": 4.5
+  },
+  {
+   "fg": "dataScale.onFill.step3",
+   "bg": "dataScale.sequential[2]",
+   "floor": 4.5
+  },
+  {
+   "fg": "dataScale.onFill.step4",
+   "bg": "dataScale.sequential[3]",
+   "floor": 4.5
+  },
+  {
+   "fg": "dataScale.onFill.step5",
+   "bg": "dataScale.sequential[4]",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.body",
+   "bg": "surface.tint.warning",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.accent.onRaised",
+   "bg": "surface.tint.warning",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.danger",
+   "bg": "surface.tint.warning",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.primary",
+   "bg": "surface.tint.accent",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.accent.onRaised",
+   "bg": "surface.tint.accent",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.success",
+   "bg": "surface.tint.success",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.danger",
+   "bg": "surface.tint.danger",
+   "floor": 4.5
+  },
+  {
+   "fg": "text.accent",
+   "bg": "surface.raised",
+   "floor": 4.5,
+   "note": "Mörkt läge: #DCA968 mot #2F4437 = 4,95. Aldrig mot border.onInk."
+  },
+  {
+   "fg": "text.link",
+   "bg": "surface.raised",
+   "floor": 4.5
+  }
+ ],
+ "contrastPolicy": {
+  "floors": {
+   "smallText": 4.5,
+   "largeText": 3,
+   "graphicAndUi": 3,
+   "disabled": 3
+  },
+  "largeTextFrom": "≥ 24 px, eller ≥ 19 px i 700",
+  "exemptions": [
+   {
+    "token": "text.disabled",
+    "floor": 3,
+    "measured": {
+     "light": 3.32,
+     "dark": 3.04
+    },
+    "reason": "WCAG 1.4.3 undantar inaktiverade kontroller. Butlery sätter ändå ett eget golv på 3:1 så att texten går att läsa — den ska förstås, bara inte inbjuda till handling."
+   },
+   {
+    "token": "surface.disabled",
+    "floor": null,
+    "reason": "Yta, inte text. Avgränsningen bärs av border.control, inte av ytkontrasten."
+   },
+   {
+    "token": "border.statusWarning",
+    "floor": null,
+    "reason": "Enbart pill-kontur runt en text som själv når 5,78:1. Konturen är dekor, inte informationsbärare (1,73:1)."
+   },
+   {
+    "token": "avatar.pairs[].fill",
+    "floor": null,
+    "reason": "Ytor. Förgrunden mäts i stället via onFill — alla fem par ligger ≥ 4,75:1."
+   },
+   {
+    "token": "decorative separators",
+    "floor": null,
+    "measured": {
+     "light": 1.41
+    },
+    "reason": "UTGÅNGEN — mellanslagsprickar (·) i metadata är borttagna och ersatta av flex-gap. Ingen dekorativ glyf under 3:1 finns kvar i skärmfilen, så undantaget behövs inte."
+   },
+   {
+    "token": "text.disabled.onRaised",
+    "floor": 3,
+    "measured": {
+     "light": 3.19,
+     "dark": 3.96
+    },
+    "reason": "Inaktiverade kontroller är undantagna 4,5:1 enligt WCAG 1.4.3. Butlerys eget golv på 3:1 gäller — texten ska gå att läsa, bara inte inbjuda till handling."
+   },
+   {
+    "token": "border.onInk",
+    "floor": null,
+    "reason": "Avgränsning på ink (1,48:1). Konturen är dekor, inte informationsbärare — samma undantag som border.statusWarning."
+   }
+  ],
+  "rule": "Ett undantag utan mätvärde och skäl är inte ett undantag, det är ett fel.",
+  "surfaceRule": "Varje textton är deklarerad mot **varje** yta den får stå på — papper och surface.raised, i båda lägena. En ton som bara mätts mot papper får inte användas på en upphöjd yta: skillnaden är 0,4–0,5 steg och den äter upp marginalen. Det var så #A15A0A på #E6EAD9 (4,30:1) slank igenom en grön T-02.",
+  "renderedMeasurement": {
+   "rule": "Varje element med egen textfärg mäts mot sin verkliga bakgrund — närmaste ogenomskinliga förfader, med mellanliggande rgba-lager komponerade i ordning. Golv per element: 3:1 för avstängd text och för stor text (>=24 px, eller >=19 px i 700), annars 4,5:1.",
+   "measured": "2026-07-29",
+   "pairs": 3017,
+   "belowFloor": 0,
+   "lowestNonDisabled": 4.73,
+   "note": "Deklarerade par i contrastPairs räcker inte: 137 brister fanns enbart i renderad markup, och varje enskild var redan namngiven i tokens som en .onRaised-variant, ett borttaget värde eller ett undantag med golv 3. Reglerna var skrivna; mätningen som läser dem saknades."
+  }
+ },
+ "touchTarget": {
+  "min": 48,
+  "unit": "dp",
+  "minGap": 8,
+  "iosEquivalent": 44,
+  "iosUnit": "pt",
+  "rule": "Visuell storlek, hitbox och grannavstånd deklareras per komponent. Hitboxen ska finnas i koden, inte bara i dokumentationen. Fokusramen ritas runt hitboxen, aldrig runt glyfen."
+ }
+}

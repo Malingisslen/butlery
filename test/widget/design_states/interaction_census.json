@@ -1,0 +1,563 @@
+{
+  "$om": "P8-U06: the 33 REQUIRED control states of fas2/block288-uxfrysning.json interaktion (vendored in test/fixtures/design/block288-interaktion.json). TESTED: the state is reached through real input in light and dark, and every check passes. PARTIAL: the state is reached and tested, but a check fails today, as listed with its BUT-#### ticket in known_interaction_findings.dart (known_finding); it does not count as meeting the spec. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
+  "INTERACTION_SET_HASH": "34ed0d011c8552877f4f823d8bf0092e5107583b944b0740b7c5403562fa59fd",
+  "entries": [
+    {
+      "row_id": "CSR::ROLE::button::COLLAPSED",
+      "status": "TESTED",
+      "control": "\"Visa detaljer\" in the merge sheet (ShoppingMergeSheet.detailsToggleKey, #inkopmerge)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::COLLAPSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::COLLAPSED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::button::DEFAULT",
+      "status": "TESTED",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::button::DISABLED",
+      "status": "TESTED",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::DISABLED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::DISABLED (dark)"
+        },
+        {
+          "file": "test/unit/theme/disabled_state_theme_test.dart",
+          "name": "no disabled colour is carried by opacity"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::button::EXPANDED",
+      "status": "TESTED",
+      "control": "\"Visa detaljer\" in the merge sheet (ShoppingMergeSheet.detailsToggleKey, #inkopmerge)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::EXPANDED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::EXPANDED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::button::FOCUSED",
+      "status": "TESTED",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::FOCUSED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::button::PRESSED",
+      "status": "TESTED",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::PRESSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::PRESSED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::button::SELECTED",
+      "status": "TESTED",
+      "control": "a filter chip (FilterChipsWidget), a button that can be selected (Komponentark v1:139-146)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::button::SELECTED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::button::SELECTED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::checkbox::DEFAULT",
+      "status": "TESTED",
+      "control": "DebouncedCheckbox (lib/widgets/common/input/debounced_checkbox.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::checkbox::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::checkbox::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::checkbox::FOCUSED",
+      "status": "TESTED",
+      "control": "DebouncedCheckbox (lib/widgets/common/input/debounced_checkbox.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::checkbox::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::checkbox::FOCUSED (dark)"
+        },
+        {
+          "file": "test/widget/common/butlery_control_focus_test.dart",
+          "name": "$name: keyboard focus draws the $mode ring outside a 48 dp box"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::checkbox::SELECTED",
+      "status": "TESTED",
+      "control": "DebouncedCheckbox (lib/widgets/common/input/debounced_checkbox.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::checkbox::SELECTED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::checkbox::SELECTED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::combobox::DEFAULT",
+      "status": "TESTED",
+      "control": "DropdownButtonFormField through the theme, as in the recipe form and settings",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::combobox::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::combobox::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::combobox::EXPANDED",
+      "status": "PARTIAL",
+      "control": "DropdownButtonFormField through the theme, as in the recipe form and settings",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::combobox::EXPANDED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::combobox::EXPANDED (dark)"
+        }
+      ],
+      "ticket": null,
+      "known_finding": "BUT-2176"
+    },
+    {
+      "row_id": "CSR::ROLE::link::DEFAULT",
+      "status": "PARTIAL",
+      "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), the same GestureDetector-in-Semantics(link) pattern as the recipe source link and the terms links",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::link::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::link::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null,
+      "known_finding": "BUT-2177"
+    },
+    {
+      "row_id": "CSR::ROLE::link::FOCUSED",
+      "status": "MISSING",
+      "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), the same GestureDetector-in-Semantics(link) pattern as the recipe source link and the terms links",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::link::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::link::FOCUSED (dark)"
+        }
+      ],
+      "ticket": "BUT-2177",
+      "reason": "A link cannot take keyboard focus at all, so the state does not exist in the app."
+    },
+    {
+      "row_id": "CSR::ROLE::menuitem::DEFAULT",
+      "status": "TESTED",
+      "control": "ButleryMenuItem in a PopupMenuButton (lib/widgets/common/butlery_control_focus.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::menuitem::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::menuitem::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::menuitem::FOCUSED",
+      "status": "TESTED",
+      "control": "ButleryMenuItem in a PopupMenuButton (lib/widgets/common/butlery_control_focus.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::menuitem::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::menuitem::FOCUSED (dark)"
+        },
+        {
+          "file": "test/widget/common/butlery_control_focus_test.dart",
+          "name": "menu item: keyboard focus draws the ring around the row"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::radio::DEFAULT",
+      "status": "TESTED",
+      "control": "RadioListTile in a RadioGroup through the theme, as in the settings and tag dialogs",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::radio::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::radio::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::radio::DISABLED",
+      "status": "TESTED",
+      "control": "RadioListTile in a RadioGroup through the theme, as in the settings and tag dialogs",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::radio::DISABLED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::radio::DISABLED (dark)"
+        },
+        {
+          "file": "test/unit/theme/disabled_state_theme_test.dart",
+          "name": "no disabled colour is carried by opacity"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::radio::FOCUSED",
+      "status": "PARTIAL",
+      "control": "RadioListTile in a RadioGroup through the theme, as in the settings and tag dialogs",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::radio::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::radio::FOCUSED (dark)"
+        },
+        {
+          "file": "test/widget/common/butlery_control_focus_test.dart",
+          "name": "$name: keyboard focus draws the $mode ring outside a 48 dp box"
+        },
+        {
+          "file": "test/widget/package4_t4_controls_test.dart",
+          "name": "the week choice radios sit in the shared focus grip"
+        }
+      ],
+      "ticket": null,
+      "known_finding": "BUT-2148"
+    },
+    {
+      "row_id": "CSR::ROLE::radio::SELECTED",
+      "status": "TESTED",
+      "control": "RadioListTile in a RadioGroup through the theme, as in the settings and tag dialogs",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::radio::SELECTED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::radio::SELECTED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::searchbox::DEFAULT",
+      "status": "TESTED",
+      "control": "ButlerySearchBox (lib/widgets/common/butlery_search_box.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::searchbox::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::searchbox::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::searchbox::DISABLED",
+      "status": "PARTIAL",
+      "control": "ButlerySearchBox (lib/widgets/common/butlery_search_box.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::searchbox::DISABLED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::searchbox::DISABLED (dark)"
+        },
+        {
+          "file": "test/unit/theme/disabled_state_theme_test.dart",
+          "name": "no disabled colour is carried by opacity"
+        }
+      ],
+      "ticket": null,
+      "known_finding": "BUT-2178"
+    },
+    {
+      "row_id": "CSR::ROLE::searchbox::FOCUSED",
+      "status": "TESTED",
+      "control": "ButlerySearchBox (lib/widgets/common/butlery_search_box.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::searchbox::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::searchbox::FOCUSED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::switch::DEFAULT",
+      "status": "TESTED",
+      "control": "SwitchListTile through the theme, the settings pattern (19 uses in lib/)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::switch::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::switch::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::switch::DISABLED",
+      "status": "TESTED",
+      "control": "SwitchListTile through the theme, the settings pattern (19 uses in lib/)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::switch::DISABLED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::switch::DISABLED (dark)"
+        },
+        {
+          "file": "test/unit/theme/disabled_state_theme_test.dart",
+          "name": "no disabled colour is carried by opacity"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::switch::FOCUSED",
+      "status": "PARTIAL",
+      "control": "SwitchListTile through the theme, the settings pattern (19 uses in lib/)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::switch::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::switch::FOCUSED (dark)"
+        },
+        {
+          "file": "test/widget/common/butlery_control_focus_test.dart",
+          "name": "$name: keyboard focus draws the $mode ring outside a 48 dp box"
+        }
+      ],
+      "ticket": null,
+      "known_finding": "BUT-2148"
+    },
+    {
+      "row_id": "CSR::ROLE::switch::SELECTED",
+      "status": "TESTED",
+      "control": "SwitchListTile through the theme, the settings pattern (19 uses in lib/)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::switch::SELECTED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::switch::SELECTED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::tab::DEFAULT",
+      "status": "TESTED",
+      "control": "ButleryTab in a TabBar (lib/widgets/common/butlery_control_focus.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::tab::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::tab::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::tab::FOCUSED",
+      "status": "TESTED",
+      "control": "ButleryTab in a TabBar (lib/widgets/common/butlery_control_focus.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::tab::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::tab::FOCUSED (dark)"
+        },
+        {
+          "file": "test/widget/common/butlery_control_focus_test.dart",
+          "name": "$name: keyboard focus draws the $mode ring outside a 48 dp box"
+        },
+        {
+          "file": "test/widget/package4_t4_controls_test.dart",
+          "name": "each of the six tabs rings when it has keyboard focus"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::tab::SELECTED",
+      "status": "TESTED",
+      "control": "ButleryTab in a TabBar (lib/widgets/common/butlery_control_focus.dart)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::tab::SELECTED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::tab::SELECTED (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::textbox::DEFAULT",
+      "status": "TESTED",
+      "control": "TextField through the theme (InputDecoration labelText)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::textbox::DEFAULT (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::textbox::DEFAULT (dark)"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::textbox::DISABLED",
+      "status": "TESTED",
+      "control": "TextField through the theme (InputDecoration labelText)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::textbox::DISABLED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::textbox::DISABLED (dark)"
+        },
+        {
+          "file": "test/unit/theme/disabled_state_theme_test.dart",
+          "name": "no disabled colour is carried by opacity"
+        }
+      ],
+      "ticket": null
+    },
+    {
+      "row_id": "CSR::ROLE::textbox::FOCUSED",
+      "status": "TESTED",
+      "control": "TextField through the theme (InputDecoration labelText)",
+      "test_file": "test/widget/design_states/interaction_roles_test.dart",
+      "test_name": "CSR::ROLE::textbox::FOCUSED (light)",
+      "also": [
+        {
+          "file": "test/widget/design_states/interaction_roles_test.dart",
+          "name": "CSR::ROLE::textbox::FOCUSED (dark)"
+        }
+      ],
+      "ticket": null
+    }
+  ],
+  "unspecified": [
+    "CSR::ROLE::checkbox::COLLAPSED",
+    "CSR::ROLE::checkbox::DISABLED",
+    "CSR::ROLE::checkbox::EXPANDED",
+    "CSR::ROLE::checkbox::PRESSED",
+    "CSR::ROLE::combobox::DISABLED",
+    "CSR::ROLE::combobox::FOCUSED",
+    "CSR::ROLE::combobox::PRESSED",
+    "CSR::ROLE::combobox::SELECTED",
+    "CSR::ROLE::link::COLLAPSED",
+    "CSR::ROLE::link::DISABLED",
+    "CSR::ROLE::link::EXPANDED",
+    "CSR::ROLE::link::PRESSED",
+    "CSR::ROLE::link::SELECTED",
+    "CSR::ROLE::menuitem::PRESSED",
+    "CSR::ROLE::menuitem::SELECTED",
+    "CSR::ROLE::radio::COLLAPSED",
+    "CSR::ROLE::radio::EXPANDED",
+    "CSR::ROLE::radio::PRESSED",
+    "CSR::ROLE::searchbox::COLLAPSED",
+    "CSR::ROLE::searchbox::EXPANDED",
+    "CSR::ROLE::searchbox::PRESSED",
+    "CSR::ROLE::searchbox::SELECTED",
+    "CSR::ROLE::switch::COLLAPSED",
+    "CSR::ROLE::switch::EXPANDED",
+    "CSR::ROLE::switch::PRESSED",
+    "CSR::ROLE::tab::COLLAPSED",
+    "CSR::ROLE::tab::DISABLED",
+    "CSR::ROLE::tab::EXPANDED",
+    "CSR::ROLE::tab::PRESSED",
+    "CSR::ROLE::textbox::COLLAPSED",
+    "CSR::ROLE::textbox::EXPANDED",
+    "CSR::ROLE::textbox::PRESSED",
+    "CSR::ROLE::textbox::SELECTED"
+  ],
+  "not_required": [
+    "CSR::ROLE::combobox::COLLAPSED",
+    "CSR::ROLE::menuitem::COLLAPSED",
+    "CSR::ROLE::menuitem::DISABLED",
+    "CSR::ROLE::menuitem::EXPANDED"
+  ]
+}

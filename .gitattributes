@@ -3,3 +3,7 @@
 # Keep them out of line-ending conversion.
 assets/icons/*.svg -text
 assets/icons/icons.json -text
+
+# P8-U04: the icon font the Linux goldens load, vendored so a render never
+# depends on a runner's Flutter cache.
+test/fixtures/fonts/*.otf binary
