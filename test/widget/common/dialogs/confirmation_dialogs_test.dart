@@ -196,12 +196,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Radera receptet'), findsOneWidget);
-      // RichText composes "<message> \"<itemName>\"?" — itemName is empty in
-      // the public helper, so the visible content contains the message verbatim.
+      // The helper passes no item name, so nothing may follow the message
+      // (BUT-2164: it used to end in ' ""?').
       expect(
         find.byWidgetPredicate((w) {
           if (w is! RichText) return false;
-          return w.text.toPlainText().contains('Detta kan inte ångras');
+          return w.text.toPlainText() == 'Detta kan inte ångras';
         }),
         findsOneWidget,
       );

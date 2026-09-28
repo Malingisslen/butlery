@@ -311,11 +311,14 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
             style: AppTextStyles.bodyMedium,
             children: [
               TextSpan(text: message),
-              TextSpan(
-                text: ' "$itemName"',
-                style: AppTextStyles.bodyBold,
-              ),
-              const TextSpan(text: '?'),
+              // A caller without a name gives a complete message.
+              if (itemName.isNotEmpty) ...[
+                TextSpan(
+                  text: ' "$itemName"',
+                  style: AppTextStyles.bodyBold,
+                ),
+                const TextSpan(text: '?'),
+              ],
             ],
           ),
         );
