@@ -18,6 +18,8 @@
 ///
 /// Today's failures are listed in known_a11y_findings.dart with their
 /// tickets; an unlisted failure is red, and so is a listed one that passes.
+/// A few text contrast findings depend on the host's glyph rasteriser and are
+/// listed per host there (Linux, Windows).
 library;
 
 import 'dart:convert';
@@ -117,6 +119,7 @@ Future<List<Violation>> _guidelines(
 void main() {
   final rows = StateFixture.load().rows;
   final results = <Map<String, Object?>>[];
+  final knownOnThisHost = knownA11yFindingsOnThisHost();
 
   setUpAll(() async {
     registerHostFallbacks();
@@ -187,7 +190,7 @@ void main() {
     final key =
         '${row.id}::${_modeName(mode)}::${width.toInt()}::${_scaleName(scale)}';
     final found = violations.map((v) => v.code).toSet();
-    final known = knownA11yFindings.keys
+    final known = knownOnThisHost.keys
         .where((k) => k.startsWith('$key::'))
         .map((k) => k.substring(key.length + 2))
         .toSet();
@@ -210,11 +213,27 @@ void main() {
   }
 
   test('the known findings stay under the ceiling and carry tickets', () {
+    final hostBound = {
+      ...knownA11yFindingsLinuxOnly,
+      ...knownA11yFindingsWindowsOnly,
+    };
     expect(
-      knownA11yFindings.length,
+      knownA11yFindings.length +
+          knownA11yFindingsLinuxOnly.length +
+          knownA11yFindingsWindowsOnly.length,
       lessThanOrEqualTo(knownA11yFindingsCeiling),
     );
-    for (final entry in knownA11yFindings.entries) {
+    // A host-bound finding is in one list only, and only a pixel check
+    // (TEXT_CONTRAST) may depend on the host.
+    expect(
+      hostBound.length,
+      knownA11yFindingsLinuxOnly.length + knownA11yFindingsWindowsOnly.length,
+    );
+    for (final key in hostBound.keys) {
+      expect(knownA11yFindings.containsKey(key), isFalse, reason: key);
+      expect(key, endsWith('::TEXT_CONTRAST'));
+    }
+    for (final entry in {...knownA11yFindings, ...hostBound}.entries) {
       expect(
         RegExp(r'^BUT-\d+$').hasMatch(entry.value),
         isTrue,

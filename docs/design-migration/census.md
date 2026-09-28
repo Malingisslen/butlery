@@ -7,8 +7,8 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 365 known failures and 2 residue lists are not empty
-- Known failures: 365 (a11y 214, contrast 18, interaction_checks 12, interactions 6, states53 72, tokens 11, transitions 32)
+- **Migration complete:** NO: 367 known failures and 2 residue lists are not empty
+- Known failures: 367 (a11y 216, contrast 18, interaction_checks 12, interactions 6, states53 72, tokens 11, transitions 32)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 41 registered in Linear
 - Failures without a ticket: 0
@@ -104,9 +104,10 @@ Declared pairs: 36. Measured in both modes: 18; unmeasurable (no generated membe
 
 ## Accessibility matrix
 
-Known findings: 214 (ceiling 214) in 178 cases (view, state, mode, width, text scale).
-- By check: ELLIPSIS 52, EXCEPTION 22, OVERFLOW 46, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 12
-- By view: admin 18, auth-otp 8, import-av-recept 20, inköpslista 38, matlagningsläge 20, profil-inställningar 8, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
+Known findings: 216 (ceiling 216) in 180 cases (view, state, mode, width, text scale).
+- Host-bound text contrast (glyph rasteriser): linux 2, windows 2
+- By check: ELLIPSIS 52, EXCEPTION 22, OVERFLOW 46, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 14
+- By view: admin 18, auth-otp 8, chatt 2, import-av-recept 20, inköpslista 38, matlagningsläge 20, profil-inställningar 8, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
 
 ## Token parity
 
@@ -176,7 +177,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 42 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp, shared list button 40 dp) |
 | BUT-2195 | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
-| BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
+| BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
 | BUT-2197 | states53 2 | Hem tonight card eyebrow draws palette.saffronLight #E09D50 in dark; Skarmar v12 del 1:47 (--r04slot-765) draws #DCA968 in dark |
 | BUT-2198 | tokens 2 | Semantic tokens with no generated app member outside the contrast pairs (surface.selected, border.onInk) |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |

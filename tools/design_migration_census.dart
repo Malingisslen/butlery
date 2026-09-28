@@ -822,22 +822,35 @@ Map<String, Object?> _contrast(CensusSource src, List<_Finding> out) {
 
 Map<String, Object?> _a11y(CensusSource src, List<_Finding> out) {
   final source = src.read(_a11yFindings);
-  final findings = _collection(source, 'knownA11yFindings');
-  if (!findings.found) return {'status': notPresent, 'file': _a11yFindings};
-  for (final f in findings.entries) {
+  final shared = _collection(source, 'knownA11yFindings');
+  if (!shared.found) return {'status': notPresent, 'file': _a11yFindings};
+  // Text contrast read from rendered pixels can depend on the host's glyph
+  // rasteriser; those findings are listed per host and count here once each.
+  final hostBound = {
+    for (final host in ['Linux', 'Windows'])
+      host: _collection(source, 'knownA11yFindings${host}Only').entries,
+  };
+  final findings = [
+    ...shared.entries,
+    for (final e in hostBound.values) ...e,
+  ];
+  for (final f in findings) {
     out.add(_Finding('a11y', f.key, f.values.isEmpty ? null : f.values.first));
   }
   final cases = {
-    for (final f in findings.entries) f.key.split('::').take(5).join('::'),
+    for (final f in findings) f.key.split('::').take(5).join('::'),
   };
   return {
     'status': present,
     'file': _a11yFindings,
-    'known_findings': findings.entries.length,
+    'known_findings': findings.length,
     'known_findings_ceiling': _intConst(source, 'knownA11yFindingsCeiling'),
+    'host_bound': {
+      for (final e in hostBound.entries) e.key.toLowerCase(): e.value.length,
+    },
     'cases_with_known_finding': cases.length,
-    'by_code': _countBy(findings.entries.map((f) => f.key.split('::').last)),
-    'by_view': _countBy(findings.entries.map((f) => f.key.split('::').first)),
+    'by_code': _countBy(findings.map((f) => f.key.split('::').last)),
+    'by_view': _countBy(findings.map((f) => f.key.split('::').first)),
   };
 }
 
@@ -1320,6 +1333,10 @@ String renderMarkdown(Map<String, Object?> census) {
         'Known findings: ${a['known_findings']} (ceiling '
         '${a['known_findings_ceiling']}) in ${a['cases_with_known_finding']} '
         'cases (view, state, mode, width, text scale).',
+      )
+      ..writeln(
+        '- Host-bound text contrast (glyph rasteriser): '
+        '${counts(a['host_bound'])}',
       )
       ..writeln('- By check: ${counts(a['by_code'])}')
       ..writeln('- By view: ${counts(a['by_view'])}');
