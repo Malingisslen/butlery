@@ -7,8 +7,8 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 343 known failures and 2 residue lists are not empty
-- Known failures: 343 (a11y 216, contrast 7, interaction_checks 12, interactions 6, states53 70, transitions 32)
+- **Migration complete:** NO: 327 known failures and 2 residue lists are not empty
+- Known failures: 327 (a11y 208, contrast 7, interaction_checks 12, interactions 6, states53 62, transitions 32)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 38 registered in Linear
 - Failures without a ticket: 0
@@ -60,9 +60,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 58; cases with a known finding: 48
-- States passing in both modes: 29 of 53
-- Known findings: 70 (ceiling 70); by rule: COLOUR_FILL 26, COLOUR_TEXT 20, EXCEPTION 6, NO_OFFLINE_BANNER 8, NO_PLATE_LINE 2, NO_UPDATED_BY_NOTICE 2, OVERFLOW 6
+- Cases passing: 64; cases with a known finding: 42
+- States passing in both modes: 32 of 53
+- Known findings: 62 (ceiling 62); by rule: COLOUR_FILL 26, COLOUR_TEXT 18, NO_OFFLINE_BANNER 8, NO_PLATE_LINE 2, NO_UPDATED_BY_NOTICE 2, OVERFLOW 6
 
 ## Required control states
 
@@ -96,10 +96,10 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 2; u
 
 ## Accessibility matrix
 
-Known findings: 216 (ceiling 216) in 180 cases (view, state, mode, width, text scale).
+Known findings: 208 (ceiling 208) in 174 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 2, windows 2
-- By check: ELLIPSIS 52, EXCEPTION 22, OVERFLOW 46, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 14
-- By view: admin 18, auth-otp 8, chatt 2, import-av-recept 20, inköpslista 38, matlagningsläge 20, profil-inställningar 8, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
+- By check: ELLIPSIS 52, OVERFLOW 58, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 16
+- By view: admin 18, auth-otp 8, chatt 2, import-av-recept 20, inköpslista 30, matlagningsläge 20, profil-inställningar 8, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
 
 ## Token parity
 
@@ -146,8 +146,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2182 | states53 8 | No offline banner ("Ingen anslutning") on this view |
 | BUT-2183 | states53 24 | Opacity used as decoration or state, off the opacityLadder |
 | BUT-2184 | states53 4 | Disabled fields and buttons use Material default opacity (0.38/0.5), not text.disabled/surface.disabled |
-| BUT-2185 | states53 8 | Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens |
-| BUT-2186 | a11y 22, states53 6 | Shopping list header: "Sortera kategorier" OutlinedButton gets infinite width in a Row (theme minimumSize width infinity), layout fails on every open list |
+| BUT-2185 | states53 6 | Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens |
 | BUT-2187 | states53 2 | Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101) |
 | BUT-2189 | states53 2 | Add members shows the empty state, not loading, while the friends service is still loading |
 | BUT-2190 | states53 2 | Member management dialog overflows by 68 px at 360 dp |
@@ -159,6 +158,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
 | BUT-2200 | contrast 2 | text.danger under its contrast floor on surface.tint.danger and surface.tint.warning in dark (#DE9078 on #2F4437, 4.18:1) |
+| BUT-2201 | a11y 14 | Shopping list header: three buttons in one row do not fit at 320 dp or 150/200 % text, and the 104 dp Sortera kategorier fails text contrast at 360 dp; the design puts Rensa köpta in the Köpt heading |
 
 ## Ratchets and adoption lists
 
