@@ -290,8 +290,6 @@ const Map<String, String> registeredTickets = {
       'Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens',
   'BUT-2201':
       'Shopping list header: three buttons in one row do not fit at 320 dp or 150/200 % text, and the 104 dp Sortera kategorier fails text contrast at 360 dp; the design puts Rensa köpta in the Köpt heading',
-  'BUT-2186':
-      'Shopping list header: "Sortera kategorier" OutlinedButton gets infinite width in a Row (theme minimumSize width infinity), layout fails on every open list',
   'BUT-2187':
       'Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101)',
   'BUT-2199': 'Shared list header draws light text.body (#37453A) in dark mode',

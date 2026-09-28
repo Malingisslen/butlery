@@ -35,10 +35,3 @@ Re-run it when `ubuntu-latest` moves to a new image or Flutter is bumped
 
 `BUTLERY_GOLDEN_SMOKE=1 flutter test test/views/golden_linux` pumps every
 screen without taking a picture, to see that the hosts still build.
-
-## Blocked screens
-
-`inkopslista` is skipped, with BUT-2186 as the reason, until that ticket
-is fixed: the open list's header fails its layout, and a picture of that
-would become the baseline. When it is fixed, remove `blockedBy`, run the
-workflow and commit `inkopslista_light.png` and `inkopslista_dark.png`.
