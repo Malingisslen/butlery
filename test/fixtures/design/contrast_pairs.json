@@ -3,8 +3,8 @@
  "source": {
   "file": "tokens.json",
   "repo": "Butlery design system",
-  "commit": "b6ea27d (unchanged at 1f0105a)",
-  "sha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02",
+  "commit": "3f38556",
+  "sha256": "c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c",
   "tokens_version": "1.13",
   "tokens_date": "2026-08-05"
  },
@@ -97,7 +97,8 @@
   {
    "fg": "text.accent.onRaised",
    "bg": "surface.raised",
-   "floor": 4.5
+   "floor": 4.5,
+   "note": "Mörkt läge: #DCA968 mot #2F4437 = 4,95. Aldrig mot border.onInk. Paret text.accent på surface.raised är struket (runda 6, 2026-09-28, godkänt av Malin): ljust #A15A0A ger bara 4,30 mot #E6EAD9 och gäller enligt text.accent.onRaised bara på papper; upphöjd yta bärs av detta par."
   },
   {
    "fg": "text.warning",
@@ -178,12 +179,6 @@
    "fg": "text.danger",
    "bg": "surface.tint.danger",
    "floor": 4.5
-  },
-  {
-   "fg": "text.accent",
-   "bg": "surface.raised",
-   "floor": 4.5,
-   "note": "Mörkt läge: #DCA968 mot #2F4437 = 4,95. Aldrig mot border.onInk."
   },
   {
    "fg": "text.link",

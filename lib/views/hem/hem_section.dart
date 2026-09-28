@@ -226,9 +226,11 @@ class HemGreeting extends StatelessWidget {
 /// Colours on surface.ink, the same in both modes:
 /// * surface: surface.ink #24382C, colorScheme.primary in both schemes
 ///   (tokens.json:112-115);
-/// * eyebrow: palette.saffronLight #E09D50 (#hemrecept :134 draws #e09d50
-///   light, #dca968 dark; the band is ink in both modes, so one value),
-///   AppModeColors.textAccentOnInk, 5.43:1;
+/// * eyebrow: context.modeColors.accentOnInk (#hemrecept :134 draws #e09d50
+///   light, #dca968 dark): text.accent #DCA968 in dark, 5.91:1, like every
+///   other accent text (produktbeslut R6-01 = A); palette.saffronLight
+///   #E09D50 in light, 5.43:1, because text.accent's light #A15A0A is
+///   2.37:1 on ink;
 /// * the dot and "Börja laga": action.primary saffron #CE7C1E with
 ///   text.onActionPrimary #17251D (tokens.json:137-140, :81-85);
 /// * title and "Byt rätt": paper #F5F4ED, colorScheme.onPrimary;
@@ -302,7 +304,7 @@ class HemTonightCard extends StatelessWidget {
                       child: Text(
                         meta.toUpperCase(),
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: AppModeColors.textAccentOnInk(),
+                          color: context.modeColors.accentOnInk,
                           letterSpacing: 1,
                         ),
                       ),

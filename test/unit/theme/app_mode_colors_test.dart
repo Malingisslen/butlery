@@ -119,6 +119,9 @@ const Map<String, (Color, Color)> _expected = {
     AppColorsDark.progressIndicator,
   ),
   'surfaceDisabled': (AppColors.surfaceDisabled, AppColorsDark.surfaceDisabled),
+  // Hem tonight eyebrow on ink (produktbeslut R6-01 = A): the drawn
+  // saffronLight in light, text.accent in dark.
+  'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccent),
 };
 
 final Map<String, Color Function(ModeColors)> _mode = {
@@ -164,6 +167,7 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'progressTrack': (ModeColors c) => c.progressTrack,
   'progressIndicator': (ModeColors c) => c.progressIndicator,
   'surfaceDisabled': (ModeColors c) => c.surfaceDisabled,
+  'accentOnInk': (ModeColors c) => c.accentOnInk,
 };
 
 void main() {
@@ -172,7 +176,7 @@ void main() {
         .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
         .map((m) => m.group(1)!)
         .toSet();
-    expect(modeGetters, hasLength(42));
+    expect(modeGetters, hasLength(43));
     expect(_expected.keys.toSet(), modeGetters);
     expect(_mode.keys.toSet(), modeGetters);
   });

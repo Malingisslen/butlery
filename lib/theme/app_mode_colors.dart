@@ -294,6 +294,18 @@ final class ModeColors {
   /// AppColors.surfaceDisabled light, AppColorsDark.surfaceDisabled dark.
   Color get surfaceDisabled =>
       _isDark ? AppColorsDark.surfaceDisabled : AppColors.surfaceDisabled;
+
+  /// Accent text on surface.ink #24382C, as the Hem tonight eyebrow draws
+  /// it (Skarmar v12 del 1:47, --r04slot-765: #e09d50 light, #dca968 dark).
+  ///
+  /// Dark: semantic text.accent, the generated AppColorsDark.textAccent
+  /// #DCA968, 5.91:1 on ink, like every other accent text in dark mode
+  /// (produktbeslut R6-01 = A, BUT-2197). Light: text.accent is #A15A0A,
+  /// which measures 2.37:1 on ink, so light keeps the drawn
+  /// AppColors.textAccentOnInk #E09D50, 5.43:1. Both rows are in the
+  /// Block 289 contrast contract.
+  Color get accentOnInk =>
+      _isDark ? AppColorsDark.textAccent : AppColors.textAccentOnInk;
 }
 
 /// `context.modeColors`: the [ModeColors] for the current theme's brightness.

@@ -31,7 +31,6 @@ const semanticKeysWithoutMember = <String, String>{
   'surface.tint.danger': 'BUT-2191',
   'surface.tint.success': 'BUT-2191',
   'surface.tint.warning': 'BUT-2191',
-  'text.accent': 'BUT-2191',
   'text.bodyMuted': 'BUT-2159',
   'text.completed': 'BUT-2147',
   'text.disabled': 'BUT-2191',

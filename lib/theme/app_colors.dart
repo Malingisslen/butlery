@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:f6a7c34787685cfc483ddce8bb683114caf1097f720168a65b13674027903370 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:73ab669133076042c911957e542f86df0e92cc0e898a0a807ff0a7d51f409eb5 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -230,6 +230,9 @@ class AppColors {
 
   /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning
   static const Color textWarning = Color(0xFF8A5212);
+
+  /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent
+  static const Color textAccent = Color(0xFFA15A0A);
 
   /// Snackbarens atgard pa surface.ink (Komponentark v1:747, #E09D50; produktbeslut PQ-09 = A). Palettfarg utan lagesberoende, eftersom ytan ar surface.ink i bada lagena. Star bara pa surface.ink: 5,43:1 dar. · palette.saffronLight
   static const Color textAccentOnInk = Color(0xFFE09D50);

@@ -1,7 +1,7 @@
 /// P8-U02: every declared contrast pair, measured on the colours the app
 /// was generated with, in light and in dark.
 ///
-/// Source: tokens.json contrastPairs (36 pairs) and contrastPolicy, vendored
+/// Source: tokens.json contrastPairs (35 pairs) and contrastPolicy, vendored
 /// in test/fixtures/design/contrast_pairs.json with the file's sha256. Each
 /// token is resolved to the generated member whose doc line names it
 /// ("· semantic.text.primary", "(dark)" in app_colors_dark.dart), so the
@@ -22,7 +22,6 @@ import 'package:flutter_test/flutter_test.dart';
 const knownContrastGaps = <String, String>{
   'text.bodyMuted on surface.base': 'BUT-2159',
   'text.completed on surface.base': 'BUT-2147',
-  'text.accent on surface.base': 'BUT-2191',
   'text.disabled on surface.base': 'BUT-2191',
   'control.checked.foreground on control.checked.background': 'BUT-2191',
   'dataScale.onFill.step1 on dataScale.sequential[0]': 'BUT-2191',
@@ -37,12 +36,11 @@ const knownContrastGaps = <String, String>{
   'text.accent.onRaised on surface.tint.accent': 'BUT-2191',
   'text.success on surface.tint.success': 'BUT-2191',
   'text.danger on surface.tint.danger': 'BUT-2191',
-  'text.accent on surface.raised': 'BUT-2191',
 };
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    '444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02';
+    'c5b9dcbfde4bace128880622848bf7af1a5181b05cc4fa585c09c58dbf1f305c';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',
@@ -111,9 +109,9 @@ void main() {
     'dark': _tokenValues('lib/theme/app_colors_dark.dart', dark: true),
   };
 
-  test('the fixture is tokens.json as vendored, 36 pairs', () {
+  test('the fixture is tokens.json as vendored, 35 pairs', () {
     expect((fixture['source'] as Map)['sha256'], _tokensSha256);
-    expect(pairs, hasLength(36));
+    expect(pairs, hasLength(35));
     final policy = fixture['contrastPolicy'] as Map<String, dynamic>;
     expect((policy['floors'] as Map)['smallText'], 4.5);
   });
