@@ -28,13 +28,12 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=772-->
+<!--manifest:files=771-->
 
 ## Reporoten
 
 | Fil | SHA-256 |
 |---|---|
-| `.claude/settings.local.json` | `c6fc0d8a60a71b969ea8779f49b3efd940cd0d9fdb687ac486b90ffa61949391` |
 | `.github/workflows/verify.yml` | `769074037ab42d6b1c074d57e5be02152b14d353e1f512ea2fe3cd2d2945a87b` |
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
 | `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
