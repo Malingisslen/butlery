@@ -28,12 +28,13 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=771-->
+<!--manifest:files=772-->
 
 ## Reporoten
 
 | Fil | SHA-256 |
 |---|---|
+| `.claude/settings.local.json` | `c6fc0d8a60a71b969ea8779f49b3efd940cd0d9fdb687ac486b90ffa61949391` |
 | `.github/workflows/verify.yml` | `769074037ab42d6b1c074d57e5be02152b14d353e1f512ea2fe3cd2d2945a87b` |
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
 | `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
@@ -191,7 +192,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `f0c3f112c46c9b0df37dc049effe48d3d8e3d22c1c8a4e5e9bb7d74bd0e21f8c` |
+| `beslutslogg.md` | `0e87015cad764618bad061e1e254ff83b6755304540103e49489fde5a3253d3a` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -559,7 +560,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
-| `produktregler.md` | `1892ec01d282772e343db4884e7645401acc3dd9c8db4497055ba6178ab542d6` |
+| `produktregler.md` | `b1e64e413a7d4d98b919820bbd60023f3fc6756986fe5e0ada7f95f21a538484` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `source-authority.json` | `0442c2bcd8b4e9ba204858179e459e948baa89670a61678165e57243b86a0d17` |
