@@ -10,8 +10,7 @@ unchanged (`test/widget/golden/golden_helper.dart`).
 
 ## Landed
 
-The 20 PNGs in `goldens/` were made by the `goldens-linux-update` workflow
-(run 36387805864) and committed in package 8. A missing or changed PNG now
+A missing or changed PNG in `goldens/` now
 fails `views (ubuntu)`, and so does a missing `goldens/` directory (the
 test `the Linux baselines are committed`).
 
