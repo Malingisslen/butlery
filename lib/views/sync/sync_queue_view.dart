@@ -215,9 +215,6 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     if (_busy.contains(key) || _discarding.contains(key)) return;
     final l10n = context.l10n;
     if (change.discardAsksFirst) {
-      // The body as customContent: the shared destructive body appends an
-      // item name and a question mark after the message (block_user_action
-      // does the same).
       final confirmed =
           await DestructiveConfirmationDialog.show(
             context,
