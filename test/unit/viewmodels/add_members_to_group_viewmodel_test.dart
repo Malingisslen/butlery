@@ -1,6 +1,8 @@
 // Rewritten: local pure-Mocks for UnifiedFriendsService and sub-operations
 // to avoid centralized concrete @override conflicts with when().
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
@@ -458,6 +460,32 @@ void main() {
         expect(coldViewModel.availableFriends, isNotEmpty);
       },
     );
+  });
+
+  group('dispose (BUT-2189)', () {
+    test('stops following the friends service once disposed', () async {
+      // A single-subscription controller, so hasListener reflects this one
+      // subscription.
+      final states = StreamController<FriendsServiceState>();
+      addTearDown(states.close);
+      when(
+        () => mockFriendsService.stateStream,
+      ).thenAnswer((_) => states.stream);
+
+      final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
+        groupId: testGroupId,
+        friendsService: mockFriendsService,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(states.hasListener, isTrue);
+
+      vm.dispose();
+
+      expect(states.hasListener, isFalse);
+    });
   });
 
   group('cold start before the groups have loaded (BUT-2189)', () {
