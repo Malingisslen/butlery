@@ -7,8 +7,8 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 286 known failures and 2 residue lists are not empty
-- Known failures: 286 (a11y 182, contrast 5, interaction_checks 12, interactions 6, states53 50, transitions 31)
+- **Migration complete:** NO: 278 known failures and 2 residue lists are not empty
+- Known failures: 278 (a11y 174, contrast 5, interaction_checks 12, interactions 6, states53 50, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 33 registered in Linear
 - Failures without a ticket: 0
@@ -90,10 +90,10 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 182 (ceiling 182) in 148 cases (view, state, mode, width, text scale).
+Known findings: 174 (ceiling 174) in 142 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 2, windows 2
-- By check: ELLIPSIS 52, OVERFLOW 32, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 16
-- By view: auth-otp 8, chatt 2, import-av-recept 20, inköpslista 30, matlagningsläge 20, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
+- By check: ELLIPSIS 52, OVERFLOW 32, TAP_LABEL 40, TAP_TARGET 34, TEXT_CONTRAST 16
+- By view: auth-otp 8, chatt 2, import-av-recept 20, inköpslista 30, matlagningsläge 14, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 20
 
 ## Token parity
 
@@ -143,7 +143,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
 | BUT-2192 | a11y 20 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
-| BUT-2194 | a11y 42 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp, shared list button 40 dp) |
+| BUT-2194 | a11y 34 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp) |
 | BUT-2195 | a11y 40 | Tap targets without a label (smart import full-page tap area, add-members checkboxes) |
 | BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |

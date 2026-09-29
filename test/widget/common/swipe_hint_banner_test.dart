@@ -48,6 +48,20 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(SwipeHintBanner.recipeSwipeSeenKey), isTrue);
     });
+
+    testWidgets('the dismiss control meets the 48 dp tap target (BUT-2194)', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+
+      // A banner that rendered nothing would pass the guideline vacuously.
+      expect(find.byIcon(ButleryIcons.x), findsOneWidget);
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      handle.dispose();
+    });
   });
 
   group('SwipeHintBanner — parameterized per gesture (BUT-1199)', () {

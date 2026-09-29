@@ -116,7 +116,6 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
             ),
             tooltip: context.l10n.commonDismiss,
             color: cs.onPrimaryContainer,
-            visualDensity: VisualDensity.compact,
             onPressed: _dismiss,
           ),
         ],

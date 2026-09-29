@@ -196,8 +196,6 @@ the wrong belief and has been corrected in place):**
   all hits inside the widget's own suite means the view that WIRES it is unpinned, and deleting the
   production lines that pass it leaves every suite green with the feature absent from the app. A
   callback seam owes one test at the CALL SITE'S layer (BUT-1904).
-- A `didChangeDependencies` retry on a widget that renders `SizedBox.shrink()` on failure is DEAD —
-  the early return happens before any `Theme.of`, so only a REMOUNT recovers.
 
 - **An overflow probe MUST mount `AppTheme.lightTheme`** — the bare `MaterialApp`'s smaller default
   typography can hide a real overflow. Pin with SYNTHETIC tall content, never real ARB copy.
@@ -215,7 +213,8 @@ the wrong belief and has been corrected in place):**
   tests — but a group NAMED "the week fits" then asserts something nothing measures. Read
   `ScrollableState.position.maxScrollExtent` before writing "fits" (a `> 0` IS the finding), and
   strike the claim rather than re-scope it (BUT-1971).
-- A page-size guard is only testable on a TALL surface (`tester.view.physicalSize = Size(800,14000)`,
-  dpr 1.0) — a short surface auto-scrolls and hides item 0.
+- **`androidTapTargetGuideline` does not flag a control flush to the surface EDGE** — a compact
+  40x40 `IconButton` at the top-right corner PASSED, the same button inset 24 dp FAILED (measured,
+  BUT-2194). Place the control off every edge, and co-assert it rendered.
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.
