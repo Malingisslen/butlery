@@ -308,43 +308,50 @@ class _CreateGroupConversationViewState
   ) {
     final isSelected = viewModel.isMemberSelected(friend.uid);
 
+    // One node per friend: the card carries the name, the e-mail when
+    // there is one, the selected state and the tap.
     return SelectionCard(
       isSelected: isSelected,
+      semanticLabel: friend.email.isEmpty
+          ? friend.displayName
+          : '${friend.displayName}, ${friend.email}',
       onTap: () => viewModel.toggleMemberSelection(friend.uid),
-      child: Row(
-        children: [
-          UserDisplayWidgets.avatar(
-            imageUrl: friend.avatarUrl,
-            displayName: friend.displayName,
-            size: ImageSize.medium,
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  friend.displayName,
-                  style: isSelected
-                      ? AppTextStyles.bodyLargeBold
-                      : AppTextStyles.bodyLarge,
-                ),
-                if (friend.email.isNotEmpty)
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            UserDisplayWidgets.avatar(
+              imageUrl: friend.avatarUrl,
+              displayName: friend.displayName,
+              size: ImageSize.medium,
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    friend.email,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
+                    friend.displayName,
+                    style: isSelected
+                        ? AppTextStyles.bodyLargeBold
+                        : AppTextStyles.bodyLarge,
                   ),
-              ],
+                  if (friend.email.isNotEmpty)
+                    Text(
+                      friend.email,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          if (isSelected)
-            ButleryIcon(
-              ButleryIcons.circleCheck,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-        ],
+            if (isSelected)
+              ButleryIcon(
+                ButleryIcons.circleCheck,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+          ],
+        ),
       ),
     );
   }

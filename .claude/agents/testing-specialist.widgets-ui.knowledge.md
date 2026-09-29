@@ -214,7 +214,8 @@ the wrong belief and has been corrected in place):**
   40x40 `IconButton` at the top-right corner PASSED, the same button inset 24 dp FAILED (measured,
   BUT-2194). Place the control off every edge, and co-assert it rendered.
 - **`labeledTapTargetGuideline` only asks that each TAP node has a label** — a row split into a
-  labelled tap node and a tapless node holding `selected` passes it. Pin "one control": exactly one
-  node whose label contains the name, then its `flagsCollection` and a `tester.semantics.tap` (BUT-2195).
+  labelled tap node and a tapless `selected` node passes it. Pin "one control": one TAP node whose
+  label contains the name, then `flagsCollection` and `tester.semantics.tap`; once picked, a
+  selected-members chip names it too, so count ALL nodes before the tap only (BUT-2195).
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.

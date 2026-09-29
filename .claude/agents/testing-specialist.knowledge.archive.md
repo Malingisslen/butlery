@@ -40093,3 +40093,7 @@ Chapter: retired verbatim to make room under the 20,000 cap —
   pick-something-then-pick-back (only killer of keying the list off current vs stored selection);
   empty-stored; literal vocabulary pin (BUT-1858)."
 Added the labeledTapTargetGuideline split-node bullet.
+
+### 2026-09-30 — BUT-2195 twin: CreateGroupConversationView friend card semantics [trigger: new pattern]
+
+Wrote test/views/messaging/create_group_conversation_view_test.dart (twin of add_members_to_group_view_test.dart). Measured semantics tree: after a friend is selected the selected-members Chip forms a node labelled "Profilbild för Anna Lindqvist\nAnna Lindqvist", so the twin's "exactly one node whose label contains the name" helper FAILS here after the tap for a harness reason, not a product one. Scoped the helper to TAP nodes and kept an all-nodes count before the first tap only. The same dump showed the Chip delete button as a tap node with NO label (Info, pre-existing, not in the diff). Red probes on a test/-side copy of the view, each run twice, both runs identical: HEAD shape (no semanticLabel, no ExcludeSemantics) -> both tests red, label "Profilbild för Anna Lindqvist\n..."; always-append-email -> only the no-email test red ("Cecilia Berg, "); ExcludeSemantics->Semantics -> both red (trailing "\n" concatenation). Chapter bullet on labeledTapTargetGuideline merged in place, not appended.
