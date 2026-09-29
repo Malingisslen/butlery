@@ -67,6 +67,38 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets(
+    'the two-step heading fits at 320 dp and 200 % text (BUT-2192)',
+    (
+      tester,
+    ) async {
+      when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2.0)),
+              child: const AccountSecurityView(),
+            ),
+          ),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      // The section heading and the row both carry the name.
+      expect(find.text(l10n.accountSecurityMfaSettings), findsNWidgets(2));
+    },
+  );
+
   testWidgets('a user without two-step verification does not see the row', (
     tester,
   ) async {

@@ -85,14 +85,6 @@ const Map<String, String> knownA11yFindings = {
   'matlagningsläge::DEFAULT::dark::412::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::412::1.5::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::412::2.0::TAP_TARGET': 'BUT-2194',
-  'profil-inställningar::DEFAULT::light::320::1.5::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::light::320::2.0::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::light::360::2.0::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::light::412::2.0::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::dark::320::1.5::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::dark::320::2.0::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::dark::360::2.0::OVERFLOW': 'BUT-2192',
-  'profil-inställningar::DEFAULT::dark::412::2.0::OVERFLOW': 'BUT-2192',
   'receptdetalj::DEFAULT::light::320::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::1.5::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::2.0::OVERFLOW': 'BUT-2192',
@@ -242,4 +234,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 190;
+const int knownA11yFindingsCeiling = 182;

@@ -7,8 +7,7 @@
   `bySemanticsLabel` returning 0 therefore measures the MERGE, not an absent live region — do
   not conclude the branch is unobservable and fall back to `find.byType`. Prefer the RegExp
   form, which held on both hosts, and scope the finder to the control: an unscoped one also
-  matches unstubbed fixture text starting with the same word. See the 2026-09-07 archive
-  entries (BUT friend-requests spinner) for the per-host figures and the superseded wordings.
+  matches unstubbed fixture text starting with the same word.
 - **An UNSCOPED `find.byType(<SpinnerClass>)` count on a busy screen is the never-TWO pin, and
   reads as incidental** — `findsOneWidget` reddens when a second surface gains the same busy
   ternary. Grade such a count before writing a dedicated "no second spinner" test; it is usually
@@ -208,7 +207,8 @@ the wrong belief and has been corrected in place):**
   COUNT). A ladder that SKIPS cases per fixture is honest only if the skipped ones are MEASURED;
   register them as NAMED `skip:` (the runner prints the name every run), never a `continue`. Two
   residuals survive: the co-assert closes only "the ADDED content vanished", and a named skip goes
-  stale GREEN the day the residual is fixed (BUT-1895/1911).
+  stale GREEN the day the residual is fixed (BUT-1895/1911). A state-matrix host pins only
+  the sections its fixture RENDERS: an `if (vm.x)` section's wrapper is revertible-green (BUT-2192).
 - **A SCROLLABLE ancestor makes the whole overflow class structurally unfailable** — inside a
   `SingleChildScrollView` the child gets unbounded height, so no content can overflow and
   `takeException(), isNull` is green at any size. It still kills a fixed-slice mutant, so keep the

@@ -40028,3 +40028,16 @@ checks isLoading before hasError. The coordinator fixed it in parallel (handler 
 returns while the service is loading; both cold tests switched to a seeded BehaviorSubject).
 Separately: dispose()'s subscription cancel had no pin; a probe pair (dispose vs no dispose,
 single-subscription controller, hasListener) went green/red as expected, snippet handed over.
+
+### 2026-09-29 — BUT-2192 account security headings: matrix host never renders the MFA section [coverage-review]
+Commit-gate review of AccountSecurityView wrapping four section headings in Expanded. The a11y
+matrix (profil-inställningar::DEFAULT, 18 cases, green; 8 OVERFLOW entries removed from
+known_a11y_findings.dart, ceiling 190 -> 182) pins the password, email and legal headings. The
+host `_securityAuth` stubs `hasMfaEnabled` false, so `_buildMfaSection` never mounts there, and
+account_security_mfa_row_test pumps at the default 800x600 x1.0. Measured with a deleted scratch
+probe (hasMfa true, 320 dp, x2.0): heading "Tvåfaktorsautentisering" intrinsic width 1002.8 vs
+row 288.0; with the fix no exception. So the one heading most likely to overflow (longest,
+single word) had its Expanded revertible with every suite green. Filed High.
+Chapter cap trim, retired verbatim from the widgets-ui busy-state bullet: "See the 2026-09-07
+archive entries (BUT friend-requests spinner) for the per-host figures and the superseded
+wordings."

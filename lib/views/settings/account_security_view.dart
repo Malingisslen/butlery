@@ -183,9 +183,11 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           children: [
             ButleryIcon(ButleryIcons.lock, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.accountSecurityChangePassword,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.accountSecurityChangePassword,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
@@ -282,9 +284,11 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           children: [
             ButleryIcon(ButleryIcons.mail, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.accountSecurityChangeEmail,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.accountSecurityChangeEmail,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
@@ -382,9 +386,11 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           children: [
             ButleryIcon(Icons.security, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.accountSecurityMfaSettings,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.accountSecurityMfaSettings,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
@@ -426,9 +432,11 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           children: [
             ButleryIcon(Icons.gavel_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.legalTermsOfService,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.legalTermsOfService,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
