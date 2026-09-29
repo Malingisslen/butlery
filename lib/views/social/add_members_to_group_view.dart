@@ -259,30 +259,45 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     final hasInvitation = viewModel.hasInvitationStatus(friend.uid);
     final invitationStatus = viewModel.getInvitationStatusForUser(friend.uid);
 
+    // One node per friend: the card carries the name, the invitation
+    // status when there is one, the selected state and the tap.
     return SelectionCard(
+      isSelected: isSelected,
+      semanticLabel: hasInvitation
+          ? '${friend.displayName}, ${_invitationStatusText(invitationStatus)}'
+          : friend.displayName,
       onTap: () {
         viewModel.toggleFriendSelection(friend.uid);
       },
-      child: ListTile(
-        leading: SocialAvatarComponents.avatar(
-          user: friend,
-          size: ImageSize.medium,
-        ),
-        title: Text(
-          friend.displayName,
-          style: AppTextStyles.titleMedium,
-        ),
-        subtitle: null,
-        trailing: _buildFriendTileTrailing(
-          friend,
-          viewModel,
-          isSelected,
-          hasInvitation,
-          invitationStatus,
+      child: ExcludeSemantics(
+        child: ListTile(
+          leading: SocialAvatarComponents.avatar(
+            user: friend,
+            size: ImageSize.medium,
+          ),
+          title: Text(
+            friend.displayName,
+            style: AppTextStyles.titleMedium,
+          ),
+          subtitle: null,
+          trailing: _buildFriendTileTrailing(
+            friend,
+            viewModel,
+            isSelected,
+            hasInvitation,
+            invitationStatus,
+          ),
         ),
       ),
     );
   }
+
+  String _invitationStatusText(String? invitationStatus) =>
+      switch (invitationStatus) {
+        'sent' => context.l10n.groupInvitationSent,
+        'failed' => context.l10n.commonFailed,
+        _ => context.l10n.commonPending,
+      };
 
   Widget _buildFriendTileTrailing(
     UserProfile friend,
@@ -295,23 +310,20 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       // Visa inbjudningsstatus
       Color statusColor;
       IconData statusIcon;
-      String statusText;
+      final statusText = _invitationStatusText(invitationStatus);
 
       switch (invitationStatus) {
         case 'sent':
           statusColor = context.modeColors.success;
           statusIcon = ButleryIcons.circleCheck;
-          statusText = context.l10n.groupInvitationSent;
           break;
         case 'failed':
           statusColor = Theme.of(context).colorScheme.error;
           statusIcon = ButleryIcons.triangleAlert;
-          statusText = context.l10n.commonFailed;
           break;
         default:
           statusColor = context.modeColors.warning;
           statusIcon = ButleryIcons.clock;
-          statusText = context.l10n.commonPending;
       }
 
       return Column(

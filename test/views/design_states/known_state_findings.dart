@@ -251,8 +251,7 @@ const Map<String, String> registeredTickets = {
       'Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name)',
   'BUT-2194':
       'Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp)',
-  'BUT-2195':
-      'Tap targets without a label (smart import full-page tap area, add-members checkboxes)',
+  'BUT-2195': 'Tap targets without a label',
   'BUT-2196':
       'Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark',
 };

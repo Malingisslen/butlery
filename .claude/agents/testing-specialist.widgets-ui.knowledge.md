@@ -83,9 +83,6 @@
   `contains`/`textContaining` pin on that sibling, with nothing red and in files the round never
   opened** — when a round adds an enum→l10n arm, run the NEW string through every existing matcher
   for its siblings, and expect the sibling's test NAME to carry a stale count too (BUT-1922).
-- **A dropdown widened to keep an off-vocabulary value needs FOUR fixtures**: off-list-untouched;
-  pick-something-then-pick-back (only killer of keying the list off current vs stored selection);
-  empty-stored; literal vocabulary pin (BUT-1858).
 - **A `StyledInput` with `keyboardType: TextInputType.number` silently gets
   `FilteringTextInputFormatter.digitsOnly`**, so any `replaceAll(',', '.')` decimal parse below it
   is DEAD and "1,5" reaches the model as 15. A suite that never types a DECIMAL cannot see it.
@@ -216,5 +213,8 @@ the wrong belief and has been corrected in place):**
 - **`androidTapTargetGuideline` does not flag a control flush to the surface EDGE** — a compact
   40x40 `IconButton` at the top-right corner PASSED, the same button inset 24 dp FAILED (measured,
   BUT-2194). Place the control off every edge, and co-assert it rendered.
+- **`labeledTapTargetGuideline` only asks that each TAP node has a label** — a row split into a
+  labelled tap node and a tapless node holding `selected` passes it. Pin "one control": exactly one
+  node whose label contains the name, then its `flagsCollection` and a `tester.semantics.tap` (BUT-2195).
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.

@@ -40073,3 +40073,23 @@ asserted), repointed task_hosts.dart's import to the copy, ran the matrix filter
 Restored: deleted the copy, task_hosts.dart from `git show :path` then `git checkout --` (it was
 clean at HEAD; the copy-back left a stat-only M). Rerun green, +22.
 Principle merged into the core card's probe ladder step (3).
+
+### 2026-09-30 — BUT-2195 add-members friend row: one control, selected state, invitation status [review, new-pattern]
+Round: `add_members_to_group_view.dart` gave each friend's `SelectionCard` `isSelected` +
+`semanticLabel`. Coverage offered was only the a11y matrix's TAP_LABEL (18 known entries removed);
+the matrix fixture never selects or sends, so `isSelected` and the label were unpinned there.
+Measured on the intermediate bytes (Checkbox in ExcludeSemantics, ListTile not excluded) with a
+state-harness probe: the friend row produced more than one node containing the name — the
+ListTile's own node ("Profilbild för Anna Lindqvist\nAnna Lindqvist", tap, no button/selected)
+beside the card's. Final bytes (ListTile in ExcludeSemantics, label `name` or `name, <status>`):
+getSemantics on the card = one node, label "Anna Lindqvist", button, tap, selected toggles with
+both a card tap and a Checkbox tap.
+Wrote test/views/social/add_members_to_group_view_test.dart (reuses StateEnvironment + stateApp).
+Test-side replica probes (probe ladder step 3), each red: (A) previous two-node shape -> both
+tests red on "one node announces" length; (B) label drops status -> 'Anna Lindqvist' vs
+'Anna Lindqvist, Misslyckades'; (C) `isSelected:` deleted -> isSelected Tristate.isFalse.
+Chapter: retired verbatim to make room under the 20,000 cap —
+"- **A dropdown widened to keep an off-vocabulary value needs FOUR fixtures**: off-list-untouched;
+  pick-something-then-pick-back (only killer of keying the list off current vs stored selection);
+  empty-stored; literal vocabulary pin (BUT-1858)."
+Added the labeledTapTargetGuideline split-node bullet.
