@@ -210,6 +210,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
+        excludeFromSemantics: true,
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(

@@ -711,4 +711,19 @@ void main() {
     expect(find.byType(PartialOutcome), findsNothing);
     expect(find.text('1 av 3 hämtade'), findsOneWidget);
   });
+
+  testWidgets(
+    'the tap-to-dismiss area is not an unlabeled screen-reader control '
+    '(BUT-2195)',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      fakeVm = _FakeUrlImportViewModel(results: const [], isMultiUrl: false);
+      registerFake(fakeVm);
+      await pumpView(tester);
+
+      expect(find.byType(ImportViaUrlView), findsOneWidget);
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      handle.dispose();
+    },
+  );
 }
