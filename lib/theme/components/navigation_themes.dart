@@ -119,6 +119,7 @@ class NavigationThemes {
   static DialogThemeData dialogTheme(ColorScheme cs) {
     return DialogThemeData(
       backgroundColor: cs.surface,
+      barrierColor: cs.scrim,
       elevation: 8,
       shadowColor: cs.shadow,
       shape: const RoundedRectangleBorder(
@@ -150,6 +151,7 @@ class NavigationThemes {
       ),
       modalBackgroundColor: cs.surface,
       modalElevation: 16,
+      modalBarrierColor: cs.scrim,
     );
   }
 }

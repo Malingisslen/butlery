@@ -39998,3 +39998,18 @@ collapses the count onto the literal. Fixture that closes both: seed core.cookCo
 "Lagat 2 gånger", cook, assert "Lagat 3 gånger". Filed Medium (non-blocking). No chapter edit:
 the widgets-ui "which new ARB strings a suite types VERBATIM" bullet already finds it, and that
 chapter sat at 19,951/20,000 chars.
+
+### 2026-09-29 — BUT-2181 scrim barrier: a shrink-only findings list compares CODES, not details [review, widgets-ui]
+Diff: NavigationThemes.dialogTheme barrierColor + bottomSheetTheme modalBarrierColor = cs.scrim;
+six COLOUR_FILL entries struck from test/views/design_states/known_state_findings.dart.
+visual_only_53_test compares the SET of violation CODES per row against the listed codes; the
+KnownFinding.what detail is never compared. So a row whose code stays listed for a second
+reason (inköpslista::LOADING keeps COLOUR_FILL for DecoratedBox #1A...) is NOT a discriminator
+for the fix even though its detail string was edited. The pins are the rows where the code
+disappears entirely: dialog-sheet::DEFAULT/LOADING (showDialog -> dialog barrier) and
+skafferi::DEFAULT (showModalBottomSheet -> modal sheet barrier), one per edited line. Settled
+analytically (HEAD listed #8A000000 on those rows = measured black54); no lib/ probe, to keep
+ledger bytes clean. Residual: the rule accepts ANY allowed palette colour, so a repoint to
+another scheme slot stays green — Low, non-blocking. Also ran a11y_matrix (dialog-sheet,
+skafferi rows) since textContrastGuideline reads pixels under the barrier: green. No chapter
+edit: widgets-ui sat at 19,951/20,000 chars.

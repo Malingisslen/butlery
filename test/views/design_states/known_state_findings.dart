@@ -72,22 +72,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2183',
     'DecoratedBox #338FB89A',
   ),
-  'dialog-sheet::DEFAULT::light::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000',
-  ),
-  'dialog-sheet::DEFAULT::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000',
-  ),
-  'dialog-sheet::LOADING::light::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000',
-  ),
-  'dialog-sheet::LOADING::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000',
-  ),
   'import-av-recept::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2184',
     '#6124382C ("https://www.koket.se/kra…")',
@@ -149,8 +133,8 @@ const Map<String, KnownFinding> knownStateFindings = {
     '#61000000 ("Redigera"), #DD000000 ("icon U+E3C6"), #FFBDBDBD ("icon U+E098")',
   ),
   'inköpslista::LOADING::light::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000, DecoratedBox #1A24382C',
+    'BUT-2183',
+    'DecoratedBox #1A24382C',
   ),
   'inköpslista::LOADING::dark::OVERFLOW': KnownFinding(
     'BUT-2190',
@@ -161,8 +145,8 @@ const Map<String, KnownFinding> knownStateFindings = {
     '#1AFFFFFF ("icon U+E098"), #62FFFFFF ("Redigera"), #FF8A5212 ("Ägare"), #FFFFFFFF ("icon U+E3C6")',
   ),
   'inköpslista::LOADING::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000, DecoratedBox #1AF5F4ED',
+    'BUT-2183',
+    'DecoratedBox #1AF5F4ED',
   ),
   'profil-inställningar::OFFLINE::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
@@ -224,17 +208,9 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2185',
     '#FF616161 ("icon U+E098")',
   ),
-  'skafferi::DEFAULT::light::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000',
-  ),
   'skafferi::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
     '#B3FFFFFF ("icon U+E098")',
-  ),
-  'skafferi::DEFAULT::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2181',
-    'ColoredBox #8A000000',
   ),
   'skafferi::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
@@ -275,13 +251,12 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 62;
+const int knownStateFindingsCeiling = 56;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {
   'BUT-2180':
       'Admin: the top bar filter row overflows by 8 px (butlery_top_bar.dart undersida bottom, 56 px row)',
-  'BUT-2181': 'Dialogs and sheets dim with Flutter black54, not semantic.scrim',
   'BUT-2182': 'No offline banner ("Ingen anslutning") on this view',
   'BUT-2183': 'Opacity used as decoration or state, off the opacityLadder',
   'BUT-2184':
