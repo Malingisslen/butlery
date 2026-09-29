@@ -259,6 +259,33 @@ void main() {
       expect(find.text('OBS: detta är farligt'), findsNothing);
       expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
     });
+
+    /// Proves: with no item name (the cook-snap photo) no body line ends in
+    /// an empty '""?' (BUT-2164).
+    testWidgets('an empty itemName draws no quoted name', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
+              context: ctx,
+              itemName: '',
+              itemType: 'foto',
+            ),
+            onResult: (_) {},
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('""'),
+        ),
+        findsNothing,
+      );
+      expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
+    });
   });
 
   group('domain-specific delete helpers', () {

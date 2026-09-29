@@ -39986,3 +39986,15 @@ struck from the function's own doc. Checked rather than assumed: they are differ
 census consumes the KEYS, which do descend from that one read, so "descends from" is true where
 "needs the source" was false. A strike in one place does not automatically condemn the similar
 sentence elsewhere — read it against the code, not against the strike.
+
+### 2026-09-28 — BUT-2164 review: a plural l10n key pinned on its `=1` arm only [review, l10n-plural]
+Chip label moved from `'${recipeCookedToday} ($cookCount)'` to plural key `recipeCookedCount`
+(`=1{Lagat 1 gång} other{Lagat {count} gånger}`). The flow test starts from a factory recipe
+(cookCount 0, `RecipeFactory.build` has no cookCount param), cooks once, and asserts
+`find.text('Lagat 1 gång')`: that kills the revert, but the `other` arm (the drawn "Lagat N
+gånger" wording, and what every recipe cooked twice or more shows) is typed by no suite, and
+`recipeCookedCount(1)` in place of `recipeCookedCount(cookCount)` stays green because 0→1
+collapses the count onto the literal. Fixture that closes both: seed core.cookCount 2, assert
+"Lagat 2 gånger", cook, assert "Lagat 3 gånger". Filed Medium (non-blocking). No chapter edit:
+the widgets-ui "which new ARB strings a suite types VERBATIM" bullet already finds it, and that
+chapter sat at 19,951/20,000 chars.

@@ -239,19 +239,22 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: TextSpan(
-            style: AppTextStyles.bodyMedium,
-            children: [
-              TextSpan(text: '${context.l10n.deleteConfirmMessage} '),
-              TextSpan(
-                text: '"$itemName"',
-                style: AppTextStyles.bodyBold,
-              ),
-              const TextSpan(text: '?'),
-            ],
+        // Without a name the title ("Ta bort foto?") already asks; the
+        // question here would end in an empty '""?'.
+        if (itemName.isNotEmpty)
+          RichText(
+            text: TextSpan(
+              style: AppTextStyles.bodyMedium,
+              children: [
+                TextSpan(text: '${context.l10n.deleteConfirmMessage} '),
+                TextSpan(
+                  text: '"$itemName"',
+                  style: AppTextStyles.bodyBold,
+                ),
+                const TextSpan(text: '?'),
+              ],
+            ),
           ),
-        ),
         if (warningMessage != null) ...[
           const SizedBox(
             height: (AppDimensions.spacingSm + AppDimensions.spacingXs),

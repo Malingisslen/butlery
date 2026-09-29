@@ -212,6 +212,22 @@ void main() {
       expect(find.text('Lagat 1 gång'), findsOneWidget);
     });
 
+    testWidgets('a recipe cooked twice before counts up to Lagat 3 gånger', (
+      tester,
+    ) async {
+      recipe = recipe.copyWith(cookCount: 2);
+      TestServiceLocator.registerMock<UnifiedRecipeService>(
+        MockUnifiedRecipeService()
+          ..setRecipeState(recipes: [recipe], isInitialized: true),
+      );
+      await pumpDetail(tester);
+      expect(find.text('Lagat 2 gånger'), findsOneWidget);
+
+      await cookAndLeaveWith(tester, 'stub Klart');
+
+      expect(find.text('Lagat 3 gånger'), findsOneWidget);
+    });
+
     testWidgets('leaving cooking mode without Klart counts nothing', (
       tester,
     ) async {
