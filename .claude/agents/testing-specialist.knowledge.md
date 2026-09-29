@@ -171,7 +171,8 @@ and a probe would only return an untrustworthy green.**
 - **THE PROBE LADDER, cheapest first**: (1) analytic — make the two sources DIFFERENT literals so a
   revert can't coincide with expected; (2) SCRATCHPAD replica via `dart.bat
   --packages=<repo>/.dart_tool/package_config.json` (no repo writes, immune to parallel sessions);
-  (3) `test/`-side replica (`_zz_probe_test.dart`, deleted after); (4) mutate the INJECTION, not
+  (3) `test/`-side replica (`_zz_probe_test.dart`, deleted after; for a VIEW a state-matrix host
+  mounts, copy it under `test/` minus the fix and repoint the host's import); (4) mutate the INJECTION, not
   `lib/`; (5) only then a real `lib/` revert.
 - **Writing a mutant into `lib/`/`functions/src` is REFUSED by the auto-mode classifier (content-, not
   command-sensitive)** — the Edit applies silently and the NEXT run is refused. On a dirty file: `cp

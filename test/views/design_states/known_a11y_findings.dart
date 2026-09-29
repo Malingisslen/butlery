@@ -19,24 +19,6 @@ const Map<String, String> knownA11yFindings = {
   'auth-otp::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'auth-otp::DEFAULT::dark::360::2.0::ELLIPSIS': 'BUT-2193',
   'auth-otp::DEFAULT::dark::412::2.0::ELLIPSIS': 'BUT-2193',
-  'import-av-recept::DEFAULT::light::320::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::320::1.5::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::320::2.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::360::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::360::1.5::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::360::2.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::412::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::412::1.5::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::light::412::2.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::320::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::320::1.5::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::320::2.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::360::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::360::1.5::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::360::2.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::412::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::412::1.5::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::DEFAULT::dark::412::2.0::TAP_LABEL': 'BUT-2195',
   'inköpslista::DEFAULT::light::320::1.0::ELLIPSIS': 'BUT-2193',
   'inköpslista::DEFAULT::light::320::1.5::OVERFLOW': 'BUT-2201',
   'inköpslista::DEFAULT::light::320::2.0::OVERFLOW': 'BUT-2201',
@@ -173,8 +155,6 @@ const Map<String, String> knownA11yFindings = {
   'vänner-grupp::DEFAULT::dark::412::1.0::TAP_LABEL': 'BUT-2195',
   'vänner-grupp::DEFAULT::dark::412::1.5::TAP_LABEL': 'BUT-2195',
   'vänner-grupp::DEFAULT::dark::412::2.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::LOADING::light::360::1.0::TAP_LABEL': 'BUT-2195',
-  'import-av-recept::LOADING::dark::360::1.0::TAP_LABEL': 'BUT-2195',
   'matlagningsläge::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
@@ -226,4 +206,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 174;
+const int knownA11yFindingsCeiling = 154;

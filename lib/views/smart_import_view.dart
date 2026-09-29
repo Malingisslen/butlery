@@ -124,6 +124,9 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           behavior: HitTestBehavior.translucent,
+          // Tapping outside a field closes the keyboard; it is not a control,
+          // so a screen reader must not announce the whole page as one.
+          excludeFromSemantics: true,
           child: SafeArea(
             child: Center(
               child: ConstrainedBox(

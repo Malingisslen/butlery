@@ -40060,3 +40060,16 @@ Chapter cap trim, retired verbatim from widgets-ui:
   dpr 1.0) — a short surface auto-scrolls and hides item 0."
 "- A `didChangeDependencies` retry on a widget that renders `SizedBox.shrink()` on failure is DEAD —
   the early return happens before any `Theme.of`, so only a REMOUNT recovers."
+
+### 2026-09-30 — BUT-2195 smart import: view-copy probe for the a11y matrix [review, technique]
+Gate review of `excludeFromSemantics: true` on SmartImportView's full-page unfocus GestureDetector,
+covered by a11y_matrix_test's TAP_LABEL (labeledTapTargetGuideline) with 20 import-av-recept keys
+removed from shrink-only known_a11y_findings.dart (ceiling 174 -> 154, 154 entries counted).
+Non-vacuity settled with NO lib/ write: copied lib/views/smart_import_view.dart to
+test/views/design_states/hosts/_zz_probe_smart_import_view.dart minus the one line (count==1
+asserted), repointed task_hosts.dart's import to the copy, ran the matrix filtered on
+"import-av-recept": exactly the 20 removed keys went [E] with TAP_LABEL on SemanticsNode#4
+(rect top 56.0 = the body under the app bar), run twice, OFFLINE (heirloom host) stayed green.
+Restored: deleted the copy, task_hosts.dart from `git show :path` then `git checkout --` (it was
+clean at HEAD; the copy-back left a stat-only M). Rerun green, +22.
+Principle merged into the core card's probe ladder step (3).
