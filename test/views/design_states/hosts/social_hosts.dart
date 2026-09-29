@@ -66,6 +66,7 @@ Widget _addMembers({required bool friends, bool coldStart = false}) {
   when(() => service.hasError).thenReturn(false);
   when(() => service.isLoading).thenReturn(coldStart);
   when(() => service.isInitialized).thenReturn(!coldStart);
+  when(() => service.stateStream).thenAnswer((_) => const Stream.empty());
   when(() => categories.getCategoryById(any())).thenReturn(
     FriendCategory(
       id: 'g1',

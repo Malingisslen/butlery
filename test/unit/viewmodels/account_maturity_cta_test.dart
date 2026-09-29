@@ -418,6 +418,10 @@ void main() {
       when(() => friendsService.currentUserId).thenReturn('test-user');
       when(() => friendsService.hasError).thenReturn(false);
       when(() => friendsService.error).thenReturn(null);
+      when(() => friendsService.isLoading).thenReturn(false);
+      when(
+        () => friendsService.stateStream,
+      ).thenAnswer((_) => const Stream.empty());
       when(() => friendsService.refresh()).thenAnswer((_) async {});
 
       when(() => categories.getCategoryById(groupId)).thenReturn(testGroup());

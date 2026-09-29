@@ -4,11 +4,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
@@ -95,6 +97,10 @@ void main() {
     when(() => mockFriendsService.invitations).thenReturn(mockInvitations);
     when(() => mockFriendsService.currentUserId).thenReturn('current-user');
     when(() => mockFriendsService.hasError).thenReturn(false);
+    when(() => mockFriendsService.isLoading).thenReturn(false);
+    when(
+      () => mockFriendsService.stateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(() => mockFriendsService.error).thenReturn(null);
     when(() => mockFriendsService.refresh()).thenAnswer((_) async {});
 
@@ -407,6 +413,94 @@ void main() {
 
       expect(result, isFalse);
       expect(viewModel.invitationError, isNotNull);
+    });
+  });
+
+  group('cold start (BUT-2189)', () {
+    test(
+      'loads while the friends service loads, then lists the friends',
+      () async {
+        // Seeded like the real service's stateStream, which replays its
+        // current state to every new listener.
+        final states = BehaviorSubject<FriendsServiceState>.seeded(
+          const FriendsStateLoading(),
+        );
+        addTearDown(states.close);
+        var serviceLoading = true;
+        var friends = <UserProfile>[];
+        when(
+          () => mockFriendsService.isLoading,
+        ).thenAnswer((_) => serviceLoading);
+        when(
+          () => mockFriendsService.stateStream,
+        ).thenAnswer((_) => states.stream);
+        when(() => mockManagement.getAllFriends()).thenAnswer((_) => friends);
+
+        final coldViewModel = AddMembersToGroupViewModel(
+          userService: MockUserService(),
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
+          groupId: testGroupId,
+          friendsService: mockFriendsService,
+        );
+        addTearDown(coldViewModel.dispose);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(coldViewModel.isLoading, isTrue);
+        expect(coldViewModel.showEmptyState, isFalse);
+
+        serviceLoading = false;
+        friends = testFriends;
+        states.add(FriendsStateData(friends: testFriends));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(coldViewModel.isLoading, isFalse);
+        expect(coldViewModel.availableFriends, isNotEmpty);
+      },
+    );
+  });
+
+  group('cold start before the groups have loaded (BUT-2189)', () {
+    test('waits instead of saying the group is not found', () async {
+      // Seeded like the real service's stateStream, which replays its
+      // current state to every new listener.
+      final states = BehaviorSubject<FriendsServiceState>.seeded(
+        const FriendsStateLoading(),
+      );
+      addTearDown(states.close);
+      var serviceLoading = true;
+      FriendCategory? group;
+      when(
+        () => mockFriendsService.isLoading,
+      ).thenAnswer((_) => serviceLoading);
+      when(
+        () => mockFriendsService.stateStream,
+      ).thenAnswer((_) => states.stream);
+      when(
+        () => mockCategories.getCategoryById(testGroupId),
+      ).thenAnswer((_) => group);
+
+      final coldViewModel = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
+        groupId: testGroupId,
+        friendsService: mockFriendsService,
+      );
+      addTearDown(coldViewModel.dispose);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(coldViewModel.isLoading, isTrue);
+      expect(coldViewModel.hasError, isFalse);
+
+      serviceLoading = false;
+      group = testGroup;
+      states.add(FriendsStateData(friends: testFriends));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(coldViewModel.hasError, isFalse);
+      expect(coldViewModel.group, testGroup);
+      expect(coldViewModel.availableFriends, isNotEmpty);
     });
   });
 

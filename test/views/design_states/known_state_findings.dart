@@ -228,14 +228,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2184',
     '#61F5F4ED ("Vegetariskt i veckan, sn…")',
   ),
-  'vänner-grupp::LOADING::light::NO_PLATE_LINE': KnownFinding(
-    'BUT-2189',
-    'no PlateLine in the tree',
-  ),
-  'vänner-grupp::LOADING::dark::NO_PLATE_LINE': KnownFinding(
-    'BUT-2189',
-    'no PlateLine in the tree',
-  ),
   'vänner-grupp::OFFLINE::light::COLOUR_FILL': KnownFinding(
     'BUT-2183',
     'DecoratedBox #1AD8B784',
@@ -251,7 +243,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 56;
+const int knownStateFindingsCeiling = 54;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {
@@ -268,8 +260,6 @@ const Map<String, String> registeredTickets = {
   'BUT-2187':
       'Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101)',
   'BUT-2199': 'Shared list header draws light text.body (#37453A) in dark mode',
-  'BUT-2189':
-      'Add members shows the empty state, not loading, while the friends service is still loading',
   'BUT-2190': 'Member management dialog overflows by 68 px at 360 dp',
   'BUT-2191':
       'Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered)',
