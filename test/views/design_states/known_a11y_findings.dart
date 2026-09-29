@@ -11,24 +11,6 @@ import 'dart:io';
 /// Failures that only one host's glyph rasteriser shows are in
 /// [knownA11yFindingsLinuxOnly] and [knownA11yFindingsWindowsOnly].
 const Map<String, String> knownA11yFindings = {
-  'admin::DEFAULT::light::320::1.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::320::1.5::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::320::2.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::360::1.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::360::1.5::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::360::2.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::412::1.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::412::1.5::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::light::412::2.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::320::1.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::320::1.5::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::320::2.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::360::1.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::360::1.5::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::360::2.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::412::1.0::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::412::1.5::OVERFLOW': 'BUT-2180',
-  'admin::DEFAULT::dark::412::2.0::OVERFLOW': 'BUT-2180',
   'auth-otp::DEFAULT::light::320::2.0::ELLIPSIS': 'BUT-2193',
   'auth-otp::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'auth-otp::DEFAULT::light::360::2.0::ELLIPSIS': 'BUT-2193',
@@ -260,4 +242,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 208;
+const int knownA11yFindingsCeiling = 190;

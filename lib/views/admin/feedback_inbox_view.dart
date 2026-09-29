@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -66,7 +68,7 @@ class _FeedbackInboxContent extends StatelessWidget {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: Size.fromHeight(_StatusFilterBar.ceilingHeight),
           child: _StatusFilterBar(vm: vm),
         ),
       ),
@@ -122,6 +124,19 @@ class _FeedbackInboxContent extends StatelessWidget {
 class _StatusFilterBar extends StatelessWidget {
   final FeedbackInboxViewModel vm;
   const _StatusFilterBar({required this.vm});
+
+  /// The row's height at 200 % text, the ceiling ButleryTopBar sizes itself
+  /// for.
+  static double get ceilingHeight {
+    final label = AppTextStyles.labelMedium;
+    final line = ((label.fontSize ?? 14) * (label.height ?? 1.0) * 2.0)
+        .ceilToDouble();
+    final chip = math.max(
+      AppDimensions.minTouchTarget,
+      line + 2 * AppDimensions.paddingS,
+    );
+    return chip + 2 * AppDimensions.paddingS;
+  }
 
   @override
   Widget build(BuildContext context) {

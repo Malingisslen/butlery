@@ -24,22 +24,6 @@ class KnownFinding {
 
 /// Today's failures, from test_results/design-states-53.json.
 const Map<String, KnownFinding> knownStateFindings = {
-  'admin::DEFAULT::light::OVERFLOW': KnownFinding(
-    'BUT-2180',
-    'A RenderFlex overflowed by 8.0 pixels on the bottom.',
-  ),
-  'admin::DEFAULT::dark::OVERFLOW': KnownFinding(
-    'BUT-2180',
-    'A RenderFlex overflowed by 8.0 pixels on the bottom.',
-  ),
-  'admin::EMPTY::light::OVERFLOW': KnownFinding(
-    'BUT-2180',
-    'A RenderFlex overflowed by 8.0 pixels on the bottom.',
-  ),
-  'admin::EMPTY::dark::OVERFLOW': KnownFinding(
-    'BUT-2180',
-    'A RenderFlex overflowed by 8.0 pixels on the bottom.',
-  ),
   'auth-otp::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
     'no "Ingen anslutning" title',
@@ -243,12 +227,10 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 54;
+const int knownStateFindingsCeiling = 50;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {
-  'BUT-2180':
-      'Admin: the top bar filter row overflows by 8 px (butlery_top_bar.dart undersida bottom, 56 px row)',
   'BUT-2182': 'No offline banner ("Ingen anslutning") on this view',
   'BUT-2183': 'Opacity used as decoration or state, off the opacityLadder',
   'BUT-2184':

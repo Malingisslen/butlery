@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 316 known failures and 2 residue lists are not empty
-- Known failures: 316 (a11y 208, contrast 5, interaction_checks 12, interactions 6, states53 54, transitions 31)
+- **Migration complete:** NO: 294 known failures and 2 residue lists are not empty
+- Known failures: 294 (a11y 190, contrast 5, interaction_checks 12, interactions 6, states53 50, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 34 registered in Linear
+- Tickets: 33 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
@@ -59,9 +59,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 70; cases with a known finding: 36
-- States passing in both modes: 35 of 53
-- Known findings: 54 (ceiling 54); by rule: COLOUR_FILL 20, COLOUR_TEXT 18, NO_OFFLINE_BANNER 8, NO_UPDATED_BY_NOTICE 2, OVERFLOW 6
+- Cases passing: 74; cases with a known finding: 32
+- States passing in both modes: 37 of 53
+- Known findings: 50 (ceiling 50); by rule: COLOUR_FILL 20, COLOUR_TEXT 18, NO_OFFLINE_BANNER 8, NO_UPDATED_BY_NOTICE 2, OVERFLOW 2
 
 ## Required control states
 
@@ -90,10 +90,10 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 208 (ceiling 208) in 174 cases (view, state, mode, width, text scale).
+Known findings: 190 (ceiling 190) in 156 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 2, windows 2
-- By check: ELLIPSIS 52, OVERFLOW 58, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 16
-- By view: admin 18, auth-otp 8, chatt 2, import-av-recept 20, inköpslista 30, matlagningsläge 20, profil-inställningar 8, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
+- By check: ELLIPSIS 52, OVERFLOW 40, TAP_LABEL 40, TAP_TARGET 42, TEXT_CONTRAST 16
+- By view: auth-otp 8, chatt 2, import-av-recept 20, inköpslista 30, matlagningsläge 20, profil-inställningar 8, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 22
 
 ## Token parity
 
@@ -134,7 +134,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2176 | interaction_checks 2, interactions 1 |  |
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2178 | interaction_checks 2, interactions 1 |  |
-| BUT-2180 | a11y 18, states53 4 | Admin: the top bar filter row overflows by 8 px (butlery_top_bar.dart undersida bottom, 56 px row) |
 | BUT-2182 | states53 8 | No offline banner ("Ingen anslutning") on this view |
 | BUT-2183 | states53 26 | Opacity used as decoration or state, off the opacityLadder |
 | BUT-2184 | states53 4 | Disabled fields and buttons use Material default opacity (0.38/0.5), not text.disabled/surface.disabled |

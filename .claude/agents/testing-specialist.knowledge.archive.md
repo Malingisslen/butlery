@@ -40013,3 +40013,18 @@ ledger bytes clean. Residual: the rule accepts ANY allowed palette colour, so a 
 another scheme slot stays green — Low, non-blocking. Also ran a11y_matrix (dialog-sheet,
 skafferi rows) since textContrastGuideline reads pixels under the barrier: green. No chapter
 edit: widgets-ui sat at 19,951/20,000 chars.
+
+### 2026-09-29 — BUT-2189 add-members cold start: a non-replaying stream stub hid an init collision [trigger: real bug caught]
+Review of AddMembersToGroupViewModel following UnifiedFriendsService.stateStream. The service's
+stateStream is `BehaviorSubject<FriendsServiceState>.seeded(const FriendsStateLoading())`; the new
+cold-start tests stubbed it with a plain StreamController (no replay). Scratch probe
+(_zz_probe_test.dart, deleted) with a real seeded BehaviorSubject, group not yet loaded, service
+loading: printed `hasError=true error=Gruppen hittades inte isLoading=true` right after
+construction. Mechanism: replay event arrives one microtask after listen(), while the
+constructor's executeNamedOperation('initializeData') is still active; the handler re-ran
+_initializeData, executeNamedOperation threw StateError('already in progress'), and
+_initializeData's catch mapped it to errorGroupNotFound. Masked in the UI only because the view
+checks isLoading before hasError. The coordinator fixed it in parallel (handler notifies and
+returns while the service is loading; both cold tests switched to a seeded BehaviorSubject).
+Separately: dispose()'s subscription cancel had no pin; a probe pair (dispose vs no dispose,
+single-subscription controller, hasListener) went green/red as expected, snippet handed over.
