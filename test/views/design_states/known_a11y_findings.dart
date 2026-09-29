@@ -69,22 +69,16 @@ const Map<String, String> knownA11yFindings = {
   'inköpslista::DEFAULT::dark::412::2.0::ELLIPSIS': 'BUT-2193',
   'matlagningsläge::DEFAULT::light::320::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::light::320::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::320::2.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::light::360::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::360::2.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::light::412::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::light::412::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::412::2.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::320::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::320::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::320::2.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::360::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::360::2.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::412::1.0::TAP_TARGET': 'BUT-2194',
   'matlagningsläge::DEFAULT::dark::412::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::412::2.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::1.5::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::2.0::OVERFLOW': 'BUT-2192',
@@ -185,9 +179,7 @@ const Map<String, String> knownA11yFindings = {
   'matlagningsläge::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
-  'vänner-grupp::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'vänner-grupp::OFFLINE::light::360::1.0::TAP_LABEL': 'BUT-2195',
-  'vänner-grupp::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'vänner-grupp::OFFLINE::dark::360::1.0::TAP_LABEL': 'BUT-2195',
 };
 
@@ -234,4 +226,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 182;
+const int knownA11yFindingsCeiling = 174;

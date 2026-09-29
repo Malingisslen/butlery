@@ -40041,3 +40041,22 @@ single word) had its Expanded revertible with every suite green. Filed High.
 Chapter cap trim, retired verbatim from the widgets-ui busy-state bullet: "See the 2026-09-07
 archive entries (BUT friend-requests spinner) for the per-host figures and the superseded
 wordings."
+
+### 2026-09-29 — BUT-2194 swipe hint dismiss tap target: guideline blind at the screen edge
+Trigger: new pattern (review of lib/widgets/common/swipe_hint_banner.dart dropping
+`visualDensity: VisualDensity.compact`). Added a direct test to
+test/widget/common/swipe_hint_banner_test.dart ("the dismiss control meets the 48 dp tap
+target (BUT-2194)", `meetsGuideline(androidTapTargetGuideline)` + co-assert the x icon).
+Instrument probe (scratch test, deleted): a compact IconButton as the last child of a bare Row
+in createLocalizedTestApp (flush top-right) -> `androidTapTargetGuideline.evaluate` passed=true
+at size 40x40. Same Row wrapped in Padding(all: 24): compact passed=false (40x40), standard
+passed=true (48x48). Revert probe: HEAD copy of swipe_hint_banner.dart (compact restored) ->
+exactly the new test [E], 6 others green; restored, cmp identical, 7/7 green.
+The a11y matrix (matlagningsläge, vänner-grupp) also kills the revert, but only on the keys
+where the banner was the sole TAP_TARGET violator (DEFAULT x2.0, OFFLINE 360 x1.0); the x1.0/x1.5
+keys stay listed for other controls, so the banner is masked there.
+Chapter cap trim, retired verbatim from widgets-ui:
+"- A page-size guard is only testable on a TALL surface (`tester.view.physicalSize = Size(800,14000)`,
+  dpr 1.0) — a short surface auto-scrolls and hides item 0."
+"- A `didChangeDependencies` retry on a widget that renders `SizedBox.shrink()` on failure is DEAD —
+  the early return happens before any `Theme.of`, so only a REMOUNT recovers."
