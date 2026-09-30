@@ -126,8 +126,8 @@ const Map<String, String> knownA11yFindings = {
 /// other check reads layout and semantics, which do not depend on pixels.
 ///
 /// chatt: "Du kan inte skicka meddelanden till denna person", bodyMedium in
-/// colorScheme.onSurfaceVariant on surface (token pair 4.75:1 light, 6.02:1
-/// dark), measured under 4.5:1 on Linux (run 36389253529).
+/// colorScheme.onSurfaceVariant on surface, measured under 4.5:1 on Linux
+/// (run 36389253529).
 ///
 /// inköpslista: the root bar's count line in dark measures under its floor
 /// on Linux (run 36689482984) and over it on Windows.

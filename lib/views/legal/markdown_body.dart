@@ -178,8 +178,8 @@ class _MarkdownBodyState extends State<MarkdownBody> {
 
     final children = <Widget>[];
     if (!widget.webLinksEnabled && _hasWebLinks) {
-      // text.secondary (colorScheme.onSurfaceVariant: #627061 light, #93A48D
-      // dark, tokens.json palette sageDeep/sage) on surface.base.
+      // text.secondary (colorScheme.onSurfaceVariant: #5B6959 light, #A9B2A0
+      // dark) on surface.base.
       children.add(
         Padding(
           padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),

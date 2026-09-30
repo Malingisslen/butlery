@@ -97,7 +97,7 @@ Known findings: 104 (ceiling 104) in 98 cases (view, state, mode, width, text sc
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `44c86b645d23225f3e528120f278cd7e58b65b9803cfc6f558ca785998ff5688`); generated files say tokens 1.13 (light) and 1.13 (dark).
+tokens.json 1.13 (sha256 `031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687db277c6018`); generated files say tokens 1.13 (light) and 1.13 (dark).
 - Semantic keys: 46; with a generated member: 46
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 

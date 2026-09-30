@@ -116,7 +116,7 @@ class ButleryNavigationRail extends StatelessWidget {
 ///
 /// Interpretation: #bredskal draws the unchosen entries in #c9d3c4 at weight
 /// 400 with 1 px tracking. The rail takes the bottom row's vocabulary
-/// ("samma vokabulär", produktregler.md:1055): #93A48D and navLabel 11/700
+/// ("samma vokabulär", produktregler.md): navLabel 11/700
 /// (Komponentark v1:663; Grafisk manual v6:244 "Aldrig 400 under 12 px").
 class _RailTab extends StatelessWidget {
   const _RailTab({

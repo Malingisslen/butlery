@@ -489,7 +489,7 @@ class _UrlResultRow extends StatelessWidget {
           size: 20,
         );
       case UrlFetchStatus.pending:
-        // text.secondary (onSurfaceVariant): #627061 light, #93A48D dark.
+        // text.secondary (onSurfaceVariant): #5B6959 light, #A9B2A0 dark.
         return ButleryIcon(
           ButleryIcons.clock,
           color: Theme.of(context).colorScheme.onSurfaceVariant,

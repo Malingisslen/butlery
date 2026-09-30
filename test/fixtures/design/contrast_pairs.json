@@ -3,8 +3,8 @@
  "source": {
   "file": "tokens.json",
   "repo": "Butlery design system",
-  "commit": "55952d0",
-  "sha256": "44c86b645d23225f3e528120f278cd7e58b65b9803cfc6f558ca785998ff5688",
+  "commit": "2f518d1",
+  "sha256": "031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687db277c6018",
   "tokens_version": "1.13",
   "tokens_date": "2026-08-05"
  },

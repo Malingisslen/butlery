@@ -23,21 +23,19 @@
 //   stands on it takes its on-ink values (see _TonightCard).
 // * The buttons keep the 48 dp touch target (tokens.json touchTarget.min);
 //   #hemrecept draws them 40 px tall.
-// * Dark mode differs from the drawings in three places, for lack of a token
+// * The build differs from the drawings, for lack of a token
 //   that carries both drawn values (Skarmar v12 del 1 and del 4 slot values):
 //   - Muted text (the date line, #hemtom's body and "Snabbaste vägarna",
 //     #hemladdar's text, #hemoffline's "Planen hämtades") is drawn in
 //     --r04slot-620, #627061 light and #C9D3C4 dark. #C9D3C4 is
 //     text.bodyMuted dark (tokens.json:174-177), but text.bodyMuted light is
-//     #37453A, so it is built as text.secondary (onSurfaceVariant, #627061 /
-//     #93A48D, tokens.json:62-65). The dark value needs the same missing
+//     #37453A, so it is built as text.secondary (onSurfaceVariant, #5B6959 /
+//     #A9B2A0, tokens.json). The dark value needs the same missing
 //     member (D1) as the rail's.
 //   - The #hemladdar skeleton and the #hemtom allergy note are drawn in
 //     --r04slot-836 / -832, #E6EAD9 light and #24382C dark. No token has
 //     that pair; they are built as surface.raised (primaryContainer, #E6EAD9
 //     / #2F4437, tokens.json:108-111).
-//   - The card's eyebrow is drawn #DCA968 dark and built palette.saffronLight
-//     #E09D50 (see _TonightCard).
 library;
 
 import 'package:flutter/material.dart';
@@ -194,7 +192,7 @@ class HemGreeting extends StatelessWidget {
               child: Text(
                 date.toUpperCase(),
                 key: const ValueKey('hem-date'),
-                // text.secondary: #627061 light, #93A48D dark
+                // text.secondary: #5B6959 light, #A9B2A0 dark
                 // (tokens.json:62-65), colorScheme.onSurfaceVariant.
                 style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,
@@ -236,8 +234,8 @@ class HemGreeting extends StatelessWidget {
 /// * title and "Byt rätt": paper #F5F4ED, colorScheme.onPrimary;
 /// * "Byt rätt" outline: paper at the on-ink 0.35 step (tokens.json:40-53),
 ///   drawn `rgba(245,244,237,.35)`;
-/// * pantry line: #93A48D, AppModeColors.textSecondaryOnInk, drawn
-///   `color:#93a48d`, 4.73:1;
+/// * pantry line: #A9B2A0, AppModeColors.textSecondaryOnInk, drawn
+///   `color:#93a48d`;
 /// * focus rings: paper, as on every dark surface (tokens.json:155-160).
 class HemTonightCard extends StatelessWidget {
   const HemTonightCard({
@@ -395,8 +393,8 @@ class HemFetchedAtLine extends StatelessWidget {
       child: Text(
         context.l10n.hemPlanFetchedAt(time),
         key: const ValueKey('hem-fetched-at'),
-        // text.secondary on paper, colorScheme.onSurfaceVariant: #627061
-        // light (4.9:1), #93A48D dark (tokens.json:62-65).
+        // text.secondary on paper, colorScheme.onSurfaceVariant: #5B6959
+        // light, #A9B2A0 dark (tokens.json).
         style: AppTextStyles.labelMedium.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),

@@ -250,7 +250,7 @@ class SyncQueueRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    // text.secondary (#627061 light, #93A48D dark; tokens.json semantic).
+    // text.secondary (#5B6959 light, #A9B2A0 dark; tokens.json semantic).
     // Interpretation: #synkko's raw slot --r04slot-620 is #627061 light but
     // #C9D3C4 (text.bodyMuted) dark (Skarmar v12 del 4:64); no token pairs
     // those two, so the token text.secondary decides the dark value.

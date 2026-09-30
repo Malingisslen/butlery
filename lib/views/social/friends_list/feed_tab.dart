@@ -329,7 +329,7 @@ class FeedTab {
                 height: 48,
                 color: Theme.of(context).dividerColor,
                 alignment: Alignment.center,
-                // text.secondary (onSurfaceVariant), #627061 light, #93A48D
+                // text.secondary (onSurfaceVariant), #5B6959 light, #A9B2A0
                 // dark (tokens.json:61-64): greenMuted's values, mode-aware.
                 child: ButleryIcon(
                   ButleryIcons.utensils,

@@ -196,12 +196,12 @@ void main() {
 
   // NAV-INK: one ink bar in both modes (Komponentark v1:662-666; Skarmar
   // v12 etapp 10 #bredskal :72): surface.ink #24382C, the chosen tab in
-  // paper #F5F4ED with the saffron plate line, the others #93A48D
+  // paper #F5F4ED with the saffron plate line, the others
   // (text.secondary dark), and the plus's paper ring seen on ink.
   group('ink bar', () {
     const ink = Color(0xFF24382C);
     const paper = Color(0xFFF5F4ED);
-    const sage = Color(0xFF93A48D);
+    const sage = Color(0xFFA9B2A0);
     const saffron = Color(0xFFCE7C1E);
 
     Color? textColor(WidgetTester tester, String label) =>

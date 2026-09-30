@@ -27,9 +27,8 @@ import 'package:butlery/widgets/menu/menu_new_badge.dart';
 
 const double _kSlotMinHeight = 80;
 
-/// The assigned-slot icons: text.secondary, #627061 light and #93A48D dark
+/// The assigned-slot icons: text.secondary, #5B6959 light and #A9B2A0 dark
 /// (tokens.json semantic text.secondary; onSurfaceVariant in both schemes).
-/// The old constant was the same #627061 but did not follow dark mode.
 Color _slotIconColor(BuildContext context) =>
     Theme.of(context).colorScheme.onSurfaceVariant;
 

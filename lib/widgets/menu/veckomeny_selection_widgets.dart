@@ -387,7 +387,7 @@ class VeckomenyGenerateButton extends StatelessWidget {
                 context.l10n.menuGenerateOfflineReason,
                 key: offlineReasonKey,
                 textAlign: TextAlign.center,
-                // text.secondary: #627061 light, its dark value in dark
+                // text.secondary: #5B6959 light, its dark value in dark
                 // (onSurfaceVariant in both schemes).
                 style: AppTextStyles.captionBase.copyWith(
                   color: cs.onSurfaceVariant,

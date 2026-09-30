@@ -20,7 +20,7 @@ class _Summary extends StatelessWidget {
       merge.rawRowCount,
       items,
     );
-    // 13/400 as drawn in --r04slot-702: #627061 light, #93a48d dark, which is
+    // 13/400 as drawn in --r04slot-702, which is
     // text.secondary (tokens.json) = onSurfaceVariant in both modes.
     final style = AppTextStyles.bodySmall.copyWith(
       color: cs.onSurfaceVariant,
