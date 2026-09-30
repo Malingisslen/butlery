@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.3
-// källfingeravtryck sha256:04364cea8c60e6cd981ff4e544d7f3c93ee097125ca8293a5d08cbf3068618c5 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:8dedc54c345948085c4f17bbd4def0415baf6985961ec63b30625a7a8c6feacd (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -12,8 +12,8 @@ class ButleryColors {
   static const textPrimaryDark = Color(0xFFF5F4ED);
   static const textBody = Color(0xFF37453A);
   static const textBodyDark = Color(0xFFF5F4ED);
-  static const textSecondary = Color(0xFF627061);
-  static const textSecondaryDark = Color(0xFF93A48D);
+  static const textSecondary = Color(0xFF5B6959);
+  static const textSecondaryDark = Color(0xFFA9B2A0);
   static const textCompleted = Color(0xFF37453A);
   static const textCompletedDark = Color(0xFF93A48D);
   static const textDisabled = Color(0xFF7D897C);

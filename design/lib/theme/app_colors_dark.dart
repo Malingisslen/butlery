@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:db3f96414ab96e72d0bcbe905900265d30063da4df67b6bd5a07e869d4efa539 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:2e8a385d0eb7673602ef45cba801f09dc3732defedd765afb3c92b5391bcb857 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -30,14 +30,14 @@ class AppColorsDark {
   /// semantic.surface.raised (dark)
   static const Color greenPale = Color(0xFF2F4437);
   /// Nav ovald · semantic.text.secondary (dark)
-  static const Color greenMuted = Color(0xFF93A48D);
+  static const Color greenMuted = Color(0xFFA9B2A0);
   /// Systemet har inget rent vitt · semantic.surface.base (dark)
   static const Color cardWhite = Color(0xFF17251D);
   /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.paperCard (dark)
   static const Color cardWhite54 = Color(0x8AF5F4ED);
   /// semantic.text.primary (dark)
   static const Color textDark = Color(0xFFF5F4ED);
-  /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. · semantic.text.secondary.onRaised (dark)
+  /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. Sedan B96-1 (BUT-2196, 2026-09-30) har text.secondary samma varde, #5B6959/#A9B2A0. · semantic.text.secondary.onRaised (dark)
   static const Color textMedium = Color(0xFFA9B2A0);
   /// semantic.border.control (dark)
   static const Color placeholderIcon = Color(0x59F5F4ED);
@@ -74,7 +74,7 @@ class AppColorsDark {
   /// semantic.border.subtle (dark)
   static const Color divider = Color(0x2EF5F4ED);
   /// semantic.text.secondary (dark)
-  static const Color recipeMeta = Color(0xFF93A48D);
+  static const Color recipeMeta = Color(0xFFA9B2A0);
   /// semantic.text.body (dark)
   static const Color sectionHeader = Color(0xFFF5F4ED);
   /// semantic.surface.raised (dark)
@@ -84,7 +84,7 @@ class AppColorsDark {
   /// semantic.surface.base (dark)
   static const Color neutralLight = Color(0xFF17251D);
   /// semantic.text.secondary (dark)
-  static const Color sharedRecipeText = Color(0xFF93A48D);
+  static const Color sharedRecipeText = Color(0xFFA9B2A0);
   /// semantic.surface.raised (dark)
   static const Color sharedRecipeBackground = Color(0xFF2F4437);
   /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.elevation.shadow (dark)
