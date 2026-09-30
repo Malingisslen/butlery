@@ -7,14 +7,15 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 203 known failures and 2 residue lists are not empty
+- **Migration complete:** NO: 203 known failures and 3 residue lists are not empty
 - Known failures: 203 (a11y 103, contrast 5, interaction_checks 12, interactions 6, states53 46, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 29 registered in Linear
 - Failures without a ticket: 0
-- Residue lists not empty: 2
+- Residue lists not empty: 3
   - `test/architecture/icon_census_test.dart _residue: 398`
   - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 1`
+  - `test/architecture/opacity_ladder_ratchet_test.dart _residue: 313`
 
 ## Required flow transitions
 
@@ -177,6 +178,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 1 | 1 | 1 |
 | `p7_type_and_space_scale_test.dart` | `_retiredSpacing` | BAN | LIVE | 19 | 19 | 19 |
 | `legacy_retirement_test.dart` | `_retired` | BAN | LIVE | 22 | 22 | 22 |
+| `opacity_ladder_ratchet_test.dart` | `_residue` | RESIDUE | LIVE | 115 | 313 | 313 |
 
 ## Symbols counted in lib
 

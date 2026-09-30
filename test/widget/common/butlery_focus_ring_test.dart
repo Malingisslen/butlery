@@ -356,7 +356,6 @@ void main() {
           t.filledButtonTheme.style!,
           t.outlinedButtonTheme.style!,
           t.textButtonTheme.style!,
-          t.iconButtonTheme.style!,
         ]) {
           for (final other in [WidgetState.pressed, WidgetState.hovered]) {
             expect(
@@ -364,6 +363,16 @@ void main() {
               isNull,
             );
           }
+        }
+        // Icon buttons fill to surface.raised instead (B83-1 = A, BUT-2183).
+        for (final other in [WidgetState.pressed, WidgetState.hovered]) {
+          expect(
+            t.iconButtonTheme.style!.overlayColor!.resolve({
+              WidgetState.focused,
+              other,
+            }),
+            t.colorScheme.surfaceContainerHighest,
+          );
         }
         // The hero alone keeps no pressed overlay (decision D4).
         expect(

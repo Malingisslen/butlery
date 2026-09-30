@@ -49,7 +49,7 @@ class ShoppingListCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     // Reproduce the previous Material(elevation: 4) appearance as a decoration
     // so the card looks identical at rest, then let HoverableCard deepen the
-    // shadow on hover (web/desktop only). Square corners are preserved.
+    // shadow on hover (web/desktop only).
     final restDecoration = BoxDecoration(
       color: cs.surface,
       borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
@@ -62,7 +62,10 @@ class ShoppingListCard extends StatelessWidget {
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
         restDecoration: restDecoration,
+        // Hover fills to surface.raised (B83-1 = A, BUT-2183,
+        // produktbeslut-2026-09-30.json).
         hoverDecoration: restDecoration.copyWith(
+          color: cs.surfaceContainerHighest,
           boxShadow: AppShadows.floating,
         ),
         child: Material(
@@ -73,6 +76,7 @@ class ShoppingListCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
+              overlayColor: HoverableCard.inkOverlay(cs),
               borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Padding(
                 padding: padding ?? _getDefaultPadding(),

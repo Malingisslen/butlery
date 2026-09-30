@@ -240,6 +240,13 @@ const ratchetSpecs = <RatchetSpec>[
     'BAN',
     'legacy names package 7 retired',
   ),
+  RatchetSpec(
+    'test/architecture/opacity_ladder_ratchet_test.dart',
+    '_residue',
+    'RESIDUE',
+    'AppDimensions.opacity* uses left to migrate to the B83 token mapping '
+        '(BUT-2183, file, uses)',
+  ),
 ];
 
 /// A symbol counted in lib/ code (comments excluded).
@@ -997,7 +1004,7 @@ List<Map<String, Object?>> _ratchets(CensusSource src) {
 Map<String, Object?> _symbols(CensusSource src, Map<String, int> liveIcons) {
   final files = src.libDartFiles();
   // Symbols are matched on code with strings kept and comments removed.
-  final withStrings = {for (final f in files) f: _stripComments(src.read(f))};
+  final withStrings = {for (final f in files) f: stripComments(src.read(f))};
   final out = <String, Object?>{};
   for (final spec in symbolSpecs) {
     final re = RegExp(spec.pattern);
@@ -1034,7 +1041,9 @@ Map<String, Object?> _symbols(CensusSource src, Map<String, int> liveIcons) {
   return out;
 }
 
-String _stripComments(String? source) {
+/// Comments stripped, string contents kept — the same scanner the symbol
+/// census uses for [symbolSpecs].
+String stripComments(String? source) {
   if (source == null) return '';
   final s = _Scan(source);
   final b = StringBuffer();
