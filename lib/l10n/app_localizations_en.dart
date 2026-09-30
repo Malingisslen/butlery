@@ -7293,9 +7293,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingPersonalList => 'Personal list';
 
   @override
-  String get shoppingPurchased => 'Purchased';
-
-  @override
   String get shoppingPurchasedCleared => 'Purchased items cleared';
 
   @override
@@ -7379,14 +7376,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shoppingBoughtOfTotal(int bought, int total) {
-    return '$bought of $total bought';
+  String shoppingBoughtCount(int count) {
+    return 'Bought ($count)';
   }
 
   @override
-  String shoppingClearCount(int count) {
-    return 'Clear $count';
-  }
+  String get shoppingClearBought => 'Clear bought';
 
   @override
   String shoppingClearPurchasedMessage(int count) {

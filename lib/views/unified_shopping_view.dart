@@ -192,6 +192,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                     _shareListExternally,
                     () => _showSharingStatus(viewModel),
                     onBrowseTemplates: _showTemplateBrowser,
+                    onSortCategories: () => _showCategoryOrderSheet(viewModel),
+                    onUncheckAll: () => _uncheckAllItems(viewModel),
                   ),
               ],
       ),
@@ -274,15 +276,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             ShoppingListHeader.build(
               context,
               viewModel,
-              () => _clearBoughtItemsWithConfirmation(viewModel),
-              () => _uncheckAllItems(viewModel),
               () => _showRenameListDialog(viewModel),
               () => _showDeleteListConfirmation(viewModel),
               onConvertList: _canConvertActiveList(viewModel)
                   ? () => _convertActiveList(viewModel)
-                  : null,
-              onSortCategories: viewModel.activeList != null
-                  ? () => _showCategoryOrderSheet(viewModel)
                   : null,
             ),
             Expanded(
@@ -294,6 +291,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                 _onDeleteItem,
                 _showCreateListDialog,
                 _showAddItemDialog,
+                () => _clearBoughtItemsWithConfirmation(viewModel),
               ),
             ),
           ],

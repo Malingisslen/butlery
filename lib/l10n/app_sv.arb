@@ -4903,7 +4903,6 @@
   "shoppingPermissionViewDescription": "Kan se varor men inte ändra",
   "shoppingPermissionViewOnly": "Visa",
   "shoppingPersonalList": "Personlig lista",
-  "shoppingPurchased": "Köpta",
   "shoppingPurchasedCleared": "Köpta varor rensade",
   "shoppingRecentActivity": "Senaste aktivitet",
   "shoppingRemoveMember": "Ta bort medlem",
@@ -4944,24 +4943,18 @@
       }
     }
   },
-  "shoppingBoughtOfTotal": "{bought} av {total} köpta",
-  "@shoppingBoughtOfTotal": {
-    "placeholders": {
-      "bought": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "shoppingClearCount": "Rensa {count}",
-  "@shoppingClearCount": {
+  "shoppingBoughtCount": "Köpt ({count})",
+  "@shoppingBoughtCount": {
+    "description": "Heading over the bought/checked-off section of the shopping list, with the item count.",
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
+  },
+  "shoppingClearBought": "Rensa köpta",
+  "@shoppingClearBought": {
+    "description": "Text action next to the bought-section heading that clears all checked-off items, after confirmation."
   },
   "shoppingClearPurchasedMessage": "Vill du rensa {count} köpta varor?",
   "@shoppingClearPurchasedMessage": {

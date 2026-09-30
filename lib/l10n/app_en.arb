@@ -4881,7 +4881,6 @@
   "shoppingPermissionViewDescription": "Can view items but not modify",
   "shoppingPermissionViewOnly": "View only",
   "shoppingPersonalList": "Personal list",
-  "shoppingPurchased": "Purchased",
   "shoppingPurchasedCleared": "Purchased items cleared",
   "shoppingRecentActivity": "Recent activity",
   "shoppingRemoveMember": "Remove member",
@@ -4922,24 +4921,18 @@
       }
     }
   },
-  "shoppingBoughtOfTotal": "{bought} of {total} bought",
-  "@shoppingBoughtOfTotal": {
-    "placeholders": {
-      "bought": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "shoppingClearCount": "Clear {count}",
-  "@shoppingClearCount": {
+  "shoppingBoughtCount": "Bought ({count})",
+  "@shoppingBoughtCount": {
+    "description": "Heading over the bought/checked-off section of the shopping list, with the item count.",
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
+  },
+  "shoppingClearBought": "Clear bought",
+  "@shoppingClearBought": {
+    "description": "Text action next to the bought-section heading that clears all checked-off items, after confirmation."
   },
   "shoppingClearPurchasedMessage": "Do you want to clear {count} purchased items?",
   "@shoppingClearPurchasedMessage": {

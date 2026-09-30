@@ -12343,12 +12343,6 @@ abstract class AppLocalizations {
   /// **'Personlig lista'**
   String get shoppingPersonalList;
 
-  /// No description provided for @shoppingPurchased.
-  ///
-  /// In sv, this message translates to:
-  /// **'Köpta'**
-  String get shoppingPurchased;
-
   /// No description provided for @shoppingPurchasedCleared.
   ///
   /// In sv, this message translates to:
@@ -12505,17 +12499,17 @@ abstract class AppLocalizations {
   /// **'Lägg till {count} vänner'**
   String shoppingAddFriendsCount(int count);
 
-  /// No description provided for @shoppingBoughtOfTotal.
+  /// Heading over the bought/checked-off section of the shopping list, with the item count.
   ///
   /// In sv, this message translates to:
-  /// **'{bought} av {total} köpta'**
-  String shoppingBoughtOfTotal(int bought, int total);
+  /// **'Köpt ({count})'**
+  String shoppingBoughtCount(int count);
 
-  /// No description provided for @shoppingClearCount.
+  /// Text action next to the bought-section heading that clears all checked-off items, after confirmation.
   ///
   /// In sv, this message translates to:
-  /// **'Rensa {count}'**
-  String shoppingClearCount(int count);
+  /// **'Rensa köpta'**
+  String get shoppingClearBought;
 
   /// No description provided for @shoppingClearPurchasedMessage.
   ///

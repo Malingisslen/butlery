@@ -269,6 +269,7 @@ const Map<String, Map<String, int>> _residue = {
       {'admin_panel_settings': 4, 'history': 1, 'manage_accounts': 1},
   'lib/views/unified_shopping/widgets/shopping_app_bar.dart': {
     'admin_panel_settings': 1,
+    'check_box_outline_blank': 1,
     'list_alt_outlined': 2,
   },
   'lib/views/unified_shopping/widgets/shopping_item_tiles.dart': {
@@ -277,7 +278,6 @@ const Map<String, Map<String, int>> _residue = {
   },
   'lib/views/unified_shopping/widgets/shopping_list_header.dart': {
     'admin_panel_settings': 2,
-    'check_box_outline_blank': 1,
   },
   'lib/views/unified_shopping_view.dart': {'kitchen_outlined': 1},
   'lib/views/veckomeny_view.dart': {'save': 1},

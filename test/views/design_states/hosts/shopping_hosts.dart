@@ -150,10 +150,7 @@ List<PantryItem> _pantryItems() => [
   ),
 ];
 
-/// The pantry tab of the shopping view. The shopping service holds no list,
-/// so the shopping tab under it draws no list header: the header's sort
-/// button fails its layout whenever a list is open (the inköpslista rows
-/// record that), and the pantry must be reachable to be judged.
+/// The pantry tab of the shopping view. The shopping service holds no list.
 Widget _pantryTab(_MockPantryViewModel vm) {
   TestServiceLocator.registerFactory<PantryViewModel>(() => vm);
   return _shopping(null);
