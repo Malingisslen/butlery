@@ -432,4 +432,23 @@ void main() {
       expect(find.textContaining('firestore exploded'), findsNothing);
     });
   });
+
+  // BUT-2190 (Malin, 2026-09-30, Q6 = A): the role picker sits on its own row
+  // under the member's name, so it is not squeezed between the avatar and the
+  // remove button.
+  testWidgets('the role picker has its own row under the name', (tester) async {
+    await pumpDialog(tester, parkedReason: null);
+
+    final name = tester.getRect(find.text('Bob'));
+    final picker = tester.getRect(
+      find.byType(DropdownButton<SharedListPermission>),
+    );
+    final remove = tester.getRect(find.byIcon(ButleryIcons.userMinus));
+
+    expect(picker.top, greaterThanOrEqualTo(name.bottom));
+    expect(picker.left, name.left);
+    // It reaches under the remove button, which a subtitle beside it
+    // could not.
+    expect(picker.right, greaterThan(remove.left));
+  });
 }
