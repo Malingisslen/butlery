@@ -1,7 +1,8 @@
-// BUT-2192: at 320 dp with 200 % text the auth header's broccoli + "butlery"
-// wordmark Row ran off the right edge. The wordmark is a logotype (exempt from
-// text resizing under WCAG 1.4.4), so it must shrink to fit on one line rather
-// than overflow or wrap.
+// BUT-2192, updated for B96-2 (beslut 2026-09-30, B96-2 = A): the header is
+// now the locked logo lockup (never text) plus the tagline, drawn straight on
+// the page background. This test now pins that header: at 320 dp / 200 %
+// text there is no layout error scoped to the header block, the lockup is
+// present, and the tagline stays within the screen bounds.
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/views/auth_view.dart';
+import 'package:butlery/widgets/common/brand/butlery_lockup.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -20,7 +23,6 @@ import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
 
-const _kWordmark = 'butlery';
 const _kScreenWidth = 320.0;
 const _kPumpCap = Duration(seconds: 2);
 
@@ -54,7 +56,8 @@ void main() {
     });
 
     testWidgets(
-      'the wordmark shrinks to fit one line at 320 dp and 200 % text',
+      'the lockup + tagline header lays out with no error at 320 dp and '
+      '200 % text',
       (tester) async {
         tester.view.physicalSize = const Size(_kScreenWidth, 800);
         tester.view.devicePixelRatio = 1.0;
@@ -80,37 +83,32 @@ void main() {
           FlutterError.onError = previousOnError;
         }
 
-        final wordmark = find.text(_kWordmark);
-        expect(wordmark, findsOneWidget);
+        final lockup = find.byType(ButleryLockup);
+        expect(lockup, findsOneWidget);
 
-        final headerRow = tester.renderObject<RenderFlex>(
-          find.ancestor(of: wordmark, matching: find.byType(Row)).first,
+        final headerColumn = tester.renderObject<RenderFlex>(
+          find.ancestor(of: lockup, matching: find.byType(Column)).first,
         );
-        final headerRowId = describeIdentity(headerRow);
+        final headerColumnId = describeIdentity(headerColumn);
         expect(
-          layoutErrors.where((e) => e.toString().contains(headerRowId)),
+          layoutErrors.where((e) => e.toString().contains(headerColumnId)),
           isEmpty,
-          reason: 'the broccoli + wordmark Row must not overflow',
+          reason: 'the lockup + tagline header must not overflow',
         );
 
-        final rect = tester.getRect(wordmark);
-        expect(rect.left, greaterThanOrEqualTo(0));
-        expect(rect.right, lessThanOrEqualTo(_kScreenWidth));
+        final lockupRect = tester.getRect(lockup);
+        expect(lockupRect.left, greaterThanOrEqualTo(0));
+        expect(lockupRect.right, lessThanOrEqualTo(_kScreenWidth));
 
-        final paragraph = tester.renderObject<RenderParagraph>(wordmark);
-        final oneLineHeight = paragraph.getMaxIntrinsicHeight(double.infinity);
-        expect(
-          paragraph.size.height,
-          moreOrLessEquals(oneLineHeight, epsilon: 0.01),
-          reason: 'the wordmark must stay on one line, not wrap',
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(AuthView)),
         );
-        expect(
-          rect.width,
-          lessThan(paragraph.size.width),
-          reason:
-              'on screen the wordmark is drawn smaller than its laid-out '
-              'width, i.e. it was scaled down to fit',
-        );
+        final tagline = find.text(l10n.authTagline);
+        expect(tagline, findsOneWidget);
+
+        final taglineRect = tester.getRect(tagline);
+        expect(taglineRect.left, greaterThanOrEqualTo(0));
+        expect(taglineRect.right, lessThanOrEqualTo(_kScreenWidth));
       },
     );
   });

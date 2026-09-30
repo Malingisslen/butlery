@@ -6756,7 +6756,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authPassword => 'Lösenord';
 
   @override
-  String get authTagline => 'Dina recept. Resten löser sig.';
+  String get authTagline => 'Recept, meny och inköp på ett ställe.';
 
   @override
   String get collaborativeAdd => 'Lägg till';

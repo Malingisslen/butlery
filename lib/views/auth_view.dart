@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/brand/butlery_lockup.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -81,11 +82,7 @@ class _AuthViewState extends State<AuthView> {
               children: [
                 SafeArea(
                   bottom: false,
-                  child: _buildGreenHeader(cs),
-                ),
-                Container(
-                  height: AppDimensions.spacingXs,
-                  color: cs.secondary,
+                  child: _buildHeader(context),
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -121,54 +118,28 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildGreenHeader(ColorScheme cs) {
-    return Container(
-      color: cs.onPrimaryContainer,
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingXl,
-        AppDimensions.spacingXxl,
-        AppDimensions.spacingXl,
-        AppDimensions.spacingXl + AppDimensions.spacingSm,
-      ),
+  /// The locked logo lockup on the page background, per the drawing
+  /// (Skarmar v12 del 2 #inloggning rad 1467-1490, #inloggningmorkt rad
+  /// 1205-1228): a centred 148 px lockup in a `padding:56px 28px 0` block,
+  /// the tagline 10 px below it, no divider underneath. The green header and
+  /// the broccoli illustration are gone; the logo is never written as text
+  /// (beslut 2026-09-30, B96-2 = A).
+  Widget _buildHeader(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 56, 28, 0),
       child: Column(
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/illustrations/broccoli.webp',
-                height: 60,
-                excludeFromSemantics: true,
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
-              // The wordmark is a logotype, so it shrinks to fit the row at
-              // large text instead of wrapping or running off it.
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: AppDimensions.space8),
-                    child: Text(
-                      'butlery',
-                      style: AppTextStyles.headlineBold.copyWith(
-                        fontSize: 38,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 1,
-                        color: cs.onPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const ButleryLockup(),
+          const SizedBox(height: 10),
           Text(
             context.l10n.authTagline,
+            textAlign: TextAlign.center,
+            // The drawing's 13/400 has no role; bodyMedium (14/400) keeps the
+            // weight. The 12/400 caption role failed the rendered
+            // text-contrast check at 360 dp in both modes.
             style: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onPrimary,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],

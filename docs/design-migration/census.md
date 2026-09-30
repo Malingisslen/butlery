@@ -7,14 +7,14 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 206 known failures and 2 residue lists are not empty
-- Known failures: 206 (a11y 104, contrast 5, interaction_checks 12, interactions 6, states53 48, transitions 31)
+- **Migration complete:** NO: 205 known failures and 2 residue lists are not empty
+- Known failures: 205 (a11y 103, contrast 5, interaction_checks 12, interactions 6, states53 48, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 30 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 398`
-  - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 2`
+  - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 1`
 
 ## Required flow transitions
 
@@ -90,10 +90,10 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 104 (ceiling 104) in 98 cases (view, state, mode, width, text scale).
+Known findings: 103 (ceiling 103) in 97 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 3, windows 0
-- By check: ELLIPSIS 52, TAP_LABEL 2, TAP_TARGET 34, TEXT_CONTRAST 16
-- By view: auth-otp 8, chatt 2, inköpslista 18, matlagningsläge 14, receptdetalj 22, recepteditor 1, receptlista-sök 2, start 1, veckogenerering 20, veckomeny 14, vänner-grupp 2
+- By check: ELLIPSIS 52, TAP_LABEL 2, TAP_TARGET 34, TEXT_CONTRAST 15
+- By view: auth-otp 8, chatt 2, inköpslista 18, matlagningsläge 14, receptdetalj 22, recepteditor 1, receptlista-sök 2, veckogenerering 20, veckomeny 14, vänner-grupp 2
 
 ## Token parity
 
@@ -143,7 +143,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 34 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp) |
 | BUT-2195 | a11y 2 | Tap targets without a label |
-| BUT-2196 | a11y 16 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle, start wordmark in dark |
+| BUT-2196 | a11y 15 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 | BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
 
 ## Ratchets and adoption lists
@@ -175,7 +175,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 176 | 402 | 398 |
 | `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | LIVE | 2 | 2 | 0 |
 | `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 2 | 3 | 3 |
-| `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 2 | 2 | 2 |
+| `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 1 | 1 | 1 |
 | `p7_type_and_space_scale_test.dart` | `_retiredSpacing` | BAN | LIVE | 19 | 19 | 19 |
 | `legacy_retirement_test.dart` | `_retired` | BAN | LIVE | 22 | 22 | 22 |
 
@@ -196,8 +196,8 @@ Code only: comments are not counted; generated l10n is left out.
 | `CircularProgressIndicator(` | 0 |  | Material spinner; PlateLine is the only loading indicator (B-18) |
 | `LinearProgressIndicator(` | 1 | `lib/widgets/common/indicators/plate_line.dart` | PlateLine draws on it (package4_adoption_test _package7Components) |
 | `commonOk` | 0 |  | "OK" as a label (content-style-guide.md:77) |
-| `fontSize: <number>` | 18 | `lib/theme/app_text_styles.dart`, `lib/views/auth_view.dart`, `lib/widgets/cooking/step_timer_widget.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
-| `Color(0x…) outside lib/theme` | 3 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
+| `fontSize: <number>` | 17 | `lib/theme/app_text_styles.dart`, `lib/widgets/cooking/step_timer_widget.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
+| `Color(0x…) outside lib/theme` | 4 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/brand/butlery_lockup.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
 | `BorderRadius.circular(<number>)` | 2 | `lib/views/menu_placement/placement_widgets.dart`, `lib/views/recipe_detail/handlers/recipe_shopping_handler.dart` | raw corner radii |
 | `spacingS / spacingXxs` | 0 |  | spacing members retired in package 7 |
 | `pubspec fonts` | 0 |  | retired type families still declared in pubspec.yaml |
