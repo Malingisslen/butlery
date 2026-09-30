@@ -1,7 +1,7 @@
 # ADR-0023: Which collection carries live collaboration, and whose names the export keeps
 
 - **Date:** 2026-09-29
-- **Status:** Escalated to Malin
+- **Status:** Decided by Malin 2026-09-30
 - **Trigger:** tasks/design-migration-but2151-plan.md (BUT-2151)
 - **Blast-radius tier:** full-panel
 - **Stakeholders seated:** Security Architect, Privacy / Data Protection Officer (GDPR),
@@ -37,4 +37,9 @@ the same collaboration.
 
 ## Decision
 
-Pending — recorded here once Malin answers.
+Malin, 2026-09-30 (decision page, Q2 = A, Q3 = A):
+
+1. Live collaboration is built out on `realtime_resources`. The legacy
+   `realtime_recipes` / `realtime_menus` pair is phased out in its own ticket.
+2. The Art. 15 section for `realtime_resources` strips other participants' display names
+   and keeps their uids, as the shared shopping lists do (BUT-1732).
