@@ -73,26 +73,32 @@ class PortionScalerUI {
     Animation<double> scaleAnimation,
     Function(int) onUpdatePortions,
   ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          context.l10n.scalerPortionsLabel,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
+    // A Wrap, so the controls move under the label when large text leaves
+    // no room beside it; full width, as the Row was, so a caller's
+    // background still spans the row.
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: AppDimensions.spacingMd,
+        children: [
+          Text(
+            context.l10n.scalerPortionsLabel,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        const SizedBox(width: AppDimensions.spacingMd),
-        _buildPortionControls(
-          context,
-          currentPortions,
-          minPortions,
-          maxPortions,
-          scaleAnimation,
-          onUpdatePortions,
-        ),
-      ],
+          _buildPortionControls(
+            context,
+            currentPortions,
+            minPortions,
+            maxPortions,
+            scaleAnimation,
+            onUpdatePortions,
+          ),
+        ],
+      ),
     );
   }
 

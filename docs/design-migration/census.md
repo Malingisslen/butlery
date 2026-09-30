@@ -7,8 +7,8 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 240 known failures and 2 residue lists are not empty
-- Known failures: 240 (a11y 136, contrast 5, interaction_checks 12, interactions 6, states53 50, transitions 31)
+- **Migration complete:** NO: 238 known failures and 2 residue lists are not empty
+- Known failures: 238 (a11y 134, contrast 5, interaction_checks 12, interactions 6, states53 50, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 33 registered in Linear
 - Failures without a ticket: 0
@@ -90,10 +90,10 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 136 (ceiling 136) in 104 cases (view, state, mode, width, text scale).
+Known findings: 134 (ceiling 134) in 104 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 2, windows 2
-- By check: ELLIPSIS 52, OVERFLOW 32, TAP_LABEL 2, TAP_TARGET 34, TEXT_CONTRAST 16
-- By view: auth-otp 8, chatt 2, inköpslista 30, matlagningsläge 14, receptdetalj 24, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 2
+- By check: ELLIPSIS 52, OVERFLOW 30, TAP_LABEL 2, TAP_TARGET 34, TEXT_CONTRAST 16
+- By view: auth-otp 8, chatt 2, inköpslista 30, matlagningsläge 14, receptdetalj 22, recepteditor 1, receptlista-sök 2, start 7, veckogenerering 26, veckomeny 20, vänner-grupp 2
 
 ## Token parity
 
@@ -141,7 +141,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2187 | states53 2 | Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101) |
 | BUT-2190 | states53 2 | Member management dialog overflows by 68 px at 360 dp |
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
-| BUT-2192 | a11y 20 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
+| BUT-2192 | a11y 18 | Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu) |
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 34 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp) |
 | BUT-2195 | a11y 2 | Tap targets without a label |
