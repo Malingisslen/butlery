@@ -202,7 +202,10 @@ the wrong belief and has been corrected in place):**
   the sections its fixture RENDERS: an `if (vm.x)` section's wrapper is revertible-green (BUT-2192).
   **A Row→Wrap overflow fix also changes WIDTH**: a Wrap sizes to its content, so under a
   start-aligned Column the caller's coloured band shrinks. Mount the caller's real parent chain
-  and assert the band's width, beside the no-overflow test (BUT-2192).
+  and assert the band's width, beside the no-overflow test (BUT-2192). **A whole-VIEW
+  `takeException` answers for every Flex on screen**: the test font overflowed the auth footer at
+  320/2.0, which the matrix never flagged. Collect `FlutterError.onError`; match `describeIdentity`
+  of the subject's own `RenderFlex` (BUT-2192).
 - **A SCROLLABLE ancestor makes the whole overflow class structurally unfailable** — inside a
   `SingleChildScrollView` the child gets unbounded height, so no content can overflow and
   `takeException(), isNull` is green at any size. It still kills a fixed-slice mutant, so keep the

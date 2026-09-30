@@ -55,9 +55,24 @@ class VeckomenyViewModeToggle extends StatelessWidget
     'veckomenyViewModeToggle.indicator',
   );
 
+  /// The text scale the height is reserved for, the same 200 % ceiling as
+  /// [ButleryTopBar.preferredSize], which adds this height to its own.
+  static const double _ceilingTextScale = 2.0;
+
+  /// The row's height at the ceiling: a tab's label line and vertical
+  /// padding, never under the tab's minimum.
   @override
-  Size get preferredSize =>
-      const Size.fromHeight(ButleryControlFocus.minSize + 1);
+  Size get preferredSize {
+    final label = AppTextStyles.bodySmall;
+    final line =
+        ((label.fontSize ?? 14) * (label.height ?? 1.0) * _ceilingTextScale)
+            .ceilToDouble();
+    final tab = line + 2 * AppDimensions.spacingL;
+    final row = tab > ButleryControlFocus.minSize
+        ? tab
+        : ButleryControlFocus.minSize;
+    return Size.fromHeight(row + 1);
+  }
 
   @override
   Widget build(BuildContext context) {

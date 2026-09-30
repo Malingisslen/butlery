@@ -135,4 +135,29 @@ void main() {
       }
     });
   });
+
+  group('VeckomenyViewModeToggle — 200 % text (BUT-2192)', () {
+    testWidgets('the row fits inside the height it asks the bar for', (
+      tester,
+    ) async {
+      final toggle = VeckomenyViewModeToggle(
+        mode: VeckomenyViewMode.lista,
+        onSelect: (_) {},
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: MediaQuery.withClampedTextScaling(
+            minScaleFactor: 2.0,
+            maxScaleFactor: 2.0,
+            child: Align(alignment: Alignment.topLeft, child: toggle),
+          ),
+        ),
+      );
+
+      expect(
+        tester.getSize(find.byType(VeckomenyViewModeToggle)).height,
+        lessThanOrEqualTo(toggle.preferredSize.height),
+      );
+    });
+  });
 }
