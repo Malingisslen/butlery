@@ -185,6 +185,10 @@ flutter:
     - assets/data/
     - assets/illustrations/
     - assets/seasonal/
+    # B96-2: the locked logo lockup SVGs (light + dark), vendored
+    # byte-identical from the design system. ButleryLockup embeds the same
+    # text; test/widget/common/brand/butlery_lockup_test.dart checks both.
+    - assets/brand/
     # P7-U08: the Butlery icon family masters and their inventory, copied
     # byte-identical from the design system (B-02). ButleryIcons embeds the
     # same text; test/widget/common/icons/butlery_icons_test.dart checks both.

@@ -71,7 +71,6 @@ const Map<String, String> knownA11yFindings = {
   'recepteditor::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptlista-sök::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptlista-sök::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-  'start::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'veckogenerering::DEFAULT::light::320::1.0::ELLIPSIS': 'BUT-2193',
   'veckogenerering::DEFAULT::light::320::1.5::ELLIPSIS': 'BUT-2193',
   'veckogenerering::DEFAULT::light::320::2.0::ELLIPSIS': 'BUT-2193',
@@ -153,4 +152,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 104;
+const int knownA11yFindingsCeiling = 103;

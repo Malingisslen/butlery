@@ -2,9 +2,7 @@
 //
 // - Type: every text size comes from a type role (tokens.json
 //   typography.roles; tokens.json:522 "Ingen handskriven ... i app- eller
-//   speckod"). A raw `fontSize: <number>` outside lib/theme is refused. The
-//   allowlist below holds the two sizes no role covers yet and may only
-//   shrink.
+//   speckod"). A raw `fontSize: <number>` outside lib/theme is refused.
 // - Space: the spacing scale is 4/8/12/16/24/32 and the layout margin is 20
 //   at 320 dp and 24 from 360 dp (tokens.json:463-475). The off-scale
 //   AppDimensions constants retired in package 7 may not come back.
@@ -22,9 +20,6 @@ import 'package:butlery/theme/app_text_roles_pending.dart';
 /// Files that may still carry a raw font size, and how many. Each entry is a
 /// known gap with a Linear follow-up; the count may only go down.
 const _rawFontSizeAllowlist = <String, int>{
-  // The wordmark drawn as text. Grafisk manual v6:86: the wordmark is a
-  // locked vector and is never recreated as text; no vector asset ships yet.
-  'lib/views/auth_view.dart': 1,
   // The cooking timer's 56 px digits. No type role is larger than stat 38,
   // which is reserved for the statistics view (tokens.json typography.roles).
   'lib/widgets/cooking/step_timer_widget.dart': 1,

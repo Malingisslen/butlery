@@ -11404,7 +11404,7 @@ abstract class AppLocalizations {
   /// No description provided for @authTagline.
   ///
   /// In sv, this message translates to:
-  /// **'Dina recept. Resten löser sig.'**
+  /// **'Recept, meny och inköp på ett ställe.'**
   String get authTagline;
 
   /// No description provided for @collaborativeAdd.

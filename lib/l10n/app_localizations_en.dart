@@ -6751,7 +6751,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPassword => 'Password';
 
   @override
-  String get authTagline => 'Your recipes. The rest sorts itself out.';
+  String get authTagline => 'Recipes, menu and shopping in one place.';
 
   @override
   String get collaborativeAdd => 'Add';
