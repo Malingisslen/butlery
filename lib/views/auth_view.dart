@@ -143,15 +143,22 @@ class _AuthViewState extends State<AuthView> {
                 excludeFromSemantics: true,
               ),
               const SizedBox(width: AppDimensions.spacingL),
-              Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.space8),
-                child: Text(
-                  'butlery',
-                  style: AppTextStyles.headlineBold.copyWith(
-                    fontSize: 38,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 1,
-                    color: cs.onPrimary,
+              // The wordmark is a logotype, so it shrinks to fit the row at
+              // large text instead of wrapping or running off it.
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppDimensions.space8),
+                    child: Text(
+                      'butlery',
+                      style: AppTextStyles.headlineBold.copyWith(
+                        fontSize: 38,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 1,
+                        color: cs.onPrimary,
+                      ),
+                    ),
                   ),
                 ),
               ),
