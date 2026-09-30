@@ -118,6 +118,42 @@ void main() {
       );
     });
 
+    testWidgets(
+      'an outgoing bubble keeps its primary fill on hover (paper text on '
+      'surface.raised would fail contrast)',
+      (tester) async {
+        late ColorScheme cs;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return MessageBubble(
+                  message: Message.text(
+                    conversationId: 'c1',
+                    senderId: 'me',
+                    senderDisplayName: 'Jag',
+                    content: 'Hej!',
+                  ),
+                  currentUserId: 'me',
+                );
+              },
+            ),
+          ),
+        );
+
+        final hoverable = tester.widget<HoverableCard>(
+          find.descendant(
+            of: find.byType(MessageBubble),
+            matching: find.byType(HoverableCard),
+          ),
+        );
+        final hover = hoverable.hoverDecoration as BoxDecoration;
+
+        expect(hover.color, cs.primary);
+      },
+    );
+
     testWidgets('display-only bubble (no handlers) defers the cursor', (
       tester,
     ) async {

@@ -57,6 +57,21 @@ class HoverableCard extends StatefulWidget {
   /// Hover cross-fade curve.
   final Curve curve;
 
+  /// Ink overlay for the InkWell inside a card: pressed fills to surface.raised
+  /// (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json), so press and hover
+  /// share one colour. Hover is transparent because [hoverDecoration] already
+  /// carries it; any other state (focus) resolves to null and keeps what the
+  /// InkWell does today.
+  static WidgetStateProperty<Color?> inkOverlay(ColorScheme cs) {
+    return WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.pressed)) {
+        return cs.surfaceContainerHighest;
+      }
+      if (states.contains(WidgetState.hovered)) return Colors.transparent;
+      return null;
+    });
+  }
+
   @override
   State<HoverableCard> createState() => _HoverableCardState();
 }

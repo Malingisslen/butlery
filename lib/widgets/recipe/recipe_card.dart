@@ -133,7 +133,7 @@ class RecipeCard extends StatelessWidget {
                 vertical: AppDimensions.borderWidthStandard,
               ),
           restDecoration: restDecoration,
-          hoverDecoration: _hoverDecoration(restDecoration),
+          hoverDecoration: _hoverDecoration(restDecoration, cs),
           child: Material(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
@@ -143,6 +143,7 @@ class RecipeCard extends StatelessWidget {
               ),
               // The ring carries focus; no saffron focus tint under it.
               focusColor: Colors.transparent,
+              overlayColor: HoverableCard.inkOverlay(cs),
               onTap: onTap != null ? () => onTap!(recipe) : null,
               onLongPress: onLongPress != null
                   ? () => onLongPress!(recipe)
@@ -173,11 +174,15 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  /// Hover variant of [base]: a stronger lift (web/desktop only). Reuses the
-  /// base decoration so border + corner treatment stay identical — only the
-  /// shadow deepens, keeping the square design language intact.
-  BoxDecoration _hoverDecoration(BoxDecoration base) {
-    return base.copyWith(boxShadow: AppShadows.elevated);
+  /// Hover variant of [base]: fills to surface.raised (B83-1 = A, BUT-2183,
+  /// produktbeslut-2026-09-30.json),
+  /// plus a stronger shadow lift (web/desktop only). Reuses the base
+  /// decoration so border + corner treatment stay identical.
+  BoxDecoration _hoverDecoration(BoxDecoration base, ColorScheme cs) {
+    return base.copyWith(
+      color: cs.surfaceContainerHighest,
+      boxShadow: AppShadows.elevated,
+    );
   }
 
   Widget _buildCardContent(BuildContext context) {

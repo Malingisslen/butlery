@@ -20,6 +20,16 @@ import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
 
+/// Paints an ink highlight in [color]: any drawRRect whose paint is exactly
+/// it. `paints..rrect` would stop at the first, transparent, rrect the
+/// enclosing Material draws.
+PaintPattern paintsRaisedHighlight(Color color) => paints
+  ..something(
+    (Symbol method, List<dynamic> arguments) =>
+        method == #drawRRect &&
+        (arguments[1] as Paint).color.toARGB32() == color.toARGB32(),
+  );
+
 void main() {
   group('RecipeCard mounts HoverableCard (BUT-1308)', () {
     late Recipe testRecipe;
@@ -64,11 +74,17 @@ void main() {
     testWidgets(
       'unselected rest decoration is the square recipe-card design token',
       (tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
             child: Scaffold(
-              body: RecipeCard(recipe: testRecipe, onTap: (_) {}),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return RecipeCard(recipe: testRecipe, onTap: (_) {});
+                },
+              ),
             ),
           ),
         );
@@ -91,11 +107,19 @@ void main() {
         );
         expect(rest.border, isA<Border>());
 
-        // Hover variant only deepens the shadow; border + corners stay identical
-        // so the square treatment is preserved under the cursor.
+        // Hover fills to surface.raised (B83-1 = A, BUT-2183); border +
+        // corners stay identical so the square treatment is preserved under
+        // the cursor.
         final hover = hoverable.hoverDecoration as BoxDecoration;
         expect(hover.border, equals(rest.border));
         expect(hover.borderRadius, isNull);
+        expect(
+          hover.color,
+          cs.surfaceContainerHighest,
+          reason:
+              'Pressed/hover on rows, cards and icon buttons fills to '
+              'surface.raised.',
+        );
       },
     );
 
@@ -104,13 +128,20 @@ void main() {
     // This exercises _HoverableCardState's onEnter/onExit wiring — removing it
     // would make this test fail, unlike the constructor-arg assertions above.
     testWidgets(
-      'pointer enter lifts rendered decoration to hover variant, exit reverts',
+      'pointer enter lifts rendered decoration to hover variant '
+      '(surface.raised), exit reverts',
       (tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
             child: Scaffold(
-              body: RecipeCard(recipe: testRecipe, onTap: (_) {}),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return RecipeCard(recipe: testRecipe, onTap: (_) {});
+                },
+              ),
             ),
           ),
         );
@@ -153,6 +184,12 @@ void main() {
           reason:
               'Pointer entering the card must lift the rendered decoration '
               'to the hover variant (BUT-710 hover feature).',
+        );
+        expect(
+          (renderedDecoration() as BoxDecoration).color,
+          cs.surfaceContainerHighest,
+          reason:
+              'A real mouse hover must paint surface.raised (B83-1 = A, BUT-2183).',
         );
 
         // Move the cursor to a point guaranteed outside the card's hit area →
@@ -365,6 +402,54 @@ void main() {
               'Hover must never replace the selected decoration with the '
               'unselected recipe-card token.',
         );
+      },
+    );
+
+    testWidgets(
+      'pressing the card paints surface.raised as the ink highlight, '
+      'not the default rust/grey tint (B83-1 = A, BUT-2183)',
+      (tester) async {
+        late ColorScheme cs;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return RecipeCard(recipe: testRecipe, onTap: (_) {});
+                },
+              ),
+            ),
+          ),
+        );
+
+        final ink = tester.renderObject(
+          find
+              .ancestor(
+                of: find.descendant(
+                  of: find.byType(RecipeCard),
+                  matching: find.byType(InkWell),
+                ),
+                matching: find.byType(Material),
+              )
+              .first,
+        );
+        expect(ink, isNot(paintsRaisedHighlight(cs.surfaceContainerHighest)));
+
+        final gesture = await tester.startGesture(
+          tester.getCenter(find.byType(InkWell).first),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(
+          ink,
+          paintsRaisedHighlight(cs.surfaceContainerHighest),
+          reason: 'Pressed on a card fills to surface.raised.',
+        );
+
+        await gesture.up();
+        await tester.pumpAndSettle();
       },
     );
   });

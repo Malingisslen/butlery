@@ -52,6 +52,21 @@ const BorderRadius _controlRadius = BorderRadius.all(
   Radius.circular(AppDimensions.radiusControl),
 );
 
+/// Icon-button overlay only (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json):
+/// pressed and hovered resolve to surface.raised. The other themed buttons
+/// are not part of this decision and keep [_noFocusTint]. Focus is untouched: the ring alone carries focus, same as
+/// every other themed button.
+WidgetStateProperty<Color?> _iconButtonOverlay(ColorScheme cs) {
+  return WidgetStateProperty.resolveWith<Color?>((states) {
+    if (states.contains(WidgetState.pressed) ||
+        states.contains(WidgetState.hovered)) {
+      return cs.surfaceContainerHighest;
+    }
+    if (states.contains(WidgetState.focused)) return Colors.transparent;
+    return null;
+  });
+}
+
 /// Disabled filled button: surface.disabled with readable ink text, never
 /// opacity (Komponentark v1:365, :373; Grafisk manual v6:167, :423).
 /// Light: #A9B2A0 behind #24382C. Dark: #4A5C50 behind paper #F5F4ED.
@@ -282,7 +297,7 @@ class ButtonThemes {
       style: ButtonStyle(
         foregroundColor: WidgetStatePropertyAll(cs.onSurfaceVariant),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-        overlayColor: _noFocusTint,
+        overlayColor: _iconButtonOverlay(cs),
         // The ring goes round the whole 48 dp button, not the glyph.
         // Interpretation: Komponentark v1:679-682 draws two icon-button
         // forms, a bordered one at radius 8 (rest :679, focused :681,

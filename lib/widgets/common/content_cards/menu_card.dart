@@ -62,9 +62,12 @@ class MenuCard extends StatelessWidget {
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
         restDecoration: restDecoration,
-        // Subtle shadow on hover (web/desktop) — border + square corners
-        // unchanged, matching the design system's reserved hover elevation.
-        hoverDecoration: restDecoration.copyWith(boxShadow: AppShadows.subtle),
+        // Hover fills to surface.raised (B83-1 = A, BUT-2183,
+        // produktbeslut-2026-09-30.json).
+        hoverDecoration: restDecoration.copyWith(
+          color: cs.surfaceContainerHighest,
+          boxShadow: AppShadows.subtle,
+        ),
         child: Material(
           color: Colors.transparent,
           child: Semantics(
@@ -73,6 +76,7 @@ class MenuCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
+              overlayColor: HoverableCard.inkOverlay(cs),
               borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
