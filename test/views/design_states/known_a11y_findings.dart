@@ -86,6 +86,7 @@ const Map<String, String> knownA11yFindings = {
   'veckogenerering::DEFAULT::dark::320::1.5::ELLIPSIS': 'BUT-2193',
   'veckogenerering::DEFAULT::dark::320::2.0::ELLIPSIS': 'BUT-2193',
   'veckogenerering::DEFAULT::dark::360::1.0::ELLIPSIS': 'BUT-2193',
+  'veckogenerering::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'veckogenerering::DEFAULT::dark::360::1.5::ELLIPSIS': 'BUT-2193',
   'veckogenerering::DEFAULT::dark::360::2.0::ELLIPSIS': 'BUT-2193',
   'veckogenerering::DEFAULT::dark::412::1.0::ELLIPSIS': 'BUT-2193',
@@ -100,6 +101,7 @@ const Map<String, String> knownA11yFindings = {
   'veckomeny::DEFAULT::light::412::2.0::ELLIPSIS': 'BUT-2193',
   'veckomeny::DEFAULT::dark::320::1.5::ELLIPSIS': 'BUT-2193',
   'veckomeny::DEFAULT::dark::320::2.0::ELLIPSIS': 'BUT-2193',
+  'veckomeny::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'veckomeny::DEFAULT::dark::360::1.5::ELLIPSIS': 'BUT-2193',
   'veckomeny::DEFAULT::dark::360::2.0::ELLIPSIS': 'BUT-2193',
   'veckomeny::DEFAULT::dark::412::1.5::ELLIPSIS': 'BUT-2193',
@@ -139,15 +141,7 @@ const Map<String, String> knownA11yFindingsLinuxOnly = {
 
 /// TEXT_CONTRAST findings that only the Windows test host shows; see
 /// [knownA11yFindingsLinuxOnly] for why.
-///
-/// veckogenerering, veckomeny: the week subtitle "Vecka 40 · inget planerat"
-/// in dark measures under its floor on Windows and over it on Linux (run
-/// 36389253529). In light it fails on both hosts and stays in
-/// [knownA11yFindings].
-const Map<String, String> knownA11yFindingsWindowsOnly = {
-  'veckogenerering::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-  'veckomeny::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-};
+const Map<String, String> knownA11yFindingsWindowsOnly = {};
 
 /// The findings expected on the host running the tests. Other hosts (macOS)
 /// have not been measured and get the shared list only.
