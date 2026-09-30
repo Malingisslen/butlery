@@ -35,6 +35,8 @@ class ShoppingMemberManagementDialog extends StatefulWidget {
 
 class _ShoppingMemberManagementDialogState
     extends State<ShoppingMemberManagementDialog> {
+  static const double _avatarRadius = 20;
+
   final _searchController = TextEditingController();
   bool _isLoading = false;
   String? _error;
@@ -522,10 +524,19 @@ class _ShoppingMemberManagementDialogState
     bool isOwner,
   ) {
     final cs = Theme.of(context).colorScheme;
+    final tileTheme = ListTileTheme.of(context);
+    // The role picker's own row starts under the name: the tile's start
+    // padding, the avatar and the gap after it (Material 3 defaults when the
+    // theme sets none).
+    final nameInset =
+        (tileTheme.contentPadding?.resolve(Directionality.of(context)).left ??
+            AppDimensions.spacingMd) +
+        2 * _avatarRadius +
+        (tileTheme.horizontalTitleGap ?? AppDimensions.spacingMd);
 
-    return ListTile(
+    final tile = ListTile(
       leading: CircleAvatar(
-        radius: 20,
+        radius: _avatarRadius,
         backgroundColor: cs.onSurface.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
@@ -545,7 +556,36 @@ class _ShoppingMemberManagementDialogState
               context.l10n.shoppingPermissionOwner,
               style: AppTextStyles.linkSmall,
             )
-          : DropdownButton<SharedListPermission>(
+          : null,
+      trailing: !isOwner
+          ? IconButton(
+              onPressed: _isLoading
+                  ? null
+                  : () => _removeMember(userId, userName),
+              icon: ButleryIcon(ButleryIcons.userMinus, color: cs.error),
+              tooltip: context.l10n.shoppingRemoveMember,
+            )
+          : null,
+    );
+    if (isOwner) return tile;
+
+    // BUT-2190: beside the avatar and the remove button the picker had
+    // too little width for "Redigera", so it takes its own row. The row
+    // shares the tile's surface, so one member reads as one entry.
+    return Material(
+      color: tileTheme.tileColor ?? Colors.transparent,
+      shape: tileTheme.shape,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          tile,
+          Padding(
+            padding: EdgeInsetsDirectional.only(
+              start: nameInset,
+              end: AppDimensions.spacingMd,
+            ),
+            child: DropdownButton<SharedListPermission>(
+              isExpanded: true,
               value: permission,
               onChanged: _isLoading
                   ? null
@@ -599,15 +639,9 @@ class _ShoppingMemberManagementDialogState
                 ),
               ],
             ),
-      trailing: !isOwner
-          ? IconButton(
-              onPressed: _isLoading
-                  ? null
-                  : () => _removeMember(userId, userName),
-              icon: ButleryIcon(ButleryIcons.userMinus, color: cs.error),
-              tooltip: context.l10n.shoppingRemoveMember,
-            )
-          : null,
+          ),
+        ],
+      ),
     );
   }
 
