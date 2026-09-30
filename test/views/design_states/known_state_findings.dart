@@ -108,10 +108,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2183',
     'DecoratedBox #1ADCA968',
   ),
-  'inköpslista::LOADING::light::OVERFLOW': KnownFinding(
-    'BUT-2190',
-    'A RenderFlex overflowed by 68 pixels on the right.',
-  ),
   'inköpslista::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
     '#61000000 ("Redigera"), #DD000000 ("icon U+E3C6"), #FFBDBDBD ("icon U+E098")',
@@ -119,10 +115,6 @@ const Map<String, KnownFinding> knownStateFindings = {
   'inköpslista::LOADING::light::COLOUR_FILL': KnownFinding(
     'BUT-2183',
     'DecoratedBox #1A24382C',
-  ),
-  'inköpslista::LOADING::dark::OVERFLOW': KnownFinding(
-    'BUT-2190',
-    'A RenderFlex overflowed by 68 pixels on the right.',
   ),
   'inköpslista::LOADING::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
@@ -227,7 +219,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 50;
+const int knownStateFindingsCeiling = 48;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {
