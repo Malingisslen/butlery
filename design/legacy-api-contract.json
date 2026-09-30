@@ -438,7 +438,7 @@
     "FLUTTER_MEMBER": "greenMuted",
     "SEMANTIC_TOKEN": "text.secondary",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary\"].dark",
-    "DARK_VALUE": "#93A48D",
+    "DARK_VALUE": "#A9B2A0",
     "KIND": "CANONICAL"
    },
    {
@@ -592,7 +592,7 @@
     "FLUTTER_MEMBER": "recipeMeta",
     "SEMANTIC_TOKEN": "text.secondary",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary\"].dark",
-    "DARK_VALUE": "#93A48D",
+    "DARK_VALUE": "#A9B2A0",
     "KIND": "CANONICAL"
    },
    {
@@ -627,7 +627,7 @@
     "FLUTTER_MEMBER": "sharedRecipeText",
     "SEMANTIC_TOKEN": "text.secondary",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary\"].dark",
-    "DARK_VALUE": "#93A48D",
+    "DARK_VALUE": "#A9B2A0",
     "KIND": "CANONICAL"
    },
    {
@@ -844,7 +844,7 @@
     "FLUTTER_MEMBER": "sharedRecipeTextColor",
     "SEMANTIC_TOKEN": "text.secondary",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary\"].dark",
-    "DARK_VALUE": "#93A48D",
+    "DARK_VALUE": "#A9B2A0",
     "KIND": "ALIAS"
    },
    {
@@ -1026,7 +1026,7 @@
     "FLUTTER_MEMBER": "navUnselectedItem",
     "SEMANTIC_TOKEN": "text.secondary",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary\"].dark",
-    "DARK_VALUE": "#93A48D",
+    "DARK_VALUE": "#A9B2A0",
     "KIND": "ALIAS"
    }
   ]

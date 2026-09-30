@@ -72,7 +72,7 @@
   "textMedium": [
    "semantic",
    "text.secondary.onRaised",
-   "Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor."
+   "Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. Sedan B96-1 (BUT-2196, 2026-09-30) har text.secondary samma varde, #5B6959/#A9B2A0."
   ],
   "placeholderIcon": [
    "semantic",

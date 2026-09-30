@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:598b0e9f932700dbe7452678199b733e6bfcf956c201d9a08bde31f7ac5a2eaa (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:4d0dd6b8744947ab55cbb876bddf1218322476264d9ddd16e85bd5f674adb8d5 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -37,14 +37,14 @@ class AppColors {
   /// semantic.surface.raised
   static const Color greenPale = Color(0xFFE6EAD9);
   /// Nav ovald · semantic.text.secondary
-  static const Color greenMuted = Color(0xFF627061);
+  static const Color greenMuted = Color(0xFF5B6959);
   /// Systemet har inget rent vitt · semantic.surface.base
   static const Color cardWhite = Color(0xFFF5F4ED);
   /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.paperCard
   static const Color cardWhite54 = Color(0x8AF5F4ED);
   /// semantic.text.primary
   static const Color textDark = Color(0xFF24382C);
-  /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. · semantic.text.secondary.onRaised
+  /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. Sedan B96-1 (BUT-2196, 2026-09-30) har text.secondary samma varde, #5B6959/#A9B2A0. · semantic.text.secondary.onRaised
   static const Color textMedium = Color(0xFF5B6959);
   /// semantic.border.control
   static const Color placeholderIcon = Color(0xFF7D897C);
@@ -83,7 +83,7 @@ class AppColors {
   /// semantic.border.subtle
   static const Color divider = Color(0xFFCCD1C2);
   /// semantic.text.secondary
-  static const Color recipeMeta = Color(0xFF627061);
+  static const Color recipeMeta = Color(0xFF5B6959);
   /// semantic.text.body
   static const Color sectionHeader = Color(0xFF37453A);
   /// palette.saffron
@@ -119,7 +119,7 @@ class AppColors {
   /// palette.inkDeep
   static const Color neutralDark = Color(0xFF17251D);
   /// semantic.text.secondary
-  static const Color sharedRecipeText = Color(0xFF627061);
+  static const Color sharedRecipeText = Color(0xFF5B6959);
   /// palette.sagePale
   static const Color sharedRecipeIcon = Color(0xFFB4BFA6);
   /// semantic.surface.raised
@@ -248,7 +248,7 @@ class AppColors {
     surface: Color(0xFFF5F4ED),
     onSurface: Color(0xFF24382C),
     surfaceContainerHighest: Color(0xFFE6EAD9),
-    onSurfaceVariant: Color(0xFF627061),
+    onSurfaceVariant: Color(0xFF5B6959),
     outline: Color(0xFF7D897C),
     outlineVariant: Color(0xFFCCD1C2),
     shadow: Color(0x1A17251D),
@@ -284,7 +284,7 @@ class AppColors {
     surface: Color(0xFF17251D),
     onSurface: Color(0xFFF5F4ED),
     surfaceContainerHighest: Color(0xFF2F4437),
-    onSurfaceVariant: Color(0xFF93A48D),
+    onSurfaceVariant: Color(0xFFA9B2A0),
     outline: Color(0x59F5F4ED),
     outlineVariant: Color(0x2EF5F4ED),
     shadow: Color(0x1A17251D),
