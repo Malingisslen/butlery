@@ -920,4 +920,137 @@ void main() {
       );
     });
   });
+
+  // BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — read
+  // from lastActivityAt/lastActivityByUserId/lastActivityByDisplayName
+  // ([UnifiedShoppingList]), no new Firestore field.
+  group('CollaborativeShoppingView — updated-by notice (BUT-2187)', () {
+    final noticeKey = find.byKey(
+      const ValueKey('collaborativeShopping.updatedByNotice'),
+    );
+
+    Future<void> pumpFullView(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    testWidgets("shows the updater's name for another user's update", (
+      tester,
+    ) async {
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+      expect(noticeKey, findsNothing);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'u-other',
+              lastActivityByDisplayName: 'Anna',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(noticeKey, findsOneWidget);
+      expect(
+        find.text(l10n.shoppingListUpdatedByNotice('Anna')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets("shows nothing for the signed-in user's own update", (
+      tester,
+    ) async {
+      // listWith's owner is 'test-user-123' — ViewTestHelpers' default
+      // signed-in user (matches the BUT-1722 view-only test above).
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'test-user-123',
+              lastActivityByDisplayName: 'Malin',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(noticeKey, findsNothing);
+    });
+
+    testWidgets('can be dismissed', (tester) async {
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'u-other',
+              lastActivityByDisplayName: 'Anna',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      expect(noticeKey, findsOneWidget);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      await tester.tap(find.byTooltip(l10n.a11yShoppingListUpdatedByDismiss));
+      await tester.pump();
+
+      expect(noticeKey, findsNothing);
+    });
+
+    testWidgets('uses the neutral fallback when the display name is missing', (
+      tester,
+    ) async {
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'u-other',
+              lastActivityByDisplayName: '',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(find.text(l10n.shoppingListUpdatedByUnknown), findsOneWidget);
+    });
+  });
 }

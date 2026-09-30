@@ -1,5 +1,4 @@
 /// Collaborative shopping view with real-time shared list management.
-
 // lib/views/social/collaborative_shopping_view.dart
 
 import 'dart:async';
@@ -9,7 +8,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -249,9 +247,6 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
             child: Column(
               children: [
                 LayoutComponents.offlineIndicator(),
-                // BUT-1162: surface silent collaborative-edit conflict
-                // resolutions on this shared list (drop-in; idle-collapses).
-                ConflictBanner(filterDocId: viewModel.listId),
                 Expanded(child: _buildBody(context, viewModel)),
               ],
             ),
@@ -318,9 +313,16 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
     BuildContext context,
     CollaborativeShoppingViewModel viewModel,
   ) {
+    final updatedByNotice = viewModel.updatedByNotice;
     return Column(
       children: [
         CollaborativeShoppingHeader(viewModel: viewModel),
+        if (updatedByNotice != null)
+          _UpdatedByNotice(
+            key: const ValueKey('collaborativeShopping.updatedByNotice'),
+            text: updatedByNotice,
+            onDismiss: viewModel.dismissUpdatedByNotice,
+          ),
         actions.buildAddItemSection(context),
         if (unaddedText != null)
           _UnaddedTextNotice(
@@ -415,6 +417,78 @@ class _UnaddedTextNotice extends StatelessWidget {
                       child: Text(l.commonClose),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — shown in
+/// the header when someone else updates this shared list while it is open.
+///
+/// A plain strip, not the danger-coloured [ConflictBanner]: border-top AND
+/// border-bottom border.subtle (colorScheme.outlineVariant), no icon, text.body
+/// (Skarmar v12 del 2 #delatlista rad 1050-1071). Sits between the header's
+/// participant/activity row and "Lägg till vara" — the widget position in
+/// [_CollaborativeShoppingViewContent._buildListContent] draws it there.
+class _UpdatedByNotice extends StatelessWidget {
+  const _UpdatedByNotice({
+    super.key,
+    required this.text,
+    required this.onDismiss,
+  });
+
+  final String text;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final body = AppModeColors.textBody(Theme.of(context).brightness);
+    // Keyed on the text so a screen reader announces each distinct notice
+    // once (a rebuild of the same text, or the same notice reappearing
+    // unchanged, stays silent) — same pattern as ConflictBanner.
+    return KeyedSubtree(
+      key: ValueKey(text),
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        child: Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+          ),
+          decoration: BoxDecoration(
+            border: Border.symmetric(
+              horizontal: BorderSide(
+                color: cs.outlineVariant,
+                width: AppDimensions.borderWidthStandard,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.paddingS,
+                  ),
+                  child: Text(
+                    text,
+                    style: AppTextStyles.captionBase.copyWith(color: body),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
+                child: IconButton(
+                  tooltip: context.l10n.a11yShoppingListUpdatedByDismiss,
+                  icon: const ButleryIcon(ButleryIcons.x),
+                  onPressed: onDismiss,
                 ),
               ),
             ],
