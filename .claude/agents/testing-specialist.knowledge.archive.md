@@ -40106,3 +40106,7 @@ Commit-gate review of lib/widgets/common/input/portion_scaler_ui.dart `_buildHea
   `MaterialApp(routes:{...})` never reads `settings.arguments` — push through `onGenerateRoute`.
 - **A control that DISABLES ITSELF after one tap makes every later negative-tap assertion in the same
   test unfailable** — order the negative tap FIRST and assert zero (BUT-1904).
+
+### 2026-09-30 — BUT-2192 review: menu prompt heading overflow test [trigger: review]
+
+Reviewed test/widget/widgets/menu/menu_prompt_input_test.dart (320 dp, text scale clamped to 2.0, createLocalizedTestApp so AppTheme.lightTheme, Scaffold body, no scroll ancestor). Analytic grading, no probe: on the revert mutant the right-edge `lessThanOrEqualTo` line is ENTAILED by `takeException(), isNull` above it (fail-fast), but it independently kills overflow-HIDING mutants that raise no RenderFlex error (OverflowBox / horizontal scroll around the Row). Neither assertion kills a `maxLines: 1` + ellipsis or a `softWrap: false` mutant inside the Flexible — the paragraph's size is clamped to the Flexible's width, so the library doc's "wraps" is unpinned. Suggested pin: `final p = tester.renderObject<RenderParagraph>(heading); expect(p.size.height, greaterThan(p.getMaxIntrinsicHeight(double.infinity)));` (height at infinite width = one line; theme-independent). Not added to the chapter: widgets-ui chapter already measures 20020 bytes.

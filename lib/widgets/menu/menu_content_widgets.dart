@@ -63,10 +63,12 @@ class MenuContentWidgets {
                 color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.space4),
-              Text(
-                context.l10n.menuPromptQuestion,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: cs.onSurface,
+              Flexible(
+                child: Text(
+                  context.l10n.menuPromptQuestion,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: cs.onSurface,
+                  ),
                 ),
               ),
             ],
