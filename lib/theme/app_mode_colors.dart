@@ -306,6 +306,13 @@ final class ModeColors {
   /// Block 289 contrast contract.
   Color get accentOnInk =>
       _isDark ? AppColorsDark.textAccent : AppColors.textAccentOnInk;
+
+  /// semantic text.accent on surface.base: #A15A0A light, #DCA968 dark
+  /// (Grafisk manual v6:524). Surface-bound: on surface.raised use
+  /// [AppColors.onWarningContainer] / [AppColorsDark.onWarningContainer]
+  /// (text.accent.onRaised) instead, and on surface.ink use [accentOnInk].
+  Color get textAccent =>
+      _isDark ? AppColorsDark.textAccent : AppColors.textAccent;
 }
 
 /// `context.modeColors`: the [ModeColors] for the current theme's brightness.

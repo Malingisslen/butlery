@@ -7298,9 +7298,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingPersonalList => 'Personlig lista';
 
   @override
-  String get shoppingPurchased => 'Köpta';
-
-  @override
   String get shoppingPurchasedCleared => 'Köpta varor rensade';
 
   @override
@@ -7384,14 +7381,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String shoppingBoughtOfTotal(int bought, int total) {
-    return '$bought av $total köpta';
+  String shoppingBoughtCount(int count) {
+    return 'Köpt ($count)';
   }
 
   @override
-  String shoppingClearCount(int count) {
-    return 'Rensa $count';
-  }
+  String get shoppingClearBought => 'Rensa köpta';
 
   @override
   String shoppingClearPurchasedMessage(int count) {

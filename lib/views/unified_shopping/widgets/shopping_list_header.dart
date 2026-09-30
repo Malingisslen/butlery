@@ -14,17 +14,18 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 
-/// Header section with list selector and actions
+/// Header section with the list selector and its management buttons.
+///
+/// The list's secondary actions (sort categories, uncheck all) live in the
+/// root bar's overflow menu (Skarmar v12 del 2 #inkop :862-870 draws only
+/// "mer" + "plus" in the header — see [ShoppingAppBar.buildHeaderActions]).
 class ShoppingListHeader {
   static Widget build(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    VoidCallback onClearCompleted,
-    VoidCallback onUncheckAll,
     VoidCallback onRenameList,
     VoidCallback onDeleteList, {
     VoidCallback? onConvertList,
-    VoidCallback? onSortCategories,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -35,29 +36,12 @@ class ShoppingListHeader {
         color: cs.surfaceContainerHighest,
         boxShadow: AppShadows.subtle,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // List selector dropdown with management buttons
-          _buildListSelector(
-            context,
-            viewModel,
-            onRenameList,
-            onDeleteList,
-            onConvertList,
-          ),
-
-          if (viewModel.activeList != null) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            _buildListActions(
-              context,
-              viewModel,
-              onClearCompleted,
-              onUncheckAll,
-              onSortCategories: onSortCategories,
-            ),
-          ],
-        ],
+      child: _buildListSelector(
+        context,
+        viewModel,
+        onRenameList,
+        onDeleteList,
+        onConvertList,
       ),
     );
   }
@@ -87,6 +71,9 @@ class ShoppingListHeader {
                 value: viewModel.activeList?.id,
                 hint: Text(context.l10n.shoppingSelectList),
                 isExpanded: true,
+                // The list's name over its item count grows with the text
+                // size, so the button takes its content's height.
+                itemHeight: null,
                 icon: ButleryIcon(
                   ButleryIcons.chevronDown,
                   color: cs.onSurfaceVariant,
@@ -176,109 +163,6 @@ class ShoppingListHeader {
     );
   }
 
-  static Widget _buildListActions(
-    BuildContext context,
-    UnifiedShoppingViewModel viewModel,
-    VoidCallback onClearCompleted,
-    VoidCallback onUncheckAll, {
-    VoidCallback? onSortCategories,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-
-    if (viewModel.activeList == null) return const SizedBox.shrink();
-
-    return Row(
-      children: [
-        // Sort categories button
-        if (onSortCategories != null)
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onSortCategories,
-              style: OutlinedButton.styleFrom(
-                padding: AppDimensions.paddingVertical8,
-                side: BorderSide(
-                  color: cs.onSurfaceVariant.withValues(
-                    alpha: AppDimensions.opacityHalf,
-                  ),
-                ),
-              ),
-              icon: ButleryIcon(
-                ButleryIcons.arrowUpDown,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
-              label: Text(
-                context.l10n.shoppingSortCategories,
-                style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-
-        if (onSortCategories != null && viewModel.boughtItems > 0)
-          const SizedBox(width: AppDimensions.spacingSm),
-
-        // Clear completed items
-        if (viewModel.boughtItems > 0)
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onClearCompleted,
-              style: OutlinedButton.styleFrom(
-                padding: AppDimensions.paddingVertical8,
-                side: BorderSide(
-                  color: cs.onSurfaceVariant.withValues(
-                    alpha: AppDimensions.opacityHalf,
-                  ),
-                ),
-              ),
-              icon: ButleryIcon(
-                ButleryIcons.x,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
-              label: Text(
-                context.l10n.shoppingClearCount(viewModel.boughtItems),
-                style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-
-        if (viewModel.boughtItems > 0 &&
-            viewModel.totalItems > viewModel.boughtItems)
-          const SizedBox(width: AppDimensions.spacingSm),
-
-        if (viewModel.boughtItems > 0)
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onUncheckAll,
-              style: OutlinedButton.styleFrom(
-                padding: AppDimensions.paddingVertical8,
-                side: BorderSide(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityHalf,
-                  ),
-                ),
-              ),
-              icon: ButleryIcon(
-                Icons.check_box_outline_blank,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurface,
-              ),
-              label: Text(
-                context.l10n.shoppingUncheckAll,
-                style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.onSurface,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
   /// Build enhanced dropdown item with sharing status indicators
   static Widget _buildListDropdownItem(
     BuildContext context,
@@ -362,7 +246,7 @@ class ShoppingListHeader {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              Row(
+              Wrap(
                 children: [
                   Text(
                     context.l10n.shoppingItemCount(list.items.length),

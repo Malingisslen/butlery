@@ -19,6 +19,8 @@ enum _ShoppingRootAction {
   shareWithFriends,
   shareExternally,
   sharingStatus,
+  sortCategories,
+  uncheckAll,
 }
 
 /// App bar actions for shopping view
@@ -144,8 +146,12 @@ class ShoppingAppBar {
     VoidCallback onShareExternally,
     VoidCallback onShowSyncStatus, {
     VoidCallback? onBrowseTemplates,
+    VoidCallback? onSortCategories,
+    VoidCallback? onUncheckAll,
   }) {
     final canShare = viewModel.hasItems;
+    final hasActiveList = viewModel.activeList != null;
+    final hasBoughtItems = viewModel.boughtItems > 0;
 
     // Skarmar v12 del 2 #inkop draws one outlined "more" button on the root
     // bar and nothing else, so the list's secondary actions live in one
@@ -169,6 +175,10 @@ class ShoppingAppBar {
               onShareExternally();
             case _ShoppingRootAction.sharingStatus:
               onShowSyncStatus();
+            case _ShoppingRootAction.sortCategories:
+              onSortCategories?.call();
+            case _ShoppingRootAction.uncheckAll:
+              onUncheckAll?.call();
           }
         },
         itemBuilder: (menuContext) => [
@@ -182,6 +192,18 @@ class ShoppingAppBar {
               _ShoppingRootAction.templates,
               Icons.list_alt_outlined,
               context.l10n.shoppingTemplateBrowse,
+            ),
+          if (hasActiveList && onSortCategories != null)
+            _item(
+              _ShoppingRootAction.sortCategories,
+              ButleryIcons.arrowUpDown,
+              context.l10n.shoppingSortCategories,
+            ),
+          if (hasBoughtItems && onUncheckAll != null)
+            _item(
+              _ShoppingRootAction.uncheckAll,
+              Icons.check_box_outline_blank,
+              context.l10n.shoppingUncheckAll,
             ),
           if (canShare)
             _item(

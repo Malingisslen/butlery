@@ -36,6 +36,7 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onDeleteItem,
     VoidCallback onCreateList,
     VoidCallback onAddItem,
+    VoidCallback onClearCompleted,
   ) {
     return ShoppingListContentWidget(
       viewModel: viewModel,
@@ -44,6 +45,7 @@ class ShoppingListContent {
       onDeleteItem: onDeleteItem,
       onCreateList: onCreateList,
       onAddItem: onAddItem,
+      onClearCompleted: onClearCompleted,
     );
   }
 }
@@ -56,6 +58,7 @@ class ShoppingListContentWidget extends StatefulWidget {
   final Function(UnifiedShoppingItem) onDeleteItem;
   final VoidCallback onCreateList;
   final VoidCallback onAddItem;
+  final VoidCallback onClearCompleted;
 
   const ShoppingListContentWidget({
     super.key,
@@ -65,6 +68,7 @@ class ShoppingListContentWidget extends StatefulWidget {
     required this.onDeleteItem,
     required this.onCreateList,
     required this.onAddItem,
+    required this.onClearCompleted,
   });
 
   /// The receipt after an item moved to [category], by drag or by the picker.
@@ -702,6 +706,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     );
   }
 
+  /// "Köpt (N)" heading with the right-aligned "Rensa köpta" text action
+  /// (Grafisk manual v6:524; Skarmar v12 del 2 #inkop :915-916 light,
+  /// :1020-1021 dark). No icon, no subtitle line — the count lives in the
+  /// heading itself, per the facit.
   Widget _buildCompletedItemsHeader(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
@@ -710,34 +718,28 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     return Row(
       children: [
-        ButleryIcon(
-          ButleryIcons.circleCheck,
-          size: AppDimensions.iconSizeM,
-          color: cs.onSurface,
-        ),
-        const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.shoppingPurchased,
-                style: AppTextStyles.bodyLargeBold.copyWith(
-                  color: cs.onSurface,
-                ),
-              ),
-              Text(
-                context.l10n.shoppingBoughtOfTotal(
-                  viewModel.boughtItems,
-                  viewModel.totalItems,
-                ),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityVeryDark,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            context.l10n.shoppingBoughtCount(viewModel.boughtItems),
+            // Nearest role to the facit's 12/700: labelSmall is 11/700,
+            // the closest surviving weight-and-size match in the scale.
+            style: AppTextStyles.labelSmall.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
+        TextButton(
+          key: const ValueKey('shopping-clear-bought'),
+          onPressed: widget.onClearCompleted,
+          child: Text(
+            context.l10n.shoppingClearBought,
+            // Nearest role to the facit's 10.5/600: labelMedium is
+            // 12.5/600, the closest surviving weight match (overline is
+            // 10.5/700 — exact size, wrong weight; the facit's weight
+            // matters more for a tappable action than 2px does).
+            style: AppTextStyles.labelMedium.copyWith(
+              color: context.modeColors.textAccent,
+            ),
           ),
         ),
       ],
