@@ -381,8 +381,7 @@ class OsPermissionRationaleDialog extends StatelessWidget {
 ///   is a stand-in: AppModeColors.textBody, right in light mode, #F5F4ED in
 ///   dark mode where the drawing has #C9D3C4. Open until D1 delivers the
 ///   member.
-/// - Consequence line: slot 702, #627061 light / #93A48D dark =
-///   cs.onSurfaceVariant.
+/// - Consequence line: slot 702 = cs.onSurfaceVariant.
 /// - Buttons: the shared outlined and hero styles (tokens.json:137-144).
 class _OsPermissionRationaleDialog extends StatelessWidget {
   const _OsPermissionRationaleDialog({

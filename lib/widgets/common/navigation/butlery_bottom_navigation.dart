@@ -77,8 +77,8 @@ Widget navigationTabList({required Widget child}) => Semantics(
 ///   (app_colors.dart lightColorScheme and darkColorScheme).
 /// * [selected]: paper #F5F4ED, colorScheme.onPrimary in both schemes; the
 ///   chosen tab's glyph and label (Komponentark v1:663, `color:#F5F4ED`).
-/// * [unselected]: #93A48D, text.secondary (dark) (tokens.json:62-65); the
-///   other tabs (Komponentark v1:663-666, `color:#93a48d`), 4.73:1 on ink.
+/// * [unselected]: #A9B2A0, text.secondary (dark) (tokens.json); the
+///   other tabs (Komponentark v1:663-666, `color:#93a48d`).
 /// * [marker]: action.primary saffron #CE7C1E, colorScheme.secondary in both
 ///   schemes; the plate line under the chosen label (Komponentark v1:663).
 /// * [divider]: paper at the ladder's on-ink 0.18 step (tokens.json:40-53).

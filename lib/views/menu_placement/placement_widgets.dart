@@ -422,8 +422,7 @@ class PlacementTrayCard extends StatelessWidget {
         // (Skarmar v12 del 2). A placed dish is struck through, never
         // faded. tokens.json gives the struck text text.completed (#37453A
         // light, #93A48D dark); no scheme slot carries it, so onSurfaceVariant
-        // stands in: exact in dark, text.secondary #627061 in light until
-        // text.completed is delivered as a member (open, D1).
+        // stands in until text.completed is delivered as a member (open, D1).
         child: Container(
           width: 132,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),

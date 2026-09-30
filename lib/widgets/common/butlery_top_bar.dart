@@ -275,7 +275,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     //                      (tokens.json rad 104–107)
     //   onSurface        = text.primary   #24382C ljust / #F5F4ED mörkt
     //                      (tokens.json rad 54)
-    //   onSurfaceVariant = text.secondary #627061 ljust / #93A48D mörkt
+    //   onSurfaceVariant = text.secondary #5B6959 ljust / #A9B2A0 mörkt
     //                      (tokens.json rad 62)
     //   primary          = surface.ink    #24382C i båda lägena
     //   onPrimary        = papper         #F5F4ED i båda lägena

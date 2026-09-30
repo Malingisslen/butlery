@@ -31,8 +31,7 @@ abstract final class AppModeColors {
       _isDark(brightness) ? AppColorsDark.textDisabled : AppColors.textDisabled;
 
   /// semantic text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
-  /// (tokens.json:184-187). Secondary text on surface.raised, where plain
-  /// text.secondary (#627061 / #93A48D) fails 4.5:1 in both modes.
+  /// (tokens.json). Secondary text on surface.raised.
   static Color textSecondaryOnRaised(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textMedium : AppColors.textMedium;
 
@@ -94,10 +93,10 @@ abstract final class AppModeColors {
   // (tokens.json:112-115), so what stands on it takes one value in both
   // modes, whatever the page's brightness.
 
-  /// semantic text.secondary (dark) #93A48D, delivered as the generated dark
+  /// semantic text.secondary (dark) #A9B2A0, delivered as the generated dark
   /// member greenMuted ("Nav ovald"), in both modes. The unchosen tabs of
   /// the ink bar (Komponentark v1:663-666) and quiet text on an ink card
-  /// (Skarmar v12 del 1 #hemrecept :137). 4.73:1 on #24382C.
+  /// (Skarmar v12 del 1 #hemrecept :137).
   static Color textSecondaryOnInk() => AppColorsDark.greenMuted;
 
   /// palette.saffronLight #E09D50, the generated member textAccentOnInk, in

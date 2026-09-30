@@ -111,9 +111,9 @@ Color _unfilledOutline(ColorScheme cs) => cs.brightness == Brightness.dark
     ? AppModeColors.paperWash(cs.brightness)
     : cs.onSurface;
 
-/// Disabled outlined button text: text.secondary, #627061 light
-/// (Komponentark v1:383) and #93A48D dark (tokens.json:62-65), through
-/// onSurfaceVariant, which carries text.secondary in both schemes.
+/// Disabled outlined button text: text.secondary (Komponentark v1,
+/// tokens.json), through onSurfaceVariant, which carries
+/// text.secondary in both schemes.
 Color _outlinedDisabledForeground(ColorScheme cs) => cs.onSurfaceVariant;
 
 /// Disabled outlined border: 1.5 px surface.disabled (Komponentark v1:383).
@@ -423,10 +423,9 @@ class ButtonThemes {
         // The surface stays surface.raised when disabled; only the text and
         // the outline change, like the outlined button. Interpretation: the
         // secondary button's disabled state is not drawn (Komponentark
-        // v1:383 draws the outlined one, on paper). On surface.raised the
-        // outlined button's text.secondary fails 4.5:1 in both modes, so the
-        // text is the same role's on-raised value, text.secondary.onRaised:
-        // #5B6959 light, #A9B2A0 dark (tokens.json:184-187).
+        // v1:383 draws the outlined one, on paper). The text is the same
+        // role's on-raised value, text.secondary.onRaised: #5B6959 light,
+        // #A9B2A0 dark (tokens.json).
         disabledBackgroundColor: cs.surfaceContainerHighest,
         disabledForegroundColor: AppModeColors.textSecondaryOnRaised(
           cs.brightness,

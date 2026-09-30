@@ -91,13 +91,13 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; u
 ## Accessibility matrix
 
 Known findings: 104 (ceiling 104) in 98 cases (view, state, mode, width, text scale).
-- Host-bound text contrast (glyph rasteriser): linux 3, windows 2
+- Host-bound text contrast (glyph rasteriser): linux 3, windows 0
 - By check: ELLIPSIS 52, TAP_LABEL 2, TAP_TARGET 34, TEXT_CONTRAST 16
 - By view: auth-otp 8, chatt 2, inköpslista 18, matlagningsläge 14, receptdetalj 22, recepteditor 1, receptlista-sök 2, start 1, veckogenerering 20, veckomeny 14, vänner-grupp 2
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `44c86b645d23225f3e528120f278cd7e58b65b9803cfc6f558ca785998ff5688`); generated files say tokens 1.13 (light) and 1.13 (dark).
+tokens.json 1.13 (sha256 `031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687db277c6018`); generated files say tokens 1.13 (light) and 1.13 (dark).
 - Semantic keys: 46; with a generated member: 46
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 

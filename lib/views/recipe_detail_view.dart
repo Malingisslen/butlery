@@ -1523,7 +1523,7 @@ class _RecipeActionBar extends StatelessWidget {
           // something and add nothing. Not drawn; interpretation: centred
           // in the button's place at its 48 dp height (the bar does not
           // jump when the pantry loads), in the button's type and
-          // text.secondary (#627061 light, #93A48D dark; tokens.json:62-65,
+          // text.secondary (#5B6959 light, #A9B2A0 dark; tokens.json,
           // colorScheme.onSurfaceVariant).
           ? ConstrainedBox(
               constraints: const BoxConstraints(

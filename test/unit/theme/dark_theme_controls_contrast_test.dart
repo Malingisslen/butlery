@@ -308,7 +308,7 @@ void main() {
       expect(chip.disabledColor!.a, 0);
       expect(
         WidgetStateProperty.resolveAs<Color?>(chip.labelStyle!.color, off),
-        const Color(0xFF93A48D),
+        const Color(0xFFA9B2A0),
       );
       expect(
         WidgetStateProperty.resolveAs<Color?>(chip.labelStyle!.color, {}),

@@ -755,7 +755,7 @@ class _PhotoImportViewContent extends StatelessWidget {
 /// Colours, both modes: the card is slot 834 in #behfoton, #E6EAD9 light =
 /// cs.surfaceContainerHighest and #24382C dark = cs.primary; text and glyph
 /// are cs.onSurface (#24382C light, #F5F4ED dark). The hint line is slot 620,
-/// #627061 light / #C9D3C4 dark; cs.onSurfaceVariant is used (#93A48D dark,
+/// #627061 light / #C9D3C4 dark; cs.onSurfaceVariant is used (#A9B2A0 dark,
 /// interpretation: the dark bodyMuted member is not delivered).
 class PhotoPermissionNoticeCard extends StatelessWidget {
   const PhotoPermissionNoticeCard({

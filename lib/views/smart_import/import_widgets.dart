@@ -127,10 +127,9 @@ class ImportInputSection extends StatelessWidget {
 /// outlined, full width and 48 dp high, as drawn.
 ///
 /// Colours, both modes, from the theme: the heading is
-/// colorScheme.onSurfaceVariant = text.secondary, #627061 light and #93A48D
+/// colorScheme.onSurfaceVariant = text.secondary, #5B6959 light and #A9B2A0
 /// dark (tokens.json:62-65). The drawing's dark heading is #C9D3C4
-/// (text.bodyMuted); text.secondary is the role the light value names, and
-/// it clears 4.5:1 on the dark surface. The first route takes the app's
+/// (text.bodyMuted). The first route takes the app's
 /// filled button theme. The outlined routes are drawn with --text-kontroll-a
 /// and a 1.5 px --ram-kontroll-a outline (Skarmar v12 etapp 4 import:27-28):
 /// #24382C text and outline in light (colorScheme.onSurface, equal to ink there); in dark a paper

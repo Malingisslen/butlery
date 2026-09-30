@@ -271,14 +271,14 @@ void main() {
       'light',
       AppTheme.lightTheme,
       const Color(0xFFF5F4ED),
-      const Color(0xFF627061),
+      const Color(0xFF5B6959),
       const Color(0xFF8A5212),
     ),
     (
       'dark',
       AppTheme.darkTheme,
       const Color(0xFF17251D),
-      const Color(0xFF93A48D),
+      const Color(0xFFA9B2A0),
       const Color(0xFFDCA968),
     ),
   ]) {

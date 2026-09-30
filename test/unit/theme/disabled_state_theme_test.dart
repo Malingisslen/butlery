@@ -51,7 +51,7 @@ void main() {
       theme: AppTheme.lightTheme,
       surfaceDisabled: const Color(0xFFA9B2A0),
       surfaceRaised: const Color(0xFFE6EAD9),
-      textSecondary: const Color(0xFF627061),
+      textSecondary: const Color(0xFF5B6959),
       textSecondaryOnRaised: const Color(0xFF5B6959),
       textDisabled: const Color(0xFF788477),
       filledDisabledText: const Color(0xFF24382C),
@@ -61,7 +61,7 @@ void main() {
       theme: AppTheme.darkTheme,
       surfaceDisabled: const Color(0xFF4A5C50),
       surfaceRaised: const Color(0xFF2F4437),
-      textSecondary: const Color(0xFF93A48D),
+      textSecondary: const Color(0xFFA9B2A0),
       textSecondaryOnRaised: const Color(0xFFA9B2A0),
       textDisabled: const Color(0xFF93A48D),
       // Open decision: the drawn #93A48D has no token pair; paper is kept.
@@ -122,7 +122,6 @@ void main() {
         expect(side.color, m.surfaceDisabled);
         expect(side.width, 1.5);
         expect(style.backgroundColor!.resolve(_disabled), m.surfaceRaised);
-        // text.secondary fails 4.5:1 on surface.raised in both modes.
         expect(
           style.foregroundColor!.resolve(_disabled),
           m.textSecondaryOnRaised,
@@ -197,7 +196,6 @@ void main() {
       });
 
       test('a disabled list row label is text.secondary.onRaised', () {
-        // Every tile is surface.raised, where text.secondary fails 4.5:1.
         expect(t.listTileTheme.tileColor, m.surfaceRaised);
         final color = t.listTileTheme.textColor! as WidgetStateColor;
         expect(color.resolve(_disabled), m.textSecondaryOnRaised);

@@ -377,10 +377,9 @@ void main() {
 
         final line = find.text(_sv.syncQueueNextAttemptSeconds(8));
         expect(line, findsOneWidget);
-        // text.secondary: #627061 light, #93A48D dark (tokens.json semantic).
+        // text.secondary: #5B6959 light, #A9B2A0 dark (tokens.json semantic).
         // Interpretation: #synkko's slot for this line is #627061 light but
-        // #C9D3C4 dark (Skarmar v12 del 4:64); the token decides the dark
-        // value.
+        // #C9D3C4 dark (Skarmar v12 del 4:64).
         expect(
           tester.widget<Text>(line).style!.color,
           mode.value.colorScheme.onSurfaceVariant,
@@ -388,8 +387,8 @@ void main() {
         expect(
           mode.value.colorScheme.onSurfaceVariant,
           mode.key == 'light'
-              ? const Color(0xFF627061)
-              : const Color(0xFF93A48D),
+              ? const Color(0xFF5B6959)
+              : const Color(0xFFA9B2A0),
         );
 
         await tester.pump(const Duration(seconds: 1));

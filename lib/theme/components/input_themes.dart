@@ -134,9 +134,8 @@ class InputThemes {
       // A disabled row's label is secondary text, never opacity (decision
       // D5; Komponentark v1:164 and :174, the disabled radio and switch
       // rows). Those rows are drawn on paper, but this theme paints every
-      // tile surface.raised (tileColor above), where text.secondary fails
-      // 4.5:1 in both modes. So the row takes the role's on-raised value,
-      // text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
+      // tile surface.raised (tileColor above), and the row takes the role's
+      // on-raised value, text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
       // (tokens.json:184-187). Switch and radio rows are ListTiles and the
       // theme cannot tell them apart from other rows, so every disabled
       // list row gets it. Without this, Flutter falls back to
@@ -177,7 +176,7 @@ class InputThemes {
   /// * resting: a 1 px paper edge at 40 %, overlay.paperWash, the screens'
   ///   dark control outline (Skarmar v12 etapp 2:37, --ram-kontroll-a);
   /// * disabled: a 1 px surface.disabled #4A5C50 edge, no fill and a
-  ///   text.secondary #93A48D label (v1:525).
+  ///   text.secondary label (v1:525).
   ///
   /// Interpretation: the panel draws the resting edge at paper 35 %
   /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and

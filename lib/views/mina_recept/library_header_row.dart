@@ -17,7 +17,7 @@
 /// with a 2 px ink rule over a 12 px label in text.secondary. Built so:
 /// the rule is text.primary (colorScheme.onSurface: #24382C light, #F5F4ED
 /// dark; tokens.json:54-56), the label captionBase in text.secondary
-/// (onSurfaceVariant: #627061 / #93A48D; tokens.json:62-65). Interpretation:
+/// (onSurfaceVariant: #5B6959 / #A9B2A0; tokens.json). Interpretation:
 /// the label at this spot is drawn as "Ditt bibliotek" (#hemrecept :153),
 /// and the decision names no label ("bibliotekets rubrikrad"). The row says
 /// "Dina recept · N": Hem's section label as drawn in Skarmar v12 del 4
