@@ -297,9 +297,6 @@ class AppDimensions {
   /// Light transparency (0.2)
   static const double opacityLight = 0.2;
 
-  /// Light medium transparency (0.25)
-  static const double opacityLightMedium = 0.25;
-
   /// Medium light transparency (0.3)
   static const double opacityMediumLight = 0.3;
 

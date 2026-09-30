@@ -323,6 +323,12 @@ const symbolSpecs = <SymbolSpec>[
     'raw corner radii',
   ),
   SymbolSpec(
+    'AppDimensions.opacity*',
+    r'\bAppDimensions\.opacity\w+',
+    'the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test',
+    skip: 'lib/theme/app_dimensions.dart',
+  ),
+  SymbolSpec(
     'spacingS / spacingXxs',
     r'\bspacing(?:S|Xxs)\b',
     'spacing members retired in package 7',
