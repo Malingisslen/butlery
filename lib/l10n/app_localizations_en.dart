@@ -8217,6 +8217,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yConflictBannerDismiss => 'Dismiss conflict notification';
 
   @override
+  String get a11yShoppingListUpdatedByDismiss => 'Dismiss notice';
+
+  @override
   String get conflictBannerTitleRecipe => 'Two versions of the recipe';
 
   @override
@@ -10838,6 +10841,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String shoppingListLastActivityBy(String name, String time) {
     return 'Last activity by $name $time';
   }
+
+  @override
+  String shoppingListUpdatedByNotice(String name) {
+    return 'The list was updated by $name';
+  }
+
+  @override
+  String get shoppingListUpdatedByUnknown =>
+      'The list was updated by someone else';
 
   @override
   String unknownResourceType(String value) {

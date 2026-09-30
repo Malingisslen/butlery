@@ -268,10 +268,15 @@ final shoppingHosts = <String, StateHost>{
     build: (ctx) async => _collaborativeView(ctx),
     reach: (tester, ctx) async {
       await tester.pump(const Duration(milliseconds: 50));
-      final merged = _shared([
-        ..._weekItems().take(3),
-        _item('i9', 'Vetemjöl', 'Torrvaror', amount: 2, unit: 'kg'),
-      ]);
+      final merged =
+          _shared([
+            ..._weekItems().take(3),
+            _item('i9', 'Vetemjöl', 'Torrvaror', amount: 2, unit: 'kg'),
+          ]).copyWith(
+            lastActivityAt: _addedAt.add(const Duration(minutes: 5)),
+            lastActivityByUserId: 'u-per',
+            lastActivityByDisplayName: 'Per',
+          );
       _collaborative[ctx]!.emitState(
         ShoppingStateData(lists: [merged], activeListId: merged.id),
       );

@@ -5738,6 +5738,10 @@
   "@a11yConflictBannerDismiss": {
     "description": "BUT-1031: a11y label for the conflict banner dismiss action."
   },
+  "a11yShoppingListUpdatedByDismiss": "Stäng meddelandet",
+  "@a11yShoppingListUpdatedByDismiss": {
+    "description": "BUT-2187: a11y label for dismissing the shared shopping list's \"updated by\" notice."
+  },
   "conflictBannerTitleRecipe": "Två versioner av receptet",
   "@conflictBannerTitleRecipe": {
     "description": "P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103)."
@@ -7182,6 +7186,19 @@
         "type": "String"
       }
     }
+  },
+  "shoppingListUpdatedByNotice": "Listan uppdaterades av {name}",
+  "@shoppingListUpdatedByNotice": {
+    "description": "BUT-2187: header notice on a shared shopping list when someone else updates it while it is open (produktregler.md).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListUpdatedByUnknown": "Listan uppdaterades av någon annan",
+  "@shoppingListUpdatedByUnknown": {
+    "description": "BUT-2187: same notice when the updater's display name is missing."
   },
   "unknownResourceType": "Okänd RealtimeResourceType: {value}",
   "@unknownResourceType": {

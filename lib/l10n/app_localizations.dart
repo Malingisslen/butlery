@@ -13843,6 +13843,12 @@ abstract class AppLocalizations {
   /// **'Stäng konfliktnotis'**
   String get a11yConflictBannerDismiss;
 
+  /// BUT-2187: a11y label for dismissing the shared shopping list's "updated by" notice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng meddelandet'**
+  String get a11yShoppingListUpdatedByDismiss;
+
   /// P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103).
   ///
   /// In sv, this message translates to:
@@ -18384,6 +18390,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Senaste aktivitet av {name} {time}'**
   String shoppingListLastActivityBy(String name, String time);
+
+  /// BUT-2187: header notice on a shared shopping list when someone else updates it while it is open (produktregler.md).
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan uppdaterades av {name}'**
+  String shoppingListUpdatedByNotice(String name);
+
+  /// BUT-2187: same notice when the updater's display name is missing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan uppdaterades av någon annan'**
+  String get shoppingListUpdatedByUnknown;
 
   /// No description provided for @unknownResourceType.
   ///
