@@ -75,8 +75,6 @@
   + "the thing it replaced is gone" are entailed by the same branch; the third observable
   (`StateWidget.error(onAction:)`) is untouched. Pin first-read-fails/second-answers plus a CALL
   COUNT, which also kills a no-op callback (BUT-1962).
-- A COPY test stopping at the confirmation dialog pins the words, not the branch.
-  `MaterialApp(routes:{...})` never reads `settings.arguments` — push through `onGenerateRoute`.
 - Two l10n keys with the SAME string make `find.text` unfalsifiable — grep the ARB for EXACT value
   equality, since `find.text` is whole-`Text.data` equality, never substring (BUT-1831). **A NEW
   arm's string merely SHARING the discriminating SUBSTRING of a pinned sibling hollows every
@@ -132,8 +130,6 @@
   `error isNull` (log-and-rethrow satisfies the count alone). The FAILED-write variant is NOT a
   second branch: the two catches share no state — unless one starts setting state the other reads
   (BUT-2124).
-- **A control that DISABLES ITSELF after one tap makes every later negative-tap assertion in the same
-  test unfailable** — order the negative tap FIRST and assert zero (BUT-1904).
 - **ONE parameter feeding TWO axes is pinned on the easy axis only** (a grid's `spacing` used between
   rows AND columns) — enumerate the axes the parameter's own doc claims, one assertion each
   (BUT-1911).
@@ -204,6 +200,9 @@ the wrong belief and has been corrected in place):**
   residuals survive: the co-assert closes only "the ADDED content vanished", and a named skip goes
   stale GREEN the day the residual is fixed (BUT-1895/1911). A state-matrix host pins only
   the sections its fixture RENDERS: an `if (vm.x)` section's wrapper is revertible-green (BUT-2192).
+  **A Row→Wrap overflow fix also changes WIDTH**: a Wrap sizes to its content, so under a
+  start-aligned Column the caller's coloured band shrinks. Mount the caller's real parent chain
+  and assert the band's width, beside the no-overflow test (BUT-2192).
 - **A SCROLLABLE ancestor makes the whole overflow class structurally unfailable** — inside a
   `SingleChildScrollView` the child gets unbounded height, so no content can overflow and
   `takeException(), isNull` is green at any size. It still kills a fixed-slice mutant, so keep the

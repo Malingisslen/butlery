@@ -63,7 +63,6 @@ const Map<String, String> knownA11yFindings = {
   'matlagningsläge::DEFAULT::dark::412::1.5::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::320::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::320::2.0::OVERFLOW': 'BUT-2192',
   'receptdetalj::DEFAULT::light::320::2.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
@@ -74,7 +73,6 @@ const Map<String, String> knownA11yFindings = {
   'receptdetalj::DEFAULT::light::412::2.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::dark::320::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::dark::320::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::320::2.0::OVERFLOW': 'BUT-2192',
   'receptdetalj::DEFAULT::dark::320::2.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
@@ -188,4 +186,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 136;
+const int knownA11yFindingsCeiling = 134;

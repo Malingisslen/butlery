@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
+
+import '../../../infrastructure/helpers/widget_test_app.dart';
 
 class _Host extends StatefulWidget {
   const _Host({
@@ -345,6 +348,106 @@ void main() {
       );
       await tester.tap(find.byWidgetPredicate((w) => w is OutlinedButton));
       expect(taps, 1);
+    });
+  });
+
+  group('PortionScalerUI — header at 320 dp and 200 % text (BUT-2192)', () {
+    testWidgets('portion controls stay on screen and tappable', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final calls = <int>[];
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2.0)),
+              // The mount recipe_detail_content gives the scaler: a padded,
+              // start-aligned Column holding the coloured band.
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      key: const ValueKey('band'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingL,
+                      ),
+                      color: Colors.grey,
+                      child: _Host(
+                        currentPortions: 4,
+                        originalPortions: 4,
+                        convertToSwedish: false,
+                        hasAmericanUnits: false,
+                        onUpdatePortions: calls.add,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Portioner:'), findsOneWidget);
+      expect(find.text('4'), findsOneWidget);
+      for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
+        expect(
+          tester.getRect(find.byIcon(icon)).right,
+          lessThanOrEqualTo(320 - 2 * AppDimensions.paddingL),
+        );
+      }
+
+      await tester.tap(find.byIcon(ButleryIcons.plus));
+      expect(calls, [5]);
+    });
+
+    testWidgets('the band behind the scaler spans the full width', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  key: const ValueKey('band'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingL,
+                  ),
+                  color: Colors.grey,
+                  child: const _Host(
+                    currentPortions: 4,
+                    originalPortions: 4,
+                    convertToSwedish: false,
+                    hasAmericanUnits: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Portioner:'), findsOneWidget);
+      expect(
+        tester.getSize(find.byKey(const ValueKey('band'))).width,
+        320 - 2 * AppDimensions.paddingL,
+      );
     });
   });
 
