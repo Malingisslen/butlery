@@ -51,6 +51,7 @@ import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -106,7 +107,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget localize(Widget home) {
+  Widget localize(Widget home, {ThemeData? theme}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -116,7 +117,7 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.lightTheme,
+      theme: theme ?? AppTheme.lightTheme,
       home: home,
     );
   }
@@ -929,7 +930,7 @@ void main() {
       const ValueKey('collaborativeShopping.updatedByNotice'),
     );
 
-    Future<void> pumpFullView(WidgetTester tester) async {
+    Future<void> pumpFullView(WidgetTester tester, {ThemeData? theme}) async {
       tester.view.physicalSize = const Size(420, 3000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -937,7 +938,10 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
       await tester.pumpWidget(
-        localize(const CollaborativeShoppingView(listId: _testListId)),
+        localize(
+          const CollaborativeShoppingView(listId: _testListId),
+          theme: theme,
+        ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -973,6 +977,50 @@ void main() {
         findsOneWidget,
       );
     });
+
+    // B83-2d: a notice box — surface.tint.warning fill, no border lines.
+    for (final (name, theme, tint) in [
+      ('light', AppTheme.lightTheme, const Color(0xFFF0EEE2)),
+      ('dark', AppTheme.darkTheme, const Color(0xFF2F4437)),
+    ]) {
+      testWidgets(
+        '$name: a surface.tint.warning fill with no border (B83-2d)',
+        (
+          tester,
+        ) async {
+          final list = listWith([item('Mjölk')]);
+          shoppingService.setShoppingState(lists: [list], isInitialized: true);
+          await pumpFullView(tester, theme: theme);
+
+          shoppingService.emitState(
+            ShoppingStateData(
+              lists: [
+                list.copyWith(
+                  lastActivityAt: DateTime(2026, 10, 1),
+                  lastActivityByUserId: 'u-other',
+                  lastActivityByDisplayName: 'Anna',
+                ),
+              ],
+            ),
+          );
+          await tester.pump();
+
+          expect(noticeKey, findsOneWidget);
+          final box = tester.widget<Container>(
+            find
+                .descendant(of: noticeKey, matching: find.byType(Container))
+                .first,
+          );
+          final decoration = box.decoration! as BoxDecoration;
+          expect(decoration.color, tint);
+          expect(decoration.border, isNull);
+          expect(
+            decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.radiusControl),
+          );
+        },
+      );
+    }
 
     testWidgets("shows nothing for the signed-in user's own update", (
       tester,

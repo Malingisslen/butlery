@@ -91,8 +91,10 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
         AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        // The information surface, without a border (B83-2b).
+        // The information surface, without a border (B83-2b), with the
+        // control radius (B83-2c).
         color: context.modeColors.surfaceTintWarning,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [

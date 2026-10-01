@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
@@ -104,6 +105,11 @@ void main() {
         final decoration = box.decoration! as BoxDecoration;
         expect(decoration.color, tint);
         expect(decoration.border, isNull);
+        // B83-2c: the control radius.
+        expect(
+          decoration.borderRadius,
+          BorderRadius.circular(AppDimensions.radiusControl),
+        );
         expect(tester.widget<Icon>(find.byIcon(Icons.swipe)).color, iconColor);
         final text = tester.widget<Text>(
           find.descendant(
