@@ -21,7 +21,9 @@ import 'package:butlery/services/unified/operations/friends_invitations_operatio
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 import '../../helpers/user_profile_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -98,10 +100,13 @@ void main() {
 
   tearDown(() => env.tearDown());
 
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(
+    WidgetTester tester, {
+    Brightness mode = Brightness.light,
+  }) async {
     await tester.pumpWidget(
       stateApp(
-        mode: Brightness.light,
+        mode: mode,
         home: const AddMembersToGroupView(groupId: 'g1'),
       ),
     );
@@ -178,4 +183,44 @@ void main() {
     );
     handle.dispose();
   });
+
+  // B83-2: a failed send is a notice box, a tint fill with no border, and its
+  // glyph and text carry the kind (BUT-2183).
+  for (final mode in Brightness.values) {
+    testWidgets('${mode.name}: the failed-send notice is a surface.tint.danger '
+        'fill with no border', (tester) async {
+      when(
+        () => invitations.sendGroupInvitationToUser(
+          userId: any(named: 'userId'),
+          groupId: any(named: 'groupId'),
+          customMessage: any(named: 'customMessage'),
+        ),
+      ).thenAnswer((_) async => false);
+      await pumpView(tester, mode: mode);
+
+      await tester.tap(find.text('Anna Lindqvist'));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('addMembers.invite')));
+      await tester.pump();
+      await tester.pump();
+
+      final context = tester.element(find.byType(AddMembersToGroupView));
+      final message = find
+          .descendant(
+            of: find.byType(BottomActionContainer),
+            matching: find.byType(Text),
+          )
+          .first;
+      final box = tester.widget<Container>(
+        find.ancestor(of: message, matching: find.byType(Container)).first,
+      );
+      final decoration = box.decoration! as BoxDecoration;
+      expect(decoration.color, context.modeColors.surfaceTintDanger);
+      expect(decoration.border, isNull);
+      expect(
+        tester.widget<Text>(message).style?.color,
+        Theme.of(context).colorScheme.onErrorContainer,
+      );
+    });
+  }
 }

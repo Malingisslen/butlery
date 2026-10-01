@@ -29,6 +29,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -55,12 +56,13 @@ void main() {
   Finder loadingLabel(AppLocalizations l10n) =>
       find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading)));
 
-  FriendRequest incoming(String id) => FriendRequest(
+  FriendRequest incoming(String id, {String? message}) => FriendRequest(
     id: id,
     fromUserId: 'sender-$id',
     toUserId: currentUserId,
     status: FriendRequestStatus.pending,
     sentAt: DateTime(2026, 9, 1),
+    message: message,
   );
 
   FriendRequest outgoing(String id) => FriendRequest(
@@ -152,9 +154,10 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester, {ThemeData? theme}) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: theme,
         locale: const Locale('sv', 'SE'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
@@ -601,4 +604,52 @@ void main() {
       handle.dispose();
     });
   });
+
+  // BUT-2183: the selection bar and the request's own message stand on
+  // surface tokens instead of faded washes.
+  for (final (name, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    testWidgets('$name: the selection bar is surface.raised and the message '
+        'inset is surface.base on the raised card', (tester) async {
+      final withMessage = [
+        incoming('req-1', message: 'Hej, vi lagar ihop!'),
+        incoming('req-2'),
+      ];
+      mockFriendsService.setFriendsState(incomingRequests: withMessage);
+      mockManagement.setManagementState(incomingRequests: withMessage);
+      await pumpView(tester, theme: theme);
+
+      await tester.tap(find.byType(Checkbox).first);
+      await tester.pump();
+
+      final context = tester.element(find.byType(FriendRequestsView));
+      final l10n = AppLocalizations.of(context);
+      final cs = Theme.of(context).colorScheme;
+
+      Color? fillOf(Finder of) =>
+          (tester
+                      .widget<Container>(
+                        find
+                            .ancestor(of: of, matching: find.byType(Container))
+                            .first,
+                      )
+                      .decoration
+                  as BoxDecoration?)
+              ?.color;
+
+      final bar = find.text(l10n.socialRequestsSelected(1));
+      expect(bar, findsOneWidget);
+      expect(
+        tester
+            .widget<Container>(
+              find.ancestor(of: bar, matching: find.byType(Container)).first,
+            )
+            .color,
+        cs.surfaceContainerHighest,
+      );
+      expect(fillOf(find.text('"Hej, vi lagar ihop!"')), cs.surface);
+    });
+  }
 }

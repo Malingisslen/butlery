@@ -172,21 +172,16 @@ class _CreateSharedShoppingListViewState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: context.modeColors.surfaceTintDanger,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusControl,
-                  ),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.error.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
                   ),
                 ),
                 child: Text(
                   viewModel.error!,
-                  style: AppTextStyles.bodyMediumError,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
                 ),
               ),
             ],
@@ -303,15 +298,8 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: context.modeColors.success.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        color: context.modeColors.surfaceTintSuccess,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: context.modeColors.success.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,14 +308,14 @@ class _CreateSharedShoppingListViewState
             children: [
               ButleryIcon(
                 ButleryIcons.info,
-                color: context.modeColors.success,
+                color: context.modeColors.onSuccessContainer,
                 size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingWhatHappensWhenSharing,
                 style: AppTextStyles.titleBold.copyWith(
-                  color: context.modeColors.success,
+                  color: context.modeColors.onSuccessContainer,
                 ),
               ),
             ],
@@ -336,7 +324,7 @@ class _CreateSharedShoppingListViewState
           Text(
             context.l10n.shoppingShareInfoBullets,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: context.modeColors.success,
+              color: context.modeColors.onSuccessContainer,
             ),
           ),
         ],

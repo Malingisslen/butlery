@@ -54,7 +54,9 @@ class ShoppingDisplayManager {
 
     final l = AppLocale.current;
     if (statusText == l.statusCompleted) return modeColors.success;
-    if (statusText == l.statusInProgress) return modeColors.warning;
+    if (statusText == l.statusInProgress) {
+      return AppModeColors.textWarning(cs.brightness);
+    }
     return cs.onSurfaceVariant;
   }
 

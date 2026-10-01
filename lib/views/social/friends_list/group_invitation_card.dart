@@ -18,15 +18,11 @@ class GroupInvitationCard {
     UnifiedFriendsService service,
   ) {
     return Card(
-      color: Theme.of(context).colorScheme.tertiaryContainer.withValues(
-        alpha: AppDimensions.opacityMediumLight,
-      ),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.tertiary.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: Theme.of(context).colorScheme.outlineVariant,
           width: 1,
         ),
       ),
@@ -41,9 +37,7 @@ class GroupInvitationCard {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.tertiary.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),
@@ -96,9 +90,7 @@ class GroupInvitationCard {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.space4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: AppDimensions.opacityExtraVeryLight,
-                  ),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusControl,
                   ),

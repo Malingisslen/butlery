@@ -345,10 +345,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final base = greyed ? cs.onSurfaceVariant : cs.onSurface;
-    final color = greyed
-        ? base.withValues(alpha: AppDimensions.opacityHalf)
-        : base;
+    final color = greyed ? cs.onSurfaceVariant : cs.onSurface;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -395,15 +392,7 @@ class _CollaborativeItemCard extends StatelessWidget {
         !isCompleted && item.assignedToUserId == null && viewModel.canEdit;
     final canRelease = isMine && viewModel.canEdit;
 
-    final bodyColor = greyed
-        ? cs.surfaceContainerHighest.withValues(
-            alpha: AppDimensions.opacityHalf,
-          )
-        : (isCompleted
-              ? cs.surfaceContainerHighest.withValues(
-                  alpha: AppDimensions.opacityHalf,
-                )
-              : null);
+    final bodyColor = (greyed || isCompleted) ? cs.surface : null;
 
     return Card(
       key: ValueKey('collab-item-${item.id}'),

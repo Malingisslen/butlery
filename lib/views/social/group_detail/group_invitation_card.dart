@@ -23,9 +23,7 @@ class GroupInvitationCard {
   ) {
     return RepaintBoundary(
       child: Card(
-        color: Theme.of(context).colorScheme.tertiaryContainer.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: ListTile(
           leading: Stack(
             children: [
@@ -34,9 +32,7 @@ class GroupInvitationCard {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: Theme.of(context).colorScheme.surface,
                   shape: BoxShape.circle,
                 ),
                 child: Center(

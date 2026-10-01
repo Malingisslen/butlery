@@ -194,21 +194,16 @@ class ProfileActionButtons extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              color: context.modeColors.warning.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: context.modeColors.surfaceTintWarning,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              border: Border.all(
-                color: context.modeColors.warning.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
             ),
             child: Row(
               children: [
                 ButleryIcon(
                   ButleryIcons.triangleAlert,
-                  color: context.modeColors.warning,
+                  color: AppModeColors.textWarning(
+                    Theme.of(context).brightness,
+                  ),
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingXs),

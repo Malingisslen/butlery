@@ -130,12 +130,7 @@ class FriendRequestCard {
                                 AppDimensions.space4,
                               ),
                               decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest
-                                    .withValues(
-                                      alpha: AppDimensions.opacityHalf,
-                                    ),
+                                color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(
                                   AppDimensions.radiusControl,
                                 ),

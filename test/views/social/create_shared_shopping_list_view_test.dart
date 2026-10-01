@@ -35,6 +35,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -134,7 +135,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget testApp() {
+  Widget testApp({ThemeData? theme}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -144,7 +145,7 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.lightTheme,
+      theme: theme ?? AppTheme.lightTheme,
       home: const CreateSharedShoppingListView(),
     );
   }
@@ -156,7 +157,7 @@ void main() {
   // layout artifact of the production widget, orthogonal to the behaviour
   // under test — so we ignore RenderFlex-overflow FlutterErrors only, and
   // let every other error fail the test as normal.
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester, {ThemeData? theme}) async {
     tester.view.physicalSize = const Size(1000, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -175,7 +176,7 @@ void main() {
     };
     addTearDown(() => FlutterError.onError = previousOnError);
 
-    await tester.pumpWidget(testApp());
+    await tester.pumpWidget(testApp(theme: theme));
     await tester.pumpAndSettle();
   }
 
@@ -400,5 +401,82 @@ void main() {
         expect(find.text('1 vän vald'), findsWidgets);
       },
     );
+  });
+
+  // B83-2: the "what happens when you share" box is a surface.tint.success
+  // fill with no border (BUT-2183).
+  group('CreateSharedShoppingListView — notice box (BUT-2183)', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('$name: a surface.tint.success fill with no border', (
+        tester,
+      ) async {
+        await pumpView(tester, theme: theme);
+
+        final context = tester.element(
+          find.byType(CreateSharedShoppingListView),
+        );
+        final title = find.text(
+          AppLocalizations.of(context).shoppingWhatHappensWhenSharing,
+        );
+        expect(title, findsOneWidget);
+        final box = tester.widget<Container>(
+          find.ancestor(of: title, matching: find.byType(Container)).first,
+        );
+        final decoration = box.decoration! as BoxDecoration;
+        expect(decoration.color, context.modeColors.surfaceTintSuccess);
+        expect(decoration.border, isNull);
+        expect(
+          tester.widget<Text>(title).style?.color,
+          context.modeColors.onSuccessContainer,
+        );
+      });
+
+      // A refused create (the service answers null) shows the error box. The
+      // dark run carries the text assertion: in light, the old static error
+      // colour and onErrorContainer are the same value.
+      testWidgets('$name: a refused create shows a surface.tint.danger box', (
+        tester,
+      ) async {
+        when(
+          () => shoppingService.createCollaborativeList(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            memberIds: any(named: 'memberIds'),
+            memberDisplayNames: any(named: 'memberDisplayNames'),
+            items: any(named: 'items'),
+            categoryIds: any(named: 'categoryIds'),
+          ),
+        ).thenAnswer((_) async => null);
+        await pumpView(tester, theme: theme);
+
+        await pickFriend(tester, 'Anna');
+        await tester.enterText(
+          find.byType(TextFormField).first,
+          'Middag hos Anna',
+        );
+        await tester.pumpAndSettle();
+        createButton(tester).onPressed!();
+        await tester.pumpAndSettle();
+
+        final context = tester.element(
+          find.byType(CreateSharedShoppingListView),
+        );
+        final message = find.text(AppLocalizations.of(context).errorUnknown);
+        expect(message, findsOneWidget);
+        final box = tester.widget<Container>(
+          find.ancestor(of: message, matching: find.byType(Container)).first,
+        );
+        final decoration = box.decoration! as BoxDecoration;
+        expect(decoration.color, context.modeColors.surfaceTintDanger);
+        expect(decoration.border, isNull);
+        expect(
+          tester.widget<Text>(message).style?.color,
+          Theme.of(context).colorScheme.onErrorContainer,
+        );
+      });
+    }
   });
 }

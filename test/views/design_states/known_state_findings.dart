@@ -64,17 +64,9 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2183',
     'DecoratedBox #1ADCA968',
   ),
-  'inköpslista::CONFLICT::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1AD8B784',
-  ),
   'inköpslista::CONFLICT::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2199',
     '#FF37453A ("Veckans inköp")',
-  ),
-  'inköpslista::CONFLICT::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1ADCA968',
   ),
   'inköpslista::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
@@ -172,22 +164,14 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2184',
     '#61F5F4ED ("Vegetariskt i veckan, sn…")',
   ),
-  'vänner-grupp::OFFLINE::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1AD8B784',
-  ),
   'vänner-grupp::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2199',
     '#FF37453A ("Veckans inköp")',
   ),
-  'vänner-grupp::OFFLINE::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1ADCA968',
-  ),
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 40;
+const int knownStateFindingsCeiling = 36;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

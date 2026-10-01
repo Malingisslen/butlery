@@ -9,7 +9,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
@@ -108,6 +110,31 @@ class _FakeCollaborativeShoppingViewModel extends ChangeNotifier
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+Widget _themedApp(ThemeData theme, Widget child) => MaterialApp(
+  theme: theme,
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  home: Scaffold(body: child),
+);
+
+UnifiedShoppingItem _item({
+  required String id,
+  required String name,
+  String? assignedTo,
+  String? assignedDisplayName,
+  bool bought = false,
+}) => UnifiedShoppingItem(
+  id: id,
+  name: name,
+  amount: 1,
+  unit: '',
+  category: ShoppingCategory.other,
+  bought: bought,
+  assignedToUserId: assignedTo,
+  assignedToDisplayName: assignedDisplayName,
+);
 
 void main() {
   group('CollaborativeShoppingItems (BUT-238)', () {
@@ -306,5 +333,61 @@ void main() {
 
       expect(vm.viewMode, equals(ShoppingViewMode.myPart));
     });
+  });
+
+  // BUT-2183: the old half-opacity steps are gone. Rows that are someone
+  // else's or done stand on surface.base instead of a faded raised fill, and
+  // the other-people header is text.secondary, not a faded copy of it.
+  group('CollaborativeShoppingItems on the B83 tokens (BUT-2183)', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('$name: other people\'s and done rows stand on surface.base, '
+          'their header is text.secondary', (tester) async {
+        final cs = theme.colorScheme;
+        final vm = _FakeCollaborativeShoppingViewModel(
+          viewMode: ShoppingViewMode.myPart,
+          items: [
+            _item(
+              id: '1',
+              name: 'Mjölk',
+              assignedTo: 'me',
+              assignedDisplayName: 'Me',
+            ),
+            _item(
+              id: '2',
+              name: 'Bröd',
+              assignedTo: 'anna',
+              assignedDisplayName: 'Anna',
+            ),
+            _item(id: '3', name: 'Pasta', bought: true),
+          ],
+        );
+
+        await tester.pumpWidget(
+          _themedApp(
+            theme,
+            CollaborativeShoppingItems(viewModel: vm, onToggleItem: (_) {}),
+          ),
+        );
+
+        Card cardOf(String text) => tester.widget<Card>(
+          find.ancestor(of: find.text(text), matching: find.byType(Card)).first,
+        );
+        expect(cardOf('Bröd').color, cs.surface);
+        expect(cardOf('Pasta').color, cs.surface);
+        expect(
+          cardOf('Mjölk').color,
+          isNull,
+          reason: 'my own open row keeps the card theme (surface.raised)',
+        );
+
+        Color? headerColor(String text) =>
+            tester.widget<Text>(find.textContaining(text)).style?.color;
+        expect(headerColor('ANNAS DEL'), cs.onSurfaceVariant);
+        expect(headerColor('MIN DEL'), cs.onSurface);
+      });
+    }
   });
 }

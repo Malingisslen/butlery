@@ -369,19 +369,16 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: cs.error.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: context.modeColors.surfaceTintDanger,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),
-                    border: Border.all(color: cs.error),
                   ),
                   child: Row(
                     children: [
                       ButleryIcon(
                         ButleryIcons.triangleAlert,
-                        color: cs.error,
+                        color: cs.onErrorContainer,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
@@ -389,7 +386,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                         child: Text(
                           viewModel.invitationError!,
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: cs.error,
+                            color: cs.onErrorContainer,
                           ),
                         ),
                       ),
