@@ -38,15 +38,8 @@ class UploadProgressWidgets {
         return Container(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
-            color: cs.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+            color: context.modeColors.surfaceTintWarning,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
-            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -270,9 +263,7 @@ class UploadProgressWidgets {
                   child: Text(
                     detail,
                     style: AppTextStyles.textSm.copyWith(
-                      color: cs.onSurface.withValues(
-                        alpha: AppDimensions.opacityVeryDark,
-                      ),
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -313,9 +304,7 @@ class UploadProgressWidgets {
                     vertical: AppDimensions.paddingS,
                   ),
                   decoration: BoxDecoration(
-                    color: cs.onSurface.withValues(
-                      alpha: AppDimensions.opacityVeryDark,
-                    ),
+                    color: context.modeColors.overlayPaperCard,
                     borderRadius: BorderRadius.circular(AppDimensions.paddingS),
                   ),
                   child: Column(
@@ -324,7 +313,7 @@ class UploadProgressWidgets {
                       Text(
                         status.statusDescription,
                         style: AppTextStyles.metadataEmphasized.copyWith(
-                          color: cs.surfaceContainerHighest,
+                          color: cs.primary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -336,9 +325,7 @@ class UploadProgressWidgets {
                             status.formattedTimeRemaining!,
                           ),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityVeryDark,
-                            ),
+                            color: cs.primary,
                           ),
                         ),
                       ],
@@ -347,9 +334,7 @@ class UploadProgressWidgets {
                         Text(
                           '${status.fileSizeMB!.toStringAsFixed(1)} MB',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityDark,
-                            ),
+                            color: cs.primary,
                           ),
                         ),
                       ],
@@ -367,7 +352,6 @@ class UploadProgressWidgets {
                           icon: ButleryIcons.refreshCw,
                           label: context.l10n.commonRetry,
                           onTap: () => onRetryUpload(imageUrl),
-                          color: cs.onSurface,
                         ),
                       if (status.canRetry &&
                           onRetryUpload != null &&
@@ -378,7 +362,6 @@ class UploadProgressWidgets {
                           icon: ButleryIcons.x,
                           label: context.l10n.commonDelete,
                           onTap: () => onCancelUpload(imageUrl),
-                          color: cs.error,
                         ),
                     ],
                   ),
@@ -486,11 +469,10 @@ class UploadProgressWidgets {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    required Color color,
   }) {
     return Builder(
       builder: (context) {
-        final cs = Theme.of(context).colorScheme;
+        final ink = Theme.of(context).colorScheme.primary;
         return Semantics(
           label: context.l10n.a11yBulkUploadAction(label),
           button: true,
@@ -503,7 +485,7 @@ class UploadProgressWidgets {
                 vertical: AppDimensions.paddingS,
               ),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: AppDimensions.opacityExtraDark),
+                color: context.modeColors.overlayPaperCard,
                 borderRadius: BorderRadius.circular(AppDimensions.paddingS),
               ),
               child: Row(
@@ -511,14 +493,14 @@ class UploadProgressWidgets {
                 children: [
                   ButleryIcon(
                     icon,
-                    color: cs.surfaceContainerHighest,
+                    color: ink,
                     size: AppDimensions.iconSizeS,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     label,
                     style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: cs.surfaceContainerHighest,
+                      color: ink,
                     ),
                   ),
                 ],

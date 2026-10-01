@@ -134,7 +134,7 @@ const Map<String, KnownFinding> knownStateFindings = {
   ),
   'recepteditor::DEFAULT::light::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
-    '#B324382C ("Tryck för att lägga till…"), #FF616161 ("icon U+E098")',
+    '#FF616161 ("icon U+E098")',
   ),
   'recepteditor::DEFAULT::light::COLOUR_FILL': KnownFinding(
     'BUT-2183',
@@ -142,7 +142,7 @@ const Map<String, KnownFinding> knownStateFindings = {
   ),
   'recepteditor::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
-    '#B3F5F4ED ("Tryck för att lägga till…"), #B3FFFFFF ("icon U+E098")',
+    '#B3FFFFFF ("icon U+E098")',
   ),
   'recepteditor::DEFAULT::dark::COLOUR_FILL': KnownFinding(
     'BUT-2183',
@@ -150,7 +150,7 @@ const Map<String, KnownFinding> knownStateFindings = {
   ),
   'recepteditor::OFFLINE::light::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
-    '#B324382C ("Tryck för att lägga till…"), #FF616161 ("icon U+E098")',
+    '#FF616161 ("icon U+E098")',
   ),
   'recepteditor::OFFLINE::light::COLOUR_FILL': KnownFinding(
     'BUT-2183',
@@ -158,7 +158,7 @@ const Map<String, KnownFinding> knownStateFindings = {
   ),
   'recepteditor::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
-    '#B3F5F4ED ("Tryck för att lägga till…"), #B3FFFFFF ("icon U+E098")',
+    '#B3FFFFFF ("icon U+E098")',
   ),
   'recepteditor::OFFLINE::dark::COLOUR_FILL': KnownFinding(
     'BUT-2183',

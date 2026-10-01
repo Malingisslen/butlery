@@ -28,9 +28,7 @@ class EmptyImageState extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -77,9 +75,7 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) => Text(
           context.l10n.imageAddingImage,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityDark,
-            ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -95,9 +91,7 @@ class EmptyImageState extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: cs.surface,
             ),
             child: ButleryIcon(
               ButleryIcons.camera,
@@ -119,9 +113,7 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) => Text(
           context.l10n.imageTapToAddUpTo(maxImages),
           style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityDark,
-            ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),

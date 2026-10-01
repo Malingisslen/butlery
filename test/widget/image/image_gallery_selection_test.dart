@@ -5,7 +5,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_gallery_widget.dart';
 
 import '../../infrastructure/helpers/base_widget_test.dart';
@@ -85,6 +88,54 @@ void main() {
         expect(d.color!.a, 1, reason: 'no translucent plate');
       }
       tester.takeException();
+    });
+  }
+
+  // BUT-2183 5c: the empty gallery is no photo, so it takes border.subtle,
+  // text.disabled for the glyph and text.secondary for the lines.
+  for (final (name, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    testWidgets('empty gallery: border.subtle, disabled glyph, secondary '
+        'text ($name)', (tester) async {
+      final cs = theme.colorScheme;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Theme(
+            data: theme,
+            child: ImageGalleryWidget.gallery(imageUrls: const []),
+          ),
+        ),
+      );
+
+      final frame = tester
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(ImageGalleryWidget),
+              matching: find.byType(Container),
+            ),
+          )
+          .map((c) => c.decoration)
+          .whereType<BoxDecoration>()
+          .firstWhere((d) => d.border != null);
+      expect(frame.color, cs.surfaceContainerHighest);
+      expect((frame.border! as Border).top.color, cs.outlineVariant);
+
+      final glyph = tester.widget<ButleryIcon>(
+        find.byWidgetPredicate(
+          (w) => w is ButleryIcon && w.icon == ButleryIcons.image,
+        ),
+      );
+      expect(glyph.color, AppModeColors.textDisabled(theme.brightness));
+      expect(
+        tester.widget<Text>(find.text('Inga bilder ännu')).style?.color,
+        cs.onSurfaceVariant,
+      );
+      expect(
+        tester.widget<Text>(find.text('Bilder visas här')).style?.color,
+        cs.onSurfaceVariant,
+      );
     });
   }
 }
