@@ -27,6 +27,12 @@
       "beslut": "Ja, tonad yta",
       "biljett": "BUT-2183",
       "innebord": "Remsan 'Listan uppdaterades av <namn>' på en delad inköpslista räknas som notisruta: surface.tint.warning, utan linjer ovanför och under."
+    },
+    {
+      "id": "B83-2e",
+      "beslut": "Ja, tonad yta",
+      "biljett": "BUT-2183",
+      "innebord": "Rutan med text som inte hann läggas till på en skrivskyddad delad inköpslista (_UnaddedTextNotice) är en notisruta: surface.tint.warning, ingen ram, radius.control."
     }
   ]
 }
