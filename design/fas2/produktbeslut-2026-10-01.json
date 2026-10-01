@@ -15,6 +15,18 @@
       "beslut": "Ja, tonad varningsyta",
       "biljett": "BUT-2183",
       "innebord": "Neutrala upplysningsrutor (svep-tipset, receptförslaget) får också surface.tint.warning, upplysningsytan, utan ram, så att alla notisrutor ser likadana ut."
+    },
+    {
+      "id": "B83-2c",
+      "beslut": "Ja, rundade hörn",
+      "biljett": "BUT-2183",
+      "innebord": "Svep-tipset får samma 8 px hörn (radius.control) som de andra notisrutorna."
+    },
+    {
+      "id": "B83-2d",
+      "beslut": "Ja, tonad yta",
+      "biljett": "BUT-2183",
+      "innebord": "Remsan 'Listan uppdaterades av <namn>' på en delad inköpslista räknas som notisruta: surface.tint.warning, utan linjer ovanför och under."
     }
   ]
 }
