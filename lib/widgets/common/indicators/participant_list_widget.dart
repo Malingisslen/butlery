@@ -84,13 +84,8 @@ class ParticipantListWidget extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintSuccess,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-        border: Border.all(
-          color: successColor.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -106,7 +101,7 @@ class ParticipantListWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             context.l10n.participantsOnlineCount(onlineCount),
-            style: AppTextStyles.successText,
+            style: AppTextStyles.successText.copyWith(color: successColor),
           ),
         ],
       ),
@@ -125,15 +120,9 @@ class ParticipantListWidget extends StatelessWidget {
         vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
-        color: isCurrentUser
-            ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-            : cs.surface,
+        color: isCurrentUser ? cs.surfaceContainerHighest : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.iconSizeAction),
-        border: Border.all(
-          color: isCurrentUser
-              ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
-              : cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -201,7 +190,7 @@ class ParticipantListWidget extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surfaceContainerHighest,
       ),
       child: Center(
         child: UserAvatarWidgets.initialsOrFallback(

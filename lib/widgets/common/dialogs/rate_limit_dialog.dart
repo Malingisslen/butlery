@@ -105,16 +105,14 @@ class RateLimitDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: context.modeColors.warning.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        color: context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
           ButleryIcon(
             ButleryIcons.clock,
-            color: context.modeColors.warning,
+            color: AppModeColors.textWarning(Theme.of(context).brightness),
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.space4),

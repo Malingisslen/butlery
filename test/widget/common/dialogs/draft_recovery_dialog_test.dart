@@ -62,6 +62,22 @@ Widget _trigger({
   );
 }
 
+Widget _wrapThemed(Widget child, ThemeData theme) => MaterialApp(
+  theme: theme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
+
+BoxDecoration _boxAround(WidgetTester tester, Finder of) => tester
+    .widgetList<Container>(
+      find.ancestor(of: of, matching: find.byType(Container)),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .firstWhere((d) => d.color != null);
+
 void main() {
   group('DraftRecoveryDialog.show', () {
     testWidgets(
@@ -305,5 +321,29 @@ void main() {
 
       expect(result, 'ext-id');
     });
+  });
+
+  // BUT-2183 5b: the draft tile's icon square is surface.raised.
+  group('DraftRecoveryDialog tokens (BUT-2183)', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('$name: the tile icon square is surface.raised', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            _trigger(drafts: [_draft()], onResult: (_) {}),
+            theme,
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
+
+        final box = _boxAround(tester, find.byIcon(Icons.article_outlined));
+        expect(box.color, theme.colorScheme.surfaceContainerHighest);
+      });
+    }
   });
 }

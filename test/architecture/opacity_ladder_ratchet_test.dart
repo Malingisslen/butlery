@@ -52,21 +52,10 @@ const _residue = <String, int>{
   'lib/widgets/branding/app_logo.dart': 1,
   'lib/widgets/common/content_cards/menu_card.dart': 2,
   'lib/widgets/common/content_cards/shopping_list_card.dart': 4,
-  'lib/widgets/common/dialogs/draft_recovery_dialog.dart': 1,
-  'lib/widgets/common/dialogs/group_shopping_list_selection_dialog.dart': 1,
-  'lib/widgets/common/dialogs/rate_limit_dialog.dart': 1,
-  'lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart':
-      5,
-  'lib/widgets/common/dialogs/recipe_selection/group_recipe_sharing_dialog.dart':
-      5,
-  'lib/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart':
-      2,
   'lib/widgets/common/emoji_reaction_display.dart': 1,
   'lib/widgets/common/filter_status_chip.dart': 2,
   'lib/widgets/common/indicators/admin_badge.dart': 1,
-  'lib/widgets/common/indicators/edit_indicator_widget.dart': 2,
   'lib/widgets/common/indicators/emoji_avatar.dart': 1,
-  'lib/widgets/common/indicators/participant_list_widget.dart': 5,
   'lib/widgets/common/indicators/progress_overlay.dart': 1,
   'lib/widgets/common/indicators/realtime_status_widgets.dart': 1,
   'lib/widgets/common/indicators/status_indicator.dart': 1,

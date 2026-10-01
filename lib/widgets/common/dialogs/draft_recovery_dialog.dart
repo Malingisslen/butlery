@@ -117,9 +117,9 @@ class DraftRecoveryDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingS),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),

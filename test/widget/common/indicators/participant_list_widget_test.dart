@@ -12,6 +12,9 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/participant_list_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -37,6 +40,22 @@ ParticipantActivity _activity({
     isOnline: isOnline,
   );
 }
+
+Widget _wrapThemed(Widget child, ThemeData theme) => MaterialApp(
+  theme: theme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
+
+BoxDecoration _boxAround(WidgetTester tester, Finder of) => tester
+    .widgetList<Container>(
+      find.ancestor(of: of, matching: find.byType(Container)),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .firstWhere((d) => d.color != null);
 
 void main() {
   group('ParticipantListWidget — empty', () {
@@ -242,5 +261,97 @@ void main() {
       expect(w.onRemoveParticipant, isNotNull);
       expect(w.onChangePermission, isNotNull);
     });
+  });
+
+  // BUT-2183 5b: fills leave the old opacity steps. The online pill is a
+  // success notice (tint fill, no border); the current user's chip is
+  // surface.raised with the same border.subtle as the others; the avatar
+  // circle is surface.raised.
+  group('ParticipantListWidget tokens (BUT-2183)', () {
+    for (final (name, theme, successTint, success) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        AppColors.surfaceTintSuccess,
+        AppColors.success,
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        AppColorsDark.surfaceTintSuccess,
+        AppColorsDark.success,
+      ),
+    ]) {
+      testWidgets('$name: the online pill is tint.success, no border, with '
+          'mode-aware success text', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            ParticipantListWidget(
+              activities: [
+                _activity(userId: 'me', name: 'Anna', isOnline: true),
+              ],
+              currentUserId: 'me',
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final label = find.text('1 online');
+        final box = _boxAround(tester, label);
+        expect(box.color, successTint);
+        expect(box.border, isNull);
+        expect(tester.widget<Text>(label).style?.color, success);
+      });
+
+      testWidgets('$name: the current user chip is surface.raised, others '
+          'surface, both with border.subtle', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            ParticipantListWidget(
+              activities: [
+                _activity(userId: 'me', name: 'Anna', isOnline: true),
+                _activity(userId: 'u2', name: 'Bert', isOnline: true),
+              ],
+              currentUserId: 'me',
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final cs = theme.colorScheme;
+        final mine = _boxAround(tester, find.text('Du'));
+        expect(mine.color, cs.surfaceContainerHighest);
+        expect(mine.border, Border.all(color: cs.outlineVariant));
+        final other = _boxAround(tester, find.text('Bert'));
+        expect(other.color, cs.surface);
+        expect(other.border, Border.all(color: cs.outlineVariant));
+      });
+
+      testWidgets('$name: the avatar circle is surface.raised', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            ParticipantListWidget(
+              activities: [
+                _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: true),
+              ],
+              currentUserId: 'me',
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final circles = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .where((d) => d.shape == BoxShape.circle)
+            .toList();
+        expect(circles, hasLength(1));
+        expect(circles.single.color, theme.colorScheme.surfaceContainerHighest);
+      });
+    }
   });
 }

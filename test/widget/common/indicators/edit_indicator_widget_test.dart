@@ -11,10 +11,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/indicators/edit_indicator_widget.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 Widget _wrap(Widget child, {bool disableAnimations = true}) => MaterialApp(
   home: MediaQuery(
     data: MediaQueryData(disableAnimations: disableAnimations),
+    child: Scaffold(body: child),
+  ),
+);
+
+Widget _wrapThemed(Widget child, ThemeData theme) => MaterialApp(
+  theme: theme,
+  home: MediaQuery(
+    data: const MediaQueryData(disableAnimations: true),
     child: Scaffold(body: child),
   ),
 );
@@ -184,4 +193,39 @@ void main() {
     await tester.pumpWidget(_wrap(const SizedBox.shrink()));
     expect(tester.takeException(), isNull);
   });
+
+  // BUT-2183 5b: the pill is surface.raised with border.subtle whatever
+  // colour the caller passes; that colour stays on the text.
+  for (final (name, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    testWidgets('$name: pill is surface.raised with border.subtle, caller '
+        'colour on the text', (tester) async {
+      const caller = Color(0xFFCE7C1E);
+      await tester.pumpWidget(
+        _wrapThemed(
+          const EditIndicatorWidget(
+            editorName: 'Alice',
+            editingWhat: 'recipe',
+            color: caller,
+          ),
+          theme,
+        ),
+      );
+      await tester.pump();
+
+      final label = find.text('Alice redigerar recipe');
+      final box = tester
+          .widgetList<Container>(
+            find.ancestor(of: label, matching: find.byType(Container)),
+          )
+          .map((c) => c.decoration)
+          .whereType<BoxDecoration>()
+          .first;
+      expect(box.color, theme.colorScheme.surfaceContainerHighest);
+      expect(box.border, Border.all(color: theme.colorScheme.outlineVariant));
+      expect(tester.widget<Text>(label).style?.color, caller);
+    });
+  }
 }

@@ -14,6 +14,8 @@ import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 
 /// Wraps a child in MaterialApp with the project's l10n delegates so the
 /// dialog can resolve `context.l10n.*` keys.
@@ -55,6 +57,22 @@ RateLimitDenied _denied({
     suggestedAction: suggestedAction,
   );
 }
+
+Widget _wrapThemed(Widget child, ThemeData theme) => MaterialApp(
+  theme: theme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
+
+BoxDecoration _boxAround(WidgetTester tester, Finder of) => tester
+    .widgetList<Container>(
+      find.ancestor(of: of, matching: find.byType(Container)),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .firstWhere((d) => d.color != null);
 
 void main() {
   group('RateLimitDialog title + icon per LimitType', () {
@@ -524,5 +542,59 @@ void main() {
         expect(find.text('Manuell import'), findsNothing);
       },
     );
+  });
+
+  // BUT-2183 5b: the retry box is a warning notice (B83-2: tint fill, no
+  // border). Its clock glyph is text.warning, because the status-warning
+  // colour it used before measures 1.64:1 on the light tint.
+  group('RateLimitDialog retry box tokens (BUT-2183)', () {
+    for (final (name, theme, tint, glyph) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        AppColors.surfaceTintWarning,
+        AppColors.textWarning,
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        AppColorsDark.surfaceTintWarning,
+        AppColorsDark.textWarning,
+      ),
+    ]) {
+      testWidgets('$name: tint.warning fill, no border, text.warning glyph', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            _triggerButton(
+              openDialog: (ctx) => RateLimitDialog.show(
+                ctx,
+                rateLimitResult: _denied(limitType: LimitType.perMinute),
+              ),
+              onResult: (_) {},
+            ),
+            theme,
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
+
+        final box = _boxAround(tester, find.byIcon(ButleryIcons.clock));
+        expect(box.color, tint);
+        expect(box.border, isNull);
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.clock)).color,
+          glyph,
+        );
+        expect(
+          tester
+              .widget<Text>(find.text('Försök igen om 5 minut(er)'))
+              .style
+              ?.color,
+          theme.colorScheme.onSurfaceVariant,
+        );
+      });
+    }
   });
 }
