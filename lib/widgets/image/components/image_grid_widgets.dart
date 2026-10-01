@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -147,9 +148,7 @@ class ImageGridWidgets {
                   decoration: BoxDecoration(
                     color: isPrimary
                         ? Theme.of(context).primaryColor
-                        : Theme.of(context).colorScheme.onSurface.withValues(
-                            alpha: AppDimensions.opacityMediumDark,
-                          ),
+                        : context.modeColors.overlayPaperCard,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),
@@ -162,9 +161,11 @@ class ImageGridWidgets {
                             ? ButleryIcons.primary
                             : ButleryIcons.primaryOutline,
                         size: AppDimensions.iconSizeXs,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
+                        color: isPrimary
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest
+                            : Theme.of(context).colorScheme.primary,
                       ),
                       if (isPrimary) ...[
                         const SizedBox(width: AppDimensions.space4),
@@ -262,14 +263,10 @@ class ImageGridWidgets {
               decoration: BoxDecoration(
                 borderRadius: config.effectiveBorderRadius,
                 border: Border.all(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
-                  ),
+                  color: cs.outlineVariant,
                   width: AppDimensions.borderWidthThin,
                 ),
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityExtraVeryLight,
-                ),
+                color: cs.surfaceContainerHighest,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -9,6 +9,7 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'dart:io';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -100,9 +101,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 widget.config.maxImages,
               ),
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityDark,
-                ),
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -121,9 +120,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -155,9 +152,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     Text(
                       context.l10n.imageSelectingImages,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityDark,
-                        ),
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ] else ...[
@@ -165,9 +160,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        color: cs.surface,
                       ),
                       child: ButleryIcon(
                         ButleryIcons.camera,
@@ -193,9 +186,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                             )
                           : context.l10n.imageTapToSelectOne,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityDark,
-                        ),
+                        color: cs.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -249,11 +240,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(
-              color: cs.outlineVariant.withValues(
-                alpha: AppDimensions.opacityLight,
-              ),
-            ),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -331,14 +318,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityExtraDark,
-              ),
+              color: context.modeColors.overlayPaperCard,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               '${index + 1}',
-              style: AppTextStyles.textXsBold,
+              style: AppTextStyles.textXsBold.copyWith(color: cs.primary),
             ),
           ),
         ),

@@ -273,9 +273,7 @@ class ImageComponents {
               vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityExtraDark,
-              ),
+              color: context.modeColors.overlayPaperCard,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               border: Border.all(
                 color: cs.outlineVariant,
@@ -287,13 +285,13 @@ class ImageComponents {
                 ButleryIcon(
                   ButleryIcons.image,
                   size: AppDimensions.iconSizeXs,
-                  color: cs.onSurface,
+                  color: cs.primary,
                 ),
                 const SizedBox(width: AppDimensions.space4),
                 Text(
                   '$imageCount',
                   style: AppTextStyles.textXsBold.copyWith(
-                    color: cs.onSurface,
+                    color: cs.primary,
                   ),
                 ),
               ],
@@ -324,9 +322,7 @@ class ImageComponents {
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityExtraDark,
-              ),
+              color: context.modeColors.overlayPaperCard,
               borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               border: Border.all(
                 color: cs.outlineVariant,
@@ -335,7 +331,7 @@ class ImageComponents {
             child: Text(
               '${currentIndex + 1}/$totalImages',
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.onSurface,
+                color: cs.primary,
               ),
             ),
           ),

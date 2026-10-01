@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -129,11 +130,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
-        border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        border: Border.all(color: cs.outlineVariant),
         color: cs.surfaceContainerHighest,
       ),
       child: Center(
@@ -143,9 +140,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             ButleryIcon(
               ButleryIcons.image,
               size: AppDimensions.iconSizeXxl,
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityMedium,
-              ),
+              color: AppModeColors.textDisabled(Theme.of(context).brightness),
             ),
             const SizedBox(
               height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -153,18 +148,14 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Text(
               context.l10n.imageNoImagesYet,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMediumDark,
-                ),
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               context.l10n.imageWillAppearHere,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMedium,
-                ),
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -221,9 +212,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -432,11 +421,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
-          border: Border.all(
-            color: cs.outlineVariant.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          border: Border.all(color: cs.outlineVariant),
           color: cs.surfaceContainerHighest,
         ),
         child: Center(
@@ -446,9 +431,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               ButleryIcon(
                 ButleryIcons.image,
                 size: AppDimensions.iconSizeXxl,
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMedium,
-                ),
+                color: AppModeColors.textDisabled(Theme.of(context).brightness),
               ),
               const SizedBox(
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -456,9 +439,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               Text(
                 context.l10n.imageNoImagesToDisplay,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityMediumDark,
-                  ),
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
