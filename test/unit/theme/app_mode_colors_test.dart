@@ -1,10 +1,5 @@
 /// Parity for ModeColors, the accessor that replaced the retired
 /// compatibility theme extension (package 7, P7-U00 and P7-Z).
-///
-/// Every member, in light and in dark, must equal the generated AppColors,
-/// AppColorsDark or AppSpecificColors member the retired extension carried
-/// at 3a68d5318 (lib/theme/butlery_colors_extension.dart, deleted in P7-Z),
-/// so the retirement changes no colour.
 library;
 
 import 'dart:io';
@@ -17,8 +12,7 @@ import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_specific_colors.dart';
 
-/// (light, dark) per member: the generated member each mode read before the
-/// extension was retired.
+/// (light, dark) per member.
 const Map<String, (Color, Color)> _expected = {
   'chatBubbleOutgoing': (
     AppColors.chatBubbleOutgoing,
@@ -123,6 +117,7 @@ const Map<String, (Color, Color)> _expected = {
   // saffronLight in light, text.accent in dark.
   'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccent),
   'textAccent': (AppColors.textAccent, AppColorsDark.textAccent),
+  'overlayPaperCard': (AppColors.cardWhite54, AppColorsDark.cardWhite54),
   'surfaceTintWarning': (
     AppColors.surfaceTintWarning,
     AppColorsDark.surfaceTintWarning,
@@ -182,6 +177,7 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'surfaceDisabled': (ModeColors c) => c.surfaceDisabled,
   'accentOnInk': (ModeColors c) => c.accentOnInk,
   'textAccent': (ModeColors c) => c.textAccent,
+  'overlayPaperCard': (ModeColors c) => c.overlayPaperCard,
   'surfaceTintWarning': (ModeColors c) => c.surfaceTintWarning,
   'surfaceTintDanger': (ModeColors c) => c.surfaceTintDanger,
   'surfaceTintSuccess': (ModeColors c) => c.surfaceTintSuccess,
@@ -193,7 +189,7 @@ void main() {
         .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
         .map((m) => m.group(1)!)
         .toSet();
-    expect(modeGetters, hasLength(47));
+    expect(modeGetters, hasLength(48));
     expect(_expected.keys.toSet(), modeGetters);
     expect(_mode.keys.toSet(), modeGetters);
   });

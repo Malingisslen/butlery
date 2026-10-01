@@ -320,6 +320,12 @@ final class ModeColors {
   Color get accentOnInk =>
       _isDark ? AppColorsDark.textAccent : AppColors.textAccentOnInk;
 
+  /// semantic overlay.paperCard: rgba(245,244,237,0.54), delivered as the
+  /// generated member cardWhite54. The translucent paper tile that carries
+  /// ink text over a photo (produktbeslut B83-3 = A).
+  Color get overlayPaperCard =>
+      _isDark ? AppColorsDark.cardWhite54 : AppColors.cardWhite54;
+
   /// semantic text.accent on surface.base: #A15A0A light, #DCA968 dark
   /// (Grafisk manual v6:524). Surface-bound: on surface.raised use
   /// [AppColors.onWarningContainer] / [AppColorsDark.onWarningContainer]
