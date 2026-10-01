@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -119,15 +120,14 @@ class FullscreenImageViewer extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityVeryDark,
-              ),
+              // overlay.inkStrong is the same value in both modes, and ModeColors has no getter for it.
+              color: AppColors.overlayBlack60,
               child: SafeArea(
                 top: false,
                 child: Text(
                   caption!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.surfaceContainerHighest,
+                    color: cs.onPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),

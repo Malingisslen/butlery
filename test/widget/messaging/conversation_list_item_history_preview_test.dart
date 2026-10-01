@@ -79,6 +79,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 void main() {
   const lateJoinerId = 'user_late';
@@ -573,5 +574,51 @@ void main() {
         expect(find.text(l10n.conversationNoMessagesYet), findsOneWidget);
       },
     );
+  });
+
+  group('ConversationListItem avatar sits on surface.raised (BUT-2183)', () {
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: the group avatar disc is raised, '
+          'opaque', (tester) async {
+        final conversation = groupConversation(
+          memberId: founderId,
+          memberSinceStamp: createdAt,
+          lastMessage: message(content: afterJoinContent, sentAt: afterJoin),
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ConversationListItem(
+                conversation: conversation,
+                currentUserId: founderId,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final cs = Theme.of(
+          tester.element(find.byType(ConversationListItem)),
+        ).colorScheme;
+
+        final raisedDiscs = tester
+            .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .where(
+              (d) =>
+                  d.shape == BoxShape.circle &&
+                  d.color == cs.surfaceContainerHighest,
+            );
+        // The avatar disc and the group glyph's own disc.
+        expect(raisedDiscs, hasLength(2));
+      });
+    }
   });
 }

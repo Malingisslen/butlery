@@ -3,11 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
+
+// Raised on ink is palette.inkRaised in both modes (the outgoing bubble is
+// ink in both), and ModeColors has no getter for it.
+const Color _inkRaised = AppColors.surfaceDark;
 
 /// Displays an interactive poll within a chat message.
 /// Shows question, votable options with progress bars, and close button for creator.
@@ -47,7 +53,7 @@ class PollMessageWidget extends StatelessWidget {
     final totalVotes = poll.totalVotes;
     final textColor = isFromCurrentUser ? cs.onPrimary : cs.onSurface;
     final subtleColor = isFromCurrentUser
-        ? cs.onPrimary.withValues(alpha: AppDimensions.opacityDark)
+        ? AppModeColors.textSecondaryOnInk()
         : cs.onSurfaceVariant;
     final votesUnread = voteHydration.isUnread;
 
@@ -195,32 +201,14 @@ class PollMessageWidget extends StatelessWidget {
               vertical: AppDimensions.spacingXs + 2,
             ),
             decoration: BoxDecoration(
-              color: hasVoted
-                  ? (isFromCurrentUser
-                        ? cs.onPrimary.withValues(
-                            alpha: AppDimensions.opacityLight,
-                          )
-                        : cs.onSurface.withValues(
-                            alpha: AppDimensions.opacityVeryLight,
-                          ))
-                  : (isFromCurrentUser
-                        ? cs.onPrimary.withValues(
-                            alpha: AppDimensions.opacityVeryLight,
-                          )
-                        : cs.surface.withValues(
-                            alpha: AppDimensions.opacityHalf,
-                          )),
+              color: isFromCurrentUser ? _inkRaised : cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              // On the ink bubble the line is paper.
               border: Border.all(
                 color: hasVoted
-                    ? (isFromCurrentUser
-                          ? cs.onPrimary.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            )
-                          : cs.onSurface.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            ))
+                    ? (isFromCurrentUser ? cs.onPrimary : cs.onSurface)
                     : Colors.transparent,
+                width: 1.5,
               ),
             ),
             child: isRecipeOption
@@ -488,15 +476,13 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isFromCurrent
-            ? cs.onPrimary.withValues(alpha: AppDimensions.opacityVeryLight)
-            : cs.surfaceContainerHighest,
+        color: isFromCurrent ? _inkRaised : cs.surfaceContainerHighest,
       ),
       child: ButleryIcon(
         ButleryIcons.utensils,
         size: 20,
         color: isFromCurrent
-            ? cs.onPrimary.withValues(alpha: AppDimensions.opacityMedium)
+            ? AppModeColors.textSecondaryOnInk()
             : cs.onSurfaceVariant,
       ),
     );

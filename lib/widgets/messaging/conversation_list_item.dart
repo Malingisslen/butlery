@@ -195,9 +195,7 @@ class ConversationListItem extends StatelessWidget {
           height: _avatarSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: cs.inversePrimary.withValues(
-              alpha: AppDimensions.opacityLight,
-            ),
+            color: cs.surfaceContainerHighest,
           ),
           child: conversation.isGroup
               ? _buildGroupAvatar(context)
@@ -232,7 +230,7 @@ class ConversationListItem extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surfaceContainerHighest,
       ),
       child: ButleryIcon(
         ButleryIcons.users,

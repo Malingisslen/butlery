@@ -7,15 +7,15 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 202 known failures and 3 residue lists are not empty
-- Known failures: 202 (a11y 102, contrast 5, interaction_checks 12, interactions 6, states53 46, transitions 31)
+- **Migration complete:** NO: 196 known failures and 3 residue lists are not empty
+- Known failures: 196 (a11y 102, contrast 5, interaction_checks 12, interactions 6, states53 40, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 29 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 3
   - `test/architecture/icon_census_test.dart _residue: 398`
   - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 1`
-  - `test/architecture/opacity_ladder_ratchet_test.dart _residue: 231`
+  - `test/architecture/opacity_ladder_ratchet_test.dart _residue: 201`
 
 ## Required flow transitions
 
@@ -60,9 +60,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 74; cases with a known finding: 32
-- States passing in both modes: 37 of 53
-- Known findings: 46 (ceiling 46); by rule: COLOUR_FILL 20, COLOUR_TEXT 18, NO_OFFLINE_BANNER 8
+- Cases passing: 78; cases with a known finding: 28
+- States passing in both modes: 39 of 53
+- Known findings: 40 (ceiling 40); by rule: COLOUR_FILL 16, COLOUR_TEXT 16, NO_OFFLINE_BANNER 8
 
 ## Required control states
 
@@ -136,7 +136,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2178 | interaction_checks 2, interactions 1 |  |
 | BUT-2182 | states53 8 | No offline banner ("Ingen anslutning") on this view |
-| BUT-2183 | states53 26 | Opacity used as decoration or state, off the opacityLadder |
+| BUT-2183 | states53 20 | Opacity used as decoration or state, off the opacityLadder |
 | BUT-2184 | states53 4 | Disabled fields and buttons use Material default opacity (0.38/0.5), not text.disabled/surface.disabled |
 | BUT-2185 | states53 6 | Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens |
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
@@ -178,7 +178,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 1 | 1 | 1 |
 | `p7_type_and_space_scale_test.dart` | `_retiredSpacing` | BAN | LIVE | 19 | 19 | 19 |
 | `legacy_retirement_test.dart` | `_retired` | BAN | LIVE | 22 | 22 | 22 |
-| `opacity_ladder_ratchet_test.dart` | `_residue` | RESIDUE | LIVE | 93 | 231 | 231 |
+| `opacity_ladder_ratchet_test.dart` | `_residue` | RESIDUE | LIVE | 85 | 201 | 201 |
 
 ## Symbols counted in lib
 
@@ -200,6 +200,6 @@ Code only: comments are not counted; generated l10n is left out.
 | `fontSize: <number>` | 17 | `lib/theme/app_text_styles.dart`, `lib/widgets/cooking/step_timer_widget.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
 | `Color(0x…) outside lib/theme` | 4 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/brand/butlery_lockup.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
 | `BorderRadius.circular(<number>)` | 2 | `lib/views/menu_placement/placement_widgets.dart`, `lib/views/recipe_detail/handlers/recipe_shopping_handler.dart` | raw corner radii |
-| `AppDimensions.opacity*` | 231 | 93 files | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
+| `AppDimensions.opacity*` | 201 | 85 files | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
 | `spacingS / spacingXxs` | 0 |  | spacing members retired in package 7 |
 | `pubspec fonts` | 0 |  | retired type families still declared in pubspec.yaml |

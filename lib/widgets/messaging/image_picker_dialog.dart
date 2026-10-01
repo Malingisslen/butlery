@@ -110,7 +110,7 @@ class _SourceOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       child: Semantics(
         label: label,

@@ -32,30 +32,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2182',
     'no "Ingen anslutning" title',
   ),
-  'chatt::DEFAULT::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2183',
-    '#B3E6EAD9 ("Skickat")',
-  ),
-  'chatt::DEFAULT::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #33CE7C1E',
-  ),
-  'chatt::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2183',
-    '#B32F4437 ("Skickat")',
-  ),
-  'chatt::DEFAULT::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #33CE7C1E',
-  ),
-  'chatt::OFFLINE::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #338FB89A',
-  ),
-  'chatt::OFFLINE::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #338FB89A',
-  ),
   'import-av-recept::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2184',
     '#6124382C ("https://www.koket.se/kra…")',
@@ -211,7 +187,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 46;
+const int knownStateFindingsCeiling = 40;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

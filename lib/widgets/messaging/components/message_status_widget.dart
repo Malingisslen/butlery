@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -17,7 +18,6 @@ class MessageStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
       child: Row(
@@ -26,17 +26,13 @@ class MessageStatusWidget extends StatelessWidget {
           ButleryIcon(
             _getStatusIcon(),
             size: AppDimensions.iconSizeXs,
-            color: cs.surfaceContainerHighest.withValues(
-              alpha: AppDimensions.opacityDark,
-            ),
+            color: AppModeColors.textSecondaryOnInk(),
           ),
           const SizedBox(width: AppDimensions.space4),
           Text(
             _getStatusText(context),
             style: AppTextStyles.textXs.copyWith(
-              color: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityDark,
-              ),
+              color: AppModeColors.textSecondaryOnInk(),
             ),
           ),
         ],

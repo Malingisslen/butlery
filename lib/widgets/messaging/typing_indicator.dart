@@ -104,9 +104,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: cs.secondary.withValues(
-                  alpha: AppDimensions.opacityLight,
-                ),
+                color: cs.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Center(

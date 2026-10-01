@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:butlery/widgets/messaging/components/group_info_card.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 void main() {
   setUpAll(() async {
@@ -60,5 +62,44 @@ void main() {
       // English yMMMd renders March 15, 2026 as "Mar 15, 2026".
       expect(find.textContaining('Mar 15'), findsOneWidget);
     });
+  });
+
+  group('GroupInfoCard icon disc (BUT-2183)', () {
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: the disc is surface.base so it stays '
+          'visible on the raised card', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: GroupInfoCard(
+                groupTitle: 'Testgrupp',
+                memberCount: 3,
+                createdAt: DateTime(2026, 3, 15),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final cs = Theme.of(
+          tester.element(find.byType(GroupInfoCard)),
+        ).colorScheme;
+
+        final disc = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .singleWhere((d) => d.shape == BoxShape.circle)
+            .color;
+        expect(disc, cs.surface);
+        expect(disc!.a, 1.0);
+      });
+    }
   });
 }
