@@ -75,7 +75,8 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.color ?? Theme.of(context).colorScheme.primary;
+    final cs = Theme.of(context).colorScheme;
+    final color = widget.color ?? cs.primary;
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -87,14 +88,9 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: cs.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: Border.all(
-                color: color.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-                width: 1,
-              ),
+              border: Border.all(color: cs.outlineVariant, width: 1),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

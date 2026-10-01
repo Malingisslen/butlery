@@ -204,9 +204,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
@@ -353,12 +351,7 @@ class MenuRecipeListItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color:
-            Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: ButleryIcon(

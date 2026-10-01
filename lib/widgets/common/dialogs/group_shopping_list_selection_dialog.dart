@@ -170,9 +170,7 @@ class _ShoppingListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: cs.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: ButleryIcon(

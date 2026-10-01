@@ -34,6 +34,8 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -77,6 +79,22 @@ Recipe _recipe({
     type: RecipeType.personal,
   );
 }
+
+Widget _wrapThemed(Widget child, ThemeData theme) => MaterialApp(
+  theme: theme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
+
+BoxDecoration _boxAround(WidgetTester tester, Finder of) => tester
+    .widgetList<Container>(
+      find.ancestor(of: of, matching: find.byType(Container)),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .firstWhere((d) => d.color != null);
 
 void main() {
   // Touch the facade members so a compile error in their signatures fails
@@ -479,5 +497,89 @@ void main() {
         expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       },
     );
+  });
+
+  // BUT-2183 5b: fills leave the old opacity steps. "Delad" is a done notice
+  // (B83-2: tint fill, no border) and the placeholder tile is surface.raised,
+  // or surface.tint.success once the recipe is shared.
+  group('recipe selection tokens (BUT-2183)', () {
+    for (final (name, theme, raised, successTint, onSuccess) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        AppColors.lightColorScheme.surfaceContainerHighest,
+        AppColors.surfaceTintSuccess,
+        AppColors.onSuccessContainer,
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        AppColors.darkColorScheme.surfaceContainerHighest,
+        AppColorsDark.surfaceTintSuccess,
+        AppColorsDark.onSuccessContainer,
+      ),
+    ]) {
+      testWidgets('$name: the "Delad" badge is tint.success without a border '
+          'and carries onSuccessContainer text', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            FriendRecipeListItem(
+              recipe: _recipe(),
+              isSelected: false,
+              isAlreadyShared: true,
+              onSelectionChanged: (_) {},
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final badge = find.text('Delad');
+        final box = _boxAround(tester, badge);
+        expect(box.color, successTint);
+        expect(box.border, isNull);
+        expect(tester.widget<Text>(badge).style?.color, onSuccess);
+      });
+
+      testWidgets('$name: the friend placeholder is surface.raised, and '
+          'tint.success when already shared', (tester) async {
+        for (final shared in [false, true]) {
+          await tester.pumpWidget(
+            _wrapThemed(
+              FriendRecipeListItem(
+                recipe: _recipe(),
+                isSelected: false,
+                isAlreadyShared: shared,
+                onSelectionChanged: (_) {},
+              ),
+              theme,
+            ),
+          );
+          await tester.pump();
+
+          final box = _boxAround(tester, find.byIcon(ButleryIcons.utensils));
+          expect(box.color, shared ? successTint : raised);
+        }
+      });
+
+      testWidgets('$name: the menu placeholder is surface.raised', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            MenuRecipeListItem(
+              recipe: _recipe(),
+              isSelected: false,
+              onSelectionChanged: (_) {},
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final box = _boxAround(tester, find.byIcon(ButleryIcons.utensils));
+        expect(box.color, raised);
+      });
+    }
   });
 }

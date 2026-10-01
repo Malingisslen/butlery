@@ -191,9 +191,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: AppDimensions.opacityVeryLight,
-                ),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.zero,
               ),
               child: Text(
@@ -265,7 +263,6 @@ class GroupRecipeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final successColor = context.modeColors.success;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -300,19 +297,14 @@ class GroupRecipeListItem extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: successColor.withValues(
-                  alpha: AppDimensions.opacityVeryLight,
-                ),
+                color: context.modeColors.surfaceTintSuccess,
                 borderRadius: BorderRadius.zero,
-                border: Border.all(
-                  color: successColor.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
-                  ),
-                ),
               ),
               child: Text(
                 context.l10n.dialogAlreadyShared,
-                style: AppTextStyles.labelSmallSuccess,
+                style: AppTextStyles.labelSmallSuccess.copyWith(
+                  color: context.modeColors.onSuccessContainer,
+                ),
               ),
             ),
         ],
@@ -415,8 +407,8 @@ class GroupRecipeListItem extends StatelessWidget {
       height: AppDimensions.iconSizeXl,
       decoration: BoxDecoration(
         color: isAlreadyShared
-            ? successColor.withValues(alpha: AppDimensions.opacityVeryLight)
-            : cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+            ? context.modeColors.surfaceTintSuccess
+            : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: ButleryIcon(
