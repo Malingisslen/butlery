@@ -149,15 +149,12 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
     final rows = RecipeSuggestionService.stillKept(_rows);
     if (rows.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
     final l = context.l10n;
-    // A neutral notice: surface.base with a 1 px border.subtle outline and
-    // the 8 px control radius, text.body (the conflict banner's anatomy,
-    // Komponentark v1:755-757, without the danger colour: nothing is lost).
-    // colorScheme.surface is surface.base (#F5F4ED / #17251D,
-    // tokens.json:104-106), outlineVariant is border.subtle (#CCD1C2 /
-    // rgba(245,244,237,0.18), tokens.json:124-127) and AppModeColors.textBody
-    // is text.body (#37453A / #F5F4ED, tokens.json:58-60).
+    // A neutral notice: surface.tint.warning (the information surface) with
+    // no border, the 8 px control radius and text.body (the conflict banner's
+    // anatomy, Komponentark v1:755-757, without the danger colour: nothing is
+    // lost). AppModeColors.textBody is text.body (#37453A / #F5F4ED,
+    // tokens.json).
     return Padding(
       key: RecipeSuggestionNotice.noticeKey,
       padding: const EdgeInsets.symmetric(
@@ -165,13 +162,9 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
         vertical: AppDimensions.paddingS,
       ),
       child: Material(
-        color: cs.surface,
+        color: context.modeColors.surfaceTintWarning,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          side: BorderSide(
-            color: cs.outlineVariant,
-            width: AppDimensions.borderWidthStandard,
-          ),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(

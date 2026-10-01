@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 
@@ -62,6 +63,57 @@ void main() {
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
       handle.dispose();
     });
+  });
+
+  group('SwipeHintBanner — B83-2 = A status box', () {
+    for (final (name, theme, tint, textColor, iconColor) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        const Color(0xFFF0EEE2),
+        const Color(0xFF37453A),
+        const Color(0xFF24382C),
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        const Color(0xFF2F4437),
+        const Color(0xFFF5F4ED),
+        const Color(0xFFF5F4ED),
+      ),
+    ]) {
+      testWidgets('$name: surface.tint.warning fill, no border', (
+        tester,
+      ) async {
+        SharedPreferences.setMockInitialValues({});
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(data: theme, child: const SwipeHintBanner()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final box = tester.widget<Container>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.swipe),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        final decoration = box.decoration! as BoxDecoration;
+        expect(decoration.color, tint);
+        expect(decoration.border, isNull);
+        expect(tester.widget<Icon>(find.byIcon(Icons.swipe)).color, iconColor);
+        final text = tester.widget<Text>(
+          find.descendant(
+            of: find.byType(SwipeHintBanner),
+            matching: find.byType(Text),
+          ),
+        );
+        expect(text.style!.color, textColor);
+      });
+    }
   });
 
   group('SwipeHintBanner — parameterized per gesture (BUT-1199)', () {

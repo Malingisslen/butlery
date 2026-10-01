@@ -2,7 +2,7 @@
 /// resolutions to the user.
 ///
 /// P3-U08: the anatomy is the drawn conflict banner (Komponentark v1:755-758):
-/// a 1 px text.danger outline with the 8 px control radius on surface.base, the triangle-alert glyph, a bold
+/// the triangle-alert glyph, a bold
 /// title that names what has two versions, and body text saying who changed it
 /// and that the user's version is still there. No channel is chosen here: which
 /// entity gets a banner and which a snackbar is package 4's mounting work.
@@ -172,11 +172,11 @@ class _ConflictBannerState extends State<ConflictBanner> {
 
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    // Komponentark v1:755-757. Outline and glyph are text.danger
-    // (colorScheme.error: #9C3B23 light, #DE9078 dark, tokens.json:96-98),
-    // title text.primary (onSurface: #24382C / #F5F4ED, tokens.json:54-56),
-    // body text.body (#37453A / #F5F4ED, tokens.json:58-60), background
-    // surface.base (surface: #F5F4ED / #17251D, tokens.json:104-106).
+    // Komponentark v1:755-757. The glyph is text.danger (colorScheme.error:
+    // #9C3B23 light, #DE9078 dark, tokens.json) and carries the kind in
+    // dark mode, where every tint is the same colour. Title text.primary
+    // (onSurface: #24382C / #F5F4ED, tokens.json), body text.body
+    // (#37453A / #F5F4ED, tokens.json).
     final danger = cs.error;
     final bodyColor = AppModeColors.textBody(theme.brightness);
 
@@ -193,16 +193,12 @@ class _ConflictBannerState extends State<ConflictBanner> {
             vertical: AppDimensions.paddingS,
           ),
           child: Material(
-            color: cs.surface,
+            color: context.modeColors.surfaceTintDanger,
             // Komponentark v1:755 border-radius:8px = radius.control
             // (tokens.json:479, :483 'control 8 = knappar, fält, brickor').
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusControl,
-              ),
-              side: BorderSide(
-                color: danger,
-                width: AppDimensions.borderWidthStandard,
               ),
             ),
             child: Padding(

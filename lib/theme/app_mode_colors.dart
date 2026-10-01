@@ -74,8 +74,7 @@ abstract final class AppModeColors {
       : AppColors.onActionPrimaryPressed;
 
   /// semantic text.warning: #8A5212 light, #DCA968 dark (tokens.json:92-95).
-  /// Warning text and warning glyphs on paper, such as the offline banner's
-  /// outline and wifi-off glyph (Komponentark v1:753, dark :571). Not
+  /// Warning text and warning glyphs on paper. Not
   /// warning (border.statusWarning, never text) and not onWarningContainer
   /// (text.accent.onRaised, a different token).
   static Color textWarning(Brightness brightness) =>
@@ -293,6 +292,21 @@ final class ModeColors {
   /// AppColors.surfaceDisabled light, AppColorsDark.surfaceDisabled dark.
   Color get surfaceDisabled =>
       _isDark ? AppColorsDark.surfaceDisabled : AppColors.surfaceDisabled;
+
+  /// semantic surface.tint.warning: the notice surface for information and
+  /// to-do boxes. #F0EEE2 light, #2F4437 dark.
+  Color get surfaceTintWarning =>
+      _isDark ? AppColorsDark.surfaceTintWarning : AppColors.surfaceTintWarning;
+
+  /// semantic surface.tint.danger: the error surface. #F2DDD6 light, #2F4437
+  /// dark, so in dark mode the glyph and text carry the kind.
+  Color get surfaceTintDanger =>
+      _isDark ? AppColorsDark.surfaceTintDanger : AppColors.surfaceTintDanger;
+
+  /// semantic surface.tint.success: the done surface. #DFE8DC light, #2F4437
+  /// dark.
+  Color get surfaceTintSuccess =>
+      _isDark ? AppColorsDark.surfaceTintSuccess : AppColors.surfaceTintSuccess;
 
   /// Accent text on surface.ink #24382C, as the Hem tonight eyebrow draws
   /// it (Skarmar v12 del 1:47, --r04slot-765: #e09d50 light, #dca968 dark).

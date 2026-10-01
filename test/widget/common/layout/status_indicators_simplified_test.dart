@@ -1,7 +1,7 @@
 // The offline banner as a pattern (P3-U05).
 //
 // Sources: Komponentark v1:752-754 (light) and :570-572 (dark) for the
-// anatomy, produktregler.md:162 and :300, flows-roles-budget.md:111,
+// anatomy (the box is a borderless tint since B83-2 = A), produktregler.md, flows-roles-budget.md,
 // tillganglighetshandoff:177 (role status, announced on transition, glyph
 // decorative), Skarmar v12 del 4 #hemoffline (single line, comma in the
 // screen-reader label).
@@ -116,53 +116,60 @@ void main() {
 
     group('OfflineIndicator anatomy', () {
       for (final brightness in Brightness.values) {
-        testWidgets('${brightness.name}: paper, text.warning outline and '
-            'glyph, text.primary title', (tester) async {
-          mockOffline.setOnline(false);
-          await tester.pumpWidget(
-            _themedApp(const OfflineIndicator(), brightness: brightness),
-          );
-          await tester.pump();
+        testWidgets(
+          '${brightness.name}: surface.tint.warning without a border, '
+          'text.warning glyph, text.primary title',
+          (tester) async {
+            mockOffline.setOnline(false);
+            await tester.pumpWidget(
+              _themedApp(const OfflineIndicator(), brightness: brightness),
+            );
+            await tester.pump();
 
-          final cs = Theme.of(
-            tester.element(find.byKey(_offlineKey)),
-          ).colorScheme;
-          final warning = AppModeColors.textWarning(brightness);
-          // text.warning (tokens.json:92-95); surface.base (:104-107);
-          // text.primary (:54-57).
-          expect(
-            warning,
-            brightness == Brightness.dark
-                ? const Color(0xFFDCA968)
-                : const Color(0xFF8A5212),
-          );
-          expect(
-            cs.surface,
-            brightness == Brightness.dark
-                ? const Color(0xFF17251D)
-                : const Color(0xFFF5F4ED),
-          );
-          expect(
-            cs.onSurface,
-            brightness == Brightness.dark
-                ? const Color(0xFFF5F4ED)
-                : const Color(0xFF24382C),
-          );
+            final cs = Theme.of(
+              tester.element(find.byKey(_offlineKey)),
+            ).colorScheme;
+            final warning = AppModeColors.textWarning(brightness);
+            // text.warning (tokens.json); surface.base;
+            // text.primary.
+            expect(
+              warning,
+              brightness == Brightness.dark
+                  ? const Color(0xFFDCA968)
+                  : const Color(0xFF8A5212),
+            );
+            expect(
+              cs.surface,
+              brightness == Brightness.dark
+                  ? const Color(0xFF17251D)
+                  : const Color(0xFFF5F4ED),
+            );
+            expect(
+              cs.onSurface,
+              brightness == Brightness.dark
+                  ? const Color(0xFFF5F4ED)
+                  : const Color(0xFF24382C),
+            );
 
-          final deco = _bannerDecoration(tester, _offlineKey);
-          expect(deco.color, cs.surface);
-          final border = deco.border! as Border;
-          expect(border.top.color, warning);
-          expect(border.top.width, 1.0);
+            final deco = _bannerDecoration(tester, _offlineKey);
+            expect(
+              deco.color,
+              brightness == Brightness.dark
+                  ? const Color(0xFF2F4437)
+                  : const Color(0xFFF0EEE2),
+            );
+            expect(deco.color, ModeColors.of(brightness).surfaceTintWarning);
+            expect(deco.border, isNull);
 
-          final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.wifiOff));
-          expect(icon.color, warning);
+            final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.wifiOff));
+            expect(icon.color, warning);
 
-          final title = tester.widget<Text>(find.text('Ingen anslutning'));
-          expect(title.style!.color, cs.onSurface);
-          expect(title.style!.fontSize, 12.5);
-          expect(title.style!.fontWeight, FontWeight.w700);
-        });
+            final title = tester.widget<Text>(find.text('Ingen anslutning'));
+            expect(title.style!.color, cs.onSurface);
+            expect(title.style!.fontSize, 12.5);
+            expect(title.style!.fontWeight, FontWeight.w700);
+          },
+        );
       }
 
       testWidgets('the warning member is not the non-text warning border', (
@@ -174,12 +181,10 @@ void main() {
         );
         await tester.pump();
         final deco = _bannerDecoration(tester, _offlineKey);
-        // border.statusWarning is #D8B784: surfaces and icons only.
+        // border.statusWarning is #D8B784.
         expect(deco.color, isNot(const Color(0xFFD8B784)));
-        expect(
-          (deco.border! as Border).top.color,
-          isNot(const Color(0xFFD8B784)),
-        );
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.wifiOff));
+        expect(icon.color, isNot(const Color(0xFFD8B784)));
       });
     });
 
@@ -323,8 +328,8 @@ void main() {
         expect(find.byKey(_onlineKey), findsOneWidget);
         final cs = Theme.of(tester.element(find.byKey(_onlineKey))).colorScheme;
         final deco = _bannerDecoration(tester, _onlineKey);
-        expect(deco.color, cs.surface);
-        expect((deco.border! as Border).top.color, cs.tertiary);
+        expect(deco.color, const Color(0xFFDFE8DC));
+        expect(deco.border, isNull);
         expect(
           tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
           cs.tertiary,
@@ -335,6 +340,34 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byKey(_onlineKey), findsNothing);
         expect(find.byKey(_offlineKey), findsNothing);
+      });
+
+      testWidgets('back online in dark mode: the tint is the shared one and '
+          'the glyph carries the kind', (tester) async {
+        mockOffline.setOnline(false);
+        await tester.pumpWidget(
+          _themedApp(const OfflineIndicator(), brightness: Brightness.dark),
+        );
+        await tester.pump();
+        mockOffline.setOnline(true);
+        await tester.pump();
+
+        final cs = Theme.of(tester.element(find.byKey(_onlineKey))).colorScheme;
+        final deco = _bannerDecoration(tester, _onlineKey);
+        expect(deco.color, const Color(0xFF2F4437));
+        expect(deco.color, ModeColors.dark.surfaceTintSuccess);
+        expect(deco.border, isNull);
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
+          cs.tertiary,
+        );
+        expect(
+          tester.widget<Text>(find.text('Ansluten igen')).style!.color,
+          cs.onSurface,
+        );
+
+        await tester.pump(AppDimensions.snackbarDuration);
+        await tester.pumpAndSettle();
       });
 
       testWidgets('announces once per transition, never on rebuild', (

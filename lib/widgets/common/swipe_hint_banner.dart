@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -90,8 +91,8 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
         AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
+        // The information surface, without a border (B83-2b).
+        color: context.modeColors.surfaceTintWarning,
       ),
       child: Row(
         children: [
@@ -105,7 +106,7 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
             child: Text(
               widget.message ?? context.l10n.recipeSwipeHintText,
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onPrimaryContainer,
+                color: AppModeColors.textBody(cs.brightness),
               ),
             ),
           ),
@@ -115,7 +116,7 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
               size: AppDimensions.iconSizeS,
             ),
             tooltip: context.l10n.commonDismiss,
-            color: cs.onPrimaryContainer,
+            color: cs.onSurface,
             onPressed: _dismiss,
           ),
         ],

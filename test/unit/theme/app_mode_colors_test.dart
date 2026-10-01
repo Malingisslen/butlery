@@ -123,6 +123,18 @@ const Map<String, (Color, Color)> _expected = {
   // saffronLight in light, text.accent in dark.
   'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccent),
   'textAccent': (AppColors.textAccent, AppColorsDark.textAccent),
+  'surfaceTintWarning': (
+    AppColors.surfaceTintWarning,
+    AppColorsDark.surfaceTintWarning,
+  ),
+  'surfaceTintDanger': (
+    AppColors.surfaceTintDanger,
+    AppColorsDark.surfaceTintDanger,
+  ),
+  'surfaceTintSuccess': (
+    AppColors.surfaceTintSuccess,
+    AppColorsDark.surfaceTintSuccess,
+  ),
 };
 
 final Map<String, Color Function(ModeColors)> _mode = {
@@ -170,6 +182,9 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'surfaceDisabled': (ModeColors c) => c.surfaceDisabled,
   'accentOnInk': (ModeColors c) => c.accentOnInk,
   'textAccent': (ModeColors c) => c.textAccent,
+  'surfaceTintWarning': (ModeColors c) => c.surfaceTintWarning,
+  'surfaceTintDanger': (ModeColors c) => c.surfaceTintDanger,
+  'surfaceTintSuccess': (ModeColors c) => c.surfaceTintSuccess,
 };
 
 void main() {
@@ -178,7 +193,7 @@ void main() {
         .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
         .map((m) => m.group(1)!)
         .toSet();
-    expect(modeGetters, hasLength(44));
+    expect(modeGetters, hasLength(47));
     expect(_expected.keys.toSet(), modeGetters);
     expect(_mode.keys.toSet(), modeGetters);
   });
