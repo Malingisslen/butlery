@@ -344,9 +344,8 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
 /// P6-U05: the item a user had typed but not added when their role on the
 /// list dropped to read-only, kept in the view until they close it.
 ///
-/// No drawing shows it. It uses the neutral notice anatomy of the recipe
-/// suggestion line (the conflict banner of Komponentark v1:755-757 without
-/// the danger colour): surface.base with a 1 px border.subtle outline and the
+/// No drawing shows it. It uses
+/// surface.base with a 1 px border.subtle outline and the
 /// 8 px control radius, text.body. colorScheme.surface is surface.base
 /// (#F5F4ED / #17251D, tokens.json:104-106), outlineVariant is border.subtle
 /// (#CCD1C2 / rgba(245,244,237,0.18), tokens.json:124-127) and
@@ -430,9 +429,8 @@ class _UnaddedTextNotice extends StatelessWidget {
 /// BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — shown in
 /// the header when someone else updates this shared list while it is open.
 ///
-/// A plain strip, not the danger-coloured [ConflictBanner]: border-top AND
-/// border-bottom border.subtle (colorScheme.outlineVariant), no icon, text.body
-/// (Skarmar v12 del 2 #delatlista rad 1050-1071). Sits between the header's
+/// A notice box, not the danger-coloured [ConflictBanner]: surface.tint.warning
+/// fill, no border, the 8 px control radius, no icon, text.body (B83-2d). Sits between the header's
 /// participant/activity row and "Lägg till vara" — the widget position in
 /// [_CollaborativeShoppingViewContent._buildListContent] draws it there.
 class _UpdatedByNotice extends StatelessWidget {
@@ -447,7 +445,6 @@ class _UpdatedByNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final body = AppModeColors.textBody(Theme.of(context).brightness);
     // Keyed on the text so a screen reader announces each distinct notice
     // once (a rebuild of the same text, or the same notice reappearing
@@ -460,20 +457,18 @@ class _UpdatedByNotice extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
-            border: Border.symmetric(
-              horizontal: BorderSide(
-                color: cs.outlineVariant,
-                width: AppDimensions.borderWidthStandard,
-              ),
-            ),
+            color: context.modeColors.surfaceTintWarning,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingM,
                     vertical: AppDimensions.paddingS,
                   ),
                   child: Text(
