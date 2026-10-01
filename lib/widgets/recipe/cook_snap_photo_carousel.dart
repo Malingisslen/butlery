@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -131,6 +132,8 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
   }
 }
 
+/// Page counter drawn as a translucent paper tile (overlay.paperCard) with
+/// ink text (B83-3).
 class _CounterBadge extends StatelessWidget {
   const _CounterBadge({required this.current, required this.total});
 
@@ -144,11 +147,11 @@ class _CounterBadge extends StatelessWidget {
         horizontal: AppDimensions.spacingXs,
         vertical: 2,
       ),
-      color: Colors.black.withValues(alpha: 0.6),
+      color: context.modeColors.overlayPaperCard,
       child: Text(
         context.l10n.cookSnapPhotoCounter(current, total),
         style: AppTextStyles.labelSmall.copyWith(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.w600,
         ),
       ),

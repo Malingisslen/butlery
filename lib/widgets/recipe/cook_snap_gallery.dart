@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
@@ -260,7 +261,8 @@ class _SnapThumbnail extends StatelessWidget {
   }
 }
 
-/// BUT-949: small overlay badge marking a multi-photo album thumbnail.
+/// BUT-949: small overlay badge marking a multi-photo album thumbnail, drawn
+/// as a translucent paper tile (overlay.paperCard) with ink text (B83-3).
 class _PhotoCountBadge extends StatelessWidget {
   const _PhotoCountBadge({required this.count});
 
@@ -268,18 +270,19 @@ class _PhotoCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ink = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      color: Colors.black.withValues(alpha: 0.6),
+      color: context.modeColors.overlayPaperCard,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const ButleryIcon(ButleryIcons.image, size: 12, color: Colors.white),
+          ButleryIcon(ButleryIcons.image, size: 12, color: ink),
           const SizedBox(width: 2),
           Text(
             '$count',
             style: AppTextStyles.labelSmall.copyWith(
-              color: Colors.white,
+              color: ink,
               fontWeight: FontWeight.w600,
             ),
           ),

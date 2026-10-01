@@ -344,14 +344,10 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
 /// P6-U05: the item a user had typed but not added when their role on the
 /// list dropped to read-only, kept in the view until they close it.
 ///
-/// No drawing shows it. It uses
-/// surface.base with a 1 px border.subtle outline and the
-/// 8 px control radius, text.body. colorScheme.surface is surface.base
-/// (#F5F4ED / #17251D, tokens.json:104-106), outlineVariant is border.subtle
-/// (#CCD1C2 / rgba(245,244,237,0.18), tokens.json:124-127) and
-/// AppModeColors.textBody is text.body (#37453A / #F5F4ED, tokens.json:58-60).
+/// A notice box like [_UpdatedByNotice]: surface.tint.warning fill, no
+/// border, the control radius, text.body (B83-2e).
 /// The typed text is body text, so it is never cut off
-/// (content-style-guide.md:109) and can be selected as well as copied.
+/// (content-style-guide.md) and can be selected as well as copied.
 class _UnaddedTextNotice extends StatelessWidget {
   const _UnaddedTextNotice({
     required this.text,
@@ -365,10 +361,8 @@ class _UnaddedTextNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
     final l = context.l10n;
-    final body = AppModeColors.textBody(theme.brightness);
+    final body = AppModeColors.textBody(Theme.of(context).brightness);
     return Padding(
       key: const ValueKey('collaborativeShopping.unaddedText'),
       padding: const EdgeInsets.symmetric(
@@ -376,13 +370,9 @@ class _UnaddedTextNotice extends StatelessWidget {
         vertical: AppDimensions.paddingS,
       ),
       child: Material(
-        color: cs.surface,
+        color: context.modeColors.surfaceTintWarning,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          side: BorderSide(
-            color: cs.outlineVariant,
-            width: AppDimensions.borderWidthStandard,
-          ),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(

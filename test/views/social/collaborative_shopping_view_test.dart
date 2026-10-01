@@ -797,8 +797,9 @@ void main() {
   group('CollaborativeShoppingView — role lowered while open (P6-U05)', () {
     Future<FakePermissionService> openWithTyped(
       WidgetTester tester,
-      String typed,
-    ) async {
+      String typed, {
+      ThemeData? theme,
+    }) async {
       tester.view.physicalSize = const Size(420, 3000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -810,7 +811,10 @@ void main() {
       final list = listWith([item('Mjölk')]);
       shoppingService.setShoppingState(lists: [list], isInitialized: true);
       await tester.pumpWidget(
-        localize(const CollaborativeShoppingView(listId: _testListId)),
+        localize(
+          const CollaborativeShoppingView(listId: _testListId),
+          theme: theme,
+        ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -905,6 +909,40 @@ void main() {
         ),
       );
     });
+
+    // B83-2e: a notice box like the updated-by strip — surface.tint.warning
+    // fill, no border, the control radius.
+    for (final (name, theme, tint) in [
+      ('light', AppTheme.lightTheme, const Color(0xFFF0EEE2)),
+      ('dark', AppTheme.darkTheme, const Color(0xFF2F4437)),
+    ]) {
+      testWidgets(
+        '$name: a surface.tint.warning fill with no border (B83-2e)',
+        (
+          tester,
+        ) async {
+          await openWithTyped(tester, 'Havregryn', theme: theme);
+
+          final box = tester.widget<Material>(
+            find
+                .descendant(
+                  of: find.byKey(
+                    const ValueKey('collaborativeShopping.unaddedText'),
+                  ),
+                  matching: find.byType(Material),
+                )
+                .first,
+          );
+          expect(box.color, tint);
+          final shape = box.shape! as RoundedRectangleBorder;
+          expect(shape.side, BorderSide.none);
+          expect(
+            shape.borderRadius,
+            BorderRadius.circular(AppDimensions.radiusControl),
+          );
+        },
+      );
+    }
 
     testWidgets('nothing typed: the notice says why, with Stäng', (
       tester,

@@ -13,14 +13,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
 
-Widget _wrap(Widget child) => MaterialApp(
+Widget _wrap(Widget child, {ThemeData? theme}) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   locale: const Locale('sv'),
+  theme: theme,
   home: Scaffold(body: child),
 );
 
@@ -152,6 +157,68 @@ void main() {
         );
       },
     );
+  });
+
+  // B83-3: the page counter and the album badge are on
+  // overlay.paperCard (rgba(245,244,237,0.54)) with ink text (surface.ink
+  // #24382C); the photo shows through the tile.
+  group('photo badges on overlay.paperCard with ink text (B83-3)', () {
+    final modes = [
+      ('light', AppTheme.lightTheme, AppColors.cardWhite54),
+      ('dark', AppTheme.darkTheme, AppColorsDark.cardWhite54),
+    ];
+    const ink = Color(0xFF24382C);
+
+    for (final (name, theme, tile) in modes) {
+      testWidgets('$name: the carousel counter badge', (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            const CookSnapPhotoCarousel(
+              photoUrls: ['https://x/a.jpg', 'https://x/b.jpg'],
+            ),
+            theme: theme,
+          ),
+        );
+
+        final counter = find.text('1/2');
+        final box = tester.widget<Container>(
+          find.ancestor(of: counter, matching: find.byType(Container)).first,
+        );
+        expect(box.color, tile);
+        expect(tester.widget<Text>(counter).style!.color, ink);
+      });
+
+      testWidgets('$name: the gallery album badge', (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            CookSnapGallery(
+              snaps: [
+                _snap(photoUrls: const ['https://x/a.jpg', 'https://x/b.jpg']),
+              ],
+              isLoading: false,
+              isUploading: false,
+              onAdd: () {},
+              onDelete: (_) {},
+              onReport: (_) {},
+              currentUserId: 'user-1',
+            ),
+            theme: theme,
+          ),
+        );
+        await tester.pump();
+
+        final count = find.text('2');
+        final box = tester.widget<Container>(
+          find.ancestor(of: count, matching: find.byType(Container)).first,
+        );
+        expect(box.color, tile);
+        expect(tester.widget<Text>(count).style!.color, ink);
+        expect(
+          tester.widget<ButleryIcon>(find.byIcon(ButleryIcons.image)).color,
+          ink,
+        );
+      });
+    }
   });
 
   group('CookSnapGallery photo-count badge (BUT-949)', () {
