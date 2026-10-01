@@ -102,6 +102,10 @@ abstract final class AppModeColors {
   /// both modes: the accent text on ink (Komponentark v1:747; Skarmar v12
   /// del 1 #hemrecept :134, the card's eyebrow). 5.43:1 on #24382C.
   static Color textAccentOnInk() => AppColors.textAccentOnInk;
+
+  /// palette.inkRaised #2F4437 in both modes: a raised surface on ink, such as
+  /// a row or card inside the outgoing chat bubble.
+  static Color surfaceRaisedOnInk() => AppColors.surfaceDark;
 }
 
 /// The mode-aware colour set for members that have no ColorScheme slot.

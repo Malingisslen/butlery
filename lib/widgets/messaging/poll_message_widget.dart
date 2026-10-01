@@ -3,17 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
-
-// Raised on ink is palette.inkRaised in both modes (the outgoing bubble is
-// ink in both), and ModeColors has no getter for it.
-const Color _inkRaised = AppColors.surfaceDark;
 
 /// Displays an interactive poll within a chat message.
 /// Shows question, votable options with progress bars, and close button for creator.
@@ -201,7 +196,9 @@ class PollMessageWidget extends StatelessWidget {
               vertical: AppDimensions.spacingXs + 2,
             ),
             decoration: BoxDecoration(
-              color: isFromCurrentUser ? _inkRaised : cs.surface,
+              color: isFromCurrentUser
+                  ? AppModeColors.surfaceRaisedOnInk()
+                  : cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               // On the ink bubble the line is paper.
               border: Border.all(
@@ -476,7 +473,9 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isFromCurrent ? _inkRaised : cs.surfaceContainerHighest,
+        color: isFromCurrent
+            ? AppModeColors.surfaceRaisedOnInk()
+            : cs.surfaceContainerHighest,
       ),
       child: ButleryIcon(
         ButleryIcons.utensils,

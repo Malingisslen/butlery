@@ -2,15 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-
-// Raised on ink is palette.inkRaised in both modes (the outgoing bubble is
-// ink in both), and ModeColors has no getter for it.
-const Color _inkRaised = AppColors.surfaceDark;
 
 /// Widget for displaying system messages in chat.
 ///
@@ -155,7 +150,9 @@ class ReplyPreviewWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: isFromCurrentUser ? _inkRaised : cs.surface,
+        color: isFromCurrentUser
+            ? AppModeColors.surfaceRaisedOnInk()
+            : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border(
           left: BorderSide(color: cs.secondary, width: 3),
