@@ -122,9 +122,9 @@ class SocialCollaborativeComponents {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: (activeColor ?? context.modeColors.success).withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        color: activeColor == null
+            ? context.modeColors.surfaceTintSuccess
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: activeColor ?? context.modeColors.success),
       ),
@@ -242,11 +242,7 @@ class SocialCollaborativeComponents {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color:
-            color ??
-            context.modeColors.success.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+        color: color ?? context.modeColors.surfaceTintSuccess,
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: color ?? context.modeColors.success),
       ),
@@ -286,11 +282,7 @@ class SocialCollaborativeComponents {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color:
-            color?.withValues(alpha: AppDimensions.opacityVeryLight) ??
-            cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: color ?? cs.onSurfaceVariant),
       ),
@@ -332,9 +324,7 @@ class SocialCollaborativeComponents {
       ),
       decoration: BoxDecoration(
         border: Border.all(
-          color: cs.onSurfaceVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
         ),
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
@@ -454,9 +444,7 @@ class SocialCollaborativeComponents {
         vertical: AppDimensions.badgePaddingY,
       ),
       decoration: BoxDecoration(
-        color: (color ?? config.color).withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: color ?? config.color),
       ),

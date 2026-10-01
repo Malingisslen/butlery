@@ -55,9 +55,7 @@ class ShareModeSelection {
                       color: selectedMode == ShareMode.staticCopy
                           ? Theme.of(
                               context,
-                            ).colorScheme.primaryContainer.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            )
+                            ).colorScheme.surfaceContainerHighest
                           : null,
                     ),
                     child: Row(
@@ -120,11 +118,7 @@ class ShareModeSelection {
                       AppDimensions.radiusControl,
                     ),
                     color: selectedMode == ShareMode.realtime
-                        ? Theme.of(
-                            context,
-                          ).colorScheme.primaryContainer.withValues(
-                            alpha: AppDimensions.opacityMediumLight,
-                          )
+                        ? Theme.of(context).colorScheme.surfaceContainerHighest
                         : null,
                   ),
                   child: Row(

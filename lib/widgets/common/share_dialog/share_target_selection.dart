@@ -110,9 +110,7 @@ class ShareTargetSelection {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(context).colorScheme.outlineVariant,
         height: 1,
       ),
       itemBuilder: (context, index) {
