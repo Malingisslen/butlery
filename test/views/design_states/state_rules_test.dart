@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'state_harness.dart';
@@ -106,6 +107,40 @@ void main() {
         contains('BANNER_FILL'),
       );
     });
+
+    for (final mode in Brightness.values) {
+      testWidgets('OFFLINE (${mode.name}): the warning tint is accepted', (
+        tester,
+      ) async {
+        Widget banner(Color fill) => _page(
+          Column(
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(color: fill),
+                child: Text(sv.indicatorOfflineMode),
+              ),
+              const Text('Veckans inköp'),
+            ],
+          ),
+          mode: mode,
+        );
+        final colors = ModeColors.of(mode);
+        await tester.pumpWidget(banner(colors.surfaceTintWarning));
+        expect(
+          offlineRule(tester, mode).map((v) => v.code),
+          isNot(contains('BANNER_FILL')),
+        );
+        // In light the success tint differs from the warning tint, so a
+        // banner filled with it is a wrong fill.
+        if (mode == Brightness.light) {
+          await tester.pumpWidget(banner(colors.surfaceTintSuccess));
+          expect(
+            offlineRule(tester, mode).map((v) => v.code),
+            contains('BANNER_FILL'),
+          );
+        }
+      });
+    }
 
     testWidgets('two saffron buttons are counted', (tester) async {
       const saffron = Color(0xFFCE7C1E);

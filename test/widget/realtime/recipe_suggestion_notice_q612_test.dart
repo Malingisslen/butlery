@@ -127,6 +127,46 @@ void main() {
     expect(find.text(l10n.recipeSuggestionFromMany(2)), findsOneWidget);
   });
 
+  for (final (name, theme, tint, textColor) in [
+    (
+      'light',
+      AppTheme.lightTheme,
+      const Color(0xFFF0EEE2),
+      const Color(0xFF37453A),
+    ),
+    (
+      'dark',
+      AppTheme.darkTheme,
+      const Color(0xFF2F4437),
+      const Color(0xFFF5F4ED),
+    ),
+  ]) {
+    testWidgets('$name: surface.tint.warning fill, no border, text.body', (
+      tester,
+    ) async {
+      await pump(tester, [_pending('s1', 'member')], theme: theme);
+
+      final material = tester.widget<Material>(
+        find
+            .ancestor(
+              of: find.text(l10n.recipeSuggestionFromOneUnnamed),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(material.color, tint);
+      final shape = material.shape! as RoundedRectangleBorder;
+      expect(shape.side, BorderSide.none);
+      expect(
+        tester
+            .widget<Text>(find.text(l10n.recipeSuggestionFromOneUnnamed))
+            .style!
+            .color,
+        textColor,
+      );
+    });
+  }
+
   testWidgets('renders in dark mode too', (tester) async {
     await pump(tester, [
       _pending('s1', 'member').replacedWith(const {}, at: at),

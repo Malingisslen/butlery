@@ -1255,7 +1255,7 @@
         },
         {
           "file": "test/widget/common/layout/status_indicators_simplified_test.dart",
-          "name": "${brightness.name}: paper, text.warning outline and glyph, text.primary title"
+          "name": "${brightness.name}: surface.tint.warning without a border, text.warning glyph, text.primary title"
         }
       ],
       "ticket": null,

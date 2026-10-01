@@ -31,9 +31,8 @@ class StatusIndicators {
 
 /// The offline banner.
 ///
-/// Anatomy (Komponentark v1:752-754 light, :570-572 dark): paper
-/// (surface.base), a 1 px outline and a wifi-off glyph in text.warning, and a
-/// bold 12.5 title in text.primary. It is a banner, never a dialog or an
+/// Anatomy: a borderless tinted surface (surface.tint.warning, B83-2 = A), a
+/// wifi-off glyph in text.warning, and a bold 12.5 title in text.primary. It is a banner, never a dialog or an
 /// illustration, and the glyph is wifi-off, never the cloche
 /// (produktregler.md:162). The title is a single line, as in Skarmar v12
 /// del 4 #hemoffline: "Ingen anslutning", followed by " · N ändringar väntar"
@@ -144,7 +143,9 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
     if (isOffline) {
       banner = _BannerFrame(
         key: const ValueKey('offline'),
-        // text.warning (tokens.json:92-95): outline and glyph.
+        // text.warning (tokens.json): the glyph carries the kind, as the
+        // dark tints are all the same colour.
+        tint: context.modeColors.surfaceTintWarning,
         accent: AppModeColors.textWarning(cs.brightness),
         icon: ButleryIcons.wifiOff,
         title: _offlineLabel(context, spoken: false),
@@ -156,6 +157,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
         key: const ValueKey('online'),
         // text.success (colorScheme.tertiary): circle-check is the "klart"
         // status glyph (Komponentark v1:764).
+        tint: context.modeColors.surfaceTintSuccess,
         accent: cs.tertiary,
         icon: ButleryIcons.circleCheck,
         title: context.l10n.indicatorBackOnline,
@@ -175,9 +177,11 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
   }
 }
 
-/// One banner: paper, 1 px outline and glyph in [accent], one title line.
+/// One banner: a [tint] surface without a border, a glyph in [accent], one
+/// title line.
 class _BannerFrame extends StatelessWidget {
   const _BannerFrame({
+    required this.tint,
     required this.accent,
     required this.icon,
     required this.title,
@@ -186,6 +190,7 @@ class _BannerFrame extends StatelessWidget {
     super.key,
   });
 
+  final Color tint;
   final Color accent;
   final IconData icon;
   final String title;
@@ -248,12 +253,8 @@ class _BannerFrame extends StatelessWidget {
 
     Widget box = DecoratedBox(
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: tint,
         borderRadius: _radius,
-        border: Border.all(
-          color: accent,
-          width: AppDimensions.borderWidthStandard,
-        ),
       ),
       child: tappable
           ? Material(

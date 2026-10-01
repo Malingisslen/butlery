@@ -20,9 +20,10 @@
 ///   (produktregler.md:292; content-style-guide.md:87-97 keeps the error
 ///   form for errors).
 /// - OFFLINE: the banner says "Ingen anslutning" (produktbeslut PQ-03 = A,
-///   fas2/produktbeslut-2026-09-23.json:190-199), has no fill of its own
-///   (PQ-20a = A, :214-218; Komponentark v1:752-754) and does not lock the
-///   content under it (produktregler.md:162, :300).
+///   fas2/produktbeslut-2026-09-23.json), is filled with the mode's
+///   surface.tint.warning or not at all (B83-2a, fas2/produktbeslut-2026-10-01.json,
+///   which supersedes PQ-20a) and does not lock the content under it
+///   (produktregler.md).
 /// - CONFLICT: the own recipe offers both versions (produktregler.md:102);
 ///   the shopping list takes the union and says "Listan uppdaterades av
 ///   namn" (produktregler.md:101; PQ-20b = A, produktbeslut :220-224).
@@ -34,6 +35,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state/delayed_skeleton.dart';
 
@@ -468,8 +470,9 @@ bool isOfflineTitle(String text) =>
     text == sv.indicatorOfflineMode ||
     text.startsWith('${sv.indicatorOfflineMode} · ');
 
-/// OFFLINE: the PQ-03 banner, without a fill of its own, over content that
-/// can still be read and used.
+/// OFFLINE: the PQ-03 banner, filled with the mode's surface.tint.warning or
+/// not at all, over content that can still be read and used. Any other fill
+/// is BANNER_FILL.
 List<Violation> offlineRule(WidgetTester tester, Brightness mode) {
   final out = <Violation>[];
   final texts = paintedTexts();
@@ -480,10 +483,12 @@ List<Violation> offlineRule(WidgetTester tester, Brightness mode) {
     );
   } else {
     final page = themeFor(mode).colorScheme.surface.toARGB32();
+    final tint = ModeColors.of(mode).surfaceTintWarning.toARGB32();
     final fill = _nearestFill(banner.first.box);
     if (fill != null &&
         (fill.toARGB32() >> 24) != 0 &&
-        fill.toARGB32() != page) {
+        fill.toARGB32() != page &&
+        fill.toARGB32() != tint) {
       out.add(Violation('BANNER_FILL', 'banner fill ${hex(fill)}'));
     }
   }

@@ -279,21 +279,21 @@ void main() {
     });
 
     // Token values from tokens.json: text.danger :96-98, text.primary :54-56,
-    // text.body :58-60, surface.base :104-106.
+    // text.body :58-60, surface.tint.danger (BUT-2191).
     for (final (mode, danger, primary, bodyText, surface) in [
       (
         ThemeMode.light,
         const Color(0xFF9C3B23),
         const Color(0xFF24382C),
         const Color(0xFF37453A),
-        const Color(0xFFF5F4ED),
+        const Color(0xFFF2DDD6),
       ),
       (
         ThemeMode.dark,
         const Color(0xFFDE9078),
         const Color(0xFFF5F4ED),
         const Color(0xFFF5F4ED),
-        const Color(0xFF17251D),
+        const Color(0xFF2F4437),
       ),
     ]) {
       testWidgets('colours follow the tokens in ${mode.name} mode', (
@@ -334,11 +334,10 @@ void main() {
               .first,
         );
         expect(material.color, surface);
-        // Komponentark v1:755: 1 px text.danger, border-radius 8 px
-        // (radius.control, tokens.json:479).
+        // B83-2 = A: no border. Border-radius 8 px (radius.control,
+        // tokens.json).
         final shape = material.shape! as RoundedRectangleBorder;
-        expect(shape.side.color, danger);
-        expect(shape.side.width, 1.0);
+        expect(shape.side, BorderSide.none);
         expect(shape.borderRadius, BorderRadius.circular(8));
         expect(
           tester.widget<Icon>(find.byIcon(ButleryIcons.triangleAlert)).color,
