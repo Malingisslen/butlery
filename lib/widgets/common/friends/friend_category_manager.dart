@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -80,21 +81,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: context.modeColors.surfaceTintDanger,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
             ),
             child: Text(
               categoriesService.error ??
                   context.l10n.errorCouldNotLoad(context.l10n.friendCategories),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
+                color: Theme.of(context).colorScheme.onErrorContainer,
               ),
             ),
           );
@@ -104,15 +98,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: context.modeColors.surfaceTintDanger,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
             ),
             child: Text(
               friendsVM.error ??
@@ -120,7 +107,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     context.l10n.friendFriendsLabel,
                   ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
+                color: Theme.of(context).colorScheme.onErrorContainer,
               ),
             ),
           );
@@ -401,17 +388,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color:
-            Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Row(

@@ -269,14 +269,10 @@ class CategorySelectionWidgets {
       builder: (context) => Container(
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSurface.withValues(
-            alpha: AppDimensions.opacityVeryLight,
-          ),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
-            color: Theme.of(context).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
         child: Row(

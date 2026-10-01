@@ -49,18 +49,9 @@ class InvitationActions {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color:
-            Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
-          top: BorderSide(
-            color: Theme.of(context).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
       child: Row(

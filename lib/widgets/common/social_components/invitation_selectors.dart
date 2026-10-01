@@ -354,17 +354,10 @@ class InvitationSelectors {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color:
-            Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Column(
@@ -402,8 +395,9 @@ class InvitationSelectors {
                   onDeleted: onRemoveTarget != null
                       ? () => onRemoveTarget(target)
                       : null,
-                  backgroundColor: Theme.of(context).colorScheme.onSurface
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
                 );
               }).toList(),
             ),
