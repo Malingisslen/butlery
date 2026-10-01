@@ -1,0 +1,20 @@
+{
+  "$om": "Malins beslut 2026-10-01, svar i sessionen på två frågor som uppstod när B83-2 (produktbeslut-2026-09-30.json) byggdes i appen (BUT-2183 del 3).",
+  "beslutat_av": "Malin",
+  "datum": "2026-10-01",
+  "rader": [
+    {
+      "id": "B83-2a",
+      "beslut": "B83-2 gäller",
+      "biljett": "BUT-2183",
+      "ersatter": "PQ-20a (produktbeslut-2026-09-23.json): \"Offlinebannern: komponentarket (ingen fyllning) mot telefonskärmens fyllning i mörkt läge.\" = A",
+      "innebord": "Offlinebannern är en notisruta enligt B83-2: tonad yta utan ram, surface.tint.warning när appen är offline och surface.tint.success när den är tillbaka. PQ-20a:s 'ingen fyllning' gäller inte längre."
+    },
+    {
+      "id": "B83-2b",
+      "beslut": "Ja, tonad varningsyta",
+      "biljett": "BUT-2183",
+      "innebord": "Neutrala upplysningsrutor (svep-tipset, receptförslaget) får också surface.tint.warning, upplysningsytan, utan ram, så att alla notisrutor ser likadana ut."
+    }
+  ]
+}
