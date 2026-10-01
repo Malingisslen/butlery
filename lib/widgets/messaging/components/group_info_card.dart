@@ -41,9 +41,7 @@ class GroupInfoCard extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: cs.surface,
               shape: BoxShape.circle,
             ),
             child: ButleryIcon(

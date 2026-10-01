@@ -23,10 +23,12 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/components/message_status_widget.dart';
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/widgets/messaging/message_bubble.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   locale: const Locale('sv'),
@@ -38,6 +40,21 @@ Widget _wrap(Widget child) => MaterialApp(
     GlobalCupertinoLocalizations.delegate,
   ],
   theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
+
+Widget _wrapThemed(Widget child, Brightness brightness) => MaterialApp(
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  theme: AppTheme.lightTheme,
+  darkTheme: AppTheme.darkTheme,
+  themeMode: brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
   home: Scaffold(body: child),
 );
 
@@ -484,5 +501,91 @@ void main() {
       await tester.pumpAndSettle();
       expect(attempts, 2, reason: 'and a retry actually reaches the delete');
     });
+  });
+
+  group('the system pill sits on surface.raised (BUT-2183)', () {
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: raised fill, text.secondary.onRaised '
+          'text, and the fill is not an alpha blend', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            const SystemMessageWidget(content: 'Erik gick med i gruppen'),
+            brightness,
+          ),
+        );
+        final cs = Theme.of(
+          tester.element(find.byType(SystemMessageWidget)),
+        ).colorScheme;
+
+        final pill =
+            tester
+                    .widget<Container>(
+                      find
+                          .descendant(
+                            of: find.byType(SystemMessageWidget),
+                            matching: find.byType(Container),
+                          )
+                          .first,
+                    )
+                    .decoration!
+                as BoxDecoration;
+        expect(pill.color, cs.surfaceContainerHighest);
+        expect(pill.color!.a, 1.0);
+
+        final text = tester.widget<Text>(find.text('Erik gick med i gruppen'));
+        expect(
+          text.style!.color,
+          AppModeColors.textSecondaryOnRaised(brightness),
+        );
+      });
+    }
+  });
+
+  group('secondary text on the ink bubble (BUT-2183)', () {
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: the delivery status icon and text are '
+          'text.secondary on ink, opaque, in both modes', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            const MessageStatusWidget(status: MessageStatus.sent),
+            brightness,
+          ),
+        );
+
+        final text = tester.widget<Text>(find.text('Skickat'));
+        expect(text.style!.color, AppModeColors.textSecondaryOnInk());
+        expect(text.style!.color!.a, 1.0);
+        final icon = tester.widget<Icon>(
+          find.descendant(
+            of: find.byType(MessageStatusWidget),
+            matching: find.byType(ButleryIcon),
+          ),
+        );
+        expect(icon.color, AppModeColors.textSecondaryOnInk());
+      });
+
+      testWidgets('${brightness.name}: the quoted reply in an outgoing bubble '
+          'is text.secondary on ink', (tester) async {
+        Future<Color?> contentColour(bool outgoing) async {
+          await tester.pumpWidget(
+            _wrapThemed(
+              ReplyPreviewWidget(
+                senderName: 'Erik',
+                content: 'Citerat svar',
+                isFromCurrentUser: outgoing,
+              ),
+              brightness,
+            ),
+          );
+          return tester.widget<Text>(find.text('Citerat svar')).style!.color;
+        }
+
+        expect(await contentColour(true), AppModeColors.textSecondaryOnInk());
+        expect(
+          await contentColour(false),
+          AppModeColors.textSecondaryOnRaised(brightness),
+        );
+      });
+    }
   });
 }

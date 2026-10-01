@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -49,7 +50,7 @@ class SystemMessageWidget extends StatelessWidget {
         vertical: AppDimensions.paddingS,
       ),
       decoration: BoxDecoration(
-        color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
@@ -59,7 +60,9 @@ class SystemMessageWidget extends StatelessWidget {
             child: Text(
               content,
               style: AppTextStyles.labelSmall.copyWith(
-                color: cs.onSurfaceVariant,
+                color: AppModeColors.textSecondaryOnRaised(
+                  Theme.of(context).brightness,
+                ),
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
@@ -147,8 +150,9 @@ class ReplyPreviewWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: (isFromCurrentUser ? cs.surfaceContainerHighest : cs.secondary)
-            .withValues(alpha: AppDimensions.opacityLight),
+        color: isFromCurrentUser
+            ? AppModeColors.surfaceRaisedOnInk()
+            : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border(
           left: BorderSide(color: cs.secondary, width: 3),
@@ -161,9 +165,7 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? cs.onPrimary.withValues(
-                      alpha: AppDimensions.opacityVeryDark,
-                    )
+                  ? AppModeColors.textSecondaryOnInk()
                   : cs.onSurface,
             ),
           ),
@@ -172,9 +174,7 @@ class ReplyPreviewWidget extends StatelessWidget {
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? cs.onPrimary.withValues(
-                      alpha: AppDimensions.opacityDark,
-                    )
+                  ? AppModeColors.textSecondaryOnInk()
                   : cs.onSurfaceVariant,
             ),
             maxLines: 2,
@@ -207,7 +207,7 @@ class MessageAvatarWidget extends StatelessWidget {
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: cs.secondary.withValues(alpha: AppDimensions.opacityLight),
+        color: cs.surfaceContainerHighest,
       ),
       child: avatarImage ?? _buildFallback(cs),
     );

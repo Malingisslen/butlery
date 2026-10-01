@@ -32,6 +32,21 @@ Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(body: child),
 );
 
+Widget _wrapThemed(Widget child, Brightness brightness) => MaterialApp(
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  theme: AppTheme.lightTheme,
+  darkTheme: AppTheme.darkTheme,
+  themeMode: brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+  home: Scaffold(body: child),
+);
+
 Message _message() => Message.text(
   conversationId: 'c1',
   senderId: 'other',
@@ -203,5 +218,29 @@ void main() {
       );
       expect(mouseRegion.cursor, SystemMouseCursors.click);
     });
+  });
+
+  group('MessageBubble avatar disc (BUT-2183)', () {
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: surface.raised, opaque', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            MessageBubble(message: _message(), currentUserId: 'me'),
+            brightness,
+          ),
+        );
+        final cs = Theme.of(
+          tester.element(find.byType(MessageBubble)),
+        ).colorScheme;
+
+        final disc = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .singleWhere((d) => d.shape == BoxShape.circle);
+        expect(disc.color, cs.surfaceContainerHighest);
+        expect(disc.color!.a, 1.0);
+      });
+    }
   });
 }

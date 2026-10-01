@@ -8,6 +8,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
@@ -87,7 +88,7 @@ class MessageContentBuilder {
               context.l10n.messagingEdited,
               style: AppTextStyles.labelSmall.copyWith(
                 color: isFromCurrentUser
-                    ? cs.onPrimary.withValues(alpha: AppDimensions.opacityDark)
+                    ? AppModeColors.textSecondaryOnInk()
                     : cs.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
               ),
@@ -164,8 +165,9 @@ class MessageContentBuilder {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: (isFromCurrentUser ? cs.onPrimary : cs.inversePrimary)
-            .withValues(alpha: AppDimensions.opacityLight),
+        color: isFromCurrentUser
+            ? AppModeColors.surfaceRaisedOnInk()
+            : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
@@ -206,9 +208,7 @@ class MessageContentBuilder {
                     subtitle,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? cs.onPrimary.withValues(
-                              alpha: AppDimensions.opacityVeryDark,
-                            )
+                          ? AppModeColors.textSecondaryOnInk()
                           : cs.onSurfaceVariant,
                     ),
                   ),
@@ -308,8 +308,8 @@ class MessageContentBuilder {
     return Container(
       height: 150,
       color: isFromCurrentUser
-          ? cs.onPrimary.withValues(alpha: AppDimensions.opacityLight)
-          : cs.inversePrimary.withValues(alpha: AppDimensions.opacityLight),
+          ? AppModeColors.surfaceRaisedOnInk()
+          : cs.surface,
       child: Center(
         // An image that loads is a still plate, never a spinner
         // (produktregler.md:163, B-18; same as the recipe images in P4-U05).
@@ -326,9 +326,7 @@ class MessageContentBuilder {
                     Icons.broken_image,
                     size: 48,
                     color: isFromCurrentUser
-                        ? cs.onPrimary.withValues(
-                            alpha: AppDimensions.opacityDark,
-                          )
+                        ? AppModeColors.textSecondaryOnInk()
                         : cs.onSurfaceVariant,
                   ),
                   const SizedBox(height: AppDimensions.space4),
@@ -336,9 +334,7 @@ class MessageContentBuilder {
                     context.l10n.messagingImageLoadError,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? cs.onPrimary.withValues(
-                              alpha: AppDimensions.opacityDark,
-                            )
+                          ? AppModeColors.textSecondaryOnInk()
                           : cs.onSurfaceVariant,
                     ),
                   ),
