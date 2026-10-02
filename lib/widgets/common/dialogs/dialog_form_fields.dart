@@ -26,6 +26,7 @@ import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
 /// through [buildTextFormField]; the dropdown, checkbox and switch builders
@@ -361,6 +362,10 @@ class DialogFormFields {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: DropdownButtonFormField<T>(
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        iconDisabledColor: AppModeColors.textDisabled(
+          Theme.of(context).brightness,
+        ),
         initialValue: value,
         items: items,
         onChanged: enabled ? onChanged : null,

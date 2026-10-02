@@ -28,6 +28,7 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Show the assisted import dialog.
 ///
@@ -315,6 +316,10 @@ class _ReviewEditStep extends StatelessWidget {
 
           // Meal type dropdown
           DropdownButtonFormField<String>(
+            iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            iconDisabledColor: AppModeColors.textDisabled(
+              Theme.of(context).brightness,
+            ),
             initialValue: viewModel.mealType,
             decoration: InputDecoration(
               labelText: context.l10n.importMealType,

@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Invitation target selection widgets.
 class InvitationSelectors {
@@ -285,6 +286,12 @@ class InvitationSelectors {
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   DropdownButton<String>(
+                    iconEnabledColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    iconDisabledColor: AppModeColors.textDisabled(
+                      Theme.of(context).brightness,
+                    ),
                     value: 'name',
                     items: [
                       DropdownMenuItem(

@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Header section with the list selector and its management buttons.
 ///
@@ -68,16 +69,19 @@ class ShoppingListHeader {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
                 value: viewModel.activeList?.id,
                 hint: Text(context.l10n.shoppingSelectList),
                 isExpanded: true,
                 // The list's name over its item count grows with the text
                 // size, so the button takes its content's height.
                 itemHeight: null,
-                icon: ButleryIcon(
-                  ButleryIcons.chevronDown,
-                  color: cs.onSurfaceVariant,
-                ),
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
                 onChanged: (listId) {
                   if (listId != null) {
                     viewModel.setActiveList(listId);
