@@ -273,15 +273,16 @@ class PortionScalerUI {
                 foregroundColor: convertToSwedish
                     ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.onSurface,
+                // Selected is the raised surface with a 1.5 px text.primary
+                // border (B83-1).
                 side: BorderSide(
                   color: convertToSwedish
                       ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).colorScheme.outline,
+                  width: convertToSwedish ? 1.5 : 1,
                 ),
                 backgroundColor: convertToSwedish
-                    ? Theme.of(context).colorScheme.primaryContainer.withValues(
-                        alpha: AppDimensions.opacityMediumLight,
-                      )
+                    ? Theme.of(context).colorScheme.surfaceContainerHighest
                     : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space4,
