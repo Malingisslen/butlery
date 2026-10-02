@@ -48,40 +48,16 @@ class PersonalTagSelector extends StatefulWidget {
 
 class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   late PersonalTagViewModel _viewModel;
-  bool _initialized = false;
-  String? _error; // HIGH-7: Track error state
 
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<PersonalTagViewModel>();
-    // Singleton is already initialized by DI
-    _initialized = true;
   }
 
-  Future<void> _retryLoad() async {
-    setState(() {
-      _initialized = false;
-      _error = null;
-    });
-    // Re-initialize from the singleton
-    try {
-      await _viewModel.initialize();
-      if (mounted) {
-        setState(() {
-          _initialized = true;
-          _error = null;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _initialized = true;
-          _error = context.l10n.personalTagCouldNotLoad;
-        });
-      }
-    }
-  }
+  // A failed load ends in the view model's own error, which the Consumer
+  // below reads.
+  Future<void> _retryLoad() => _viewModel.initialize();
 
   @override
   void dispose() {
@@ -152,7 +128,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
           // Tags
           Consumer<PersonalTagViewModel>(
             builder: (context, viewModel, _) {
-              if (!_initialized || viewModel.isLoading) {
+              if (viewModel.isLoading) {
                 // The plate line with what is being fetched, never a
                 // spinner (produktregler.md:163, B-18).
                 return Padding(
@@ -163,9 +139,11 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 );
               }
 
-              // HIGH-7: Show error state if loading failed
-              if (_error != null) {
-                return _buildErrorState(_error!);
+              // A failed refresh keeps the tags it had, so the error only
+              // replaces an empty list: an empty list is what a failed first
+              // load leaves behind, and it must not read as "no tags yet".
+              if (viewModel.loadFailed && !viewModel.hasTags) {
+                return _buildErrorState(context.l10n.personalTagCouldNotLoad);
               }
 
               if (!viewModel.hasTags) {

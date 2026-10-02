@@ -17,14 +17,15 @@
 // in `_loadRecipeData` — cited by name, not by line, precisely because this
 // change's own additions moved it). Text import contributes
 // 'Huvudrätt' (`text_import_strategy.dart:990`), which is in no list at all.
-//
-// Every case below is RED before the fix. They are the proof the bug is real,
-// and they double as the mutation probes for it.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
@@ -317,6 +318,87 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(mealTypeDropdown(tester).initialValue, 'Huvudrätt');
     });
+
+    // The selected value is read through the dropdown's own text style. A
+    // style handed to the dropdown REPLACES the themed one, so one that
+    // carries no colour leaves the value unpainted by the theme (it drew
+    // near-white on the light field). The colour is read off the painted
+    // paragraph of the visible selected row, and its contrast against the
+    // field fill the theme draws.
+    double contrastOf(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
+      final hi = la > lb ? la : lb;
+      final lo = la > lb ? lb : la;
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    Future<void> pumpThemed(
+      WidgetTester tester,
+      Widget child,
+      Brightness brightness,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: brightness == Brightness.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          home: child,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    void expectSelectedValueReadable(WidgetTester tester) {
+      final dropdown = find.byType(DropdownButton<String>);
+      final selected = find.descendant(
+        of: dropdown,
+        matching: find.text('Lunch'),
+      );
+      expect(selected, findsOneWidget);
+      final theme = Theme.of(tester.element(dropdown));
+      final painted = tester.renderObject<RenderParagraph>(selected);
+      final color = painted.text.style?.color;
+      expect(
+        color,
+        theme.colorScheme.onSurface,
+        reason: 'The selected value must be the themed body-text colour.',
+      );
+      final fill = theme.inputDecorationTheme.fillColor!;
+      expect(contrastOf(color!, fill), greaterThanOrEqualTo(4.5));
+    }
+
+    for (final brightness in Brightness.values) {
+      testWidgets('Skriv själv: the selected meal type is body text, '
+          '${brightness.name}', (tester) async {
+        await pumpThemed(
+          tester,
+          SkrivSjalvReceptView(initialRecipe: recipeWithMealType('Lunch')),
+          brightness,
+        );
+        expectSelectedValueReadable(tester);
+      });
+
+      testWidgets('the edit screen: the selected meal type is body text, '
+          '${brightness.name}', (tester) async {
+        await pumpThemed(
+          tester,
+          EditRecipeView(recipe: recipeWithMealType('Lunch')),
+          brightness,
+        );
+        expectSelectedValueReadable(tester);
+      });
+    }
 
     // P4-U07: the editor is a modal with X; Skriv själv is a subpage; each
     // has one saffron save (Komponentark v1:57, :71-78; Skarmar v12 etapp 4

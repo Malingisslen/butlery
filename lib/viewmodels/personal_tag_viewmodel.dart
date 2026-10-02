@@ -38,6 +38,7 @@ class PersonalTagViewModel extends ChangeNotifier
   bool _isLoadingRuleStats = false;
   String? _selectedTagId;
   bool _isDisposed = false;
+  bool _loadFailed = false;
 
   // Stream subscriptions
   StreamSubscription<PersonalTagsWithGroups>? _tagsWithGroupsSubscription;
@@ -56,6 +57,10 @@ class PersonalTagViewModel extends ChangeNotifier
 
   bool get hasTags => _tags.isNotEmpty;
   bool get hasGroups => _groups.isNotEmpty;
+
+  // The shared error also carries failed actions (create, delete, rules);
+  // only this says the tags themselves could not be read.
+  bool get loadFailed => _loadFailed;
   Map<String, int> get tagUsageCounts => Map.unmodifiable(_tagUsageCounts);
   Map<String, int> get ruleMatchCounts => Map.unmodifiable(_ruleMatchCounts);
   bool get isLoadingStats => _isLoadingStats;
@@ -140,6 +145,7 @@ class PersonalTagViewModel extends ChangeNotifier
   Future<void> _doInitialize() async {
     setLoading(true);
     clearError();
+    _loadFailed = false;
 
     try {
       _tags = await _service.getAllTags();
@@ -170,6 +176,7 @@ class PersonalTagViewModel extends ChangeNotifier
         return _doInitialize();
       }
 
+      _loadFailed = true;
       setError(AppLocale.current.errorCouldNotLoadTags);
     }
   }

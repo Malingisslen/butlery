@@ -618,6 +618,14 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     );
   }
 
+  // The theme's filled button asks for an infinite minimum width, which a
+  // Row's unbounded main axis cannot satisfy.
+  static const ButtonStyle _rowButtonStyle = ButtonStyle(
+    minimumSize: WidgetStatePropertyAll(
+      Size(0, AppDimensions.minTouchTarget),
+    ),
+  );
+
   Widget _buildActions() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -639,10 +647,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             onPressed: _isSaving ? PlateLineButton.ignore : _save,
             style: _isSaving
                 ? PlateLineButton.busyStyle(
-                    null,
+                    _rowButtonStyle,
                     Theme.of(context).filledButtonTheme.style,
                   )
-                : null,
+                : _rowButtonStyle,
             child: Text(
               _isEditing ? context.l10n.commonSave : context.l10n.commonCreate,
             ),

@@ -65,23 +65,7 @@ abstract class BrandColors {
   /// Generic platform color (neutral gray)
   static const Color generic = AppColors.brandGeneric;
 
-  // Platform-specific background colors (light tints for badges)
-  /// YouTube light background (light red tint)
-  static const Color youtubeBackground = AppColors.brandYoutubeBackground;
-
-  /// TikTok light background (light cyan tint)
-  static const Color tiktokBackground = AppColors.brandTiktokBackground;
-
-  /// Instagram light background (light pink tint)
-  static const Color instagramBackground = AppColors.brandInstagramBackground;
-
   // Platform-specific text colors (darker shades for readability)
-  /// YouTube dark text color
-  static const Color youtubeText = AppColors.brandYoutubeText;
-
   /// TikTok dark text color (black per brand guidelines)
   static const Color tiktokText = AppColors.brandTiktokText;
-
-  /// Instagram dark text color
-  static const Color instagramText = AppColors.brandInstagramText;
 }

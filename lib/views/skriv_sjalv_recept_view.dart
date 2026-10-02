@@ -454,7 +454,11 @@ class _SkrivSjalvReceptViewContentState
                                   ),
                                   border: OutlineInputBorder(),
                                 ),
-                                style: AppTextStyles.bodyMedium,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
                                 items: mealTypeOptions.values
                                     .map(
                                       (mt) => DropdownMenuItem(
