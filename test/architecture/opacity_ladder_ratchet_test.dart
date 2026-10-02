@@ -23,7 +23,6 @@ const _residue = <String, int>{
   'lib/views/realtime/conflict_diff_view.dart': 2,
   'lib/views/receive_share_view.dart': 2,
   'lib/views/settings/allergen_preferences_view.dart': 2,
-  'lib/widgets/branding/app_logo.dart': 1,
   'lib/widgets/common/indicators/progress_overlay.dart': 1,
   'lib/widgets/common/loading/loading_widgets.dart': 1,
   'lib/widgets/common/menu_persistence/menu_load_dialog.dart': 1,
@@ -35,11 +34,7 @@ const _residue = <String, int>{
   'lib/widgets/common/scaffolds/empty_state_scaffold.dart': 1,
   'lib/widgets/common/search_filter/search_stats_widget.dart': 2,
   'lib/widgets/common/service/service_widgets.dart': 3,
-  'lib/widgets/cooking/inline_timer_text.dart': 1,
-  'lib/widgets/import/platform_badge_widget.dart': 3,
   'lib/widgets/menu/calendar/calendar_drag.dart': 1,
-  'lib/widgets/menu/menu_content_widgets.dart': 1,
-  'lib/widgets/recipe/recipe_shelf.dart': 1,
 };
 
 // Aligned with symbolSpecs' 'AppDimensions.opacity*' pattern in

@@ -157,7 +157,8 @@ class _RelatedThumbnail extends StatelessWidget {
                           ),
                           size:
                               (_thumbnailSize - AppDimensions.spacingXl) * 0.65,
-                          opacity: 0.8,
+                          opacity:
+                              VegetableIllustration.recipePlaceholderOpacity,
                         ),
                       ),
               ),

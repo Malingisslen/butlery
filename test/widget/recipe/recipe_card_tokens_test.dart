@@ -14,6 +14,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
@@ -221,10 +222,42 @@ void main() {
             reason: text,
           );
           expect(textColor(tester, text), secondary, reason: text);
+          // The line keeps the marker visible once the card itself turns
+          // surface.raised under a hover or press, which is its own fill.
+          final border =
+              decorationAround(tester, find.text(text)).border! as Border;
+          expect(border.top.color, cs.outlineVariant, reason: text);
+          expect(border.top.width, 1, reason: text);
         }
         expect(glyphColor(tester, Icons.help_outline), secondary);
         expect(glyphColor(tester, Icons.pie_chart_outline), secondary);
       });
+
+      testWidgets(
+        'the photo-less placeholder draws the vegetable at the shared '
+        'placeholder opacity',
+        (tester) async {
+          for (final style in [
+            RecipeCardStyle.detailed,
+            RecipeCardStyle.grid,
+          ]) {
+            await pump(
+              tester,
+              theme: theme,
+              card: RecipeCard(recipe: _recipe(), style: style),
+            );
+            expect(
+              tester
+                  .widget<VegetableIllustration>(
+                    find.byType(VegetableIllustration),
+                  )
+                  .opacity,
+              0.8,
+              reason: style.name,
+            );
+          }
+        },
+      );
 
       testWidgets('visibility glyph is text.disabled', (tester) async {
         await pump(

@@ -18,7 +18,9 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/components/add_item_field.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
@@ -223,6 +225,38 @@ void main() {
         expect(badge.color, cs.surfaceContainerHighest);
         expect((badge.border! as Border).top.color, cs.outlineVariant);
       });
+
+      for (final (platform, glyph, brand) in [
+        (Platform.youtube, Icons.play_circle_outline, BrandColors.youtube),
+        (Platform.tiktok, Icons.music_note, BrandColors.tiktokText),
+        (Platform.instagram, ButleryIcons.camera, BrandColors.instagram),
+      ]) {
+        testWidgets('$platform keeps its brand on the glyph, at full '
+            'strength, and the same outlineVariant line as the rest', (
+          tester,
+        ) async {
+          await _pump(
+            tester,
+            theme,
+            PlatformBadgeWidget(detection: detection(platform)),
+          );
+
+          final badge = _badgeDecoration(tester);
+          final border = badge.border! as Border;
+          expect(border.top.color, cs.outlineVariant);
+          expect(border.top.width, 1);
+          expect(
+            tester
+                .widget<ButleryIcon>(
+                  find.byWidgetPredicate(
+                    (w) => w is ButleryIcon && w.icon == glyph,
+                  ),
+                )
+                .color,
+            brand,
+          );
+        });
+      }
     });
 
     group('plain fields and glyphs, $mode', () {

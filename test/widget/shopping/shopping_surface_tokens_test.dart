@@ -201,6 +201,60 @@ void main() {
         }
       });
 
+      testWidgets('the sharing dialog draws the Redigera role in ink with a '
+          'saffron glyph', (tester) async {
+        await tester.pumpWidget(
+          _app(
+            ShoppingShareStatusDialog(
+              list: _sharedList(),
+              userDisplayNames: const {_ownerId: 'Malin', 'bob': 'Bob'},
+            ),
+            brightness,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          tester.widget<Text>(find.text('Redigera')).style?.color,
+          cs.onSurface,
+        );
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.pencil)).color,
+          cs.secondary,
+        );
+      });
+
+      testWidgets('the member dialog draws the Redigera role in ink with a '
+          'saffron glyph', (tester) async {
+        tester.view.physicalSize = const Size(1000, 1800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await tester.pumpWidget(
+          _app(
+            ShoppingMemberManagementDialog(
+              list: _sharedList(),
+              userDisplayNames: const {_ownerId: 'Malin', 'bob': 'Bob'},
+              availableFriends: const [],
+            ),
+            brightness,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final role = find.text('Redigera').hitTestable();
+        expect(role, findsOneWidget);
+        final style = DefaultTextStyle.of(tester.element(role)).style;
+        expect(style.color, cs.onSurface);
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.pencil)).color,
+          cs.secondary,
+        );
+      });
+
       testWidgets('a refused change is a tinted notice with its own text', (
         tester,
       ) async {

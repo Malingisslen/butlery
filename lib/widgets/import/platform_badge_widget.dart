@@ -51,7 +51,7 @@ class PlatformBadgeWidget extends StatelessWidget {
           color: _getBackgroundColor(detection!.platform, colorScheme),
           borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           border: Border.all(
-            color: _getBorderColor(detection!.platform, colorScheme),
+            color: colorScheme.outlineVariant,
             width: 1,
           ),
         ),
@@ -102,24 +102,6 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.website:
       case Platform.unknown:
         return colorScheme.surfaceContainerHighest;
-    }
-  }
-
-  Color _getBorderColor(Platform platform, ColorScheme colorScheme) {
-    switch (platform) {
-      case Platform.youtube:
-        return BrandColors.youtube.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        );
-      case Platform.tiktok:
-        return BrandColors.tiktok.withValues(alpha: AppDimensions.opacityHalf);
-      case Platform.instagram:
-        return BrandColors.instagram.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        );
-      case Platform.website:
-      case Platform.unknown:
-        return colorScheme.outlineVariant;
     }
   }
 

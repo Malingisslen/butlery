@@ -441,7 +441,17 @@ void main() {
         expect(nameText.style?.color, equals(Colors.black));
 
         final taglineText = tester.widget<Text>(find.text('Test'));
-        expect(taglineText.style?.color?.a, lessThan(1.0)); // Has transparency
+        // Secondary text is its own role at full strength, never ink at an
+        // opacity.
+        expect(
+          taglineText.style?.color,
+          equals(
+            Theme.of(
+              tester.element(find.text('Test')),
+            ).colorScheme.onSurfaceVariant,
+          ),
+        );
+        expect(taglineText.style?.color?.a, equals(1.0));
       });
 
       testWidgets('should apply bold weight to app name', (

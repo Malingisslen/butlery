@@ -145,9 +145,7 @@ class AppBranding extends StatelessWidget {
             style:
                 taglineStyle ??
                 AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: AppDimensions.opacityDark,
-                  ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
             textAlign: TextAlign.center,
           ),
