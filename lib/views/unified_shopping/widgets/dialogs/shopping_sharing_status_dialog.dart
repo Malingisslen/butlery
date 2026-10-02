@@ -308,27 +308,33 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     String permissionLabel;
     IconData permissionIcon;
     Color permissionColor;
+    // Only the role glyph carries the saffron; the words stay ink.
+    Color permissionTextColor;
 
     if (isOwner) {
       permissionLabel = context.l10n.shoppingPermissionOwner;
       permissionIcon = Icons.admin_panel_settings;
       permissionColor = cs.onSurface;
+      permissionTextColor = cs.onSurface;
     } else {
       switch (permission) {
         case SharedListPermission.view:
           permissionLabel = context.l10n.shoppingPermissionView;
           permissionIcon = ButleryIcons.eye;
           permissionColor = cs.onSurfaceVariant;
+          permissionTextColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionIcon = ButleryIcons.pencil;
           permissionColor = cs.secondary;
+          permissionTextColor = cs.onSurface;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdmin;
           permissionIcon = Icons.admin_panel_settings;
           permissionColor = cs.onSurface;
+          permissionTextColor = cs.onSurface;
           break;
       }
     }
@@ -372,7 +378,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                     Text(
                       permissionLabel,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: permissionColor,
+                        color: permissionTextColor,
                       ),
                     ),
                   ],

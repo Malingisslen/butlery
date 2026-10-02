@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
 import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
@@ -179,6 +180,26 @@ void main() {
         expect(
           tester.widget<Divider>(find.byType(Divider)).color,
           cs.outlineVariant,
+        );
+      });
+
+      testWidgets('the shelf placeholder draws the vegetable at the shared '
+          'placeholder opacity', (tester) async {
+        await tester.pumpWidget(
+          _app(
+            theme,
+            RecipeShelf(
+              title: 'Nyligen',
+              recipes: [_recipe()],
+              onRecipeTap: (_) {},
+            ),
+          ),
+        );
+        expect(
+          tester
+              .widget<VegetableIllustration>(find.byType(VegetableIllustration))
+              .opacity,
+          0.8,
         );
       });
 

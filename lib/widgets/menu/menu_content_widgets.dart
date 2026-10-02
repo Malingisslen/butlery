@@ -89,9 +89,7 @@ class MenuContentWidgets {
                           icon: ButleryIcon(
                             ButleryIcons.x,
                             size: AppDimensions.iconSizeAction,
-                            color: cs.onSurface.withValues(
-                              alpha: AppDimensions.opacityDark,
-                            ),
+                            color: cs.onSurfaceVariant,
                           ),
                           onPressed: onClear,
                           tooltip: context.l10n.commonClear,

@@ -1217,6 +1217,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                         instruction,
                                       ),
                                       chipColor: cs.onPrimary,
+                                      chipFill:
+                                          AppModeColors.surfaceRaisedOnInk(),
                                       style: AppTextStyles.titleLarge.copyWith(
                                         color: cs.onPrimary,
                                         height: 1.7,

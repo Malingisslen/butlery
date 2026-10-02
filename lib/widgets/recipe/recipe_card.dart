@@ -477,7 +477,7 @@ class RecipeCard extends StatelessWidget {
                 child: VegetableIllustration(
                   type: VegetableIllustration.randomForRecipe(recipe.id),
                   size: imageSize * 0.7,
-                  opacity: 0.8,
+                  opacity: VegetableIllustration.recipePlaceholderOpacity,
                 ),
               ),
       ),
@@ -1075,6 +1075,7 @@ class RecipeCard extends StatelessWidget {
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
           color: _chipFill(cs),
+          border: Border.all(color: cs.outlineVariant),
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
@@ -1123,6 +1124,7 @@ class RecipeCard extends StatelessWidget {
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
           color: _chipFill(cs),
+          border: Border.all(color: cs.outlineVariant),
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(

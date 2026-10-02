@@ -103,7 +103,8 @@ class _ShelfCard extends StatelessWidget {
                             recipe.id,
                           ),
                           size: AppDimensions.imageSizeThumbnail / 2,
-                          opacity: AppDimensions.opacityDark,
+                          opacity:
+                              VegetableIllustration.recipePlaceholderOpacity,
                         ),
                       ),
               ),

@@ -29,12 +29,17 @@ class InlineTimerText extends StatelessWidget {
   /// Chip foreground/border color; defaults to the surrounding text color.
   final Color? chipColor;
 
+  /// Chip fill; defaults to the theme's raised surface. Pass the on-ink raised
+  /// surface when the line sits on the ink base.
+  final Color? chipFill;
+
   const InlineTimerText({
     super.key,
     required this.text,
     required this.onTimerTap,
     this.style,
     this.chipColor,
+    this.chipFill,
   });
 
   @override
@@ -71,9 +76,7 @@ class InlineTimerText extends StatelessWidget {
                   decoration: BoxDecoration(
                     // Square design language — no border radius.
                     border: Border.all(color: accent),
-                    color: accent.withValues(
-                      alpha: AppDimensions.opacityExtraVeryLight,
-                    ),
+                    color: chipFill ?? cs.surfaceContainerHighest,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
