@@ -1,8 +1,8 @@
 // lib/widgets/common/indicators/pulse_dot.dart
 //
-// BUT-408: Reusable pulsing status dot, extracted from [EditIndicatorWidget]
-// so cooking session cards and other live-presence widgets share the same
-// animation contract (WCAG 2.3.3 reduce-motion aware).
+// BUT-408: Reusable pulsing status dot, so cooking session cards and other
+// live-presence widgets share the same animation contract (WCAG 2.3.3
+// reduce-motion aware).
 //
 // Behavior:
 // - Pulses from scale 0.5 → 1.0 and back, over 2s.
@@ -30,8 +30,7 @@ class PulseDot extends StatefulWidget {
   /// Edge length in logical pixels (square).
   final double size;
 
-  /// Full pulse cycle (0.5 → 1.0 → 0.5). 2s matches the original
-  /// [EditIndicatorWidget] cadence.
+  /// Full pulse cycle (0.5 → 1.0 → 0.5).
   final Duration duration;
 
   @override

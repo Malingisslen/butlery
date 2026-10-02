@@ -207,20 +207,13 @@ class AvatarImageWidget extends StatelessWidget {
       height: dimensions.height,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryDark),
-            cs.primary,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: cs.surfaceContainerHighest,
       ),
       child: Center(
         child: UserAvatarWidgets.initialsOrFallback(
           initials: initials,
           fontSize: _getFontSize(dimensions.width),
-          color: cs.onPrimary,
+          color: cs.onSurface,
           baseStyle: AppTextStyles.headlineMedium.copyWith(
             fontWeight: FontWeight.w600,
           ),

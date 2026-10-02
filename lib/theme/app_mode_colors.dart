@@ -106,6 +106,17 @@ abstract final class AppModeColors {
   /// palette.inkRaised #2F4437 in both modes: a raised surface on ink, such as
   /// a row or card inside the outgoing chat bubble.
   static Color surfaceRaisedOnInk() => AppColors.surfaceDark;
+
+  /// semantic border.onInk #3F5145 in both modes: the line between ink and
+  /// inkRaised, and the fill of a progress bar on an inkRaised track in the
+  /// outgoing chat bubble (B101).
+  static Color borderOnInk() => AppColors.borderOnInk;
+
+  /// semantic surface.base light #F5F4ED, in both modes: an opaque paper card
+  /// that carries ink text over a photo scrim, so the text pair does not depend
+  /// on the photo behind it (B102). The translucent overlayPaperCard stays for
+  /// pills directly on a photo.
+  static Color surfacePaperOnPhoto() => AppColors.cardWhite;
 }
 
 /// The mode-aware colour set for members that have no ColorScheme slot.
