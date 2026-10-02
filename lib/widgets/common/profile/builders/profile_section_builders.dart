@@ -44,7 +44,6 @@ class ProfileSectionBuilders {
             subtitle: context.l10n.profileDownloadBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleBackup(rootContext ?? context),
-            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
@@ -54,7 +53,6 @@ class ProfileSectionBuilders {
             subtitle: context.l10n.profileRestoreFromBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleRestore(rootContext ?? context),
-            color: Theme.of(context).colorScheme.onSurface,
           ),
         ],
       ),
@@ -77,10 +75,8 @@ class ProfileSectionBuilders {
             child: FilledButton.tonalIcon(
               onPressed: () => AuthActionHandler.handleLogout(context),
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityVeryLight,
-                ),
-                foregroundColor: Theme.of(context).colorScheme.error,
+                backgroundColor: context.modeColors.surfaceTintDanger,
+                foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
                 minimumSize: const Size(
                   double.infinity,
                   AppDimensions.buttonHeight,
@@ -135,7 +131,6 @@ class ProfileSectionBuilders {
             title: context.l10n.profilePrivacyPolicy,
             subtitle: context.l10n.profilePrivacyPolicySubtitle,
             onTap: () => GdprConsentHandler.handlePrivacyPolicy(context),
-            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -146,7 +141,6 @@ class ProfileSectionBuilders {
             title: context.l10n.profileManageConsent,
             subtitle: context.l10n.profileManageConsentSubtitle,
             onTap: () => GdprConsentHandler.handleManageConsent(context),
-            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -157,7 +151,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileExportData,
             subtitle: context.l10n.profileExportDataSubtitle,
             onTap: () => GdprConsentHandler.handleExportData(context),
-            color: context.modeColors.info,
+            tone: DataButtonTone.info,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -168,7 +162,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileDeleteAccount,
             subtitle: context.l10n.profileDeleteAccountSubtitle,
             onTap: () => AuthActionHandler.handleDeleteAccount(context),
-            color: Theme.of(context).colorScheme.error,
+            tone: DataButtonTone.danger,
           ),
         ],
       ),

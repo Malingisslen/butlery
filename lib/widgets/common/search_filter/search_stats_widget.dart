@@ -36,15 +36,8 @@ class SearchStatsWidget extends StatelessWidget {
       ),
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        ), // ✅ Back to proper AppTheme color
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurface.withValues(alpha: AppDimensions.opacityLight),
-        ),
       ),
       child: Row(
         children: [
