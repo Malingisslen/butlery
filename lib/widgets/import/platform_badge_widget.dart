@@ -100,9 +100,6 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.instagram:
         return BrandColors.instagramBackground;
       case Platform.website:
-        return colorScheme.primaryContainer.withValues(
-          alpha: AppDimensions.opacityHalf,
-        );
       case Platform.unknown:
         return colorScheme.surfaceContainerHighest;
     }
@@ -121,11 +118,8 @@ class PlatformBadgeWidget extends StatelessWidget {
           alpha: AppDimensions.opacityMediumLight,
         );
       case Platform.website:
-        return colorScheme.onSurface.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        );
       case Platform.unknown:
-        return colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf);
+        return colorScheme.outlineVariant;
     }
   }
 
@@ -153,7 +147,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.instagram:
         return BrandColors.instagramText;
       case Platform.website:
-        return colorScheme.onPrimaryContainer;
+        return colorScheme.onSurface;
       case Platform.unknown:
         return colorScheme.onSurfaceVariant;
     }

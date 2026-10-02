@@ -152,9 +152,7 @@ class TextLineSelector extends StatelessWidget {
             ButleryIcon(
               Icons.text_fields,
               size: 48,
-              color: theme.colorScheme.onSurfaceVariant.withValues(
-                alpha: AppDimensions.opacityHalf,
-              ),
+              color: AppModeColors.textDisabled(theme.brightness),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Builder(

@@ -217,17 +217,12 @@ class TagResultDisplay extends StatelessWidget {
 
   Widget _buildRetagIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final warningColor = context.modeColors.warning;
+    final warningColor = AppModeColors.textWarning(cs.brightness);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: warningColor.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
       ),
       child: Row(
         children: [
