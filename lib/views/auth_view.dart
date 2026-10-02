@@ -24,6 +24,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -245,6 +246,10 @@ class _AuthViewState extends State<AuthView> {
                 _buildLabeledField(
                   label: context.l10n.authYourName,
                   child: TextFormField(
+                    style: fieldTextStyle(
+                      context,
+                      enabled: !viewModel.isLoading,
+                    ),
                     key: const Key('name_field'),
                     controller: _nameController,
                     focusNode: _nameFocus,
@@ -267,6 +272,7 @@ class _AuthViewState extends State<AuthView> {
               _buildLabeledField(
                 label: context.l10n.authEmail,
                 child: TextFormField(
+                  style: fieldTextStyle(context, enabled: !viewModel.isLoading),
                   key: const Key('email_field'),
                   controller: _emailController,
                   focusNode: _emailFocus,
@@ -289,6 +295,7 @@ class _AuthViewState extends State<AuthView> {
               _buildLabeledField(
                 label: context.l10n.authPassword,
                 child: TextFormField(
+                  style: fieldTextStyle(context, enabled: !viewModel.isLoading),
                   key: const Key('password_field'),
                   controller: _passwordController,
                   focusNode: _passwordFocus,

@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Banner shown when a previous import is pending retry.
 class PendingImportBanner extends StatelessWidget {
@@ -82,6 +83,7 @@ class ImportInputSection extends StatelessWidget {
     final theme = Theme.of(context);
 
     return TextField(
+      style: fieldTextStyle(context, enabled: !viewModel.isImporting),
       controller: controller,
       focusNode: focusNode,
       onChanged: onChanged,

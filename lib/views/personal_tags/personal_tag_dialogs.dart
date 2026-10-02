@@ -33,6 +33,7 @@ import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
 abstract final class PersonalTagDialogs {
@@ -312,6 +313,7 @@ abstract final class PersonalTagDialogs {
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagCreateTag),
             content: TextField(
+              style: fieldTextStyle(context, enabled: !isLoading),
               onChanged: (v) => tagName = v,
               enabled: !isLoading,
               decoration: InputDecoration(
@@ -414,6 +416,7 @@ abstract final class PersonalTagDialogs {
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagCreateGroup),
             content: TextField(
+              style: fieldTextStyle(context, enabled: !isLoading),
               onChanged: (v) => groupName = v,
               enabled: !isLoading,
               decoration: InputDecoration(
@@ -501,6 +504,7 @@ abstract final class PersonalTagDialogs {
             content: Form(
               key: formKey,
               child: TextFormField(
+                style: fieldTextStyle(context, enabled: !isLoading),
                 initialValue: tag.name,
                 onChanged: (v) => tagName = v,
                 enabled: !isLoading,
@@ -744,6 +748,7 @@ abstract final class PersonalTagDialogs {
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagCreateNewGroup),
             content: TextField(
+              style: fieldTextStyle(context, enabled: !isLoading),
               onChanged: (v) => groupName = v,
               enabled: !isLoading,
               decoration: InputDecoration(
@@ -834,6 +839,7 @@ abstract final class PersonalTagDialogs {
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagRenameGroup),
             content: TextFormField(
+              style: fieldTextStyle(context, enabled: !isLoading),
               initialValue: group.name,
               onChanged: (v) => groupName = v,
               enabled: !isLoading,

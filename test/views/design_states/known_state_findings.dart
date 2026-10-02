@@ -32,14 +32,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2182',
     'no "Ingen anslutning" title',
   ),
-  'import-av-recept::LOADING::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2184',
-    '#6124382C ("https://www.koket.se/kra…")',
-  ),
-  'import-av-recept::LOADING::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2184',
-    '#61F5F4ED ("https://www.koket.se/kra…")',
-  ),
   'import-av-recept::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
     'no "Ingen anslutning" title',
@@ -72,18 +64,10 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2182',
     'no "Ingen anslutning" title',
   ),
-  'veckogenerering::LOADING::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2184',
-    '#6124382C ("Vegetariskt i veckan, sn…")',
-  ),
-  'veckogenerering::LOADING::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2184',
-    '#61F5F4ED ("Vegetariskt i veckan, sn…")',
-  ),
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 14;
+const int knownStateFindingsCeiling = 10;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

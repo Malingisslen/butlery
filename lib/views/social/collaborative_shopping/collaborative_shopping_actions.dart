@@ -14,6 +14,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -162,6 +163,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildItemInput(BuildContext context) {
     return TextField(
+      style: fieldTextStyle(context, enabled: !viewModel.isAddingItem),
       controller: newItemController,
       decoration: InputDecoration(
         hintText: context.l10n.collaborativeAddItemHint,
