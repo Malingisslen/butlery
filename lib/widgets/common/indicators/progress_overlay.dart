@@ -1,7 +1,9 @@
 // lib/widgets/common/indicators/progress_overlay.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -53,37 +55,46 @@ class ProgressOverlay extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: shape,
-          color:
-              backgroundColor ??
-              cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+          color: backgroundColor ?? AppColors.overlayBlack60,
         ),
         // Text plus the plate line, never a spinner (produktregler.md:163,
-        // B-18). The line takes the in-button form in the overlay's own text
-        // colour (Komponentark v1:307), so it contrasts with the scrim
-        // exactly as the text does, in either mode. The scrim and text
-        // colours themselves predate this line and have no drawn source.
+        // B-18). They sit on an opaque paper card, because the scrim alone
+        // cannot guarantee a reading colour over an arbitrary photo (B102).
+        // The line takes the in-button form in the text's own colour
+        // (Komponentark v1:307).
         child: Center(
           child: Semantics(
             liveRegion: true,
             label: text,
             child: ExcludeSemantics(
-              child: SizedBox(
-                width: overlayLineWidth,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      text,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: textColor ?? cs.surfaceContainerHighest,
-                      ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppModeColors.surfacePaperOnPhoto(),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusControl,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                  child: SizedBox(
+                    width: overlayLineWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          text,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: textColor ?? cs.primary,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        ButtonPlateLine(
+                          color: progressColor ?? cs.primary,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    ButtonPlateLine(
-                      color: progressColor ?? cs.surfaceContainerHighest,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

@@ -19,6 +19,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -388,6 +389,43 @@ void main() {
         expect(decoration.color, modeColors.surfaceTintDanger);
         expect(decoration.border, isNull);
         expect(_textColor(tester, 'Något gick fel'), cs.onErrorContainer);
+      });
+
+      testWidgets('service loading overlay is the ink overlay, not an '
+          'on-surface tint', (tester) async {
+        final service = _FakeRecipeService();
+        when(() => service.hasError).thenReturn(false);
+        when(() => service.lastError).thenReturn(null);
+        when(() => service.isLoading).thenReturn(true);
+        when(() => service.recipes).thenReturn(const <Recipe>[]);
+        when(() => service.stateStream).thenAnswer((_) => const Stream.empty());
+        GetIt.instance.registerSingleton<UnifiedRecipeService>(service);
+        production.ServiceLocator.initialize(DIContainer());
+        addTearDown(() async {
+          production.ServiceLocator.reset();
+          await GetIt.instance.reset();
+        });
+
+        await _pump(
+          tester,
+          theme,
+          Scaffold(
+            body: ServiceWidgets.serviceWidget(
+              builder: (recipes) => const SizedBox.shrink(),
+              showLoadingOverlay: true,
+            ),
+          ),
+        );
+
+        final scrim = tester.widget<ColoredBox>(
+          find
+              .ancestor(
+                of: find.text(_sv.loadingGeneric),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+        );
+        expect(scrim.color, AppColors.overlayBlack40);
       });
     });
   }

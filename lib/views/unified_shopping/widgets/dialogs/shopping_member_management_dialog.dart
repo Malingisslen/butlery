@@ -615,7 +615,11 @@ class _ShoppingMemberManagementDialogState
                       ButleryIcon(
                         ButleryIcons.pencil,
                         size: AppDimensions.iconSizeS,
-                        color: cs.secondary,
+                        // Saffron falls under 3:1 on the light surfaces, so
+                        // only dark mode keeps it.
+                        color: cs.brightness == Brightness.dark
+                            ? cs.secondary
+                            : cs.onSurface,
                       ),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionEdit),

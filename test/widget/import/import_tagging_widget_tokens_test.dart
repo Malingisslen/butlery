@@ -130,6 +130,12 @@ Color? _labelColorBeside(WidgetTester tester, Finder glyph) {
   return tester.widget<Text>(label).style?.color;
 }
 
+double _contrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  return (la > lb ? la + 0.05 : lb + 0.05) / (la > lb ? lb + 0.05 : la + 0.05);
+}
+
 void main() {
   for (final (mode, theme) in [
     ('light', AppTheme.lightTheme),
@@ -226,15 +232,22 @@ void main() {
         expect((badge.border! as Border).top.color, cs.outlineVariant);
       });
 
+      // The brand is on the glyph only: the badge is the raised fill, the
+      // outlineVariant line and ink text like the rest, and the glyph is the
+      // brand's own colour, TikTok taking the half of its brand that shows on
+      // the mode's fill.
+      final dark = theme.brightness == Brightness.dark;
       for (final (platform, glyph, brand) in [
         (Platform.youtube, Icons.play_circle_outline, BrandColors.youtube),
-        (Platform.tiktok, Icons.music_note, BrandColors.tiktokText),
+        (
+          Platform.tiktok,
+          Icons.music_note,
+          dark ? BrandColors.tiktok : BrandColors.tiktokText,
+        ),
         (Platform.instagram, ButleryIcons.camera, BrandColors.instagram),
       ]) {
-        testWidgets('$platform keeps its brand on the glyph, at full '
-            'strength, and the same outlineVariant line as the rest', (
-          tester,
-        ) async {
+        testWidgets('$platform is the raised fill with brand only on the '
+            'glyph, and ink text that reads', (tester) async {
           await _pump(
             tester,
             theme,
@@ -242,6 +255,7 @@ void main() {
           );
 
           final badge = _badgeDecoration(tester);
+          expect(badge.color, cs.surfaceContainerHighest);
           final border = badge.border! as Border;
           expect(border.top.color, cs.outlineVariant);
           expect(border.top.width, 1);
@@ -254,6 +268,17 @@ void main() {
                 )
                 .color,
             brand,
+          );
+          final label = tester.widget<Text>(
+            find.descendant(
+              of: find.byType(PlatformBadgeWidget),
+              matching: find.byType(Text),
+            ),
+          );
+          expect(label.style?.color, cs.onSurface);
+          expect(
+            _contrast(label.style!.color!, cs.surfaceContainerHighest),
+            greaterThanOrEqualTo(4.5),
           );
         });
       }

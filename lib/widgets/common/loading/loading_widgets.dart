@@ -1,6 +1,7 @@
 // lib/widgets/common/loading/loading_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -26,9 +27,7 @@ class LoadingWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return ColoredBox(
-          color:
-              overlayColor ??
-              cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: overlayColor ?? AppColors.overlayBlack40,
           child: Center(
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
