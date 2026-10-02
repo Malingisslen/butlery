@@ -85,20 +85,13 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                 margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.modeColors.warning.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
-                  border: Border.all(
-                    color: context.modeColors.warning.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
-                  ),
+                  color: context.modeColors.surfaceTintWarning,
                 ),
                 child: Row(
                   children: [
                     ButleryIcon(
                       ButleryIcons.wifiOff,
-                      color: context.modeColors.warning,
+                      color: AppModeColors.textWarning(cs.brightness),
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.space4),

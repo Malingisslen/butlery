@@ -365,9 +365,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
+            color: cs.outlineVariant,
             width: 1,
           ),
         ),
