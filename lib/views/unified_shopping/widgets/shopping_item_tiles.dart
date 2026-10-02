@@ -339,11 +339,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
             Text(
               widget.item.note!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: widget.isCompleted
-                    ? cs.onSurfaceVariant.withValues(
-                        alpha: AppDimensions.opacityVeryDark,
-                      )
-                    : cs.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
                 decoration: widget.isCompleted
                     ? TextDecoration.lineThrough
                     : TextDecoration.none,
@@ -397,9 +393,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           icon: ButleryIcons.trash2,
           onPressed: () => widget.onDeleteItem(widget.item),
           semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
-          color: cs.onSurfaceVariant.withValues(
-            alpha: AppDimensions.opacityDark,
-          ),
+          color: cs.onSurfaceVariant,
           iconSize: AppDimensions.iconSizeS,
         ),
       ],

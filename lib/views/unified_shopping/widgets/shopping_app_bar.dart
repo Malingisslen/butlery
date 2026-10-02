@@ -47,12 +47,7 @@ class ShoppingAppBar {
             button: true,
             enabled: true,
             child: IconButton(
-              icon: ButleryIcon(
-                ButleryIcons.plus,
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityDark,
-                ),
-              ),
+              icon: ButleryIcon(ButleryIcons.plus, color: cs.onSurface),
               onPressed: onCreateList,
               tooltip: context.l10n.shoppingNewList,
             ),
@@ -61,12 +56,7 @@ class ShoppingAppBar {
           // Browse templates
           if (onBrowseTemplates != null)
             IconButton(
-              icon: ButleryIcon(
-                Icons.list_alt_outlined,
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityDark,
-                ),
-              ),
+              icon: ButleryIcon(Icons.list_alt_outlined, color: cs.onSurface),
               onPressed: onBrowseTemplates,
               tooltip: context.l10n.shoppingTemplateBrowse,
             ),
@@ -81,9 +71,7 @@ class ShoppingAppBar {
             child: IconButton(
               icon: ButleryIcon(
                 ButleryIcons.users,
-                color: canShare
-                    ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
-                    : cs.outlineVariant,
+                color: canShare ? cs.onSurface : cs.outlineVariant,
               ),
               onPressed: canShare ? onShowShareDialog : null,
               tooltip: canShare
@@ -102,9 +90,7 @@ class ShoppingAppBar {
             child: IconButton(
               icon: ButleryIcon(
                 ButleryIcons.share2,
-                color: canShare
-                    ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
-                    : cs.outlineVariant,
+                color: canShare ? cs.onSurface : cs.outlineVariant,
               ),
               onPressed: canShare ? onShareExternally : null,
               tooltip: canShare
