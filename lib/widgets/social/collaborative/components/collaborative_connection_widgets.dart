@@ -21,16 +21,14 @@ class CollaborativeConnectionWidgets {
         final cs = Theme.of(context).colorScheme;
 
         if (isOnline) {
-          final successColor = context.modeColors.success;
+          final modeColors = context.modeColors;
           return Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: successColor.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: modeColors.surfaceTintSuccess,
               borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: Row(
@@ -40,7 +38,7 @@ class CollaborativeConnectionWidgets {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: successColor,
+                    color: modeColors.success,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -48,7 +46,7 @@ class CollaborativeConnectionWidgets {
                 Text(
                   context.l10n.collaborativeOnline,
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: successColor,
+                    color: modeColors.onSuccessContainer,
                   ),
                 ),
               ],
@@ -61,12 +59,7 @@ class CollaborativeConnectionWidgets {
           width: double.infinity,
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
-            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-            border: Border.all(
-              color: cs.error.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
-            ),
+            color: context.modeColors.surfaceTintDanger,
           ),
           child: Row(
             children: [
@@ -87,13 +80,13 @@ class CollaborativeConnectionWidgets {
                     Text(
                       context.l10n.collaborativeOffline,
                       style: AppTextStyles.bodyLargeBold.copyWith(
-                        color: cs.error,
+                        color: cs.onErrorContainer,
                       ),
                     ),
                     Text(
                       statusText,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.error,
+                        color: cs.onErrorContainer,
                       ),
                     ),
                   ],
@@ -105,7 +98,7 @@ class CollaborativeConnectionWidgets {
                   child: Text(
                     context.l10n.commonRetry,
                     style: AppTextStyles.buttonTextStyle.copyWith(
-                      color: cs.error,
+                      color: cs.onErrorContainer,
                     ),
                   ),
                 ),

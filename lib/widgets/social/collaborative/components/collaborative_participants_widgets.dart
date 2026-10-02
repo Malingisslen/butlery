@@ -36,9 +36,7 @@ class CollaborativeParticipantsWidgets {
                 height: avatarSize,
                 margin: EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: Theme.of(context).colorScheme.surface,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -112,9 +110,7 @@ class CollaborativeParticipantsWidgets {
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityLight,
-                  ),
+                  color: cs.surface,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: cs.onSurface,

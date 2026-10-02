@@ -24,7 +24,9 @@ class CollaborativeLiveWidgets {
           duration: AnimationUtils.getDuration(context, animationDuration),
           tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
           builder: (context, opacity, child) {
-            final indicatorColor = color ?? context.modeColors.warning;
+            final indicatorColor =
+                color ??
+                AppModeColors.textWarning(Theme.of(context).brightness);
             return Opacity(
               opacity: opacity,
               child: Container(
@@ -33,15 +35,8 @@ class CollaborativeLiveWidgets {
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(
-                  color: indicatorColor.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: context.modeColors.surfaceTintWarning,
                   borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-                  border: Border.all(
-                    color: indicatorColor.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
-                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

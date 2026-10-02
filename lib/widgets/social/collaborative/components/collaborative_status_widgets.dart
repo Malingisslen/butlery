@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -20,10 +21,12 @@ class CollaborativeStatusWidgets {
     IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
+    bool onInk = false,
   }) {
     return Builder(
       builder: (context) {
-        final effectiveColor = color ?? Theme.of(context).colorScheme.onSurface;
+        final cs = Theme.of(context).colorScheme;
+        final effectiveColor = color ?? (onInk ? cs.onPrimary : cs.onSurface);
 
         return Container(
           padding:
@@ -33,14 +36,12 @@ class CollaborativeStatusWidgets {
                 vertical: AppDimensions.spacingXs,
               ),
           decoration: BoxDecoration(
-            color: effectiveColor.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+            color: onInk
+                ? AppModeColors.surfaceRaisedOnInk()
+                : cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             border: Border.all(
-              color: effectiveColor.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: onInk ? AppModeColors.borderOnInk() : cs.outlineVariant,
             ),
           ),
           child: Row(
@@ -79,9 +80,7 @@ class CollaborativeStatusWidgets {
     return Builder(
       builder: (builderContext) {
         final cs = Theme.of(builderContext).colorScheme;
-        final bgColor =
-            backgroundColor ??
-            cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight);
+        final bgColor = backgroundColor ?? cs.surfaceContainerHighest;
 
         return Container(
           width: double.infinity,
@@ -89,11 +88,7 @@ class CollaborativeStatusWidgets {
           decoration: BoxDecoration(
             color: bgColor,
             border: Border(
-              bottom: BorderSide(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
+              bottom: BorderSide(color: cs.outlineVariant),
             ),
           ),
           child: Semantics(
@@ -297,6 +292,7 @@ class _CollaborativeAppBar extends StatelessWidget
                       icon: ButleryIcons.users,
                       // Paper on the ink bar (onPrimary, both schemes).
                       color: cs.onPrimary,
+                      onInk: true,
                     ),
                   ),
                 ),

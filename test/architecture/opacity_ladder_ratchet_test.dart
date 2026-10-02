@@ -62,19 +62,6 @@ const _residue = <String, int>{
   'lib/widgets/menu/calendar/calendar_drag.dart': 1,
   'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/recipe/recipe_shelf.dart': 1,
-  'lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart':
-      3,
-  'lib/widgets/social/collaborative/components/collaborative_live_widgets.dart':
-      2,
-  'lib/widgets/social/collaborative/components/collaborative_participants_widgets.dart':
-      2,
-  'lib/widgets/social/collaborative/components/collaborative_permissions_widgets.dart':
-      2,
-  'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart':
-      4,
-  'lib/widgets/social/groups/group_shared_content_section.dart': 1,
-  'lib/widgets/social/groups/shared/group_dialog_components.dart': 3,
-  'lib/widgets/social/groups/shared_content_card.dart': 2,
   'lib/widgets/tagging/personal_tag_rule_dialog.dart': 2,
   'lib/widgets/tagging/personal_tag_selector.dart': 3,
   'lib/widgets/tagging/tag_detail_header.dart': 1,
