@@ -79,9 +79,7 @@ class CommentItemWidgets {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: cs.onSurfaceVariant.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
+                    color: cs.outlineVariant,
                     width: 2,
                   ),
                 ),
@@ -282,9 +280,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
             padding: AppDimensions.paddingAll12,
             decoration: isReply
                 ? BoxDecoration(
-                    color: cs.surface.withValues(
-                      alpha: AppDimensions.opacityHalf,
-                    ),
+                    color: cs.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),

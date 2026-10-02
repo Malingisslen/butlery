@@ -165,14 +165,8 @@ class _IngredientSubstitutionSheetState
               Container(
                 padding: AppDimensions.badgePadding,
                 decoration: BoxDecoration(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
-                  border: Border.all(
-                    color: cs.onSurface.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
-                  ),
+                  color: cs.surface,
+                  border: Border.all(color: cs.outlineVariant),
                 ),
                 child: Text(
                   _formatRatio(option.ratio),

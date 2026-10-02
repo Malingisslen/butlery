@@ -498,7 +498,6 @@ class RecipeCard extends StatelessWidget {
   /// view. Collaborative wins over `isPublic` — a collab recipe is always
   /// scoped to its members regardless of the public flag.
   Widget _buildVisibilityIcon(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final (IconData icon, String label) = switch (recipe) {
       Recipe(isCollaborative: true) => (
         ButleryIcons.users,
@@ -523,9 +522,7 @@ class RecipeCard extends StatelessWidget {
           child: ButleryIcon(
             icon,
             size: AppDimensions.iconSizeS,
-            color: cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
+            color: AppModeColors.textDisabled(Theme.of(context).brightness),
           ),
         ),
       ),
@@ -712,12 +709,8 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
-          color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-          border: Border.all(
-            color: cs.onSurface.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          color: _chipFill(cs),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Text(
           '$pct%',
@@ -805,6 +798,11 @@ class RecipeCard extends StatelessWidget {
       ),
     );
   }
+
+  // The card rests on surface.base; a chip fills to surface.raised there, and
+  // to surface.base once the card itself is the raised (selected) surface.
+  Color _chipFill(ColorScheme cs) =>
+      isSelected ? cs.surface : cs.surfaceContainerHighest;
 
   /// Whether the recipe has any metadata to display.
   bool get _hasAnyMetadata {
@@ -950,13 +948,9 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
-        color: cs.onSurface.withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: _chipFill(cs),
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.onSurface.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         name,
@@ -973,16 +967,16 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
-        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: _chipFill(cs),
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+          color: AppModeColors.textSecondaryOnRaised(
+            Theme.of(context).brightness,
+          ),
         ),
       ),
     );
@@ -993,6 +987,12 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tagResult = recipe.tagResult;
     final hasFailed = tagResult?.hasFailed ?? false;
+    // B83-2: a notice is the mode's surface tint with no border; the text and
+    // glyph take the matching on-colour, never the raw status colour.
+    final modeColors = context.modeColors;
+    final noticeFg = hasFailed
+        ? cs.onErrorContainer
+        : AppModeColors.textWarning(Theme.of(context).brightness);
 
     return Semantics(
       label: hasFailed
@@ -1001,9 +1001,9 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: (hasFailed ? cs.error : context.modeColors.warning).withValues(
-            alpha: AppDimensions.opacityVeryLight,
-          ),
+          color: hasFailed
+              ? modeColors.surfaceTintDanger
+              : modeColors.surfaceTintWarning,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
@@ -1013,7 +1013,7 @@ class RecipeCard extends StatelessWidget {
             ButleryIcon(
               hasFailed ? ButleryIcons.triangleAlert : Icons.pending_outlined,
               size: 14,
-              color: hasFailed ? cs.error : context.modeColors.warning,
+              color: noticeFg,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible for the reason on the unassessed marker above.
@@ -1023,7 +1023,7 @@ class RecipeCard extends StatelessWidget {
                     ? context.l10n.recipeAnalysisFailed
                     : context.l10n.recipeAnalyzing,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: hasFailed ? cs.error : context.modeColors.warning,
+                  color: noticeFg,
                 ),
               ),
             ),
@@ -1059,26 +1059,29 @@ class RecipeCard extends StatelessWidget {
   /// the paraphrase is not in the committed diff, and the warning stands on
   /// the mechanism above rather than on a trace you can go and find.
   ///
-  /// Neutral `outline`, not `warning` — this is an absence of information, not
-  /// a hazard, and colouring it as a hazard would be its own false claim.
+  /// Neutral, not `warning` — this is an absence of information, not a hazard,
+  /// and colouring it as a hazard would be its own false claim.
   ///
   /// Not shown when the user has turned badges off: silence is then their own
   /// choice and needs no explanation.
   Widget _buildUnassessedIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final secondary = AppModeColors.textSecondaryOnRaised(
+      Theme.of(context).brightness,
+    );
     return Semantics(
       label: context.l10n.recipeAllergensUnassessedA11y,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: _chipFill(cs),
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ButleryIcon(Icons.help_outline, size: 14, color: cs.outline),
+            ButleryIcon(Icons.help_outline, size: 14, color: secondary),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
@@ -1099,7 +1102,7 @@ class RecipeCard extends StatelessWidget {
             Flexible(
               child: Text(
                 context.l10n.recipeAllergensUnassessed,
-                style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+                style: AppTextStyles.labelSmall.copyWith(color: secondary),
               ),
             ),
           ],
@@ -1110,26 +1113,33 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildCompletenessIndicator(BuildContext context, double rawScore) {
     final cs = Theme.of(context).colorScheme;
+    final secondary = AppModeColors.textSecondaryOnRaised(
+      Theme.of(context).brightness,
+    );
     final score = (rawScore * 100).round();
     return Semantics(
       label: context.l10n.recipeCompletenessA11y(score),
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: _chipFill(cs),
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ButleryIcon(Icons.pie_chart_outline, size: 14, color: cs.outline),
+            ButleryIcon(
+              Icons.pie_chart_outline,
+              size: 14,
+              color: secondary,
+            ),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible for the reason on the unassessed marker above.
             Flexible(
               child: Text(
                 context.l10n.recipeCompleteness(score),
-                style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+                style: AppTextStyles.labelSmall.copyWith(color: secondary),
               ),
             ),
           ],

@@ -55,9 +55,7 @@ class RecipeShelf extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingSm),
         Divider(
           height: 1,
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
         ),
       ],
     );

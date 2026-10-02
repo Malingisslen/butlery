@@ -251,7 +251,7 @@ class _RecipePickerItem extends StatelessWidget {
     return Container(
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
-      color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: ButleryIcon(
         ButleryIcons.utensils,
         color: cs.onSurface,
