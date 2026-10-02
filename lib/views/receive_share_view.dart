@@ -399,26 +399,23 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
                     decoration: BoxDecoration(
-                      color: cs.error.withValues(
-                        alpha: AppDimensions.opacityVeryLight,
-                      ),
+                      color: context.modeColors.surfaceTintDanger,
                       borderRadius: BorderRadius.circular(
                         AppDimensions.radiusControl,
                       ),
-                      border: Border.all(color: cs.error),
                     ),
                     child: Row(
                       children: [
                         ButleryIcon(
                           ButleryIcons.triangleAlert,
-                          color: cs.error,
+                          color: cs.onErrorContainer,
                         ),
                         const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             _extractionError!,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.error,
+                              color: cs.onErrorContainer,
                             ),
                           ),
                         ),
@@ -482,31 +479,27 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
           children: [
             Builder(
               builder: (context) {
-                final cs = Theme.of(context).colorScheme;
                 return Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: context.modeColors.success.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: context.modeColors.surfaceTintSuccess,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),
-                    border: Border.all(color: cs.outlineVariant),
                   ),
                   child: Row(
                     children: [
                       ButleryIcon(
                         ButleryIcons.circleCheck,
-                        color: context.modeColors.success,
+                        color: context.modeColors.onSuccessContainer,
                       ),
                       const SizedBox(width: AppDimensions.space4),
                       Expanded(
                         child: Text(
                           context.l10n.importRecipeTextCanImport,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: context.modeColors.success,
+                            color: context.modeColors.onSuccessContainer,
                           ),
                         ),
                       ),

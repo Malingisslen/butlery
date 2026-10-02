@@ -341,9 +341,8 @@ class ConflictDiffFieldCard extends StatelessWidget {
             label: localLabel ?? context.l10n.conflictDiffLocalLabel,
             text: field.localText,
             accent: butlery.success,
-            background: butlery.success.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+            labelColor: butlery.onSuccessContainer,
+            background: butlery.surfaceTintSuccess,
             textColor: cs.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -351,9 +350,8 @@ class ConflictDiffFieldCard extends StatelessWidget {
             label: remoteLabel ?? context.l10n.conflictDiffRemoteLabel,
             text: field.remoteText,
             accent: butlery.warning,
-            background: butlery.warning.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+            labelColor: AppModeColors.textWarning(cs.brightness),
+            background: butlery.surfaceTintWarning,
             textColor: cs.onSurface,
           ),
         ],
@@ -366,6 +364,7 @@ class _ValueRow extends StatelessWidget {
   final String label;
   final String? text;
   final Color accent;
+  final Color labelColor;
   final Color background;
   final Color textColor;
 
@@ -373,6 +372,7 @@ class _ValueRow extends StatelessWidget {
     required this.label,
     required this.text,
     required this.accent,
+    required this.labelColor,
     required this.background,
     required this.textColor,
   });
@@ -397,7 +397,7 @@ class _ValueRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppTextStyles.captionText.copyWith(color: accent),
+            style: AppTextStyles.captionText.copyWith(color: labelColor),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(

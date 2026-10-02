@@ -9,6 +9,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
@@ -347,20 +348,19 @@ class _AllergenPreferencesContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Row(
         children: [
-          ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
           const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               error,
-              style: AppTextStyles.errorText,
+              style: AppTextStyles.errorText.copyWith(
+                color: cs.onErrorContainer,
+              ),
             ),
           ),
         ],

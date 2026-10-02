@@ -82,16 +82,12 @@ class PersonalTagTile extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     backgroundColor: hasActiveRules
-                        ? context.modeColors.success.withValues(
-                            alpha: AppDimensions.opacityLight,
-                          )
-                        : colorScheme.onSurface.withValues(
-                            alpha: AppDimensions.opacityLight,
-                          ),
+                        ? context.modeColors.surfaceTintSuccess
+                        : colorScheme.surfaceContainerHighest,
                     child: ButleryIcon(
                       ButleryIcons.tag,
                       color: hasActiveRules
-                          ? context.modeColors.success
+                          ? context.modeColors.onSuccessContainer
                           : colorScheme.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),
