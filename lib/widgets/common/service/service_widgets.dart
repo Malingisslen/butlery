@@ -5,6 +5,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -79,17 +80,14 @@ class ServiceWidgets {
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
-            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: context.modeColors.surfaceTintDanger,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(
-              color: cs.error.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
-            ),
           ),
           child: Text(
             error,
-            style: AppTextStyles.bodyMediumError,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onErrorContainer,
+            ),
           ),
         ),
       ),

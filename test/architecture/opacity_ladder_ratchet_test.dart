@@ -25,15 +25,7 @@ const _residue = <String, int>{
   'lib/views/settings/allergen_preferences_view.dart': 2,
   'lib/widgets/common/indicators/progress_overlay.dart': 1,
   'lib/widgets/common/loading/loading_widgets.dart': 1,
-  'lib/widgets/common/menu_persistence/menu_load_dialog.dart': 1,
-  'lib/widgets/common/menu_persistence/menu_save_dialog.dart': 1,
-  'lib/widgets/common/permissions/permission_widgets.dart': 1,
-  'lib/widgets/common/profile/builders/menu_item_builders.dart': 2,
-  'lib/widgets/common/profile/builders/profile_section_builders.dart': 1,
-  'lib/widgets/common/profile/profile_menu.dart': 1,
-  'lib/widgets/common/scaffolds/empty_state_scaffold.dart': 1,
-  'lib/widgets/common/search_filter/search_stats_widget.dart': 2,
-  'lib/widgets/common/service/service_widgets.dart': 3,
+  'lib/widgets/common/service/service_widgets.dart': 1,
   'lib/widgets/menu/calendar/calendar_drag.dart': 1,
 };
 
