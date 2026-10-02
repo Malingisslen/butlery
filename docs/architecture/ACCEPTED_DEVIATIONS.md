@@ -5409,3 +5409,9 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   writes the whole resource (`merge: false`) so that "Återställ" drops what only the newer
   version had. A stale copy carries the roster as it was. This
   is the BUT-1971 shape, accepted on the same reasoning.
+- **RESOLVED 2026-10-02 — Malin: a live-menu participant with an edit role may write any
+  text into `ownerDisplayName` / `lastEditedByDisplayName` (BUT-2151).** The rules pin the
+  uid fields (`ownerId` is immutable; `lastEditedBy` is the caller or unchanged) and not the
+  cached names beside them; pinning the names would cost a profile read on every save. Same
+  class as the forgeable group-menu provenance entry (2026-08-29). Do not re-propose a
+  profile-read check without new cause.

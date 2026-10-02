@@ -170,3 +170,4 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - `system_events` retention covers ONE type: `rate_limit_violation`, 90 days. Separable because it carries `userIdHash` and none of the three `details.*` uid fields the hold predicate and the cascade sweep match on — do not harmonise the moderation types or the receipts into the job (2026-09-20)
 - `realtime_resources` admits live MENUS only; a recipe resource is refused until a writer exists (BUT-2213). Do not open the type "for completeness" (BUT-2151, 2026-10-02)
 - A client holding a pre-erasure copy of a live menu can write the erased uid back through the whole-document save — accepted, BUT-1971's shape (BUT-2151, 2026-10-02)
+- RESOLVED 2026-10-02 — Malin: a live-menu participant with an edit role may write any text into `ownerDisplayName` / `lastEditedByDisplayName`; the rules pin the uids, not the cached names (BUT-2151)
