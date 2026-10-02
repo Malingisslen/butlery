@@ -72,6 +72,13 @@ abstract class RecipeRepository extends Repository<Recipe>
     required String recipeId,
   });
 
+  /// [readSharedRecipe], live: emits on every change to the recipe, and null
+  /// once it is gone or no longer shared with the current user.
+  Stream<Recipe?> watchSharedRecipe({
+    required String ownerId,
+    required String recipeId,
+  });
+
   /// Fetch all recipes for a user using cursor-based pagination.
   /// Unlike [fetchUserRecipes], this has no hard limit and will fetch
   /// all recipes in batches. Use for batch operations like statistics.

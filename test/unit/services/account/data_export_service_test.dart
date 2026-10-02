@@ -1038,6 +1038,8 @@ void main() {
         expect(data['reports'], isNotNull);
         expect(data['pings'], isNotNull);
         expect(data['realtime_recipes'], isNotNull);
+        // BUT-2151: live menus, empty for a user with none.
+        expect(data['live_menus']['total_count'], 0);
         expect(data['group_weekly_menu_plans'], isNotNull);
         // BUT-1450: notification-analytics sections the deletion cascade
         // erases must each be present for Art. 15 right-of-access.

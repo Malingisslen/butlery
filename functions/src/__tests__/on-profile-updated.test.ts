@@ -367,6 +367,50 @@ void (async () => {
       },
     },
     {
+      // BUT-2151: live menus carry the same owner and last-editor name pair.
+      name: "a rename reaches the live menus in realtime_resources",
+      fn: async () => {
+        const fake = makeFakeDb({
+          [Collections.realtimeResources]: [
+            {
+              id: `${UID}_m1`,
+              data: {
+                ownerId: UID,
+                ownerDisplayName: "Anna",
+                lastEditedBy: UID,
+                lastEditedByDisplayName: "Anna",
+              },
+            },
+            {
+              id: `${OTHER}_m2`,
+              data: {
+                ownerId: OTHER,
+                ownerDisplayName: "Keep",
+                lastEditedBy: UID,
+                lastEditedByDisplayName: "Anna",
+              },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Anna", "Annika", null, null);
+
+        const [mine, theirs] = fake.store[Collections.realtimeResources];
+        assertEqual(mine.data.ownerDisplayName, "Annika", "own menu owner name");
+        assertEqual(
+          mine.data.lastEditedByDisplayName,
+          "Annika",
+          "own menu last-editor name"
+        );
+        assertEqual(theirs.data.ownerDisplayName, "Keep", "other owner kept");
+        assertEqual(
+          theirs.data.lastEditedByDisplayName,
+          "Annika",
+          "last-editor name on someone else's menu"
+        );
+      },
+    },
+    {
       name: "avatar-only change skips the name-only collections",
       fn: async () => {
         const fake = makeFakeDb({

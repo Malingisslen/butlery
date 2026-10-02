@@ -132,6 +132,13 @@
   skips the filter and exports the field WHOLE. Check what the write rule actually permits
   before calling that unreachable — a `.get('f', []).size() <= N` cap bounds ROW COUNT, not
   TYPE, so a map with N keys satisfies it. Put the else-branch on the container too.
+- A name STRIP keyed to top-level `*DisplayName` fields misses the same names a document
+  EMBEDS through another model's serializer (a live menu's `menuSnapshot` is
+  `recipe.toFirestore()` per dish, carrying `socialData.ownerDisplayName` and
+  `realtimeData.lastEditedByDisplayName`), and a drift test built from `toFirestore().keys`
+  with an EMPTY embedded collection is blind to them by construction. Enumerate every
+  embedded model a section ships and walk it, or record that the strip is top-level only;
+  the erasure side has the same blind spot, since no handle queries inside the embed.
 - A BUNDLE-WIDE claim in `export_metadata` ("all timestamps end with Z", "nothing here is
   another person's") is a universal over EVERY assembly route, and the routes that falsify it
   are the ones that never touch a raw document: a section serialising a MODEL

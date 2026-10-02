@@ -205,12 +205,17 @@ class ConflictResolutionModule {
     }
   }
 
-  /// Perform the update to Firebase
+  /// Writes the whole resource. Not a merge: when "Återställ" brings back
+  /// an older version, a nested key only the newer version had must go.
   Future<void> performUpdate(
     DocumentReference<Map<String, dynamic>> docRef,
     RealtimeResource resource,
   ) async {
-    await firestoreRepository.setDocument(docRef, resource.toFirestore());
+    await firestoreRepository.setDocument(
+      docRef,
+      resource.toFirestore(),
+      merge: false,
+    );
   }
 
   /// Record local update for conflict detection

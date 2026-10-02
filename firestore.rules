@@ -291,7 +291,7 @@ service cloud.firestore {
       return isSharedOwner(collectionName, docId) || isSharedMember(collectionName, docId);
     }
 
-    // Realtime collaboration helper — used by realtime_recipes, realtime_menus, realtime_resources
+    // Realtime collaboration helper — used by realtime_recipes, realtime_menus
     // Uses get() which returns null for non-existent docs (avoids exists()+get() double read)
     function isRealtimeParticipant(collectionName, docId) {
       let parentPath = /databases/$(database)/documents/$(collectionName)/$(docId);
@@ -1287,6 +1287,59 @@ service cloud.firestore {
       allow delete: if isAuthenticated()
         && shareId.split('_').size() == 2
         && shareId.split('_')[1] == request.auth.uid;
+    }
+
+    // ========================================
+    // REALTIME RESOURCES - live collaboration (ADR-0023, BUT-2151)
+    // ========================================
+    // Live menus. A recipe resource is refused until a writer for it exists.
+    // The id starts with the owner's uid, so nobody can claim an id that
+    // belongs to someone else's resource. Participants with an edit role
+    // write the content; only the owner changes who takes part, and nobody
+    // writes another person's uid as the last editor.
+
+    function realtimeResourceShapeOk(data) {
+      return data.type == 'menu'
+        && data.ownerId is string && data.ownerId.size() > 0
+        && data.participants is map
+        && data.participantIds is list
+        && data.participantIds.toSet() == data.participants.keys().toSet()
+        && data.keys().hasOnly(['type', 'ownerId', 'ownerDisplayName', 'participants',
+              'participantIds', 'createdAt', 'lastEditedAt', 'lastEditedBy',
+              'lastEditedByDisplayName', 'editCount', 'isActive', 'metadata',
+              'menuTitle', 'createdForDate', 'menuSnapshot', 'menuNotes',
+              'favoriteRecipeIds', 'originalPrompt']);
+    }
+
+    function realtimeLastEditorIsCaller() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastEditedBy'])
+        || request.resource.data.lastEditedBy == request.auth.uid;
+    }
+
+    match /realtime_resources/{resourceId} {
+      allow read: if isAuthenticated()
+        && (request.auth.uid == resource.data.ownerId
+            || request.auth.uid in resource.data.participantIds);
+
+      allow create: if isAuthenticated()
+        && hasRequiredFields(['type', 'ownerId', 'participants', 'participantIds', 'createdAt'])
+        && request.auth.uid == request.resource.data.ownerId
+        && resourceId.matches(request.auth.uid + '_.+')
+        && request.auth.uid in request.resource.data.participantIds
+        && request.resource.data.lastEditedBy == request.auth.uid
+        && realtimeResourceShapeOk(request.resource.data);
+
+      allow update: if isAuthenticated()
+        && cannotModify(['type', 'ownerId', 'createdAt'])
+        && realtimeResourceShapeOk(request.resource.data)
+        && realtimeLastEditorIsCaller()
+        && (request.auth.uid == resource.data.ownerId
+            || (resource.data.participants.get(request.auth.uid, '')
+                  in ['editor', 'write', 'admin', 'owner']
+                && cannotModify(['participants', 'participantIds'])));
+
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.ownerId;
     }
 
     // ========================================

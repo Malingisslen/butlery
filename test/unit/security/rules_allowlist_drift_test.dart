@@ -87,6 +87,7 @@ import 'dart:io';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
@@ -233,6 +234,16 @@ const _allowlists = <_Allowlist>[
     mustContain: 'includeUnknownInMenu',
     anchor: 'function allergenShareValid',
     writer: 'lib/models/household_allergen_share.dart toFirestore',
+  ),
+  // Anchored on the helper, which holds the block's only `keys().hasOnly`; the
+  // create and update limbs both call it.
+  _Allowlist(
+    label: 'realtime_resources (menu)',
+    mustContain: 'menuSnapshot',
+    anchor: 'function realtimeResourceShapeOk',
+    writer:
+        'lib/models/realtime/realtime_menu.dart RealtimeMenu.toFirestore, '
+        'written whole by ConflictResolutionModule.performUpdate (BUT-2151)',
   ),
   _Allowlist(
     label: 'users/{uid}/rate_limits stamp',
@@ -422,6 +433,19 @@ Map<String, Set<String>> _writtenKeys() => {
   ).toFirestore().keys.toSet(),
   // Hand-built map; `stampRateLimit` is its only writer.
   'users/{uid}/rate_limits stamp': {'lastWrite', 'expireAt', 'lastDocId'},
+  // Every optional argument set, so the set is the widest the writer sends.
+  'realtime_resources (menu)': RealtimeMenu.fromMenuCategories(
+    menuTitle: 'm',
+    menuSnapshot: const {},
+    ownerId: 'o',
+    ownerDisplayName: 'O',
+    editorUserIds: const ['e'],
+    viewerUserIds: const ['v'],
+    menuNotes: 'n',
+    favoriteRecipeIds: const ['f'],
+    originalPrompt: 'p',
+    createdForDate: DateTime(2026),
+  ).toFirestore().keys.toSet(),
 };
 
 /// Pulls the first `hasOnly([...])` list appearing after [anchor].
@@ -835,9 +859,11 @@ void main() {
     // the suggester's replacement (writer
     // RecipeSuggestion.toReplacementFirestore), outside the payload
     // comparison for the same reason.
+    // BUT-2151 added realtime_resources: one keys().hasOnly, guarded above in
+    // _allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      44,
+      45,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

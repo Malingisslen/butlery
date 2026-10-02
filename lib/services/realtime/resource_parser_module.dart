@@ -6,6 +6,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Module handling resource parsing and fetching for realtime sync.
@@ -20,7 +21,7 @@ class ResourceParserModule {
   /// Get DocumentReference for a resource
   DocumentReference<Map<String, dynamic>> getResourceDocRef(String resourceId) {
     return firestoreRepository.firestore
-        .collection('realtime_resources')
+        .collection(FirestoreCollections.realtimeResources)
         .doc(resourceId);
   }
 

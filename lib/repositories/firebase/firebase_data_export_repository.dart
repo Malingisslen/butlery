@@ -50,6 +50,8 @@ enum ExportResourceType {
   reports('reports'),
   pings('pings'),
   realtimeRecipes('realtime_recipes'),
+  // BUT-2151: live menus.
+  realtimeResources('realtime_resources'),
   // BUT-1450: notification analytics the deletion cascade erases but the
   // export previously omitted (Art. 15 ⊇ Art. 17).
   notificationHistory('notification_history'),
@@ -1085,6 +1087,32 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('ownerId', isEqualTo: userId),
     userId,
     ExportResourceType.realtimeRecipes,
+    limit: maxDocuments,
+  );
+
+  /// BUT-2151: live menus the user owns (`realtime_resources.ownerId`).
+  Future<List<Map<String, dynamic>>> exportRealtimeResourcesOwned(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.realtimeResources)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.realtimeResources,
+    limit: maxDocuments,
+  );
+
+  /// BUT-2151: live menus the user takes part in (`participantIds`).
+  Future<List<Map<String, dynamic>>> exportRealtimeResourcesAsParticipant(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.realtimeResources)
+        .where('participantIds', arrayContains: userId),
+    userId,
+    ExportResourceType.realtimeResources,
     limit: maxDocuments,
   );
 

@@ -5393,3 +5393,25 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   This does not save money. Cloud Scheduler's three free jobs are long since spent, so the
   job costs a marginal ~1 kr/month; the deletion writes and the index storage are
   fractions of an öre. The motive is capping unbounded growth.
+
+## BUT-2151 — live menus in `realtime_resources` (2026-10-02)
+
+- **A recipe resource is refused until a writer for it exists (BUT-2151, BUT-2213,
+  2026-10-02).** `realtimeResourceShapeOk` in `firestore.rules` admits `type == 'menu'`
+  only. No production path writes a recipe document to `realtime_resources`: the app's
+  recipe sharing runs on `socialData.memberPermissions` on `users/{owner}/recipes/{id}`,
+  and the recipe editor's live role reads that document (`watchSharedRecipe`). Malin,
+  2026-10-02: "bygg det som är mest robust och modulärt" — one home per fact. Opening
+  the recipe type belongs to BUT-2213, together with its writer and an id of the form
+  `{ownerId}_{recipeId}`. Do not open the type "for completeness".
+- **A client holding a copy read BEFORE an erasure can write the erased uid back through a
+  whole-document save (BUT-2151, 2026-10-02).** `ConflictResolutionModule.performUpdate`
+  writes the whole resource (`merge: false`) so that "Återställ" drops what only the newer
+  version had. A stale copy carries the roster as it was. This
+  is the BUT-1971 shape, accepted on the same reasoning.
+- **RESOLVED 2026-10-02 — Malin: a live-menu participant with an edit role may write any
+  text into `ownerDisplayName` / `lastEditedByDisplayName` (BUT-2151).** The rules pin the
+  uid fields (`ownerId` is immutable; `lastEditedBy` is the caller or unchanged) and not the
+  cached names beside them; pinning the names would cost a profile read on every save. Same
+  class as the forgeable group-menu provenance entry (2026-08-29). Do not re-propose a
+  profile-read check without new cause.

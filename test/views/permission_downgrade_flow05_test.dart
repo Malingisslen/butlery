@@ -7,7 +7,7 @@
 // inte längre"); PQ-13 = A (no request button, BUT-2143); produktregler.md
 // :535 (never offer what the app cannot do).
 //
-// The live role comes from the realtime resource of the shared recipe
+// The live role comes from the owner's recipe document
 // (RecipePermissionManager.watchCanEdit), faked here as a stream.
 
 import 'dart:async';
@@ -23,10 +23,10 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_en.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -50,26 +50,27 @@ import '../test_support/base_unit_test.dart';
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 
+class _MockRecipeRepository extends Mock implements RecipeRepository {}
+
 const _me = 'test-user-123';
 const _owner = 'friend-owner-456';
 
-RealtimeRecipe _live(Recipe recipe, ResourcePermission myRole) =>
-    RealtimeRecipe(
-      id: recipe.id,
-      ownerId: _owner,
-      ownerDisplayName: 'Olle',
-      participants: {_owner: ResourcePermission.owner, _me: myRole},
-      createdAt: DateTime(2026, 9, 1),
-      lastEditedAt: DateTime(2026, 9, 20),
-      lastEditedBy: _owner,
-      lastEditedByDisplayName: 'Olle',
-      editCount: 1,
-      recipe: recipe,
-    );
+Recipe _live(Recipe recipe, ResourcePermission myRole) => RecipeFactory.build(
+  id: recipe.id,
+  title: recipe.title,
+  createdBy: _owner,
+  socialData: RecipeSocialData(
+    ownerId: _owner,
+    ownerDisplayName: 'Olle',
+    memberPermissions: {_me: myRole},
+    allowGuestViewing: false,
+    allowMemberInvites: false,
+  ),
+);
 
 void main() {
   final l10n = AppLocalizationsSv();
-  late StreamController<RealtimeRecipe> roles;
+  late StreamController<Recipe?> roles;
   late mocks.MockPersonalRecipeOperations personal;
 
   setUpAll(() async {
@@ -120,11 +121,16 @@ void main() {
       personalOperations: personal,
     );
 
-    roles = StreamController<RealtimeRecipe>.broadcast();
-    final sync = _MockRealtimeSyncService();
+    roles = StreamController<Recipe?>.broadcast();
+    final repository = _MockRecipeRepository();
     when(
-      () => sync.watchResource<RealtimeRecipe>(any()),
+      () => repository.watchSharedRecipe(
+        ownerId: _owner,
+        recipeId: 'shared-recipe-1',
+      ),
     ).thenAnswer((_) => roles.stream);
+    TestServiceLocator.registerMock<RecipeRepository>(repository);
+    final sync = _MockRealtimeSyncService();
     when(
       () => sync.conflictStream,
     ).thenAnswer((_) => const Stream<ConflictEvent>.empty());
@@ -259,6 +265,20 @@ void main() {
       verifyNever(() => personal.updateUnifiedRecipe(any()));
     });
 
+    testWidgets('removed from the share: the editor closes as for a lowered '
+        'role', (tester) async {
+      final recipe = sharedRecipe();
+      await openEditor(tester, recipe);
+      roles.add(_live(recipe, ResourcePermission.editor));
+      await tester.pumpAndSettle();
+
+      roles.add(null);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditRecipeView), findsNothing);
+      expect(find.text(l10n.roleLoweredRecipeClosed), findsOneWidget);
+    });
+
     testWidgets('a sheet open over the editor is closed first, then the '
         'editor', (tester) async {
       final recipe = sharedRecipe();
@@ -289,8 +309,7 @@ void main() {
       final recipe = sharedRecipe();
       await openEditor(tester, recipe);
 
-      // The live participants map does not list me when the editor opens
-      // (for example a map that does not follow sharing). Nothing changed.
+      // Nothing changed.
       roles.add(_live(recipe, ResourcePermission.viewer));
       await tester.pumpAndSettle();
 

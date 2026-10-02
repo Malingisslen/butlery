@@ -141,7 +141,11 @@ export async function propagateProfileUpdate(
     );
 
     // Realtime resources — owner + last-editor denorm names.
-    for (const col of [Collections.realtimeRecipes, Collections.realtimeMenus]) {
+    for (const col of [
+      Collections.realtimeRecipes,
+      Collections.realtimeMenus,
+      Collections.realtimeResources,
+    ]) {
       steps.push(
         paginatedDualUpdate(db, db.collection(col), userId,
           { queryField: "ownerId", updateField: "ownerDisplayName" },

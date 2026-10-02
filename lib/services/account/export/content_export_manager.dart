@@ -16,6 +16,7 @@ import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, normalizeRecipeDocumentStamps, sanitizeForJson;
 import 'package:butlery/services/account/export/shared_shopping_list_export.dart';
+import 'package:butlery/services/account/export/live_menu_export.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -257,6 +258,9 @@ class ContentExportManager {
   /// each live with the code that applies them.
   Future<Map<String, dynamic>> exportSharedShoppingLists(String userId) =>
       SharedShoppingListExport(_exports).export(userId);
+
+  Future<Map<String, dynamic>> exportLiveMenus(String userId) =>
+      LiveMenuExport(_exports).export(userId);
 
   /// Export all personal tags with embedded rules (GDPR Article 20).
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {

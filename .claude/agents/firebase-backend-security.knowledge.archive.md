@@ -11012,3 +11012,28 @@ writers (`shopping_item_operations_module.dart`, `shopping_repository_query_modu
 `firebase_data_export_repository.dart`) — none under `shared_content` — consistent with the
 BUT-1716 deviation that the shared-list item subcollection API is gone. No Firestore
 behaviour, rules or audit change. Verdict pass. No new principle.
+
+## 2026-10-02 — BUT-2151 second gate round (realtime_resources Art. 15/17)
+
+Files: `live_menu_export.dart` (new), `firebase_data_export_repository.dart`,
+`content_export_manager.dart`, `data_export_service.dart`, `account-deletion-cascade.ts`,
+both accepted-deviation files. Cascade leg `deleteRealtimeResources` (owned delete, last-editor
+scrub, roster leave on participantIds+participants together) and three probe legs mirror
+`realtime_menus`; export probes `ownerId ==` and `participantIds array-contains`, both proven
+by the read rule field-to-field. No subcollection blocks under `realtime_resources`, so the
+presence/votes child sweep reads empty.
+BLOCKING: `LiveMenuExport.dropOtherPeoplesNames` strips only top-level
+`ownerDisplayName`/`lastEditedByDisplayName`. `menuSnapshot` is
+`RealtimeMenuData.toFirestore` -> `recipe.toFirestore()` per dish -> `socialData.toJson()`
+(`ownerDisplayName`) and `realtimeData.toJson()` (`lastEditedByDisplayName`).
+`RecipeFactory.createCollaborative` stamps `socialData.ownerDisplayName` with the creator's
+name, so a live menu holding the owner's collaborative recipe ships the owner's name nested
+in every participant's export while the top-level copy is stripped (ADR-0023 decision 2).
+The drift test seeds `menuSnapshot: const {}`. The same nested copies are reached by no
+erasure handle and no rename propagation (Medium). Also noted: the third accepted-deviation
+entry (editor can forge cached names) is not in the plan's step-8 list.
+Re-review same day: `LiveMenuExport.minimise` now walks `menuSnapshot` with `dishNameKeys`
+(socialData.ownerDisplayName/ownerId, realtimeData.lastEditedByDisplayName/lastEditedByUserId),
+withholds a non-map snapshot, and the drift test walks every `*DisplayName` path of a menu with
+a populated dish. Nested erasure gap filed as BUT-2214; the unplanned deviation entry removed.
+Verdict pass.
