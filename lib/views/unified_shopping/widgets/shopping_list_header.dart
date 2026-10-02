@@ -132,9 +132,7 @@ class ShoppingListHeader {
                 semanticLabel: viewModel.activeList?.isPersonal == true
                     ? context.l10n.shoppingConvertToCollaborative
                     : context.l10n.shoppingConvertToPersonal,
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityDark,
-                ),
+                color: cs.onSurface,
                 iconSize: AppDimensions.iconSizeAction,
               ),
             ),

@@ -26,13 +26,6 @@ const _residue = <String, int>{
   'lib/views/receive_share_view.dart': 2,
   'lib/views/recipe_detail/recipe_detail_content.dart': 10,
   'lib/views/settings/allergen_preferences_view.dart': 2,
-  'lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart':
-      3,
-  'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart':
-      5,
-  'lib/views/unified_shopping/widgets/shopping_app_bar.dart': 4,
-  'lib/views/unified_shopping/widgets/shopping_item_tiles.dart': 2,
-  'lib/views/unified_shopping/widgets/shopping_list_header.dart': 1,
   'lib/widgets/branding/app_logo.dart': 1,
   'lib/widgets/common/content_cards/menu_card.dart': 2,
   'lib/widgets/common/content_cards/shopping_list_card.dart': 4,

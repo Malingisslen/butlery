@@ -130,9 +130,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: _getListTypeColor(
-        cs,
-      ).withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -211,7 +209,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
 
     return Card(
-      color: permissionColor.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -260,7 +258,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     allMembers.addAll(list.memberPermissions);
 
     return Card(
-      color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -341,9 +339,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: cs.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+            backgroundColor: cs.surface,
             child: Text(
               // Keyed off the RESOLVED name, not the rendered one: the unknown
               // fallback is a sentence, and its initial ("O" for "Okänd
@@ -393,7 +389,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(

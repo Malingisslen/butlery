@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -395,16 +396,16 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: cs.error.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: context.modeColors.surfaceTintDanger,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(
                   _error!,
-                  style: AppTextStyles.bodyMediumError,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onErrorContainer,
+                  ),
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
@@ -537,9 +538,7 @@ class _ShoppingMemberManagementDialogState
     final tile = ListTile(
       leading: CircleAvatar(
         radius: _avatarRadius,
-        backgroundColor: cs.onSurface.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        backgroundColor: cs.surface,
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
@@ -652,9 +651,7 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: cs.onSurface.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        backgroundColor: cs.surface,
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()
