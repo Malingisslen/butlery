@@ -14,6 +14,7 @@ import 'package:butlery/services/tagging/config/valid_properties.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Prefix marking a disabled category-header dropdown item; its value is a
@@ -593,24 +594,23 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Row(
         children: [
           ButleryIcon(
             ButleryIcons.triangleAlert,
-            color: cs.error,
+            color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               _error!,
-              style: AppTextStyles.errorText,
+              style: AppTextStyles.errorText.copyWith(
+                color: cs.onErrorContainer,
+              ),
             ),
           ),
         ],

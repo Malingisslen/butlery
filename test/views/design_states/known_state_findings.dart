@@ -36,17 +36,9 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2184',
     '#6124382C ("https://www.koket.se/kra…")',
   ),
-  'import-av-recept::LOADING::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #80E6EAD9',
-  ),
   'import-av-recept::LOADING::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2184',
     '#61F5F4ED ("https://www.koket.se/kra…")',
-  ),
-  'import-av-recept::LOADING::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #802F4437',
   ),
   'import-av-recept::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
@@ -147,7 +139,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 30;
+const int knownStateFindingsCeiling = 28;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

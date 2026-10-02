@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
@@ -192,9 +193,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
         children: [
           ButleryIcon(
             ButleryIcons.tag,
-            color: cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityHalf,
-            ),
+            color: AppModeColors.textDisabled(cs.brightness),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
@@ -220,17 +219,14 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Row(
         children: [
           ButleryIcon(
             ButleryIcons.triangleAlert,
-            color: cs.error,
+            color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -238,7 +234,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             child: Text(
               message,
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.error,
+                color: cs.onErrorContainer,
               ),
             ),
           ),

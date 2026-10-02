@@ -17,48 +17,28 @@ class ConfidenceIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final modeColors = context.modeColors;
     final percentage = (confidence * 100).toInt();
+    // A notice-style chip (B83-2): the mode's tint with no border, and the
+    // glyph and text in the one on-colour that reads on that tint.
     Color badgeBackgroundColor;
-    Color badgeBorderColor;
-    Color badgeIconColor;
-    Color badgeTextColor;
+    Color badgeOnColor;
     IconData icon;
     String label;
 
     if (confidence >= 0.8) {
-      // High confidence - Green
-      badgeBackgroundColor = context.modeColors.success.withValues(
-        alpha: AppDimensions.opacityVeryLight,
-      );
-      badgeBorderColor = context.modeColors.success.withValues(
-        alpha: AppDimensions.opacityMediumLight,
-      );
-      badgeIconColor = context.modeColors.success;
-      badgeTextColor = context.modeColors.onSuccessContainer;
+      badgeBackgroundColor = modeColors.surfaceTintSuccess;
+      badgeOnColor = modeColors.onSuccessContainer;
       icon = ButleryIcons.circleCheck;
       label = context.l10n.importHighQuality;
     } else if (confidence >= 0.6) {
-      // Medium confidence - Orange
-      badgeBackgroundColor = context.modeColors.warning.withValues(
-        alpha: AppDimensions.opacityVeryLight,
-      );
-      badgeBorderColor = context.modeColors.warning.withValues(
-        alpha: AppDimensions.opacityMediumLight,
-      );
-      badgeIconColor = context.modeColors.warning;
-      badgeTextColor = context.modeColors.onWarningContainer;
+      badgeBackgroundColor = modeColors.surfaceTintWarning;
+      badgeOnColor = AppModeColors.textWarning(cs.brightness);
       icon = ButleryIcons.info;
       label = context.l10n.importGoodQuality;
     } else {
-      // Low confidence - Red
-      badgeBackgroundColor = cs.error.withValues(
-        alpha: AppDimensions.opacityVeryLight,
-      );
-      badgeBorderColor = cs.error.withValues(
-        alpha: AppDimensions.opacityMediumLight,
-      );
-      badgeIconColor = cs.error;
-      badgeTextColor = cs.onErrorContainer;
+      badgeBackgroundColor = modeColors.surfaceTintDanger;
+      badgeOnColor = cs.onErrorContainer;
       icon = ButleryIcons.triangleAlert;
       label = context.l10n.importLowQuality;
     }
@@ -73,10 +53,6 @@ class ConfidenceIndicator extends StatelessWidget {
         decoration: BoxDecoration(
           color: badgeBackgroundColor,
           borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-          border: Border.all(
-            color: badgeBorderColor,
-            width: AppDimensions.borderWidthStandard,
-          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -84,13 +60,13 @@ class ConfidenceIndicator extends StatelessWidget {
             ButleryIcon(
               icon,
               size: AppDimensions.iconSizeS,
-              color: badgeIconColor,
+              color: badgeOnColor,
             ),
             const SizedBox(width: AppDimensions.space4),
             Text(
               '$percentage%',
               style: AppTextStyles.labelSmall.copyWith(
-                color: badgeTextColor,
+                color: badgeOnColor,
               ),
             ),
           ],

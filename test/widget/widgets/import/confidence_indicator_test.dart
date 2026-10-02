@@ -37,9 +37,11 @@ Future<_Tokens> _pump(WidgetTester tester, double confidence) async {
         body: Builder(
           builder: (context) {
             tokens
-              ..success = context.modeColors.success
-              ..warning = context.modeColors.warning
-              ..error = Theme.of(context).colorScheme.error;
+              ..success = context.modeColors.onSuccessContainer
+              ..warning = AppModeColors.textWarning(
+                Theme.of(context).brightness,
+              )
+              ..error = Theme.of(context).colorScheme.onErrorContainer;
             return ConfidenceIndicator(confidence: confidence);
           },
         ),

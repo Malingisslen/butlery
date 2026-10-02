@@ -48,18 +48,10 @@ const _residue = <String, int>{
   'lib/widgets/common/search_filter/search_stats_widget.dart': 2,
   'lib/widgets/common/service/service_widgets.dart': 3,
   'lib/widgets/cooking/inline_timer_text.dart': 1,
-  'lib/widgets/import/components/add_item_field.dart': 1,
-  'lib/widgets/import/confidence_indicator.dart': 6,
-  'lib/widgets/import/platform_badge_widget.dart': 6,
-  'lib/widgets/import/text_line_selector.dart': 1,
+  'lib/widgets/import/platform_badge_widget.dart': 3,
   'lib/widgets/menu/calendar/calendar_drag.dart': 1,
   'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/recipe/recipe_shelf.dart': 1,
-  'lib/widgets/tagging/personal_tag_rule_dialog.dart': 2,
-  'lib/widgets/tagging/personal_tag_selector.dart': 3,
-  'lib/widgets/tagging/tag_detail_header.dart': 1,
-  'lib/widgets/tagging/tag_result_display.dart': 2,
-  'lib/widgets/tagging/tag_status_badge.dart': 2,
 };
 
 // Aligned with symbolSpecs' 'AppDimensions.opacity*' pattern in

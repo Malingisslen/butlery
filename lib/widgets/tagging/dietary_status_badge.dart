@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 
@@ -11,7 +10,6 @@ import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 ///
 /// Both color AND shape are used for accessibility (color-blind users):
 /// - FREE: Green leaf icon (diet-compatible)
-/// - CONTAINS: Red triangle with exclamation (contains excluded ingredients)
 /// - UNKNOWN: Grey circle with question mark (uncertain)
 class DietaryStatusBadge extends StatelessWidget {
   /// The dietary key (e.g., 'vegetarisk', 'vegansk').
@@ -45,13 +43,13 @@ class DietaryStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon) = _getStatusStyle(context);
+    final (tone, icon) = _getStatusStyle(context);
     final displayLabel = label ?? _getDisplayLabel(context);
     final semanticLabel = _getSemanticLabel(context);
 
     if (compact) {
       return TagStatusBadgeCompact(
-        color: color,
+        tone: tone,
         icon: icon,
         semanticLabel: semanticLabel,
         label: showLabel ? displayLabel : null,
@@ -59,7 +57,7 @@ class DietaryStatusBadge extends StatelessWidget {
     }
 
     return TagStatusBadge(
-      color: color,
+      tone: tone,
       icon: icon,
       semanticLabel: semanticLabel,
       label: showLabel ? displayLabel : null,
@@ -81,23 +79,22 @@ class DietaryStatusBadge extends StatelessWidget {
     }
   }
 
-  (Color, IconData) _getStatusStyle(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  (TagStatusTone, IconData) _getStatusStyle(BuildContext context) {
     // Shape distinction for color-blind accessibility:
     // - FREE: Leaf (eco)
     // - CONTAINS: Neutral "not" icon (dietary preference, not a health risk)
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
-        return (context.modeColors.success, Icons.eco_outlined);
+        return (TagStatusTone.success, Icons.eco_outlined);
       case TriState.contains:
         // Dietary "contains" = factual ("not vegetarian"), not an allergen
         // health risk. Using the same red as allergen warnings made "Ej
         // vegetarisk" look as alarming as "Innehåller gluten". Neutral grey +
         // a cancel icon keeps the message clear without overstating risk.
-        return (cs.onSurfaceVariant, Icons.cancel_outlined);
+        return (TagStatusTone.neutral, Icons.cancel_outlined);
       case TriState.unknown:
-        return (cs.onSurfaceVariant, ButleryIcons.info);
+        return (TagStatusTone.neutral, ButleryIcons.info);
     }
   }
 
