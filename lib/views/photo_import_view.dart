@@ -555,17 +555,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: context.modeColors.warning.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        color: context.modeColors.surfaceTintWarning,
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusControl,
-                        ),
-                        border: Border.all(
-                          color: context.modeColors.warning.withValues(
-                            alpha: AppDimensions.opacityMediumLight,
-                          ),
-                          width: AppDimensions.borderWidthStandard,
                         ),
                       ),
                       child: Column(
@@ -575,7 +567,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             children: [
                               ButleryIcon(
                                 ButleryIcons.triangleAlert,
-                                color: context.modeColors.warning,
+                                color: AppModeColors.textWarning(cs.brightness),
                                 size: AppDimensions.iconSizeM,
                               ),
                               const SizedBox(width: AppDimensions.space4),

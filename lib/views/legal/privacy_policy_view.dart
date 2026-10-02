@@ -222,17 +222,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: context.modeColors.info.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: context.modeColors.info.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-            width: 1,
-          ),
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
       child: Row(
         children: [
