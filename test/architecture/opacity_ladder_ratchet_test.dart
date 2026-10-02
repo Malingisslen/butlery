@@ -11,10 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../tools/design_migration_census.dart' show stripComments;
 
-const _residue = <String, int>{
-  'lib/theme/components/feedback_themes.dart': 1,
-  'lib/theme/components/input_themes.dart': 6,
-};
+const _residue = <String, int>{};
 
 // Aligned with symbolSpecs' 'AppDimensions.opacity*' pattern in
 // design_migration_census.dart.

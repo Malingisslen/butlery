@@ -331,6 +331,13 @@ void main() {
     });
   });
 
+  // BUT-2183: Malin chose no pressed halo around the slider thumb.
+  test('the slider draws no pressed halo, in both modes', () {
+    for (final theme in [light, dark]) {
+      expect(theme.sliderTheme.overlayColor, Colors.transparent);
+    }
+  });
+
   group('light mode: the touched values are unchanged', () {
     final cs = light.colorScheme;
 
@@ -369,7 +376,6 @@ void main() {
       expect(s.activeTrackColor, _ink);
       expect(s.thumbColor, _ink);
       expect(s.valueIndicatorColor, _ink);
-      expect(s.overlayColor, _ink.withValues(alpha: s.overlayColor!.a));
       expect(light.progressIndicatorTheme.color, _ink);
       expect(
         light.scrollbarTheme.thumbColor!.resolve({}),

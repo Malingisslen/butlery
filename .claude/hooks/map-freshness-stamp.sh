@@ -11,8 +11,6 @@
 
 set -euo pipefail
 
-INPUT=$(cat 2>/dev/null || echo "{}")
-
 # Detect Python (same probe order as the other hooks).
 if command -v py &>/dev/null; then
   PY_CMD="py -3"
@@ -23,6 +21,18 @@ elif command -v python &>/dev/null; then
 else
   exit 0
 fi
+
+# lefthook pre-commit: stamp from the staged files, which include those a script changed.
+if [[ "${1:-}" == "--staged" ]]; then
+  $PY_CMD .claude/hooks/map_stamp.py --staged || true
+  exit 0
+fi
+# The stamper's own tests; unlike the stamping, these must fail loudly.
+if [[ "${1:-}" == "--self-test" ]]; then
+  exec $PY_CMD .claude/hooks/map_stamp.py --self-test
+fi
+
+INPUT=$(cat 2>/dev/null || echo "{}")
 
 echo "$INPUT" | $PY_CMD .claude/hooks/map_stamp.py 2>/dev/null || true
 
