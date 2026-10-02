@@ -48,17 +48,13 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2182',
     'no "Ingen anslutning" title',
   ),
-  'inköpslista::CONFLICT::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2199',
-    '#FF37453A ("Veckans inköp")',
-  ),
   'inköpslista::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
     '#61000000 ("Redigera"), #DD000000 ("icon U+E3C6"), #FFBDBDBD ("icon U+E098")',
   ),
   'inköpslista::LOADING::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
-    '#1AFFFFFF ("icon U+E098"), #62FFFFFF ("Redigera"), #FF8A5212 ("Ägare"), #FFFFFFFF ("icon U+E3C6")',
+    '#1AFFFFFF ("icon U+E098"), #62FFFFFF ("Redigera"), #FFFFFFFF ("icon U+E3C6")',
   ),
   'profil-inställningar::OFFLINE::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
@@ -116,14 +112,10 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2184',
     '#61F5F4ED ("Vegetariskt i veckan, sn…")',
   ),
-  'vänner-grupp::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2199',
-    '#FF37453A ("Veckans inköp")',
-  ),
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 24;
+const int knownStateFindingsCeiling = 22;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

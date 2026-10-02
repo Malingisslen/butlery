@@ -553,7 +553,9 @@ class _ShoppingMemberManagementDialogState
       subtitle: isOwner
           ? Text(
               context.l10n.shoppingPermissionOwner,
-              style: AppTextStyles.linkSmall,
+              style: AppTextStyles.linkSmall.copyWith(
+                color: context.modeColors.info,
+              ),
             )
           : null,
       trailing: !isOwner
