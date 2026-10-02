@@ -313,9 +313,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                                   vertical: AppDimensions.spacingXs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: cs.onSurface.withValues(
-                                    alpha: AppDimensions.opacityVeryLight,
-                                  ),
+                                  color: cs.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(
                                     AppDimensions.radiusControl,
                                   ),
