@@ -401,6 +401,10 @@ class _NotificationPreferencesViewState
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<DigestFrequency>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
+              ),
               value: _preferences.digestFrequency,
               isDense: true,
               isExpanded: true,

@@ -445,6 +445,12 @@ class _SkrivSjalvReceptViewContentState
                               // constructor assert re-checks the match on every
                               // build.
                               DropdownButtonFormField<String>(
+                                iconEnabledColor: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                iconDisabledColor: AppModeColors.textDisabled(
+                                  Theme.of(context).brightness,
+                                ),
                                 initialValue: mealTypeOptions.selected,
                                 isExpanded: true,
                                 decoration: const InputDecoration(

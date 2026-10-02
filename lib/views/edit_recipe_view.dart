@@ -59,6 +59,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -422,6 +423,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           // stored value — the dropdown's constructor assert re-checks the
           // match on every build.
           DropdownButtonFormField<String>(
+            iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            iconDisabledColor: AppModeColors.textDisabled(
+              Theme.of(context).brightness,
+            ),
             initialValue: mealTypeOptions.selected,
             isExpanded: true,
             decoration: const InputDecoration(

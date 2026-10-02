@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Editable card for a single rule condition with type, operator, and value fields.
 class RuleConditionCard extends StatefulWidget {
@@ -64,6 +65,12 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<ConditionType>(
+                    iconEnabledColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    iconDisabledColor: AppModeColors.textDisabled(
+                      Theme.of(context).brightness,
+                    ),
                     initialValue: widget.condition.type,
                     decoration: const InputDecoration(
                       isDense: true,
@@ -98,6 +105,12 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: DropdownButtonFormField<ConditionOperator>(
+                    iconEnabledColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    iconDisabledColor: AppModeColors.textDisabled(
+                      Theme.of(context).brightness,
+                    ),
                     initialValue: operators.contains(widget.condition.operator)
                         ? widget.condition.operator
                         : operators.first,

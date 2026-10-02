@@ -430,6 +430,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
 
   Widget _buildTagSelector() {
     return DropdownButtonFormField<String>(
+      iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      iconDisabledColor: AppModeColors.textDisabled(
+        Theme.of(context).brightness,
+      ),
       initialValue: _selectedTagId,
       decoration: InputDecoration(
         labelText: context.l10n.ruleApplyToTag,
@@ -699,6 +703,12 @@ class _ConditionRow extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: DropdownButtonFormField<ConditionType>(
+                  iconEnabledColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
+                  iconDisabledColor: AppModeColors.textDisabled(
+                    Theme.of(context).brightness,
+                  ),
                   initialValue: condition.type,
                   decoration: const InputDecoration(
                     isDense: true,
@@ -722,7 +732,7 @@ class _ConditionRow extends StatelessWidget {
               // Operator dropdown (filtered by condition type)
               Expanded(
                 flex: 2,
-                child: _buildOperatorDropdown(),
+                child: _buildOperatorDropdown(context),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               // Delete button
@@ -762,13 +772,17 @@ class _ConditionRow extends StatelessWidget {
     );
   }
 
-  Widget _buildOperatorDropdown() {
+  Widget _buildOperatorDropdown(BuildContext context) {
     final validOperators = OperatorRegistry.getValidOperators(condition.type);
     final currentOperator = validOperators.contains(condition.operator)
         ? condition.operator
         : validOperators.first;
 
     return DropdownButtonFormField<ConditionOperator>(
+      iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      iconDisabledColor: AppModeColors.textDisabled(
+        Theme.of(context).brightness,
+      ),
       initialValue: currentOperator,
       decoration: const InputDecoration(
         isDense: true,
@@ -877,6 +891,10 @@ class _ConditionRow extends StatelessWidget {
     ];
 
     return DropdownButtonFormField<String>(
+      iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      iconDisabledColor: AppModeColors.textDisabled(
+        Theme.of(context).brightness,
+      ),
       initialValue: dropdownInitialValue(storedValue),
       decoration: InputDecoration(
         isDense: true,
