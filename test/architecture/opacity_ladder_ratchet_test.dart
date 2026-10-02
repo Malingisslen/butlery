@@ -14,8 +14,6 @@ import '../../tools/design_migration_census.dart' show stripComments;
 const _residue = <String, int>{
   'lib/theme/components/feedback_themes.dart': 1,
   'lib/theme/components/input_themes.dart': 6,
-  'lib/views/account/consent_management_view.dart': 7,
-  'lib/views/account/data_export_view.dart': 2,
   'lib/views/legal/privacy_policy_view.dart': 2,
   'lib/views/messaging/chat_view/chat_input_section.dart': 1,
   'lib/views/onboarding/onboarding_import_page.dart': 2,
@@ -24,7 +22,6 @@ const _residue = <String, int>{
   'lib/views/photo_import_view.dart': 2,
   'lib/views/realtime/conflict_diff_view.dart': 2,
   'lib/views/receive_share_view.dart': 2,
-  'lib/views/recipe_detail/recipe_detail_content.dart': 10,
   'lib/views/settings/allergen_preferences_view.dart': 2,
   'lib/widgets/branding/app_logo.dart': 1,
   'lib/widgets/common/content_cards/menu_card.dart': 2,

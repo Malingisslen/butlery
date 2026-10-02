@@ -15,7 +15,7 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 - Residue lists not empty: 3
   - `test/architecture/icon_census_test.dart _residue: 398`
   - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 1`
-  - `test/architecture/opacity_ladder_ratchet_test.dart _residue: 82`
+  - `test/architecture/opacity_ladder_ratchet_test.dart _residue: 63`
 
 ## Required flow transitions
 
@@ -178,7 +178,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 1 | 1 | 1 |
 | `p7_type_and_space_scale_test.dart` | `_retiredSpacing` | BAN | LIVE | 19 | 19 | 19 |
 | `legacy_retirement_test.dart` | `_retired` | BAN | LIVE | 22 | 22 | 22 |
-| `opacity_ladder_ratchet_test.dart` | `_residue` | RESIDUE | LIVE | 40 | 82 | 82 |
+| `opacity_ladder_ratchet_test.dart` | `_residue` | RESIDUE | LIVE | 37 | 63 | 63 |
 
 ## Symbols counted in lib
 
@@ -200,6 +200,6 @@ Code only: comments are not counted; generated l10n is left out.
 | `fontSize: <number>` | 17 | `lib/theme/app_text_styles.dart`, `lib/widgets/cooking/step_timer_widget.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
 | `Color(0x…) outside lib/theme` | 4 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/brand/butlery_lockup.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
 | `BorderRadius.circular(<number>)` | 2 | `lib/views/menu_placement/placement_widgets.dart`, `lib/views/recipe_detail/handlers/recipe_shopping_handler.dart` | raw corner radii |
-| `AppDimensions.opacity*` | 82 | 40 files | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
+| `AppDimensions.opacity*` | 63 | 37 files | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
 | `spacingS / spacingXxs` | 0 |  | spacing members retired in package 7 |
 | `pubspec fonts` | 0 |  | retired type families still declared in pubspec.yaml |
