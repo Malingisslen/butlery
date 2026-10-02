@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Consolidated messaging UI components.
 
@@ -61,7 +62,9 @@ class ModalHeaderText extends StatelessWidget {
       children: [
         Text(
           text,
-          style: AppTextStyles.sectionHeader,
+          style: AppTextStyles.sectionHeader.copyWith(
+            color: AppModeColors.textBody(Theme.of(context).brightness),
+          ),
         ),
         const SizedBox(height: AppDimensions.paddingL),
       ],

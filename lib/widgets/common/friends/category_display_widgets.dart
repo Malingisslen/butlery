@@ -136,7 +136,9 @@ class CategoryDisplayWidgets {
           children: [
             Text(
               context.l10n.friendCategoryStatistics,
-              style: AppTextStyles.sectionTitleStyle,
+              style: AppTextStyles.sectionTitleStyle.copyWith(
+                color: AppModeColors.textBody(Theme.of(context).brightness),
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Row(

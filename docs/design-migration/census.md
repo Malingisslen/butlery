@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 168 known failures and 2 residue lists are not empty
-- Known failures: 168 (a11y 102, contrast 5, interaction_checks 12, interactions 6, states53 12, transitions 31)
+- **Migration complete:** NO: 166 known failures and 2 residue lists are not empty
+- Known failures: 166 (a11y 102, contrast 5, interaction_checks 12, interactions 6, states53 10, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 27 registered in Linear
+- Tickets: 26 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 393`
@@ -59,9 +59,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 94; cases with a known finding: 12
-- States passing in both modes: 46 of 53
-- Known findings: 12 (ceiling 12); by rule: COLOUR_TEXT 4, NO_OFFLINE_BANNER 8
+- Cases passing: 96; cases with a known finding: 10
+- States passing in both modes: 48 of 53
+- Known findings: 10 (ceiling 10); by rule: COLOUR_TEXT 2, NO_OFFLINE_BANNER 8
 
 ## Required control states
 
@@ -141,7 +141,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2194 | a11y 34 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp) |
 | BUT-2195 | a11y 2 | Tap targets without a label |
 | BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
-| BUT-2199 | states53 2 | Shared list header draws light text.body (#37453A) in dark mode |
 
 ## Ratchets and adoption lists
 

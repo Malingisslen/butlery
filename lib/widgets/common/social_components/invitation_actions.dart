@@ -360,7 +360,9 @@ class InvitationActions {
                 ),
                 title: Text(
                   context.l10n.commonDelete,
-                  style: AppTextStyles.bodyMediumError,
+                  style: AppTextStyles.bodyMediumError.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 ),
                 dense: true,
               ),
@@ -407,7 +409,9 @@ class InvitationActions {
                 ),
                 Text(
                   resolvedLeftLabel,
-                  style: AppTextStyles.buttonTextLight,
+                  style: AppTextStyles.buttonTextLight.copyWith(
+                    color: cs.surfaceContainerHighest,
+                  ),
                 ),
               ],
             ),
@@ -427,7 +431,9 @@ class InvitationActions {
                 ),
                 Text(
                   resolvedRightLabel,
-                  style: AppTextStyles.buttonTextLight,
+                  style: AppTextStyles.buttonTextLight.copyWith(
+                    color: cs.surfaceContainerHighest,
+                  ),
                 ),
               ],
             ),

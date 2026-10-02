@@ -618,7 +618,11 @@ class RecipeCard extends StatelessWidget {
         if (parts.isNotEmpty)
           Text(
             parts.join(' \u00B7 '),
-            style: AppTextStyles.recipeMeta,
+            style: AppTextStyles.recipeMeta.copyWith(
+              color: AppModeColors.textSecondaryOnRaised(
+                Theme.of(context).brightness,
+              ),
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

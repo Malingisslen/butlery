@@ -103,7 +103,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Expanded(
           child: Text(
             viewModel.listTitle,
-            style: AppTextStyles.sectionHeader,
+            style: AppTextStyles.sectionHeader.copyWith(
+              color: AppModeColors.textBody(Theme.of(context).brightness),
+            ),
           ),
         ),
         _buildStatusBadge(context),
