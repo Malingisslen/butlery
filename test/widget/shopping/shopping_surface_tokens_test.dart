@@ -53,6 +53,12 @@ class _RefusingService extends Fake implements UnifiedShoppingService {
   String? consumeMutationError() => null;
 }
 
+double _contrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  return (la > lb ? la + 0.05 : lb + 0.05) / (la > lb ? lb + 0.05 : la + 0.05);
+}
+
 Widget _app(Widget child, Brightness brightness) => MaterialApp(
   locale: const Locale('sv'),
   supportedLocales: AppLocalizations.supportedLocales,
@@ -128,6 +134,9 @@ void main() {
 
   for (final brightness in Brightness.values) {
     final cs = _scheme(brightness);
+    final editGlyph = brightness == Brightness.dark
+        ? AppColors.darkColorScheme.secondary
+        : AppColors.lightColorScheme.onSurface;
 
     group('shopping surfaces in ${brightness.name} mode', () {
       testWidgets('the sharing dialog cards are raised, the avatars on paper', (
@@ -201,8 +210,42 @@ void main() {
         }
       });
 
-      testWidgets('the sharing dialog draws the Redigera role in ink with a '
-          'saffron glyph', (tester) async {
+      testWidgets(
+        'the sharing dialog draws the Redigera role in ink, its glyph '
+        'in ink in light and saffron in dark',
+        (tester) async {
+          await tester.pumpWidget(
+            _app(
+              ShoppingShareStatusDialog(
+                list: _sharedList(),
+                userDisplayNames: const {_ownerId: 'Malin', 'bob': 'Bob'},
+              ),
+              brightness,
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(
+            tester.widget<Text>(find.text('Redigera')).style?.color,
+            cs.onSurface,
+          );
+          expect(
+            tester.widget<Icon>(find.byIcon(ButleryIcons.pencil)).color,
+            editGlyph,
+          );
+          expect(
+            _contrast(editGlyph, cs.surfaceContainerHighest),
+            greaterThanOrEqualTo(3),
+          );
+        },
+      );
+
+      testWidgets('the sharing dialog draws the own-permission Redigera '
+          'permission glyph the same way', (tester) async {
+        GetIt.instance.unregister<PermissionService>();
+        GetIt.instance.registerSingleton<PermissionService>(
+          FakePermissionService()..setPermissionState(currentUserId: 'bob'),
+        );
         await tester.pumpWidget(
           _app(
             ShoppingShareStatusDialog(
@@ -214,18 +257,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(
-          tester.widget<Text>(find.text('Redigera')).style?.color,
-          cs.onSurface,
-        );
-        expect(
-          tester.widget<Icon>(find.byIcon(ButleryIcons.pencil)).color,
-          cs.secondary,
-        );
+        final glyphs = tester
+            .widgetList<Icon>(find.byIcon(ButleryIcons.pencil))
+            .toList();
+        expect(glyphs, hasLength(2));
+        for (final glyph in glyphs) {
+          expect(glyph.color, editGlyph);
+        }
       });
 
-      testWidgets('the member dialog draws the Redigera role in ink with a '
-          'saffron glyph', (tester) async {
+      testWidgets('the member dialog draws the Redigera role in ink, its glyph '
+          'in ink in light and saffron in dark', (tester) async {
         tester.view.physicalSize = const Size(1000, 1800);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() {
@@ -251,7 +293,11 @@ void main() {
         expect(style.color, cs.onSurface);
         expect(
           tester.widget<Icon>(find.byIcon(ButleryIcons.pencil)).color,
-          cs.secondary,
+          editGlyph,
+        );
+        expect(
+          _contrast(editGlyph, cs.surfaceContainerHighest),
+          greaterThanOrEqualTo(3),
         );
       });
 

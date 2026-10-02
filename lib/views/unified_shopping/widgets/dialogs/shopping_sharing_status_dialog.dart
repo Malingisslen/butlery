@@ -190,7 +190,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionDescription =
               context.l10n.shoppingPermissionEditDescription;
           permissionIcon = ButleryIcons.pencil;
-          permissionColor = cs.secondary;
+          // Saffron falls under 3:1 on the light surfaces, so only dark mode
+          // keeps it.
+          permissionColor = cs.brightness == Brightness.dark
+              ? cs.secondary
+              : cs.onSurface;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdministrator;
@@ -327,7 +331,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionIcon = ButleryIcons.pencil;
-          permissionColor = cs.secondary;
+          // Saffron falls under 3:1 on the light surfaces, so only dark mode
+          // keeps it.
+          permissionColor = cs.brightness == Brightness.dark
+              ? cs.secondary
+              : cs.onSurface;
           permissionTextColor = cs.onSurface;
           break;
         case SharedListPermission.admin:
