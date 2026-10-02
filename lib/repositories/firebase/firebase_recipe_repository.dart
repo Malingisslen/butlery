@@ -784,6 +784,35 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
+  Stream<Recipe?> watchSharedRecipe({
+    required String ownerId,
+    required String recipeId,
+  }) {
+    return denialAsNull(
+      getCollectionForUser(ownerId)
+          .doc(recipeId)
+          .snapshots()
+          .map((doc) => doc.exists ? fromFirestore(doc) : null),
+    );
+  }
+
+  /// A denied read (removed from the share) arrives as null; any other
+  /// error passes on unchanged.
+  static Stream<Recipe?> denialAsNull(Stream<Recipe?> source) {
+    return source.transform(
+      StreamTransformer<Recipe?, Recipe?>.fromHandlers(
+        handleError: (error, stack, sink) {
+          if (error is FirebaseException && error.code == 'permission-denied') {
+            sink.add(null);
+          } else {
+            sink.addError(error, stack);
+          }
+        },
+      ),
+    );
+  }
+
+  @override
   Future<List<Recipe>> fetchAllUserRecipes(
     String userId, {
     int batchSize = 500,

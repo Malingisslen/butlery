@@ -188,6 +188,14 @@ class FakeMaturedAccountHelper extends Fake implements AccountMaturityHelper {
 
 /// Mock implementation of RecipeRepository
 class MockRecipeRepository extends Mock implements RecipeRepository {
+  // The recipe form watches the live role on every open; a mock that answered
+  // null here would throw in the view model's constructor.
+  @override
+  Stream<Recipe?> watchSharedRecipe({
+    required String ownerId,
+    required String recipeId,
+  }) => const Stream<Recipe?>.empty();
+
   // Configuration state
   String? _currentUserId = 'test-user-123';
   Map<String, List<Recipe>> _recipesByUser = {};
@@ -923,9 +931,10 @@ class FakeFirestoreRepository extends Fake implements FirestoreRepository {
   @override
   Future<void> setDocument(
     DocumentReference<Map<String, dynamic>> ref,
-    Map<String, dynamic> data,
-  ) async {
-    await ref.set(data, SetOptions(merge: true));
+    Map<String, dynamic> data, {
+    bool merge = true,
+  }) async {
+    await ref.set(data, SetOptions(merge: merge));
   }
 }
 

@@ -20,7 +20,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_sv.dart';
-import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -121,9 +120,6 @@ void main() {
     );
 
     final sync = _MockRealtimeSyncService();
-    when(
-      () => sync.watchResource<RealtimeRecipe>(any()),
-    ).thenAnswer((_) => const Stream<RealtimeRecipe>.empty());
     when(
       () => sync.conflictStream,
     ).thenAnswer((_) => const Stream<ConflictEvent>.empty());

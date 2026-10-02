@@ -8,7 +8,10 @@
 /// 2. readSharedRecipe returns null when the doc does not exist.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 
@@ -90,6 +93,110 @@ void main() {
 
       // Assert
       expect(result, isNull);
+    });
+  });
+
+  group('FirebaseRecipeRepository.watchSharedRecipe', () {
+    late FirebaseRecipeRepository repository;
+    late FakeFirebaseFirestore fakeFirestore;
+
+    const callerId = 'caller-user';
+    const ownerId = 'owner-user';
+
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+    });
+
+    setUp(() {
+      fakeFirestore = FakeFirebaseFirestore();
+      final auth = FakeAuthRepository();
+      auth.setAuthState(
+        user: FakeUser(),
+        userId: callerId,
+        isAuthenticated: true,
+      );
+      repository = FirebaseRecipeRepository(
+        firestore: fakeFirestore,
+        authRepository: auth,
+      );
+    });
+
+    tearDown(() async {
+      BaseUnitTest.resetMocks();
+      await TestServiceLocator.reset();
+    });
+
+    DocumentReference<Map<String, dynamic>> recipeDoc(String uid) =>
+        fakeFirestore
+            .collection('users')
+            .doc(uid)
+            .collection('recipes')
+            .doc('r1');
+
+    Recipe sharedWithCaller(ResourcePermission role) => RecipeFactory.build(
+      id: 'r1',
+      title: 'Pannkakor',
+      createdBy: ownerId,
+      socialData: RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: 'Olle',
+        memberPermissions: {callerId: role},
+        allowGuestViewing: false,
+        allowMemberInvites: false,
+      ),
+    );
+
+    test('watches the owner\'s document, follows changes, and ends in null '
+        'when it is gone', () async {
+      await recipeDoc(ownerId).set(
+        sharedWithCaller(ResourcePermission.editor).toFirestore(),
+      );
+      // A decoy at the caller's own path: reading it would give viewer.
+      await recipeDoc(callerId).set(
+        sharedWithCaller(ResourcePermission.viewer).toFirestore(),
+      );
+
+      final roles = repository
+          .watchSharedRecipe(ownerId: ownerId, recipeId: 'r1')
+          .map((r) => r?.socialData?.memberPermissions?[callerId]);
+      final expectation = expectLater(
+        roles,
+        emitsInOrder([
+          ResourcePermission.editor,
+          ResourcePermission.viewer,
+          isNull,
+        ]),
+      );
+
+      await Future<void>.delayed(Duration.zero);
+      await recipeDoc(ownerId).set(
+        sharedWithCaller(ResourcePermission.viewer).toFirestore(),
+      );
+      await Future<void>.delayed(Duration.zero);
+      await recipeDoc(ownerId).delete();
+      await expectation;
+    });
+
+    test('a denied read becomes null; any other error passes on', () async {
+      expect(
+        await FirebaseRecipeRepository.denialAsNull(
+          Stream<Recipe?>.error(
+            FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'permission-denied',
+            ),
+          ),
+        ).toList(),
+        [null],
+      );
+      expect(
+        FirebaseRecipeRepository.denialAsNull(
+          Stream<Recipe?>.error(
+            FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+          ),
+        ).toList(),
+        throwsA(isA<FirebaseException>()),
+      );
     });
   });
 }

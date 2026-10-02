@@ -52,6 +52,17 @@ void main() {
         expect(participants['user_123'], equals(ResourcePermission.owner));
       });
 
+      test('the id starts with the owner uid, as the rules require', () {
+        final result = RealtimeMenuFactory.createFromMenuCategories(
+          menuTitle: 'Veckans meny',
+          menuSnapshot: testMenuSnapshot,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna Andersson',
+        );
+
+        expect(result['id'] as String, startsWith('user_123_'));
+      });
+
       test('should create menu with editors and viewers', () {
         final result = RealtimeMenuFactory.createFromMenuCategories(
           menuTitle: 'Delad meny',
@@ -131,8 +142,8 @@ void main() {
           final result = RealtimeMenuFactory.createFromMenuCategories(
             menuTitle: 'Menu $i',
             menuSnapshot: testMenuSnapshot,
-            ownerId: 'user_$i',
-            ownerDisplayName: 'User $i',
+            ownerId: 'user_1',
+            ownerDisplayName: 'User 1',
           );
           ids.add(result['id'] as String);
         }

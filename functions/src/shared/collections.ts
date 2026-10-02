@@ -11,6 +11,7 @@ export const Collections = {
   sharedRecipes: "shared_recipes",
   realtimeRecipes: "realtime_recipes",
   realtimeMenus: "realtime_menus",
+  realtimeResources: "realtime_resources",
   messages: "messages",
   conversations: "conversations",
   // The roster subcollection under `conversations/{id}`, and the collection-group
