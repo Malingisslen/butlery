@@ -25,16 +25,10 @@ class FilterStatusChip extends StatelessWidget {
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
+      // A neutral info chip: the raised surface with no border (B83-2).
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-        border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.secondary.withValues(alpha: AppDimensions.opacityLight),
-        ),
       ),
       child: Row(
         children: [

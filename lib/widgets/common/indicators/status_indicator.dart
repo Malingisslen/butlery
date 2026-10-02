@@ -26,7 +26,7 @@ class StatusIndicator extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(padding ?? AppDimensions.space4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: ButleryIcon(

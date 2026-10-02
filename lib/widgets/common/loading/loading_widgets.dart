@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -78,22 +79,19 @@ class LoadingWidgets {
                       final cs = Theme.of(ctx).colorScheme;
                       return Container(
                         padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        // An error notice (B83-2): the mode's tint with no
+                        // border, and text in the on-colour that reads on it.
                         decoration: BoxDecoration(
-                          color: cs.error.withValues(
-                            alpha: AppDimensions.opacityVeryLight,
-                          ),
+                          color: ctx.modeColors.surfaceTintDanger,
                           borderRadius: BorderRadius.circular(
                             AppDimensions.radiusControl,
-                          ),
-                          border: Border.all(
-                            color: cs.error.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            ),
                           ),
                         ),
                         child: Text(
                           ctx.l10n.errorUnexpected,
-                          style: AppTextStyles.bodyMediumError,
+                          style: AppTextStyles.bodyMediumError.copyWith(
+                            color: cs.onErrorContainer,
+                          ),
                         ),
                       );
                     },

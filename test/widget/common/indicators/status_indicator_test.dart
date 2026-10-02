@@ -59,7 +59,7 @@ void main() {
         expect(icon.color, equals(testColor));
       });
 
-      testWidgets('applies correct background color with alpha', (
+      testWidgets('fills with the raised surface, whatever the glyph colour', (
         WidgetTester tester,
       ) async {
         const testColor = Colors.red;
@@ -77,7 +77,14 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(testColor.withValues(alpha: 0.1)));
+        expect(
+          decoration.color,
+          equals(
+            Theme.of(
+              tester.element(find.byType(StatusIndicator)),
+            ).colorScheme.surfaceContainerHighest,
+          ),
+        );
       });
 
       testWidgets('applies correct border radius', (WidgetTester tester) async {
@@ -206,7 +213,14 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(successColor.withValues(alpha: 0.1)));
+        expect(
+          decoration.color,
+          equals(
+            Theme.of(
+              tester.element(find.byType(StatusIndicator)),
+            ).colorScheme.surfaceContainerHighest,
+          ),
+        );
       });
 
       testWidgets('renders warning status correctly', (

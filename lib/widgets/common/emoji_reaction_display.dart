@@ -51,9 +51,7 @@ class EmojiReactionDisplay extends StatelessWidget {
                 // Your reaction is surface.selected (surfaceContainerHighest carries its
                 // values in both modes) with a real text.primary border, never an ink
                 // tint (tokens.json:40-53, :116-119; Grafisk manual v6:209).
-                color: hasReacted
-                    ? cs.surfaceContainerHighest
-                    : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
+                color: hasReacted ? cs.surfaceContainerHighest : cs.surface,
                 borderRadius: BorderRadius.circular(
                   AppDimensions.radiusPill,
                 ),

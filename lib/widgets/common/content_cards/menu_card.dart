@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
@@ -293,15 +294,10 @@ class MenuCard extends StatelessWidget {
         horizontal: AppDimensions.spacingM,
         vertical: AppDimensions.space4,
       ),
+      // A neutral info chip: the raised surface with no border (B83-2).
       decoration: BoxDecoration(
-        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.onSurface.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-          width: AppDimensions.borderWidthThin,
-        ),
       ),
       child: Row(
         children: [
@@ -315,7 +311,9 @@ class MenuCard extends StatelessWidget {
             memberCount > 0
                 ? context.l10n.menuCardSharedWithCount(memberCount)
                 : context.l10n.menuCardSharedMenu,
-            style: AppTextStyles.linkSmall,
+            style: AppTextStyles.linkSmall.copyWith(
+              color: context.modeColors.info,
+            ),
           ),
         ],
       ),

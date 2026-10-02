@@ -23,8 +23,9 @@ class AdminBadge extends StatelessWidget {
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.paddingS,
       ),
+      // A neutral info chip with no border (B83-2).
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
@@ -33,13 +34,13 @@ class AdminBadge extends StatelessWidget {
           ButleryIcon(
             icon,
             size: AppDimensions.iconSizeS,
-            color: cs.primary,
+            color: cs.onSurface,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label ?? context.l10n.adminYouAreAdmin,
             style: AppTextStyles.labelMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
         ],
