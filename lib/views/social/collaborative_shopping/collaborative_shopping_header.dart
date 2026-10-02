@@ -122,11 +122,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surface,
         borderRadius: BorderRadius.zero,
-        border: Border.all(
-          color: color.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Text(
         viewModel.statusText,

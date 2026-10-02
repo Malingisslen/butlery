@@ -142,20 +142,17 @@ class FriendRequestsHeaderBuilder {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Row(
         children: [
-          ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
           const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               viewModel.error!,
-              style: TextStyle(color: cs.error),
+              style: TextStyle(color: cs.onErrorContainer),
             ),
           ),
           TextButton(
@@ -243,9 +240,7 @@ class IncomingRequestsTabBuilder {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
                   ButleryIcon(
@@ -336,9 +331,7 @@ class SentRequestsTabBuilder {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
                   ButleryIcon(

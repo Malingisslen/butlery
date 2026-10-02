@@ -52,6 +52,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -1138,5 +1139,67 @@ void main() {
       );
       expect(find.text(l10n.shoppingListUpdatedByUnknown), findsOneWidget);
     });
+  });
+
+  // BUT-2183: the list header is surface.raised, so its status badge stands on
+  // surface.base with no border, and the text carries the status colour.
+  group('CollaborativeShoppingView — status badge (BUT-2183)', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      for (final done in [false, true]) {
+        testWidgets(
+          '$name, ${done ? 'completed' : 'in progress'}: base fill, no border, '
+          'the status text token',
+          (tester) async {
+            tester.view.physicalSize = const Size(420, 3000);
+            tester.view.devicePixelRatio = 1.0;
+            addTearDown(() {
+              tester.view.resetPhysicalSize();
+              tester.view.resetDevicePixelRatio();
+            });
+            shoppingService.setShoppingState(
+              lists: [
+                listWith([
+                  item('Mjölk', bought: done),
+                  item('Bröd', bought: true),
+                ]),
+              ],
+              isInitialized: true,
+            );
+            await tester.pumpWidget(
+              localize(
+                const CollaborativeShoppingView(listId: _testListId),
+                theme: theme,
+              ),
+            );
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 50));
+
+            final context = tester.element(
+              find.byType(CollaborativeShoppingView),
+            );
+            final l10n = AppLocalizations.of(context);
+            final badge = find.text(
+              done ? l10n.statusCompleted : l10n.statusInProgress,
+            );
+            expect(badge, findsOneWidget);
+            final box = tester.widget<Container>(
+              find.ancestor(of: badge, matching: find.byType(Container)).first,
+            );
+            final decoration = box.decoration! as BoxDecoration;
+            expect(decoration.color, theme.colorScheme.surface);
+            expect(decoration.border, isNull);
+            expect(
+              tester.widget<Text>(badge).style?.color,
+              done
+                  ? context.modeColors.success
+                  : AppModeColors.textWarning(theme.brightness),
+            );
+          },
+        );
+      }
+    }
   });
 }

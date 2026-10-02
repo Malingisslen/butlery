@@ -33,6 +33,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -159,7 +160,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget testApp() {
+  Widget testApp({ThemeData? theme}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -169,7 +170,7 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.lightTheme,
+      theme: theme ?? AppTheme.lightTheme,
       home: const FriendsListView(),
     );
   }
@@ -180,7 +181,7 @@ void main() {
   // layout artifact of the surrounding scaffold, orthogonal to the
   // tab/state behaviour under test — so we ignore RenderFlex-overflow
   // FlutterErrors ONLY, letting every other error fail the test as normal.
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester, {ThemeData? theme}) async {
     tester.view.physicalSize = const Size(1200, 2600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -200,7 +201,7 @@ void main() {
     };
     addTearDown(() => FlutterError.onError = previousOnError);
 
-    await tester.pumpWidget(testApp());
+    await tester.pumpWidget(testApp(theme: theme));
     await tester.pumpAndSettle();
   }
 
@@ -332,5 +333,61 @@ void main() {
         expect(find.text(_tabFeed), findsNothing);
       },
     );
+  });
+
+  // BUT-2183: the discovery card is a surface.raised fill with a hairline
+  // border.subtle line, and the error box is a surface.tint.danger notice
+  // with no border (B83-2).
+  group('FriendsListView — tokens (BUT-2183)', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('$name: the discovery card is surface.raised with an '
+          'outlineVariant line', (tester) async {
+        await pumpView(tester, theme: theme);
+        await tester.tap(
+          find.descendant(
+            of: find.byType(TabBar),
+            matching: find.text(_tabFindFriends),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final context = tester.element(find.byType(FriendsListView));
+        final title = find.text(
+          AppLocalizations.of(context).socialFindNewFriends,
+        );
+        expect(title, findsOneWidget);
+        final box = tester.widget<Container>(
+          find.ancestor(of: title, matching: find.byType(Container)).first,
+        );
+        final decoration = box.decoration! as BoxDecoration;
+        final cs = Theme.of(context).colorScheme;
+        expect(decoration.color, cs.surfaceContainerHighest);
+        expect((decoration.border! as Border).top.color, cs.outlineVariant);
+      });
+
+      testWidgets('$name: the error box is a surface.tint.danger fill with no '
+          'border', (tester) async {
+        friendsViewModel.setFriendsState(error: 'Något gick fel');
+        when(() => friendsViewModel.error).thenReturn('Något gick fel');
+        await pumpView(tester, theme: theme);
+
+        final context = tester.element(find.byType(FriendsListView));
+        final message = find.text('Något gick fel');
+        expect(message, findsOneWidget);
+        final box = tester.widget<Container>(
+          find.ancestor(of: message, matching: find.byType(Container)).first,
+        );
+        final decoration = box.decoration! as BoxDecoration;
+        expect(decoration.color, context.modeColors.surfaceTintDanger);
+        expect(decoration.border, isNull);
+        expect(
+          tester.widget<Text>(message).style?.color,
+          Theme.of(context).colorScheme.onErrorContainer,
+        );
+      });
+    }
   });
 }

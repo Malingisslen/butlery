@@ -115,9 +115,7 @@ class GroupCard {
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.onSurface.withValues(
-            alpha: AppDimensions.opacityVeryLight,
-          ),
+          backgroundColor: Theme.of(context).colorScheme.surface,
           child: Text(
             group.emoji ?? '👥',
             style: AppTextStyles.headlineMedium,

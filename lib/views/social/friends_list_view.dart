@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -274,31 +275,28 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.error
-                                .withValues(
-                                  alpha: AppDimensions.opacityVeryLight,
-                                ),
+                            color: context.modeColors.surfaceTintDanger,
                             borderRadius: BorderRadius.circular(
                               AppDimensions.radiusControl,
-                            ),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.error
-                                  .withValues(
-                                    alpha: AppDimensions.opacityMediumLight,
-                                  ),
                             ),
                           ),
                           child: Row(
                             children: [
                               ButleryIcon(
                                 ButleryIcons.triangleAlert,
-                                color: Theme.of(context).colorScheme.error,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onErrorContainer,
                               ),
                               const SizedBox(width: AppDimensions.space4),
                               Expanded(
                                 child: Text(
                                   viewModel.error!,
-                                  style: AppTextStyles.bodyMediumError,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onErrorContainer,
+                                  ),
                                 ),
                               ),
                               ActionButtons.secondaryButton(

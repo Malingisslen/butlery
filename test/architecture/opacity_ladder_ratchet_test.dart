@@ -26,22 +26,6 @@ const _residue = <String, int>{
   'lib/views/receive_share_view.dart': 2,
   'lib/views/recipe_detail/recipe_detail_content.dart': 10,
   'lib/views/settings/allergen_preferences_view.dart': 2,
-  'lib/views/social/add_members_to_group_view.dart': 1,
-  'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart':
-      1,
-  'lib/views/social/collaborative_shopping/collaborative_shopping_header.dart':
-      2,
-  'lib/views/social/collaborative_shopping/collaborative_shopping_items.dart':
-      3,
-  'lib/views/social/create_shared_shopping_list_view.dart': 4,
-  'lib/views/social/friend_requests/friend_request_builders.dart': 4,
-  'lib/views/social/friend_requests/friend_request_card.dart': 1,
-  'lib/views/social/friends_list/friends_list_cards.dart': 1,
-  'lib/views/social/friends_list/group_invitation_card.dart': 4,
-  'lib/views/social/friends_list/requests_tab.dart': 2,
-  'lib/views/social/friends_list_view.dart': 2,
-  'lib/views/social/group_detail/group_invitation_card.dart': 2,
-  'lib/views/social/user_profile_edit/preferences_sections.dart': 2,
   'lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart':
       3,
   'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart':
