@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 void main() {
   group('LoadingWidgets Tests', () {
@@ -162,41 +164,36 @@ void main() {
         expect(coloredBox.color, equals(customColor));
       });
 
-      testWidgets('should use theme onSurface overlay when not provided', (
-        WidgetTester tester,
-      ) async {
-        late ColorScheme cs;
-        await tester.pumpWidget(
-          MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('sv'),
-            home: Scaffold(
-              body: Builder(
-                builder: (context) {
-                  cs = Theme.of(context).colorScheme;
-                  return LoadingWidgets.loadingOverlay(isLoading: true);
-                },
+      for (final (mode, theme) in [
+        ('light', AppTheme.lightTheme),
+        ('dark', AppTheme.darkTheme),
+      ]) {
+        testWidgets('the default overlay is the ink overlay in $mode', (
+          WidgetTester tester,
+        ) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: theme,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('sv'),
+              home: Scaffold(
+                body: LoadingWidgets.loadingOverlay(isLoading: true),
               ),
             ),
-          ),
-        );
+          );
 
-        final coloredBox = tester.widget<ColoredBox>(
-          find
-              .ancestor(
-                of: find.byType(PlateLine),
-                matching: find.byType(ColoredBox),
-              )
-              .first,
-        );
-        expect(
-          coloredBox.color,
-          equals(
-            cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
-          ),
-        );
-      });
+          final coloredBox = tester.widget<ColoredBox>(
+            find
+                .ancestor(
+                  of: find.byType(PlateLine),
+                  matching: find.byType(ColoredBox),
+                )
+                .first,
+          );
+          expect(coloredBox.color, AppColors.overlayBlack40);
+        });
+      }
 
       testWidgets('should have proper container styling', (
         WidgetTester tester,

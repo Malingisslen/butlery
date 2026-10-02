@@ -48,7 +48,7 @@ class PlatformBadgeWidget extends StatelessWidget {
           vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
-          color: _getBackgroundColor(detection!.platform, colorScheme),
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           border: Border.all(
             color: colorScheme.outlineVariant,
@@ -91,26 +91,16 @@ class PlatformBadgeWidget extends StatelessWidget {
     }
   }
 
-  Color _getBackgroundColor(Platform platform, ColorScheme colorScheme) {
-    switch (platform) {
-      case Platform.youtube:
-        return BrandColors.youtubeBackground;
-      case Platform.tiktok:
-        return BrandColors.tiktokBackground;
-      case Platform.instagram:
-        return BrandColors.instagramBackground;
-      case Platform.website:
-      case Platform.unknown:
-        return colorScheme.surfaceContainerHighest;
-    }
-  }
-
   Color _getIconColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
         return BrandColors.youtube;
       case Platform.tiktok:
-        return BrandColors.tiktokText;
+        // TikTok's black vanishes on the dark raised fill and its cyan on the
+        // light one, so each mode takes the half of the brand that shows.
+        return colorScheme.brightness == Brightness.dark
+            ? BrandColors.tiktok
+            : BrandColors.tiktokText;
       case Platform.instagram:
         return BrandColors.instagram;
       case Platform.website:
@@ -123,11 +113,8 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getTextColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return BrandColors.youtubeText;
       case Platform.tiktok:
-        return BrandColors.tiktokText;
       case Platform.instagram:
-        return BrandColors.instagramText;
       case Platform.website:
         return colorScheme.onSurface;
       case Platform.unknown:

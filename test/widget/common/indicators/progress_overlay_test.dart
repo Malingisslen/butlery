@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 
@@ -39,6 +39,27 @@ BoxDecoration _scrim(WidgetTester tester) =>
             )
             .decoration
         as BoxDecoration;
+
+BoxDecoration _card(WidgetTester tester) =>
+    tester
+            .widget<DecoratedBox>(
+              find
+                  .ancestor(
+                    of: find.text('x'),
+                    matching: find.byType(DecoratedBox),
+                  )
+                  .first,
+            )
+            .decoration
+        as BoxDecoration;
+
+double _contrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
+}
 
 void main() {
   testWidgets('shows the text and the in-button plate line, no spinner', (
@@ -72,27 +93,39 @@ void main() {
   });
 
   for (final brightness in Brightness.values) {
-    testWidgets('scrim, text and line follow the scheme in $brightness', (
-      tester,
-    ) async {
+    testWidgets('scrim is ink, the card is paper, text and line are ink in '
+        '$brightness', (tester) async {
       await tester.pumpWidget(
         _wrap(const ProgressOverlay(text: 'x'), brightness: brightness),
       );
       final cs = brightness == Brightness.dark
           ? AppColors.darkColorScheme
           : AppColors.lightColorScheme;
-      expect(
-        _scrim(tester).color,
-        cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
-      );
+      // The ink overlay in both modes, never an on-surface tint that turns
+      // paper-coloured in dark.
+      expect(_scrim(tester).color, AppColors.overlayBlack60);
+      expect(_card(tester).color, AppModeColors.surfacePaperOnPhoto());
       expect(
         tester.widget<Text>(find.text('x')).style?.color,
-        cs.surfaceContainerHighest,
+        cs.primary,
       );
       expect(
         tester.widget<ButtonPlateLine>(find.byType(ButtonPlateLine)).color,
-        cs.surfaceContainerHighest,
+        cs.primary,
       );
+    });
+
+    // The card is opaque, so the ratio does not depend on the photo behind it.
+    testWidgets('ink text on the paper card reads in $brightness', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const ProgressOverlay(text: 'x'), brightness: brightness),
+      );
+      final text = tester.widget<Text>(find.text('x')).style!.color!;
+      final fill = _card(tester).color!;
+      expect(fill.a, 1.0);
+      expect(_contrast(text, fill), greaterThanOrEqualTo(4.5));
     });
   }
 
