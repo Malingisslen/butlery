@@ -143,15 +143,14 @@ class ErrorDisplayWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: cs.error),
       ),
       child: Row(
         children: [
           ButleryIcon(
             ButleryIcons.triangleAlert,
-            color: cs.error,
+            color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.space4),
@@ -159,7 +158,7 @@ class ErrorDisplayWidget extends StatelessWidget {
             child: Text(
               errorMessage,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.error,
+                color: cs.onErrorContainer,
               ),
             ),
           ),
@@ -180,17 +179,14 @@ class WarningDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final warningColor = context.modeColors.warning;
+    final warningColor = AppModeColors.textWarning(
+      Theme.of(context).brightness,
+    );
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: warningColor.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
       ),
       child: Row(
         children: [

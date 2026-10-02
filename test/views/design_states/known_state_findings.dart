@@ -96,33 +96,17 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2183',
     '#FF616161 ("icon U+E098")',
   ),
-  'recepteditor::DEFAULT::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1A24382C',
-  ),
   'recepteditor::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
     '#B3FFFFFF ("icon U+E098")',
-  ),
-  'recepteditor::DEFAULT::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1AF5F4ED',
   ),
   'recepteditor::OFFLINE::light::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
     '#FF616161 ("icon U+E098")',
   ),
-  'recepteditor::OFFLINE::light::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1A24382C',
-  ),
   'recepteditor::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2183',
     '#B3FFFFFF ("icon U+E098")',
-  ),
-  'recepteditor::OFFLINE::dark::COLOUR_FILL': KnownFinding(
-    'BUT-2183',
-    'DecoratedBox #1AF5F4ED',
   ),
   'receptlista-sök::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
@@ -163,7 +147,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 34;
+const int knownStateFindingsCeiling = 30;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

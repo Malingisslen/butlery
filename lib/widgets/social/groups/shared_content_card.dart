@@ -42,9 +42,9 @@ class SharedContentCard extends StatelessWidget {
       case 'recipe':
         return cs.onSurface;
       case 'menu':
-        return context.modeColors.success;
+        return context.modeColors.onSuccessContainer;
       case 'shopping_list':
-        return context.modeColors.warning;
+        return AppModeColors.textWarning(Theme.of(context).brightness);
       default:
         return cs.onSurfaceVariant;
     }
@@ -90,9 +90,7 @@ class SharedContentCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingS),
                       decoration: BoxDecoration(
-                        color: iconColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        color: cs.surface,
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusControl,
                         ),
@@ -139,9 +137,7 @@ class SharedContentCard extends StatelessWidget {
                     else
                       CircleAvatar(
                         radius: 12,
-                        backgroundColor: cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityLight,
-                        ),
+                        backgroundColor: cs.surface,
                         child: Text(
                           item.sharedByDisplayName.isNotEmpty
                               ? item.sharedByDisplayName[0].toUpperCase()
