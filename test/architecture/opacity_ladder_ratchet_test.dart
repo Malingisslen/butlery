@@ -66,13 +66,7 @@ const _residue = <String, int>{
   'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/messaging/builders/message_content_builder.dart': 1,
   'lib/widgets/messaging/poll_message_widget.dart': 6,
-  'lib/widgets/recipe/comment_item_widgets.dart': 2,
-  'lib/widgets/recipe/duplicate_merge_sheet.dart': 1,
-  'lib/widgets/recipe/ingredient_substitution_sheet.dart': 2,
-  'lib/widgets/recipe/recipe_card.dart': 11,
-  'lib/widgets/recipe/recipe_shelf.dart': 2,
-  'lib/widgets/recipe/related_recipes_editor.dart': 2,
-  'lib/widgets/recipe/related_recipes_picker_dialog.dart': 1,
+  'lib/widgets/recipe/recipe_shelf.dart': 1,
   'lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart':
       3,
   'lib/widgets/social/collaborative/components/collaborative_live_widgets.dart':

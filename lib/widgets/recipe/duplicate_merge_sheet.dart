@@ -134,9 +134,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              color: cs.onSurfaceVariant.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: AppModeColors.textDisabled(Theme.of(context).brightness),
             ),
           ),
           // Header

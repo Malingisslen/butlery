@@ -156,12 +156,8 @@ class _RelatedChip extends StatelessWidget {
       label: context.l10n.a11yRelatedRecipeChip(title),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
-          border: Border.all(
-            color: cs.onSurface.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          color: cs.surfaceContainerHighest,
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

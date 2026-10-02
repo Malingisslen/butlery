@@ -43,6 +43,10 @@ void main() {
         id: 'hover_recipe',
         title: 'Köttbullar med potatismos',
         description: 'Klassisk svensk husmanskost',
+        // Three ingredients keep the recipe above the completeness threshold:
+        // the incomplete chip is a surface.raised fill, and the highlight
+        // matcher below counts any raised rrect the card draws.
+        ingredients: const ['Köttfärs', 'Ströbröd', 'Mjölk'],
         imageUrls: const [],
         personalTagIds: const [],
       );
