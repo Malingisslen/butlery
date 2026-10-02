@@ -139,7 +139,7 @@ class InputThemes {
       // (tokens.json:184-187). Switch and radio rows are ListTiles and the
       // theme cannot tell them apart from other rows, so every disabled
       // list row gets it. Without this, Flutter falls back to
-      // ThemeData.disabledColor, a 38 % black. Selected and enabled rows
+      // ThemeData.disabledColor. Selected and enabled rows
       // are text.primary (onSurface); see the selected colour above.
       textColor: WidgetStateColor.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {

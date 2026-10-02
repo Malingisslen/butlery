@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -70,6 +71,11 @@ class AppTheme {
       scrollbarTheme: ComponentThemes.scrollbarTheme(colorScheme),
 
       scaffoldBackgroundColor: colorScheme.surface,
+
+      // BUT-2185: a disabled DropdownButton draws its selected value in
+      // disabledColor; the token is
+      // text.disabled, the same as its disabled arrow.
+      disabledColor: AppModeColors.textDisabled(colorScheme.brightness),
 
       // BUT-533: keyboard focus must be visible on cream surfaces. Material 3
       // default focus tint is ~12% primary, which renders near-invisible

@@ -373,9 +373,10 @@ class _ShoppingMemberManagementDialogState
     return AlertDialog(
       title: Row(
         children: [
-          const ButleryIcon(
+          ButleryIcon(
             Icons.manage_accounts,
             size: AppDimensions.iconSizeAction,
+            color: cs.onSurface,
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
