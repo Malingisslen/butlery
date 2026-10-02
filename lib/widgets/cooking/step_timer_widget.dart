@@ -7,7 +7,7 @@ import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -20,7 +20,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 /// - `colorScheme.surface` background, `colorScheme.onPrimaryContainer` numerals.
 /// - Square container (plain `Container`, no `BorderRadius`).
 /// - On expiry: `modeColors.starGold` pulse via `AnimationController` running
-///   `ThemeConstants.durationMedium` in reverse-repeat until the user
+///   `AppMotion.standard` in reverse-repeat until the user
 ///   dismisses the sheet.
 ///
 /// The widget has three visible states:
@@ -84,7 +84,7 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: ThemeConstants.durationMedium,
+      duration: AppMotion.standard,
     );
     // Auto-start once at mount — no need to re-check on every rebuild.
     WidgetsBinding.instance.addPostFrameCallback((_) async {

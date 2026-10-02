@@ -1,8 +1,7 @@
 // lib/widgets/common/buttons/overlay_button.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -35,17 +34,17 @@ class OverlayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
+      // A control without text on a photo is a paper circle with an ink
+      // glyph (overlay.paperCard); cs.primary is ink in both modes.
       decoration: BoxDecoration(
-        // Dark scrim behind the light icon — the previous light-surface scrim
-        // gave a light-on-light icon with poor contrast over photos.
-        color: backgroundColor ?? ThemeConstants.blackOverlay60,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        color: backgroundColor ?? context.modeColors.overlayPaperCard,
+        shape: BoxShape.circle,
       ),
       child: IconButton(
         onPressed: onPressed,
         tooltip: tooltip,
         icon: IconTheme(
-          data: IconThemeData(color: cs.surfaceContainerHighest),
+          data: IconThemeData(color: cs.primary),
           child: child,
         ),
       ),
