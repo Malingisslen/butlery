@@ -27,6 +27,7 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
 /// through [buildTextFormField]; the dropdown, checkbox and switch builders
@@ -50,46 +51,49 @@ class DialogFormFields {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
-          border: const OutlineInputBorder(),
-          counterText: maxLength != null ? null : '',
+      child: Builder(
+        builder: (context) => TextFormField(
+          style: fieldTextStyle(context, enabled: enabled),
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: labelText,
+            hintText: hintText,
+            prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
+            border: const OutlineInputBorder(),
+            counterText: maxLength != null ? null : '',
+          ),
+          maxLength: maxLength,
+          maxLines: maxLines,
+          enabled: enabled,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          // BUT-517 follow-up: contentFilter must NEVER be bypassable. The old
+          // shape `customValidator ?? combine([...defaults, contentFilter])`
+          // silently dropped the profanity gate whenever a caller passed a
+          // customValidator (foot-gun for any future UGC-bearing dialog field).
+          // Always compose; customValidator runs first so its error wins on its
+          // own concern, and contentFilter is the unconditional final step.
+          validator: FormValidators.combine([
+            ?customValidator,
+            if (required)
+              (value) =>
+                  ValidationUtils.validateRequired(value, fieldName: labelText),
+            // Length only applies when there IS content — otherwise an optional
+            // field with the default minLength=1 would always reject empty
+            // input (regression caught when buildPhoneField etc. compose this
+            // chain without explicitly opting out of length-checking).
+            (value) {
+              if (value == null || value.isEmpty) return null;
+              return ValidationUtils.validateLength(
+                value,
+                minLength: minLength,
+                maxLength: maxLengthLimit,
+                fieldName: labelText,
+              );
+            },
+            FormValidators.contentFilter(labelText),
+          ]),
         ),
-        maxLength: maxLength,
-        maxLines: maxLines,
-        enabled: enabled,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        // BUT-517 follow-up: contentFilter must NEVER be bypassable. The old
-        // shape `customValidator ?? combine([...defaults, contentFilter])`
-        // silently dropped the profanity gate whenever a caller passed a
-        // customValidator (foot-gun for any future UGC-bearing dialog field).
-        // Always compose; customValidator runs first so its error wins on its
-        // own concern, and contentFilter is the unconditional final step.
-        validator: FormValidators.combine([
-          ?customValidator,
-          if (required)
-            (value) =>
-                ValidationUtils.validateRequired(value, fieldName: labelText),
-          // Length only applies when there IS content — otherwise an optional
-          // field with the default minLength=1 would always reject empty
-          // input (regression caught when buildPhoneField etc. compose this
-          // chain without explicitly opting out of length-checking).
-          (value) {
-            if (value == null || value.isEmpty) return null;
-            return ValidationUtils.validateLength(
-              value,
-              minLength: minLength,
-              maxLength: maxLengthLimit,
-              fieldName: labelText,
-            );
-          },
-          FormValidators.contentFilter(labelText),
-        ]),
       ),
     );
   }

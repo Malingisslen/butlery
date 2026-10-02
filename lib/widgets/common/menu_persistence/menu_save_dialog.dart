@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Dialog for saving a menu with name, comment and social sharing
 /// This dialog allows users to save their generated menus with custom names,
@@ -143,6 +144,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildNameField() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isLoading),
       controller: _nameController,
       decoration: InputDecoration(
         labelText: context.l10n.menuNameLabel,
@@ -158,6 +160,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildCommentField() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isLoading),
       controller: _commentController,
       decoration: InputDecoration(
         labelText: context.l10n.menuCommentLabel,
@@ -254,6 +257,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildShareMessage() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isLoading),
       controller: _shareMessageController,
       decoration: InputDecoration(
         labelText: context.l10n.menuShareMessageLabel,

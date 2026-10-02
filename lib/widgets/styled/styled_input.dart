@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app
@@ -320,7 +321,11 @@ class StyledInput extends StatelessWidget {
       validator: validator,
       focusNode: focusNode,
       autofillHints: autofillHints,
-      style: AppTextStyles.bodyMedium,
+      style: fieldTextStyle(
+        context,
+        enabled: enabled,
+        base: AppTextStyles.bodyMedium,
+      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,

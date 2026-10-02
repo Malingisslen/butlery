@@ -14,6 +14,7 @@ import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Custom search box with Butlery styling.
 ///
@@ -142,8 +143,12 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
           focusNode: _focusNode,
           autofocus: widget.autofocus,
           enabled: widget.enabled,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: cs.onSurface,
+          style: fieldTextStyle(
+            context,
+            enabled: widget.enabled,
+            base: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurface,
+            ),
           ),
           decoration: InputDecoration(
             hintText: widget.hintText ?? context.l10n.searchHint,

@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Prefix marking a disabled category-header dropdown item; its value is a
 /// sentinel that is never a real property.
@@ -412,6 +413,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
 
   Widget _buildNameField() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isSaving),
       controller: _nameController,
       decoration: InputDecoration(
         labelText: context.l10n.ruleNameLabel,
@@ -757,6 +759,7 @@ class _ConditionRow extends StatelessWidget {
             _buildPropertyDropdown(context)
           else
             TextFormField(
+              style: fieldTextStyle(context, enabled: enabled),
               initialValue: condition.value,
               decoration: InputDecoration(
                 isDense: true,
