@@ -113,13 +113,18 @@ def main():
     if not file_path:
         return
     root = repo_root(cwd)
-    rel = rel_path(file_path, root)
-    # anti-loop: edits to the map, the marker, or this machinery never stamp
-    if not rel or rel in (MAP_REL, MARKER_REL) or rel.startswith(".claude/"):
-        return
+    stamp(root, [rel_path(file_path, root)])
 
-    if not any(matches(rel, tok) for tok in map_tokens(root)):
-        return
+
+def stamp(root, rels):
+    """Add every rel the map references to the marker; returns the ones added."""
+    tokens = map_tokens(root)
+    # anti-loop: edits to the map, the marker, or this machinery never stamp
+    hits = [r for r in rels
+            if r and r not in (MAP_REL, MARKER_REL) and not r.startswith(".claude/")
+            and any(matches(r, tok) for tok in tokens)]
+    if not hits:
+        return []
 
     marker = os.path.join(root, MARKER_REL)
     today = datetime.date.today().isoformat()
@@ -131,16 +136,75 @@ def main():
             data.setdefault("stale_since", today)
         except Exception:
             pass
-    if rel not in data["triggers"]:
-        data["triggers"].append(rel)
+    for rel in hits:
+        if rel not in data["triggers"]:
+            data["triggers"].append(rel)
     data["last_stamped"] = today
     with open(marker, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
+    return hits
+
+
+def git_lines(root, *args):
+    import subprocess
+    out = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=True).stdout
+    return [line.strip() for line in out.splitlines() if line.strip()]
+
+
+def staged():
+    """Pre-commit mode: the edit hook above sees only edits made with Claude's Edit/Write,
+    so a file a script or a codemod changed never stamps the map. At commit time every
+    changed file is staged, however it was changed. A commit that stages the map itself
+    is the re-trace, so it stamps nothing."""
+    root = git_lines(os.getcwd(), "rev-parse", "--show-toplevel")[0]
+    files = git_lines(root, "diff", "--cached", "--name-only", "--diff-filter=ACMRD")
+    if MAP_REL in files:
+        return []
+    hits = stamp(root, files)
+    if hits:
+        print(f"workflow-map: {len(hits)} staged file(s) are in the map; marked {MARKER_REL} for a re-trace.")
+    return hits
+
+
+def self_test():
+    import shutil
+    import subprocess
+    import tempfile
+    tmp = tempfile.mkdtemp()
+    try:
+        run = lambda *a: subprocess.run(["git", *a], cwd=tmp, capture_output=True, check=True)
+        run("init", "-q")
+        os.makedirs(os.path.join(tmp, "docs", "onboarding"))
+        os.makedirs(os.path.join(tmp, "lib", "views"))
+        data = {"nodes": [{"path": "lib/views/mapped_view.dart:10-20"}]}
+        with open(os.path.join(tmp, MAP_REL), "w", encoding="utf-8") as f:
+            f.write('<script id="data" type="application/json">' + json.dumps(data) + "</script>")
+        for name in ("mapped_view.dart", "other_view.dart"):
+            open(os.path.join(tmp, "lib", "views", name), "w").write("x")
+        marker = os.path.join(tmp, MARKER_REL)
+        cwd = os.getcwd()
+        os.chdir(tmp)
+        try:
+            run("add", "--", "lib/views/other_view.dart")
+            assert staged() == [] and not os.path.exists(marker), "an unmapped file stamped the map"
+            run("add", "--", "lib/views/mapped_view.dart")
+            assert staged() == ["lib/views/mapped_view.dart"] and os.path.exists(marker), "a mapped file did not stamp"
+            os.remove(marker)
+            run("add", "--", MAP_REL)
+            assert staged() == [] and not os.path.exists(marker), "a commit carrying the map stamped it"
+        finally:
+            os.chdir(cwd)
+        print("map_stamp --self-test: 3 cases passed")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 if __name__ == "__main__":
+    if "--self-test" in sys.argv:
+        self_test()  # fails loudly: a test must not pass by swallowing its own error
+        sys.exit(0)
     try:
-        main()
+        staged() if "--staged" in sys.argv else main()
     except Exception:
         pass  # fail open — never disrupt a Write/Edit
