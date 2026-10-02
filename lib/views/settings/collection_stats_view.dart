@@ -197,7 +197,9 @@ class _SectionHeader extends StatelessWidget {
       ),
       child: Text(
         title.toUpperCase(),
-        style: AppTextStyles.sectionLabel,
+        style: AppTextStyles.sectionLabel.copyWith(
+          color: context.modeColors.onWarningContainer,
+        ),
       ),
     );
   }
