@@ -586,6 +586,10 @@ class _ShoppingMemberManagementDialogState
               end: AppDimensions.spacingMd,
             ),
             child: DropdownButton<SharedListPermission>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
+              ),
               isExpanded: true,
               value: permission,
               onChanged: _isLoading

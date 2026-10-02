@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class AddPantryItemSheet extends StatefulWidget {
   const AddPantryItemSheet({super.key, this.existingItem});
@@ -323,6 +324,12 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: DropdownButtonFormField<String>(
+                    iconEnabledColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    iconDisabledColor: AppModeColors.textDisabled(
+                      Theme.of(context).brightness,
+                    ),
                     initialValue: _unit,
                     decoration: InputDecoration(
                       labelText: l10n.pantryUnitLabel,
@@ -346,6 +353,10 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             DropdownButtonFormField<PantryLocation>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
+              ),
               initialValue: _location,
               decoration: InputDecoration(
                 labelText: l10n.pantryLocationLabel,

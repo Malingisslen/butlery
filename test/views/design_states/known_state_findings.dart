@@ -50,35 +50,11 @@ const Map<String, KnownFinding> knownStateFindings = {
   ),
   'inköpslista::LOADING::light::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
-    '#61000000 ("Redigera"), #DD000000 ("icon U+E3C6"), #FFBDBDBD ("icon U+E098")',
+    '#61000000 ("Redigera"), #DD000000 ("icon U+E3C6")',
   ),
   'inköpslista::LOADING::dark::COLOUR_TEXT': KnownFinding(
     'BUT-2185',
-    '#1AFFFFFF ("icon U+E098"), #62FFFFFF ("Redigera"), #FFFFFFFF ("icon U+E3C6")',
-  ),
-  'profil-inställningar::OFFLINE::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#FF616161 ("icon U+E098")',
-  ),
-  'profil-inställningar::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#B3FFFFFF ("icon U+E098")',
-  ),
-  'recepteditor::DEFAULT::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2183',
-    '#FF616161 ("icon U+E098")',
-  ),
-  'recepteditor::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2183',
-    '#B3FFFFFF ("icon U+E098")',
-  ),
-  'recepteditor::OFFLINE::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2183',
-    '#FF616161 ("icon U+E098")',
-  ),
-  'recepteditor::OFFLINE::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2183',
-    '#B3FFFFFF ("icon U+E098")',
+    '#62FFFFFF ("Redigera"), #FFFFFFFF ("icon U+E3C6")',
   ),
   'receptlista-sök::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
@@ -87,14 +63,6 @@ const Map<String, KnownFinding> knownStateFindings = {
   'receptlista-sök::OFFLINE::dark::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
     'no "Ingen anslutning" title',
-  ),
-  'skafferi::DEFAULT::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#FF616161 ("icon U+E098")',
-  ),
-  'skafferi::DEFAULT::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#B3FFFFFF ("icon U+E098")',
   ),
   'skafferi::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
@@ -115,7 +83,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 22;
+const int knownStateFindingsCeiling = 14;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

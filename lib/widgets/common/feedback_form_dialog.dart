@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Dialog that collects feedback details and submits via FeedbackService.
 class FeedbackFormDialog extends StatefulWidget {
@@ -76,6 +77,12 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               ),
               const SizedBox(height: AppDimensions.spacingSm),
               DropdownButtonFormField<FeedbackCategory>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
                 initialValue: _category,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(
