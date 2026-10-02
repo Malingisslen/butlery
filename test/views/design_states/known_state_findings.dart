@@ -40,14 +40,6 @@ const Map<String, KnownFinding> knownStateFindings = {
     'BUT-2182',
     'no "Ingen anslutning" title',
   ),
-  'inköpslista::LOADING::light::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#61000000 ("Redigera"), #DD000000 ("icon U+E3C6")',
-  ),
-  'inköpslista::LOADING::dark::COLOUR_TEXT': KnownFinding(
-    'BUT-2185',
-    '#62FFFFFF ("Redigera"), #FFFFFFFF ("icon U+E3C6")',
-  ),
   'receptlista-sök::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
     'BUT-2182',
     'no "Ingen anslutning" title',
@@ -67,7 +59,7 @@ const Map<String, KnownFinding> knownStateFindings = {
 };
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 10;
+const int knownStateFindingsCeiling = 8;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

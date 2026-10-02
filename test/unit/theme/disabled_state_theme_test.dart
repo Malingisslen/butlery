@@ -204,6 +204,10 @@ void main() {
         expect(color.resolve({WidgetState.selected}), t.colorScheme.onSurface);
       });
 
+      test('ThemeData.disabledColor is text.disabled (BUT-2185)', () {
+        expect(t.disabledColor, m.textDisabled);
+      });
+
       test('no disabled colour is carried by opacity', () {
         final colors = <Color?>[
           t.elevatedButtonTheme.style!.backgroundColor!.resolve(_disabled),
@@ -220,6 +224,7 @@ void main() {
           t.radioTheme.fillColor!.resolve(_disabled),
           t.radioTheme.backgroundColor!.resolve(_disabled),
           t.listTileTheme.textColor,
+          t.disabledColor,
         ];
         for (final c in colors) {
           final resolved = c is WidgetStateColor ? c.resolve(_disabled) : c;

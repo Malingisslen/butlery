@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 166 known failures and 2 residue lists are not empty
-- Known failures: 166 (a11y 102, contrast 5, interaction_checks 12, interactions 6, states53 10, transitions 31)
+- **Migration complete:** NO: 164 known failures and 2 residue lists are not empty
+- Known failures: 164 (a11y 102, contrast 5, interaction_checks 12, interactions 6, states53 8, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 26 registered in Linear
+- Tickets: 25 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 393`
@@ -59,9 +59,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 96; cases with a known finding: 10
-- States passing in both modes: 48 of 53
-- Known findings: 10 (ceiling 10); by rule: COLOUR_TEXT 2, NO_OFFLINE_BANNER 8
+- Cases passing: 98; cases with a known finding: 8
+- States passing in both modes: 49 of 53
+- Known findings: 8 (ceiling 8); by rule: NO_OFFLINE_BANNER 8
 
 ## Required control states
 
@@ -135,7 +135,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2178 | interaction_checks 2, interactions 1 |  |
 | BUT-2182 | states53 8 | No offline banner ("Ingen anslutning") on this view |
-| BUT-2185 | states53 2 | Material default greys (DropdownButton arrow #616161/white70, black87, hint white60) instead of tokens |
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 34 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp) |
