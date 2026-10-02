@@ -188,13 +188,17 @@ class FakeMaturedAccountHelper extends Fake implements AccountMaturityHelper {
 
 /// Mock implementation of RecipeRepository
 class MockRecipeRepository extends Mock implements RecipeRepository {
-  // The recipe form watches the live role on every open; a mock that answered
-  // null here would throw in the view model's constructor.
-  @override
-  Stream<Recipe?> watchSharedRecipe({
-    required String ownerId,
-    required String recipeId,
-  }) => const Stream<Recipe?>.empty();
+  // The recipe form watches the live role on every open; an unstubbed mock
+  // answers null there and throws in the view model's constructor. A stub, not
+  // an override, so a test can still replace it with its own `when`.
+  MockRecipeRepository() {
+    when(
+      () => watchSharedRecipe(
+        ownerId: any(named: 'ownerId'),
+        recipeId: any(named: 'recipeId'),
+      ),
+    ).thenAnswer((_) => const Stream<Recipe?>.empty());
+  }
 
   // Configuration state
   String? _currentUserId = 'test-user-123';

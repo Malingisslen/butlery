@@ -575,6 +575,9 @@ export async function probeResidualData(
     [Collections.realtimeRecipes, "ownerId", "=="],
     [Collections.realtimeRecipes, "lastEditedBy", "=="],
     [Collections.realtimeRecipes, "participantIds", "array-contains"],
+    [Collections.realtimeResources, "ownerId", "=="],
+    [Collections.realtimeResources, "lastEditedBy", "=="],
+    [Collections.realtimeResources, "participantIds", "array-contains"],
     [Collections.conversations, "participantIds", "array-contains"],
     // BUT-1838: chat-group membership. A deleter without a probe is exactly how
     // an erasure becomes silently incomplete, so this line ships in the same
@@ -4381,6 +4384,28 @@ export async function deleteRealtimeMenus(
     uid,
   );
   await removeVoteEntries(db, stillJoined, uid);
+  return true;
+}
+
+/**
+ * BUT-2151: live menus (`realtime_resources`). Owned documents go, the
+ * last-editor pair is anonymized on
+ * the rest, and the user leaves every roster they were in. The roster leg
+ * removes the uid from `participantIds` and `participants` together, which is
+ * the pair the rules require to stay in step.
+ */
+export async function deleteRealtimeResources(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const owned = await db
+    .collection(Collections.realtimeResources)
+    .where("ownerId", "==", uid)
+    .get();
+  await deleteRealtimeDocsWithChildren(db, owned.docs);
+
+  await scrubLastEditor(db, Collections.realtimeResources, uid);
+  await removeRealtimeParticipation(db, Collections.realtimeResources, uid);
   return true;
 }
 

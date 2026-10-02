@@ -1176,6 +1176,12 @@
       "path": "realtime_menus"
     },
     {
+      "id": "ds-realtime-resources",
+      "label": "Realtidsresurser (Firestore)",
+      "context": "datastore",
+      "path": "realtime_resources"
+    },
+    {
       "id": "v-menu-preview",
       "label": "Förhandsvisning av delad meny",
       "context": "view",
@@ -2918,14 +2924,14 @@
         {
           "from": "svc-data-export",
           "to": "svc-export-managers",
-          "payload": "Future.wait över ~36 namngivna sektioner (Increment 5 lade till pooled_rating_events; BUT-1732 lade till shared_shopping_lists)",
+          "payload": "Future.wait över ~36 namngivna sektioner (Increment 5 lade till pooled_rating_events; BUT-1732 lade till shared_shopping_lists; BUT-2151 lade till live_menus)",
           "transport": "method call",
           "verified": true
         },
         {
           "from": "svc-export-managers",
           "to": "ds-users",
-          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
+          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till), realtime_resources (BUT-2151, ägd/deltagare; andras visningsnamn stryps) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
           "transport": "Firestore reads",
           "verified": true
         },
@@ -4777,7 +4783,7 @@
         },
         {
           "from": "svc-realtime-sync",
-          "to": "ds-realtime-menus",
+          "to": "ds-realtime-resources",
           "payload": "skriv menydokument, kontrollerar konflikt mot senaste version",
           "transport": "Firestore write",
           "verified": true

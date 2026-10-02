@@ -1,11 +1,4 @@
 /// Tests for FirebaseRecipeRepository.readSharedRecipe (cross-user read path).
-///
-/// Behaviour under test:
-/// 1. readSharedRecipe returns the Recipe when the doc exists under the owner's
-///    collection — Firestore rules (already widened in Task 1) grant access when
-///    the caller is a member; fake_cloud_firestore skips rule enforcement so the
-///    test focuses purely on the read + deserialization path.
-/// 2. readSharedRecipe returns null when the doc does not exist.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';

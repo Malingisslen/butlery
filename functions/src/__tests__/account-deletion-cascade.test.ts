@@ -34,6 +34,7 @@ const {
   MAX_BLOCK_SWEEP_ROWS,
   MAX_MIRROR_SWEEP_ROWS,
   deleteRealtimeMenus,
+  deleteRealtimeResources,
 } = require("../account/account-deletion-cascade");
 
 /** Marker standing in for `FieldValue.arrayRemove` (real SDK unavailable). */
@@ -1084,6 +1085,55 @@ async function scenario_realtimeMenuLastEditorIsScrubbed(): Promise<void> {
     shared?.lastEditedBy === "deleted" &&
       shared?.lastEditedByDisplayName === "[Raderad användare]",
     `got ${JSON.stringify(shared)}`,
+  );
+}
+
+/**
+ * BUT-2151: live menus in `realtime_resources`. Owned goes; someone else's
+ * stays with the last-editor pair anonymized; the user leaves the roster in
+ * BOTH fields, which the rules require to match.
+ */
+async function scenario_realtimeResourcesAreErased(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/${UID}_m1`, {
+    type: "menu",
+    ownerId: UID,
+    participants: { [UID]: "owner" },
+    participantIds: [UID],
+  });
+  db.set(`realtime_resources/${OTHER}_m2`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "editor" },
+    participantIds: [OTHER, UID],
+    lastEditedBy: UID,
+    lastEditedByDisplayName: "Malin",
+    menuTitle: "Veckans middagar",
+  });
+
+  await deleteRealtimeResources(asDb(db), UID);
+
+  check(
+    "a live menu the user OWNS is deleted",
+    !db.has(`realtime_resources/${UID}_m1`),
+  );
+  const kept = db.get(`realtime_resources/${OTHER}_m2`);
+  check(
+    "someone else's live menu is kept for its owner",
+    kept?.menuTitle === "Veckans middagar",
+  );
+  check(
+    "its last-editor pair is anonymized",
+    kept?.lastEditedBy === "deleted" &&
+      kept?.lastEditedByDisplayName === "[Raderad användare]",
+    `got ${JSON.stringify(kept)}`,
+  );
+  check(
+    "the user leaves both roster fields",
+    Array.isArray(kept?.participantIds) &&
+      !(kept?.participantIds as string[]).includes(UID) &&
+      !Object.keys((kept?.participants ?? {}) as object).includes(UID),
+    `got ${JSON.stringify(kept)}`,
   );
 }
 
@@ -2385,6 +2435,59 @@ async function scenario_probeSeesLeftoverGroupMenuPlans(): Promise<void> {
     await probeResidualData(asDb(dirty), UID, dirtyResult);
     check(
       `a group menu plan still naming the user in ${label} is reported as residual`,
+      dirtyResult.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+    );
+  }
+}
+
+/**
+ * BUT-2151: the `realtime_resources` legs of the residual probe.
+ */
+async function scenario_probeSeesLeftoverRealtimeResources(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const result = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const clean = new FakeFirestore();
+  clean.set(`realtime_resources/${OTHER}_m`, {
+    ownerId: OTHER,
+    participantIds: [OTHER],
+    lastEditedBy: OTHER,
+  });
+  const cleanResult = result();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a live menu clean on all three handles probes CLEAN",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  for (const [label, doc] of [
+    [
+      "the owner field",
+      { ownerId: UID, participantIds: [OTHER], lastEditedBy: OTHER },
+    ],
+    [
+      "the last editor",
+      { ownerId: OTHER, participantIds: [OTHER], lastEditedBy: UID },
+    ],
+    [
+      "the roster",
+      { ownerId: OTHER, participantIds: [OTHER, UID], lastEditedBy: OTHER },
+    ],
+  ] as const) {
+    const dirty = new FakeFirestore();
+    dirty.set(`realtime_resources/${OTHER}_m`, doc);
+    const dirtyResult = result();
+    await probeResidualData(asDb(dirty), UID, dirtyResult);
+    check(
+      `a live menu still naming the user in ${label} is reported as residual`,
       dirtyResult.failedCollections.includes("residual_data_detected"),
       `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
     );
@@ -9070,6 +9173,7 @@ async function main(): Promise<void> {
   await scenario_realtimeMenuLastEditorIsScrubbed();
   await scenario_ownedRealtimeMenuChildrenAreDeleted();
   await scenario_realtimeParticipationIsRemoved();
+  await scenario_realtimeResourcesAreErased();
   await scenario_featureRetentionRowsAreErased();
   await scenario_retentionAnalyticsRowsAreErased();
   await scenario_retentionAnalyticsWithNoRowsSucceeds();
@@ -9082,6 +9186,7 @@ async function main(): Promise<void> {
   await scenario_unclearableRosterLeavesTheParentStanding();
   await scenario_probeSeesLeftoverRosterRows();
   await scenario_probeSeesLeftoverGroupMenuPlans();
+  await scenario_probeSeesLeftoverRealtimeResources();
   await scenario_probeSeesLeftoverRecipes();
   await scenario_rosterIndexIsDeclared();
   await scenario_chatGroupMembershipIsErasedEverywhere();
