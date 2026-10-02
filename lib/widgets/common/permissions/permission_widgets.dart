@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -87,17 +88,18 @@ class PermissionWidgets {
         return Container(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
-            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: context.modeColors.surfaceTintDanger,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(color: cs.error),
           ),
           child: Row(
             children: [
-              ButleryIcon(ButleryIcons.block, color: cs.error),
+              ButleryIcon(ButleryIcons.block, color: cs.onErrorContainer),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.permissionNoAccess,
-                style: AppTextStyles.bodyMediumError,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: cs.onErrorContainer,
+                ),
               ),
             ],
           ),

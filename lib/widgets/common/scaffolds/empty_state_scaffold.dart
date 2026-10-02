@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -52,8 +53,8 @@ class EmptyStateScaffold extends StatelessWidget {
                 ButleryIcon(
                   emptyIcon,
                   size: iconSize,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: AppDimensions.opacityMediumDark,
+                  color: AppModeColors.textDisabled(
+                    Theme.of(context).brightness,
                   ),
                 ),
                 SizedBox(height: spacing),
