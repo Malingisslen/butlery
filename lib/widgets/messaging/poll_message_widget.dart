@@ -253,15 +253,7 @@ class PollMessageWidget extends StatelessWidget {
               widthFactor: percentage,
               child: Container(
                 decoration: BoxDecoration(
-                  color: hasVoted
-                      ? (isFromCurrentUser
-                            ? cs.onPrimary.withValues(
-                                alpha: AppDimensions.opacityVeryLight,
-                              )
-                            : cs.onSurface.withValues(
-                                alpha: AppDimensions.opacityExtraVeryLight,
-                              ))
-                      : Colors.transparent,
+                  color: hasVoted ? _barColor(cs) : Colors.transparent,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusControl,
                   ),
@@ -296,7 +288,7 @@ class PollMessageWidget extends StatelessWidget {
               Text(
                 '${(percentage * 100).round()}%',
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: subtleColor,
+                  color: _percentColor(cs, subtleColor),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -409,9 +401,7 @@ class PollMessageWidget extends StatelessWidget {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: cs.surface.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: _trackColor(cs),
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusControl,
                     ),
@@ -425,17 +415,7 @@ class PollMessageWidget extends StatelessWidget {
                     widthFactor: percentage,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: hasVoted
-                            ? (isFromCurrentUser
-                                  ? cs.onPrimary.withValues(
-                                      alpha: AppDimensions.opacityMediumLight,
-                                    )
-                                  : cs.onSurface.withValues(
-                                      alpha: AppDimensions.opacityVeryLight,
-                                    ))
-                            : cs.onSurface.withValues(
-                                alpha: AppDimensions.opacityExtraVeryLight,
-                              ),
+                        color: _barColor(cs),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusControl,
                         ),
@@ -452,7 +432,7 @@ class PollMessageWidget extends StatelessWidget {
             child: Text(
               '${(percentage * 100).round()}%',
               style: AppTextStyles.labelSmall.copyWith(
-                color: subtleColor,
+                color: _percentColor(cs, subtleColor),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -460,10 +440,25 @@ class PollMessageWidget extends StatelessWidget {
       ],
     );
   }
+
+  // Progress bar (B101): raised on the row in an incoming bubble; the ink
+  // border line on the inkRaised row in an outgoing one.
+  Color _barColor(ColorScheme cs) => isFromCurrentUser
+      ? AppModeColors.borderOnInk()
+      : cs.surfaceContainerHighest;
+
+  Color _trackColor(ColorScheme cs) =>
+      isFromCurrentUser ? AppModeColors.surfaceRaisedOnInk() : cs.surface;
+
+  // The percentage sits over the bar. text.secondary on ink measures 3.86:1 on
+  // the ink border line, so an outgoing percentage is paper.
+  Color _percentColor(ColorScheme cs, Color subtleColor) =>
+      isFromCurrentUser ? cs.onPrimary : subtleColor;
 }
 
-/// Fallback thumbnail when a recipe option has no image URL. Theme-tinted
-/// square (no border radius — square design language).
+/// Fallback thumbnail when a recipe option has no image URL. A solid square
+/// (no border radius — square design language): raised on the incoming row,
+/// ink on the outgoing row so it stands out from the inkRaised row (B101).
 class _RecipeFallbackThumbnail extends StatelessWidget {
   final bool isFromCurrent;
   const _RecipeFallbackThumbnail({required this.isFromCurrent});
@@ -473,16 +468,12 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isFromCurrent
-            ? AppModeColors.surfaceRaisedOnInk()
-            : cs.surfaceContainerHighest,
+        color: isFromCurrent ? cs.primary : cs.surfaceContainerHighest,
       ),
       child: ButleryIcon(
         ButleryIcons.utensils,
         size: 20,
-        color: isFromCurrent
-            ? AppModeColors.textSecondaryOnInk()
-            : cs.onSurfaceVariant,
+        color: isFromCurrent ? cs.onPrimary : cs.onSurfaceVariant,
       ),
     );
   }
