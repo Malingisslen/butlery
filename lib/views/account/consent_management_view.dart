@@ -130,16 +130,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.modeColors.info.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusControl,
-                  ),
-                  border: Border.all(
-                    color: context.modeColors.info.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
                   ),
                 ),
                 child: Row(
@@ -153,7 +146,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     Expanded(
                       child: Text(
                         '${context.l10n.consentLastUpdated}: ${viewModel.getConsentTimestampText()}',
-                        style: AppTextStyles.infoText,
+                        style: AppTextStyles.infoText.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ],
@@ -347,10 +342,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
-          color: value
-              ? cs.onSurface.withValues(alpha: AppDimensions.opacityHalf)
-              : cs.outlineVariant,
-          width: value ? 2 : 1,
+          color: value ? cs.onSurface : cs.outlineVariant,
+          width: value ? 1.5 : 1,
         ),
       ),
       child: Padding(
@@ -360,11 +353,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             Container(
               padding: AppDimensions.paddingAll8,
               decoration: BoxDecoration(
-                color: value
-                    ? cs.onSurface.withValues(
-                        alpha: AppDimensions.opacityVeryLight,
-                      )
-                    : cs.surfaceContainerLow,
+                color: value ? cs.surface : cs.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(
                   AppDimensions.radiusControl,
                 ),
@@ -530,17 +519,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Row(
         children: [
           ButleryIcon(
             ButleryIcons.triangleAlert,
-            color: cs.error,
+            color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -548,7 +534,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             child: Text(
               viewModel.errorMessage!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.error,
+                color: cs.onErrorContainer,
               ),
             ),
           ),
@@ -573,9 +559,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color: context.modeColors.info.withValues(
-        alpha: AppDimensions.opacityExtraVeryLight,
-      ),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(

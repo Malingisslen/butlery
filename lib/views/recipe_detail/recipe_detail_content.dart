@@ -26,6 +26,7 @@ import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -379,9 +380,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   ButleryIcon(
                     ButleryIcons.swapHorizontal,
                     size: AppDimensions.iconSizeS,
-                    color: cs.onSurfaceVariant.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
+                    color: AppModeColors.textDisabled(cs.brightness),
                   ),
                 ],
               ),
@@ -671,21 +670,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(
-                  color: isUserAdded
-                      ? cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityLightSubtle,
-                        )
-                      : cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                  color: cs.surface,
                   border: Border.all(
-                    color: isUserAdded
-                        ? cs.onSurface.withValues(
-                            alpha: AppDimensions.opacityHalf,
-                          )
-                        : cs.onSurface.withValues(
-                            alpha: AppDimensions.opacityMediumLight,
-                          ),
+                    color: isUserAdded ? cs.onSurface : cs.outlineVariant,
+                    width: isUserAdded ? 1.5 : 1,
                   ),
                 ),
                 child: Text(
@@ -895,12 +883,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: cs.onSurface.withValues(alpha: AppDimensions.opacityLightSubtle),
-        border: Border.all(
-          color: cs.onSurface.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        color: cs.surface,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         name,
@@ -925,17 +909,13 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
-            color: cs.onSurface.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
-            border: Border.all(
-              color: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
-            ),
+            color: cs.surface,
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: Text(
             context.l10n.commonMoreCount(count),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              color: AppModeColors.textSecondaryOnRaised(cs.brightness),
             ),
           ),
         ),

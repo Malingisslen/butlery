@@ -282,8 +282,9 @@ class DataExportView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: context.modeColors.success.withValues(
-        alpha: AppDimensions.opacityVeryLight,
+      color: context.modeColors.surfaceTintSuccess,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space16),
@@ -292,7 +293,7 @@ class DataExportView extends StatelessWidget {
             ButleryIcon(
               ButleryIcons.circleCheck,
               size: 48,
-              color: context.modeColors.success,
+              color: context.modeColors.onSuccessContainer,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
@@ -366,9 +367,7 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoSection(BuildContext context) {
     return Card(
-      color: context.modeColors.info.withValues(
-        alpha: AppDimensions.opacityVeryLight,
-      ),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
