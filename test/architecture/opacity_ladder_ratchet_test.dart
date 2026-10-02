@@ -12,8 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../tools/design_migration_census.dart' show stripComments;
 
 const _residue = <String, int>{
-  'lib/theme/components/feedback_themes.dart': 1,
-  'lib/theme/components/input_themes.dart': 6,
   'lib/widgets/common/indicators/progress_overlay.dart': 1,
   'lib/widgets/common/loading/loading_widgets.dart': 1,
   'lib/widgets/common/service/service_widgets.dart': 1,

@@ -224,7 +224,7 @@ class FeedbackThemes {
       activeTrackColor: cs.onSurface,
       inactiveTrackColor: cs.outlineVariant,
       thumbColor: cs.onSurface,
-      overlayColor: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
+      overlayColor: Colors.transparent,
       valueIndicatorColor: cs.primary,
       valueIndicatorTextStyle: AppTextStyles.labelSmall.copyWith(
         color: cs.onPrimary,

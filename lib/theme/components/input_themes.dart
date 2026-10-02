@@ -246,43 +246,6 @@ class InputThemes {
     boxShadow: AppShadows.cardLifted,
   );
 
-  /// Trending recipe card decoration
-  static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
-    color: AppColors.primaryContainer.withValues(
-      alpha: AppDimensions.opacityVeryLight,
-    ),
-    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-    border: Border.all(
-      color: AppColors.forestGreen.withValues(
-        alpha: AppDimensions.opacityLight,
-      ),
-    ),
-  );
-
-  /// Activity timeline item decoration
-  static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
-    color: AppColors.secondaryContainer.withValues(
-      alpha: AppDimensions.opacityVeryLight,
-    ),
-    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-    border: Border.all(
-      color: AppColors.rust.withValues(alpha: AppDimensions.opacityLight),
-    ),
-  );
-
-  /// Empty state container decoration
-  static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
-    color: AppColors.primaryContainer.withValues(
-      alpha: AppDimensions.opacityVeryLight,
-    ),
-    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-    border: Border.all(
-      color: AppColors.forestGreen.withValues(
-        alpha: AppDimensions.opacityLight,
-      ),
-    ),
-  );
-
   /// Search box decoration — green+rust border always visible
   static BoxDecoration get searchBoxDecoration => BoxDecoration(
     color: AppColors.cardWhite,

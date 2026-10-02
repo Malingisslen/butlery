@@ -115,12 +115,4 @@ class ComponentThemes {
       ButtonThemes.deleteButtonStyle(cs);
   static ButtonStyle extendedFabStyle(ColorScheme cs) =>
       ButtonThemes.extendedFabStyle(cs);
-
-  // BoxDecorations (still static, not theme-dependent)
-  static BoxDecoration get trendingRecipeCardDecoration =>
-      InputThemes.trendingRecipeCardDecoration;
-  static BoxDecoration get activityTimelineItemDecoration =>
-      InputThemes.activityTimelineItemDecoration;
-  static BoxDecoration get emptyStateContainerDecoration =>
-      InputThemes.emptyStateContainerDecoration;
 }
