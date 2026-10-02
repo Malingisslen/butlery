@@ -7,11 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/factories/shopping_list_factory.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -156,4 +160,50 @@ void main() {
       }
     },
   );
+
+  // BUT-2183 5i: the convert button is text.primary itself, like the rename
+  // and delete buttons beside it, never a 70 % tint of it.
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'the convert button is text.primary in ${brightness.name} mode',
+      (
+        tester,
+      ) async {
+        final viewModel = _MockUnifiedShoppingViewModel();
+        final list = ShoppingListFactory.build();
+        when(() => viewModel.activeList).thenReturn(list);
+        when(() => viewModel.lists).thenReturn([list]);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            theme: brightness == Brightness.dark
+                ? AppTheme.darkTheme
+                : AppTheme.lightTheme,
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ShoppingListHeader.build(
+                  context,
+                  viewModel,
+                  () {},
+                  () {},
+                  onConvertList: () {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final scheme = brightness == Brightness.dark
+            ? AppColors.darkColorScheme
+            : AppColors.lightColorScheme;
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.swapHorizontal)).color,
+          scheme.onSurface,
+        );
+      },
+    );
+  }
 }
