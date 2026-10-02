@@ -152,7 +152,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildRecipeCard() {
-    final cs = Theme.of(context).colorScheme;
     final primaryImage = widget.imageUrls.first;
 
     return Stack(
@@ -168,23 +167,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
             imageCount: widget.imageUrls.length,
             config: widget.config,
           ),
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: widget.config.effectiveBorderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  cs.surfaceContainerHighest.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }

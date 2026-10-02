@@ -287,8 +287,8 @@ void main() {
     final modes = ModeColors.of(theme.brightness);
 
     group('BUT-2183 5c image tokens ($name)', () {
-      testWidgets('upload overlay: status pill and retry button are '
-          'overlay.paperCard with ink', (tester) async {
+      testWidgets('upload overlay: status pill and retry button are opaque '
+          'paper (B102) with ink', (tester) async {
         const failedStatus = ImageUploadStatus(
           state: ImageUploadState.failed,
           error: 'network failure',
@@ -317,14 +317,14 @@ void main() {
         final pillText = find.text(failedStatus.statusDescription);
         expect(
           _fillAround(tester, pillText).color,
-          modes.overlayPaperCard,
+          AppModeColors.surfacePaperOnPhoto(),
         );
         expect(_textColor(tester, pillText), cs.primary);
 
         final retryText = find.text('Försök igen');
         expect(
           _fillAround(tester, retryText).color,
-          modes.overlayPaperCard,
+          AppModeColors.surfacePaperOnPhoto(),
         );
         expect(_textColor(tester, retryText), cs.primary);
       });

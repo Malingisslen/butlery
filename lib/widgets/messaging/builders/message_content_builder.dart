@@ -175,9 +175,9 @@ class MessageContentBuilder {
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingS),
             decoration: BoxDecoration(
-              color: cs.inversePrimary.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: isFromCurrentUser
+                  ? cs.primary
+                  : cs.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: ButleryIcon(
