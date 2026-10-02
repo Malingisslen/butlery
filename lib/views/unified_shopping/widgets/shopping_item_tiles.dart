@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
@@ -158,21 +158,21 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: ThemeConstants.durationFast,
+      duration: AppMotion.micro,
     );
     _pulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween(
           begin: 1.0,
           end: _pulseScale,
-        ).chain(CurveTween(curve: ThemeConstants.standardCurve)),
+        ).chain(CurveTween(curve: AppMotion.curve)),
         weight: 50,
       ),
       TweenSequenceItem(
         tween: Tween(
           begin: _pulseScale,
           end: 1.0,
-        ).chain(CurveTween(curve: ThemeConstants.standardCurve)),
+        ).chain(CurveTween(curve: AppMotion.curve)),
         weight: 50,
       ),
     ]).animate(_pulseController);
@@ -286,8 +286,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     return ScaleTransition(
       scale: _pulseAnimation,
       child: AnimatedContainer(
-        duration: ThemeConstants.durationStandard.respectingMotion(context),
-        curve: ThemeConstants.standardCurve,
+        duration: AppMotion.micro.respectingMotion(context),
+        curve: AppMotion.curve,
         width: _checkboxSize,
         height: _checkboxSize,
         decoration: BoxDecoration(
@@ -302,9 +302,9 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           color: widget.isCompleted ? cs.primary : cs.surfaceContainerHighest,
         ),
         child: AnimatedSwitcher(
-          duration: ThemeConstants.durationFast.respectingMotion(context),
-          switchInCurve: ThemeConstants.standardCurve,
-          switchOutCurve: ThemeConstants.standardCurve,
+          duration: AppMotion.micro.respectingMotion(context),
+          switchInCurve: AppMotion.curve,
+          switchOutCurve: AppMotion.curve,
           child: widget.isCompleted
               ? ButleryIcon(
                   ButleryIcons.check,

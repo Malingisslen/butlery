@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/overlay_button.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -86,7 +86,7 @@ void main() {
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(
           decoration.color,
-          equals(ThemeConstants.blackOverlay60),
+          equals(ModeColors.of(Brightness.light).overlayPaperCard),
         );
       });
 
@@ -169,7 +169,7 @@ void main() {
         expect(iconButton.tooltip, isNull);
       });
 
-      testWidgets('applies correct border radius', (WidgetTester tester) async {
+      testWidgets('is a circle', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -185,10 +185,8 @@ void main() {
           find.byType(DecoratedBox),
         );
         final decoration = decoratedBox.decoration as BoxDecoration;
-        expect(
-          decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.radiusControl)),
-        );
+        expect(decoration.shape, BoxShape.circle);
+        expect(decoration.borderRadius, isNull);
       });
 
       testWidgets('accepts any widget as child', (WidgetTester tester) async {
@@ -259,12 +257,42 @@ void main() {
           ),
         );
 
-        // Icon color is provided via IconTheme (cs.surfaceContainerHighest).
         final iconTheme = IconTheme.of(
           tester.element(find.byIcon(ButleryIcons.x)),
         );
-        expect(iconTheme.color, equals(cs.surfaceContainerHighest));
+        expect(iconTheme.color, equals(cs.primary));
       });
+
+      for (final dark in [false, true]) {
+        testWidgets('remove is a paper circle with an ink glyph, '
+            '${dark ? 'dark' : 'light'}', (WidgetTester tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+              home: Scaffold(body: OverlayButton.remove(onPressed: () {})),
+            ),
+          );
+
+          final decoration =
+              tester
+                      .widget<DecoratedBox>(
+                        find
+                            .descendant(
+                              of: find.byType(OverlayButton),
+                              matching: find.byType(DecoratedBox),
+                            )
+                            .first,
+                      )
+                      .decoration
+                  as BoxDecoration;
+          expect(decoration.color, const Color(0x8AF5F4ED));
+          expect(decoration.shape, BoxShape.circle);
+          expect(
+            IconTheme.of(tester.element(find.byIcon(ButleryIcons.x))).color,
+            const Color(0xFF24382C),
+          );
+        });
+      }
 
       testWidgets('uses default background color for remove variant', (
         WidgetTester tester,
@@ -285,10 +313,9 @@ void main() {
           find.byType(DecoratedBox),
         );
         final decoration = decoratedBox.decoration as BoxDecoration;
-        // Remove variant sets backgroundColor to null → default theme surface.
         expect(
           decoration.color,
-          equals(ThemeConstants.blackOverlay60),
+          equals(ModeColors.of(Brightness.light).overlayPaperCard),
         );
       });
 
@@ -411,7 +438,7 @@ void main() {
         expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
-      testWidgets('uses theme surface color when no background specified', (
+      testWidgets('uses overlayPaperCard when no background specified', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -437,7 +464,7 @@ void main() {
         // The button resolves its background from the ambient theme.
         expect(
           decoration.color,
-          equals(ThemeConstants.blackOverlay60),
+          equals(ModeColors.of(Brightness.light).overlayPaperCard),
         );
       });
     });

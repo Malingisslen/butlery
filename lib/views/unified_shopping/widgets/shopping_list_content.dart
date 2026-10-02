@@ -11,7 +11,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -426,7 +426,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   });
                 },
                 child: AnimatedContainer(
-                  duration: ThemeConstants.durationFast.respectingMotion(
+                  duration: AppMotion.micro.respectingMotion(
                     context,
                   ),
                   width: double.infinity,
@@ -658,7 +658,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       },
       builder: (context, candidateData, rejectedData) {
         return AnimatedContainer(
-          duration: ThemeConstants.durationFast.respectingMotion(context),
+          duration: AppMotion.micro.respectingMotion(context),
           width: double.infinity,
           // Min 48px so the empty drop zone is a comfortable drag target
           // (touch-accessibility) rather than a thin, hard-to-hit strip.

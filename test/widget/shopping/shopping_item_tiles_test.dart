@@ -4,7 +4,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart'
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -857,8 +857,8 @@ void main() {
         final animatedContainer = tester.widget<AnimatedContainer>(
           find.byType(AnimatedContainer),
         );
-        expect(animatedContainer.duration, ThemeConstants.durationStandard);
-        expect(animatedContainer.curve, ThemeConstants.standardCurve);
+        expect(animatedContainer.duration, AppMotion.micro);
+        expect(animatedContainer.curve, AppMotion.curve);
       });
 
       testWidgets('AnimatedSwitcher uses theme duration constant', (
@@ -880,7 +880,7 @@ void main() {
         final animatedSwitcher = tester.widget<AnimatedSwitcher>(
           find.byType(AnimatedSwitcher),
         );
-        expect(animatedSwitcher.duration, ThemeConstants.durationFast);
+        expect(animatedSwitcher.duration, AppMotion.micro);
       });
     });
 
