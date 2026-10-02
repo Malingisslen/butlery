@@ -431,7 +431,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               ),
               border: OutlineInputBorder(),
             ),
-            style: AppTextStyles.bodyMedium,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             items: mealTypeOptions.values
                 .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
                 .toList(),

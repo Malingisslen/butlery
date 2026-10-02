@@ -58,6 +58,9 @@ class FakePersonalTagViewModel extends ChangeNotifier
   bool get hasError => _error != null;
 
   @override
+  bool get loadFailed => false;
+
+  @override
   bool get hasTags => _tags.isNotEmpty;
 
   @override

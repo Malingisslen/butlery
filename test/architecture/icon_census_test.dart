@@ -270,7 +270,7 @@ const Map<String, Map<String, int>> _residue = {
   'lib/views/unified_shopping/widgets/shopping_app_bar.dart': {
     'admin_panel_settings': 1,
     'check_box_outline_blank': 1,
-    'list_alt_outlined': 2,
+    'list_alt_outlined': 1,
   },
   'lib/views/unified_shopping/widgets/shopping_item_tiles.dart': {
     'circle_outlined': 1,
@@ -455,10 +455,10 @@ const Map<String, Map<String, int>> _residue = {
   'lib/widgets/import/batch_import_preview.dart': {'deselect': 1},
   'lib/widgets/import/components/import_dialog_footer.dart': {'save': 1},
   'lib/widgets/import/platform_badge_widget.dart': {
-    'language': 2,
-    'music_note': 2,
-    'play_circle_outline': 2,
-    'text_snippet_outlined': 2,
+    'language': 1,
+    'music_note': 1,
+    'play_circle_outline': 1,
+    'text_snippet_outlined': 1,
   },
   'lib/widgets/import/text_line_selector.dart': {
     'auto_awesome': 1,

@@ -33,6 +33,7 @@ import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
+import '../../infrastructure/builders/personal_tag_builder.dart';
 import '../../infrastructure/helpers/tagging_test_helper.dart';
 
 class _EmptyViewModel extends ChangeNotifier implements PersonalTagViewModel {
@@ -41,6 +42,9 @@ class _EmptyViewModel extends ChangeNotifier implements PersonalTagViewModel {
 
   @override
   bool get hasTags => false;
+
+  @override
+  bool get loadFailed => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
@@ -520,22 +524,9 @@ void main() {
             builder: (context) => TextButton(
               onPressed: () => showDialog<void>(
                 context: context,
-                // The app's filled-button theme asks for an infinite minimum
-                // width, which the dialog's action Row cannot satisfy, so the
-                // dialog is shown under a finite one. This test reads the
-                // error notice, not the button.
-                builder: (_) => Theme(
-                  data: theme.copyWith(
-                    filledButtonTheme: FilledButtonThemeData(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 48),
-                      ),
-                    ),
-                  ),
-                  child: PersonalTagRuleDialog(
-                    availableTags: [tag],
-                    preselectedTagId: 't1',
-                  ),
+                builder: (_) => PersonalTagRuleDialog(
+                  availableTags: [tag],
+                  preselectedTagId: 't1',
                 ),
               ),
               child: const Text('Öppna'),
@@ -563,6 +554,61 @@ void main() {
           _labelColorBeside(tester, find.byIcon(ButleryIcons.triangleAlert)),
           cs.onErrorContainer,
         );
+      });
+
+      testWidgets('the rule dialog saves and closes with its busy button '
+          'drawn in the row', (tester) async {
+        final tag = PersonalTag(
+          id: 't1',
+          name: 'Favoriter',
+          createdAt: DateTime(2026, 1, 1),
+          updatedAt: DateTime(2026, 1, 1),
+        );
+        final rule = PersonalTagRuleBuilder()
+            .withTagId('t1')
+            .withName('Regel')
+            .withIngredientCondition('kyckling')
+            .build();
+        await tester.binding.setSurfaceSize(const Size(900, 1600));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final originalHandler = FlutterError.onError;
+        FlutterError.onError = (details) {
+          if (details.exceptionAsString().contains('overflowed')) return;
+          originalHandler?.call(details);
+        };
+        addTearDown(() => FlutterError.onError = originalHandler);
+        Object? popped;
+        await _pump(
+          tester,
+          theme,
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                popped = await showDialog<Object?>(
+                  context: context,
+                  builder: (_) => PersonalTagRuleDialog(
+                    availableTags: [tag],
+                    existingRule: rule,
+                  ),
+                );
+              },
+              child: const Text('Öppna'),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Öppna'));
+        await tester.pumpAndSettle();
+
+        // Saving pops in the same step that sets the busy style, so the
+        // exit animation is what draws the busy button.
+        await tester.tap(find.text('Spara'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(PersonalTagRuleDialog), findsNothing);
+        expect(popped, isNotNull);
       });
     });
 

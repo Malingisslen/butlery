@@ -13,7 +13,7 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 - Tickets: 29 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
-  - `test/architecture/icon_census_test.dart _residue: 398`
+  - `test/architecture/icon_census_test.dart _residue: 393`
   - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 1`
 
 ## Required flow transitions
@@ -106,7 +106,7 @@ tokens.json 1.13 (sha256 `031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687
 
 ## Icon residue
 
-Material icons with no Butlery glyph yet: 398 uses of 178 icons in 174 files (Material icon uses found in lib code: 398).
+Material icons with no Butlery glyph yet: 393 uses of 178 icons in 174 files (Material icon uses found in lib code: 393).
 Rows still listed for files that are deleted (not counted): `lib/widgets/common/feedback/snackbar_widgets.dart`, `lib/widgets/common/indicators/sync_indicator.dart`.
 
 ## Known failures by ticket
@@ -171,7 +171,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 80 | 80 | 80 |
 | `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
-| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 176 | 402 | 398 |
+| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 176 | 397 | 393 |
 | `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | LIVE | 2 | 2 | 0 |
 | `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 2 | 3 | 3 |
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 1 | 1 | 1 |
@@ -190,7 +190,7 @@ Code only: comments are not counted; generated l10n is left out.
 | `AppSpecificColors` | 10 | `lib/theme/app_mode_colors.dart`, `lib/theme/app_specific_colors.dart` | app-specific decoration colours (lib/theme/app_specific_colors.dart) |
 | `SeasonalAccent*` | 0 |  | retired seasonal tint (Q7-01 = A) |
 | `CupertinoColors` | 0 |  | Cupertino palette |
-| `Icons.<name>` | 398 | 174 files | Material icons; the residue is listed in icon_census_test |
+| `Icons.<name>` | 393 | 174 files | Material icons; the residue is listed in icon_census_test |
 | `CupertinoIcons.<name>` | 0 |  | banned by icon_census_test |
 | `AdaptiveAppBar(` | 0 |  | retired for ButleryTopBar (B-45) |
 | `CircularProgressIndicator(` | 0 |  | Material spinner; PlateLine is the only loading indicator (B-18) |
