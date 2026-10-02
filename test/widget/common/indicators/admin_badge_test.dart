@@ -38,7 +38,7 @@ void main() {
     expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
   });
 
-  testWidgets('container has rounded border decoration with primary tint', (
+  testWidgets('container has rounded border decoration', (
     tester,
   ) async {
     await tester.pumpWidget(_wrap(const AdminBadge()));
@@ -54,11 +54,11 @@ void main() {
     expect(row.mainAxisSize, MainAxisSize.min);
   });
 
-  testWidgets('icon + text are styled with the theme primary color', (
+  testWidgets('icon + text are styled with the text.primary colour', (
     tester,
   ) async {
     final theme = ThemeData(
-      colorScheme: const ColorScheme.light(primary: Colors.deepPurple),
+      colorScheme: const ColorScheme.light(onSurface: Colors.deepPurple),
     );
     await tester.pumpWidget(
       MaterialApp(

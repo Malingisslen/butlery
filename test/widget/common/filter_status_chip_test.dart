@@ -70,7 +70,7 @@ void main() {
     expect(container.constraints?.maxWidth, double.infinity);
   });
 
-  testWidgets('decoration uses rounded border + secondary-container tint', (
+  testWidgets('decoration is a rounded raised chip with no border', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -83,8 +83,13 @@ void main() {
     );
     final deco = container.decoration! as BoxDecoration;
     expect(deco.borderRadius, isNotNull);
-    expect(deco.border, isA<Border>());
-    expect(deco.color, isNotNull);
+    expect(deco.border, isNull);
+    expect(
+      deco.color,
+      Theme.of(
+        tester.element(find.byType(FilterStatusChip)),
+      ).colorScheme.surfaceContainerHighest,
+    );
   });
 
   testWidgets('count text styled with the primary color', (tester) async {
