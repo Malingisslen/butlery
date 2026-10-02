@@ -262,6 +262,21 @@ jobs:
               --force || true
           done
 
+      - name: Function parameters
+        # `IDENTITY_TOOLKIT_API_KEY` is a `defineString` with an empty default, and
+        # the CLI refuses a non-interactive functions deploy without a value for it
+        # (run 37057418062). It is the app's public web API key, so it is a repo
+        # variable, not a secret.
+        env:
+          IDENTITY_TOOLKIT_API_KEY: ${{ vars.IDENTITY_TOOLKIT_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$IDENTITY_TOOLKIT_API_KEY" ]; then
+            echo "::error::repo variable IDENTITY_TOOLKIT_API_KEY is not set"
+            exit 1
+          fi
+          echo "IDENTITY_TOOLKIT_API_KEY=$IDENTITY_TOOLKIT_API_KEY" >> functions/.env.butlery-app-1
+
       - name: Deploy
         id: deploy
         run: |
