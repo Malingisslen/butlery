@@ -118,9 +118,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Column(

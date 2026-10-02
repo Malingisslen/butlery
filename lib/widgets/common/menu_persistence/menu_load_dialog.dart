@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -88,9 +89,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               vertical: AppDimensions.spacingL,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
-                alpha: AppDimensions.opacityMedium,
-              ),
+              color: AppModeColors.textDisabled(Theme.of(context).brightness),
               borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
             ),
           ),
