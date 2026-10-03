@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -39,7 +40,7 @@ class GroupDetailStats {
               icon: ButleryIcons.calendar,
               label: context.l10n.groupDaysActive,
               value: _calculateDaysActive(group.createdAt),
-              color: Theme.of(context).colorScheme.secondary,
+              color: context.modeColors.textAccent,
               iconSize: AppDimensions.iconSizeAction,
               valueStyle: AppTextStyles.titleBold,
               labelStyle: AppTextStyles.bodySmall,

@@ -178,6 +178,7 @@ class ShoppingListHeader {
     // Get sharing status
     IconData sharingIcon;
     Color sharingColor;
+    Color? permissionTextColor;
     String? permissionText;
 
     switch (list.type) {
@@ -204,6 +205,7 @@ class ShoppingListHeader {
               case SharedListPermission.edit:
                 sharingIcon = ButleryIcons.pencil;
                 sharingColor = cs.secondary;
+                permissionTextColor = context.modeColors.textAccent;
                 permissionText = context.l10n.shoppingPermissionEdit;
                 break;
               case SharedListPermission.admin:
@@ -262,7 +264,7 @@ class ShoppingListHeader {
                     Text(
                       ' • $permissionText',
                       style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: sharingColor,
+                        color: permissionTextColor ?? sharingColor,
                       ),
                     ),
                   ],

@@ -16,6 +16,7 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_roles_pending.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -387,7 +388,7 @@ class _SlotPresenceRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.end,
-                    style: _label(cs.secondary),
+                    style: _label(context.modeColors.textAccent),
                   ),
                 ),
               ButleryIcon(
@@ -615,7 +616,10 @@ class _OvrigtCell extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _slotLabel(MealSlot.ovrigt.displayLabel, cs.secondary),
+                _slotLabel(
+                  MealSlot.ovrigt.displayLabel,
+                  context.modeColors.onWarningContainer,
+                ),
                 const SizedBox(height: 2),
                 for (final entry in entries) ...[
                   _OvrigtEntry(
@@ -645,7 +649,7 @@ class _OvrigtCell extends StatelessWidget {
                         context.l10n.weeklyMenuOvrigtAddMore,
                         textAlign: TextAlign.center,
                         style: AppTextStyles.overline.copyWith(
-                          color: cs.secondary,
+                          color: context.modeColors.onWarningContainer,
                         ),
                       ),
                     ),

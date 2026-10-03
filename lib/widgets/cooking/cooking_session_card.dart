@@ -105,7 +105,7 @@ class CookingSessionCard extends StatelessWidget {
             label: '$primaryLine. $eyebrow',
             child: Container(
               decoration: BoxDecoration(
-                color: cs.onPrimaryContainer,
+                color: cs.primary,
                 border: Border(
                   left: BorderSide(color: starGold, width: 3),
                 ),
@@ -126,7 +126,7 @@ class CookingSessionCard extends StatelessWidget {
                         Text(
                           eyebrow,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: starGold,
+                            color: context.modeColors.accentOnInk,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.8,
                           ),

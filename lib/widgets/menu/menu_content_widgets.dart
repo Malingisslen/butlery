@@ -525,7 +525,7 @@ Widget _buildInlineError(
           Text(
             context.l10n.menuGenerateError,
             style: AppTextStyles.titleMedium.copyWith(
-              color: cs.secondary,
+              color: context.modeColors.textAccent,
             ),
             textAlign: TextAlign.center,
           ),
