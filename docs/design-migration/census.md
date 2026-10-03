@@ -7,8 +7,8 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 68 known failures and 2 residue lists are not empty
-- Known failures: 68 (a11y 14, contrast 5, interaction_checks 12, interactions 6, transitions 31)
+- **Migration complete:** NO: 66 known failures and 2 residue lists are not empty
+- Known failures: 66 (a11y 12, contrast 5, interaction_checks 12, interactions 6, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Tickets: 21 registered in Linear
 - Failures without a ticket: 0
@@ -90,10 +90,10 @@ Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 14 (ceiling 14) in 14 cases (view, state, mode, width, text scale).
+Known findings: 12 (ceiling 12) in 12 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 3, windows 0
-- By check: TEXT_CONTRAST 14
-- By view: auth-otp 2, chatt 2, inköpslista 2, receptdetalj 2, receptlista-sök 2, veckogenerering 2, veckomeny 2
+- By check: TEXT_CONTRAST 12
+- By view: chatt 2, inköpslista 2, receptdetalj 2, receptlista-sök 2, veckogenerering 2, veckomeny 2
 
 ## Token parity
 
@@ -135,7 +135,7 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2178 | interaction_checks 2, interactions 1 |  |
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
-| BUT-2196 | a11y 14 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
+| BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 
 ## Ratchets and adoption lists
 

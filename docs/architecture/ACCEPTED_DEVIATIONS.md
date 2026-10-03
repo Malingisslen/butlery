@@ -5431,3 +5431,13 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
 - **A failed dish scrub is logged, not reported (BUT-2214, 2026-10-03).** Each menu is
   rewritten in its own transaction and a failure is a warning, as in `scrubLastEditor`; it
   does not mark the step incomplete.
+
+## BUT-2196 — rendered text under the contrast floor (2026-10-03)
+
+- **RESOLVED 2026-10-03 — Malin: the remaining TEXT_CONTRAST findings are accepted as a
+  measurement difference.** The listed texts (the top bar's secondary line, the recipe meta
+  line, the selected "Hem" tab, the chat rows) use design tokens whose colour pairs clear
+  their WCAG floors (text.secondary on surface.base: 5.28:1 light, 7.25:1 dark); Flutter's
+  textContrastGuideline estimates contrast from the rendered glyph pixels and measures them
+  under. WCAG computes contrast on the specified colours. The entries stay in
+  `known_a11y_findings.dart` so the matrix still reddens on any new or changed finding.

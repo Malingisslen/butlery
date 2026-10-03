@@ -11,8 +11,6 @@ import 'dart:io';
 /// Failures that only one host's glyph rasteriser shows are in
 /// [knownA11yFindingsLinuxOnly] and [knownA11yFindingsWindowsOnly].
 const Map<String, String> knownA11yFindings = {
-  'auth-otp::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-  'auth-otp::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'inköpslista::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptdetalj::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptdetalj::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
@@ -63,4 +61,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 14;
+const int knownA11yFindingsCeiling = 12;

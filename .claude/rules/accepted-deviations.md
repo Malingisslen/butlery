@@ -173,3 +173,4 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - RESOLVED 2026-10-02 — Malin: a live-menu participant with an edit role may write any text into `ownerDisplayName` / `lastEditedByDisplayName`; the rules pin the uids, not the cached names (BUT-2151)
 - A menu dish naming an erased user is scrubbed only on menus the erasure already finds; a dish on a menu they never joined, or in a conflict copy, keeps the uid (and a whole-recipe dish the names beside it), with no probe leg (BUT-2214, 2026-10-03)
 - A failed dish scrub is logged, not reported, as in `scrubLastEditor` (BUT-2214, 2026-10-03)
+- RESOLVED 2026-10-03 — Malin: the remaining TEXT_CONTRAST matrix findings are a measurement difference (token pairs clear WCAG; Flutter measures rendered glyphs) and stay listed in `known_a11y_findings.dart` (BUT-2196)
