@@ -26,6 +26,7 @@ import 'package:butlery/views/photo_import_view.dart';
 
 import '../../infrastructure/helpers/announce_channel.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/helpers/offline_banner_support.dart';
 
 /// Thin fake of [PhotoImportViewModel] exposing only the surface the view reads
 /// in its OCR-complete (no-image) render path. `extends ChangeNotifier` so the
@@ -135,6 +136,7 @@ void main() {
 
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
   });
 
   tearDown(() async {

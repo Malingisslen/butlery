@@ -23,6 +23,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 
 class PantryView extends StatefulWidget {
@@ -88,19 +89,26 @@ class _PantryViewContent extends StatelessWidget {
 
     return Stack(
       children: [
-        LoadingStateBuilder<List<PantryItem>>(
-          isLoading: viewModel.isLoading,
-          loadingMessage: context.l10n.loadingPantry,
-          error: viewModel.error,
-          data: viewModel.items,
-          onErrorRetry: () {
-            viewModel.clearError();
-            viewModel.loadPantry();
-          },
-          emptyBuilder: (context) => _PantryEmptyState(
-            onAdd: () => _showAddSheet(context, viewModel),
-          ),
-          builder: (context, items) => const _PantrySections(),
+        Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            Expanded(
+              child: LoadingStateBuilder<List<PantryItem>>(
+                isLoading: viewModel.isLoading,
+                loadingMessage: context.l10n.loadingPantry,
+                error: viewModel.error,
+                data: viewModel.items,
+                onErrorRetry: () {
+                  viewModel.clearError();
+                  viewModel.loadPantry();
+                },
+                emptyBuilder: (context) => _PantryEmptyState(
+                  onAdd: () => _showAddSheet(context, viewModel),
+                ),
+                builder: (context, items) => const _PantrySections(),
+              ),
+            ),
+          ],
         ),
         // BUT-948: in selection mode a contextual bulk bar replaces the add FAB.
         if (selection.isSelectionMode)

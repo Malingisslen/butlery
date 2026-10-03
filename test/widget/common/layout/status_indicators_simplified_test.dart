@@ -26,9 +26,22 @@ import '../../../infrastructure/helpers/base_widget_test.dart';
 /// Lightweight mock that extends ChangeNotifier so listeners work.
 class _MockOfflineService extends ChangeNotifier implements OfflineService {
   bool _online = true;
+  int listenerCount = 0;
 
   @override
   bool get isOnline => _online;
+
+  @override
+  void addListener(VoidCallback listener) {
+    listenerCount++;
+    super.addListener(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    listenerCount--;
+    super.removeListener(listener);
+  }
 
   void setOnline(bool value) {
     _online = value;
@@ -98,6 +111,43 @@ void main() {
 
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
+    });
+
+    // BUT-2182: the e-mail verification screen can show before a signed-in
+    // user's services exist, and keeps the same banner after they do.
+    group('OfflineIndicator without an OfflineService', () {
+      testWidgets('draws nothing, then shows once the service is registered '
+          'and the parent rebuilds', (tester) async {
+        GetIt.instance.unregister<OfflineService>();
+        late StateSetter rebuild;
+        await tester.pumpWidget(
+          _themedApp(
+            StatefulBuilder(
+              builder: (context, setState) {
+                rebuild = setState;
+                // A new widget each build, as the screen's own build makes.
+                return StatusIndicators.offlineIndicator();
+              },
+            ),
+            brightness: Brightness.light,
+          ),
+        );
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(_offlineKey), findsNothing);
+
+        mockOffline.setOnline(false);
+        GetIt.instance.registerSingleton<OfflineService>(mockOffline);
+        rebuild(() {});
+        await tester.pump();
+
+        expect(find.byKey(_offlineKey), findsOneWidget);
+        // Later rebuilds keep the one listener.
+        rebuild(() {});
+        await tester.pump();
+        expect(mockOffline.listenerCount, 1);
+      });
     });
 
     group('facade', () {

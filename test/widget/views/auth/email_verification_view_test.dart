@@ -27,12 +27,15 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
+import '../../../infrastructure/helpers/offline_banner_support.dart';
 
 const _testEmail = 'anna@example.com';
 
@@ -55,6 +58,7 @@ void main() {
     final container = DIContainer();
     container.container.registerSingleton<AuthService>(authService);
     ServiceLocator.initialize(container);
+    ensureOfflineService();
   });
 
   tearDown(() async {
@@ -116,6 +120,33 @@ void main() {
       find.text(l10n.emailVerificationContinue),
       findsOneWidget,
       reason: '"Fortsätt ändå" link must let the user skip verification.',
+    );
+  });
+
+  // BUT-2182: the screen carries the offline banner, as a status the user
+  // cannot tap (Malin, 2026-10-03).
+  testWidgets('the offline banner is a status, not a control', (tester) async {
+    await tester.pumpWidget(buildView());
+    await tester.pump();
+
+    final banner = find.byType(OfflineIndicator);
+    expect(banner, findsOneWidget);
+    expect(tester.widget<OfflineIndicator>(banner).onTap, isNull);
+  });
+
+  // BUT-2182: the screen can show before a signed-in user's services are
+  // registered, OfflineService among them.
+  testWidgets('renders without an OfflineService registered', (tester) async {
+    GetIt.instance.unregister<OfflineService>();
+
+    await tester.pumpWidget(buildView());
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(OfflineIndicator), findsOneWidget);
+    expect(
+      find.text(AppLocalizationsSv().emailVerificationTitle),
+      findsOneWidget,
     );
   });
 

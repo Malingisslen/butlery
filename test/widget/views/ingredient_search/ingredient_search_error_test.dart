@@ -25,6 +25,7 @@ import 'package:butlery/views/ingredient_search/ingredient_search_view.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/helpers/offline_banner_support.dart';
 
 class _MockMatchService extends Mock implements IngredientMatchService {}
 
@@ -55,6 +56,7 @@ void main() {
     );
     GetIt.instance.registerSingleton<IngredientSearchViewModel>(vm);
     prod.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
   });
 
   tearDown(() async {
