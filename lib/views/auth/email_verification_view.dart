@@ -239,7 +239,11 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                             },
                             child: Text(
                               l.emailVerificationContinue,
-                              style: tt.bodyMedium?.copyWith(color: cs.outline),
+                              // BUT-2196: text.secondary, not the border
+                              // colour (outline), which fails 4.5:1 as text.
+                              style: tt.bodyMedium?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ],
