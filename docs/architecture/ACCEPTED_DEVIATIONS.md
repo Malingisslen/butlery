@@ -5415,3 +5415,19 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   cached names beside them; pinning the names would cost a profile read on every save. Same
   class as the forgeable group-menu provenance entry (2026-08-29). Do not re-propose a
   profile-read check without new cause.
+
+## BUT-2214 — dishes inside shared menus (2026-10-03)
+
+- **A dish is scrubbed only on menus the erasure already finds (BUT-2214, 2026-10-03).**
+  The app stores a menu dish as the recipe's core without personal tags or the
+  social/realtime blocks (`Recipe.toMenuDish`). At erasure, `scrubDishCreator` rewrites every
+  dish that mentions the uid as such a dish, with the uid replaced by `"deleted"` as a value
+  and removed as a key, on the `realtime_resources` and `realtime_menus` the person was a
+  participant of and on `shared_content` shared with them. A uid inside an array element
+  cannot be queried, so a dish of theirs on a menu they never joined keeps it, and, if the dish is stored as a
+  whole recipe, the display names beside it; no probe leg can see what is left. A conflict copy in `overwritten_versions` is
+  not scrubbed either; its TTL on `expiresAt` removes it. Malin approved the plan, option A,
+  2026-10-03.
+- **A failed dish scrub is logged, not reported (BUT-2214, 2026-10-03).** Each menu is
+  rewritten in its own transaction and a failure is a warning, as in `scrubLastEditor`; it
+  does not mark the step incomplete.

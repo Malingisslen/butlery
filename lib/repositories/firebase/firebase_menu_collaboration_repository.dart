@@ -196,7 +196,7 @@ class FirebaseMenuCollaborationRepository
 
       // Update menu snapshot with FieldValue operations
       await collection.doc(menuId).update({
-        'menuSnapshot.$category': FieldValue.arrayUnion([recipe.toFirestore()]),
+        'menuSnapshot.$category': FieldValue.arrayUnion([recipe.toMenuDish()]),
         'lastUpdatedAt': timestampProvider.serverTimestamp(),
         'lastUpdatedBy': userId,
         'lastUpdatedByDisplayName': userDisplayName,

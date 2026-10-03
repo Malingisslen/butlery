@@ -251,7 +251,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     final menuData = <String, dynamic>{};
     for (final entry in menuSnapshot.entries) {
       menuData[entry.key] = entry.value.map((recipe) {
-        final recipeData = recipe.core.toFirestore();
+        final recipeData = recipe.toMenuDish();
 
         if (recipeData['createdAt'] is DateTime) {
           recipeData['createdAt'] = AppTimestamp.fromDateTime(
