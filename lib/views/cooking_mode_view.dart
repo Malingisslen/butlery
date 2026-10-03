@@ -835,39 +835,47 @@ class _IngredientsPanel extends StatelessWidget {
                   // BUT-948 exception: long-press activates substitutions
                   // (feature affordance), not multi-select.
                   child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onLongPress: () => _showSubstitutionSheet(
                       context,
                       vm,
                       line.ingredientIndex,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.space4,
+                    // BUT-2194: a row is a control (long press), so it is at
+                    // least 48 dp tall (tokens.json touchTarget).
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: AppDimensions.minTouchTarget,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            margin: const EdgeInsetsDirectional.only(
-                              top: 8,
-                              end: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cs.onPrimary,
-                              shape: BoxShape.rectangle,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              line.text,
-                              style: AppTextStyles.bodyLarge.copyWith(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.space4,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              margin: const EdgeInsetsDirectional.only(
+                                top: 8,
+                                end: 12,
+                              ),
+                              decoration: BoxDecoration(
                                 color: cs.onPrimary,
+                                shape: BoxShape.rectangle,
                               ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                line.text,
+                                style: AppTextStyles.bodyLarge.copyWith(
+                                  color: cs.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
