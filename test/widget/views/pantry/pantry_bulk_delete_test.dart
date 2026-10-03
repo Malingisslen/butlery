@@ -17,6 +17,7 @@ import 'package:butlery/views/pantry/pantry_view.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../infrastructure/helpers/offline_banner_support.dart';
 
 class _MockPantryViewModel extends Mock implements PantryViewModel {}
 
@@ -33,6 +34,7 @@ void main() {
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
     production.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
     registerFallbackValue(<String>{});
     registerFallbackValue(<PantryItem>[]);
     registerFallbackValue(PantryLocation.fridge);
@@ -42,6 +44,7 @@ void main() {
 
   setUp(() async {
     await TestServiceLocator.initialize();
+    ensureOfflineService();
     vm = _MockPantryViewModel();
     when(() => vm.isLoading).thenReturn(false);
     when(() => vm.error).thenReturn(null);

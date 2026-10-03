@@ -24,6 +24,7 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/views/photo_import_view.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import '../../../infrastructure/helpers/offline_banner_support.dart';
 
 late AppLocalizations _sv;
 
@@ -218,6 +219,7 @@ void main() {
           getIt.registerFactory<PhotoImportViewModel>(() => fake);
           app_provider.ServiceLocator.reset();
           app_provider.ServiceLocator.initialize(DIContainer());
+          ensureOfflineService();
         });
 
         tearDown(() async {

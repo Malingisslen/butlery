@@ -35,6 +35,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/helpers/offline_banner_support.dart';
 
 const _email = 'anna@example.com';
 final _sv = AppLocalizationsSv();
@@ -68,6 +69,7 @@ void main() {
     final container = DIContainer();
     container.container.registerSingleton<AuthService>(auth);
     ServiceLocator.initialize(container);
+    ensureOfflineService();
   });
 
   tearDown(() async {

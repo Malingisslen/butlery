@@ -23,43 +23,10 @@ class KnownFinding {
 }
 
 /// Today's failures, from test_results/design-states-53.json.
-const Map<String, KnownFinding> knownStateFindings = {
-  'auth-otp::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'auth-otp::OFFLINE::dark::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'import-av-recept::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'import-av-recept::OFFLINE::dark::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'receptlista-sök::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'receptlista-sök::OFFLINE::dark::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'skafferi::OFFLINE::light::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-  'skafferi::OFFLINE::dark::NO_OFFLINE_BANNER': KnownFinding(
-    'BUT-2182',
-    'no "Ingen anslutning" title',
-  ),
-};
+const Map<String, KnownFinding> knownStateFindings = {};
 
 /// The most entries the list may hold. Lower it when an entry goes.
-const int knownStateFindingsCeiling = 8;
+const int knownStateFindingsCeiling = 0;
 
 /// The package 8 tickets, registered in Linear, by id: title in one line.
 const Map<String, String> registeredTickets = {

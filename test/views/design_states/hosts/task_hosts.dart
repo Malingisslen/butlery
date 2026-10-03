@@ -26,6 +26,7 @@ import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/smart_import_view.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -130,14 +131,21 @@ Widget _heirloomOffline() {
   when(() => vm.heirloomWriterName).thenReturn('Mormor Ingrid');
   when(() => vm.heirloomYear).thenReturn(1962);
   when(() => vm.heirloomNote).thenReturn('Skrivet på baksidan av en kalender');
-  // As photo_import_view.dart:386-389 and :520-523 place it: in the photo
-  // import page ("Importera från foto") and its scrolling column, under the
-  // chosen photo.
+  // As photo_import_view.dart places it: in the photo import page
+  // ("Importera från foto") and its scrolling column, under the chosen photo,
+  // below the page's offline banner.
   return Scaffold(
     appBar: ButleryTopBar.undersida(title: sv.importFromPhoto),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: HeirloomSection(viewModel: vm),
+    body: Column(
+      children: [
+        LayoutComponents.offlineIndicator(),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: HeirloomSection(viewModel: vm),
+          ),
+        ),
+      ],
     ),
   );
 }

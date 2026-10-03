@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 162 known failures and 2 residue lists are not empty
-- Known failures: 162 (a11y 100, contrast 5, interaction_checks 12, interactions 6, states53 8, transitions 31)
+- **Migration complete:** NO: 154 known failures and 2 residue lists are not empty
+- Known failures: 154 (a11y 100, contrast 5, interaction_checks 12, interactions 6, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 24 registered in Linear
+- Tickets: 23 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 393`
@@ -59,9 +59,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 ## The 53 visual-only view states
 
 States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run in light and dark: 106 cases.
-- Cases passing: 98; cases with a known finding: 8
-- States passing in both modes: 49 of 53
-- Known findings: 8 (ceiling 8); by rule: NO_OFFLINE_BANNER 8
+- Cases passing: 106; cases with a known finding: 0
+- States passing in both modes: 53 of 53
+- Known findings: 0 (ceiling 0); by rule: 
 
 ## Required control states
 
@@ -134,7 +134,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2176 | interaction_checks 2, interactions 1 |  |
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2178 | interaction_checks 2, interactions 1 |  |
-| BUT-2182 | states53 8 | No offline banner ("Ingen anslutning") on this view |
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
 | BUT-2193 | a11y 52 | Button labels are cut with an ellipsis instead of wrapping (Skicka igen, Välj recept manuellt, Till inköpslista, list name) |
 | BUT-2194 | a11y 34 | Tap targets under 48 dp (cooking ingredient rows 32 dp, recipe detail text button 20 dp) |

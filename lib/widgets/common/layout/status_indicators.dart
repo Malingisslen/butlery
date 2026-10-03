@@ -44,8 +44,7 @@ class StatusIndicators {
 ///
 /// Screen readers hear it once per offline/online transition, not
 /// continuously, and the glyph is decorative (tillganglighetshandoff:177).
-/// Every mounted banner listens to [OfflineService], including those on
-/// routes below the top one, so only a banner on the current route
+/// Only a banner on the current route
 /// announces, and only one banner announces per transition app-wide.
 ///
 /// Uses ServiceLocator to access OfflineService directly so it works in any
@@ -69,7 +68,10 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
   /// same round stay quiet.
   static bool _transitionAnnounced = false;
 
-  late final OfflineService _offlineService;
+  /// Null before a signed-in user's services exist: the e-mail
+  /// verification screen can show before then (BUT-2182). The banner then
+  /// shows nothing.
+  OfflineService? _offlineService;
   bool _wasOffline = false;
   bool _showBackOnline = false;
   Timer? _backOnlineTimer;
@@ -77,20 +79,32 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
   @override
   void initState() {
     super.initState();
-    _offlineService = ServiceLocator.get<OfflineService>();
-    _offlineService.addListener(_onConnectivityChanged);
-    _wasOffline = !_offlineService.isOnline;
+    _attach();
+  }
+
+  @override
+  void didUpdateWidget(OfflineIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _attach();
+  }
+
+  void _attach() {
+    if (_offlineService != null) return;
+    final service = ServiceLocator.tryGet<OfflineService>();
+    if (service == null) return;
+    _offlineService = service..addListener(_onConnectivityChanged);
+    _wasOffline = !service.isOnline;
   }
 
   @override
   void dispose() {
-    _offlineService.removeListener(_onConnectivityChanged);
+    _offlineService?.removeListener(_onConnectivityChanged);
     _backOnlineTimer?.cancel();
     super.dispose();
   }
 
   void _onConnectivityChanged() {
-    final isOnline = _offlineService.isOnline;
+    final isOnline = _offlineService?.isOnline ?? true;
     final wasOffline = _wasOffline;
     _wasOffline = !isOnline;
     // OfflineService also notifies for other changes (the current user).
@@ -136,7 +150,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
 
   @override
   Widget build(BuildContext context) {
-    final isOffline = !_offlineService.isOnline;
+    final isOffline = !(_offlineService?.isOnline ?? true);
     final cs = Theme.of(context).colorScheme;
 
     Widget? banner;
