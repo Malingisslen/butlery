@@ -171,6 +171,7 @@ class ShoppingListHeader {
     UnifiedShoppingList list,
   ) {
     final cs = Theme.of(context).colorScheme;
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1;
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;
 
@@ -242,11 +243,12 @@ class ShoppingListHeader {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // BUT-2193 (Malin, 2026-10-03): cut at the normal text size.
               Text(
                 list.name,
                 style: AppTextStyles.contentLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                maxLines: largeText ? null : 1,
+                overflow: largeText ? null : TextOverflow.ellipsis,
               ),
               Wrap(
                 children: [

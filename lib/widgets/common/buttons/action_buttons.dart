@@ -51,11 +51,11 @@ class ActionButtons {
               child: ButleryIcon(icon),
             ),
           Flexible(
+            // BUT-2193: a label wraps rather than ellipsising; a button
+            // never cuts its own name (plattformsmatris.md, systemtextstorlek).
             child: Text(
               effectiveLabel,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -356,11 +356,11 @@ class ActionButtons {
               child: ButleryIcon(icon),
             ),
           Flexible(
+            // BUT-2193: a label wraps rather than ellipsising; a button
+            // never cuts its own name (plattformsmatris.md, systemtextstorlek).
             child: Text(
               effectiveLabel,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+              textAlign: TextAlign.center,
             ),
           ),
         ],
