@@ -5,8 +5,7 @@
 /// globala tillstand och flerval.dc.html:390-393.
 ///
 /// Pins, in light AND dark: the surface is surface.raised (#E6EAD9 / #2F4437,
-/// tokens.json), the edge is 3 px #CE7C1E on the leading side only, and the
-/// text is text.primary. Also the public API P5-T4 reads: items keyed by id,
+/// tokens.json), the edge is 3 px #CE7C1E on the leading side only. Also the public API P5-T4 reads: items keyed by id,
 /// reasons shown, actions rendered, the title a live region.
 library;
 
@@ -14,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 
@@ -86,6 +86,13 @@ void main() {
 
       final title = tester.widget<Text>(find.text('Vi hämtade 7 av 9 länkar'));
       expect(title.style?.color, text);
+      final message = tester.widget<Text>(
+        find.text('Vi kunde inte hämta länkarna nedan.'),
+      );
+      expect(
+        message.style?.color,
+        AppModeColors.textBodyMuted(theme.brightness),
+      );
       final reason = tester.widget<Text>(find.text('Sidan svarade inte'));
       expect(reason.style?.color, text);
     });

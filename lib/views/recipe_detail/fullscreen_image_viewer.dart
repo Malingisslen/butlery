@@ -272,11 +272,7 @@ class ImageFailedPlate extends StatelessWidget {
     // The glyph and the second line are text.secondary.onRaised (#5B6959 /
     // #A9B2A0, tokens.json:184-187); the drawing's single #5b6959 literal
     // (del 4:888,890) is kept in light and replaced by the token in dark.
-    // The first line is drawn as text.bodyMuted (#37453A / #C9D3C4,
-    // tokens.json:174-177; del 4:889 --r04slot-833). The generated theme has
-    // no bodyMuted member yet, so it uses text.body: right in light, and in
-    // dark #F5F4ED instead of the drawn #C9D3C4 (an interpretation, open
-    // until bodyMuted is delivered).
+    // The first line is drawn as text.bodyMuted (#37453A / #C9D3C4).
     final secondary = AppModeColors.textSecondaryOnRaised(brightness);
     // tillganglighetshandoff:188: role status, the text read once, the glyph
     // decorative.
@@ -308,7 +304,7 @@ class ImageFailedPlate extends StatelessWidget {
                   l10n.imageCouldNotBeShown,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.captionBase.copyWith(
-                    color: AppModeColors.textBody(brightness),
+                    color: AppModeColors.textBodyMuted(brightness),
                   ),
                 ),
                 if (retriesWhenOnline) ...[

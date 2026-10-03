@@ -137,9 +137,8 @@ class ImportInputSection extends StatelessWidget {
 /// #24382C text and outline in light (colorScheme.onSurface, equal to ink there); in dark a paper
 /// outline at 40 % (overlay.paperWash, tokens.json:263) and text in
 /// colorScheme.onSurface (#F5F4ED, text.primary). The drawn dark text is
-/// #C9D3C4 (text.bodyMuted, tokens.json:174-177), which no generated member
-/// carries yet; the app theme's own outlined foreground (primary) would sit
-/// at 1.3:1 on the dark surface.
+/// #C9D3C4 (text.bodyMuted); the app theme's own
+/// outlined foreground (primary) would sit at 1.3:1 on the dark surface.
 class ImportErrorMessage extends StatelessWidget {
   final String message;
   final String? preserved;
