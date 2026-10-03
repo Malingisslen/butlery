@@ -326,7 +326,7 @@
     },
     {
       "row_id": "CSR::ROLE::searchbox::DISABLED",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "control": "ButlerySearchBox (lib/widgets/common/butlery_search_box.dart)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::searchbox::DISABLED (light)",
@@ -340,8 +340,7 @@
           "name": "no disabled colour is carried by opacity"
         }
       ],
-      "ticket": null,
-      "known_finding": "BUT-2178"
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::searchbox::FOCUSED",
