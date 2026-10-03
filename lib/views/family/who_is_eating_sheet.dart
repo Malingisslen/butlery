@@ -192,7 +192,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.secondary,
+                      color: context.modeColors.textAccent,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

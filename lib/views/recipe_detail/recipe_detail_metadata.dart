@@ -279,7 +279,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             style: AppTextStyles.labelSmall,
           ),
           style: OutlinedButton.styleFrom(
-            foregroundColor: context.modeColors.starGold,
+            foregroundColor: context.modeColors.onWarningContainer,
             side: BorderSide(
               color: context.modeColors.starGold,
               width: 0.5,
