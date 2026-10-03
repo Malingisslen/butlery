@@ -34,6 +34,7 @@ import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { batchUpdateRefs, commitInChunks } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
+import { hashUid } from "../shared/hash-uid";
 // Deliberate cross-domain import (BUT-1822). `tryClearRoster` lives in a
 // minor-safety TRIGGER module, but it is the one roster clearer: bounded,
 // never-throwing, and it answers the exact question this cascade must ask before
@@ -3102,10 +3103,55 @@ export async function removeFromSharedContent(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const [members, engagements] = await Promise.all([
+  // BUT-1798 — the members-subcollection scrub below reaches ONLY content shared
+  // through BaseSharedContentRepository.addMember() (the group path). The three
+  // direct-share managers — recipe_sharing_manager, social_menu_operations and
+  // shopping_social_share_module — write the parent document only and have never
+  // written a members/{uid} row, so every recipient of an ad-hoc shared recipe,
+  // menu or list has been un-erasable since this collection existed. The Art. 15
+  // export now returns exactly those rows, so the gap has to close with it.
+  //
+  // Single `array-contains` on the one membership field. This was a union of
+  // two queries deduped by document id, because the collection carried the same
+  // list under two spellings; retired 2026-08-03.
+  //
+  // The admin SDK bypasses rules, so this predicate is the only access control  claim-lint:ok moved unchanged from below the members leg (BUT-1798)
+  // on the read — keep it scoped to shared_content and to this exact field.
+  //
+  // BUT-2214: read together with `members`, before either leg removes the uid
+  // from `sharedToUserIds`: `addMember` writes both handles, so a query run
+  // after the members leg no longer matches a document shared that way.
+  const [members, engagements, membershipSnap] = await Promise.all([
     db.collectionGroup("members").where("userId", "==", uid).get(),
     db.collectionGroup("engagements").where("userId", "==", uid).get(),
+    db
+      .collection("shared_content")
+      .where("sharedToUserIds", "array-contains", uid)
+      .get(),
   ]);
+
+  const membershipDocs = new Map<
+    string,
+    admin.firestore.QueryDocumentSnapshot
+  >();
+  for (const doc of membershipSnap.docs) {
+    // Documents this user OWNS are hard-deleted a few lines below. Updating them
+    // first is wasted writes, and a batch.update against an already-deleted doc
+    // throws NOT_FOUND and poison-pills the whole chunk on any retry — the same
+    // failure shape as BUT-1582/1583. The owner is always in their own
+    // membership array, so without this skip the overlap would be total.
+    if (doc.get("sharedByUserId") === uid) continue;
+    membershipDocs.set(doc.id, doc);
+  }
+
+  // BUT-2214: a menu shared with the user can hold a dish of theirs. Scrubbed
+  // while the user is still in `sharedToUserIds`.
+  await scrubDishCreator(
+    db,
+    [...membershipDocs.values()],
+    uid,
+    "shared_content",
+  );
 
   // Scrub membership on each parent shared_content doc. One field: this
   // collection briefly carried the same recipient list under two spellings so
@@ -3139,39 +3185,6 @@ export async function removeFromSharedContent(
   // parent document, while a `members` row naming this user should go wherever
   // it sits.
   await batchDeleteAll(db, members.docs);
-
-  // BUT-1798 — the members-subcollection scrub above reaches ONLY content shared
-  // through BaseSharedContentRepository.addMember() (the group path). The three
-  // direct-share managers — recipe_sharing_manager, social_menu_operations and
-  // shopping_social_share_module — write the parent document only and have never
-  // written a members/{uid} row, so every recipient of an ad-hoc shared recipe,
-  // menu or list has been un-erasable since this collection existed. The Art. 15
-  // export now returns exactly those rows, so the gap has to close with it.
-  //
-  // Single `array-contains` on the one membership field. This was a union of
-  // two queries deduped by document id, because the collection carried the same
-  // list under two spellings; retired 2026-08-03.
-  //
-  // The admin SDK bypasses rules, so this predicate is the only access control
-  // on the read — keep it scoped to shared_content and to this exact field.
-  const membershipSnap = await db
-    .collection("shared_content")
-    .where("sharedToUserIds", "array-contains", uid)
-    .get();
-
-  const membershipDocs = new Map<
-    string,
-    admin.firestore.QueryDocumentSnapshot
-  >();
-  for (const doc of membershipSnap.docs) {
-    // Documents this user OWNS are hard-deleted a few lines below. Updating them
-    // first is wasted writes, and a batch.update against an already-deleted doc
-    // throws NOT_FOUND and poison-pills the whole chunk on any retry — the same
-    // failure shape as BUT-1582/1583. The owner is always in their own
-    // membership array, so without this skip the overlap would be total.
-    if (doc.get("sharedByUserId") === uid) continue;
-    membershipDocs.set(doc.id, doc);
-  }
 
   if (membershipDocs.size > 0) {
     await commitInChunks(
@@ -4532,6 +4545,9 @@ async function removeRealtimeParticipation(
   const notOwned = joined.docs.filter((doc) => doc.data().ownerId !== uid);
   if (notOwned.length === 0) return notOwned;
 
+  // BUT-2214: before the roster write below.
+  await scrubDishCreator(db, notOwned, uid, collection);
+
   for (const doc of notOwned) {
     const presence = doc.ref.collection("presence").doc(uid);
     try {
@@ -4619,6 +4635,124 @@ async function scrubLastEditor(
           logger.warn(`scrubLastEditor:${collection}: doc write failed`, {
             uid_prefix: uid.slice(0, 6),
             docId: doc.id,
+            errName: err instanceof Error ? err.name : typeof err,
+          });
+        }
+      }),
+    );
+  }
+}
+
+/**
+ * Keys a menu dish does not keep: the blocks that name people and the owner's
+ * personal tags. Mirrors `RecipeSerialization.toMenuDish` in the app.
+ */
+const NON_DISH_KEYS = new Set([
+  "socialData",
+  "realtimeData",
+  "offlineData",
+  "type",
+  "personalTagIds",
+  "personalTags",
+]);
+
+/** A map as Firestore hands it over, not a Timestamp or other SDK value. */
+function isPlainMap(node: unknown): node is Record<string, unknown> {
+  return (
+    !!node &&
+    typeof node === "object" &&
+    Object.getPrototypeOf(node) === Object.prototype
+  );
+}
+
+/** True when [uid] is a string value or a map key anywhere under [node]. */
+function mentionsUid(node: unknown, uid: string): boolean {
+  if (node === uid) return true;
+  if (Array.isArray(node)) return node.some((v) => mentionsUid(v, uid));
+  if (isPlainMap(node)) {
+    return Object.entries(node).some(
+      ([k, v]) => k === uid || mentionsUid(v, uid),
+    );
+  }
+  return false;
+}
+
+/**
+ * [node] with every string equal to [uid] as "deleted" and every map key equal
+ * to it removed.
+ */
+function withoutUid(node: unknown, uid: string): unknown {
+  if (node === uid) return "deleted";
+  if (Array.isArray(node)) return node.map((v) => withoutUid(v, uid));
+  if (isPlainMap(node)) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node)) {
+      if (k !== uid) out[k] = withoutUid(v, uid);
+    }
+    return out;
+  }
+  return node;
+}
+
+/**
+ * BUT-2214: a dish that mentions the deleted user is rewritten as a menu dish
+ * — the recipe's core, flat, without the keys in [NON_DISH_KEYS] — with the uid
+ * replaced by "deleted" wherever it is a value and removed wherever it is a
+ * key. Menus written by a client before BUT-2214 store whole recipes, whose
+ * `socialData` / `realtimeData` blocks carry display names beside the ids, so
+ * the projection is what removes the names. A dish that does not mention the
+ * user is left as it is.
+ *
+ * Only the menus a caller already found can be scrubbed: a uid inside an
+ * array element cannot be queried, so a dish of theirs on a menu they never
+ * joined is out of reach, and no probe leg can see what is left.
+ *
+ * Per-doc transaction, as in [scrubLastEditor]: the menu is live, and the
+ * whole `menuSnapshot` is rewritten, so it must be rewritten from a fresh read.
+ */
+async function scrubDishCreator(
+  db: admin.firestore.Firestore,
+  docs: admin.firestore.QueryDocumentSnapshot[],
+  uid: string,
+  label: string,
+): Promise<void> {
+  // A document with no menu in the query snapshot (a shared recipe or list)
+  // costs no transaction read.
+  const menus = docs.filter((d) => d.data().menuSnapshot);
+  const chunkSize = 10;
+  for (let i = 0; i < menus.length; i += chunkSize) {
+    await Promise.all(
+      menus.slice(i, i + chunkSize).map(async (doc) => {
+        try {
+          await db.runTransaction(async (tx) => {
+            const fresh = await tx.get(doc.ref);
+            const snapshot = fresh.data()?.menuSnapshot;
+            if (!isPlainMap(snapshot)) return;
+            let changed = false;
+            const scrubbed: Record<string, unknown> = {};
+            for (const [category, dishes] of Object.entries(snapshot)) {
+              if (!Array.isArray(dishes)) {
+                scrubbed[category] = dishes;
+                continue;
+              }
+              scrubbed[category] = dishes.map((dish) => {
+                if (!isPlainMap(dish) || !mentionsUid(dish, uid)) return dish;
+                changed = true;
+                const base = isPlainMap(dish.core) ? dish.core : dish;
+                const projected: Record<string, unknown> = {};
+                for (const [k, v] of Object.entries(base)) {
+                  if (!NON_DISH_KEYS.has(k)) projected[k] = v;
+                }
+                return withoutUid(projected, uid);
+              });
+            }
+            if (changed) tx.update(doc.ref, { menuSnapshot: scrubbed });
+          });
+        } catch (err) {
+          logger.warn(`scrubDishCreator:${label}: doc write failed`, {
+            uid_prefix: uid.slice(0, 6),
+            // A live menu's id starts with its owner's uid.
+            docIdHash: hashUid(doc.id),
             errName: err instanceof Error ? err.name : typeof err,
           });
         }

@@ -1138,6 +1138,148 @@ async function scenario_realtimeResourcesAreErased(): Promise<void> {
 }
 
 /**
+ * BUT-2214: the menus the user took part in stay for their owners, but no
+ * dish in them may name the user afterwards — by uid anywhere in it, or by
+ * the display name an older whole-recipe dish carries beside the uid.
+ */
+function menuWithDishes(): DocData {
+  return {
+    middag: [
+      // Flat, as the app stores a dish since BUT-2214; the user's uid also
+      // sits in two nested fields the core keeps.
+      {
+        id: "mine-flat",
+        title: "Linsgryta",
+        createdBy: UID,
+        heirloom: { addedByUserId: UID, writerName: "Farmor Elsa" },
+        tagOverrides: { lastEditedBy: UID },
+        // A map keyed by the uid, as a hand-rolled client could write.
+        handRolled: { [UID]: true },
+      },
+      { id: "theirs", title: "Pasta", createdBy: OTHER },
+      // A whole recipe, as a client before BUT-2214 stores it: names beside
+      // the ids, and the owner's personal tags.
+      {
+        core: {
+          id: "mine-whole",
+          title: "Soppa",
+          createdBy: UID,
+          personalTagIds: ["barnens-favoriter"],
+        },
+        type: 2,
+        socialData: {
+          ownerId: UID,
+          ownerDisplayName: "Malin",
+          memberPermissions: { [UID]: "editor", [OTHER]: "viewer" },
+        },
+        realtimeData: {
+          lastEditedByUserId: UID,
+          lastEditedByDisplayName: "Malin",
+        },
+      },
+    ],
+  };
+}
+
+function checkDishesScrubbed(where: string, menu: DocData | undefined): void {
+  const dishes = ((menu?.menuSnapshot as DocData | undefined)?.middag ??
+    []) as DocData[];
+  const text = JSON.stringify(dishes);
+  const flat = dishes.find((d) => d.id === "mine-flat");
+  const whole = dishes.find((d) => d.id === "mine-whole");
+  const theirs = dishes.find((d) => d.id === "theirs");
+  check(
+    `${where}: no dish holds the user's uid`,
+    dishes.length === 3 && !text.includes(UID),
+    `got ${text}`,
+  );
+  check(
+    `${where}: no dish holds the user's name`,
+    !text.includes("Malin"),
+    `got ${text}`,
+  );
+  check(
+    `${where}: the user's dishes keep their content, "deleted" in the uid's place`,
+    flat?.title === "Linsgryta" &&
+      flat?.createdBy === "deleted" &&
+      (flat?.heirloom as DocData | undefined)?.addedByUserId === "deleted" &&
+      (flat?.heirloom as DocData | undefined)?.writerName === "Farmor Elsa" &&
+      whole?.title === "Soppa" &&
+      whole?.createdBy === "deleted",
+    `got ${text}`,
+  );
+  check(
+    `${where}: an older whole-recipe dish becomes a menu dish`,
+    whole !== undefined &&
+      !("core" in whole) &&
+      !("socialData" in whole) &&
+      !("realtimeData" in whole) &&
+      !("type" in whole) &&
+      !("personalTagIds" in whole),
+    `got ${JSON.stringify(whole)}`,
+  );
+  check(
+    `${where}: someone else's dish is left as it was`,
+    JSON.stringify(theirs) ===
+      JSON.stringify({ id: "theirs", title: "Pasta", createdBy: OTHER }),
+    `got ${JSON.stringify(theirs)}`,
+  );
+}
+
+async function scenario_menuDishCreatorIsScrubbed(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/${OTHER}_m2`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "editor" },
+    participantIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  db.set("realtime_menus/theirs", {
+    ownerId: OTHER,
+    participantIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  // Shared without a members row (the direct-share managers) ...
+  db.set("shared_content/their-menu", {
+    contentType: "menu",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  // ... and through `addMember`, which writes the members row AND the array:
+  // the members leg removes the uid from the array before anything after it.
+  db.set("shared_content/invited-menu", {
+    contentType: "menu",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  db.set(`shared_content/invited-menu/members/${UID}`, { userId: UID });
+
+  await deleteRealtimeResources(asDb(db), UID);
+  await deleteRealtimeMenus(asDb(db), UID);
+  const { removeFromSharedContent } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  await removeFromSharedContent(asDb(db), UID);
+
+  checkDishesScrubbed(
+    "realtime_resources",
+    db.get(`realtime_resources/${OTHER}_m2`),
+  );
+  checkDishesScrubbed("realtime_menus", db.get("realtime_menus/theirs"));
+  checkDishesScrubbed(
+    "shared_content, direct share",
+    db.get("shared_content/their-menu"),
+  );
+  checkDishesScrubbed(
+    "shared_content, invited",
+    db.get("shared_content/invited-menu"),
+  );
+}
+
+/**
  * Anonymizing the message ROWS is not the whole erasure: the conversation
  * DOCUMENT carries uid-keyed maps and a full `lastMessage` copy, and every
  * remaining group member reads it. Nothing renames or erases those once the
@@ -9174,6 +9316,7 @@ async function main(): Promise<void> {
   await scenario_ownedRealtimeMenuChildrenAreDeleted();
   await scenario_realtimeParticipationIsRemoved();
   await scenario_realtimeResourcesAreErased();
+  await scenario_menuDishCreatorIsScrubbed();
   await scenario_featureRetentionRowsAreErased();
   await scenario_retentionAnalyticsRowsAreErased();
   await scenario_retentionAnalyticsWithNoRowsSucceeds();

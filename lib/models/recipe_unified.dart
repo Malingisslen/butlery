@@ -1687,6 +1687,7 @@ class Recipe {
 
   Map<String, dynamic> toJson() => RecipeSerialization.toJson(this);
   Map<String, dynamic> toFirestore() => RecipeSerialization.toFirestore(this);
+  Map<String, dynamic> toMenuDish() => RecipeSerialization.toMenuDish(this);
 
   factory Recipe.fromJson(Map<String, dynamic> json) =>
       RecipeSerialization.fromJson(json);

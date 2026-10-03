@@ -173,7 +173,17 @@ void main() {
         ownerDisplayName: 'Olle',
         editorUserIds: const [_me],
       );
-      await seed(menu.id, menu.toFirestore());
+      // Whole recipes, as a client before BUT-2214 or a hand-rolled one
+      // stores them: the app's own save path keeps no names in a dish.
+      await seed(menu.id, {
+        ...menu.toFirestore(),
+        'menuSnapshot': {
+          'middag': [
+            dish('d1', _owner, 'Olle').toFirestore(),
+            dish('d2', _me, 'Jag').toFirestore(),
+          ],
+        },
+      });
 
       final exported = menuOf(await export.export(_me), menu.id);
       final dishes = ((exported['menuSnapshot'] as Map)['middag'] as List)
@@ -203,27 +213,27 @@ void main() {
   );
 
   test(
-    'the name rules cover every display name a menu and its dishes persist',
+    'the name rules cover every display name a menu and a whole-recipe dish '
+    'persist',
     () {
+      final recipe = RecipeFactory.build(
+        id: 'd',
+        socialData: RecipeSocialData(
+          ownerId: 'o',
+          ownerDisplayName: 'O',
+          memberPermissions: const {'x': ResourcePermission.editor},
+          allowGuestViewing: false,
+          allowMemberInvites: false,
+        ),
+        realtimeData: const RecipeRealtimeData(
+          lastEditedByUserId: 'o',
+          lastEditedByDisplayName: 'O',
+        ),
+      );
       final menu = RealtimeMenu.fromMenuCategories(
         menuTitle: 'm',
         menuSnapshot: {
-          'middag': [
-            RecipeFactory.build(
-              id: 'd',
-              socialData: RecipeSocialData(
-                ownerId: 'o',
-                ownerDisplayName: 'O',
-                memberPermissions: const {'x': ResourcePermission.editor},
-                allowGuestViewing: false,
-                allowMemberInvites: false,
-              ),
-              realtimeData: const RecipeRealtimeData(
-                lastEditedByUserId: 'o',
-                lastEditedByDisplayName: 'O',
-              ),
-            ),
-          ],
+          'middag': [recipe],
         },
         ownerId: 'o',
         ownerDisplayName: 'O',
@@ -245,10 +255,13 @@ void main() {
         return found;
       }
 
-      expect(namesIn(menu, ''), {
-        ...LiveMenuExport.nameKeysByOwnerIdKey.keys,
+      // BUT-2214: the app stores a dish without names, so a saved menu
+      // carries them only on the menu itself.
+      expect(namesIn(menu, ''), {...LiveMenuExport.nameKeysByOwnerIdKey.keys});
+      // A whole recipe, the shape an older or hand-rolled client stores.
+      expect(namesIn(recipe.toFirestore(), ''), {
         for (final (mapKey, nameKey, _) in LiveMenuExport.dishNameKeys)
-          'menuSnapshot.middag[].$mapKey.$nameKey',
+          '$mapKey.$nameKey',
       });
     },
   );
