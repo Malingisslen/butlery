@@ -405,36 +405,46 @@ void main() {
       // P7-C4: the progress colour reads the generated member for the
       // mode (tokens.json:522; NULAGE.md:71-74), the same member the
       // retired ButleryColors extension read, in both modes.
-      test('progress colour follows the mode: success, warning, primary', () {
-        final manager = ShoppingDisplayManager();
-        const light = ColorScheme.light();
-        const dark = ColorScheme.dark();
+      test(
+        'progress colour follows the mode: success, warning, text.primary',
+        () {
+          final manager = ShoppingDisplayManager();
+          const light = ColorScheme.light();
+          const dark = ColorScheme.dark();
 
-        expect(
-          manager.getProgressColor(light, ModeColors.light, 100),
-          AppColors.success,
-        );
-        expect(
-          manager.getProgressColor(dark, ModeColors.dark, 100),
-          AppColorsDark.success,
-        );
-        expect(
-          manager.getProgressColor(light, ModeColors.light, 75),
-          AppColors.warning,
-        );
-        expect(
-          manager.getProgressColor(dark, ModeColors.dark, 75),
-          AppColorsDark.warning,
-        );
-        expect(
-          manager.getProgressColor(light, ModeColors.light, 10),
-          light.primary,
-        );
-        expect(
-          manager.getProgressColor(dark, ModeColors.dark, 10),
-          dark.primary,
-        );
-      });
+          expect(
+            manager.getProgressColor(light, ModeColors.light, 100),
+            AppColors.success,
+          );
+          expect(
+            manager.getProgressColor(dark, ModeColors.dark, 100),
+            AppColorsDark.success,
+          );
+          expect(
+            manager.getProgressColor(light, ModeColors.light, 75),
+            AppColors.warning,
+          );
+          expect(
+            manager.getProgressColor(dark, ModeColors.dark, 75),
+            AppColorsDark.warning,
+          );
+          expect(
+            manager.getProgressColor(light, ModeColors.light, 10),
+            light.onSurface,
+          );
+          expect(
+            manager.getProgressColor(dark, ModeColors.dark, 10),
+            dark.onSurface,
+          );
+          // BUT-2207: below half it is text.primary (onSurface), never
+          // cs.primary, which is surface.ink in dark: 1.19:1 on raised.
+          final appDark = AppColors.darkColorScheme;
+          expect(
+            manager.getProgressColor(appDark, ModeColors.dark, 10),
+            isNot(appDark.primary),
+          );
+        },
+      );
 
       test('should handle fully completed list', () async {
         final completedList = ShoppingListFactory.build(

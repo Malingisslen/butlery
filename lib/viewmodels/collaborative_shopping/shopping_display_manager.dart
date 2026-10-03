@@ -67,7 +67,7 @@ class ShoppingDisplayManager {
   ) {
     if (completionPercentage == 100) return modeColors.success;
     if (completionPercentage > 50) return modeColors.warning;
-    return cs.primary;
+    return cs.onSurface;
   }
 
   String? getItemSubtitle(UnifiedShoppingItem item) {

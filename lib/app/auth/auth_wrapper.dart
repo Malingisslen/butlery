@@ -311,7 +311,7 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
                 Text(
                   l10n.onboardingResumeTitle,
                   style: AppTextStyles.headlineSmall.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),

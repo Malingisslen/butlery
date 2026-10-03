@@ -191,7 +191,7 @@ class MessageStates {
               ButleryIcon(
                 icon ?? ButleryIcons.info,
                 size: iconSize ?? AppDimensions.iconSizeL,
-                color: iconColor ?? Theme.of(context).colorScheme.primary,
+                color: iconColor ?? Theme.of(context).colorScheme.onSurface,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               if (title != null) ...[
