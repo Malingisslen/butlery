@@ -180,6 +180,46 @@ void main() {
       expect(find.text('Ägg'), findsOneWidget);
     });
 
+    // BUT-2195: the tick box is its own tap target, so a screen reader needs
+    // the item's name on it.
+    testWidgets('each tick box is labelled with its item', (tester) async {
+      final handle = tester.ensureSemantics();
+      final milk = UnifiedShoppingItem(
+        id: '1',
+        name: 'Mjölk',
+        amount: 2,
+        unit: 'liter',
+        category: ShoppingCategory.other,
+      );
+      // The amount must reach the label, so the fixture must not let
+      // displayText and name coincide.
+      expect(milk.displayText, isNot(milk.name));
+      final vm = _FakeCollaborativeShoppingViewModel(items: [milk]);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
+        ),
+      );
+
+      expect(
+        tester.getSemantics(find.byType(Checkbox)),
+        matchesSemantics(
+          label: milk.displayText,
+          hasCheckedState: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          isFocusable: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+        ),
+      );
+      handle.dispose();
+    });
+
     testWidgets(
       'Min del mode: splits items into Min del / Annas del / Otilldelat',
       (tester) async {

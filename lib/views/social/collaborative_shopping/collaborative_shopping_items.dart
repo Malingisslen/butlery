@@ -456,6 +456,7 @@ class _CollaborativeItemCard extends StatelessWidget {
   Widget _buildCheckbox(BuildContext context) {
     return Checkbox(
       value: item.bought,
+      semanticLabel: item.displayText,
       onChanged: viewModel.canView ? (_) => onToggleItem(item.id) : null,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
     );

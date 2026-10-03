@@ -108,8 +108,6 @@ const Map<String, String> knownA11yFindings = {
   'matlagningsläge::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
-  'vänner-grupp::OFFLINE::light::360::1.0::TAP_LABEL': 'BUT-2195',
-  'vänner-grupp::OFFLINE::dark::360::1.0::TAP_LABEL': 'BUT-2195',
 };
 
 /// TEXT_CONTRAST findings that only the Linux test host shows (CI, views
@@ -151,4 +149,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 102;
+const int knownA11yFindingsCeiling = 100;
