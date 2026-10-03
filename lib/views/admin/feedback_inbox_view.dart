@@ -232,7 +232,9 @@ class _FeedbackCard extends StatelessWidget {
               Text(
                 '${context.l10n.adminFeedbackInteractions}: '
                 '${_formatInteractions(entry.recentInteractions)}',
-                style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ],
             const SizedBox(height: AppDimensions.spacingSm),
@@ -360,7 +362,9 @@ class _Screenshot extends StatelessWidget {
             Expanded(
               child: Text(
                 url,
-                style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ],

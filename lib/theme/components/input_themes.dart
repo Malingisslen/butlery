@@ -85,7 +85,7 @@ class InputThemes {
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.space12,
       ),
-      hintStyle: TextStyle(color: cs.outline),
+      hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       errorStyle: AppTextStyles.errorText.copyWith(color: cs.error),
     );

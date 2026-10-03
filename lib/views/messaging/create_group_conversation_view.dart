@@ -213,7 +213,7 @@ class _CreateGroupConversationViewState
         Text(
           context.l10n.messagingSelectAtLeastTwoMembers,
           style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.outline,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -339,7 +339,7 @@ class _CreateGroupConversationViewState
                     Text(
                       friend.email,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.outline,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                 ],

@@ -75,7 +75,7 @@ class FamilySectionHeader extends StatelessWidget {
               Text(
                 trailing!,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.outline,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
           ],
@@ -135,7 +135,7 @@ class _TagChip extends StatelessWidget {
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: emphasized ? cs.onSurface : cs.outline,
+          color: emphasized ? cs.onSurface : cs.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),

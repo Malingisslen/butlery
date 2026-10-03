@@ -87,7 +87,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
                     child: Text(
                       l10n.adminDrillEmpty,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.outline,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   )

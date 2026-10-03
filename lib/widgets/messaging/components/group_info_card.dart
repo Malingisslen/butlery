@@ -76,7 +76,7 @@ class GroupInfoCard extends StatelessWidget {
           Text(
             context.l10n.chatCreatedDate(createdDateStr),
             style: AppTextStyles.bodySmall.copyWith(
-              color: cs.outline,
+              color: cs.onSurfaceVariant,
             ),
           ),
 

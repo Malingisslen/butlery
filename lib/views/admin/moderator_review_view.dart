@@ -184,7 +184,7 @@ class _ReportCard extends StatelessWidget {
                   ? context.l10n.moderatorReporterErased
                   : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.outline,
+                color: cs.onSurfaceVariant,
               ),
             ),
             // BUT-1609: moderation on a minor's account carries extra care

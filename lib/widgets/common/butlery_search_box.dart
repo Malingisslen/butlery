@@ -153,7 +153,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
           decoration: InputDecoration(
             hintText: widget.hintText ?? context.l10n.searchHint,
             hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: cs.outline,
+              color: cs.onSurfaceVariant,
             ),
             prefixIcon:
                 widget.prefixIcon ??

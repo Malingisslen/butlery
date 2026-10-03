@@ -359,7 +359,7 @@ class _SlotPresenceRow extends StatelessWidget {
                     context.l10n.menuPresenceNobody,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: _label(cs.outline),
+                    style: _label(cs.onSurfaceVariant),
                   ),
                 )
               else

@@ -139,7 +139,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
       children: [
         Text(
           l10n.familyRatingIntro,
-          style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 16),
         for (final member in vm.present)
@@ -217,7 +217,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(),
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(40),
-                  foregroundColor: cs.outline,
+                  foregroundColor: cs.onSurfaceVariant,
                 ),
                 child: Text(l10n.whoAteSkip),
               ),
@@ -307,7 +307,7 @@ class _DinerRatingRow extends StatelessWidget {
                 Text(
                   _tag(context),
                   style: AppTextStyles.captionText.copyWith(
-                    color: cs.outline,
+                    color: cs.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

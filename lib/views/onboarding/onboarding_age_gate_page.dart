@@ -80,7 +80,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             context.l10n.onboardingAgeGatePrivacyNote,
-            style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
         ],

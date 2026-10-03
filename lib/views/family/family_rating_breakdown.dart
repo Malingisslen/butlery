@@ -187,7 +187,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               Text(
                 l10n.familyRatingCount(vm.familyCount),
                 style: AppTextStyles.captionText.copyWith(
-                  color: cs.outline,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
@@ -263,7 +263,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     Text(
                       l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
                       style: AppTextStyles.captionText.copyWith(
-                        color: cs.outline,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -312,7 +312,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: cs.outline,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                   if (communityCount != null) ...[

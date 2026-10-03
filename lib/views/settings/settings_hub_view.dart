@@ -185,7 +185,7 @@ class SettingsHubView extends StatelessWidget {
                   child: Text(
                     'Butlery',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.outline,
+                      color: cs.onSurfaceVariant,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -421,7 +421,7 @@ class _LanguageTileState extends State<LanguageTile> {
       ),
       subtitle: Text(
         LocaleProvider.getLocaleName(_localeProvider.locale.languageCode),
-        style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
       ),
       trailing: ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
       onTap: () => _showLanguagePicker(context),

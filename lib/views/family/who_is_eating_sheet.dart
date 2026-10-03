@@ -266,7 +266,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                       Navigator.pop(context, const WhoAteResult.skipped()),
                   style: TextButton.styleFrom(
                     minimumSize: const Size.fromHeight(40),
-                    foregroundColor: cs.outline,
+                    foregroundColor: cs.onSurfaceVariant,
                   ),
                   child: Text(config.skipLabel!),
                 ),
@@ -350,7 +350,7 @@ class _DinerToggleRow extends StatelessWidget {
                     Text(
                       _tag(context),
                       style: AppTextStyles.captionText.copyWith(
-                        color: cs.outline,
+                        color: cs.onSurfaceVariant,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

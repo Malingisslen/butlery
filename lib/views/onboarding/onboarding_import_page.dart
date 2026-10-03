@@ -208,7 +208,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             child: Text(
               context.l10n.onboardingImportSkipNote,
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.outline,
+                color: cs.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
