@@ -454,8 +454,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 backgroundColor: cs.surface,
                 foregroundColor: cs.onSurface,
                 // UI Redesign: Custom leading widget (back button)
+                // BUT-2194: the leading slot is 56 dp, so 4 dp padding leaves
+                // the button its full 48 dp tap target.
                 leading: Padding(
-                  padding: AppDimensions.paddingAll8,
+                  padding: const EdgeInsets.all(AppDimensions.space4),
                   child: _HeroButton(
                     icon: ButleryIcons.arrowLeft,
                     onPressed: () => Navigator.pop(context),
@@ -524,13 +526,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                   ),
                 ),
-                // UI Redesign: Hero action buttons with cream background
+                // UI Redesign: Hero action buttons with cream background.
+                // BUT-2194: 4 dp above and below in the 56 dp bar leaves each
+                // button its full 48 dp tap target.
                 actions: [
                   // Favorite toggle — owner-only (hidden for a friend's recipe)
                   if (!widget.readOnly)
                     Padding(
                       key: const ValueKey('test-recipe-detail-favorite'),
-                      padding: AppDimensions.paddingVertical8,
+                      padding: AppDimensions.paddingVertical4,
                       child: Semantics(
                         identifier: 'btn-favorite-recipe',
                         button: true,
@@ -563,7 +567,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // Internal sharing with friends and groups
                   Padding(
                     key: const ValueKey('test-recipe-detail-share-friends'),
-                    padding: AppDimensions.paddingVertical8,
+                    padding: AppDimensions.paddingVertical4,
                     child: Semantics(
                       identifier: 'btn-share-friends',
                       button: true,
@@ -579,7 +583,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // External sharing
                   Padding(
                     key: const ValueKey('test-recipe-detail-share-recipe'),
-                    padding: AppDimensions.paddingVertical8,
+                    padding: AppDimensions.paddingVertical4,
                     child: Semantics(
                       identifier: 'btn-share-recipe',
                       button: true,
@@ -601,7 +605,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       !_actions.pantryCoversAll(recipe, _pantry.pantry))
                     Padding(
                       key: const ValueKey('test-recipe-detail-add-to-list'),
-                      padding: AppDimensions.paddingVertical8,
+                      padding: AppDimensions.paddingVertical4,
                       child: _HeroButton(
                         icon: ButleryIcons.shoppingCart,
                         onPressed: () => _actions.showAddToCartConfirmation(
@@ -615,8 +619,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   Padding(
                     key: const ValueKey('test-recipe-detail-more'),
                     padding: const EdgeInsetsDirectional.only(
-                      top: AppDimensions.spacingSm,
-                      bottom: AppDimensions.spacingSm,
+                      top: AppDimensions.space4,
+                      bottom: AppDimensions.space4,
                       end: AppDimensions.spacingSm,
                     ),
                     child: Semantics(

@@ -329,60 +329,67 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           button: true,
           child: InkWell(
             onTap: () => _showSubstitutionSheet(context, parsed.name),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.space12,
+            child: ConstrainedBox(
+              // BUT-2194: a row is a control (tap), so it is at least 48 dp tall
+              // (tokens.json touchTarget).
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 70,
-                    child: Text(
-                      parsed.unit.isNotEmpty
-                          ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                          : parsed.quantity > 0
-                          ? _formatQuantity(parsed.quantity)
-                          : '',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.end,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXl),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        if (isAllergen)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                              end: AppDimensions.spacingXs,
-                            ),
-                            child: ButleryIcon(
-                              ButleryIcons.triangleAlert,
-                              size: AppDimensions.iconSizeS,
-                              color: cs.error,
-                            ),
-                          ),
-                        Expanded(
-                          child: Text(
-                            parsed.name,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: isAllergen ? cs.error : cs.onSurface,
-                            ),
-                          ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.space12,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 70,
+                      child: Text(
+                        parsed.unit.isNotEmpty
+                            ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                            : parsed.quantity > 0
+                            ? _formatQuantity(parsed.quantity)
+                            : '',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: cs.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
+                        textAlign: TextAlign.end,
+                      ),
                     ),
-                  ),
-                  ButleryIcon(
-                    ButleryIcons.swapHorizontal,
-                    size: AppDimensions.iconSizeS,
-                    color: AppModeColors.textDisabled(cs.brightness),
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.spacingXl),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          if (isAllergen)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                end: AppDimensions.spacingXs,
+                              ),
+                              child: ButleryIcon(
+                                ButleryIcons.triangleAlert,
+                                size: AppDimensions.iconSizeS,
+                                color: cs.error,
+                              ),
+                            ),
+                          Expanded(
+                            child: Text(
+                              parsed.name,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: isAllergen ? cs.error : cs.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ButleryIcon(
+                      ButleryIcons.swapHorizontal,
+                      size: AppDimensions.iconSizeS,
+                      color: AppModeColors.textDisabled(cs.brightness),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

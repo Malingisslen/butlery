@@ -36,38 +36,8 @@ const Map<String, String> knownA11yFindings = {
   'inköpslista::DEFAULT::dark::360::2.0::ELLIPSIS': 'BUT-2193',
   'inköpslista::DEFAULT::dark::412::1.5::ELLIPSIS': 'BUT-2193',
   'inköpslista::DEFAULT::dark::412::2.0::ELLIPSIS': 'BUT-2193',
-  'matlagningsläge::DEFAULT::light::320::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::320::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::360::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::360::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::412::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::light::412::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::320::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::320::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::360::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::360::1.5::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::412::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::DEFAULT::dark::412::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::320::1.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::320::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::320::2.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-  'receptdetalj::DEFAULT::light::360::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::360::2.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::412::1.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::412::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::light::412::2.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::320::1.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::320::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::320::2.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::360::1.0::TAP_TARGET': 'BUT-2194',
   'receptdetalj::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-  'receptdetalj::DEFAULT::dark::360::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::360::2.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::412::1.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::412::1.5::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::DEFAULT::dark::412::2.0::TAP_TARGET': 'BUT-2194',
   'receptlista-sök::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptlista-sök::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'veckogenerering::DEFAULT::light::320::1.0::ELLIPSIS': 'BUT-2193',
@@ -104,10 +74,6 @@ const Map<String, String> knownA11yFindings = {
   'veckomeny::DEFAULT::dark::360::2.0::ELLIPSIS': 'BUT-2193',
   'veckomeny::DEFAULT::dark::412::1.5::ELLIPSIS': 'BUT-2193',
   'veckomeny::DEFAULT::dark::412::2.0::ELLIPSIS': 'BUT-2193',
-  'matlagningsläge::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
-  'matlagningsläge::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::OFFLINE::light::360::1.0::TAP_TARGET': 'BUT-2194',
-  'receptdetalj::OFFLINE::dark::360::1.0::TAP_TARGET': 'BUT-2194',
 };
 
 /// TEXT_CONTRAST findings that only the Linux test host shows (CI, views
@@ -149,4 +115,4 @@ Map<String, String> knownA11yFindingsOnThisHost() => {
 
 /// The most entries the three lists may hold together. Lower it when an
 /// entry goes.
-const int knownA11yFindingsCeiling = 100;
+const int knownA11yFindingsCeiling = 66;

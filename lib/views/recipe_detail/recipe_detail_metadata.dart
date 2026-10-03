@@ -253,7 +253,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               vertical: AppDimensions.badgePaddingY,
             ),
             minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            // BUT-2194: the chip stays small, its tap area is padded to 48 dp
+            // (tokens.json touchTarget).
+            tapTargetSize: MaterialTapTargetSize.padded,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
             ),
@@ -287,7 +289,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               vertical: AppDimensions.badgePaddingY,
             ),
             minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            // BUT-2194: the chip stays small, its tap area is padded to 48 dp
+            // (tokens.json touchTarget).
+            tapTargetSize: MaterialTapTargetSize.padded,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
             ),
