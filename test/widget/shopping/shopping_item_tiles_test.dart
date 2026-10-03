@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -128,6 +129,46 @@ void main() {
         expect(find.text(itemWithNote.displayText), findsOneWidget);
         expect(find.text(itemWithNote.note!), findsOneWidget);
       });
+
+      // BUT-2193 (Malin, 2026-10-03): a row may cut a long note at the
+      // normal text size, and wraps it when the text is scaled up.
+      for (final (scale, wraps) in [(1.0, false), (2.0, true)]) {
+        testWidgets('a long note at ${scale}x ${wraps ? 'wraps' : 'is cut'}', (
+          WidgetTester tester,
+        ) async {
+          const note =
+              'Ekologiska om möjligt, annars de från gården vid vägen ut mot sjön';
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: MediaQuery(
+                data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+                child: SizedBox(
+                  width: 360,
+                  child: ShoppingItemTile(
+                    item: itemWithNote.copyWith(note: note),
+                    isCompleted: false,
+                    onItemTap: (_) {},
+                    onEditItem: (_) {},
+                    onDeleteItem: (_) {},
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final text = tester.widget<Text>(find.text(note));
+          expect(text.maxLines, wraps ? isNull : 1);
+          final lineHeight = tester
+              .renderObject<RenderParagraph>(find.text(note))
+              .preferredLineHeight;
+          final height = tester.getSize(find.text(note)).height;
+          expect(
+            height,
+            wraps ? greaterThan(lineHeight * 1.5) : lessThan(lineHeight * 1.5),
+          );
+        });
+      }
     });
 
     group('buildItemTile - Priority Indicators', () {

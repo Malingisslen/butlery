@@ -319,10 +319,13 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
   }
 
   Widget _buildItemDetails(ColorScheme cs) {
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // BUT-2193 (Malin, 2026-10-03): a row may cut a long name at the
+          // normal text size.
           Text(
             widget.item.displayText,
             style: AppTextStyles.contentTitle.copyWith(
@@ -331,8 +334,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                   ? TextDecoration.lineThrough
                   : TextDecoration.none,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            maxLines: largeText ? null : 2,
+            overflow: largeText ? null : TextOverflow.ellipsis,
           ),
           if (widget.item.note?.isNotEmpty == true) ...[
             const SizedBox(height: AppDimensions.spacingXs),
@@ -344,8 +347,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                     ? TextDecoration.lineThrough
                     : TextDecoration.none,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: largeText ? null : 1,
+              overflow: largeText ? null : TextOverflow.ellipsis,
             ),
           ],
         ],

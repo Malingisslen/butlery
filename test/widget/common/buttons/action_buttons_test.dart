@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -7,6 +8,8 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+
+const _longLabel = 'This is a very long button label that wraps';
 
 void main() {
   group('ActionButtons', () {
@@ -502,33 +505,49 @@ void main() {
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('should handle very long labels with ellipsis', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: SizedBox(
-              width: 150,
-              child: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label:
-                      'This is a very long button label that should be truncated',
-                  onPressed: () {},
-                ),
-              ),
+      // BUT-2193: a button never cuts its label (plattformsmatris.md:
+      // ellipsis is forbidden in buttons); a long one wraps.
+      // actionButton and textButton each build their own label.
+      for (final (name, build) in <(String, Widget Function(BuildContext))>[
+        (
+          'actionButton',
+          (context) => ActionButtons.actionButton(
+            context,
+            label: _longLabel,
+            onPressed: () {},
+          ),
+        ),
+        (
+          'textButton',
+          (context) => ActionButtons.textButton(
+            context,
+            label: _longLabel,
+            onPressed: () {},
+          ),
+        ),
+      ]) {
+        testWidgets('$name: a very long label wraps instead of being cut', (
+          tester,
+        ) async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: SizedBox(width: 150, child: Builder(builder: build)),
             ),
-          ),
-        );
+          );
 
-        final text = tester.widget<Text>(
-          find.text(
-            'This is a very long button label that should be truncated',
-          ),
-        );
-        expect(text.overflow, equals(TextOverflow.ellipsis));
-        expect(text.maxLines, equals(1));
-      });
+          final label = find.text(_longLabel);
+          final text = tester.widget<Text>(label);
+          expect(text.overflow, isNull);
+          expect(text.maxLines, isNull);
+          expect(tester.takeException(), isNull);
+          // More than one line: the label really wrapped in 150 dp.
+          final paragraph = tester.renderObject<RenderParagraph>(label);
+          expect(
+            tester.getSize(label).height,
+            greaterThan(paragraph.preferredLineHeight * 1.5),
+          );
+        });
+      }
 
       testWidgets('should not show icon when loading', (tester) async {
         await tester.pumpWidget(

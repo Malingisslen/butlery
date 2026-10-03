@@ -29,6 +29,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+
 import 'known_a11y_findings.dart';
 import 'state_harness.dart';
 import 'state_hosts.dart';
@@ -74,21 +76,28 @@ bool _pageScrollsSideways(WidgetTester tester) {
   return false;
 }
 
-/// Button labels cut to an ellipsis: a truncated paragraph inside a button.
-List<String> _ellipsisedButtons() {
+/// Labels cut to an ellipsis: a truncated paragraph inside a button or an
+/// InkWell. BUT-2193 (Malin, 2026-10-03): a shopping item row and the list
+/// name in the list picker may cut a long name at the normal text size, never
+/// at a larger one.
+List<String> _ellipsisedButtons(double scale) {
   final out = <String>[];
   for (final e in onstageElements()) {
     final r = e is RenderObjectElement ? e.renderObject : null;
     if (r is! RenderParagraph || r.overflow != TextOverflow.ellipsis) continue;
     if (!r.hasSize || !r.didExceedMaxLines) continue;
     var inButton = false;
+    var inListRow = false;
     e.visitAncestorElements((a) {
+      if (a.widget is ShoppingItemTile || a.widget is DropdownMenuItem) {
+        inListRow = true;
+      }
       if (a.widget is ButtonStyleButton || a.widget is InkWell) {
         inButton = true;
-        return false;
       }
       return true;
     });
+    if (inListRow && scale <= 1) continue;
     if (inButton) out.add(textSample(r.text.toPlainText()));
   }
   return out;
@@ -168,7 +177,7 @@ void main() {
           const Violation('H_SCROLL', 'the page scrolls sideways'),
         );
       }
-      final cut = _ellipsisedButtons();
+      final cut = _ellipsisedButtons(scale);
       if (cut.isNotEmpty) {
         violations.add(Violation('ELLIPSIS', cut.join(', ')));
       }
