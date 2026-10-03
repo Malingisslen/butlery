@@ -133,7 +133,9 @@ class _LabelValueTable extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             child: Text(
               context.l10n.adminMetricNoData,
-              style: AppTextStyles.bodyMedium.copyWith(color: cs.outline),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           )
         else
@@ -199,7 +201,9 @@ class _MatrixTable extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             child: Text(
               context.l10n.adminMetricNoData,
-              style: AppTextStyles.bodyMedium.copyWith(color: cs.outline),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           )
         else

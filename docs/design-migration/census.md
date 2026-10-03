@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 66 known failures and 2 residue lists are not empty
-- Known failures: 66 (a11y 12, contrast 5, interaction_checks 12, interactions 6, transitions 31)
+- **Migration complete:** NO: 63 known failures and 2 residue lists are not empty
+- Known failures: 63 (a11y 12, contrast 5, interaction_checks 10, interactions 5, transitions 31)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 21 registered in Linear
+- Tickets: 20 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 2
   - `test/architecture/icon_census_test.dart _residue: 393`
@@ -65,7 +65,7 @@ States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run i
 
 ## Required control states
 
-Required: 33; MISSING 1, PARTIAL 5, TESTED 27. Unspecified in block 288 (not tested): 33; not required: 4. Known check findings: 12.
+Required: 33; MISSING 1, PARTIAL 4, TESTED 28. Unspecified in block 288 (not tested): 33; not required: 4. Known check findings: 10.
 
 | Control state | Status | Ticket |
 | --- | --- | --- |
@@ -73,7 +73,6 @@ Required: 33; MISSING 1, PARTIAL 5, TESTED 27. Unspecified in block 288 (not tes
 | `CSR::ROLE::link::DEFAULT` | PARTIAL | BUT-2177 |
 | `CSR::ROLE::link::FOCUSED` | MISSING | BUT-2177 |
 | `CSR::ROLE::radio::FOCUSED` | PARTIAL | BUT-2148 |
-| `CSR::ROLE::searchbox::DISABLED` | PARTIAL | BUT-2178 |
 | `CSR::ROLE::switch::FOCUSED` | PARTIAL | BUT-2148 |
 
 ## Contrast pairs
@@ -133,7 +132,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2175 | transitions 2 |  |
 | BUT-2176 | interaction_checks 2, interactions 1 |  |
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
-| BUT-2178 | interaction_checks 2, interactions 1 |  |
 | BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
 | BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 

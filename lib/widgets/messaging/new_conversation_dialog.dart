@@ -250,7 +250,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               context.l10n.conversationAddFriendsFirst,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.outline,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],

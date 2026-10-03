@@ -70,16 +70,6 @@ const _switchFocused = KnownInteractionFinding(
       '(butlery_control_focus_test.dart).',
 );
 
-const _searchDisabled = KnownInteractionFinding(
-  checks: {'contrast'},
-  ticket: 'BUT-2178',
-  reason:
-      'The disabled search box hint reads 2.98:1 in light (#7D897C on '
-      'surface.raised #E6EAD9) and 2.57:1 in dark (paper at 35 % on '
-      '#2F4437), under the 3:1 disabled floor (tokens.json contrastPolicy). '
-      'On a raised surface the onRaised variant is the one measured for it.',
-);
-
 /// Keyed by `CSR::ROLE::<role>::<STATE> (light|dark)`.
 const Map<String, KnownInteractionFinding> knownInteractionFindings = {
   'CSR::ROLE::combobox::EXPANDED (light)': _comboboxExpanded,
@@ -92,6 +82,4 @@ const Map<String, KnownInteractionFinding> knownInteractionFindings = {
   'CSR::ROLE::radio::FOCUSED (dark)': _radioFocused,
   'CSR::ROLE::switch::FOCUSED (light)': _switchFocused,
   'CSR::ROLE::switch::FOCUSED (dark)': _switchFocused,
-  'CSR::ROLE::searchbox::DISABLED (light)': _searchDisabled,
-  'CSR::ROLE::searchbox::DISABLED (dark)': _searchDisabled,
 };

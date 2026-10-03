@@ -117,7 +117,7 @@ class MessageTimestampWidget extends StatelessWidget {
       child: Text(
         MessageTimeFormatter.format(timestamp),
         style: AppTextStyles.textXs.copyWith(
-          color: cs.outline,
+          color: cs.onSurfaceVariant,
         ),
       ),
     );

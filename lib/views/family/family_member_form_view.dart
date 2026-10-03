@@ -299,7 +299,9 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         child: Text(
                           ageBandLabel(l10n, band),
                           style: AppTextStyles.captionText.copyWith(
-                            color: _band == band ? cs.onPrimary : cs.outline,
+                            color: _band == band
+                                ? cs.onPrimary
+                                : cs.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -315,7 +317,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           child: Text(
             l10n.familyAgeBandHint,
             style: AppTextStyles.captionText.copyWith(
-              color: cs.outline,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -340,6 +342,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     String badge,
     Color badgeColor, {
     Color? titleColor,
+    Color? badgeTextColor,
   }) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -352,7 +355,9 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         decoration: BoxDecoration(border: Border.all(color: badgeColor)),
         child: Text(
           badge,
-          style: AppTextStyles.captionText.copyWith(color: badgeColor),
+          style: AppTextStyles.captionText.copyWith(
+            color: badgeTextColor ?? badgeColor,
+          ),
         ),
       ),
     ],
@@ -418,6 +423,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             l10n.familyOptionalBadge,
             cs.outline,
             titleColor: cs.secondary,
+            badgeTextColor: cs.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.space4),
           Text(
@@ -503,7 +509,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? cs.onSurface : cs.outline,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -534,6 +540,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             l10n.familyOptionalBadge,
             cs.outline,
             titleColor: cs.secondary,
+            badgeTextColor: cs.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.space4),
           Text(
@@ -587,7 +594,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? cs.onSurface : cs.outline,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
