@@ -376,11 +376,7 @@ class OsPermissionRationaleDialog extends StatelessWidget {
 /// Colours, both modes:
 /// - Card: slot 835, #F5F4ED light = cs.surface, #24382C dark = cs.primary.
 /// - Title and icon: #24382C light / #F5F4ED dark = cs.onSurface.
-/// - Body: slot 833 = text.bodyMuted, #37453A light / #C9D3C4 dark
-///   (tokens.json:174-177). The theme has no bodyMuted member yet, so this
-///   is a stand-in: AppModeColors.textBody, right in light mode, #F5F4ED in
-///   dark mode where the drawing has #C9D3C4. Open until D1 delivers the
-///   member.
+/// - Body: slot 833 = text.bodyMuted, #37453A light / #C9D3C4 dark.
 /// - Consequence line: slot 702 = cs.onSurfaceVariant.
 /// - Buttons: the shared outlined and hero styles (tokens.json:137-144).
 class _OsPermissionRationaleDialog extends StatelessWidget {
@@ -448,7 +444,7 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
             Text(
               body,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppModeColors.textBody(cs.brightness),
+                color: AppModeColors.textBodyMuted(cs.brightness),
               ),
             ),
             if (consequence != null) ...[

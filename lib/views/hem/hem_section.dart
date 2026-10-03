@@ -30,8 +30,7 @@
 //     --r04slot-620, #627061 light and #C9D3C4 dark. #C9D3C4 is
 //     text.bodyMuted dark (tokens.json:174-177), but text.bodyMuted light is
 //     #37453A, so it is built as text.secondary (onSurfaceVariant, #5B6959 /
-//     #A9B2A0, tokens.json). The dark value needs the same missing
-//     member (D1) as the rail's.
+//     #A9B2A0, tokens.json).
 //   - The #hemladdar skeleton and the #hemtom allergy note are drawn in
 //     --r04slot-836 / -832, #E6EAD9 light and #24382C dark. No token has
 //     that pair; they are built as surface.raised (primaryContainer, #E6EAD9

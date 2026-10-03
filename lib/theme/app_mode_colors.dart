@@ -42,6 +42,11 @@ abstract final class AppModeColors {
   static Color textBody(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textOnCream : AppColors.textOnCream;
 
+  /// semantic text.bodyMuted: #37453A light, #C9D3C4 dark.
+  static Color textBodyMuted(Brightness brightness) => _isDark(brightness)
+      ? AppColorsDark.textBodyMuted
+      : AppColors.textBodyMuted;
+
   /// semantic focusRing: #24382C light, #F5F4ED dark (tokens.json:155-160).
   /// Never saffron (Grafisk manual v6:209).
   static Color focusRing(Brightness brightness) =>

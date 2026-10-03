@@ -271,6 +271,25 @@ void main() {
     }
   });
 
+  test('AppModeColors.textBodyMuted picks the generated text.bodyMuted', () {
+    expect(
+      AppModeColors.textBodyMuted(Brightness.light),
+      AppColors.textBodyMuted,
+    );
+    expect(
+      AppModeColors.textBodyMuted(Brightness.dark),
+      AppColorsDark.textBodyMuted,
+    );
+    expect(
+      AppModeColors.textBodyMuted(Brightness.light),
+      const Color(0xFF37453A),
+    );
+    expect(
+      AppModeColors.textBodyMuted(Brightness.dark),
+      const Color(0xFFC9D3C4),
+    );
+  });
+
   test('app_mode_colors.dart holds no colour literal', () {
     final source = File('lib/theme/app_mode_colors.dart').readAsStringSync();
     expect(RegExp(r'Color\(0x').hasMatch(source), isFalse);

@@ -63,52 +63,54 @@ void main() {
 
   group('ImageFailedPlate', () {
     for (final brightness in Brightness.values) {
-      testWidgets('${brightness.name}: surface.raised, glyph and second line '
-          'text.secondary.onRaised, first line text.body (bodyMuted not '
-          'delivered yet), caption 12/400, no button', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          _app(
-            const Scaffold(body: Center(child: ImageFailedPlate())),
-            brightness,
-          ),
-        );
+      testWidgets(
+        '${brightness.name}: surface.raised, glyph and second line '
+        'text.secondary.onRaised, first line text.bodyMuted, caption 12/400, no button',
+        (
+          tester,
+        ) async {
+          await tester.pumpWidget(
+            _app(
+              const Scaffold(body: Center(child: ImageFailedPlate())),
+              brightness,
+            ),
+          );
 
-        final theme = Theme.of(tester.element(find.byType(ImageFailedPlate)));
-        final box = tester.widget<ColoredBox>(
-          find.descendant(
-            of: find.byType(ImageFailedPlate),
-            matching: find.byType(ColoredBox),
-          ),
-        );
-        // surface.raised: #E6EAD9 light, #2F4437 dark.
-        expect(box.color, theme.colorScheme.surfaceContainerHighest);
-        expect(
-          box.color,
-          brightness == Brightness.dark
-              ? const Color(0xFF2F4437)
-              : const Color(0xFFE6EAD9),
-        );
+          final theme = Theme.of(tester.element(find.byType(ImageFailedPlate)));
+          final box = tester.widget<ColoredBox>(
+            find.descendant(
+              of: find.byType(ImageFailedPlate),
+              matching: find.byType(ColoredBox),
+            ),
+          );
+          // surface.raised: #E6EAD9 light, #2F4437 dark.
+          expect(box.color, theme.colorScheme.surfaceContainerHighest);
+          expect(
+            box.color,
+            brightness == Brightness.dark
+                ? const Color(0xFF2F4437)
+                : const Color(0xFFE6EAD9),
+          );
 
-        final secondary = AppModeColors.textSecondaryOnRaised(brightness);
-        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.image));
-        expect(icon.color, secondary);
+          final secondary = AppModeColors.textSecondaryOnRaised(brightness);
+          final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.image));
+          expect(icon.color, secondary);
 
-        final first = tester.widget<Text>(find.text(sv.imageCouldNotBeShown));
-        expect(first.style?.color, AppModeColors.textBody(brightness));
-        // Drawn 12.5 px regular; caption 12/400 is the nearest role.
-        expect(first.style?.fontSize, 12);
-        expect(first.style?.fontWeight, FontWeight.w400);
-        final second = tester.widget<Text>(
-          find.text(sv.imageRetriesWhenOnline),
-        );
-        expect(second.style?.color, secondary);
+          final first = tester.widget<Text>(find.text(sv.imageCouldNotBeShown));
+          expect(first.style?.color, AppModeColors.textBodyMuted(brightness));
+          // Drawn 12.5 px regular; caption 12/400 is the nearest role.
+          expect(first.style?.fontSize, 12);
+          expect(first.style?.fontWeight, FontWeight.w400);
+          final second = tester.widget<Text>(
+            find.text(sv.imageRetriesWhenOnline),
+          );
+          expect(second.style?.color, secondary);
 
-        // The drawing offers no button, and the old faded icon is gone.
-        expect(find.byType(ButtonStyleButton), findsNothing);
-        expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
-      });
+          // The drawing offers no button, and the old faded icon is gone.
+          expect(find.byType(ButtonStyleButton), findsNothing);
+          expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
+        },
+      );
     }
 
     testWidgets('without a pending retry the plate promises none', (

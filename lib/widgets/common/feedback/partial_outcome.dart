@@ -25,10 +25,6 @@
 /// Interpretations, recorded here so the reader of the code sees them:
 /// - The title uses the `label` role (14/600). The delivery has no 14/700
 ///   role yet; package 2 made the same fallback for the subpage title (D2).
-/// - The body text is `text.primary` (onSurface). The drawing uses
-///   text.bodyMuted (#37453A / #C9D3C4), which the delivered theme does not
-///   expose to widgets. text.primary passes on surface.raised in both modes
-///   (#24382C on #E6EAD9, #F5F4ED on #2F4437), so nothing gets less legible.
 ///
 /// ## Public API (stable; P5-T4 reads it in phase B)
 ///
@@ -57,6 +53,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -182,7 +179,9 @@ class PartialOutcome extends StatelessWidget {
                       const SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         message!,
-                        style: AppTextStyles.labelMedium.copyWith(color: text),
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: AppModeColors.textBodyMuted(cs.brightness),
+                        ),
                       ),
                     ],
                     if (child != null) ...[
