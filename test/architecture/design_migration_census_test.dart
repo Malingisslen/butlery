@@ -145,9 +145,13 @@ void main() {
       'NOT_YET', () {
     const file = 'test/views/design_states/known_state_findings.dart';
     final source = CensusSource('.').read(file)!;
+    // Adds one entry rather than renaming one, so the case holds while the
+    // list is empty too.
     final unregistered = source.replaceFirst(
-      RegExp(r"KnownFinding\(\s*'BUT-\d+'"),
-      "KnownFinding('PROPOSED-1'",
+      'knownStateFindings = {',
+      'knownStateFindings = {\n'
+          "  'skafferi::OFFLINE::light::NO_OFFLINE_BANNER': "
+          "KnownFinding('PROPOSED-1', 'test'),",
     );
     expect(unregistered, isNot(source));
     final v =
