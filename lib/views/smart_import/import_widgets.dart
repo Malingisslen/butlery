@@ -101,6 +101,8 @@ class ImportInputSection extends StatelessWidget {
         ),
         filled: true,
         fillColor: theme.colorScheme.surfaceContainerLowest,
+        // A field on surface.base: hover takes surface.raised (BUT-2205).
+        hoverColor: theme.colorScheme.surfaceContainerHighest,
         contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(

@@ -20,6 +20,7 @@ import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 ///
@@ -1157,56 +1158,59 @@ class RecipeCard extends StatelessWidget {
   Widget _buildContextMenuButton(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return PopupMenuButton<String>(
-      icon: ButleryIcon(
-        ButleryIcons.moreVertical,
-        color: cs.onSurfaceVariant,
+    return PressFill(
+      surface: PressSurface.raised,
+      child: PopupMenuButton<String>(
+        icon: ButleryIcon(
+          ButleryIcons.moreVertical,
+          color: cs.onSurfaceVariant,
+        ),
+        // Ensure minimum touch target size for accessibility
+        constraints: const BoxConstraints(
+          minWidth: 48,
+          minHeight: 48,
+        ),
+        onSelected: (value) {
+          // Handle context menu actions
+          switch (value) {
+            case 'edit':
+              // Handle edit
+              break;
+            case 'share':
+              // Handle share
+              break;
+            case 'delete':
+              // Handle delete
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          ButleryMenuItem(
+            value: 'edit',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.pencil),
+              title: Text(context.l10n.commonEdit),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          ButleryMenuItem(
+            value: 'share',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.share2),
+              title: Text(context.l10n.commonShare),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          ButleryMenuItem(
+            value: 'delete',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.trash2),
+              title: Text(context.l10n.commonDelete),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ],
       ),
-      // Ensure minimum touch target size for accessibility
-      constraints: const BoxConstraints(
-        minWidth: 48,
-        minHeight: 48,
-      ),
-      onSelected: (value) {
-        // Handle context menu actions
-        switch (value) {
-          case 'edit':
-            // Handle edit
-            break;
-          case 'share':
-            // Handle share
-            break;
-          case 'delete':
-            // Handle delete
-            break;
-        }
-      },
-      itemBuilder: (context) => [
-        ButleryMenuItem(
-          value: 'edit',
-          child: ListTile(
-            leading: const ButleryIcon(ButleryIcons.pencil),
-            title: Text(context.l10n.commonEdit),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        ButleryMenuItem(
-          value: 'share',
-          child: ListTile(
-            leading: const ButleryIcon(ButleryIcons.share2),
-            title: Text(context.l10n.commonShare),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        ButleryMenuItem(
-          value: 'delete',
-          child: ListTile(
-            leading: const ButleryIcon(ButleryIcons.trash2),
-            title: Text(context.l10n.commonDelete),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ],
     );
   }
 }

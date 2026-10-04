@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 // Local
 import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Builds the header and app bar for friend requests view
 class FriendRequestsHeaderBuilder {
@@ -76,49 +77,54 @@ class FriendRequestsHeaderBuilder {
       actions: [
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
-          PopupMenuButton<String>(
-            enabled: !batchRunning,
-            // Paper on the ink bar (the bar's icon theme).
-            icon: const ButleryIcon(ButleryIcons.listCheck),
-            onSelected: (value) {
-              if (value == 'accept_all') {
-                onBatchAccept();
-              } else if (value == 'reject_all') {
-                onBatchReject();
-              }
-            },
-            itemBuilder: (context) => [
-              ButleryMenuItem(
-                value: 'accept_all',
-                child: Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.circleCheck,
-                      color: context.modeColors.success,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      context.l10n.socialAcceptCount(selectedIncoming.length),
-                    ),
-                  ],
+          PressFill(
+            surface: PressSurface.base,
+            child: PopupMenuButton<String>(
+              enabled: !batchRunning,
+              // Paper on the ink bar (the bar's icon theme).
+              icon: const ButleryIcon(ButleryIcons.listCheck),
+              onSelected: (value) {
+                if (value == 'accept_all') {
+                  onBatchAccept();
+                } else if (value == 'reject_all') {
+                  onBatchReject();
+                }
+              },
+              itemBuilder: (context) => [
+                ButleryMenuItem(
+                  value: 'accept_all',
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.circleCheck,
+                        color: context.modeColors.success,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        context.l10n.socialAcceptCount(selectedIncoming.length),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              ButleryMenuItem(
-                value: 'reject_all',
-                child: Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.x,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      context.l10n.socialDeclineCount(selectedIncoming.length),
-                    ),
-                  ],
+                ButleryMenuItem(
+                  value: 'reject_all',
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.x,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        context.l10n.socialDeclineCount(
+                          selectedIncoming.length,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(

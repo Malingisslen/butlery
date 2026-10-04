@@ -19,6 +19,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// A single tag list item with icon, usage stats, and navigation.
 class PersonalTagTile extends StatelessWidget {
@@ -377,43 +378,46 @@ class PersonalTagGroupSection extends StatelessWidget {
       title: group.name,
       tags: tags,
       viewModel: viewModel,
-      trailing: PopupMenuButton<String>(
-        icon: const ButleryIcon(
-          ButleryIcons.moreVertical,
-          size: AppDimensions.iconSizeM,
+      trailing: PressFill(
+        surface: PressSurface.raised,
+        child: PopupMenuButton<String>(
+          icon: const ButleryIcon(
+            ButleryIcons.moreVertical,
+            size: AppDimensions.iconSizeM,
+          ),
+          onSelected: (value) {
+            // Defer to next frame so PopupMenu fully dismisses before dialog opens
+            // Fixes BUG-033 (RenderBox assertion during popup dismiss animation)
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+              PersonalTagDialogs.handleGroupAction(context, value, group);
+            });
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'rename',
+              child: ListTile(
+                leading: const ButleryIcon(ButleryIcons.pencil),
+                title: Text(context.l10n.commonRename),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: ListTile(
+                leading: ButleryIcon(
+                  ButleryIcons.trash2,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  context.l10n.personalTagDeleteGroup,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
         ),
-        onSelected: (value) {
-          // Defer to next frame so PopupMenu fully dismisses before dialog opens
-          // Fixes BUG-033 (RenderBox assertion during popup dismiss animation)
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!context.mounted) return;
-            PersonalTagDialogs.handleGroupAction(context, value, group);
-          });
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            value: 'rename',
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.pencil),
-              title: Text(context.l10n.commonRename),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: 'delete',
-            child: ListTile(
-              leading: ButleryIcon(
-                ButleryIcons.trash2,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              title: Text(
-                context.l10n.personalTagDeleteGroup,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
       ),
     );
   }

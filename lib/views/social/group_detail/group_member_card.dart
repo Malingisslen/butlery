@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// GroupMemberCard - Member card component
 /// Displays individual group member information with actions.
@@ -137,60 +138,63 @@ class GroupMemberCard {
           ],
         ),
         trailing: showMenu && !isSelectionMode
-            ? PopupMenuButton<String>(
-                icon: const ButleryIcon(ButleryIcons.moreVertical),
-                onSelected: (value) async {
-                  if (value == 'remove') {
-                    final success = await GroupDetailActions.removeMember(
-                      context,
-                      member,
-                      group,
-                    );
-                    if (success) {
-                      onRemoved();
+            ? PressFill(
+                surface: PressSurface.base,
+                child: PopupMenuButton<String>(
+                  icon: const ButleryIcon(ButleryIcons.moreVertical),
+                  onSelected: (value) async {
+                    if (value == 'remove') {
+                      final success = await GroupDetailActions.removeMember(
+                        context,
+                        member,
+                        group,
+                      );
+                      if (success) {
+                        onRemoved();
+                      }
+                    } else if (value == 'report') {
+                      await GroupDetailActions.reportMember(context, member);
                     }
-                  } else if (value == 'report') {
-                    await GroupDetailActions.reportMember(context, member);
-                  }
-                },
-                itemBuilder: (context) => [
-                  if (canRemoveMember)
-                    ButleryMenuItem(
-                      value: 'remove',
-                      child: Row(
-                        children: [
-                          ButleryIcon(
-                            ButleryIcons.userMinus,
-                            size: AppDimensions.iconSizeM,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          const SizedBox(width: AppDimensions.spacingXs),
-                          Text(
-                            context.l10n.groupRemoveFromGroup,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                          ),
-                        ],
+                  },
+                  itemBuilder: (context) => [
+                    if (canRemoveMember)
+                      ButleryMenuItem(
+                        value: 'remove',
+                        child: Row(
+                          children: [
+                            ButleryIcon(
+                              ButleryIcons.userMinus,
+                              size: AppDimensions.iconSizeM,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            const SizedBox(width: AppDimensions.spacingXs),
+                            Text(
+                              context.l10n.groupRemoveFromGroup,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  if (canReportMember)
-                    ButleryMenuItem(
-                      value: 'report',
-                      child: Row(
-                        children: [
-                          ButleryIcon(
-                            Icons.flag_outlined,
-                            size: AppDimensions.iconSizeM,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          const SizedBox(width: AppDimensions.spacingXs),
-                          Text(context.l10n.reportContent),
-                        ],
+                    if (canReportMember)
+                      ButleryMenuItem(
+                        value: 'report',
+                        child: Row(
+                          children: [
+                            ButleryIcon(
+                              Icons.flag_outlined,
+                              size: AppDimensions.iconSizeM,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            const SizedBox(width: AppDimensions.spacingXs),
+                            Text(context.l10n.reportContent),
+                          ],
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               )
             : null,
       ),

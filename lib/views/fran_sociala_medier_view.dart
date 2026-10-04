@@ -442,6 +442,8 @@ class _FranSocialaMedierViewContentState
           ),
           filled: true,
           fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
+          // A field on surface.base: hover takes surface.raised (BUT-2205).
+          hoverColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         ),
         keyboardType: TextInputType.multiline,
         maxLines: null,

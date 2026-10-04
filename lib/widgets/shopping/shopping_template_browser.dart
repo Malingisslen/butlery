@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Displays saved shopping list templates for selection or management.
 /// Follows the same pattern as MenuTemplateBrowser.
@@ -177,48 +178,51 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                 ),
               ],
             ),
-            trailing: PopupMenuButton<String>(
-              icon: const ButleryIcon(ButleryIcons.moreVertical),
-              onSelected: (action) {
-                if (action == 'use') {
-                  widget.onTemplateSelected(id);
-                } else if (action == 'delete') {
-                  _deleteTemplate(id, name);
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'use',
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.check,
-                        size: AppDimensions.iconSizeM,
-                        color: cs.onSurface,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingM),
-                      Text(context.l10n.shoppingTemplateUse),
-                    ],
+            trailing: PressFill(
+              surface: PressSurface.base,
+              child: PopupMenuButton<String>(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
+                onSelected: (action) {
+                  if (action == 'use') {
+                    widget.onTemplateSelected(id);
+                  } else if (action == 'delete') {
+                    _deleteTemplate(id, name);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'use',
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.check,
+                          size: AppDimensions.iconSizeM,
+                          color: cs.onSurface,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingM),
+                        Text(context.l10n.shoppingTemplateUse),
+                      ],
+                    ),
                   ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.trash2,
-                        size: AppDimensions.iconSizeM,
-                        color: cs.error,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingM),
-                      Text(
-                        context.l10n.shoppingTemplateDelete,
-                        style: TextStyle(color: cs.error),
-                      ),
-                    ],
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.trash2,
+                          size: AppDimensions.iconSizeM,
+                          color: cs.error,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingM),
+                        Text(
+                          context.l10n.shoppingTemplateDelete,
+                          style: TextStyle(color: cs.error),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

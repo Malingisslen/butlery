@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -63,18 +64,21 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Widget _buildMenuActions(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: const ButleryIcon(ButleryIcons.moreVertical),
-      onSelected: onMenuAction,
-      tooltip: context.l10n.collaborativeMoreActions,
-      itemBuilder: (context) => [
-        if (viewModel.canEdit)
-          _buildPopupMenuItem(
-            value: 'clear_completed',
-            icon: Icons.clear_all,
-            label: context.l10n.collaborativeClearCompleted,
-          ),
-      ],
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        onSelected: onMenuAction,
+        tooltip: context.l10n.collaborativeMoreActions,
+        itemBuilder: (context) => [
+          if (viewModel.canEdit)
+            _buildPopupMenuItem(
+              value: 'clear_completed',
+              icon: Icons.clear_all,
+              label: context.l10n.collaborativeClearCompleted,
+            ),
+        ],
+      ),
     );
   }
 

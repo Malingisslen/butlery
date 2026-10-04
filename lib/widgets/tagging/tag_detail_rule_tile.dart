@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Displays a rule with its status, condition summary, and match count.
 class TagDetailRuleTile extends StatelessWidget {
@@ -86,36 +87,39 @@ class TagDetailRuleTile extends StatelessWidget {
               value: rule.isEnabled,
               onChanged: (_) => onToggleEnabled(rule.isEnabled),
             ),
-            PopupMenuButton<String>(
-              icon: const ButleryIcon(
-                ButleryIcons.moreVertical,
-                size: AppDimensions.iconSizeM,
+            PressFill(
+              surface: PressSurface.raised,
+              child: PopupMenuButton<String>(
+                icon: const ButleryIcon(
+                  ButleryIcons.moreVertical,
+                  size: AppDimensions.iconSizeM,
+                ),
+                onSelected: _handleMenuAction,
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: ListTile(
+                      leading: const ButleryIcon(ButleryIcons.pencil),
+                      title: Text(context.l10n.commonEdit),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: ListTile(
+                      leading: ButleryIcon(
+                        ButleryIcons.trash2,
+                        color: colorScheme.error,
+                      ),
+                      title: Text(
+                        context.l10n.commonDelete,
+                        style: TextStyle(color: colorScheme.error),
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
               ),
-              onSelected: _handleMenuAction,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: ListTile(
-                    leading: const ButleryIcon(ButleryIcons.pencil),
-                    title: Text(context.l10n.commonEdit),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: ListTile(
-                    leading: ButleryIcon(
-                      ButleryIcons.trash2,
-                      color: colorScheme.error,
-                    ),
-                    title: Text(
-                      context.l10n.commonDelete,
-                      style: TextStyle(color: colorScheme.error),
-                    ),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

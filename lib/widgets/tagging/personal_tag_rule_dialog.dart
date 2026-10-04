@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Prefix marking a disabled category-header dropdown item; its value is a
 /// sentinel that is never a real property.
@@ -431,43 +432,46 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildTagSelector() {
-    return DropdownButtonFormField<String>(
-      iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-      iconDisabledColor: AppModeColors.textDisabled(
-        Theme.of(context).brightness,
+    return PressFill(
+      surface: PressSurface.base,
+      child: DropdownButtonFormField<String>(
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        iconDisabledColor: AppModeColors.textDisabled(
+          Theme.of(context).brightness,
+        ),
+        initialValue: _selectedTagId,
+        decoration: InputDecoration(
+          labelText: context.l10n.ruleApplyToTag,
+          border: const OutlineInputBorder(),
+        ),
+        items: widget.availableTags.map((tag) {
+          return DropdownMenuItem(
+            value: tag.id,
+            child: Row(
+              children: [
+                ButleryIcon(
+                  ButleryIcons.tag,
+                  size: AppDimensions.iconSizeS,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(tag.name),
+              ],
+            ),
+          );
+        }).toList(),
+        onChanged: _isSaving
+            ? null
+            : (value) {
+                setState(() => _selectedTagId = value);
+              },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return context.l10n.ruleSelectTag;
+          }
+          return null;
+        },
       ),
-      initialValue: _selectedTagId,
-      decoration: InputDecoration(
-        labelText: context.l10n.ruleApplyToTag,
-        border: const OutlineInputBorder(),
-      ),
-      items: widget.availableTags.map((tag) {
-        return DropdownMenuItem(
-          value: tag.id,
-          child: Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.tag,
-                size: AppDimensions.iconSizeS,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(tag.name),
-            ],
-          ),
-        );
-      }).toList(),
-      onChanged: _isSaving
-          ? null
-          : (value) {
-              setState(() => _selectedTagId = value);
-            },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return context.l10n.ruleSelectTag;
-        }
-        return null;
-      },
     );
   }
 
@@ -704,30 +708,36 @@ class _ConditionRow extends StatelessWidget {
               // Type dropdown
               Expanded(
                 flex: 2,
-                child: DropdownButtonFormField<ConditionType>(
-                  iconEnabledColor: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                  iconDisabledColor: AppModeColors.textDisabled(
-                    Theme.of(context).brightness,
+                child: PressFill(
+                  surface: PressSurface.base,
+                  child: DropdownButtonFormField<ConditionType>(
+                    iconEnabledColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    iconDisabledColor: AppModeColors.textDisabled(
+                      Theme.of(context).brightness,
+                    ),
+                    initialValue: condition.type,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: AppDimensions.paddingSymmetric12x8,
+                      border: OutlineInputBorder(),
+                    ),
+                    items: ConditionType.values.map((type) {
+                      return DropdownMenuItem(
+                        value: type,
+                        child: Text(
+                          type.label,
+                          style: AppTextStyles.formOption,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: enabled
+                        ? (value) {
+                            if (value != null) onTypeChanged(value);
+                          }
+                        : null,
                   ),
-                  initialValue: condition.type,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: AppDimensions.paddingSymmetric12x8,
-                    border: OutlineInputBorder(),
-                  ),
-                  items: ConditionType.values.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type.label, style: AppTextStyles.formOption),
-                    );
-                  }).toList(),
-                  onChanged: enabled
-                      ? (value) {
-                          if (value != null) onTypeChanged(value);
-                        }
-                      : null,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
@@ -781,28 +791,31 @@ class _ConditionRow extends StatelessWidget {
         ? condition.operator
         : validOperators.first;
 
-    return DropdownButtonFormField<ConditionOperator>(
-      iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-      iconDisabledColor: AppModeColors.textDisabled(
-        Theme.of(context).brightness,
+    return PressFill(
+      surface: PressSurface.base,
+      child: DropdownButtonFormField<ConditionOperator>(
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        iconDisabledColor: AppModeColors.textDisabled(
+          Theme.of(context).brightness,
+        ),
+        initialValue: currentOperator,
+        decoration: const InputDecoration(
+          isDense: true,
+          contentPadding: AppDimensions.paddingSymmetric12x8,
+          border: OutlineInputBorder(),
+        ),
+        items: validOperators.map((op) {
+          return DropdownMenuItem(
+            value: op,
+            child: Text(op.label, style: AppTextStyles.formOption),
+          );
+        }).toList(),
+        onChanged: enabled
+            ? (value) {
+                if (value != null) onOperatorChanged(value);
+              }
+            : null,
       ),
-      initialValue: currentOperator,
-      decoration: const InputDecoration(
-        isDense: true,
-        contentPadding: AppDimensions.paddingSymmetric12x8,
-        border: OutlineInputBorder(),
-      ),
-      items: validOperators.map((op) {
-        return DropdownMenuItem(
-          value: op,
-          child: Text(op.label, style: AppTextStyles.formOption),
-        );
-      }).toList(),
-      onChanged: enabled
-          ? (value) {
-              if (value != null) onOperatorChanged(value);
-            }
-          : null,
     );
   }
 
@@ -893,27 +906,30 @@ class _ConditionRow extends StatelessWidget {
         ),
     ];
 
-    return DropdownButtonFormField<String>(
-      iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-      iconDisabledColor: AppModeColors.textDisabled(
-        Theme.of(context).brightness,
-      ),
-      initialValue: dropdownInitialValue(storedValue),
-      decoration: InputDecoration(
-        isDense: true,
-        contentPadding: AppDimensions.paddingAll12,
-        hintText: context.l10n.ruleSelectProperty,
-        border: const OutlineInputBorder(),
-      ),
-      isExpanded: true,
-      items: items,
-      onChanged: enabled
-          ? (value) {
-              if (value != null && !value.startsWith(_kHeaderPrefix)) {
-                onValueChanged(value);
+    return PressFill(
+      surface: PressSurface.base,
+      child: DropdownButtonFormField<String>(
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        iconDisabledColor: AppModeColors.textDisabled(
+          Theme.of(context).brightness,
+        ),
+        initialValue: dropdownInitialValue(storedValue),
+        decoration: InputDecoration(
+          isDense: true,
+          contentPadding: AppDimensions.paddingAll12,
+          hintText: context.l10n.ruleSelectProperty,
+          border: const OutlineInputBorder(),
+        ),
+        isExpanded: true,
+        items: items,
+        onChanged: enabled
+            ? (value) {
+                if (value != null && !value.startsWith(_kHeaderPrefix)) {
+                  onValueChanged(value);
+                }
               }
-            }
-          : null,
+            : null,
+      ),
     );
   }
 }

@@ -26,6 +26,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Sort order for personal tags.
 enum TagSortOrder { byName, byUsage, byRuleCount }
@@ -261,73 +262,79 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   Widget _buildSortMenu(BuildContext context) {
-    return PopupMenuButton<TagSortOrder>(
-      icon: const ButleryIcon(ButleryIcons.arrowUpDown),
-      tooltip: context.l10n.commonSort,
-      onSelected: (order) => setState(() {
-        _sortOrder = order;
-        _invalidateSortCache();
-      }),
-      itemBuilder: (context) => TagSortOrder.values.map((order) {
-        final label = switch (order) {
-          TagSortOrder.byName => context.l10n.personalTagSortByName,
-          TagSortOrder.byUsage => context.l10n.personalTagSortByUsage,
-          TagSortOrder.byRuleCount => context.l10n.personalTagSortByRuleCount,
-        };
-        return PopupMenuItem(
-          value: order,
-          child: Row(
-            children: [
-              if (order == _sortOrder)
-                const ButleryIcon(
-                  ButleryIcons.check,
-                  size: AppDimensions.iconSize18,
-                )
-              else
-                const SizedBox(width: AppDimensions.iconSize18),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(label),
-            ],
-          ),
-        );
-      }).toList(),
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<TagSortOrder>(
+        icon: const ButleryIcon(ButleryIcons.arrowUpDown),
+        tooltip: context.l10n.commonSort,
+        onSelected: (order) => setState(() {
+          _sortOrder = order;
+          _invalidateSortCache();
+        }),
+        itemBuilder: (context) => TagSortOrder.values.map((order) {
+          final label = switch (order) {
+            TagSortOrder.byName => context.l10n.personalTagSortByName,
+            TagSortOrder.byUsage => context.l10n.personalTagSortByUsage,
+            TagSortOrder.byRuleCount => context.l10n.personalTagSortByRuleCount,
+          };
+          return PopupMenuItem(
+            value: order,
+            child: Row(
+              children: [
+                if (order == _sortOrder)
+                  const ButleryIcon(
+                    ButleryIcons.check,
+                    size: AppDimensions.iconSize18,
+                  )
+                else
+                  const SizedBox(width: AppDimensions.iconSize18),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(label),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _buildAddMenu(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: const ButleryIcon(ButleryIcons.plus),
-      tooltip: context.l10n.commonCreate,
-      onSelected: (value) {
-        // Defer to next frame so PopupMenu fully dismisses before dialog opens
-        // Fixes BUG-025 (RenderBox assertion) and BUG-022 (Provider lifecycle)
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!context.mounted) return;
-          if (value == 'tag') {
-            PersonalTagDialogs.showCreateTagDialog(context);
-          } else if (value == 'group') {
-            PersonalTagDialogs.showCreateGroupDialog(context);
-          }
-        });
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'tag',
-          child: ListTile(
-            leading: const ButleryIcon(ButleryIcons.tag),
-            title: Text(context.l10n.personalTagCreateTag),
-            contentPadding: EdgeInsets.zero,
+    return PressFill(
+      surface: PressSurface.raised,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.plus),
+        tooltip: context.l10n.commonCreate,
+        onSelected: (value) {
+          // Defer to next frame so PopupMenu fully dismisses before dialog opens
+          // Fixes BUG-025 (RenderBox assertion) and BUG-022 (Provider lifecycle)
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            if (value == 'tag') {
+              PersonalTagDialogs.showCreateTagDialog(context);
+            } else if (value == 'group') {
+              PersonalTagDialogs.showCreateGroupDialog(context);
+            }
+          });
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'tag',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.tag),
+              title: Text(context.l10n.personalTagCreateTag),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-        ),
-        PopupMenuItem(
-          value: 'group',
-          child: ListTile(
-            leading: const ButleryIcon(ButleryIcons.folder),
-            title: Text(context.l10n.personalTagCreateGroup),
-            contentPadding: EdgeInsets.zero,
+          PopupMenuItem(
+            value: 'group',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.folder),
+              title: Text(context.l10n.personalTagCreateGroup),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

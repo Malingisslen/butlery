@@ -66,6 +66,7 @@ import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 import 'package:butlery/services/shopping/recipe_pantry_check.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -1682,17 +1683,20 @@ class _HeroMenuButton extends StatelessWidget {
       child: SizedBox(
         width: AppDimensions.minTouchTarget,
         height: AppDimensions.minTouchTarget,
-        child: PopupMenuButton<_MenuAction>(
-          padding: EdgeInsets.zero,
-          icon: _PaperRing(
-            child: ButleryIcon(
-              icon,
-              color: cs.primary,
-              size: AppDimensions.iconSizeM,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: PopupMenuButton<_MenuAction>(
+            padding: EdgeInsets.zero,
+            icon: _PaperRing(
+              child: ButleryIcon(
+                icon,
+                color: cs.primary,
+                size: AppDimensions.iconSizeM,
+              ),
             ),
+            itemBuilder: itemBuilder,
+            onSelected: onSelected,
           ),
-          itemBuilder: itemBuilder,
-          onSelected: onSelected,
         ),
       ),
     );

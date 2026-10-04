@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
@@ -84,52 +85,55 @@ class _FriendProfileViewState extends State<FriendProfileView> {
       appBar: ButleryTopBar.undersida(
         title: friend.displayName,
         actions: [
-          PopupMenuButton<String>(
-            icon: const ButleryIcon(ButleryIcons.moreVertical),
-            onSelected: (value) {
-              if (value == 'block') {
-                _blockFriend();
-              } else if (value == 'report') {
-                ReportContentDialog.show(
-                  context: context,
-                  contentType: ContentType.profile,
-                  contentId: friend.uid,
-                  contentOwnerId: friend.uid,
-                );
-              }
-            },
-            itemBuilder: (context) => [
-              // isBlocked, not getFriendshipStatus (BUT-2022): the enum
-              // answers `friends` before `blocked`, which would offer
-              // "Blockera" for someone already blocked.
-              if (!_friendsViewModel.isBlocked(friend.uid))
+          PressFill(
+            surface: PressSurface.base,
+            child: PopupMenuButton<String>(
+              icon: const ButleryIcon(ButleryIcons.moreVertical),
+              onSelected: (value) {
+                if (value == 'block') {
+                  _blockFriend();
+                } else if (value == 'report') {
+                  ReportContentDialog.show(
+                    context: context,
+                    contentType: ContentType.profile,
+                    contentId: friend.uid,
+                    contentOwnerId: friend.uid,
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                // isBlocked, not getFriendshipStatus (BUT-2022): the enum
+                // answers `friends` before `blocked`, which would offer
+                // "Blockera" for someone already blocked.
+                if (!_friendsViewModel.isBlocked(friend.uid))
+                  ButleryMenuItem(
+                    value: 'block',
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.block,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingSm),
+                        Text(context.l10n.socialBlock),
+                      ],
+                    ),
+                  ),
                 ButleryMenuItem(
-                  value: 'block',
+                  value: 'report',
                   child: Row(
                     children: [
                       ButleryIcon(
-                        ButleryIcons.block,
+                        Icons.flag_outlined,
                         color: Theme.of(context).colorScheme.error,
                       ),
                       const SizedBox(width: AppDimensions.spacingSm),
-                      Text(context.l10n.socialBlock),
+                      Text(context.l10n.reportContent),
                     ],
                   ),
                 ),
-              ButleryMenuItem(
-                value: 'report',
-                child: Row(
-                  children: [
-                    ButleryIcon(
-                      Icons.flag_outlined,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(context.l10n.reportContent),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

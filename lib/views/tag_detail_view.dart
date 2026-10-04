@@ -30,6 +30,7 @@ import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Full-screen view for viewing and editing a single personal tag.
 class TagDetailView extends StatelessWidget {
@@ -207,34 +208,39 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           tooltip: context.l10n.commonEdit,
           onPressed: () => _enterEditMode(tag),
         ),
-        PopupMenuButton<String>(
-          icon: const ButleryIcon(ButleryIcons.moreVertical),
-          onSelected: (value) => _handleMenuAction(context, value, tag),
-          itemBuilder: (menuContext) => [
-            PopupMenuItem(
-              value: 'apply_rules',
-              child: ListTile(
-                leading: const ButleryIcon(Icons.play_arrow),
-                title: Text(context.l10n.tagDetailApplyRules),
-                subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.trash2,
-                  color: Theme.of(context).colorScheme.error,
+        PressFill(
+          surface: PressSurface.raised,
+          child: PopupMenuButton<String>(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            onSelected: (value) => _handleMenuAction(context, value, tag),
+            itemBuilder: (menuContext) => [
+              PopupMenuItem(
+                value: 'apply_rules',
+                child: ListTile(
+                  leading: const ButleryIcon(Icons.play_arrow),
+                  title: Text(context.l10n.tagDetailApplyRules),
+                  subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                title: Text(
-                  context.l10n.commonDelete,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                contentPadding: EdgeInsets.zero,
               ),
-            ),
-          ],
+              PopupMenuItem(
+                value: 'delete',
+                child: ListTile(
+                  leading: ButleryIcon(
+                    ButleryIcons.trash2,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    context.l10n.commonDelete,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

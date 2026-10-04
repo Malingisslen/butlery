@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Invitation action widgets.
 class InvitationActions {
@@ -303,72 +304,75 @@ class InvitationActions {
     bool showRemove = true,
     bool showInvite = true,
   }) {
-    return PopupMenuButton<String>(
-      icon: const ButleryIcon(ButleryIcons.moreVertical),
-      onSelected: (action) {
-        switch (action) {
-          case 'view':
-            onView?.call();
-            break;
-          case 'edit':
-            onEdit?.call();
-            break;
-          case 'invite':
-            onInvite?.call();
-            break;
-          case 'remove':
-            onRemove?.call();
-            break;
-        }
-      },
-      itemBuilder: (context) => [
-        if (showView && onView != null)
-          PopupMenuItem(
-            value: 'view',
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.eye),
-              title: Text(context.l10n.invitationView),
-              dense: true,
-            ),
-          ),
-        if (showEdit && onEdit != null)
-          PopupMenuItem(
-            value: 'edit',
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.pencil),
-              title: Text(context.l10n.commonEdit),
-              dense: true,
-            ),
-          ),
-        if (showInvite && onInvite != null)
-          PopupMenuItem(
-            value: 'invite',
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.send),
-              title: Text(context.l10n.invitationSendInvitation),
-              dense: true,
-            ),
-          ),
-        if (showRemove && onRemove != null)
-          PopupMenuItem(
-            value: 'remove',
-            child: Builder(
-              builder: (context) => ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.trash2,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                title: Text(
-                  context.l10n.commonDelete,
-                  style: AppTextStyles.bodyMediumError.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
+    return PressFill(
+      surface: PressSurface.raised,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        onSelected: (action) {
+          switch (action) {
+            case 'view':
+              onView?.call();
+              break;
+            case 'edit':
+              onEdit?.call();
+              break;
+            case 'invite':
+              onInvite?.call();
+              break;
+            case 'remove':
+              onRemove?.call();
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          if (showView && onView != null)
+            PopupMenuItem(
+              value: 'view',
+              child: ListTile(
+                leading: const ButleryIcon(ButleryIcons.eye),
+                title: Text(context.l10n.invitationView),
                 dense: true,
               ),
             ),
-          ),
-      ],
+          if (showEdit && onEdit != null)
+            PopupMenuItem(
+              value: 'edit',
+              child: ListTile(
+                leading: const ButleryIcon(ButleryIcons.pencil),
+                title: Text(context.l10n.commonEdit),
+                dense: true,
+              ),
+            ),
+          if (showInvite && onInvite != null)
+            PopupMenuItem(
+              value: 'invite',
+              child: ListTile(
+                leading: const ButleryIcon(ButleryIcons.send),
+                title: Text(context.l10n.invitationSendInvitation),
+                dense: true,
+              ),
+            ),
+          if (showRemove && onRemove != null)
+            PopupMenuItem(
+              value: 'remove',
+              child: Builder(
+                builder: (context) => ListTile(
+                  leading: ButleryIcon(
+                    ButleryIcons.trash2,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    context.l10n.commonDelete,
+                    style: AppTextStyles.bodyMediumError.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  dense: true,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

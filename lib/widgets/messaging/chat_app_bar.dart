@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Clean chat app bar with conversation info and menu actions
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -66,79 +67,82 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           : null,
       secondaryLineIsLive: false,
       actions: [
-        PopupMenuButton<String>(
-          onSelected: _handleMenuAction,
-          icon: const ButleryIcon(ButleryIcons.moreVertical),
-          itemBuilder: (context) => [
-            ButleryMenuItem(
-              value: 'info',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const ButleryIcon(ButleryIcons.info),
-                  const SizedBox(width: AppDimensions.space4),
-                  Flexible(
-                    child: Text(context.l10n.chatConversationInfo),
-                  ),
-                ],
-              ),
-            ),
-            ButleryMenuItem(
-              value: 'mute',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const ButleryIcon(Icons.notifications_off_outlined),
-                  const SizedBox(width: AppDimensions.space4),
-                  Flexible(
-                    child: Text(context.l10n.chatMute),
-                  ),
-                ],
-              ),
-            ),
-            // The group's weekly menu only exists for a group conversation —
-            // the plan is keyed by the CONVERSATION id (`messaging_service`
-            // writes `groupId: conversation.id`), and a DM has no plan.
-            if (conversation?.groupId != null)
+        PressFill(
+          surface: PressSurface.base,
+          child: PopupMenuButton<String>(
+            onSelected: _handleMenuAction,
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            itemBuilder: (context) => [
               ButleryMenuItem(
-                value: 'weekly_menu',
+                value: 'info',
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const ButleryIcon(ButleryIcons.calendar),
+                    const ButleryIcon(ButleryIcons.info),
                     const SizedBox(width: AppDimensions.space4),
-                    Flexible(child: Text(context.l10n.groupMenuChatAction)),
+                    Flexible(
+                      child: Text(context.l10n.chatConversationInfo),
+                    ),
                   ],
                 ),
               ),
-            ButleryMenuItem(
-              value: 'block',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ButleryIcon(ButleryIcons.block, color: cs.error),
-                  const SizedBox(width: AppDimensions.space4),
-                  Flexible(
-                    child: Text(context.l10n.socialBlock),
-                  ),
-                ],
+              ButleryMenuItem(
+                value: 'mute',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const ButleryIcon(Icons.notifications_off_outlined),
+                    const SizedBox(width: AppDimensions.space4),
+                    Flexible(
+                      child: Text(context.l10n.chatMute),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const PopupMenuDivider(),
-            ButleryMenuItem(
-              value: 'leave',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ButleryIcon(Icons.exit_to_app, color: cs.error),
-                  const SizedBox(width: AppDimensions.space4),
-                  Flexible(
-                    child: Text(context.l10n.chatLeaveConversation),
+              // The group's weekly menu only exists for a group conversation —
+              // the plan is keyed by the CONVERSATION id (`messaging_service`
+              // writes `groupId: conversation.id`), and a DM has no plan.
+              if (conversation?.groupId != null)
+                ButleryMenuItem(
+                  value: 'weekly_menu',
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const ButleryIcon(ButleryIcons.calendar),
+                      const SizedBox(width: AppDimensions.space4),
+                      Flexible(child: Text(context.l10n.groupMenuChatAction)),
+                    ],
                   ),
-                ],
+                ),
+              ButleryMenuItem(
+                value: 'block',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(ButleryIcons.block, color: cs.error),
+                    const SizedBox(width: AppDimensions.space4),
+                    Flexible(
+                      child: Text(context.l10n.socialBlock),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const PopupMenuDivider(),
+              ButleryMenuItem(
+                value: 'leave',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(Icons.exit_to_app, color: cs.error),
+                    const SizedBox(width: AppDimensions.space4),
+                    Flexible(
+                      child: Text(context.l10n.chatLeaveConversation),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

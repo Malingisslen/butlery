@@ -24,6 +24,9 @@ class InputThemes {
     return InputDecorationTheme(
       filled: true,
       fillColor: cs.surfaceContainerHighest,
+      // BUT-2205: a filled field rests on surface.raised, so hover takes the
+      // step on raised.
+      hoverColor: ModeColors.of(cs.brightness).pressedOnRaised,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(

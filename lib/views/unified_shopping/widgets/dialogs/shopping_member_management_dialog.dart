@@ -15,6 +15,7 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Comprehensive member management dialog for collaborative shopping list administration
 class ShoppingMemberManagementDialog extends StatefulWidget {
@@ -586,68 +587,73 @@ class _ShoppingMemberManagementDialogState
               start: nameInset,
               end: AppDimensions.spacingMd,
             ),
-            child: DropdownButton<SharedListPermission>(
-              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(
-                Theme.of(context).brightness,
+            child: PressFill(
+              surface: PressSurface.base,
+              child: DropdownButton<SharedListPermission>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
+                isExpanded: true,
+                value: permission,
+                onChanged: _isLoading
+                    ? null
+                    : (newPermission) {
+                        if (newPermission != null) {
+                          _updateMemberPermission(userId, newPermission);
+                        }
+                      },
+                items: [
+                  DropdownMenuItem(
+                    value: SharedListPermission.view,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.eye,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(context.l10n.shoppingPermissionView),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: SharedListPermission.edit,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.pencil,
+                          size: AppDimensions.iconSizeS,
+                          // Saffron falls under 3:1 on the light surfaces, so
+                          // only dark mode keeps it.
+                          color: cs.brightness == Brightness.dark
+                              ? cs.secondary
+                              : cs.onSurface,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(context.l10n.shoppingPermissionEdit),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: SharedListPermission.admin,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          Icons.admin_panel_settings,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onSurface,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(context.l10n.shoppingPermissionAdmin),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              isExpanded: true,
-              value: permission,
-              onChanged: _isLoading
-                  ? null
-                  : (newPermission) {
-                      if (newPermission != null) {
-                        _updateMemberPermission(userId, newPermission);
-                      }
-                    },
-              items: [
-                DropdownMenuItem(
-                  value: SharedListPermission.view,
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.eye,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(context.l10n.shoppingPermissionView),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: SharedListPermission.edit,
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.pencil,
-                        size: AppDimensions.iconSizeS,
-                        // Saffron falls under 3:1 on the light surfaces, so
-                        // only dark mode keeps it.
-                        color: cs.brightness == Brightness.dark
-                            ? cs.secondary
-                            : cs.onSurface,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(context.l10n.shoppingPermissionEdit),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: SharedListPermission.admin,
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        Icons.admin_panel_settings,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onSurface,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(context.l10n.shoppingPermissionAdmin),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
         ],

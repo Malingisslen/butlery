@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 enum _ShoppingRootAction {
   newList,
@@ -49,70 +50,73 @@ class ShoppingAppBar {
     // count line almost no width on a 320-360 dp phone. Each item keeps the
     // name it had as an icon; the sharing status says what the list is.
     return [
-      PopupMenuButton<_ShoppingRootAction>(
-        key: const ValueKey('shopping-root-more'),
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        tooltip: context.l10n.rootBarMoreActions,
-        onSelected: (action) {
-          switch (action) {
-            case _ShoppingRootAction.newList:
-              onCreateList();
-            case _ShoppingRootAction.templates:
-              onBrowseTemplates?.call();
-            case _ShoppingRootAction.shareWithFriends:
-              onShowShareDialog();
-            case _ShoppingRootAction.shareExternally:
-              onShareExternally();
-            case _ShoppingRootAction.sharingStatus:
-              onShowSyncStatus();
-            case _ShoppingRootAction.sortCategories:
-              onSortCategories?.call();
-            case _ShoppingRootAction.uncheckAll:
-              onUncheckAll?.call();
-          }
-        },
-        itemBuilder: (menuContext) => [
-          _item(
-            _ShoppingRootAction.newList,
-            ButleryIcons.plus,
-            context.l10n.shoppingNewList,
-          ),
-          if (onBrowseTemplates != null)
+      PressFill(
+        surface: PressSurface.base,
+        child: PopupMenuButton<_ShoppingRootAction>(
+          key: const ValueKey('shopping-root-more'),
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
+          tooltip: context.l10n.rootBarMoreActions,
+          onSelected: (action) {
+            switch (action) {
+              case _ShoppingRootAction.newList:
+                onCreateList();
+              case _ShoppingRootAction.templates:
+                onBrowseTemplates?.call();
+              case _ShoppingRootAction.shareWithFriends:
+                onShowShareDialog();
+              case _ShoppingRootAction.shareExternally:
+                onShareExternally();
+              case _ShoppingRootAction.sharingStatus:
+                onShowSyncStatus();
+              case _ShoppingRootAction.sortCategories:
+                onSortCategories?.call();
+              case _ShoppingRootAction.uncheckAll:
+                onUncheckAll?.call();
+            }
+          },
+          itemBuilder: (menuContext) => [
             _item(
-              _ShoppingRootAction.templates,
-              Icons.list_alt_outlined,
-              context.l10n.shoppingTemplateBrowse,
+              _ShoppingRootAction.newList,
+              ButleryIcons.plus,
+              context.l10n.shoppingNewList,
             ),
-          if (hasActiveList && onSortCategories != null)
+            if (onBrowseTemplates != null)
+              _item(
+                _ShoppingRootAction.templates,
+                Icons.list_alt_outlined,
+                context.l10n.shoppingTemplateBrowse,
+              ),
+            if (hasActiveList && onSortCategories != null)
+              _item(
+                _ShoppingRootAction.sortCategories,
+                ButleryIcons.arrowUpDown,
+                context.l10n.shoppingSortCategories,
+              ),
+            if (hasBoughtItems && onUncheckAll != null)
+              _item(
+                _ShoppingRootAction.uncheckAll,
+                Icons.check_box_outline_blank,
+                context.l10n.shoppingUncheckAll,
+              ),
+            if (canShare)
+              _item(
+                _ShoppingRootAction.shareWithFriends,
+                ButleryIcons.users,
+                context.l10n.shoppingShareWithFriends,
+              ),
+            if (canShare)
+              _item(
+                _ShoppingRootAction.shareExternally,
+                ButleryIcons.share2,
+                context.l10n.shoppingShareExternally,
+              ),
             _item(
-              _ShoppingRootAction.sortCategories,
-              ButleryIcons.arrowUpDown,
-              context.l10n.shoppingSortCategories,
+              _ShoppingRootAction.sharingStatus,
+              _getSharingStatusIcon(viewModel),
+              _getSharingStatusTooltip(context, viewModel),
             ),
-          if (hasBoughtItems && onUncheckAll != null)
-            _item(
-              _ShoppingRootAction.uncheckAll,
-              Icons.check_box_outline_blank,
-              context.l10n.shoppingUncheckAll,
-            ),
-          if (canShare)
-            _item(
-              _ShoppingRootAction.shareWithFriends,
-              ButleryIcons.users,
-              context.l10n.shoppingShareWithFriends,
-            ),
-          if (canShare)
-            _item(
-              _ShoppingRootAction.shareExternally,
-              ButleryIcons.share2,
-              context.l10n.shoppingShareExternally,
-            ),
-          _item(
-            _ShoppingRootAction.sharingStatus,
-            _getSharingStatusIcon(viewModel),
-            _getSharingStatusTooltip(context, viewModel),
-          ),
-        ],
+          ],
+        ),
       ),
     ];
   }
