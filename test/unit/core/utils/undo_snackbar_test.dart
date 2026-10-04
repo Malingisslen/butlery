@@ -133,59 +133,56 @@ void main() {
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      for (final look in UndoSnackBarLook.values) {
-        testWidgets('${look.name} is the ink snackbar in $mode', (
-          tester,
-        ) async {
-          await pumpApp(tester, theme: theme);
-          SnackBarUtils.showUndo(
-            ctx,
-            'Varan togs bort.',
-            look: look,
-            onUndo: () {},
-          );
-          await tester.pumpAndSettle();
+      testWidgets('is the ink snackbar in $mode', (
+        tester,
+      ) async {
+        await pumpApp(tester, theme: theme);
+        SnackBarUtils.showUndo(
+          ctx,
+          'Varan togs bort.',
+          onUndo: () {},
+        );
+        await tester.pumpAndSettle();
 
-          final bar = shownSnackBar(tester);
-          expect(bar.backgroundColor, isNull, reason: 'snackBarTheme decides');
-          expect(find.byIcon(ButleryIcons.check), findsNothing);
-          // The painted surface: surface.ink in both modes.
-          final material = tester.widget<Material>(
-            find
-                .descendant(
-                  of: find.byType(SnackBar),
-                  matching: find.byType(Material),
-                )
-                .first,
-          );
-          expect(material.color, const Color(0xFF24382C));
-          final shape = material.shape! as RoundedRectangleBorder;
-          expect(shape.borderRadius, BorderRadius.circular(8));
-          expect(
-            shape.side,
-            mode == 'dark'
-                ? const BorderSide(color: Color(0x2EF5F4ED))
-                : BorderSide.none,
-          );
-          // Message paper, action light saffron.
-          final message = tester.widget<Text>(
-            find.byKey(InkSnackBar.messageKey),
-          );
-          expect(message.style?.color, const Color(0xFFF5F4ED));
-          final action = tester.widget<TextButton>(
-            find.byKey(InkSnackBarAction.actionKey),
-          );
-          expect(
-            action.style?.foregroundColor?.resolve(<WidgetState>{}),
-            const Color(0xFFE09D50),
-          );
-          // At least a 48 dp target.
-          expect(
-            tester.getSize(find.byKey(InkSnackBarAction.actionKey)).height,
-            greaterThanOrEqualTo(48),
-          );
-        });
-      }
+        final bar = shownSnackBar(tester);
+        expect(bar.backgroundColor, isNull, reason: 'snackBarTheme decides');
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
+        // The painted surface: surface.ink in both modes.
+        final material = tester.widget<Material>(
+          find
+              .descendant(
+                of: find.byType(SnackBar),
+                matching: find.byType(Material),
+              )
+              .first,
+        );
+        expect(material.color, const Color(0xFF24382C));
+        final shape = material.shape! as RoundedRectangleBorder;
+        expect(shape.borderRadius, BorderRadius.circular(8));
+        expect(
+          shape.side,
+          mode == 'dark'
+              ? const BorderSide(color: Color(0x2EF5F4ED))
+              : BorderSide.none,
+        );
+        // Message paper, action light saffron.
+        final message = tester.widget<Text>(
+          find.byKey(InkSnackBar.messageKey),
+        );
+        expect(message.style?.color, const Color(0xFFF5F4ED));
+        final action = tester.widget<TextButton>(
+          find.byKey(InkSnackBarAction.actionKey),
+        );
+        expect(
+          action.style?.foregroundColor?.resolve(<WidgetState>{}),
+          const Color(0xFFE09D50),
+        );
+        // At least a 48 dp target.
+        expect(
+          tester.getSize(find.byKey(InkSnackBarAction.actionKey)).height,
+          greaterThanOrEqualTo(48),
+        );
+      });
     }
 
     testWidgets('the action has its own paper focus ring, also in light mode', (

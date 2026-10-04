@@ -227,7 +227,6 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     SnackBarUtils.showUndo(
       context,
       context.l10n.weeklyMenuClearedUndo,
-      look: UndoSnackBarLook.confirmation,
       onUndo: () => vm.undoClearWeek(),
     );
   }

@@ -399,7 +399,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     SnackBarUtils.showUndo(
       context,
       removedMsg,
-      look: UndoSnackBarLook.confirmation,
       onUndo: () {
         _viewModel.addItemToActiveList(
           name: item.name,
@@ -438,7 +437,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     SnackBarUtils.showUndo(
       context,
       removedMsg,
-      look: UndoSnackBarLook.confirmation,
       onUndo: () => _viewModel.restoreItems(removed),
     );
   }

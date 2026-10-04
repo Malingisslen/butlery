@@ -500,9 +500,12 @@ void main() {
       expect(result.errors.length, equals(1));
       expect(
         result.errors.first,
-        contains('quota exceeded'),
-        reason: 'raw exception must surface for diagnostics',
+        isNot(contains('quota exceeded')),
+        reason:
+            'the raw exception goes to the log, not to the user-facing list',
       );
+      expect(result.errors.first, isNot(contains('StateError')));
+      expect(result.errors, equals(['Will Fail']));
       // BUT-1139: error message now contains the REAL recipe title
       // (sourced from core.title) so users know which entry failed.
       expect(

@@ -524,7 +524,6 @@ class _SkrivSjalvReceptViewContentState
                               SnackBarUtils.showUndo(
                                 context,
                                 context.l10n.imageRemovedUndoMessage,
-                                look: UndoSnackBarLook.confirmation,
                                 onUndo: viewModel.restoreLastImageDeletion,
                               );
                             },

@@ -259,11 +259,9 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
                   child: OutlinedButton(
                     key: ShoppingMergeSheet.cancelKey,
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      l.commonCancel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    // A button never cuts its own name (BUT-2193, BUT-2219):
+                    // the label wraps, as HeroButton's does.
+                    child: Text(l.commonCancel, textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),

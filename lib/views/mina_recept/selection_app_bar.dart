@@ -280,7 +280,6 @@ Future<void> _confirmBulkDelete(
     SnackBarUtils.showUndoDeferred(
       context,
       context.l10n.bulkDeleteSuccess(count),
-      look: UndoSnackBarLook.confirmation,
       onUndo: () => viewModel.undoBulkDelete(),
       onCommit: () => viewModel.commitDeletes(batch),
     );
@@ -576,7 +575,6 @@ Future<void> _openBulkTagPicker(
   SnackBarUtils.showUndo(
     context,
     context.l10n.bulkTagSuccess(modified),
-    look: UndoSnackBarLook.confirmation,
     onUndo: () => viewModel.undoBulkApplyPersonalTag(),
   );
 }
