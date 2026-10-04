@@ -137,7 +137,9 @@
    "textDark",
    "textDisabled",
    "textDisabledOnBase",
+   "textDisabledOnInk",
    "textLight",
+   "textLink",
    "textMedium",
    "textOnCream",
    "textOnPrimary",
@@ -174,6 +176,7 @@
    "buttonText",
    "buttonTextLight",
    "buttonTextStyle",
+   "calendarCell",
    "captionBase",
    "captionText",
    "cardTitle",
@@ -304,7 +307,9 @@
    "textDark",
    "textDisabled",
    "textDisabledOnBase",
+   "textDisabledOnInk",
    "textLight",
+   "textLink",
    "textMedium",
    "textOnCream",
    "textOnPrimary",
@@ -380,6 +385,7 @@
    "text.danger",
    "text.danger.onRaised",
    "text.disabled",
+   "text.disabled.onInk",
    "text.disabled.onRaised",
    "text.link",
    "text.onActionPrimary",
@@ -824,6 +830,20 @@
     "SEMANTIC_TOKEN": "control.checked.background",
     "TOKENS_JSON_PATH": "semantic[\"control.checked.background\"].dark",
     "DARK_VALUE": "#24382C",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "textLink",
+    "SEMANTIC_TOKEN": "text.link",
+    "TOKENS_JSON_PATH": "semantic[\"text.link\"].dark",
+    "DARK_VALUE": "#DCA968",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "textDisabledOnInk",
+    "SEMANTIC_TOKEN": "text.disabled.onInk",
+    "TOKENS_JSON_PATH": "semantic[\"text.disabled.onInk\"].dark",
+    "DARK_VALUE": "#93A48D",
     "KIND": "CANONICAL"
    },
    {

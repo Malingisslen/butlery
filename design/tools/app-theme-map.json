@@ -418,6 +418,16 @@
    "semantic",
    "control.checked.background",
    "Ifylld kryssruta och radio (BUT-2191). Bar control.checked.foreground (textOnPrimary), 11,36:1 i bada lagena."
+  ],
+  "textLink": [
+   "semantic",
+   "text.link",
+   "Lanktext (BUT-2226). Ytbunden: klarar papper (5,78:1), surface.raised (5,20:1) och de fyra statustintarna (minst 4,88:1) i ljust lage; morkt 7,52:1 pa surface.base, 4,95:1 pa surface.raised och 5,91:1 pa surface.ink. ALDRIG pa surface.ink i ljust lage: #8A5212 ger 1,97:1 dar."
+  ],
+  "textDisabledOnInk": [
+   "semantic",
+   "text.disabled.onInk",
+   "Avstangd text pa surface.ink. Harledd, inte ritad; Malin kan prova. Ink ar #24382C i bada lagena, sa vardet ar #93A48D i bada (mork ytas varde, som text.disabled.onRaised morkt). Golv 3:1 (contrastPolicy disabled): 4,73:1 pa ink. Ytbunden till surface.ink."
   ]
  },
  "aliases": {
@@ -610,7 +620,8 @@
   "overline": "overline",
   "statNumber": "stat",
   "cookingStep": "cookingStep",
-  "captionBase": "caption"
+  "captionBase": "caption",
+  "calendarCell": "calendarCell"
  },
  "typeAliases": {
   "titleSmall": "headlineSmall",

@@ -20,7 +20,7 @@ function argb(v) {
 
 function renderDart(t) {
   const L = [];
-  for (const h of header({ generator: 'tools/gen-flutter.mjs', generatorVersion: '1.3', tokenVersion: t.version, inputs: ['tokens.json'], date: t.date }).lines) L.push(h);
+  for (const h of header({ generator: 'tools/gen-flutter.mjs', generatorVersion: '1.4', tokenVersion: t.version, inputs: ['tokens.json'], date: t.date }).lines) L.push(h);
   L.push('// ignore_for_file: unused_field');
   L.push("import 'package:flutter/material.dart';");
   L.push('');
@@ -116,7 +116,15 @@ function renderDart(t) {
   L.push('class ButleryMotion {');
   L.push('  const ButleryMotion._();');
   for (const [k, v] of Object.entries(t.motion.durations)) L.push('  static const ' + camel(k) + ' = Duration(milliseconds: ' + v + ');');
-  L.push('  static const Curve standard = Cubic(0.33, 0, 0.2, 1);');
+  // BUT-2211: kurvorna hette tidigare standard, samma namn som durationen
+  // standard, och klassen fick tva medlemmar med samma namn. Kurvorna far
+  // prefixet curve och laser tokens.motion.easing i stallet for en literal.
+  for (const [k, v] of Object.entries(t.motion.easing)) {
+    const m = String(v).match(/^cubic-bezier\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/);
+    if (!m) throw new Error('Okänd kurva i tokens.motion.easing.' + k + ': ' + v);
+    const n = 'curve' + camel(k).replace(/^(.)/, (x, c) => c.toUpperCase());
+    L.push('  static const Curve ' + n + ' = Cubic(' + m.slice(1).map(Number).join(', ') + ');');
+  }
   L.push('}');
   L.push('');
 

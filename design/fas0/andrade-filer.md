@@ -104,7 +104,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
 | `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
 | `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
-| `assets/generated/tokens.css` | `7765e0de60db69f9255b200f6672109cfae506f067029f10056d2997d7ed1b5d` |
+| `assets/generated/tokens.css` | `8db98c1ac069c6ee6f2fbb2c1a52ef59471e9af4d535ea333d51d0f71c9186c8` |
 | `assets/icons/archive.svg` | `cf161abb7df09faed9bccb69e17efc0c85b134b4a522d6654c45201e3706467c` |
 | `assets/icons/arrow-left.svg` | `f86261b82b6c3df65ab8f027335d56dba6cf3131c76929398d59d0da0bfb3cc3` |
 | `assets/icons/arrow-right.svg` | `b9961b118f5627bb77b489e57f106607380d9a240e86da37f6868c53ae9c9010` |
@@ -264,7 +264,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/block287k-population.json` | `8afb1e3f586da54bc22e0e87c7c6cb3d3a98be1e133beae37e68bc485c4d7853` |
 | `fas2/block287k-skrivplan.json` | `ab9bcc062504f9e0cb62919108e2b0b6259a78f1c3f525a1e722583a7c3a5bf1` |
 | `fas2/block288-uxfrysning.json` | `663e5c449d0e4b76ad1c0d70eb5357c64e588645e8fc0a712cc1195261aa8c37` |
-| `fas2/block289-visuell-leverans.json` | `b79277a6978e6c5b1963dea49a54a991c962f3b22e7374a9bb9866d3156bbd2f` |
+| `fas2/block289-visuell-leverans.json` | `1f61d5b2391338e0c9164000ce00c8adba9c20094cb164762eb5f36de6fa740e` |
 | `fas2/carrier-adjudikering-a2.json` | `09e8791b187948ead5fd95980919549758738fb8f29e631411fbe7879bdc2a55` |
 | `fas2/carrier-korrigering-a4.json` | `9776cb3a558e0578fecf1f1ec934a5d2d4e37ca4cf17a06dd0d2322e8499a969` |
 | `fas2/effect-registry.json` | `3cc0615e726cd8e15eeec0c7b3bbbfb09f723d7c9b070e8a13682d15c5ef2fab` |
@@ -543,7 +543,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `icons.json` | `fa46237fdc7ef51b4f46885144e1480504bc65230c63bf484b669975355f0cc9` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `d8b9683b373a3e142456890d177285c52307ccd433908f30c8e0592b35648431` |
-| `legacy-api-contract.json` | `1635a13c2f6bc222607f295126c76b3a99bbc3ac8565f77239a61947c3817e5f` |
+| `legacy-api-contract.json` | `80ea73a3e1701c66082f863f873bf9c4fb8049fd00eaf5908b29f9101ad93612` |
 | `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
@@ -554,10 +554,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `901fe6cea9a0b0308b5522666d04e9cf01154134a8958aace1b2818d25d9190e` |
-| `lib/theme/app_colors_dark.dart` | `a59f82089b086f9c41c55f9c5720cedfeaf4afcf6988b81934a9f291c29bd756` |
-| `lib/theme/app_text_styles.dart` | `449fd8c1d986d0ef6a918287e4360dfa51bfab72cde52fef209fe86ee61e9a3c` |
-| `lib/theme/butlery_tokens.dart` | `372eed5940b0868b5a474de52c8ba347463bce640d95a3816ccc474ac71f2806` |
+| `lib/theme/app_colors.dart` | `b48b87c426b24e5faf473c4c9c90cd60f26ea8d59b32adf7e39135f97dde9a81` |
+| `lib/theme/app_colors_dark.dart` | `21e33d809cff14bbd41ff019ca743c13c2dd689704ea34dd60337a74ae5dc105` |
+| `lib/theme/app_text_styles.dart` | `1c8c1c24219182a070f54eaa7fdb1fa6cf63f15c1972f8d28b301dee2bb37784` |
+| `lib/theme/butlery_tokens.dart` | `3e95184e264442a05ab8472651920e9664bd4dac89b1d51100002ad88e995b3a` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
@@ -568,14 +568,14 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `a16098a17dccf5a82acd4297b7ef26a738584a4c2914ac263b4a2113deaa6c4b` |
-| `tokens.json` | `031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687db277c6018` |
+| `tokens.json` | `2560b5f0804e908aac5ce59e54c3300ceac2622b7145bcd4844ddaaad613527c` |
 | `tools/README.md` | `759f70a35c33d3ce2824c37ecda40724b3f2e6fcc1ab7b4cf976059f5b872051` |
 | `tools/adjudication-guards-fixtures.mjs` | `e435e8b5df13f07ecfd17ea2baf18a1796b24081d89dcef6352e8584c0c29d37` |
 | `tools/adjudication-pilot-fixtures.mjs` | `91adf41c78e92605e577f4c7f85511d9ccd1226e5b795977b9104e4193604c1f` |
 | `tools/affordance-negatives.mjs` | `c9aac4b95f54c244de296e2784ee1aa5dfbf27bc1f4838b41412be87b1b68831` |
 | `tools/animation-freeze-fixtures.mjs` | `67ed58276c190e7cacec41d96ab9602e84d8fac3137c8a892d6580b1eaefbcf3` |
 | `tools/animation-freeze.mjs` | `6205431fc2506b8dafbd44e14aabf1894f9f1d55ef2bae3aa8ce60a403b24014` |
-| `tools/app-theme-map.json` | `6eeea38ca0ae1e178b98a8754c4c72e499d6814e9a7cc0a1111a98689f61786e` |
+| `tools/app-theme-map.json` | `dfaadb8afbf1b3215eee751e729d8b827b1fc7e3e90c553d1955b99cdbde4c70` |
 | `tools/app-theme-map.schema.json` | `540c09035681771786f7884abb098468e3382682f1e5dde6e98b9e2a829fd387` |
 | `tools/applicability-fixtures.mjs` | `7d6308092307738f80f89dd3bb96238c6f4e1362a235b8fa0db2b770b1545fc6` |
 | `tools/applicability-planner.mjs` | `593b1407c81730418c13de8516a43090ca6d4e4bbccb0bc76722b2c8806d6600` |
@@ -624,7 +624,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/block287/slutfrysning.mjs` | `04b76abaf7e0cbf192ca485fadcd345eafa75f7dbadfe3d5deeb14e13ef1bf6c` |
 | `tools/block288/uxfrysning.mjs` | `79e27eeabf12bfc06e9fc4e918af2bdea74eb0c251116c8f408e401ad17e7944` |
 | `tools/block288/uxprov.mjs` | `8e160724d5f5205ac4441f0ae6e790587375c558752292ecc51342b7c8b3bc75` |
-| `tools/block289/visuellfrysning.mjs` | `4fc6d0d0b0be22d6e0d823880a5296b4c323afb0cc6897ca3e789c08a7ccc3c2` |
+| `tools/block289/visuellfrysning.mjs` | `f43a52d1eb713aaa10f039ff756dca1158b723620ba22d5fb37c450b0c243199` |
 | `tools/block289/visuellprov.mjs` | `09be22f4d3104cb086becad67d7d4bb4caa7c5ee727d459f370980b24b2b06ce` |
 | `tools/box-graphics-fixtures.mjs` | `a95e370c6e800a2e73c53f4495a7248f81503f847c8e7f4eaa6d21fdeb98a44f` |
 | `tools/box-graphics.mjs` | `82764c68d7538f1a0c752332a6ba67efe856bc1e67d6a9b3ab562e72f19184bb` |
@@ -674,7 +674,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-check.mjs` | `f52d62056ee0b58cb2f718f64a57ce422fa73fd21079e9dc666d5307b51f31d4` |
 | `tools/gen-counts.mjs` | `d74c3921589f23e7ec5d3d5208565677b04daa7833ae3f6af65c7d522fa869cd` |
 | `tools/gen-css.mjs` | `723681243b90cc2703aefc9874d6421b248940a7c6884c316bc23b7daaf24d1b` |
-| `tools/gen-flutter.mjs` | `112c73ba2c1808d845c692d26145854a22bfb89f9e7a9b3098c64742a92fd984` |
+| `tools/gen-flutter.mjs` | `442f5f4d550acf2b27b9c38da03fb105e76fcf971e080f247010d11fbc9c6e3f` |
 | `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
 | `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
 | `tools/gen-manifest.mjs` | `3572f9b1a2d63ee9ffdc605d7c40d903276a7605753ee21dc6d6170ee458b0dd` |

@@ -2,7 +2,7 @@
   GENERERAD FIL — ändra källan, inte den här.
   system 2.1 · tokens 1.13
   generator tools/gen-css.mjs v1.3
-  källfingeravtryck sha256:b155cb6ef58ce2318b957114745e6faf91f5662526900d4195e346d671603d2e (4 indatafiler, generatorns källa inräknad)
+  källfingeravtryck sha256:1ecac06dfdaffe5ac5ee36f91d02fe60cf4fca9849778d4ce4e445037bac6a7d (4 indatafiler, generatorns källa inräknad)
   genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 */
 
@@ -105,6 +105,7 @@
   --butlery-text-completed: #37453A;
   --butlery-text-danger-on-raised: #9C3B23;
   --butlery-text-danger: #9C3B23;
+  --butlery-text-disabled-on-ink: #93A48D;
   --butlery-text-disabled-on-raised: #788477;
   --butlery-text-disabled: #7D897C;
   --butlery-text-link: #8A5212;
@@ -192,6 +193,7 @@
   --butlery-text-completed: #93A48D;
   --butlery-text-danger-on-raised: #E5A08A;
   --butlery-text-danger: #DE9078;
+  --butlery-text-disabled-on-ink: #93A48D;
   --butlery-text-disabled-on-raised: #93A48D;
   --butlery-text-disabled: #627061;
   --butlery-text-link: #DCA968;
