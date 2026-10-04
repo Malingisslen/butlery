@@ -1,4 +1,4 @@
-/// BUT-1241: grid + tray-card widgets for the manual placement mode.
+/// BUT-1241: grid widgets for the manual placement mode.
 ///
 /// Deliberately separate from `calendar_cells.dart` — those cells carry
 /// drag-drop machinery and the live-plan ViewModel; placement cells are a
@@ -14,6 +14,9 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+
+export 'package:butlery/views/menu_placement/placement_tray_card.dart';
 
 const double _kCellMinHeight = 56;
 const double _kDayColumnWidth = 44;
@@ -174,25 +177,31 @@ class _EligibleCell extends StatelessWidget {
         slot.displayLabel,
       ),
       button: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () => vm.placeSelectedAt(day),
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: _kCellMinHeight - 8,
-          ),
-          alignment: Alignment.center,
-          // Skarmar v12 del 2 #placera draws a free cell, also while a dish
-          // is chosen ("Kikärtscurry vald"), as a 1.5 px dashed border.subtle
-          // outline with an 8 px radius, no fill and text.secondary text.
-          // outlineVariant and onSurfaceVariant carry border.subtle and
-          // text.secondary in both schemes (tokens.json semantic).
-          foregroundDecoration: _DashedOutline(color: cs.outlineVariant),
-          child: Text(
-            context.l10n.menuPlacementPlaceHere,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.overline.copyWith(
-              color: cs.onSurfaceVariant,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => vm.placeSelectedAt(day),
+            child: Container(
+              constraints: const BoxConstraints(
+                minHeight: _kCellMinHeight - 8,
+              ),
+              alignment: Alignment.center,
+              // Skarmar v12 del 2 #placera draws a free cell, also while a
+              // dish is chosen ("Kikärtscurry vald"), as a 1.5 px dashed
+              // border.subtle outline with an 8 px radius, no fill and
+              // text.secondary text. outlineVariant and onSurfaceVariant carry
+              // border.subtle and text.secondary in both schemes.
+              foregroundDecoration: _DashedOutline(color: cs.outlineVariant),
+              child: Text(
+                context.l10n.menuPlacementPlaceHere,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.overline.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
         ),
@@ -275,7 +284,6 @@ class _OccupiedCell extends StatelessWidget {
       // (3.19 light / 3.96 dark, floor 3 at :543). surface.disabled is a
       // surface for empty cells only, never under text (tokens.json:557).
       decoration: BoxDecoration(
-        color: cs.primaryContainer,
         border: Border.all(
           color: isSession ? cs.onSurface : cs.outline,
           width: isSession ? 1.5 : 1,
@@ -303,14 +311,13 @@ class _OccupiedCell extends StatelessWidget {
         ],
       ),
     );
-    if (!isSession) return cell;
-    return Semantics(
-      label: context.l10n.a11yPlacementRemoveEntry(entry.recipeTitle),
-      button: true,
-      child: InkWell(
-        onTap: () => vm.unplaceEntry(entry.id),
-        child: cell,
-      ),
+    return _unplaceable(
+      context,
+      vm: vm,
+      entry: entry,
+      isSession: isSession,
+      surface: PressSurface.raised,
+      filled: Ink(color: cs.primaryContainer, child: cell),
     );
   }
 }
@@ -339,8 +346,7 @@ class _OvrigtEntryChip extends StatelessWidget {
       decoration: BoxDecoration(
         // Paper under text in both states; an unavailable chip only turns
         // its title to text.disabled.onRaised (3.55:1 on paper), never
-        // surface.disabled under text (tokens.json:198-201, :557).
-        color: cs.surface,
+        // surface.disabled under text.
         border: Border(
           left: BorderSide(
             color: isSession ? cs.onSurface : cs.secondary,
@@ -365,16 +371,41 @@ class _OvrigtEntryChip extends StatelessWidget {
         ],
       ),
     );
-    if (!isSession) return chip;
-    return Semantics(
-      label: context.l10n.a11yPlacementRemoveEntry(entry.recipeTitle),
-      button: true,
-      child: InkWell(
-        onTap: () => vm.unplaceEntry(entry.id),
-        child: chip,
-      ),
+    return _unplaceable(
+      context,
+      vm: vm,
+      entry: entry,
+      isSession: isSession,
+      surface: PressSurface.base,
+      filled: Ink(color: cs.surface, child: chip),
     );
   }
+}
+
+/// A placed dish: this session's dish un-places on tap. The fill paints on
+/// the ink layer, beneath the press, and the border box stays above it.
+Widget _unplaceable(
+  BuildContext context, {
+  required MenuPlacementViewModel vm,
+  required WeeklyMenuPlanEntry entry,
+  required bool isSession,
+  required PressSurface surface,
+  required Widget filled,
+}) {
+  if (!isSession) {
+    return Material(type: MaterialType.transparency, child: filled);
+  }
+  return Semantics(
+    label: context.l10n.a11yPlacementRemoveEntry(entry.recipeTitle),
+    button: true,
+    child: Material(
+      type: MaterialType.transparency,
+      child: PressFill(
+        surface: surface,
+        child: InkWell(onTap: () => vm.unplaceEntry(entry.id), child: filled),
+      ),
+    ),
+  );
 }
 
 class _NeutralEmptyCell extends StatelessWidget {
@@ -392,75 +423,6 @@ class _NeutralEmptyCell extends StatelessWidget {
             ? AppModeColors.surfaceDisabled(theme.brightness)
             : theme.cardColor,
         border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-    );
-  }
-}
-
-/// One recipe card in the bottom tray. Tap to select (unplaced) or
-/// un-place (placed).
-class PlacementTrayCard extends StatelessWidget {
-  final MenuPlacementViewModel vm;
-  final int index;
-
-  const PlacementTrayCard({super.key, required this.vm, required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final item = vm.items[index];
-    final isSelected = vm.selectedIndex == index;
-    return Semantics(
-      label: context.l10n.a11yPlacementTrayCard(item.recipe.title),
-      button: true,
-      selected: isSelected,
-      child: InkWell(
-        onTap: () => vm.tapItem(index),
-        // #placera draws the chosen dish in the tray as ink with paper text,
-        // and the others on surface.raised with a 1 px border.control
-        // (Skarmar v12 del 2). A placed dish is struck through, never
-        // faded. tokens.json gives the struck text text.completed (#37453A
-        // light, #93A48D dark); no scheme slot carries it, so onSurfaceVariant
-        // stands in until text.completed is delivered as a member (open, D1).
-        child: Container(
-          width: 132,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected ? cs.primary : cs.primaryContainer,
-            border: isSelected ? null : Border.all(color: cs.outline),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.slot.displayLabel.toUpperCase(),
-                style: AppTextStyles.overline.copyWith(
-                  color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Expanded(
-                child: Text(
-                  item.recipe.title,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? cs.onPrimary
-                        : (item.isPlaced
-                              ? cs.onSurfaceVariant
-                              : cs.onPrimaryContainer),
-                    decoration: item.isPlaced
-                        ? TextDecoration.lineThrough
-                        : null,
-                    height: 1.2,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

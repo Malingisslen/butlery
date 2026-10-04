@@ -380,6 +380,7 @@ void main() {
       'lib/views/recipe_detail/handlers/recipe_personal_tag_handler.dart',
       'lib/views/importera_fran_arkiv_view.dart',
       'lib/views/menu_placement/placement_widgets.dart',
+      'lib/views/menu_placement/placement_tray_card.dart',
       'lib/views/cooking_mode_view.dart',
     ];
     final opacityState = RegExp(r'Opacity\(\s*(?://[^\n]*\n\s*)*opacity:\s*\w');

@@ -19,6 +19,7 @@ import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class PantryItemCard extends StatelessWidget {
   const PantryItemCard({super.key, required this.item});
@@ -97,18 +98,27 @@ class PantryItemCard extends StatelessWidget {
           : context.l10n.a11yPantryEditItem(item.ingredientName),
       button: true,
       selected: selectionMode ? selected : null,
-      child: InkWell(
-        onTap: selectionMode
-            ? () => selection.toggleSelection(item.id)
-            : () => _showEditSheet(context, viewModel),
-        onLongPress: selectionMode
-            ? null
-            : () => selection.enterSelectionMode(item.id),
-        child: _buildRow(
-          context,
-          cs,
-          selectionMode: selectionMode,
-          selected: selected,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.raised : PressSurface.base,
+          child: InkWell(
+            onTap: selectionMode
+                ? () => selection.toggleSelection(item.id)
+                : () => _showEditSheet(context, viewModel),
+            onLongPress: selectionMode
+                ? null
+                : () => selection.enterSelectionMode(item.id),
+            child: Ink(
+              color: selected ? cs.primaryContainer : null,
+              child: _buildRow(
+                context,
+                cs,
+                selectionMode: selectionMode,
+                selected: selected,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -157,7 +167,6 @@ class PantryItemCard extends StatelessWidget {
       // primaryContainer / outlineVariant slots carry those tokens in both
       // schemes.
       decoration: BoxDecoration(
-        color: selected ? cs.primaryContainer : null,
         border: Border(
           top: BorderSide(color: cs.outlineVariant, width: 1),
         ),

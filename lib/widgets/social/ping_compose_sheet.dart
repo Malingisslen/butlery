@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
@@ -278,31 +279,41 @@ class _TypeChip extends StatelessWidget {
       selected: selected,
       button: true,
       label: label,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingSm,
-            vertical: AppDimensions.spacingMd,
-          ),
-          decoration: BoxDecoration(
-            color: bg,
-            border: Border.all(color: border, width: selected ? 2 : 1),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ButleryIcon(icon, size: AppDimensions.iconSizeM, color: fg),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                label,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: fg,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.ink : PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: bg,
               ),
-            ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingSm,
+                  vertical: AppDimensions.spacingMd,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: border, width: selected ? 2 : 1),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(icon, size: AppDimensions.iconSizeM, color: fg),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      label,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: fg,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),

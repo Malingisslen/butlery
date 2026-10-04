@@ -88,6 +88,8 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   String? _unit = 'st';
   PantryLocation _location = PantryLocation.pantry;
   DateTime? _expiryDate;
+  bool _expiryPressed = false;
+  bool _expiryHovered = false;
   IngredientData? _selectedIngredient;
   bool _showSuggestions = false;
 
@@ -401,9 +403,23 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               button: true,
               child: InkWell(
                 onTap: _pickExpiryDate,
+                // The field paints its own fill above the ink layer, so the
+                // field itself takes the pressed fill and the InkWell none.
+                onHighlightChanged: (value) =>
+                    setState(() => _expiryPressed = value),
+                onHover: (value) => setState(() => _expiryHovered = value),
+                overlayColor: WidgetStateProperty.resolveWith(
+                  (states) => states.contains(WidgetState.focused)
+                      ? null
+                      : Colors.transparent,
+                ),
                 child: InputDecorator(
                   decoration: InputDecoration(
                     labelText: l10n.pantryExpiryLabel,
+                    fillColor: _expiryPressed || _expiryHovered
+                        ? PressFill.fillFor(context, PressSurface.raised)
+                        : null,
+                    hoverColor: PressFill.fillFor(context, PressSurface.raised),
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.zero,
                     ),

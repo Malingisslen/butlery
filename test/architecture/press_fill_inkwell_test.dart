@@ -27,21 +27,6 @@ const _waiting = <String, int>{
   'lib/widgets/image/image_picker_widget.dart': 1,
   'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/social/groups/shared_content_card.dart': 1,
-  // Hidden: a fill painted above the ink layer covers the press, so these
-  // show no press today; BUT-2205 moves the fill under the ink.
-  'lib/views/menu_placement/placement_widgets.dart': 4,
-  'lib/views/pantry/add_pantry_item_sheet.dart': 1,
-  'lib/views/pantry/pantry_item_card.dart': 1,
-  'lib/widgets/common/profile/builders/menu_item_builders.dart': 1,
-  'lib/widgets/common/search_filter/quick_filter_chips.dart': 1,
-  'lib/widgets/common/share_dialog/share_mode_selection.dart': 2,
-  'lib/widgets/cooking/cooking_session_card.dart': 1,
-  'lib/widgets/import/voice_section_card.dart': 1,
-  'lib/widgets/recipe/comment_form_widget.dart': 1,
-  'lib/widgets/recipe/comment_image_attachments.dart': 1,
-  'lib/widgets/social/ping_compose_sheet.dart': 2,
-  'lib/widgets/styled/styled_card.dart': 1,
-  'lib/widgets/user/user_avatar_widgets.dart': 2,
   // Mixed: a tab with its own drawn press (paper at the on-ink 0.18 step)
   // and the saffron add button, a surface the rule does not cover (BUT-2232).
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 2,
@@ -50,11 +35,18 @@ const _waiting = <String, int>{
   // Mixed: one on surface.raised and one hidden.
   'lib/widgets/image/components/upload_progress_widgets.dart': 2,
   // A surface the rule does not cover, for the design session (BUT-2232):
-  // saffron, the warning tint, the recipe photo and the scanned page.
+  // saffron, the warning and danger tints, the error colour, photos, the
+  // scanned page, and a send button that is paper in dark mode.
   'lib/views/lagg_till_recept_view.dart': 1,
   'lib/views/recipe_detail_view.dart': 1,
   'lib/widgets/common/layout/status_indicators.dart': 1,
+  'lib/widgets/common/profile/builders/menu_item_builders.dart': 1,
+  'lib/widgets/import/voice_section_card.dart': 1,
+  'lib/widgets/recipe/comment_form_widget.dart': 1,
+  'lib/widgets/recipe/comment_image_attachments.dart': 1,
   'lib/widgets/recipe/heirloom_section.dart': 1,
+  'lib/widgets/social/ping_compose_sheet.dart': 1,
+  'lib/widgets/user/user_avatar_widgets.dart': 1,
   // Never pressed: onTap is null at every caller, or the widget has none.
   'lib/widgets/cooking/substitution_bottom_sheet.dart': 1,
   'lib/widgets/social/collaborative/components/collaborative_permissions_widgets.dart':
@@ -62,6 +54,7 @@ const _waiting = <String, int>{
   'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart':
       1,
   'lib/widgets/recipe/comment_item_widget.dart': 2,
+  'lib/widgets/styled/styled_card.dart': 1,
   // Mixed: one on surface.raised and one with no live caller.
   'lib/widgets/user/user_layout_widgets.dart': 2,
 };

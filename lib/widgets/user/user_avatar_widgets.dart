@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Avatar widgets and related functionality
 class UserAvatarWidgets {
@@ -179,26 +180,28 @@ class UserAvatarWidgets {
                 child: Semantics(
                   label: context.l10n.a11yChangeProfileImage,
                   button: true,
-                  child: InkWell(
-                    onTap: onEditTap,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusPill,
-                    ),
-                    child: Container(
-                      width: AppDimensions.iconSizeXl,
-                      height: AppDimensions.iconSizeXl,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: cs.primary,
-                        border: Border.all(
-                          color: cs.onPrimary,
-                          width: AppDimensions.borderWidthThick,
-                        ),
+                  child: PressFill(
+                    surface: PressSurface.ink,
+                    child: InkWell(
+                      onTap: onEditTap,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusPill,
                       ),
-                      child: ButleryIcon(
-                        ButleryIcons.pencil,
-                        size: AppDimensions.iconSizeM,
-                        color: cs.onPrimary,
+                      child: Container(
+                        width: AppDimensions.iconSizeXl,
+                        height: AppDimensions.iconSizeXl,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: cs.onPrimary,
+                            width: AppDimensions.borderWidthThick,
+                          ),
+                        ),
+                        child: ButleryIcon(
+                          ButleryIcons.pencil,
+                          size: AppDimensions.iconSizeM,
+                          color: cs.onPrimary,
+                        ),
                       ),
                     ),
                   ),

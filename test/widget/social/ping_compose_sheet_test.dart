@@ -15,6 +15,10 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/widgets/social/ping_compose_sheet.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+
+import '../../infrastructure/helpers/ink_fill.dart';
 
 /// Records every `sendPing` invocation. Throws on demand to exercise
 /// rate-limit and generic-error code paths.
@@ -79,6 +83,52 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
+  // BUT-2205: a ping type chip's own fill used to cover the press.
+  for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+    testWidgets('pressed type chips show their surface\'s fill '
+        '(${theme.brightness.name})', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          Theme(
+            data: theme,
+            child: PingComposeSheet(
+              groupId: 'g1',
+              targetUserId: 'erik',
+              pingService: _FakePingService(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      Finder label(String key) => find
+          .descendant(of: find.byKey(Key(key)), matching: find.byType(Text))
+          .first;
+
+      final rest = label('ping-type-nudge');
+      expect(pressIsCovered(tester, rest), isFalse);
+      expect(borderIsAbovePress(tester, rest), isTrue);
+      var gesture = await holdPress(tester, rest);
+      expect(
+        paintsInkFill(tester, rest, theme.colorScheme.surfaceContainerHighest),
+        isTrue,
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      // The tap chose it: a chosen chip is ink.
+      gesture = await holdPress(tester, rest);
+      expect(
+        paintsInkFill(
+          tester,
+          rest,
+          ModeColors.of(theme.brightness).pressedOnInk,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
+
   group('PingComposeSheet', () {
     testWidgets('renders 3 type chips, message field, and send button', (
       tester,
