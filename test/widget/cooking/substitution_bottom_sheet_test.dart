@@ -8,11 +8,15 @@
 ///    are empty; the "Föreslå ett alternativ" CTA is disabled.
 library;
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 
+import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -154,4 +158,37 @@ void main() {
       expect(find.text('Föreslå ett alternativ'), findsOneWidget);
     });
   });
+
+  // BUT-2205: "Byt i receptet" is an ink button, so its press takes the
+  // step on ink.
+  for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+    testWidgets('a pressed Byt i receptet takes the step on ink '
+        '(${theme.brightness.name})', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Theme(
+            data: theme,
+            child: SubstitutionBottomSheet(
+              ingredientName: 'smetana',
+              suggestions: const [
+                IngredientSubstitution(name: 'yoghurt', ratio: 1.0),
+              ],
+              onReplace: (_) {},
+            ),
+          ),
+        ),
+      );
+      final target = find.text('Byt i receptet');
+      final gesture = await holdPress(tester, target);
+      expect(
+        paintsInkFill(
+          tester,
+          target,
+          ModeColors.of(theme.brightness).pressedOnInk,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
 }

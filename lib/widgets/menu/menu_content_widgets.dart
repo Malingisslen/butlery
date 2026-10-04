@@ -26,6 +26,7 @@ import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_vote_card.dart';
 import 'package:butlery/widgets/menu/suggest_alternative_sheet.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
@@ -421,21 +422,24 @@ class MenuContentWidgets {
                   ),
                   button: true,
                   enabled: !viewModel.isGenerating,
-                  child: InkWell(
-                    onTap: viewModel.isGenerating
-                        ? null
-                        : () => viewModel.regenerateSection(category),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingSm),
-                      child: ButleryIcon(
-                        ButleryIcons.refreshCw,
-                        size: AppDimensions.iconSizeM,
-                        color: viewModel.isGenerating
-                            ? cs.onSurfaceVariant
-                            : cs.onSurface,
+                  child: PressFill(
+                    surface: PressSurface.base,
+                    child: InkWell(
+                      onTap: viewModel.isGenerating
+                          ? null
+                          : () => viewModel.regenerateSection(category),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusControl,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                        child: ButleryIcon(
+                          ButleryIcons.refreshCw,
+                          size: AppDimensions.iconSizeM,
+                          color: viewModel.isGenerating
+                              ? cs.onSurfaceVariant
+                              : cs.onSurface,
+                        ),
                       ),
                     ),
                   ),
@@ -674,53 +678,57 @@ class _MenuRecipeCard extends StatelessWidget {
                           recipe.title,
                         ),
                         button: true,
-                        child: InkWell(
-                          onTap: () async {
-                            final selectedRecipe =
-                                await SuggestAlternativeSheet.show(
-                                  context,
-                                  availableRecipes: viewModel.availableRecipes,
-                                  excludeRecipeIds: [recipe.id],
+                        child: PressFill(
+                          surface: PressSurface.base,
+                          child: InkWell(
+                            onTap: () async {
+                              final selectedRecipe =
+                                  await SuggestAlternativeSheet.show(
+                                    context,
+                                    availableRecipes:
+                                        viewModel.availableRecipes,
+                                    excludeRecipeIds: [recipe.id],
+                                  );
+                              if (selectedRecipe != null) {
+                                final userId =
+                                    ServiceLocator.get<PermissionService>()
+                                        .currentUserId ??
+                                    '';
+                                final currentOption = VoteOption(
+                                  id: recipe.id,
+                                  recipeId: recipe.id,
+                                  recipeName: recipe.title,
+                                  recipeImageUrl: recipe.imageUrls.isNotEmpty
+                                      ? recipe.imageUrls.first
+                                      : null,
+                                  suggestedByUserId: userId,
                                 );
-                            if (selectedRecipe != null) {
-                              final userId =
-                                  ServiceLocator.get<PermissionService>()
-                                      .currentUserId ??
-                                  '';
-                              final currentOption = VoteOption(
-                                id: recipe.id,
-                                recipeId: recipe.id,
-                                recipeName: recipe.title,
-                                recipeImageUrl: recipe.imageUrls.isNotEmpty
-                                    ? recipe.imageUrls.first
-                                    : null,
-                                suggestedByUserId: userId,
-                              );
-                              final newOption = VoteOption(
-                                id: selectedRecipe.id,
-                                recipeId: selectedRecipe.id,
-                                recipeName: selectedRecipe.title,
-                                recipeImageUrl:
-                                    selectedRecipe.imageUrls.isNotEmpty
-                                    ? selectedRecipe.imageUrls.first
-                                    : null,
-                                suggestedByUserId: userId,
-                              );
-                              votingViewModel!.createVote(
-                                category: category,
-                                slotIndex: slotIndex,
-                                alternatives: [currentOption, newOption],
-                              );
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              AppDimensions.spacingXs,
-                            ),
-                            child: ButleryIcon(
-                              ButleryIcons.vote,
-                              size: AppDimensions.iconSizeS,
-                              color: cs.onSurface,
+                                final newOption = VoteOption(
+                                  id: selectedRecipe.id,
+                                  recipeId: selectedRecipe.id,
+                                  recipeName: selectedRecipe.title,
+                                  recipeImageUrl:
+                                      selectedRecipe.imageUrls.isNotEmpty
+                                      ? selectedRecipe.imageUrls.first
+                                      : null,
+                                  suggestedByUserId: userId,
+                                );
+                                votingViewModel!.createVote(
+                                  category: category,
+                                  slotIndex: slotIndex,
+                                  alternatives: [currentOption, newOption],
+                                );
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(
+                                AppDimensions.spacingXs,
+                              ),
+                              child: ButleryIcon(
+                                ButleryIcons.vote,
+                                size: AppDimensions.iconSizeS,
+                                color: cs.onSurface,
+                              ),
                             ),
                           ),
                         ),
@@ -736,43 +744,47 @@ class _MenuRecipeCard extends StatelessWidget {
                       label: context.l10n.a11yMenuSwapRecipe(recipe.title),
                       button: true,
                       enabled: !viewModel.isGenerating,
-                      child: InkWell(
-                        onTap: viewModel.isGenerating
-                            ? null
-                            : () async {
-                                final result = await viewModel.swapRecipe(
-                                  recipe,
-                                  category,
-                                );
-                                // The ink snackbar, never a saffron fill
-                                // (Komponentark v1:745-750, :300; PQ-09 = A).
-                                if (result.recipe == null && context.mounted) {
-                                  SnackBarUtils.showInfo(
-                                    context,
-                                    result.exhaustedMessage ??
-                                        context.l10n.menuNoMoreRecipes,
+                      child: PressFill(
+                        surface: PressSurface.base,
+                        child: InkWell(
+                          onTap: viewModel.isGenerating
+                              ? null
+                              : () async {
+                                  final result = await viewModel.swapRecipe(
+                                    recipe,
+                                    category,
                                   );
-                                } else if (result.recipe != null &&
-                                    context.mounted) {
-                                  SnackBarUtils.showInfo(
-                                    context,
-                                    context.l10n.menuSwapAlternatives(
-                                      result.alternativesRemaining,
-                                    ),
-                                    duration: const Duration(seconds: 2),
-                                  );
-                                }
-                              },
-                        child: Padding(
-                          padding: const EdgeInsets.all(
-                            AppDimensions.spacingXs,
-                          ),
-                          child: ButleryIcon(
-                            ButleryIcons.swapHorizontal,
-                            size: AppDimensions.iconSizeS,
-                            color: viewModel.isGenerating
-                                ? cs.onSurfaceVariant
-                                : cs.onSurface,
+                                  // The ink snackbar, never a saffron fill
+                                  // (Komponentark v1:745-750, :300; PQ-09 = A).
+                                  if (result.recipe == null &&
+                                      context.mounted) {
+                                    SnackBarUtils.showInfo(
+                                      context,
+                                      result.exhaustedMessage ??
+                                          context.l10n.menuNoMoreRecipes,
+                                    );
+                                  } else if (result.recipe != null &&
+                                      context.mounted) {
+                                    SnackBarUtils.showInfo(
+                                      context,
+                                      context.l10n.menuSwapAlternatives(
+                                        result.alternativesRemaining,
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    );
+                                  }
+                                },
+                          child: Padding(
+                            padding: const EdgeInsets.all(
+                              AppDimensions.spacingXs,
+                            ),
+                            child: ButleryIcon(
+                              ButleryIcons.swapHorizontal,
+                              size: AppDimensions.iconSizeS,
+                              color: viewModel.isGenerating
+                                  ? cs.onSurfaceVariant
+                                  : cs.onSurface,
+                            ),
                           ),
                         ),
                       ),

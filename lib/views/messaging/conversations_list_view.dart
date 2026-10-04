@@ -27,6 +27,7 @@ import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Conversations list view showing all user's messaging conversations.
 /// Delegates all state management to ConversationsViewModel.
@@ -271,40 +272,44 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           label: context.l10n.a11yArchivedConversationsToggle,
           button: true,
           toggled: _archivedExpanded,
-          child: InkWell(
-            onTap: () => setState(() => _archivedExpanded = !_archivedExpanded),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppDimensions.minTouchTarget,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: () =>
+                  setState(() => _archivedExpanded = !_archivedExpanded),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
                 ),
-                child: Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.archive,
-                      size: AppDimensions.iconSizeM,
-                      color: cs.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        context.l10n.messagingArchivedCount(archived.length),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.onSurfaceVariant,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingL,
+                    vertical: AppDimensions.paddingM,
+                  ),
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.archive,
+                        size: AppDimensions.iconSizeM,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Expanded(
+                        child: Text(
+                          context.l10n.messagingArchivedCount(archived.length),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
                       ),
-                    ),
-                    ButleryIcon(
-                      _archivedExpanded
-                          ? ButleryIcons.chevronUp
-                          : ButleryIcons.chevronDown,
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ],
+                      ButleryIcon(
+                        _archivedExpanded
+                            ? ButleryIcons.chevronUp
+                            : ButleryIcons.chevronDown,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

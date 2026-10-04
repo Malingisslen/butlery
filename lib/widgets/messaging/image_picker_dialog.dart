@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Bottom sheet dialog for selecting image source (camera or gallery).
 /// Provides a clean, modern interface for image source selection with:
@@ -115,41 +116,44 @@ class _SourceOption extends StatelessWidget {
       child: Semantics(
         label: label,
         button: true,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingM),
-                  decoration: BoxDecoration(
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.paddingM),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                    child: ButleryIcon(
+                      icon,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      size: AppDimensions.iconSizeL,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingL),
+                  Text(
+                    label,
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: color,
+                    ),
+                  ),
+                  const Spacer(),
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
                     color: color,
-                    shape: BoxShape.circle,
+                    size: AppDimensions.iconSizeS,
                   ),
-                  child: ButleryIcon(
-                    icon,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingL),
-                Text(
-                  label,
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: color,
-                  ),
-                ),
-                const Spacer(),
-                ButleryIcon(
-                  ButleryIcons.chevronRight,
-                  color: color,
-                  size: AppDimensions.iconSizeS,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

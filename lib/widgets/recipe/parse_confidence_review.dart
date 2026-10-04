@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Review widget that surfaces per-ingredient parse confidence (BUT-925).
 ///
@@ -135,40 +136,43 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
       label: context.l10n.a11yToggleConfidenceSection,
       button: true,
       toggled: _expanded,
-      child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingXs,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.parseConfidenceTitle,
-                      style: AppTextStyles.labelLarge,
-                    ),
-                    if (reviewCount > 0)
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingXs,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        context.l10n.parseConfidenceReviewCountSubtitle(
-                          reviewCount,
-                        ),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: context.modeColors.warning,
-                        ),
+                        context.l10n.parseConfidenceTitle,
+                        style: AppTextStyles.labelLarge,
                       ),
-                  ],
+                      if (reviewCount > 0)
+                        Text(
+                          context.l10n.parseConfidenceReviewCountSubtitle(
+                            reviewCount,
+                          ),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: context.modeColors.warning,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              ButleryIcon(
-                _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
-                size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
+                ButleryIcon(
+                  _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
+                  size: AppDimensions.iconSizeM,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -236,69 +240,74 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
           label: a11yLabel,
           button: _hasOriginal,
           toggled: _hasOriginal ? _showOriginal : null,
-          child: InkWell(
-            onTap: _hasOriginal
-                ? () => setState(() => _showOriginal = !_showOriginal)
-                : null,
-            onLongPress: _hasOriginal
-                ? () => setState(() => _showOriginal = !_showOriginal)
-                : null,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingXs,
-              ),
-              // IntrinsicHeight lets the bar stretch to match the text row
-              // height even though the parent is unconstrained (scrollview).
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Thin colour accent bar — 4 px wide, full row height, square.
-                    Container(
-                      key: ValueKey(
-                        'confidence-bar-${widget.ingredient.confidence.name}',
-                      ),
-                      width: _barWidth,
-                      color: barColor,
-                    ),
-                    const SizedBox(width: AppDimensions.space4),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingXs,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: _hasOriginal
+                  ? () => setState(() => _showOriginal = !_showOriginal)
+                  : null,
+              onLongPress: _hasOriginal
+                  ? () => setState(() => _showOriginal = !_showOriginal)
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingXs,
+                ),
+                // IntrinsicHeight lets the bar stretch to match the text row
+                // height even though the parent is unconstrained (scrollview).
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Thin colour accent bar — 4 px wide, full row height, square.
+                      Container(
+                        key: ValueKey(
+                          'confidence-bar-${widget.ingredient.confidence.name}',
                         ),
-                        child: _unread
-                            // The text slot stays empty; the mark says why.
-                            ? Text(
-                                context.l10n.parseConfidenceUnreadLine,
-                                key: const ValueKey('parse-row-unread-mark'),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                  fontStyle: FontStyle.italic,
+                        width: _barWidth,
+                        color: barColor,
+                      ),
+                      const SizedBox(width: AppDimensions.space4),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppDimensions.spacingXs,
+                          ),
+                          child: _unread
+                              // The text slot stays empty; the mark says why.
+                              ? Text(
+                                  context.l10n.parseConfidenceUnreadLine,
+                                  key: const ValueKey('parse-row-unread-mark'),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                )
+                              : Text(
+                                  widget.ingredient.displayString,
+                                  style: AppTextStyles.bodyMedium,
                                 ),
-                              )
-                            : Text(
-                                widget.ingredient.displayString,
-                                style: AppTextStyles.bodyMedium,
-                              ),
-                      ),
-                    ),
-                    if (_hasOriginal)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingXs,
-                        ),
-                        child: ButleryIcon(
-                          _showOriginal
-                              ? ButleryIcons.chevronUp
-                              : ButleryIcons.chevronDown,
-                          size: AppDimensions.iconSizeS,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                  ],
+                      if (_hasOriginal)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppDimensions.spacingXs,
+                          ),
+                          child: ButleryIcon(
+                            _showOriginal
+                                ? ButleryIcons.chevronUp
+                                : ButleryIcons.chevronDown,
+                            size: AppDimensions.iconSizeS,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

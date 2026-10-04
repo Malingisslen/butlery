@@ -150,38 +150,41 @@ class _DetailsToggle extends StatelessWidget {
           ? l.shoppingMergeHideDetailsA11y
           : l.shoppingMergeShowDetailsA11y,
       excludeSemantics: true,
-      child: InkWell(
-        key: ShoppingMergeSheet.detailsToggleKey,
-        onTap: onTap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: cs.outlineVariant),
-              bottom: BorderSide(
-                color: open ? cs.onSurface : cs.outlineVariant,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          key: ShoppingMergeSheet.detailsToggleKey,
+          onTap: onTap,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: cs.outlineVariant),
+                bottom: BorderSide(
+                  color: open ? cs.onSurface : cs.outlineVariant,
+                ),
               ),
             ),
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppDimensions.spacingXxl,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    open
-                        ? l.shoppingMergeHideDetails
-                        : l.shoppingMergeShowDetails,
-                    style: AppTextStyles.bodySmall.copyWith(color: link),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.spacingXxl,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      open
+                          ? l.shoppingMergeHideDetails
+                          : l.shoppingMergeShowDetails,
+                      style: AppTextStyles.bodySmall.copyWith(color: link),
+                    ),
                   ),
-                ),
-                ButleryIcon(
-                  open ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
-                  size: AppDimensions.iconSizeM,
-                  color: link,
-                ),
-              ],
+                  ButleryIcon(
+                    open ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
+                    size: AppDimensions.iconSizeM,
+                    color: link,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -217,64 +220,67 @@ class _SwitchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return MergeSemantics(
-      child: InkWell(
-        key: ShoppingMergeSheet.switchKey(which),
-        onTap: onChanged == null ? null : () => onChanged!(!value),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: divider
-                ? Border(bottom: BorderSide(color: cs.outlineVariant))
-                : null,
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppDimensions.spacingXxl,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          key: ShoppingMergeSheet.switchKey(which),
+          onTap: onChanged == null ? null : () => onChanged!(!value),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: divider
+                  ? Border(bottom: BorderSide(color: cs.outlineVariant))
+                  : null,
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingSm,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.spacingXxl,
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Checkbox(
-                    value: value,
-                    onChanged: onChanged == null
-                        ? null
-                        : (v) => onChanged!(v ?? false),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppDimensions.spacingL,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.onSurface,
-                              fontWeight: FontWeight.w700,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingSm,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: value,
+                      onChanged: onChanged == null
+                          ? null
+                          : (v) => onChanged!(v ?? false),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppDimensions.spacingL,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: AppDimensions.space4),
-                          Text(
-                            body,
-                            style: AppTextStyles.captionBase.copyWith(
-                              color: cs.onSurfaceVariant,
+                            const SizedBox(height: AppDimensions.space4),
+                            Text(
+                              body,
+                              style: AppTextStyles.captionBase.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
                             ),
-                          ),
-                          if (extra != null) ...[
-                            const SizedBox(height: AppDimensions.spacingXs),
-                            extra!,
+                            if (extra != null) ...[
+                              const SizedBox(height: AppDimensions.spacingXs),
+                              extra!,
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -10,6 +10,7 @@ import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// List item widget for displaying conversation in conversations list.
 /// Supports swipe gestures for pin/archive and long-press context menu.
@@ -91,92 +92,95 @@ class ConversationListItem extends StatelessWidget {
             conversation.getDisplayTitle(currentUserId),
           ),
           button: true,
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
-              ),
-              child: Row(
-                children: [
-                  _buildAvatar(context),
-                  const SizedBox(width: AppDimensions.paddingM),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title row with optional pin icon and timestamp
-                        Row(
-                          children: [
-                            if (conversation.isPinned)
-                              Padding(
-                                padding: const EdgeInsetsDirectional.only(
-                                  end: AppDimensions.spacingXs,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingS,
+                ),
+                child: Row(
+                  children: [
+                    _buildAvatar(context),
+                    const SizedBox(width: AppDimensions.paddingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title row with optional pin icon and timestamp
+                          Row(
+                            children: [
+                              if (conversation.isPinned)
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.only(
+                                    end: AppDimensions.spacingXs,
+                                  ),
+                                  child: ButleryIcon(
+                                    ButleryIcons.pin,
+                                    size: AppDimensions.iconSize14,
+                                    color: cs.outlineVariant,
+                                  ),
                                 ),
-                                child: ButleryIcon(
-                                  ButleryIcons.pin,
-                                  size: AppDimensions.iconSize14,
-                                  color: cs.outlineVariant,
+                              Expanded(
+                                child: Text(
+                                  conversation.getDisplayTitle(currentUserId),
+                                  style: _hasUnreadMessages
+                                      ? AppTextStyles.bodyBold.copyWith(
+                                          color: cs.onSurface,
+                                        )
+                                      : AppTextStyles.bodyMedium.copyWith(
+                                          color: cs.onSurface,
+                                        ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            Expanded(
-                              child: Text(
-                                conversation.getDisplayTitle(currentUserId),
-                                style: _hasUnreadMessages
-                                    ? AppTextStyles.bodyBold.copyWith(
-                                        color: cs.onSurface,
-                                      )
-                                    : AppTextStyles.bodyMedium.copyWith(
-                                        color: cs.onSurface,
-                                      ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: AppDimensions.paddingS),
-                            Text(
-                              conversation.formattedLastActivity,
-                              style: _hasUnreadMessages
-                                  ? AppTextStyles.labelSmall.copyWith(
-                                      color: cs.onSurface,
-                                    )
-                                  : AppTextStyles.labelSmall.copyWith(
-                                      color: cs.onSurfaceVariant,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        // Last message and unread indicator row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _getLastMessagePreview(context),
+                              const SizedBox(width: AppDimensions.paddingS),
+                              Text(
+                                conversation.formattedLastActivity,
                                 style: _hasUnreadMessages
                                     ? AppTextStyles.labelSmall.copyWith(
                                         color: cs.onSurface,
                                       )
                                     : AppTextStyles.labelSmall.copyWith(
                                         color: cs.onSurfaceVariant,
+                                        fontWeight: FontWeight.normal,
                                       ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            if (_hasUnreadMessages) ...[
-                              const SizedBox(width: AppDimensions.paddingS),
-                              _buildUnreadIndicator(context),
                             ],
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SizedBox(height: AppDimensions.space4),
+                          // Last message and unread indicator row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _getLastMessagePreview(context),
+                                  style: _hasUnreadMessages
+                                      ? AppTextStyles.labelSmall.copyWith(
+                                          color: cs.onSurface,
+                                        )
+                                      : AppTextStyles.labelSmall.copyWith(
+                                          color: cs.onSurfaceVariant,
+                                        ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (_hasUnreadMessages) ...[
+                                const SizedBox(width: AppDimensions.paddingS),
+                                _buildUnreadIndicator(context),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

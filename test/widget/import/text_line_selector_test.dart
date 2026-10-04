@@ -9,9 +9,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 
+import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -182,6 +184,58 @@ void main() {
           .toList();
       expect(borders, hasLength(1));
       expect(borders.single.top.color, theme.colorScheme.onSurface);
+    });
+  }
+
+  // BUT-2205: a chosen line rests on surface.raised, so its press takes the
+  // step on raised; an unchosen line rests on the dialog and takes raised.
+  for (final dark in [false, true]) {
+    final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+    final mode = dark ? 'dark' : 'light';
+
+    Widget selector() => createLocalizedTestApp(
+      child: Theme(
+        data: theme,
+        child: TextLineSelector(
+          lines: lines,
+          selectedIndices: const {1},
+          onSelectionChanged: (_) {},
+        ),
+      ),
+    );
+
+    testWidgets('a pressed chosen line takes the step on raised ($mode)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(selector());
+      final target = find.text('Vispa ihop');
+      final gesture = await holdPress(tester, target);
+      expect(
+        paintsInkFill(
+          tester,
+          target,
+          ModeColors.of(theme.brightness).pressedOnRaised,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+
+    testWidgets('a pressed unchosen line takes surface.raised ($mode)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(selector());
+      final target = find.text('200 g smör');
+      final gesture = await holdPress(tester, target);
+      expect(
+        paintsInkFill(
+          tester,
+          target,
+          theme.colorScheme.surfaceContainerHighest,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
     });
   }
 }

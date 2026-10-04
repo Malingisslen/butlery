@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog for recovering unsaved recipe drafts.
 /// Shows available drafts with metadata and allows user to:
@@ -133,43 +134,46 @@ class _DraftListTile extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yDraftRecoverTile(draftTitle),
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: AppDimensions.paddingSymmetric4x12,
-          child: Row(
-            children: [
-              ButleryIcon(
-                Icons.description_outlined,
-                size: AppDimensions.iconSizeM,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.width12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      draftTitle,
-                      style: AppTextStyles.contentLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppDimensions.space4),
-                    Text(
-                      '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: AppDimensions.paddingSymmetric4x12,
+            child: Row(
+              children: [
+                ButleryIcon(
+                  Icons.description_outlined,
+                  size: AppDimensions.iconSizeM,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-              ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ],
+                const SizedBox(width: AppDimensions.width12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        draftTitle,
+                        style: AppTextStyles.contentLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppDimensions.space4),
+                      Text(
+                        '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),

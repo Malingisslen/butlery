@@ -25,6 +25,7 @@ import 'package:butlery/views/cooking_mode_view.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 
 import '../infrastructure/factories/recipe_factory.dart';
+import '../infrastructure/helpers/ink_fill.dart';
 import '../infrastructure/mocks/production_mocks.dart';
 
 class _MockPersistenceService extends Mock implements PersistenceService {}
@@ -149,6 +150,48 @@ void main() {
 
       final chip = tester.widget<InlineTimerText>(find.byType(InlineTimerText));
       expect(chip.chipFill, AppModeColors.surfaceRaisedOnInk());
+    });
+  }
+
+  // BUT-2205: the cooking base is ink in light mode and the dark page in
+  // dark mode, so the portion button presses to the step on ink in light
+  // and to surface.raised in dark.
+  for (final (mode, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    testWidgets('a pressed portion button takes the fill of the cooking '
+        'base ($mode)', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          locale: const Locale('sv'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CookingModeView(
+            recipe: RecipeFactory.build(
+              id: 'r1',
+              title: 'Köttbullar',
+              ingredients: ['500 g blandfärs'],
+              instructions: ['Stek bollarna i 10 min.'],
+              portions: 4,
+            ),
+            effects: _NoEffects(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final target = find.descendant(
+        of: find.bySemanticsLabel('Öka portioner'),
+        matching: find.byType(InkWell),
+      );
+      final gesture = await holdPress(tester, target);
+      final fill = theme.brightness == Brightness.dark
+          ? theme.colorScheme.surfaceContainerHighest
+          : ModeColors.of(theme.brightness).pressedOnInk;
+      expect(paintsInkFill(tester, target, fill), isTrue);
+      await gesture.cancel();
     });
   }
 }

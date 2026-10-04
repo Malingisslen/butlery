@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedShoppingListCard - Card for displaying shared shopping lists
 /// Displays shared shopping list information with view/join/dismiss actions
@@ -40,66 +41,72 @@ class SharedShoppingListCard {
       child: Semantics(
         label: context.l10n.a11ySharedShoppingList(sharedShoppingList.listName),
         button: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          onTap: () {
-            if (!isRead) {
-              viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
-            }
-            _showShoppingListPreview(context, viewModel, sharedShoppingList);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: !isRead
-                  ? Border.all(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      width: 2,
-                    )
-                  : null,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with sharing info
-                SharedCardHeader(
-                  displayName: sharedShoppingList.sharedByDisplayName,
-                  timestampText: sharedShoppingList.timeAgoText,
-                  isRead: isRead,
-                  onDismiss: () => SharedContentActions.dismissShoppingList(
-                    context,
-                    viewModel,
-                    sharedShoppingList,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            onTap: () {
+              if (!isRead) {
+                viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
+              }
+              _showShoppingListPreview(context, viewModel, sharedShoppingList);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                border: !isRead
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      )
+                    : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with sharing info
+                  SharedCardHeader(
+                    displayName: sharedShoppingList.sharedByDisplayName,
+                    timestampText: sharedShoppingList.timeAgoText,
+                    isRead: isRead,
+                    onDismiss: () => SharedContentActions.dismissShoppingList(
+                      context,
+                      viewModel,
+                      sharedShoppingList,
+                    ),
+                    onUnshare: () => SharedContentActions.unshareShoppingList(
+                      context,
+                      viewModel,
+                      sharedShoppingList,
+                    ),
                   ),
-                  onUnshare: () => SharedContentActions.unshareShoppingList(
-                    context,
-                    viewModel,
-                    sharedShoppingList,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.space4),
-
-                // Shopping list content
-                _buildShoppingListContent(context, sharedShoppingList),
-
-                // Message from sharer
-                if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
                   const SizedBox(height: AppDimensions.space4),
-                  _buildShareMessage(context, sharedShoppingList.shareMessage!),
+
+                  // Shopping list content
+                  _buildShoppingListContent(context, sharedShoppingList),
+
+                  // Message from sharer
+                  if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
+                    const SizedBox(height: AppDimensions.space4),
+                    _buildShareMessage(
+                      context,
+                      sharedShoppingList.shareMessage!,
+                    ),
+                  ],
+
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Action buttons
+                  _buildActionButtons(
+                    context,
+                    viewModel,
+                    sharedShoppingList,
+                    isRead,
+                    isJoined,
+                  ),
                 ],
-
-                const SizedBox(height: AppDimensions.space4),
-
-                // Action buttons
-                _buildActionButtons(
-                  context,
-                  viewModel,
-                  sharedShoppingList,
-                  isRead,
-                  isJoined,
-                ),
-              ],
+              ),
             ),
           ),
         ),

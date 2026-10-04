@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
@@ -196,36 +197,39 @@ class _AddPageTile extends StatelessWidget {
     return Semantics(
       label: context.l10n.importPhotoAddPage,
       button: true,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: Container(
-          height: size,
-          width: size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(
-              color: onPressed == null ? cs.outlineVariant : cs.onSurface,
-              width: AppDimensions.borderWidthStandard,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ButleryIcon(
-                ButleryIcons.camera,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: Container(
+            height: size,
+            width: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              border: Border.all(
                 color: onPressed == null ? cs.outlineVariant : cs.onSurface,
-                size: AppDimensions.iconSizeM,
+                width: AppDimensions.borderWidthStandard,
               ),
-              const SizedBox(height: AppDimensions.space4),
-              Text(
-                context.l10n.importPhotoAddPage,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.badgeLarge.copyWith(
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ButleryIcon(
+                  ButleryIcons.camera,
                   color: onPressed == null ? cs.outlineVariant : cs.onSurface,
+                  size: AppDimensions.iconSizeM,
                 ),
-              ),
-            ],
+                const SizedBox(height: AppDimensions.space4),
+                Text(
+                  context.l10n.importPhotoAddPage,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.badgeLarge.copyWith(
+                    color: onPressed == null ? cs.outlineVariant : cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -23,6 +23,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// View-mode toggle for the Veckomeny screen output.
 enum VeckomenyViewMode { lista, kalender }
@@ -121,41 +122,44 @@ class VeckomenyViewModeToggle extends StatelessWidget
       selected: active,
       excludeSemantics: true,
       child: ButleryControlFocus(
-        child: InkWell(
-          onTap: onTap,
-          child: ButleryControlFocus.box(
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingXs,
-                    vertical: AppDimensions.spacingL,
-                  ),
-                  child: Text(
-                    label,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      // text.primary / text.secondary (onSurface /
-                      // onSurfaceVariant), both modes.
-                      color: active ? cs.onSurface : cs.onSurfaceVariant,
-                      fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: ButleryControlFocus.box(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingXs,
+                      vertical: AppDimensions.spacingL,
                     ),
-                  ),
-                ),
-                if (active)
-                  PositionedDirectional(
-                    start: 0,
-                    end: 0,
-                    bottom: 0,
-                    child: SizedBox(
-                      key: indicatorKey,
-                      height: indicatorHeight,
-                      child: ColoredBox(
-                        color: context.modeColors.progressIndicator,
+                    child: Text(
+                      label,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        // text.primary / text.secondary (onSurface /
+                        // onSurfaceVariant), both modes.
+                        color: active ? cs.onSurface : cs.onSurfaceVariant,
+                        fontWeight: active ? FontWeight.w700 : FontWeight.w600,
                       ),
                     ),
                   ),
-              ],
+                  if (active)
+                    PositionedDirectional(
+                      start: 0,
+                      end: 0,
+                      bottom: 0,
+                      child: SizedBox(
+                        key: indicatorKey,
+                        height: indicatorHeight,
+                        child: ColoredBox(
+                          color: context.modeColors.progressIndicator,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

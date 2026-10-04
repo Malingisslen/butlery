@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -279,128 +280,130 @@ class _LineItem extends StatelessWidget {
               ? '${text.trim()}, ${context.l10n.importAiSuggestedA11y}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}'
               : '${text.trim()}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}',
           button: true,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.space8,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusControl,
+          child: PressFill(
+            surface: isSelected ? PressSurface.raised : PressSurface.base,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.space8,
                 ),
-                border: Border.all(
-                  color: borderColor,
-                  width: isSelected ? 1.5 : 1,
-                  style: borderStyle,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusControl,
+                  ),
+                  border: Border.all(
+                    color: borderColor,
+                    width: isSelected ? 1.5 : 1,
+                    style: borderStyle,
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  // Selection indicator
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected ? modeColor : Colors.transparent,
-                      border: Border.all(
-                        color: isSelected ? modeColor : colorScheme.outline,
-                        width: 2,
-                      ),
-                    ),
-                    child: isSelected
-                        ? ButleryIcon(
-                            ButleryIcons.check,
-                            size: AppDimensions.iconSizeS,
-                            color: colorScheme.onPrimary,
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: AppDimensions.width12),
-                  // Line number (optional)
-                  if (showLineNumber) ...[
-                    SizedBox(
-                      width: 32,
-                      child: Text(
-                        '${lineIndex + 1}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                  ],
-                  // Line text
-                  Expanded(
-                    child: Text(
-                      text.trim(),
-                      style: isSelected
-                          ? AppTextStyles.contentLabel
-                          : AppTextStyles.bodyMedium,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // BUT-931: provenance chip ("Butlerys förslag") — marks lines
-                  // the local heuristic detector suggested so the user can tell
-                  // them from their own input. Not labelled "AI" (no LLM call).
-                  if (isAiSuggested) ...[
-                    const SizedBox(width: AppDimensions.spacingSm),
+                child: Row(
+                  children: [
+                    // Selection indicator
                     Container(
-                      padding: AppDimensions.badgePadding,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusControl,
+                        shape: BoxShape.circle,
+                        color: isSelected ? modeColor : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected ? modeColor : colorScheme.outline,
+                          width: 2,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ButleryIcon(
-                            Icons.auto_awesome,
-                            size: AppDimensions.iconSizeXs,
-                            color: colorScheme.onSecondaryContainer,
+                      child: isSelected
+                          ? ButleryIcon(
+                              ButleryIcons.check,
+                              size: AppDimensions.iconSizeS,
+                              color: colorScheme.onPrimary,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: AppDimensions.width12),
+                    // Line number (optional)
+                    if (showLineNumber) ...[
+                      SizedBox(
+                        width: 32,
+                        child: Text(
+                          '${lineIndex + 1}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
-                          const SizedBox(width: AppDimensions.space4),
-                          Text(
-                            context.l10n.importAiSuggested,
-                            style: AppTextStyles.labelSmall.copyWith(
+                        ),
+                      ),
+                    ],
+                    // Line text
+                    Expanded(
+                      child: Text(
+                        text.trim(),
+                        style: isSelected
+                            ? AppTextStyles.contentLabel
+                            : AppTextStyles.bodyMedium,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // BUT-931: provenance chip ("Butlerys förslag") — marks lines
+                    // the local heuristic detector suggested so the user can tell
+                    // them from their own input. Not labelled "AI" (no LLM call).
+                    if (isAiSuggested) ...[
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Container(
+                        padding: AppDimensions.badgePadding,
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusControl,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ButleryIcon(
+                              Icons.auto_awesome,
+                              size: AppDimensions.iconSizeXs,
                               color: colorScheme.onSecondaryContainer,
                             ),
+                            const SizedBox(width: AppDimensions.space4),
+                            Text(
+                              context.l10n.importAiSuggested,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: colorScheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    // Highlighted indicator
+                    if (isHighlighted && !isSelected) ...[
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Container(
+                        padding: AppDimensions.badgePadding,
+                        // A thin border in the mode's colour, not a tint:
+                        // the line's suggested state is never opacity.
+                        decoration: BoxDecoration(
+                          border: Border.all(color: modeColor),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusControl,
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  // Highlighted indicator
-                  if (isHighlighted && !isSelected) ...[
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Container(
-                      padding: AppDimensions.badgePadding,
-                      // A thin border in the mode's colour, not a tint:
-                      // the line's suggested state is never opacity
-                      // (tokens.json:40-53).
-                      decoration: BoxDecoration(
-                        border: Border.all(color: modeColor),
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusControl,
+                        ),
+                        child: Text(
+                          mode == SelectionMode.ingredients
+                              ? context.l10n.importLikely
+                              : context.l10n.importStep,
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: modeColor,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        mode == SelectionMode.ingredients
-                            ? context.l10n.importLikely
-                            : context.l10n.importStep,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: modeColor,
-                        ),
-                      ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

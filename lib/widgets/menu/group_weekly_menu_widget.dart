@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
 ///
@@ -459,18 +460,21 @@ Widget _provenance(
   return Semantics(
     label: context.l10n.a11yShowVoters,
     button: true,
-    child: InkWell(
-      onTap: () => _showVoters(context, vm, entry),
-      // The visible row is one line of `bodySmall`, well under the minimum
-      // touch target. Not wrapped in `TappableWrapper`: its `Center` would
-      // re-centre the row in a layout that is deliberately left-aligned. A
-      // control that is hard to hit shows no names, and the Art. 15 decision
-      // to export other members' voter uids rests on the app showing them.
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minHeight: AppDimensions.minTouchTarget,
+    child: PressFill(
+      surface: PressSurface.base,
+      child: InkWell(
+        onTap: () => _showVoters(context, vm, entry),
+        // The visible row is one line of `bodySmall`, well under the minimum
+        // touch target. Not wrapped in `TappableWrapper`: its `Center` would
+        // re-centre the row in a layout that is deliberately left-aligned. A
+        // control that is hard to hit shows no names, and the Art. 15 decision
+        // to export other members' voter uids rests on the app showing them.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
+          child: Align(alignment: Alignment.centerLeft, child: label),
         ),
-        child: Align(alignment: Alignment.centerLeft, child: label),
       ),
     ),
   );

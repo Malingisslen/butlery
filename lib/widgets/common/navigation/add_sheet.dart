@@ -20,6 +20,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Opens the add sheet. A choice closes the sheet and opens its view on the
 /// navigator below it, so Back returns to where the plus was.
@@ -200,32 +201,35 @@ class _RouteTile extends StatelessWidget {
           key: ValueKey('test-add-sheet-$identifier'),
           color: cs.surface,
           shape: shape,
-          child: InkWell(
-            customBorder: shape,
-            onTap: onTap,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppDimensions.minTouchTarget,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingSm,
-                  vertical: AppDimensions.spacingMd,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              customBorder: shape,
+              onTap: onTap,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ButleryIcon(icon, color: cs.onSurface),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w600,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingSm,
+                    vertical: AppDimensions.spacingMd,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ButleryIcon(icon, color: cs.onSurface),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: cs.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
