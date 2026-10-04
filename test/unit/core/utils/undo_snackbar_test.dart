@@ -165,7 +165,7 @@ void main() {
               ? const BorderSide(color: Color(0x2EF5F4ED))
               : BorderSide.none,
         );
-        // Message paper, action light saffron.
+        // Message paper.
         final message = tester.widget<Text>(
           find.byKey(InkSnackBar.messageKey),
         );
@@ -175,7 +175,7 @@ void main() {
         );
         expect(
           action.style?.foregroundColor?.resolve(<WidgetState>{}),
-          const Color(0xFFE09D50),
+          mode == 'dark' ? const Color(0xFFDCA968) : const Color(0xFFE09D50),
         );
         // At least a 48 dp target.
         expect(

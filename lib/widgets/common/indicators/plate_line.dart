@@ -68,8 +68,7 @@ class PlateLine extends StatefulWidget {
   /// att pulsen är lugn och inte drar uppmärksamhet (Grafisk manual v6:589).
   static const double pulseMinOpacity = 0.4;
 
-  /// En halv puls (full opacitet till [pulseMinOpacity]). Ingen token finns
-  /// för pulsen; tolkning.
+  /// En halv puls (full opacitet till [pulseMinOpacity]).
   static const Duration pulseHalfCycle = Duration(milliseconds: 1200);
 
   /// Det obestämda segmentet. Nyckeln finns för prov, inte för identitet i

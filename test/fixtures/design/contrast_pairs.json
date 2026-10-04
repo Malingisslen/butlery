@@ -3,8 +3,8 @@
  "source": {
   "file": "tokens.json",
   "repo": "Butlery design system",
-  "commit": "c307e18",
-  "sha256": "2560b5f0804e908aac5ce59e54c3300ceac2622b7145bcd4844ddaaad613527c",
+  "commit": "baf22e2",
+  "sha256": "a2d2bafafa14c6b918c797ad4b22ef81393b4ebeb96f71c723fd7ceb018afaa3",
   "tokens_version": "1.13",
   "tokens_date": "2026-08-05"
  },
@@ -246,6 +246,15 @@
      "dark": 4.73
     },
     "reason": "Inaktiverade kontroller är undantagna 4,5:1 enligt WCAG 1.4.3. Butlerys eget golv på 3:1 gäller — texten ska gå att läsa, bara inte inbjuda till handling. Mätt mot surface.ink (#24382C i båda lägena)."
+   },
+   {
+    "token": "surface.pressed.onRaised",
+    "floor": 3,
+    "measured": {
+     "light": 3.03,
+     "dark": 7.25
+    },
+    "reason": "Övergående tryckläge (produktbeslut R7-1 = B, BUT-2205, Malin 2026-10-04): så länge fingret ligger kvar får texten i en tryckt rad på surface.raised stå på #B4BFA6 med golvet 3:1. Lägst text.secondary.onRaised 3,03 ljust; text.success.onRaised 3,19, text.accent.onRaised och text.link 3,32, text.danger.onRaised 3,57, text.body 5,27, text.primary 6,53. Mörkt #17251D klarar 4,5 för all text (lägst 7,25). Gäller bara tryck och hover, aldrig vila; inaktiverade rader trycks inte."
    },
    {
     "token": "border.onInk",

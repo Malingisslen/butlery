@@ -20,6 +20,7 @@ import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -207,6 +208,30 @@ void main() {
       expect(find.text('Säg ett kommando…'), findsOneWidget);
     },
   );
+
+  testWidgets('listening pulses on the shared 1200 ms loop (R7-4 = B)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buttonApp(onEnsurePermission: () async => true));
+    await tester.tap(find.byIcon(ButleryIcons.mic));
+    await tester.pump();
+
+    double scale() => tester
+        .widget<ScaleTransition>(
+          find.ancestor(
+            of: find.byIcon(ButleryIcons.stop),
+            matching: find.byType(ScaleTransition),
+          ),
+        )
+        .scale
+        .value;
+
+    expect(scale(), closeTo(0.88, 0.005));
+    await tester.pump(AppMotion.pulse ~/ 2);
+    expect(scale(), lessThan(0.99));
+    await tester.pump(AppMotion.pulse ~/ 2);
+    expect(scale(), closeTo(1.0, 0.005));
+  });
 
   testWidgets('transcribing shows the plate line, not a spinner (P4-U06)', (
     tester,

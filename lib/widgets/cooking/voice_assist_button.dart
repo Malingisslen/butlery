@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 
@@ -47,7 +48,7 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
   static const double _buttonEdge = 56;
 
   late final AnimationController _pulse = AnimationController(
-    duration: const Duration(milliseconds: 900),
+    duration: AppMotion.pulse,
     vsync: this,
   );
 

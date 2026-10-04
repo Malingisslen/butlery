@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 
 /// BUT-406: Widget-level tests. We drive a real [StepTimerService] and
@@ -52,6 +53,27 @@ void main() {
       expect(service.isRunning, isTrue);
 
       // Clear the periodic timer before the framework's pending-timer check.
+      service.reset();
+      await service.dispose();
+    },
+  );
+
+  testWidgets(
+    'the digits are the stat role with tabular figures (R7-3 = C)',
+    (tester) async {
+      final service = StepTimerService();
+
+      await tester.pumpWidget(
+        harness(service, initialDuration: const Duration(minutes: 3)),
+      );
+      await tester.pump();
+
+      final style = tester.widget<Text>(find.text('03:00')).style!;
+      expect(style.fontSize, AppTextStyles.statNumber.fontSize);
+      expect(style.fontSize, 38);
+      expect(style.fontWeight, AppTextStyles.statNumber.fontWeight);
+      expect(style.fontFeatures, contains(const FontFeature.tabularFigures()));
+
       service.reset();
       await service.dispose();
     },

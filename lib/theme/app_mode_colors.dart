@@ -103,11 +103,6 @@ abstract final class AppModeColors {
   /// (Skarmar v12 del 1 #hemrecept :137).
   static Color textSecondaryOnInk() => AppColorsDark.greenMuted;
 
-  /// palette.saffronLight #E09D50, the generated member textAccentOnInk, in
-  /// both modes: the accent text on ink (Komponentark v1:747; Skarmar v12
-  /// del 1 #hemrecept :134, the card's eyebrow). 5.43:1 on #24382C.
-  static Color textAccentOnInk() => AppColors.textAccentOnInk;
-
   /// palette.inkRaised #2F4437 in both modes: a raised surface on ink, such as
   /// a row or card inside the outgoing chat bubble.
   static Color surfaceRaisedOnInk() => AppColors.surfaceDark;
@@ -333,17 +328,11 @@ final class ModeColors {
   Color get surfaceTintSuccess =>
       _isDark ? AppColorsDark.surfaceTintSuccess : AppColors.surfaceTintSuccess;
 
-  /// Accent text on surface.ink #24382C, as the Hem tonight eyebrow draws
-  /// it (Skarmar v12 del 1:47, --r04slot-765: #e09d50 light, #dca968 dark).
-  ///
-  /// Dark: semantic text.accent, the generated AppColorsDark.textAccent
-  /// #DCA968, 5.91:1 on ink, like every other accent text in dark mode
-  /// (produktbeslut R6-01 = A, BUT-2197). Light: text.accent is #A15A0A,
-  /// which measures 2.37:1 on ink, so light keeps the drawn
-  /// AppColors.textAccentOnInk #E09D50, 5.43:1. Both rows are in the
-  /// Block 289 contrast contract.
+  /// semantic text.accent.onInk: accent text on surface.ink, as the Hem
+  /// tonight eyebrow and the snackbar action draw it (produktbeslut
+  /// R7-5 = A).
   Color get accentOnInk =>
-      _isDark ? AppColorsDark.textAccent : AppColors.textAccentOnInk;
+      _isDark ? AppColorsDark.textAccentOnInk : AppColors.textAccentOnInk;
 
   /// semantic overlay.paperCard: rgba(245,244,237,0.54), delivered as the
   /// generated member cardWhite54. The translucent paper tile that carries

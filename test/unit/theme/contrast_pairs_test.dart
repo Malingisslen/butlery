@@ -39,7 +39,7 @@ const knownContrastFailures = <String, String>{};
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    '2560b5f0804e908aac5ce59e54c3300ceac2622b7145bcd4844ddaaad613527c';
+    'a2d2bafafa14c6b918c797ad4b22ef81393b4ebeb96f71c723fd7ceb018afaa3';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',
