@@ -7,7 +7,6 @@
 /// - Marks drawn straight on the page (radio, slider, scrollbar) use
 ///   text.primary: ink in light, paper in dark
 /// - Snackbar: the ink snackbar (Komponentark v1:745-750)
-/// - Progress indicators: ink in light, saffron in dark
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -234,22 +233,14 @@ class FeedbackThemes {
 
   /// Progress indicator theme
   ///
-  /// Dark: the indicator is progressIndicator, saffron #CE7C1E, on the
-  /// progressTrack paper 18 % (tokens.json:161-168), as the dark panel draws
-  /// the progress bar (Komponentark v1:545). It used to be cs.primary, ink,
-  /// 1.27:1 on the dark base #17251D. The track is cs.outlineVariant, which
-  /// is that same paper 18 % in the dark scheme.
-  ///
-  /// Light keeps ink on border.subtle, unchanged. tokens.json names saffron
-  /// on #E6EAD9 for light too; that light change is outside this dark-mode
-  /// unit and is left open.
+  /// The indicator is progressIndicator, saffron #CE7C1E, on progressTrack
+  /// (#E6EAD9 light, paper 18 % dark), the same members PlateLine draws.
   static ProgressIndicatorThemeData progressIndicatorTheme(ColorScheme cs) {
+    final colors = ModeColors.of(cs.brightness);
     return ProgressIndicatorThemeData(
-      color: cs.brightness == Brightness.dark
-          ? AppColorsDark.progressIndicator
-          : cs.primary,
-      linearTrackColor: cs.outlineVariant,
-      circularTrackColor: cs.outlineVariant,
+      color: colors.progressIndicator,
+      linearTrackColor: colors.progressTrack,
+      circularTrackColor: colors.progressTrack,
     );
   }
 

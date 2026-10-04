@@ -391,6 +391,17 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(capturedSelection, containsAll(['user1', 'user2']));
+        // BUT-2155: the chosen chip sits on surface.raised, so its label is
+        // ink, not the theme's paper label for the ink fill.
+        final label = DefaultTextStyle.of(
+          tester.element(
+            find.descendant(
+              of: find.widgetWithText(FilterChip, 'Familjen'),
+              matching: find.text('Familjen'),
+            ),
+          ),
+        ).style;
+        expect(label.color, AppTheme.lightTheme.colorScheme.onSurface);
       });
 
       testWidgets('deselects category on second tap', (

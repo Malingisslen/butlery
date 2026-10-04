@@ -206,6 +206,9 @@ class CategorySelectionWidgets {
       // text.primary (onSurface): ink on light, paper on dark.
       selectedColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       checkmarkColor: Theme.of(context).colorScheme.onSurface,
+      labelStyle: AppTextStyles.labelMedium.copyWith(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       side: BorderSide(
         color: isSelected

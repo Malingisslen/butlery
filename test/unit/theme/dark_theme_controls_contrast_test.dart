@@ -13,9 +13,6 @@
 /// (--ram-kontroll-a); tokens.json:54-57 (text.primary), :128-131
 /// (border.control), :137-152 (action.primary, control.checked),
 /// :161-168 (progress), :263 (overlay.paperWash).
-///
-/// Light mode must be unchanged: the second group pins every touched value
-/// to what it resolved to before.
 library;
 
 import 'package:flutter/material.dart';
@@ -371,12 +368,11 @@ void main() {
       expect(light.switchTheme.thumbColor!.resolve(_selected), _paper);
     });
 
-    test('slider, progress and scrollbar', () {
+    test('slider and scrollbar', () {
       final s = light.sliderTheme;
       expect(s.activeTrackColor, _ink);
       expect(s.thumbColor, _ink);
       expect(s.valueIndicatorColor, _ink);
-      expect(light.progressIndicatorTheme.color, _ink);
       expect(
         light.scrollbarTheme.thumbColor!.resolve({}),
         _ink.withValues(alpha: 0.6),

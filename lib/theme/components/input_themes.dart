@@ -181,7 +181,7 @@ class InputThemes {
   /// Interpretation: the panel draws the resting edge at paper 35 %
   /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
   /// has a generated member, as for the outlined button. Light mode sets no
-  /// side and no check colour, so it resolves exactly as before.
+  /// side and no check colour.
   static ChipThemeData chipTheme(ColorScheme cs) {
     final dark = cs.brightness == Brightness.dark;
     return ChipThemeData(
@@ -191,13 +191,15 @@ class InputThemes {
       side: dark ? _darkChipSide(cs) : null,
       disabledColor: dark ? Colors.transparent : cs.outlineVariant,
       labelStyle: AppTextStyles.labelMedium.copyWith(
-        color: dark
-            ? WidgetStateColor.resolveWith(
-                (states) => states.contains(WidgetState.disabled)
-                    ? cs.onSurfaceVariant
-                    : cs.onSurface,
-              )
-            : cs.onSurface,
+        // A chosen chip sits on the ink fill, so its label is paper in both
+        // modes (cs.onPrimary), never ink on ink.
+        color: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return cs.onPrimary;
+          if (dark && states.contains(WidgetState.disabled)) {
+            return cs.onSurfaceVariant;
+          }
+          return cs.onSurface;
+        }),
       ),
       secondaryLabelStyle: AppTextStyles.labelMedium.copyWith(
         color: cs.onPrimary,
