@@ -8,6 +8,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
@@ -311,6 +312,33 @@ void main() {
       );
     });
   }
+
+  // BUT-2193, BUT-2219: Avbryt wraps at a large system text size instead of
+  // ending in "…".
+  testWidgets('Avbryt wraps instead of being cut at a large text size', (
+    tester,
+  ) async {
+    await _open(tester);
+    tester.view.physicalSize = const Size(640, 1400);
+    tester.platformDispatcher.textScaleFactorTestValue = 3;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpAndSettle();
+
+    final label = find.descendant(
+      of: find.byKey(ShoppingMergeSheet.cancelKey),
+      matching: find.text('Avbryt'),
+    );
+    final text = tester.widget<Text>(label);
+    expect(text.overflow, isNull);
+    expect(text.maxLines, isNull);
+    expect(tester.takeException(), isNull);
+    final paragraph = tester.renderObject<RenderParagraph>(label);
+    expect(paragraph.didExceedMaxLines, isFalse);
+    expect(
+      tester.getSize(label).height,
+      greaterThan(paragraph.preferredLineHeight * 1.5),
+    );
+  });
 
   testWidgets('fits a 320 dp phone with details open, without overflow', (
     tester,

@@ -244,7 +244,7 @@ class BackupService extends BaseService {
             sourceUrl: newRecipe.sourceUrl,
           );
           successCount++;
-        } catch (e) {
+        } catch (e, stackTrace) {
           skipCount++;
           // BUT-1139: read nested `core.title` first (current Recipe.toJson()
           // shape), fall back to top-level `title` for any future flatter
@@ -255,7 +255,15 @@ class BackupService extends BaseService {
               coreTitle ??
               recipeJson['title'] ??
               AppLocale.current.backupUnknownRecipe;
-          errors.add('$label: $e');
+          // The exception goes to the log without the title, which is the
+          // user's own content.
+          AppLogger.error(
+            'Import av recept misslyckades',
+            e,
+            'BackupService',
+            stackTrace,
+          );
+          errors.add('$label');
         }
       }
 

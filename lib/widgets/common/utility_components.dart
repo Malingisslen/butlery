@@ -37,25 +37,6 @@ class UtilityComponents {
     );
   }
 
-  /// Square button for grid layouts (recipe upload view)
-  static Widget squareButton(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required VoidCallback onPressed,
-    bool isLoading = false,
-    String? loadingText,
-  }) {
-    return ActionButtons.squareButton(
-      context,
-      label: label,
-      icon: icon,
-      onPressed: onPressed,
-      isLoading: isLoading,
-      loadingText: loadingText,
-    );
-  }
-
   /// Large prominent button for important actions
   static Widget largeButton(
     BuildContext context, {

@@ -445,11 +445,8 @@ class SnackBarUtils {
     BuildContext context,
     String message, {
     required VoidCallback onUndo,
-    UndoSnackBarLook look = UndoSnackBarLook.plain,
   }) {
-    return UndoSnackBar.capture(
-      context,
-    ).show(message, onUndo: onUndo, look: look);
+    return UndoSnackBar.capture(context).show(message, onUndo: onUndo);
   }
 
   /// [showUndo] for a delete whose commit waits for the undo window.
@@ -461,13 +458,11 @@ class SnackBarUtils {
     String message, {
     required VoidCallback onUndo,
     required FutureOr<void> Function() onCommit,
-    UndoSnackBarLook look = UndoSnackBarLook.plain,
   }) {
     UndoSnackBar.capture(context).showDeferred(
       message,
       onUndo: onUndo,
       onCommit: onCommit,
-      look: look,
     );
   }
 }
@@ -606,18 +601,6 @@ class InkSnackBarAction extends StatelessWidget {
   }
 }
 
-/// How an undo snackbar looks. Both values give the ink snackbar
-/// (Komponentark v1:745-750, PQ-09 = A): the app never shows two snackbar
-/// looks at once. The value stays so the call sites keep compiling; it is
-/// removed in package 7.
-enum UndoSnackBarLook {
-  /// The ink snackbar.
-  plain,
-
-  /// The ink snackbar. Used to be the green confirmation look.
-  confirmation,
-}
-
 /// An undo snackbar whose context lookups are done up front.
 ///
 /// [capture] resolves the [ScaffoldMessengerState], the `commonUndo` label and
@@ -674,7 +657,6 @@ class UndoSnackBar {
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? show(
     String message, {
     required VoidCallback onUndo,
-    UndoSnackBarLook look = UndoSnackBarLook.plain,
   }) {
     final messenger = _messenger;
     if (messenger == null) return null;
@@ -734,12 +716,10 @@ class UndoSnackBar {
     String message, {
     required VoidCallback onUndo,
     required FutureOr<void> Function() onCommit,
-    UndoSnackBarLook look = UndoSnackBarLook.plain,
   }) {
     var undone = false;
     final controller = show(
       message,
-      look: look,
       onUndo: () {
         if (undone) return;
         undone = true;

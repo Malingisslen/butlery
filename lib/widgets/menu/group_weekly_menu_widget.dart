@@ -211,7 +211,6 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     SnackBarUtils.showUndo(
       context,
       context.l10n.groupMenuDishRemoved,
-      look: UndoSnackBarLook.confirmation,
       onUndo: () => unawaited(vm.undoLastRemoval()),
     );
   }

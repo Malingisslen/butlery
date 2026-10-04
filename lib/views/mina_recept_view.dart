@@ -618,7 +618,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     SnackBarUtils.showUndoDeferred(
       context,
       context.l10n.recipeDeleted,
-      look: UndoSnackBarLook.confirmation,
       onUndo: () => viewModel.undoDeleteById(id),
       onCommit: () => viewModel.commitDeletes([id]),
     );
