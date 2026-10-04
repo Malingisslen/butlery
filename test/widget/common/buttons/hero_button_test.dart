@@ -3,6 +3,7 @@
 // bottom edge, never disabled while it works.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_theme.dart';
@@ -13,6 +14,29 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
+  // BUT-2219: a long name wraps instead of ending in "…".
+  testWidgets('a very long label wraps instead of being cut', (tester) async {
+    const long = 'Spara receptet och lägg till det i veckans meny direkt';
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: SizedBox(
+          width: 150,
+          child: HeroButton(label: long, onPressed: () {}),
+        ),
+      ),
+    );
+    final label = find.text(long);
+    final text = tester.widget<Text>(label);
+    expect(text.overflow, isNull);
+    expect(text.maxLines, isNull);
+    expect(tester.takeException(), isNull);
+    final paragraph = tester.renderObject<RenderParagraph>(label);
+    expect(
+      tester.getSize(label).height,
+      greaterThan(paragraph.preferredLineHeight * 1.5),
+    );
+  });
+
   for (final dark in [false, true]) {
     testWidgets('rests on the hero colours (${dark ? 'dark' : 'light'})', (
       tester,
