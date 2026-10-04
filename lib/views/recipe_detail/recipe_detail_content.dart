@@ -857,7 +857,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                   style: TextButton.styleFrom(
                     padding: AppDimensions.paddingHorizontal8,
                     minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    // BUT-2218: the button stays compact, its tap area is
+                    // padded to 48 dp (tokens.json touchTarget).
+                    tapTargetSize: MaterialTapTargetSize.padded,
                   ),
                 ),
             ],
@@ -867,6 +869,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           Wrap(
             spacing: AppDimensions.space4,
             runSpacing: AppDimensions.space4,
+            // The overflow chip's hit area makes its run taller than the
+            // tags; centring keeps the chips level with each other.
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               ...displayNames.map((name) => _buildPersonalTag(context, name)),
               if (!_isExpanded && hasOverflow)
@@ -909,20 +914,33 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       label: context.l10n.a11yShowMore(count),
       button: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _isExpanded = true),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space4,
-            vertical: AppDimensions.spacingXs,
+        // BUT-2218: the chip stays small; its hit area is 48 dp tall and wide
+        // (tokens.json touchTarget), the chip centred inside it.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: AppDimensions.minTouchTarget,
+            minHeight: AppDimensions.minTouchTarget,
           ),
-          decoration: BoxDecoration(
-            color: cs.surface,
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: Text(
-            context.l10n.commonMoreCount(count),
-            style: AppTextStyles.metadataEmphasized.copyWith(
-              color: AppModeColors.textSecondaryOnRaised(cs.brightness),
+          child: Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.space4,
+                vertical: AppDimensions.spacingXs,
+              ),
+              decoration: BoxDecoration(
+                color: cs.surface,
+                border: Border.all(color: cs.outlineVariant),
+              ),
+              child: Text(
+                context.l10n.commonMoreCount(count),
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: AppModeColors.textSecondaryOnRaised(cs.brightness),
+                ),
+              ),
             ),
           ),
         ),
