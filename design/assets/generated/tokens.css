@@ -2,7 +2,7 @@
   GENERERAD FIL — ändra källan, inte den här.
   system 2.1 · tokens 1.13
   generator tools/gen-css.mjs v1.3
-  källfingeravtryck sha256:1ecac06dfdaffe5ac5ee36f91d02fe60cf4fca9849778d4ce4e445037bac6a7d (4 indatafiler, generatorns källa inräknad)
+  källfingeravtryck sha256:1048d865474f899fe98770d6e8e62e9abfbed3bc235551cade78933bad860b5e (4 indatafiler, generatorns källa inräknad)
   genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 */
 
@@ -34,6 +34,7 @@
   --butlery-motion-cloche-return: 200ms;
   --butlery-motion-easing: cubic-bezier(0.33,0,0.2,1);
   --butlery-motion-micro: 180ms;
+  --butlery-motion-pulse: 1200ms;
   --butlery-motion-splash-loop: 5000ms;
   --butlery-motion-standard: 320ms;
   --butlery-overlay-ink-light: rgba(23,37,29,0.20);
@@ -92,12 +93,15 @@
   --butlery-surface-base: #F5F4ED;
   --butlery-surface-disabled: #A9B2A0;
   --butlery-surface-ink: #24382C;
+  --butlery-surface-pressed-on-ink: #17251D;
+  --butlery-surface-pressed-on-raised: #B4BFA6;
   --butlery-surface-raised: #E6EAD9;
   --butlery-surface-selected: #E6EAD9;
   --butlery-surface-tint-accent: #F7E8D2;
   --butlery-surface-tint-danger: #F2DDD6;
   --butlery-surface-tint-success: #DFE8DC;
   --butlery-surface-tint-warning: #F0EEE2;
+  --butlery-text-accent-on-ink: #E09D50;
   --butlery-text-accent-on-raised: #8A5212;
   --butlery-text-accent: #A15A0A;
   --butlery-text-body-muted: #37453A;
@@ -180,12 +184,15 @@
   --butlery-surface-base: #17251D;
   --butlery-surface-disabled: #4A5C50;
   --butlery-surface-ink: #24382C;
+  --butlery-surface-pressed-on-ink: #17251D;
+  --butlery-surface-pressed-on-raised: #17251D;
   --butlery-surface-raised: #2F4437;
   --butlery-surface-selected: #2F4437;
   --butlery-surface-tint-accent: #2F4437;
   --butlery-surface-tint-danger: #2F4437;
   --butlery-surface-tint-success: #2F4437;
   --butlery-surface-tint-warning: #2F4437;
+  --butlery-text-accent-on-ink: #DCA968;
   --butlery-text-accent-on-raised: #DCA968;
   --butlery-text-accent: #DCA968;
   --butlery-text-body-muted: #C9D3C4;

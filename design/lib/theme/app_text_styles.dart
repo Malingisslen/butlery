@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:e88e5c48a5e92efec75806b7d250c697e13f86d5779bae1650f772c0e57e3ddf (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:f2351ff5321272c34493161b611dcc7a52b342a1e4af247c3bf37bd300ad4f3b (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -135,7 +135,7 @@ class AppTextStyles {
     height: 1.45,
   );
 
-  /// tokens: typography.roles.stat — 38/700 · endast statistikvyn
+  /// tokens: typography.roles.stat — 38/700 · endast statistikvyn och matlagningslägets timer (produktbeslut R7-3 = C, BUT-2165, Malin 2026-10-04): timerns siffror är 38/700 med tabellsiffror (typography.numerals.tabular: timer)
   static TextStyle get statNumber => const TextStyle(
     fontFamily: family,
     fontSize: 38,
