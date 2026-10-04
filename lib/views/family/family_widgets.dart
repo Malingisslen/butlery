@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Swedish (localized) label for a coarse age band.
 String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
@@ -244,54 +245,68 @@ class FamilyMemberRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: l10n.a11yEditFamilyMember,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: cs.surface,
-            border: Border(
-              left: BorderSide(color: cs.secondary, width: 4),
-              bottom: BorderSide(
-                color: context.modeColors.recipeCardBottomBorder,
-                width: 3,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              FamilyAvatar(
-                name: profile.name,
-                color: parseAvatarColor(profile.avatarColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(profile.name, style: AppTextStyles.titleSmall),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        _TagChip(ageBandLabel(l10n, profile.ageBand)),
-                        if (allergens.isEmpty)
-                          _TagChip(l10n.familyNoAllergies)
-                        else
-                          for (final a in allergens)
-                            _AllergenBadge(
-                              AllergenPreferenceOptions.getAllergenLabel(a),
-                            ),
-                      ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: onTap,
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: cs.surface,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(color: cs.secondary, width: 4),
+                      bottom: BorderSide(
+                        color: context.modeColors.recipeCardBottomBorder,
+                        width: 3,
+                      ),
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      FamilyAvatar(
+                        name: profile.name,
+                        color: parseAvatarColor(profile.avatarColor),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(profile.name, style: AppTextStyles.titleSmall),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                _TagChip(ageBandLabel(l10n, profile.ageBand)),
+                                if (allergens.isEmpty)
+                                  _TagChip(l10n.familyNoAllergies)
+                                else
+                                  for (final a in allergens)
+                                    _AllergenBadge(
+                                      AllergenPreferenceOptions.getAllergenLabel(
+                                        a,
+                                      ),
+                                    ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
+                    ],
+                  ),
                 ),
               ),
-              ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
-            ],
+            ),
           ),
         ),
       ),

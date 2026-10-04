@@ -13,9 +13,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 DinerProfile _diner({
   String name = 'Liam',
@@ -135,4 +137,31 @@ void main() {
       expect(find.text('E'), findsOneWidget);
     });
   });
+
+  // BUT-2205: the row's own fill used to sit above the ink layer, so a
+  // pressed row showed nothing.
+  for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+    testWidgets('a pressed family member row shows surface.raised '
+        '(${theme.brightness.name})', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Theme(
+            data: theme,
+            child: Material(
+              child: FamilyMemberRow(profile: _diner(), onTap: () {}),
+            ),
+          ),
+        ),
+      );
+      final row = find.text('Liam');
+      expect(pressIsCovered(tester, row), isFalse);
+      expect(borderIsAbovePress(tester, row), isTrue);
+      final gesture = await holdPress(tester, row);
+      expect(
+        paintsInkFill(tester, row, theme.colorScheme.surfaceContainerHighest),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
 }

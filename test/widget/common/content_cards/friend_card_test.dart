@@ -23,6 +23,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -359,5 +360,22 @@ void main() {
       await tester.pump();
       expect(taps, 1);
     });
+  });
+
+  // BUT-2205: the card's own fill used to sit above the ink layer, so a
+  // pressed card showed nothing.
+  testWidgets('a pressed friend request card shows surface.raised', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(FriendRequestCard(friendRequest: _request(), onTap: () {})),
+    );
+    final title = find.text('Vänförfrågan');
+    final cs = Theme.of(tester.element(title)).colorScheme;
+    expect(pressIsCovered(tester, title), isFalse);
+    expect(borderIsAbovePress(tester, title), isTrue);
+    final gesture = await holdPress(tester, title);
+    expect(paintsInkFill(tester, title, cs.surfaceContainerHighest), isTrue);
+    await gesture.cancel();
   });
 }

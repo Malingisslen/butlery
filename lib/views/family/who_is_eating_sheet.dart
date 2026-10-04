@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Outcome of the who's-eating picker.
 ///
@@ -308,57 +309,70 @@ class _DinerToggleRow extends StatelessWidget {
       button: true,
       toggled: selected,
       label: context.l10n.a11yToggleDiner(member.displayName),
-      child: InkWell(
-        onTap: onTap,
-        // Who eats is a chosen state: surface.selected with the real
-        // text.primary left border, never a faded row (tokens.json:41,
-        // :116-119; Grafisk manual v6:209). An unchosen row keeps full text.
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? cs.surfaceContainerHighest : cs.surface,
-            border: Border(
-              left: BorderSide(
-                color: selected ? cs.onSurface : cs.outlineVariant,
-                width: 4,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.raised : PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            // Who eats is a chosen state: surface.selected with the real
+            // text.primary left border, never a faded row.
+            // An unchosen row keeps full text.
+            child: Ink(
+              decoration: BoxDecoration(
+                color: selected ? cs.surfaceContainerHighest : cs.surface,
               ),
-              bottom: BorderSide(
-                color: selected
-                    ? context.modeColors.recipeCardBottomBorder
-                    : cs.outlineVariant,
-                width: 3,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              FamilyAvatar(
-                name: member.displayName,
-                color: parseAvatarColor(member.avatarColor),
-                size: 40,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      member.displayName,
-                      style: AppTextStyles.titleSmall,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: selected ? cs.onSurface : cs.outlineVariant,
+                      width: 4,
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      _tag(context),
-                      style: AppTextStyles.captionText.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
+                    bottom: BorderSide(
+                      color: selected
+                          ? context.modeColors.recipeCardBottomBorder
+                          : cs.outlineVariant,
+                      width: 3,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    FamilyAvatar(
+                      name: member.displayName,
+                      color: parseAvatarColor(member.avatarColor),
+                      size: 40,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            member.displayName,
+                            style: AppTextStyles.titleSmall,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _tag(context),
+                            style: AppTextStyles.captionText.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    _CheckBox(selected: selected),
                   ],
                 ),
               ),
-              _CheckBox(selected: selected),
-            ],
+            ),
           ),
         ),
       ),

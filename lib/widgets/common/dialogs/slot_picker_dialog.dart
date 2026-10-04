@@ -28,6 +28,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:clock/clock.dart';
 
 /// Triple identifying a single placement target in the weekly plan.
@@ -292,74 +293,88 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       ),
       button: true,
       selected: widget.multiSelect ? isSelected : null,
-      child: InkWell(
-        onTap: () => _selectSlot(day, slot),
-        child: Container(
-          height: 64,
-          padding: const EdgeInsets.all(AppDimensions.spacingXs),
-          decoration: BoxDecoration(
-            // Square per design language.
-            borderRadius: BorderRadius.zero,
-            // A chosen slot is surface.selected with a 1.5 px text.primary
-            // border; an occupied one surface.raised with border.control.
-            // Never a tint (tokens.json:40-53; enhet-3 valda tonplattor).
-            // primaryContainer / onSurface / outline carry the tokens in
-            // both schemes.
-            border: Border.all(
-              color: isSelected
-                  ? cs.onSurface
-                  : isOccupied
-                  ? cs.outline
-                  : cs.outlineVariant,
-              width: isSelected ? 1.5 : 1,
-            ),
-            color: (isSelected || isOccupied)
-                ? cs.primaryContainer
-                : cs.surface,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      day.displayLabel,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                        letterSpacing: 1,
-                      ),
-                    ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: (isSelected || isOccupied)
+              ? PressSurface.raised
+              : PressSurface.base,
+          child: InkWell(
+            onTap: () => _selectSlot(day, slot),
+            child: Ink(
+              height: 64,
+              decoration: BoxDecoration(
+                // Square per design language.
+                borderRadius: BorderRadius.zero,
+                color: (isSelected || isOccupied)
+                    ? cs.primaryContainer
+                    : cs.surface,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                decoration: BoxDecoration(
+                  // A chosen slot is surface.selected with a 1.5 px text.primary
+                  // border; an occupied one surface.raised with border.control.
+                  // Never a tint.
+                  // primaryContainer / onSurface / outline carry the tokens in
+                  // both schemes.
+                  border: Border.all(
+                    color: isSelected
+                        ? cs.onSurface
+                        : isOccupied
+                        ? cs.outline
+                        : cs.outlineVariant,
+                    width: isSelected ? 1.5 : 1,
                   ),
-                  if (widget.multiSelect)
-                    ButleryIcon(
-                      isSelected
-                          ? Icons.check_box
-                          : Icons.check_box_outline_blank,
-                      size: AppDimensions.iconSize18,
-                      color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            day.displayLabel,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                        if (widget.multiSelect)
+                          ButleryIcon(
+                            isSelected
+                                ? Icons.check_box
+                                : Icons.check_box_outline_blank,
+                            size: AppDimensions.iconSize18,
+                            color: isSelected
+                                ? cs.onSurface
+                                : cs.onSurfaceVariant,
+                          ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 2),
+                    Expanded(
+                      child: isOccupied
+                          ? Text(
+                              entries.first.recipeTitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.labelSmall,
+                            )
+                          : widget.multiSelect
+                          ? const SizedBox.shrink()
+                          : ButleryIcon(
+                              ButleryIcons.plus,
+                              size: AppDimensions.iconSize18,
+                              color: cs.onSurfaceVariant,
+                            ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 2),
-              Expanded(
-                child: isOccupied
-                    ? Text(
-                        entries.first.recipeTitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.labelSmall,
-                      )
-                    : widget.multiSelect
-                    ? const SizedBox.shrink()
-                    : ButleryIcon(
-                        ButleryIcons.plus,
-                        size: AppDimensions.iconSize18,
-                        color: cs.onSurfaceVariant,
-                      ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

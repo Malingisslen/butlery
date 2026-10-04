@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Focused module for friend card components
 /// This module handles ONLY friend and user card display responsibilities:
@@ -270,22 +271,38 @@ class FriendRequestCard extends StatelessWidget {
         child: Semantics(
           label: context.l10n.a11yFriendRequest,
           button: true,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            child: Container(
-              padding: padding ?? const EdgeInsets.all(AppDimensions.space4),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+          child: Material(
+            type: MaterialType.transparency,
+            child: PressFill(
+              surface: PressSurface.base,
+              child: InkWell(
+                onTap: onTap,
                 borderRadius: BorderRadius.circular(
                   AppDimensions.radiusControl,
                 ),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline,
-                  width: AppDimensions.borderWidthThin,
+                child: Ink(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusControl,
+                    ),
+                  ),
+                  child: Container(
+                    padding:
+                        padding ?? const EdgeInsets.all(AppDimensions.space4),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                        width: AppDimensions.borderWidthThin,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusControl,
+                      ),
+                    ),
+                    child: _buildContent(context),
+                  ),
                 ),
               ),
-              child: _buildContent(context),
             ),
           ),
         ),

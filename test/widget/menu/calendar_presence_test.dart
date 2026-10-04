@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
@@ -149,5 +150,26 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('pannkakor'), findsOneWidget);
+  });
+
+  // BUT-2205: the row's own fill used to sit above the ink layer, so a
+  // pressed presence row showed nothing.
+  testWidgets('a pressed presence row shows surface.raised', (tester) async {
+    await tester.pumpWidget(
+      _dayCell(vm, [_member('u1', 'Malin'), _member('g1', 'Mormor')]),
+    );
+    final face = find.byType(FamilyAvatar).first;
+    expect(pressIsCovered(tester, face), isFalse);
+    expect(borderIsAbovePress(tester, face), isTrue);
+    final gesture = await holdPress(tester, face);
+    expect(
+      paintsInkFill(
+        tester,
+        face,
+        AppTheme.lightTheme.colorScheme.surfaceContainerHighest,
+      ),
+      isTrue,
+    );
+    await gesture.cancel();
   });
 }

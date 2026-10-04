@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 const double _kSlotMinHeight = 80;
 
@@ -339,63 +340,75 @@ class _SlotPresenceRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticsLabel,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(
-              bottom: BorderSide(color: cs.outlineVariant),
-              left: BorderSide(color: cs.outlineVariant),
-              right: BorderSide(color: cs.outlineVariant),
-            ),
-          ),
-          child: Row(
-            children: [
-              if (present.isEmpty)
-                Expanded(
-                  child: Text(
-                    context.l10n.menuPresenceNobody,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: _label(cs.onSurfaceVariant),
-                  ),
-                )
-              else
-                for (var i = 0; i < shown.length; i++)
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(start: i == 0 ? 0 : 2),
-                    child: FamilyAvatar(
-                      name: shown[i].displayName,
-                      color: parseAvatarColor(shown[i].avatarColor),
-                      size: 16,
-                    ),
-                  ),
-              if (overflow > 0)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 3),
-                  child: Text(
-                    '+$overflow',
-                    style: _label(cs.onSurfaceVariant),
-                  ),
-                ),
-              if (present.isNotEmpty)
-                Expanded(
-                  child: Text(
-                    context.l10n.menuPresencePortions(present.length),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
-                    style: _label(context.modeColors.textAccent),
-                  ),
-                ),
-              ButleryIcon(
-                ButleryIcons.chevronDown,
-                size: 12,
-                color: cs.outline,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
               ),
-            ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: cs.outlineVariant),
+                    left: BorderSide(color: cs.outlineVariant),
+                    right: BorderSide(color: cs.outlineVariant),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    if (present.isEmpty)
+                      Expanded(
+                        child: Text(
+                          context.l10n.menuPresenceNobody,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _label(cs.onSurfaceVariant),
+                        ),
+                      )
+                    else
+                      for (var i = 0; i < shown.length; i++)
+                        Padding(
+                          padding: EdgeInsetsDirectional.only(
+                            start: i == 0 ? 0 : 2,
+                          ),
+                          child: FamilyAvatar(
+                            name: shown[i].displayName,
+                            color: parseAvatarColor(shown[i].avatarColor),
+                            size: 16,
+                          ),
+                        ),
+                    if (overflow > 0)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 3),
+                        child: Text(
+                          '+$overflow',
+                          style: _label(cs.onSurfaceVariant),
+                        ),
+                      ),
+                    if (present.isNotEmpty)
+                      Expanded(
+                        child: Text(
+                          context.l10n.menuPresencePortions(present.length),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: _label(context.modeColors.textAccent),
+                        ),
+                      ),
+                    ButleryIcon(
+                      ButleryIcons.chevronDown,
+                      size: 12,
+                      color: cs.outline,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),

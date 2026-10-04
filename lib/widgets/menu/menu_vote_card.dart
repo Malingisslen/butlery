@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Displays a menu slot vote with alternatives, progress bars, and actions.
 class MenuVoteCard extends StatelessWidget {
@@ -98,50 +99,68 @@ class MenuVoteCard extends StatelessWidget {
                       : context.l10n.a11yMenuVoteOption(option.recipeName),
                   button: true,
                   selected: isSelected,
-                  child: InkWell(
-                    onTap: hasVoted || onVote == null
-                        ? null
-                        : () => onVote!(option.id),
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingM),
-                      // The chosen option is surface.selected with a real
-                      // 1.5 px text.primary border, never a tint (enhet-3
-                      // valda tonplattor; tokens.json surface.selected,
-                      // opacityLadder). primaryContainer is surface.selected
-                      // (#E6EAD9 / #2F4437) and onSurface text.primary (ink /
-                      // paper) in both schemes.
-                      decoration: BoxDecoration(
-                        color: isSelected ? cs.primaryContainer : cs.surface,
-                        border: Border.all(
-                          color: isSelected ? cs.onSurface : cs.outlineVariant,
-                          width: isSelected ? 1.5 : 1,
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: PressFill(
+                      surface: isSelected
+                          ? PressSurface.raised
+                          : PressSurface.base,
+                      child: InkWell(
+                        onTap: hasVoted || onVote == null
+                            ? null
+                            : () => onVote!(option.id),
+                        // The chosen option is surface.selected with a real
+                        // 1.5 px text.primary border, never a tint.
+                        // primaryContainer is surface.selected
+                        // (#E6EAD9 / #2F4437) and onSurface text.primary (ink /
+                        // paper) in both schemes.
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? cs.primaryContainer
+                                : cs.surface,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(
+                              AppDimensions.paddingM,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isSelected
+                                    ? cs.onSurface
+                                    : cs.outlineVariant,
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  option.recipeName,
+                                  style: AppTextStyles.titleSmall.copyWith(
+                                    color: isSelected
+                                        ? cs.onPrimaryContainer
+                                        : cs.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimensions.spacingXs),
+                                // The share of the votes as the determinate plate
+                                // line. The count below says the number, so the
+                                // line is not read out on its own.
+                                ExcludeSemantics(
+                                  child: PlateLine(value: fraction),
+                                ),
+                                const SizedBox(height: AppDimensions.space4),
+                                Text(
+                                  context.l10n.menuVoteCount(count),
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            option.recipeName,
-                            style: AppTextStyles.titleSmall.copyWith(
-                              color: isSelected
-                                  ? cs.onPrimaryContainer
-                                  : cs.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          // The share of the votes as the determinate plate
-                          // line (Komponentark v1:305; B-18, no bar of its
-                          // own). The count below says the number, so the
-                          // line is not read out on its own.
-                          ExcludeSemantics(child: PlateLine(value: fraction)),
-                          const SizedBox(height: AppDimensions.space4),
-                          Text(
-                            context.l10n.menuVoteCount(count),
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ),
