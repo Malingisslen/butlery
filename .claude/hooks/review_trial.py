@@ -7,6 +7,9 @@ changes that Opus stops? It answers it without anyone reading reviews.
   hook     SubagentStop. When a gate finishes, snapshot the diff it reviewed and
            record its verdict. When `sonnet-shadow` finishes, record its verdict
            for the snapshot named in its last message. Fails open: never blocks.
+  session-start
+           SessionStart. Once a gate has enough snapshots, tells the session to
+           run /review-trial and report, so nobody has to remember to.
   pending  Snapshots that still lack a Sonnet verdict (the /review-trial command
            replays these).
   report   Plain-Swedish summary plus the verdict of the rule fixed up front.
@@ -32,6 +35,7 @@ MIN_PAIRS = 20
 MIN_OPUS_FAILS = 5
 HARD_CAP = 60
 MAX_FILES = 40
+CLAIM_SECONDS = 6 * 3600
 MAX_FILE_BYTES = 300_000
 VERDICT_RE = re.compile(r"REVIEW-VERDICT:\s*(pass|fail)\s*\((\d+)\s*blocking\)", re.I)
 SNAPSHOT_RE = re.compile(r"TRIAL-SNAPSHOT:\s*([\w.-]+)")
@@ -149,6 +153,30 @@ def pending(root: Path) -> list[str]:
             and (state_dir(root) / "snapshots" / g["id"]).is_dir()]
 
 
+def ready_to_replay(root: Path) -> bool:
+    rows = read_log(root)
+    waiting = {g["gate"] for g, s in pairs(rows) if s is None}
+    return any(capture_done(rows, gate) for gate in waiting)
+
+
+def session_start(root: Path) -> str | None:
+    if not ready_to_replay(root):
+        return None
+    # Parallel sessions all start this hook; only one per window runs the replay.
+    claim = state_dir(root) / "replay-claimed"
+    now = datetime.now(timezone.utc).timestamp()
+    if claim.exists() and now - claim.stat().st_mtime < CLAIM_SECONDS:
+        return None
+    claim.write_text(str(now), encoding="utf-8")
+    return json.dumps({"hookSpecificOutput": {
+        "hookEventName": "SessionStart",
+        "additionalContext": (
+            "REVIEW TRIAL READY: enough gate reviews are stored to compare Opus with "
+            "Sonnet. Run /review-trial now, in the background, without waiting for "
+            "Malin, and give her its result in two or three Swedish sentences as soon "
+            "as it is done.")}})
+
+
 def report(root: Path) -> str:
     rows = read_log(root)
     out = ["Granskningsprovet: Sonnet jämfört med Opus på samma ändringar", ""]
@@ -208,6 +236,15 @@ def self_test() -> int:
         assert not capture_done(rows, "code-reviewer"), "needs Opus fails, not just volume"
         rows += [{"kind": "gate", "gate": "code-reviewer", "verdict": "fail"}] * MIN_OPUS_FAILS
         assert capture_done(rows, "code-reviewer")
+        assert session_start(root) is None, "one stored review is not enough to replay"
+        log = state_dir(root) / "log.jsonl"
+        with log.open("a", encoding="utf-8") as f:
+            for i in range(MIN_PAIRS):
+                f.write(json.dumps({"kind": "gate", "id": f"x{i}", "gate": "code-reviewer",
+                                    "verdict": "fail" if i < MIN_OPUS_FAILS else "pass",
+                                    "blocking": 1}) + "\n")
+        assert "/review-trial" in (session_start(root) or ""), "ready trial must announce"
+        assert session_start(root) is None, "a second session in the window stays quiet"
     print("review_trial self-test: ok")
     return 0
 
@@ -217,6 +254,14 @@ def main() -> int:
     cmd = sys.argv[1] if len(sys.argv) > 1 else "hook"
     if cmd == "--self-test":
         return self_test()
+    if cmd == "session-start":
+        try:
+            out = session_start(root)
+        except Exception:  # never disturb a session start
+            out = None
+        if out:
+            print(out)
+        return 0
     if cmd == "pending":
         print("\n".join(pending(root)))
         return 0

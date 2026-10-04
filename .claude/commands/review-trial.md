@@ -5,7 +5,8 @@ description: Replay stored gate reviews on Sonnet and report, in plain Swedish, 
 The Opus-vs-Sonnet review trial. A SubagentStop hook (`.claude/hooks/review_trial.py`)
 already snapshots each change the two gates review, with the Opus verdict. This command
 gets the Sonnet verdict for the same changes and reports. Malin reads the summary, not
-the reviews.
+the reviews. Nobody has to remember to run it: once a gate has enough stored reviews, a
+SessionStart hook tells the next session to run it and report.
 
 ## Steps
 
