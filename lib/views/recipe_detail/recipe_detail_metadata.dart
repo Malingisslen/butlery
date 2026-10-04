@@ -171,10 +171,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       );
     }
 
-    // Star rating row — always visible, tappable to set rating
+    // Star rating row — always visible, tappable to set rating.
+    // BUT-2218: a Wrap, not a Row, so the 48 dp remove control drops to the
+    // next line on a narrow screen instead of overflowing the row.
     metadataWidgets.add(
-      Row(
-        mainAxisSize: MainAxisSize.min,
+      Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: AppDimensions.spacingXs,
         children: [
           StarRatingRow(
             rating: recipe.rating ?? 0,
@@ -182,28 +185,38 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
           ),
           if ((recipe.rating ?? 0) > 0) ...[
-            const SizedBox(width: AppDimensions.spacingXs),
             Text(
               // sv-SE decimal comma (4.5 → "4,5"); whole ratings drop the decimal.
               TextFormatting.formatFractional(recipe.rating!),
               style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
             ),
             // Remove own rating — only when the user has rated
-            if (_checkedUserRating && _hasUserRating) ...[
-              const SizedBox(width: AppDimensions.spacingXs),
+            if (_checkedUserRating && _hasUserRating)
               Semantics(
                 label: context.l10n.a11yRemoveOwnRating,
                 button: true,
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () => _removeMyRating(context),
-                  child: ButleryIcon(
-                    ButleryIcons.x,
-                    size: 14,
-                    color: cs.onSurfaceVariant,
+                  // BUT-2218: the glyph stays 14 dp; the hit area is padded to
+                  // 48 dp (tokens.json touchTarget).
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: AppDimensions.minTouchTarget,
+                      minHeight: AppDimensions.minTouchTarget,
+                    ),
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
+                        size: 14,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ],
           ],
         ],
       ),
