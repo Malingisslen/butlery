@@ -555,7 +555,7 @@ class _ShoppingMemberManagementDialogState
           ? Text(
               context.l10n.shoppingPermissionOwner,
               style: AppTextStyles.linkSmall.copyWith(
-                color: context.modeColors.info,
+                color: context.modeColors.textLink,
               ),
             )
           : null,

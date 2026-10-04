@@ -312,7 +312,7 @@ class MenuCard extends StatelessWidget {
                 ? context.l10n.menuCardSharedWithCount(memberCount)
                 : context.l10n.menuCardSharedMenu,
             style: AppTextStyles.linkSmall.copyWith(
-              color: context.modeColors.info,
+              color: context.modeColors.textLink,
             ),
           ),
         ],

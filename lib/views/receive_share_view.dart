@@ -352,11 +352,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   _detectionResult.extractedUrl!,
-                  // text.link: #8A5212 light, #DCA968 dark, never the ink
-                  // primary, which vanishes on dark (tokens.json
-                  // semantic.text.link; onSecondaryContainer carries it).
+                  // Never the ink primary, which vanishes on dark.
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    color: context.modeColors.textLink,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

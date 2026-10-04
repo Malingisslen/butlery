@@ -17,11 +17,11 @@
 ///   (tokens.json:58-60);
 /// - background: colorScheme.surface = surface.base, #F5F4ED / #17251D
 ///   (tokens.json:104-106);
-/// - action: ModeColors.info = text.link, #8A5212 / #DCA968
-///   (tokens.json:228-231). The drawn boundary has no button, so the action
-///   takes the link colour, which clears 4.5:1 on paper in both modes. The
-///   theme's text-button colour (colorScheme.primary) is #24382C in dark
-///   mode and would read at about 1.3:1 on the dark surface.
+/// - action: ModeColors.textLink, #8A5212 / #DCA968. The drawn boundary has
+///   no button, so the action takes the link colour, which clears 4.5:1 on
+///   paper in both modes. The theme's text-button colour
+///   (colorScheme.primary) is #24382C in dark mode and would read at about
+///   1.3:1 on the dark surface.
 ///
 /// Screen readers: the box has the alert role and its text is a live
 /// region, so it is read when it appears without moving focus
@@ -78,7 +78,7 @@ class InlineError extends StatelessWidget {
     final cs = theme.colorScheme;
     final danger = cs.error;
     final bodyColor = AppModeColors.textBody(theme.brightness);
-    final actionColor = context.modeColors.info;
+    final actionColor = context.modeColors.textLink;
     final preserved = this.preserved;
     final actionLabel = this.actionLabel;
     final onAction = this.onAction;

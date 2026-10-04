@@ -173,11 +173,8 @@ class HemPlanError extends StatelessWidget {
               ),
               TextButton(
                 key: showSavedPlanKey,
-                // text.link: #8A5212 light, #DCA968 dark
-                // (tokens.json:228-231), drawn in the link colour (#hemfel
-                // :227).
                 style: TextButton.styleFrom(
-                  foregroundColor: context.modeColors.info,
+                  foregroundColor: context.modeColors.textLink,
                   minimumSize: const Size(0, AppDimensions.minTouchTarget),
                 ),
                 onPressed: onShowSavedPlan,

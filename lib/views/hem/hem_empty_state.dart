@@ -160,10 +160,8 @@ class HemEmptyState extends StatelessWidget {
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
               key: allergyLinkKey,
-              // text.link: #8A5212 light, #DCA968 dark (tokens.json:228-231);
-              // #hemtom :118 draws #8a5212.
               style: TextButton.styleFrom(
-                foregroundColor: context.modeColors.info,
+                foregroundColor: context.modeColors.textLink,
               ),
               onPressed: () =>
                   Navigator.pushNamed(context, Routes.settingsAllergens),
