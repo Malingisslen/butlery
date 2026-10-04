@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
 /// The surface a pressable widget rests on, which decides its pressed and
@@ -67,7 +67,7 @@ class PressUnchanged extends StatelessWidget {
     final iconTheme = IconTheme.of(context);
     return Theme(
       data: theme.copyWith(
-        highlightColor: AppColors.rust.withValues(alpha: 0.12),
+        highlightColor: AppTheme.pressHighlightBefore2205,
         hoverColor: hover.withValues(alpha: 0.04),
       ),
       child: IconTheme(data: iconTheme, child: child),

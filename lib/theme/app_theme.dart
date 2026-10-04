@@ -12,6 +12,12 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 class AppTheme {
   AppTheme._();
 
+  /// The theme's press fill before BUT-2205. The surfaces the design session
+  /// decides keep it until then (BUT-2232).
+  static final Color pressHighlightBefore2205 = AppColors.rust.withValues(
+    alpha: 0.12,
+  );
+
   /// Creates the complete light theme for the application.
   static ThemeData get lightTheme => createTheme(AppColors.lightColorScheme);
 
