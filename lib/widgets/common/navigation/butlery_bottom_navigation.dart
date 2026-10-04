@@ -45,6 +45,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-557: the container-level navigation landmark (WCAG 1.3.1).
 Widget navigationLandmark({
@@ -250,6 +251,9 @@ class _BottomNavTab extends StatelessWidget {
             // Paper at the on-ink 0.18 step while pressed.
             splashColor: ink.selected.withValues(alpha: 0.18),
             highlightColor: Colors.transparent,
+            // The tab rests on ink, so a hovered tab takes the step on ink
+            // rather than the theme's step on raised.
+            hoverColor: PressFill.fillFor(context, PressSurface.ink),
             child: ExcludeSemantics(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -405,14 +409,16 @@ class ButleryAddButton extends StatelessWidget {
                   : BorderSide.none,
             ),
             clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onPressed,
-              customBorder: const CircleBorder(),
-              child: ExcludeSemantics(
-                child: ButleryIcon(
-                  ButleryIcons.navAdd,
-                  color: cs.onSecondary,
-                  size: AppDimensions.iconSizeL,
+            child: PressUnchanged(
+              child: InkWell(
+                onTap: onPressed,
+                customBorder: const CircleBorder(),
+                child: ExcludeSemantics(
+                  child: ButleryIcon(
+                    ButleryIcons.navAdd,
+                    color: cs.onSecondary,
+                    size: AppDimensions.iconSizeL,
+                  ),
                 ),
               ),
             ),

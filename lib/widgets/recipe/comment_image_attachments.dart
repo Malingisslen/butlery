@@ -8,6 +8,7 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-1049: renders a comment's image attachments as a horizontal row of
 /// square 80x80 cropped thumbnails. Tapping a thumbnail opens a full-screen,
@@ -38,23 +39,25 @@ class CommentImageAttachments extends StatelessWidget {
           return Semantics(
             label: context.l10n.a11yCommentImageThumbnail,
             button: true,
-            child: InkWell(
-              onTap: () => _openViewer(context, index),
-              child: ClipRRect(
-                borderRadius: BorderRadius.zero,
-                child: CachedNetworkImage(
-                  imageUrl: url,
-                  cacheKey: FirebaseUrlUtils.stableCacheKey(url),
-                  width: _thumbnailSize,
-                  height: _thumbnailSize,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) =>
-                      ColoredBox(color: cs.surfaceContainerHighest),
-                  errorWidget: (_, __, ___) => ColoredBox(
-                    color: cs.surfaceContainerHighest,
-                    child: ButleryIcon(
-                      Icons.broken_image,
-                      color: cs.onSurfaceVariant,
+            child: PressUnchanged(
+              child: InkWell(
+                onTap: () => _openViewer(context, index),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.zero,
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    cacheKey: FirebaseUrlUtils.stableCacheKey(url),
+                    width: _thumbnailSize,
+                    height: _thumbnailSize,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) =>
+                        ColoredBox(color: cs.surfaceContainerHighest),
+                    errorWidget: (_, __, ___) => ColoredBox(
+                      color: cs.surfaceContainerHighest,
+                      child: ButleryIcon(
+                        Icons.broken_image,
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),

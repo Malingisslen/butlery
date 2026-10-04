@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
 /// The surface a pressable widget rests on, which decides its pressed and
@@ -17,8 +18,8 @@ enum PressSurface {
 
 /// Gives the pressed and hovered fill to the widgets below it that take
 /// [ThemeData.highlightColor] and [ThemeData.hoverColor] and have no colour
-/// setting of their own: chips, popup menu rows and dropdown rows. Wrap a
-/// menu's button: the menu route captures the themes around it.
+/// setting of their own. Wrap a menu's button: the menu route captures the
+/// themes around it.
 class PressFill extends StatelessWidget {
   const PressFill({required this.surface, required this.child, super.key});
 
@@ -44,6 +45,31 @@ class PressFill extends StatelessWidget {
     final iconTheme = IconTheme.of(context);
     return Theme(
       data: Theme.of(context).copyWith(highlightColor: fill, hoverColor: fill),
+      child: IconTheme(data: iconTheme, child: child),
+    );
+  }
+}
+
+/// Keeps the press and hover a widget had before BUT-2205 on a surface the
+/// rule does not cover: saffron, a warning tint, the error colour, a photo
+/// or a scanned page. The design session decides them (BUT-2232).
+class PressUnchanged extends StatelessWidget {
+  const PressUnchanged({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hover = theme.brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+    final iconTheme = IconTheme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        highlightColor: AppTheme.pressHighlightBefore2205,
+        hoverColor: hover.withValues(alpha: 0.04),
+      ),
       child: IconTheme(data: iconTheme, child: child),
     );
   }

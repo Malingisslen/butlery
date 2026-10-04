@@ -18,6 +18,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Section rendering the original heirloom scan with a rust corner stamp.
 ///
@@ -74,8 +75,10 @@ class HeirloomSection extends StatelessWidget {
                 child: Semantics(
                   label: context.l10n.a11yHeirloomScanOpenFullscreen,
                   button: true,
-                  child: InkWell(
-                    onTap: () => _openFullscreen(context, imageUrl),
+                  child: PressUnchanged(
+                    child: InkWell(
+                      onTap: () => _openFullscreen(context, imageUrl),
+                    ),
                   ),
                 ),
               ),

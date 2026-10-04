@@ -12,6 +12,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Refactored FriendRequestActions using BaseActionHandler
 /// This class provides standardized friend request operations with:
@@ -33,23 +34,26 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     if (!validateContext(context)) return null;
 
     if (tabController.index == 0 && selectedIncoming.isNotEmpty) {
-      return FloatingActionButton.extended(
-        // The caller's handler owns the batch, so the FAB only delegates —
-        // running it from here too would hand that handler to the batch as its
-        // own completion callback. A null onPressed is what refuses a second
-        // press while one runs; what SAYS so is `BatchActivityBar` in the
-        // view, which a cleared selection cannot take off screen (BUT-2041).
-        onPressed: batchRunning ? null : onBatchAccept,
-        tooltip: context.l10n.socialAcceptSelected,
-        icon: const ButleryIcon(ButleryIcons.circleCheck),
-        // The label stays put so the button does not resize mid-batch.
-        label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
-        // The FAB theme's own surface, never a fill in a status colour
-        // (Komponentark v1:300).
-        // The theme's CircleBorder is for the round create button only; a
-        // labelled FAB is the same shape stretched to its label, a pill
-        // (Komponentark v1:665, tokens.json space.radius.pill).
-        shape: const StadiumBorder(),
+      return PressFill(
+        surface: PressSurface.ink,
+        child: FloatingActionButton.extended(
+          // The caller's handler owns the batch, so the FAB only delegates —
+          // running it from here too would hand that handler to the batch as its
+          // own completion callback. A null onPressed is what refuses a second
+          // press while one runs; what SAYS so is `BatchActivityBar` in the
+          // view, which a cleared selection cannot take off screen (BUT-2041).
+          onPressed: batchRunning ? null : onBatchAccept,
+          tooltip: context.l10n.socialAcceptSelected,
+          icon: const ButleryIcon(ButleryIcons.circleCheck),
+          // The label stays put so the button does not resize mid-batch.
+          label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
+          // The FAB theme's own surface, never a fill in a status colour
+          // (Komponentark v1:300).
+          // The theme's CircleBorder is for the round create button only; a
+          // labelled FAB is the same shape stretched to its label, a pill
+          // (Komponentark v1:665, tokens.json space.radius.pill).
+          shape: const StadiumBorder(),
+        ),
       );
     }
     return null;

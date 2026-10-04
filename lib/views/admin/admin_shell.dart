@@ -10,6 +10,7 @@ import 'package:butlery/views/admin/parsing_details_view.dart';
 import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/views/admin/admin_url_state_stub.dart'
     if (dart.library.js_interop) 'package:butlery/views/admin/admin_url_state_web.dart';
 
@@ -131,38 +132,41 @@ class AdminRail extends StatelessWidget {
     final l10n = context.l10n;
     return Theme(
       data: ButleryControlFocus.themeWithoutFocusTint(Theme.of(context)),
-      child: NavigationRail(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onSelected,
-        labelType: NavigationRailLabelType.all,
-        destinations: [
-          _destination(
-            Icons.feedback_outlined,
-            Icons.feedback,
-            l10n.adminNavFeedback,
-          ),
-          _destination(
-            ButleryIcons.download,
-            ButleryIcons.download,
-            l10n.adminNavImport,
-          ),
-          _destination(
-            ButleryIcons.users,
-            ButleryIcons.users,
-            l10n.adminNavEngagement,
-          ),
-          _destination(Icons.rule_outlined, Icons.rule, l10n.adminNavParsing),
-          _destination(
-            ButleryIcons.utensils,
-            ButleryIcons.utensils,
-            l10n.adminNavRecipes,
-          ),
-          _destination(
-            ButleryIcons.server,
-            ButleryIcons.server,
-            l10n.adminNavOps,
-          ),
-        ],
+      child: PressFill(
+        surface: PressSurface.base,
+        child: NavigationRail(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onSelected,
+          labelType: NavigationRailLabelType.all,
+          destinations: [
+            _destination(
+              Icons.feedback_outlined,
+              Icons.feedback,
+              l10n.adminNavFeedback,
+            ),
+            _destination(
+              ButleryIcons.download,
+              ButleryIcons.download,
+              l10n.adminNavImport,
+            ),
+            _destination(
+              ButleryIcons.users,
+              ButleryIcons.users,
+              l10n.adminNavEngagement,
+            ),
+            _destination(Icons.rule_outlined, Icons.rule, l10n.adminNavParsing),
+            _destination(
+              ButleryIcons.utensils,
+              ButleryIcons.utensils,
+              l10n.adminNavRecipes,
+            ),
+            _destination(
+              ButleryIcons.server,
+              ButleryIcons.server,
+              l10n.adminNavOps,
+            ),
+          ],
+        ),
       ),
     );
   }

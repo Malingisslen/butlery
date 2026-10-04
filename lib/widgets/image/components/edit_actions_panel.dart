@@ -3,6 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Floating action buttons for image editing operations
 class EditActionsPanel extends StatelessWidget {
@@ -71,6 +72,18 @@ class _EditActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final button = InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.spacingSm),
+        child: ButleryIcon(
+          icon,
+          size: AppDimensions.iconSizeM,
+          color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
+        ),
+      ),
+    );
     return Tooltip(
       message: tooltip,
       child: Material(
@@ -79,20 +92,7 @@ class _EditActionButton extends StatelessWidget {
         child: Semantics(
           label: context.l10n.a11yEditImageAction(tooltip),
           button: true,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingSm),
-              child: ButleryIcon(
-                icon,
-                size: AppDimensions.iconSizeM,
-                color: isDestructive
-                    ? cs.surfaceContainerHighest
-                    : cs.onSurface,
-              ),
-            ),
-          ),
+          child: isDestructive ? PressUnchanged(child: button) : button,
         ),
       ),
     );

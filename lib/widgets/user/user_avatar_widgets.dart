@@ -129,10 +129,12 @@ class UserAvatarWidgets {
                 child: Semantics(
                   label: context.l10n.a11yProfileImage(displayName),
                   button: true,
-                  child: InkWell(
-                    onTap: onTap,
-                    borderRadius: BorderRadius.zero,
-                    child: avatarWidget,
+                  child: PressUnchanged(
+                    child: InkWell(
+                      onTap: onTap,
+                      borderRadius: BorderRadius.zero,
+                      child: avatarWidget,
+                    ),
                   ),
                 ),
               )
