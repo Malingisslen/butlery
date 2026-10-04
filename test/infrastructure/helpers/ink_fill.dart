@@ -1,5 +1,4 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -39,4 +38,25 @@ Future<TestGesture> holdPress(WidgetTester tester, Finder finder) async {
   await tester.pump(kPressTimeout);
   await tester.pump(const Duration(milliseconds: 300));
   return gesture;
+}
+
+/// Whether an opaque fill sits between [target] and the ink layer its press
+/// paints on. Such a fill is painted after the ink, so it hides the press
+/// (BUT-2205, the hidden InkWells).
+bool pressIsCovered(WidgetTester tester, Finder target) {
+  RenderObject? node = tester.renderObject(target);
+  while (node != null && node.runtimeType.toString() != '_RenderInkFeatures') {
+    if (node is RenderDecoratedBox) {
+      final decoration = node.decoration;
+      if (decoration is BoxDecoration &&
+          (decoration.color?.a ?? 0) == 1 &&
+          node.position == DecorationPosition.background) {
+        return true;
+      }
+    }
+    if (node.runtimeType.toString() == '_RenderColoredBox') return true;
+    node = node.parent;
+  }
+  expect(node, isNotNull, reason: 'no Material above the pressed widget');
+  return false;
 }

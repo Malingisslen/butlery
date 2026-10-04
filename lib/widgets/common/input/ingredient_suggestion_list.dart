@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Autocomplete suggestion list for ingredient search.
 /// Shared by the pantry add sheet and the ingredient search chip input.
@@ -35,17 +36,23 @@ class IngredientSuggestionList extends StatelessWidget {
           return Semantics(
             label: context.l10n.a11yAddIngredient(ingredient.swedish),
             button: true,
-            child: InkWell(
-              key: ValueKey(ingredient.id),
-              onTap: () => onTap(ingredient),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm,
-                ),
-                child: Text(
-                  ingredient.swedish,
-                  style: AppTextStyles.bodyMedium,
+            child: Material(
+              type: MaterialType.transparency,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  key: ValueKey(ingredient.id),
+                  onTap: () => onTap(ingredient),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingMd,
+                      vertical: AppDimensions.spacingSm,
+                    ),
+                    child: Text(
+                      ingredient.swedish,
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -242,47 +242,50 @@ class _BottomNavTab extends StatelessWidget {
       selected: isSelected,
       // Komponentark v1:667: the focus ring goes around the whole tab.
       child: ButleryControlFocus(
-        child: InkWell(
-          key: ValueKey('test-nav-${item.route}'),
-          onTap: onTap,
-          // Paper at the on-ink 0.18 step while pressed (tokens.json:40-53).
-          splashColor: ink.selected.withValues(alpha: 0.18),
-          highlightColor: Colors.transparent,
-          child: ExcludeSemantics(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                NavBadgedIcon(
-                  icon: isSelected ? item.activeIcon : item.icon,
-                  badgeCount: item.badgeCount,
-                  color: color,
-                ),
-                const SizedBox(height: AppDimensions.bottomNavStackGap),
-                Text(
-                  label,
-                  style: style,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppDimensions.bottomNavStackGap),
-                // The saffron line under the chosen label, as wide as the
-                // text (Komponentark v1:663; produktregler.md:1055).
-                AnimatedContainer(
-                  duration: AnimationUtils.getDuration(
-                    context,
-                    AppDimensions.animationDurationFast,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            key: ValueKey('test-nav-${item.route}'),
+            onTap: onTap,
+            // Paper at the on-ink 0.18 step while pressed.
+            splashColor: ink.selected.withValues(alpha: 0.18),
+            highlightColor: Colors.transparent,
+            child: ExcludeSemantics(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  NavBadgedIcon(
+                    icon: isSelected ? item.activeIcon : item.icon,
+                    badgeCount: item.badgeCount,
+                    color: color,
                   ),
-                  height: AppDimensions.bottomNavMarkerThickness,
-                  width: isSelected ? _textWidth(label, style) : 0,
-                  decoration: BoxDecoration(
-                    color: isSelected ? ink.marker : Colors.transparent,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusKnob,
+                  const SizedBox(height: AppDimensions.bottomNavStackGap),
+                  Text(
+                    label,
+                    style: style,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppDimensions.bottomNavStackGap),
+                  // The saffron line under the chosen label, as wide as the
+                  // text.
+                  AnimatedContainer(
+                    duration: AnimationUtils.getDuration(
+                      context,
+                      AppDimensions.animationDurationFast,
+                    ),
+                    height: AppDimensions.bottomNavMarkerThickness,
+                    width: isSelected ? _textWidth(label, style) : 0,
+                    decoration: BoxDecoration(
+                      color: isSelected ? ink.marker : Colors.transparent,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusKnob,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

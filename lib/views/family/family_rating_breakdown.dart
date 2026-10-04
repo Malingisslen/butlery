@@ -13,6 +13,7 @@ import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Collapsible recipe-detail section: the household's family-rating breakdown
 /// (average + per-diner rows), with community + personal comparison for shared
@@ -101,30 +102,38 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       button: true,
       toggled: _expanded,
       label: l10n.a11yToggleRatingBreakdown,
-      child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: Border(left: BorderSide(color: cs.secondary, width: 3)),
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 10),
-              Text(
-                l10n.familyRatingSectionTitle,
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: cs.onSurface,
-                ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.raised,
+          child: InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: cs.secondary, width: 3)),
               ),
-              const SizedBox(width: 10),
-              _familyPill(context, vm.familyAverageDisplay),
-              const Spacer(),
-              ButleryIcon(
-                _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
-                color: cs.outline,
+              child: Row(
+                children: [
+                  const SizedBox(width: 10),
+                  Text(
+                    l10n.familyRatingSectionTitle,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _familyPill(context, vm.familyAverageDisplay),
+                  const Spacer(),
+                  ButleryIcon(
+                    _expanded
+                        ? ButleryIcons.chevronUp
+                        : ButleryIcons.chevronDown,
+                    color: cs.outline,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -208,69 +217,75 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     return Semantics(
       button: true,
       label: l10n.a11yEditMemberRating(row.member.displayName),
-      child: InkWell(
-        onTap: () => _editMember(context, row.member.memberId),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: cs.surface, width: 1),
-            ),
-          ),
-          child: Row(
-            children: [
-              FamilyAvatar(
-                name: row.member.displayName,
-                color: parseAvatarColor(row.member.avatarColor),
-                size: 34,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            row.member.displayName,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isHolder) ...[
-                          const SizedBox(width: 6),
-                          Text(
-                            l10n.familyRatingYou,
-                            style: AppTextStyles.captionText.copyWith(
-                              color: cs.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (row.isProxy && row.enteredByName != null)
-                      Text(
-                        l10n.familyRatingProxyEntered(row.enteredByName!),
-                        style: AppTextStyles.captionText.copyWith(
-                          color: cs.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    Text(
-                      l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
-                      style: AppTextStyles.captionText.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.raised,
+          child: InkWell(
+            onTap: () => _editMember(context, row.member.memberId),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: cs.surface, width: 1),
                 ),
               ),
-              StarRatingRow(rating: row.stars.toDouble(), size: 16),
-            ],
+              child: Row(
+                children: [
+                  FamilyAvatar(
+                    name: row.member.displayName,
+                    color: parseAvatarColor(row.member.avatarColor),
+                    size: 34,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                row.member.displayName,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (isHolder) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                l10n.familyRatingYou,
+                                style: AppTextStyles.captionText.copyWith(
+                                  color: cs.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (row.isProxy && row.enteredByName != null)
+                          Text(
+                            l10n.familyRatingProxyEntered(row.enteredByName!),
+                            style: AppTextStyles.captionText.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        Text(
+                          l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
+                          style: AppTextStyles.captionText.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  StarRatingRow(rating: row.stars.toDouble(), size: 16),
+                ],
+              ),
+            ),
           ),
         ),
       ),

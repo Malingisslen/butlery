@@ -15,6 +15,9 @@ import 'package:butlery/views/ingredient_search/ingredient_chip_input.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 
 void main() {
   setUpAll(() async {
@@ -62,4 +65,51 @@ void main() {
       },
     );
   });
+
+  // BUT-2205: the chip's own fill used to sit above the ink layer, so its
+  // remove × showed no press.
+  for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+    testWidgets('a pressed remove × on an ingredient chip shows the step on '
+        'raised (${theme.brightness.name})', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Theme(
+            data: theme,
+            child: Material(
+              child: IngredientChipInput(
+                selectedIngredients: const [
+                  IngredientData(
+                    id: 'tomato',
+                    swedish: 'Tomater',
+                    english: 'Tomatoes',
+                    group: 'vegetables',
+                    properties: {},
+                  ),
+                ],
+                autocompleteResults: const [],
+                onSearchChanged: (_) {},
+                onIngredientSelected: (_) {},
+                onIngredientRemoved: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      final remove = find.descendant(
+        of: find.bySemanticsLabel('Ta bort Tomater'),
+        matching: find.byType(InkWell),
+      );
+      expect(pressIsCovered(tester, remove), isFalse);
+      final gesture = await holdPress(tester, remove);
+      expect(
+        paintsInkFill(
+          tester,
+          remove,
+          ModeColors.of(theme.brightness).pressedOnRaised,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
 }

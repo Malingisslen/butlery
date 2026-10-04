@@ -29,37 +29,30 @@ const _waiting = <String, int>{
   'lib/widgets/social/groups/shared_content_card.dart': 1,
   // Hidden: a fill painted above the ink layer covers the press, so these
   // show no press today; BUT-2205 moves the fill under the ink.
-  'lib/views/family/family_rating_breakdown.dart': 2,
   'lib/views/family/family_widgets.dart': 1,
   'lib/views/family/who_is_eating_sheet.dart': 1,
-  'lib/views/ingredient_search/ingredient_chip_input.dart': 1,
   'lib/views/menu_placement/placement_widgets.dart': 4,
   'lib/views/pantry/add_pantry_item_sheet.dart': 1,
   'lib/views/pantry/pantry_item_card.dart': 1,
   'lib/views/recipe_detail/cook_snap_visibility_dialog.dart': 1,
-  'lib/views/recipe_detail/recipe_detail_comments.dart': 2,
+  'lib/views/recipe_detail/recipe_detail_comments.dart': 1,
   'lib/widgets/common/content_cards/friend_card.dart': 1,
   'lib/widgets/common/dialogs/slot_picker_dialog.dart': 1,
-  'lib/widgets/common/input/ingredient_suggestion_list.dart': 1,
   'lib/widgets/common/input/portion_scaler_ui.dart': 1,
-  'lib/widgets/common/navigation/butlery_navigation_rail.dart': 1,
-  'lib/widgets/common/profile/builders/menu_item_builders.dart': 3,
+  'lib/widgets/common/profile/builders/menu_item_builders.dart': 1,
   'lib/widgets/common/search_filter/quick_filter_chips.dart': 1,
   'lib/widgets/common/share_dialog/share_mode_selection.dart': 2,
   'lib/widgets/cooking/cooking_session_card.dart': 1,
   'lib/widgets/import/voice_section_card.dart': 1,
   'lib/widgets/menu/calendar/calendar_cells.dart': 1,
-  'lib/widgets/menu/calendar/presence_overview.dart': 1,
   'lib/widgets/menu/menu_vote_card.dart': 1,
   'lib/widgets/recipe/comment_form_widget.dart': 1,
   'lib/widgets/recipe/comment_image_attachments.dart': 1,
-  'lib/widgets/recipe/related_recipes_editor.dart': 1,
-  'lib/widgets/social/activity_pings_feed.dart': 1,
   'lib/widgets/social/ping_compose_sheet.dart': 2,
   'lib/widgets/styled/styled_card.dart': 1,
   'lib/widgets/user/user_avatar_widgets.dart': 2,
-  // Mixed: one hidden InkWell and one on a surface the rule does not cover
-  // (the saffron add button, BUT-2232).
+  // Mixed: a tab with its own drawn press (paper at the on-ink 0.18 step)
+  // and the saffron add button, a surface the rule does not cover (BUT-2232).
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 2,
   // Raised, or cs.error when the action is destructive (BUT-2232).
   'lib/widgets/image/components/edit_actions_panel.dart': 1,

@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/related_recipes_picker_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Edit-form section for managing related-recipe links.
 ///
@@ -179,19 +180,25 @@ class _RelatedChip extends StatelessWidget {
             Semantics(
               label: context.l10n.a11yRemoveRelatedRecipe(title),
               button: true,
-              child: InkWell(
-                onTap: onRemove,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: AppDimensions.spacingXs,
-                    end: AppDimensions.space4,
-                    top: AppDimensions.spacingXs,
-                    bottom: AppDimensions.spacingXs,
-                  ),
-                  child: ButleryIcon(
-                    ButleryIcons.x,
-                    size: AppDimensions.iconSizeS,
-                    color: cs.onSurface,
+              child: Material(
+                type: MaterialType.transparency,
+                child: PressFill(
+                  surface: PressSurface.raised,
+                  child: InkWell(
+                    onTap: onRemove,
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: AppDimensions.spacingXs,
+                        end: AppDimensions.space4,
+                        top: AppDimensions.spacingXs,
+                        bottom: AppDimensions.spacingXs,
+                      ),
+                      child: ButleryIcon(
+                        ButleryIcons.x,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.onSurface,
+                      ),
+                    ),
                   ),
                 ),
               ),

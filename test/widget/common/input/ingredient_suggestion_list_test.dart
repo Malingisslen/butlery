@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
+
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -157,4 +160,38 @@ void main() {
     // Last item not initially in viewport (container is 180px tall).
     expect(find.text('item29'), findsNothing);
   });
+
+  // BUT-2205: the list's own surface fill used to sit above the ink layer and
+  // hide the press; a row now presses visibly to surface.raised.
+  for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+    testWidgets('a pressed suggestion shows surface.raised '
+        '(${theme.brightness.name})', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          home: Scaffold(
+            body: IngredientSuggestionList(
+              results: [_ingredient()],
+              onTap: (_) {},
+            ),
+          ),
+        ),
+      );
+      final target = find.text('Mjölk');
+      expect(pressIsCovered(tester, target), isFalse);
+      final gesture = await holdPress(tester, target);
+      expect(
+        paintsInkFill(
+          tester,
+          target,
+          theme.colorScheme.surfaceContainerHighest,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
 }
