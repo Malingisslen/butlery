@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
@@ -315,15 +316,18 @@ class _PantryFab extends StatelessWidget {
       child: Semantics(
         label: context.l10n.a11yPantryAddItem,
         button: true,
-        child: InkWell(
-          onTap: onPressed,
-          child: SizedBox(
-            width: 56,
-            height: 56,
-            child: ButleryIcon(
-              ButleryIcons.plus,
-              color: cs.onPrimary,
-              size: AppDimensions.iconSizeL,
+        child: PressFill(
+          surface: PressSurface.ink,
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              width: 56,
+              height: 56,
+              child: ButleryIcon(
+                ButleryIcons.plus,
+                color: cs.onPrimary,
+                size: AppDimensions.iconSizeL,
+              ),
             ),
           ),
         ),

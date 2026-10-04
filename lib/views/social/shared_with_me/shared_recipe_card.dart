@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
 /// Displays shared recipe information with action buttons.
@@ -38,73 +39,76 @@ class SharedRecipeCard {
       child: Semantics(
         label: context.l10n.a11ySharedRecipe(sharedRecipe.recipeTitle),
         button: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          onTap: () {
-            if (!isRead) {
-              viewModel.recipeViewModel.markAsViewed(sharedRecipe);
-            }
-            // Use contentSnapshot which provides minimal recipe from denormalized fields
-            Navigator.pushNamed(
-              context,
-              Routes.recipeDetail,
-              arguments: sharedRecipe.contentSnapshot,
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: !isRead
-                  ? Border.all(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      width: 2,
-                    )
-                  : null,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header med delningsinfo
-                SharedCardHeader(
-                  displayName: sharedRecipe.sharedByDisplayName,
-                  timestampText: timeago.format(
-                    sharedRecipe.sharedAt,
-                    locale: 'sv',
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            onTap: () {
+              if (!isRead) {
+                viewModel.recipeViewModel.markAsViewed(sharedRecipe);
+              }
+              // Use contentSnapshot which provides minimal recipe from denormalized fields
+              Navigator.pushNamed(
+                context,
+                Routes.recipeDetail,
+                arguments: sharedRecipe.contentSnapshot,
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                border: !isRead
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      )
+                    : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header med delningsinfo
+                  SharedCardHeader(
+                    displayName: sharedRecipe.sharedByDisplayName,
+                    timestampText: timeago.format(
+                      sharedRecipe.sharedAt,
+                      locale: 'sv',
+                    ),
+                    isRead: isRead,
+                    onDismiss: () => SharedContentActions.dismissRecipe(
+                      context,
+                      viewModel,
+                      sharedRecipe,
+                    ),
+                    onUnshare: () => SharedContentActions.unshareRecipe(
+                      context,
+                      sharedRecipe,
+                    ),
                   ),
-                  isRead: isRead,
-                  onDismiss: () => SharedContentActions.dismissRecipe(
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Recept content - uses denormalized fields for V2 efficiency
+                  _buildRecipeContent(context, sharedRecipe),
+
+                  // Message from the sharer
+                  if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
+                    const SizedBox(height: AppDimensions.space4),
+                    _buildShareMessage(context, sharedRecipe.shareMessage!),
+                  ],
+
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Action buttons
+                  _buildActionButtons(
                     context,
                     viewModel,
                     sharedRecipe,
+                    isRead,
+                    isImported,
                   ),
-                  onUnshare: () => SharedContentActions.unshareRecipe(
-                    context,
-                    sharedRecipe,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.space4),
-
-                // Recept content - uses denormalized fields for V2 efficiency
-                _buildRecipeContent(context, sharedRecipe),
-
-                // Message from the sharer
-                if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
-                  const SizedBox(height: AppDimensions.space4),
-                  _buildShareMessage(context, sharedRecipe.shareMessage!),
                 ],
-
-                const SizedBox(height: AppDimensions.space4),
-
-                // Action buttons
-                _buildActionButtons(
-                  context,
-                  viewModel,
-                  sharedRecipe,
-                  isRead,
-                  isImported,
-                ),
-              ],
+              ),
             ),
           ),
         ),

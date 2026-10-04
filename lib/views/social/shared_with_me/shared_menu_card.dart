@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedMenuCard - Card for displaying shared menus
 /// Displays shared menu information with action buttons.
@@ -34,77 +35,80 @@ class SharedMenuCard {
       child: Semantics(
         label: context.l10n.a11ySharedMenu(sharedMenu.menuTitle),
         button: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          onTap: () {
-            if (!isRead) {
-              viewModel.menuViewModel.markAsViewed(sharedMenu);
-            }
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider.value(
-                  value: viewModel,
-                  child: MenuPreviewView(sharedMenu: sharedMenu),
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            onTap: () {
+              if (!isRead) {
+                viewModel.menuViewModel.markAsViewed(sharedMenu);
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider.value(
+                    value: viewModel,
+                    child: MenuPreviewView(sharedMenu: sharedMenu),
+                  ),
                 ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                border: !isRead
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      )
+                    : null,
               ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: !isRead
-                  ? Border.all(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      width: 2,
-                    )
-                  : null,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header med delningsinfo
-                SharedCardHeader(
-                  displayName: sharedMenu.sharedByDisplayName,
-                  timestampText: timeago.format(
-                    sharedMenu.sharedAt,
-                    locale: 'sv',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header med delningsinfo
+                  SharedCardHeader(
+                    displayName: sharedMenu.sharedByDisplayName,
+                    timestampText: timeago.format(
+                      sharedMenu.sharedAt,
+                      locale: 'sv',
+                    ),
+                    isRead: isRead,
+                    onDismiss: () => SharedContentActions.dismissMenu(
+                      context,
+                      viewModel,
+                      sharedMenu,
+                    ),
+                    onUnshare: () => SharedContentActions.unshareMenu(
+                      context,
+                      viewModel,
+                      sharedMenu,
+                    ),
                   ),
-                  isRead: isRead,
-                  onDismiss: () => SharedContentActions.dismissMenu(
-                    context,
-                    viewModel,
-                    sharedMenu,
-                  ),
-                  onUnshare: () => SharedContentActions.unshareMenu(
-                    context,
-                    viewModel,
-                    sharedMenu,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.space4),
-
-                // Meny content
-                _buildMenuContent(context, sharedMenu),
-
-                // Message from the sharer
-                if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
                   const SizedBox(height: AppDimensions.space4),
-                  _buildShareMessage(context, sharedMenu.shareMessage!),
+
+                  // Meny content
+                  _buildMenuContent(context, sharedMenu),
+
+                  // Message from the sharer
+                  if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
+                    const SizedBox(height: AppDimensions.space4),
+                    _buildShareMessage(context, sharedMenu.shareMessage!),
+                  ],
+
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Action buttons
+                  _buildActionButtons(
+                    context,
+                    viewModel,
+                    sharedMenu,
+                    isRead,
+                    isImported,
+                  ),
                 ],
-
-                const SizedBox(height: AppDimensions.space4),
-
-                // Action buttons
-                _buildActionButtons(
-                  context,
-                  viewModel,
-                  sharedMenu,
-                  isRead,
-                  isImported,
-                ),
-              ],
+              ),
             ),
           ),
         ),

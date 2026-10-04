@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class MoreView extends StatelessWidget {
   const MoreView({super.key, this.avatar = const RecipeListAvatarBadge()});
@@ -188,39 +189,42 @@ class _MoreRow extends StatelessWidget {
       identifier: 'more-row-$route',
       // The count is read as words, not as a bare number.
       value: count > 0 ? context.l10n.syncQueueNeedsYouHeader(count) : null,
-      child: InkWell(
-        key: MoreView.rowKey(route),
-        onTap: () =>
-            Navigator.of(context).pushNamed(route, arguments: arguments),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: AppDimensions.minTouchTarget,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingSm,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          key: MoreView.rowKey(route),
+          onTap: () =>
+              Navigator.of(context).pushNamed(route, arguments: arguments),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    label,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: cs.onSurface,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingSm,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
-                ),
-                if (count > 0) ...[
-                  ExcludeSemantics(child: SaffronCount(count: count)),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                ],
-                ExcludeSemantics(
-                  child: ButleryIcon(
-                    ButleryIcons.chevronRight,
-                    color: cs.onSurfaceVariant,
+                  if (count > 0) ...[
+                    ExcludeSemantics(child: SaffronCount(count: count)),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                  ],
+                  ExcludeSemantics(
+                    child: ButleryIcon(
+                      ButleryIcons.chevronRight,
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

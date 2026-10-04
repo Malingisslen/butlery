@@ -40,6 +40,7 @@ import 'package:butlery/widgets/cooking/voice_heard_chip.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// How cooking mode was left, returned to the recipe detail view that
 /// pushed it.
@@ -962,22 +963,27 @@ class _IngredientsPanel extends StatelessWidget {
       enabled: isEnabled,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          child: Container(
-            width: AppDimensions.minTouchTarget,
-            height: AppDimensions.minTouchTarget,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isEnabled ? cs.onPrimary : _disabledOnInk,
-                width: 2,
+        child: PressFill(
+          surface: Theme.of(context).brightness == Brightness.dark
+              ? PressSurface.base
+              : PressSurface.ink,
+          child: InkWell(
+            onTap: onPressed,
+            child: Container(
+              width: AppDimensions.minTouchTarget,
+              height: AppDimensions.minTouchTarget,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: isEnabled ? cs.onPrimary : _disabledOnInk,
+                  width: 2,
+                ),
               ),
-            ),
-            child: ButleryIcon(
-              icon,
-              size: AppDimensions.iconSizeL,
-              color: isEnabled ? cs.onPrimary : _disabledOnInk,
+              child: ButleryIcon(
+                icon,
+                size: AppDimensions.iconSizeL,
+                color: isEnabled ? cs.onPrimary : _disabledOnInk,
+              ),
             ),
           ),
         ),

@@ -31,6 +31,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -327,68 +328,71 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         Semantics(
           label: context.l10n.a11yShowSubstitutionsFor(parsed.name),
           button: true,
-          child: InkWell(
-            onTap: () => _showSubstitutionSheet(context, parsed.name),
-            child: ConstrainedBox(
-              // BUT-2194: a row is a control (tap), so it is at least 48 dp tall
-              // (tokens.json touchTarget).
-              constraints: const BoxConstraints(
-                minHeight: AppDimensions.minTouchTarget,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.space12,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: () => _showSubstitutionSheet(context, parsed.name),
+              child: ConstrainedBox(
+                // BUT-2194: a row is a control (tap), so it is at least 48 dp tall
+                // (tokens.json touchTarget).
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 70,
-                      child: Text(
-                        parsed.unit.isNotEmpty
-                            ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                            : parsed.quantity > 0
-                            ? _formatQuantity(parsed.quantity)
-                            : '',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.end,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingXl),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          if (isAllergen)
-                            Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                end: AppDimensions.spacingXs,
-                              ),
-                              child: ButleryIcon(
-                                ButleryIcons.triangleAlert,
-                                size: AppDimensions.iconSizeS,
-                                color: cs.error,
-                              ),
-                            ),
-                          Expanded(
-                            child: Text(
-                              parsed.name,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: isAllergen ? cs.error : cs.onSurface,
-                              ),
-                            ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.space12,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 70,
+                        child: Text(
+                          parsed.unit.isNotEmpty
+                              ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                              : parsed.quantity > 0
+                              ? _formatQuantity(parsed.quantity)
+                              : '',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: cs.onSurface,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
+                          textAlign: TextAlign.end,
+                        ),
                       ),
-                    ),
-                    ButleryIcon(
-                      ButleryIcons.swapHorizontal,
-                      size: AppDimensions.iconSizeS,
-                      color: AppModeColors.textDisabled(cs.brightness),
-                    ),
-                  ],
+                      const SizedBox(width: AppDimensions.spacingXl),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (isAllergen)
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(
+                                  end: AppDimensions.spacingXs,
+                                ),
+                                child: ButleryIcon(
+                                  ButleryIcons.triangleAlert,
+                                  size: AppDimensions.iconSizeS,
+                                  color: cs.error,
+                                ),
+                              ),
+                            Expanded(
+                              child: Text(
+                                parsed.name,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: isAllergen ? cs.error : cs.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ButleryIcon(
+                        ButleryIcons.swapHorizontal,
+                        size: AppDimensions.iconSizeS,
+                        color: AppModeColors.textDisabled(cs.brightness),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -445,36 +449,39 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         label: context.l10n.a11yToggleStepDone(index + 1),
         button: true,
         toggled: isCompleted,
-        child: InkWell(
-          onTap: () => _toggleStepCompletion(index),
-          borderRadius: BorderRadius.zero,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingXs,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStepCheckbox(context, index + 1, isCompleted),
-                const SizedBox(width: AppDimensions.spacingMd),
-                Expanded(
-                  // BUT-604: duration phrases render as inline tappable
-                  // chips that open the step-timer sheet — same affordance
-                  // as cooking mode, no long-press discovery needed.
-                  child: InlineTimerText(
-                    text: instruction,
-                    onTimerTap: (match) =>
-                        _openStepTimer(context, instruction, match),
-                    chipColor: cs.onSurface,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
-                      decoration: isCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: () => _toggleStepCompletion(index),
+            borderRadius: BorderRadius.zero,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingXs,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStepCheckbox(context, index + 1, isCompleted),
+                  const SizedBox(width: AppDimensions.spacingMd),
+                  Expanded(
+                    // BUT-604: duration phrases render as inline tappable
+                    // chips that open the step-timer sheet — same affordance
+                    // as cooking mode, no long-press discovery needed.
+                    child: InlineTimerText(
+                      text: instruction,
+                      onTimerTap: (match) =>
+                          _openStepTimer(context, instruction, match),
+                      chipColor: cs.onSurface,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
+                        decoration: isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

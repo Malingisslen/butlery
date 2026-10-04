@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Seasonal hero header for BUT-409.
 ///
@@ -50,69 +51,72 @@ class SeasonalHeroHeader extends StatelessWidget {
       label:
           '$title, $ingredientsLine, '
           '${l10n.seasonalHeroRecipeCount(matchCount)}',
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: AppDimensions.responsiveContentPadding(context),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(
-              AppDimensions.spacingMd,
-              AppDimensions.spacingSm,
-              AppDimensions.spacingSm,
-              AppDimensions.spacingSm,
-            ),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: cs.secondary, width: 3),
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: AppDimensions.responsiveContentPadding(context),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.spacingMd,
+                AppDimensions.spacingSm,
+                AppDimensions.spacingSm,
+                AppDimensions.spacingSm,
               ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                VegetableIllustration(
-                  type: month.vegetableType,
-                  size: 28,
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: cs.secondary, width: 3),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          letterSpacing: 1.5,
-                          color: cs.onPrimaryContainer,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: AppDimensions.space4),
-                      Text(
-                        ingredientsLine,
-                        style: AppTextStyles.captionBase.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  VegetableIllustration(
+                    type: month.vegetableType,
+                    size: 28,
                   ),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  l10n.seasonalHeroRecipeCount(matchCount),
-                  style: AppTextStyles.labelSmall.copyWith(
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            letterSpacing: 1.5,
+                            color: cs.onPrimaryContainer,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: AppDimensions.space4),
+                        Text(
+                          ingredientsLine,
+                          style: AppTextStyles.captionBase.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(
+                    l10n.seasonalHeroRecipeCount(matchCount),
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
                     color: cs.onSurfaceVariant,
+                    size: 18,
                   ),
-                ),
-                ButleryIcon(
-                  ButleryIcons.chevronRight,
-                  color: cs.onSurfaceVariant,
-                  size: 18,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

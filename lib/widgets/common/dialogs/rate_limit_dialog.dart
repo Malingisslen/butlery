@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog shown when user hits a rate limit during import.
 ///
@@ -241,45 +242,48 @@ class _ActionTile extends StatelessWidget {
     return Semantics(
       label: title,
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingM),
-          decoration: BoxDecoration(
-            border: Border.all(color: cs.outlineVariant),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          ),
-          child: Row(
-            children: [
-              ButleryIcon(
-                icon,
-                color: cs.onSurface,
-                size: AppDimensions.iconSizeL,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.bodyBold,
-                    ),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              border: Border.all(color: cs.outlineVariant),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            ),
+            child: Row(
+              children: [
+                ButleryIcon(
+                  icon,
+                  color: cs.onSurface,
+                  size: AppDimensions.iconSizeL,
                 ),
-              ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                color: cs.onSurfaceVariant,
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingM),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.bodyBold,
+                      ),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
+                  color: cs.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),

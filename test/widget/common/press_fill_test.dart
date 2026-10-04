@@ -264,6 +264,43 @@ void main() {
     });
   }
 
+  for (final (mode, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    final modeColors = ModeColors.of(theme.brightness);
+    for (final (surface, fill) in [
+      (PressSurface.base, theme.colorScheme.surfaceContainerHighest),
+      (PressSurface.ink, modeColors.pressedOnInk),
+    ]) {
+      testWidgets(
+        'a pressed InkWell on ${surface.name} takes its fill ($mode)',
+        (
+          tester,
+        ) async {
+          await tester.pumpWidget(
+            app(
+              theme,
+              PressFill(
+                surface: surface,
+                child: InkWell(
+                  onTap: () {},
+                  child: const SizedBox(
+                    width: 200,
+                    height: 48,
+                    child: Text('Vegetariskt'),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await press(tester);
+          expect(fills(tester, fill), isTrue);
+        },
+      );
+    }
+  }
+
   testWidgets('the icon colour around it reaches the chip unchanged', (
     tester,
   ) async {

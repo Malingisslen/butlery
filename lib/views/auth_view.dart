@@ -25,6 +25,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -655,15 +656,18 @@ class _AuthViewState extends State<AuthView> {
             Semantics(
               link: true,
               label: context.l10n.a11yTermsOfServiceLink,
-              child: InkWell(
-                onTap: () =>
-                    Navigator.pushNamed(context, Routes.termsOfService),
-                child: Text(
-                  context.l10n.authTermsOfService,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onPrimaryContainer,
-                    decoration: TextDecoration.underline,
-                    decorationColor: cs.onPrimaryContainer,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.termsOfService),
+                  child: Text(
+                    context.l10n.authTermsOfService,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: cs.onPrimaryContainer,
+                      decoration: TextDecoration.underline,
+                      decorationColor: cs.onPrimaryContainer,
+                    ),
                   ),
                 ),
               ),
@@ -677,14 +681,18 @@ class _AuthViewState extends State<AuthView> {
             Semantics(
               link: true,
               label: context.l10n.a11yPrivacyPolicyLink,
-              child: InkWell(
-                onTap: () => Navigator.pushNamed(context, Routes.privacyPolicy),
-                child: Text(
-                  context.l10n.profilePrivacyPolicy,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onPrimaryContainer,
-                    decoration: TextDecoration.underline,
-                    decorationColor: cs.onPrimaryContainer,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.privacyPolicy),
+                  child: Text(
+                    context.l10n.profilePrivacyPolicy,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: cs.onPrimaryContainer,
+                      decoration: TextDecoration.underline,
+                      decorationColor: cs.onPrimaryContainer,
+                    ),
                   ),
                 ),
               ),

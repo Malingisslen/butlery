@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Collapsible section showing blocked users with unblock actions.
 /// Used in consent/privacy settings to let users manage their block list.
@@ -303,39 +304,44 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       label: context.l10n.a11yBlockedUsersToggle,
       button: true,
       expanded: _isExpanded,
-      child: InkWell(
-        onTap: () => setState(() => _isExpanded = !_isExpanded),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.block,
-                color: cs.onSurfaceVariant,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.blockedUsersTitle,
-                      style: AppTextStyles.titleBold,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      '${_blockedUserIds.length} blockerade',
-                      style: AppTextStyles.metadataEmphasized,
-                    ),
-                  ],
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => setState(() => _isExpanded = !_isExpanded),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Row(
+              children: [
+                ButleryIcon(
+                  ButleryIcons.block,
+                  color: cs.onSurfaceVariant,
+                  size: AppDimensions.iconSizeM,
                 ),
-              ),
-              ButleryIcon(
-                _isExpanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
-                color: cs.onSurfaceVariant,
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingSm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.blockedUsersTitle,
+                        style: AppTextStyles.titleBold,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        '${_blockedUserIds.length} blockerade',
+                        style: AppTextStyles.metadataEmphasized,
+                      ),
+                    ],
+                  ),
+                ),
+                ButleryIcon(
+                  _isExpanded
+                      ? ButleryIcons.chevronUp
+                      : ButleryIcons.chevronDown,
+                  color: cs.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -396,10 +402,13 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       label: context.l10n.a11yBlockedUserSelect(displayName),
       button: true,
       selected: _selectionMode ? isSelected : null,
-      child: InkWell(
-        onLongPress: () => _enterSelection(userId),
-        onTap: _selectionMode ? () => _toggleSelection(userId) : null,
-        child: row,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onLongPress: () => _enterSelection(userId),
+          onTap: _selectionMode ? () => _toggleSelection(userId) : null,
+          child: row,
+        ),
       ),
     );
   }

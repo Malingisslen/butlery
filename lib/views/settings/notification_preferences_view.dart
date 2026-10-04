@@ -554,29 +554,32 @@ class _NotificationPreferencesViewState
     return Semantics(
       label: context.l10n.a11yPickTime(label, time),
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: Column(
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            decoration: BoxDecoration(
+              border: Border.all(color: cs.outlineVariant),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                time,
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: cs.onSurface,
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  time,
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: cs.onSurface,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

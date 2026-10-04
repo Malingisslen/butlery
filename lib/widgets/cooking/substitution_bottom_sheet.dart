@@ -5,6 +5,7 @@ import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-202: Bottom sheet shown on long-press of an ingredient row in cooking
 /// mode. Square corners, cream bg, greenDark text per design system.
@@ -154,14 +155,17 @@ class _SuggestionRow extends StatelessWidget {
               child: Semantics(
                 label: context.l10n.a11yReplaceWithSubstitute(suggestion.name),
                 button: true,
-                child: InkWell(
-                  onTap: onReplace,
-                  child: Center(
-                    child: Text(
-                      context.l10n.replaceInRecipe,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: cs.onPrimary,
-                        fontWeight: FontWeight.w700,
+                child: PressFill(
+                  surface: PressSurface.ink,
+                  child: InkWell(
+                    onTap: onReplace,
+                    child: Center(
+                      child: Text(
+                        context.l10n.replaceInRecipe,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: cs.onPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -275,19 +279,22 @@ class _CancelButton extends StatelessWidget {
         child: Semantics(
           label: context.l10n.commonCancel,
           button: true,
-          child: InkWell(
-            onTap: onPressed,
-            child: Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: Border.fromBorderSide(
-                  BorderSide(color: context.modeColors.iconMuted, width: 1),
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: onPressed,
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.fromBorderSide(
+                    BorderSide(color: context.modeColors.iconMuted, width: 1),
+                  ),
                 ),
-              ),
-              child: Text(
-                context.l10n.commonCancel,
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: cs.onPrimaryContainer,
+                child: Text(
+                  context.l10n.commonCancel,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
             ),

@@ -25,6 +25,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Hem when the library is empty (#hemtom).
 class HemEmptyState extends StatelessWidget {
@@ -197,53 +198,56 @@ class _ShortcutRow extends StatelessWidget {
     return Semantics(
       button: true,
       identifier: 'hem-shortcut-$route',
-      child: InkWell(
-        key: ValueKey('hem-shortcut-$route'),
-        onTap: () => Navigator.pushNamed(context, route),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 64),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-          ),
-          child: Row(
-            children: [
-              ButleryIcon(
-                icon,
-                color: cs.onSurface,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm + 4),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingSm,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.onSurface,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          key: ValueKey('hem-shortcut-$route'),
+          onTap: () => Navigator.pushNamed(context, route),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 64),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+            ),
+            child: Row(
+              children: [
+                ButleryIcon(
+                  icon,
+                  color: cs.onSurface,
+                  size: AppDimensions.iconSizeM,
+                ),
+                const SizedBox(width: AppDimensions.spacingSm + 4),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.spacingSm,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.onSurface,
+                          ),
                         ),
-                      ),
-                      Text(
-                        body,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: cs.onSurfaceVariant,
-                          fontWeight: FontWeight.w400,
+                        Text(
+                          body,
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: cs.onSurfaceVariant,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                color: cs.onSurfaceVariant,
-                size: AppDimensions.iconSizeM,
-              ),
-            ],
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
+                  color: cs.onSurfaceVariant,
+                  size: AppDimensions.iconSizeM,
+                ),
+              ],
+            ),
           ),
         ),
       ),
