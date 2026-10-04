@@ -204,7 +204,8 @@ final class ModeColors {
   Color get onWarningContainer =>
       _isDark ? AppColorsDark.onWarningContainer : AppColors.onWarningContainer;
 
-  /// AppColors.info light, AppColorsDark.info dark.
+  /// AppColors.info light, AppColorsDark.info dark. Not for links: a link
+  /// reads [textLink].
   Color get info => _isDark ? AppColorsDark.info : AppColors.info;
 
   /// AppColors.onInfo light, AppColorsDark.onInfo dark.

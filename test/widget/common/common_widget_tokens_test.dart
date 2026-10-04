@@ -133,7 +133,7 @@ void main() {
     final modeColors = ModeColors.of(theme.brightness);
 
     group('sharing chip on the menu and list cards, $mode', () {
-      testWidgets('menu card: raised fill, no border, info-text label', (
+      testWidgets('menu card: raised fill, no border, link-text label', (
         tester,
       ) async {
         await _pump(
@@ -150,11 +150,11 @@ void main() {
         expect(_glyphColor(tester, glyph), cs.onSurface);
         expect(
           _labelColorBeside(tester, glyph),
-          modeColors.info,
+          modeColors.textLink,
         );
       });
 
-      testWidgets('list card: raised fill, no border, info-text label', (
+      testWidgets('list card: raised fill, no border, link-text label', (
         tester,
       ) async {
         await _pump(
@@ -174,7 +174,7 @@ void main() {
         expect(_glyphColor(tester, glyph), cs.onSurface);
         expect(
           _labelColorBeside(tester, glyph),
-          modeColors.info,
+          modeColors.textLink,
         );
       });
     });

@@ -306,9 +306,9 @@ void main() {
       final label = tester.widget<Text>(find.text('Visa detaljer'));
       expect(label.style!.color, link);
       expect(
-        ModeColors.of(theme.brightness).info,
+        ModeColors.of(theme.brightness).textLink,
         link,
-        reason: 'text.link is the info member (app_colors.dart)',
+        reason: 'the literal pair above is text.link',
       );
     });
   }

@@ -175,6 +175,22 @@ void main() {
         },
       );
 
+      testWidgets('the detected link address is text.link', (tester) async {
+        await _pump(
+          tester,
+          theme,
+          detected: ContentDetectionResult(
+            type: ContentType.socialMediaUrl,
+            extractedUrl: 'https://www.instagram.com/p/abc/',
+            originalContent: 'delat',
+          ),
+        );
+
+        final url = find.text('https://www.instagram.com/p/abc/');
+        expect(url, findsOneWidget);
+        expect(_textColor(tester, url), modeColors.textLink);
+      });
+
       testWidgets(
         'the failed-extraction notice is the danger tint with no border and '
         'onErrorContainer glyph and text',

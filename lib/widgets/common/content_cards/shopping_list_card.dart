@@ -332,7 +332,7 @@ class ShoppingListCard extends StatelessWidget {
                 ? context.l10n.shoppingCardSharedWithCount(memberCount)
                 : context.l10n.shoppingCardSharedList,
             style: AppTextStyles.linkSmall.copyWith(
-              color: context.modeColors.info,
+              color: context.modeColors.textLink,
             ),
           ),
         ],
