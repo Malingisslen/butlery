@@ -40,8 +40,8 @@ class FeedbackThemes {
   ///   AppColorsDark).
   /// * Message: paper #F5F4ED in both modes (control.checked.foreground,
   ///   member textOnPrimary; 11.36:1 on ink).
-  /// * Action: light saffron #E09D50 in both modes (palette.saffronLight,
-  ///   member textAccentOnInk; 5.43:1 on ink, Block 289 contrast contract).
+  /// * Action: text.accent.onInk (member textAccentOnInk; produktbeslut
+  ///   R7-5 = A).
   /// * Radius 8 (radius.control; Komponentark v1:746 `border-radius:8px`).
   /// * Dark mode: a 1 px border.subtle edge (rgba(245,244,237,0.18)), since
   ///   ink on the dark page (#17251D) is only a small step. Interpretation;
@@ -54,7 +54,9 @@ class FeedbackThemes {
     return SnackBarThemeData(
       backgroundColor: ink,
       contentTextStyle: inkSnackBarMessageStyle.copyWith(color: paper),
-      actionTextColor: AppColors.textAccentOnInk,
+      actionTextColor: dark
+          ? AppColorsDark.textAccentOnInk
+          : AppColors.textAccentOnInk,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         side: dark

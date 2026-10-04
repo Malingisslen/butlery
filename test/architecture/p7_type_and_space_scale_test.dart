@@ -19,11 +19,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 
 /// Files that may still carry a raw font size, and how many. Each entry is a
 /// known gap with a Linear follow-up; the count may only go down.
-const _rawFontSizeAllowlist = <String, int>{
-  // The cooking timer's 56 px digits. No type role is larger than stat 38,
-  // which is reserved for the statistics view (tokens.json typography.roles).
-  'lib/widgets/cooking/step_timer_widget.dart': 1,
-};
+const _rawFontSizeAllowlist = <String, int>{};
 
 /// The AppDimensions members retired in package 7 (P7-U09).
 const _retiredSpacing = <String>[

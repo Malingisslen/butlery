@@ -12,6 +12,10 @@ class AppMotion {
   /// motion.durations.standard
   static const Duration standard = Duration(milliseconds: 320);
 
+  /// motion.durations.pulse: one loop of a pulsing indicator (produktbeslut
+  /// R7-4 = B).
+  static const Duration pulse = Duration(milliseconds: 1200);
+
   /// motion.easing.standard: cubic-bezier(0.33, 0, 0.2, 1).
   static const Curve curve = Cubic(0.33, 0, 0.2, 1);
 }

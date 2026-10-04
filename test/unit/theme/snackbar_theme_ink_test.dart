@@ -34,9 +34,17 @@ void main() {
         expect(t.contentTextStyle?.fontWeight, FontWeight.w400);
       });
 
-      test('action is light saffron #E09D50 (text accent on ink)', () {
-        expect(t.actionTextColor, AppColors.textAccentOnInk);
-        expect(t.actionTextColor, const Color(0xFFE09D50));
+      test('action is text.accent.onInk (R7-5 = A)', () {
+        expect(
+          t.actionTextColor,
+          mode == 'dark'
+              ? AppColorsDark.textAccentOnInk
+              : AppColors.textAccentOnInk,
+        );
+        expect(
+          t.actionTextColor,
+          mode == 'dark' ? const Color(0xFFDCA968) : const Color(0xFFE09D50),
+        );
         expect(
           FeedbackThemes.inkSnackBarActionStyle.fontWeight,
           FontWeight.w700,

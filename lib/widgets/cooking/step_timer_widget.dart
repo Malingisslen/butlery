@@ -245,10 +245,8 @@ class _TimerDisplay extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             _formatRemaining(remaining),
-            style: AppTextStyles.titleLarge.copyWith(
+            style: AppTextStyles.statNumber.copyWith(
               color: cs.onPrimaryContainer,
-              fontSize: 56,
-              fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),

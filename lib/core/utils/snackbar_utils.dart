@@ -4,8 +4,8 @@
 /// (produktbeslut PQ-09 = A, 2026-09-23). The surface, text colour, radius
 /// and dark-mode edge come from the global snackBarTheme
 /// (lib/theme/components/feedback_themes.dart); this file builds the
-/// content: the message and, when there is one, the action in light saffron
-/// with its own paper focus ring. The action is never "OK" (Komponentark
+/// content: the message and, when there is one, the action with its own
+/// paper focus ring. The action is never "OK" (Komponentark
 /// v1:750): Ångra, Försök igen, Öppna inställningar or Stäng.
 
 import 'dart:async';
@@ -550,9 +550,8 @@ class InkSnackBar extends StatelessWidget {
   }
 }
 
-/// The ink snackbar's action: 13/700 in light saffron (text accent on ink,
-/// #E09D50, 5.43:1 on surface.ink; Komponentark v1:747), at least 48 dp
-/// tall, with its own paper focus ring.
+/// The ink snackbar's action: 13/700 (text accent on ink; Komponentark
+/// v1:747), with its own paper focus ring.
 class InkSnackBarAction extends StatelessWidget {
   const InkSnackBarAction({
     required this.label,

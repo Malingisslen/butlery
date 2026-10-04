@@ -3,8 +3,8 @@
   "source": {
     "file": "tokens.json",
     "repo": "Butlery design system",
-    "commit": "c307e18",
-    "sha256": "2560b5f0804e908aac5ce59e54c3300ceac2622b7145bcd4844ddaaad613527c"
+    "commit": "baf22e2",
+    "sha256": "a2d2bafafa14c6b918c797ad4b22ef81393b4ebeb96f71c723fd7ceb018afaa3"
   },
   "version": "1.13",
   "date": "2026-08-05",
@@ -114,6 +114,14 @@
       "light": "#24382C",
       "dark": "#24382C"
     },
+    "surface.pressed.onRaised": {
+      "light": "#B4BFA6",
+      "dark": "#17251D"
+    },
+    "surface.pressed.onInk": {
+      "light": "#17251D",
+      "dark": "#17251D"
+    },
     "surface.selected": {
       "light": "#E6EAD9",
       "dark": "#2F4437"
@@ -216,6 +224,10 @@
     },
     "text.link": {
       "light": "#8A5212",
+      "dark": "#DCA968"
+    },
+    "text.accent.onInk": {
+      "light": "#E09D50",
       "dark": "#DCA968"
     },
     "elevation.shadow": {

@@ -114,8 +114,8 @@ const Map<String, (Color, Color)> _expected = {
   ),
   'surfaceDisabled': (AppColors.surfaceDisabled, AppColorsDark.surfaceDisabled),
   // Hem tonight eyebrow on ink (produktbeslut R6-01 = A): the drawn
-  // saffronLight in light, text.accent in dark.
-  'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccent),
+  // saffronLight in light.
+  'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccentOnInk),
   'textAccent': (AppColors.textAccent, AppColorsDark.textAccent),
   'textLink': (AppColors.textLink, AppColorsDark.textLink),
   'overlayPaperCard': (AppColors.cardWhite54, AppColorsDark.cardWhite54),
