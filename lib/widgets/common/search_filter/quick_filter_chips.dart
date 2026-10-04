@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Quick filter chip data model.
 class QuickFilterOption {
@@ -163,7 +164,7 @@ class QuickFilterChips extends StatelessWidget {
 }
 
 /// Individual quick filter chip with selection state.
-class _QuickChip extends StatelessWidget {
+class _QuickChip extends StatefulWidget {
   const _QuickChip({
     required this.label,
     required this.isSelected,
@@ -177,8 +178,28 @@ class _QuickChip extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
+  State<_QuickChip> createState() => _QuickChipState();
+}
+
+class _QuickChipState extends State<_QuickChip> {
+  bool _pressed = false;
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
+    final label = widget.label;
+    final icon = widget.icon;
+    final isSelected = widget.isSelected;
     final cs = Theme.of(context).colorScheme;
+    // The InkWell covers the 48 dp grip, wider than the pill, so the pill
+    // itself takes the pressed fill of its surface and the grip paints none.
+    final rest = isSelected ? cs.primary : cs.surfaceContainerHighest;
+    final fill = _pressed || _hovered
+        ? PressFill.fillFor(
+            context,
+            isSelected ? PressSurface.ink : PressSurface.raised,
+          )
+        : rest;
     // The shared grip (Grafisk manual v6:381): the InkWell fills a 48 dp box
     // around the visible chip, and the focus ring goes around that box.
     return ButleryControlFocus(
@@ -192,7 +213,10 @@ class _QuickChip extends StatelessWidget {
           button: true,
           selected: isSelected,
           child: InkWell(
-            onTap: onTap,
+            onTap: widget.onTap,
+            onHighlightChanged: (value) => setState(() => _pressed = value),
+            onHover: (value) => setState(() => _hovered = value),
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
             borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             child: ButleryControlFocus.box(
               child: AnimatedContainer(
@@ -205,7 +229,7 @@ class _QuickChip extends StatelessWidget {
                   vertical: AppDimensions.spacingSm,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? cs.primary : cs.surfaceContainerHighest,
+                  color: fill,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusPill,
                   ),

@@ -212,16 +212,14 @@ void main() {
           ),
         ),
       );
-      final card = tester
-          .widgetList<Container>(
-            find.descendant(
+      final card = tester.widget<Material>(
+        find
+            .descendant(
               of: find.byType(CookingSessionCard),
-              matching: find.byType(Container),
-            ),
-          )
-          .map((c) => c.decoration)
-          .whereType<BoxDecoration>()
-          .firstWhere((d) => d.border != null);
+              matching: find.byType(Material),
+            )
+            .first,
+      );
       expect(card.color, theme.colorScheme.primary);
       expect(card.color, isNot(theme.colorScheme.onPrimaryContainer));
     });
