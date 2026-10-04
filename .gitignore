@@ -121,6 +121,8 @@ nul
 !tools/gen_role_paths.py
 # Role-org Phase-2 stakeholder router (committed tooling)
 !tools/stakeholder_router.py
+# Opus-vs-Sonnet review trial (committed tooling)
+!.claude/hooks/review_trial.py
 
 # Temp analysis files
 *tmp_analyze*
