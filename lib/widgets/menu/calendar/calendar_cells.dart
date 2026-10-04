@@ -17,7 +17,6 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/app_text_roles_pending.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
@@ -557,7 +556,7 @@ class _AssignedSlot extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextRolesPending.calendarCell.copyWith(
+                  style: AppTextStyles.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.15,
                   ),
@@ -747,7 +746,7 @@ class _OvrigtEntry extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextRolesPending.calendarCell.copyWith(
+                  style: AppTextStyles.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.1,
                   ),

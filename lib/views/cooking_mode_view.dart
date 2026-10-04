@@ -338,8 +338,7 @@ class CookingTimerGate {
 /// Colours on the cooking base (ink #24382C light / #17251D dark, paper text
 /// on both): "Skriv stegen" is paper filled with ink text (cs.onPrimary /
 /// cs.primary, the same in both modes), "Till inköpslistan" is outlined in
-/// sage #93A48D (tokens.json:19, delivered as the dark text.disabled member
-/// the step row already uses on this base) with paper text.
+/// sage #93A48D (delivered as the dark text.disabled member) with paper text.
 class CookingNoStepsState extends StatelessWidget {
   const CookingNoStepsState({
     super.key,
@@ -1394,12 +1393,12 @@ Color _cookingBase(ColorScheme cs) =>
 /// base, as drawn in Skarmar v12 del 1 #laga (tokens.json:40-53 onInk).
 const double _onInkStepPlate = 0.6;
 
-/// A disabled control on the cooking-mode base, in both modes: #93A48D, the
-/// dark text.disabled.onRaised (tokens.json:198-201), never paper at an
-/// opacity. It measures 4.73:1 on ink #24382C (light base) and 5.9:1 on
+/// A disabled control on the cooking-mode base, in both modes:
+/// text.disabled.onInk #93A48D, never paper at an opacity. It measures 4.73:1
+/// on ink #24382C (light base) and 5.9:1 on
 /// #17251D (dark base), above the 4.5:1 the P4-U06 test plan asks for and the
 /// 3:1 disabled floor (tokens.json contrastPolicy).
-final Color _disabledOnInk = AppModeColors.textDisabled(Brightness.dark);
+final Color _disabledOnInk = AppModeColors.textDisabledOnInk();
 
 /// Persisting the swap can fail (offline / Firestore error). Without
 /// feedback the user believes the substitution was applied mid-cook when it

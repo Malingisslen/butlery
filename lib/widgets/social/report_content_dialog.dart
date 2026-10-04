@@ -6,6 +6,7 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
@@ -287,7 +288,7 @@ class _GuidelinesNote extends StatelessWidget {
                 child: Text(
                   linkText,
                   style: base.copyWith(
-                    color: theme.colorScheme.onSurface,
+                    color: context.modeColors.textLink,
                     decoration: TextDecoration.underline,
                   ),
                 ),

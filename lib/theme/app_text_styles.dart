@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:4d0dd6b8744947ab55cbb876bddf1218322476264d9ddd16e85bd5f674adb8d5 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:e88e5c48a5e92efec75806b7d250c697e13f86d5779bae1650f772c0e57e3ddf (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -156,6 +156,14 @@ class AppTextStyles {
     fontFamily: family,
     fontSize: 12,
     fontWeight: FontWeight.w400,
+    height: 1.45,
+  );
+
+  /// tokens: typography.roles.calendarCell — 11/600 · endast kalendercellens rättnamn — 52 dp kolumn. Beslut B-41.
+  static TextStyle get calendarCell => const TextStyle(
+    fontFamily: family,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
     height: 1.45,
   );
 

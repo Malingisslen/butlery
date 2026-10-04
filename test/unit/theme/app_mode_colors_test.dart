@@ -117,6 +117,7 @@ const Map<String, (Color, Color)> _expected = {
   // saffronLight in light, text.accent in dark.
   'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccent),
   'textAccent': (AppColors.textAccent, AppColorsDark.textAccent),
+  'textLink': (AppColors.textLink, AppColorsDark.textLink),
   'overlayPaperCard': (AppColors.cardWhite54, AppColorsDark.cardWhite54),
   'surfaceTintWarning': (
     AppColors.surfaceTintWarning,
@@ -177,6 +178,7 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'surfaceDisabled': (ModeColors c) => c.surfaceDisabled,
   'accentOnInk': (ModeColors c) => c.accentOnInk,
   'textAccent': (ModeColors c) => c.textAccent,
+  'textLink': (ModeColors c) => c.textLink,
   'overlayPaperCard': (ModeColors c) => c.overlayPaperCard,
   'surfaceTintWarning': (ModeColors c) => c.surfaceTintWarning,
   'surfaceTintDanger': (ModeColors c) => c.surfaceTintDanger,
@@ -189,7 +191,7 @@ void main() {
         .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
         .map((m) => m.group(1)!)
         .toSet();
-    expect(modeGetters, hasLength(48));
+    expect(modeGetters, hasLength(49));
     expect(_expected.keys.toSet(), modeGetters);
     expect(_mode.keys.toSet(), modeGetters);
   });
@@ -288,6 +290,17 @@ void main() {
       AppModeColors.textBodyMuted(Brightness.dark),
       const Color(0xFFC9D3C4),
     );
+  });
+
+  test('ModeColors.textLink is the generated text.link of each mode', () {
+    expect(ModeColors.light.textLink, const Color(0xFF8A5212));
+    expect(ModeColors.dark.textLink, const Color(0xFFDCA968));
+  });
+
+  test('AppModeColors.textDisabledOnInk is #93A48D whatever the mode', () {
+    expect(AppModeColors.textDisabledOnInk(), AppColors.textDisabledOnInk);
+    expect(AppModeColors.textDisabledOnInk(), AppColorsDark.textDisabledOnInk);
+    expect(AppModeColors.textDisabledOnInk(), const Color(0xFF93A48D));
   });
 
   test('app_mode_colors.dart holds no colour literal', () {
