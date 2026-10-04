@@ -108,71 +108,88 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       label: context.l10n.a11yCommentsToggle,
       button: true,
       toggled: _isExpanded,
-      child: InkWell(
-        onTap: () {
-          if (!mounted) return;
-          setState(() => _isExpanded = !_isExpanded);
-          if (_isExpanded) {
-            vm.startWatchingComments(widget.recipe.id);
-          } else {
-            vm.stopWatchingComments();
-          }
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.raised,
+          child: InkWell(
+            onTap: () {
+              if (!mounted) return;
+              setState(() => _isExpanded = !_isExpanded);
+              if (_isExpanded) {
+                vm.startWatchingComments(widget.recipe.id);
+              } else {
+                vm.stopWatchingComments();
+              }
+            },
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.messageSquare,
-                color: cs.onSurface,
-                size: AppDimensions.iconSizeAction,
+            child: Ink(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  border: Border.all(color: cs.outlineVariant),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                ),
+                child: Row(
                   children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        context.l10n.socialComments,
-                        style: AppTextStyles.titleMedium,
+                    ButleryIcon(
+                      ButleryIcons.messageSquare,
+                      color: cs.onSurface,
+                      size: AppDimensions.iconSizeAction,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              context.l10n.socialComments,
+                              style: AppTextStyles.titleMedium,
+                            ),
+                          ),
+                          if ((vm.commentCount ?? 0) > 0) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Text(
+                              context.l10n.socialCommentsCount(
+                                vm.commentCount!,
+                              ),
+                              style: AppTextStyles.titleMedium,
+                            ),
+                          ],
+                          // Preview snippet when collapsed
+                          if (!_isExpanded &&
+                              vm.topLevelComments.isNotEmpty) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Text(
+                              vm.topLevelComments.first.text,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    if ((vm.commentCount ?? 0) > 0) ...[
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        context.l10n.socialCommentsCount(vm.commentCount!),
-                        style: AppTextStyles.titleMedium,
-                      ),
-                    ],
-                    // Preview snippet when collapsed
-                    if (!_isExpanded && vm.topLevelComments.isNotEmpty) ...[
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        vm.topLevelComments.first.text,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                    ButleryIcon(
+                      _isExpanded
+                          ? ButleryIcons.chevronUp
+                          : ButleryIcons.chevronDown,
+                      color: cs.onSurfaceVariant,
+                      size: AppDimensions.iconSizeAction,
+                    ),
                   ],
                 ),
               ),
-              ButleryIcon(
-                _isExpanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
-                color: cs.onSurfaceVariant,
-                size: AppDimensions.iconSizeAction,
-              ),
-            ],
+            ),
           ),
         ),
       ),

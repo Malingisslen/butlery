@@ -23,6 +23,8 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 
 class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
 
@@ -304,5 +306,43 @@ void main() {
         reason: 'Single-select must pop on first tap, exactly as before',
       );
     });
+  });
+
+  // BUT-2205: the cell's own fill used to sit above the ink layer, so a
+  // pressed cell showed nothing.
+  testWidgets('a pressed empty cell shows surface.raised, a pressed '
+      'selected cell the step on raised', (tester) async {
+    await pumpHost(
+      tester,
+      open: (context) => showMultiSlotPickerDialog(context),
+      onResult: (_) {},
+    );
+    final empty = find.text('tis').at(0);
+    final theme = Theme.of(tester.element(empty));
+    expect(pressIsCovered(tester, empty), isFalse);
+    expect(borderIsAbovePress(tester, empty), isTrue);
+    final gesture = await holdPress(tester, empty);
+    expect(
+      paintsInkFill(tester, empty, theme.colorScheme.surfaceContainerHighest),
+      isTrue,
+    );
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+
+    final chosen = find.text('mån').at(0);
+    await tester.tap(chosen);
+    await tester.pumpAndSettle();
+    expect(pressIsCovered(tester, chosen), isFalse);
+    expect(borderIsAbovePress(tester, chosen), isTrue);
+    final chosenGesture = await holdPress(tester, chosen);
+    expect(
+      paintsInkFill(
+        tester,
+        chosen,
+        ModeColors.of(theme.brightness).pressedOnRaised,
+      ),
+      isTrue,
+    );
+    await chosenGesture.cancel();
   });
 }

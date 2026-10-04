@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-1214: pre-upload dialog offering the per-snap visibility override —
 /// "Samma som receptet" (default) or "Bara jag". [message] is the BUT-901
@@ -118,64 +119,71 @@ class _VisibilityOptionTile extends StatelessWidget {
       button: true,
       selected: selected,
       inMutuallyExclusiveGroup: true,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(_gap),
-          // Chosen is surface.selected with a real text.primary border;
-          // the others stand on the base surface with border.subtle
-          // (tokens.json:104-107, :116-119, :124-127; Grafisk manual v6:209
-          // "Vald = riktig border"; enhet-3 cook_snap_visibility_dialog
-          // .dart:127).
-          decoration: BoxDecoration(
-            color: selected ? cs.surfaceContainerHighest : cs.surface,
-            border: Border.all(
-              color: selected ? cs.onSurface : cs.outlineVariant,
-              width: selected ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 18,
-                height: 18,
-                margin: const EdgeInsets.only(top: 1),
-                decoration: BoxDecoration(
-                  color: selected ? cs.primary : null,
-                  border: selected
-                      ? null
-                      : Border.all(color: cs.outlineVariant, width: 2),
-                ),
-                child: selected
-                    ? ButleryIcon(
-                        ButleryIcons.check,
-                        size: 14,
-                        color: cs.onPrimary,
-                      )
-                    : null,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.raised : PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            // Chosen is surface.selected with a real text.primary border;
+            // the others stand on the base surface with border.subtle.
+            child: Ink(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: selected ? cs.surfaceContainerHighest : cs.surface,
               ),
-              const SizedBox(width: _gap),
-              Expanded(
-                child: Column(
+              child: Container(
+                padding: const EdgeInsets.all(_gap),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: selected ? cs.onSurface : cs.outlineVariant,
+                    width: selected ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppTextStyles.bodyMedium),
-                    if (subtitle != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          subtitle!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
+                    Container(
+                      width: 18,
+                      height: 18,
+                      margin: const EdgeInsets.only(top: 1),
+                      decoration: BoxDecoration(
+                        color: selected ? cs.primary : null,
+                        border: selected
+                            ? null
+                            : Border.all(color: cs.outlineVariant, width: 2),
                       ),
+                      child: selected
+                          ? ButleryIcon(
+                              ButleryIcons.check,
+                              size: 14,
+                              color: cs.onPrimary,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: _gap),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: AppTextStyles.bodyMedium),
+                          if (subtitle != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                subtitle!,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -5,6 +5,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 void main() {
   setUp(() async {
@@ -428,18 +430,31 @@ void main() {
         expect(find.text('Skalat från 4 till 2 portioner'), findsOneWidget);
       });
 
-      testWidgets('shows animated scale changes', (WidgetTester tester) async {
-        // This tests that the animation parameter is properly used
+      // BUT-2205: the button's own fill used to sit above the ink layer, so
+      // a pressed button showed nothing.
+      testWidgets('a pressed portion button shows the step on raised', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createTestWidget(
-            currentPortions: originalPortions,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
         );
-
-        // The widget should accept and use the animation
-        expect(find.byType(Container), findsAtLeastNWidgets(1));
+        final plus = find.byIcon(ButleryIcons.plus);
+        final brightness = Theme.of(tester.element(plus)).brightness;
+        expect(pressIsCovered(tester, plus), isFalse);
+        expect(borderIsAbovePress(tester, plus), isTrue);
+        final gesture = await holdPress(tester, plus);
+        expect(
+          paintsInkFill(
+            tester,
+            plus,
+            ModeColors.of(brightness).pressedOnRaised,
+          ),
+          isTrue,
+        );
+        await gesture.cancel();
       });
     });
 

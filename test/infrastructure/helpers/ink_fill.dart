@@ -60,3 +60,19 @@ bool pressIsCovered(WidgetTester tester, Finder target) {
   expect(node, isNotNull, reason: 'no Material above the pressed widget');
   return false;
 }
+
+/// Whether a border is drawn between [target] and the ink layer its press
+/// paints on, so the press fill cannot cover it. A border drawn by an `Ink`
+/// sits on the ink layer, beneath the press (BUT-2205).
+bool borderIsAbovePress(WidgetTester tester, Finder target) {
+  RenderObject? node = tester.renderObject(target);
+  while (node != null && node.runtimeType.toString() != '_RenderInkFeatures') {
+    if (node is RenderDecoratedBox) {
+      final decoration = node.decoration;
+      if (decoration is BoxDecoration && decoration.border != null) return true;
+    }
+    node = node.parent;
+  }
+  expect(node, isNotNull, reason: 'no Material above the pressed widget');
+  return false;
+}
