@@ -60,8 +60,9 @@ class HeroButton extends StatelessWidget {
     final hero = ComponentThemes.heroButtonStyle(cs);
     final text = Text(
       busy ? (busyLabel ?? label) : label,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      // BUT-2219: a label wraps rather than ellipsising; a button never
+      // cuts its name (plattformsmatris.md).
+      textAlign: TextAlign.center,
     );
     final VoidCallback? pressed = busy ? PlateLineButton.ignore : onPressed;
     final style = busy
