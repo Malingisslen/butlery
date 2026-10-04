@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
-// generator tools/gen-flutter.mjs v1.3
-// källfingeravtryck sha256:8dedc54c345948085c4f17bbd4def0415baf6985961ec63b30625a7a8c6feacd (4 indatafiler, generatorns källa inräknad)
+// generator tools/gen-flutter.mjs v1.4
+// källfingeravtryck sha256:48dd5550caf071ee462eb2b38518e97ed2651b75b84a8163b56ea6696a56e05a (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -74,6 +74,8 @@ class ButleryColors {
   static const textSuccessOnRaisedDark = Color(0xFF8FB89A);
   static const textDisabledOnRaised = Color(0xFF788477);
   static const textDisabledOnRaisedDark = Color(0xFF93A48D);
+  static const textDisabledOnInk = Color(0xFF93A48D);
+  static const textDisabledOnInkDark = Color(0xFF93A48D);
   static const surfaceTintWarning = Color(0xFFF0EEE2);
   static const surfaceTintWarningDark = Color(0xFF2F4437);
   static const surfaceTintAccent = Color(0xFFF7E8D2);
@@ -198,7 +200,9 @@ class ButleryMotion {
   static const clocheLift = Duration(milliseconds: 400);
   static const clocheReturn = Duration(milliseconds: 200);
   static const splashLoop = Duration(milliseconds: 5000);
-  static const Curve standard = Cubic(0.33, 0, 0.2, 1);
+  static const Curve curveStandard = Cubic(0.33, 0, 0.2, 1);
+  static const Curve curveExit = Cubic(0.4, 0, 1, 1);
+  static const Curve curveCeremony = Cubic(0.3, 0, 0.15, 1);
 }
 
 class ButleryType {

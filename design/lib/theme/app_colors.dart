@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:4d0dd6b8744947ab55cbb876bddf1218322476264d9ddd16e85bd5f674adb8d5 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:e88e5c48a5e92efec75806b7d250c697e13f86d5779bae1650f772c0e57e3ddf (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -184,6 +184,10 @@ class AppColors {
   static const Color surfaceTintWarning = Color(0xFFF0EEE2);
   /// Ifylld kryssruta och radio (BUT-2191). Bar control.checked.foreground (textOnPrimary), 11,36:1 i bada lagena. · semantic.control.checked.background
   static const Color controlCheckedBackground = Color(0xFF24382C);
+  /// Lanktext (BUT-2226). Ytbunden: klarar papper (5,78:1), surface.raised (5,20:1) och de fyra statustintarna (minst 4,88:1) i ljust lage; morkt 7,52:1 pa surface.base, 4,95:1 pa surface.raised och 5,91:1 pa surface.ink. ALDRIG pa surface.ink i ljust lage: #8A5212 ger 1,97:1 dar. · semantic.text.link
+  static const Color textLink = Color(0xFF8A5212);
+  /// Avstangd text pa surface.ink. Harledd, inte ritad; Malin kan prova. Ink ar #24382C i bada lagena, sa vardet ar #93A48D i bada (mork ytas varde, som text.disabled.onRaised morkt). Golv 3:1 (contrastPolicy disabled): 4,73:1 pa ink. Ytbunden till surface.ink. · semantic.text.disabled.onInk
+  static const Color textDisabledOnInk = Color(0xFF93A48D);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.

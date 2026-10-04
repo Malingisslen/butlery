@@ -158,7 +158,23 @@ export function bygg(rot) {
     { NAMN: 'textDisabledOnBase', YTA: 'surface.base', KRAV: 3.0, SLAG: 'DISABLED' },
     // BUT-2147. textCompleted ar text.completed och bunden till surface.base:
     // det morka #93A48D ger 6,02:1 dar men 3,96:1 pa surface.raised.
-    { NAMN: 'textCompleted', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' }
+    { NAMN: 'textCompleted', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+    // BUT-2226. textLink ar text.link och bunden till de ytor den ar matt mot:
+    // papper (5,78:1 ljust, 7,52:1 morkt), surface.raised (5,20 / 4,95) och de
+    // fyra statustintarna (minst 4,88:1 ljust). Pa surface.ink klarar bara
+    // det morka #DCA968 golvet (5,91:1); det ljusa #8A5212 ger 1,97:1 dar och
+    // far aldrig sta pa ink, sa ink-raden provas bara i morkt lage.
+    { NAMN: 'textLink', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textLink', YTA: 'surface.raised', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textLink', YTA: 'surface.tint.warning', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textLink', YTA: 'surface.tint.accent', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textLink', YTA: 'surface.tint.success', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textLink', YTA: 'surface.tint.danger', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textLink', YTA: 'surface.ink', LAGEN: ['dark'], KRAV: 4.5, SLAG: 'READABLE' },
+    // textDisabledOnInk ar text.disabled.onInk (#93A48D i bada lagena, ink ar
+    // #24382C i bada) och bunden till surface.ink: 4,73:1 mot golvet 3:1
+    // (contrastPolicy disabled). Harledd, inte ritad.
+    { NAMN: 'textDisabledOnInk', YTA: 'surface.ink', KRAV: 3.0, SLAG: 'DISABLED' }
   ];
   const ytbunden = YTBUNDNA.map(({ NAMN: namn, YTA: yta, LAGEN: lagen, KRAV: krav, SLAG: slag }) => {
     const ljus = flutterFarg[namn];
