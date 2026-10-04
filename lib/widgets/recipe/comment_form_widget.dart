@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Form widget for posting new comments or replies on recipes.
 /// Handles both top-level comments and threaded replies with visual feedback.
@@ -387,14 +388,16 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 child: Semantics(
                   label: context.l10n.a11yCommentRemoveSelectedImage,
                   button: true,
-                  child: InkWell(
-                    onTap: _isBusy ? null : () => _removeImageAt(index),
-                    child: ColoredBox(
-                      color: cs.scrim.withValues(alpha: 0.6),
-                      child: ButleryIcon(
-                        ButleryIcons.x,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onPrimary,
+                  child: PressUnchanged(
+                    child: InkWell(
+                      onTap: _isBusy ? null : () => _removeImageAt(index),
+                      child: ColoredBox(
+                        color: cs.scrim.withValues(alpha: 0.6),
+                        child: ButleryIcon(
+                          ButleryIcons.x,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onPrimary,
+                        ),
                       ),
                     ),
                   ),

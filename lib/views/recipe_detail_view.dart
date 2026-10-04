@@ -1382,21 +1382,23 @@ class _HeroButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       child: Material(
         type: MaterialType.transparency,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            onPressed();
-          },
-          child: SizedBox(
-            width: AppDimensions.minTouchTarget,
-            height: AppDimensions.minTouchTarget,
-            child: Center(
-              child: _PaperRing(
-                child: ButleryIcon(
-                  icon,
-                  color: cs.primary,
-                  size: AppDimensions.iconSizeM,
+        child: PressUnchanged(
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onPressed();
+            },
+            child: SizedBox(
+              width: AppDimensions.minTouchTarget,
+              height: AppDimensions.minTouchTarget,
+              child: Center(
+                child: _PaperRing(
+                  child: ButleryIcon(
+                    icon,
+                    color: cs.primary,
+                    size: AppDimensions.iconSizeM,
+                  ),
                 ),
               ),
             ),

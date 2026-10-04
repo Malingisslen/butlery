@@ -34,6 +34,7 @@ import 'package:butlery/views/social/friends_list/groups_tab.dart';
 import 'package:butlery/views/social/friends_list/group_search_tab.dart';
 import 'package:butlery/views/social/friends_list/feed_tab.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Friends and groups management view with tabs for friends, groups, and discovery.
 class FriendsListView extends StatefulWidget {
@@ -374,12 +375,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         return Semantics(
           label: context.l10n.a11yAddFriend,
           button: true,
-          child: FloatingActionButton(
-            onPressed: () => _tabController.animateTo(3),
-            tooltip: context.l10n.socialAddFriend,
-            child: const ButleryIcon(
-              Icons.person_add_alt_1,
-              size: AppDimensions.iconSizeL,
+          child: PressFill(
+            surface: PressSurface.ink,
+            child: FloatingActionButton(
+              onPressed: () => _tabController.animateTo(3),
+              tooltip: context.l10n.socialAddFriend,
+              child: const ButleryIcon(
+                Icons.person_add_alt_1,
+                size: AppDimensions.iconSizeL,
+              ),
             ),
           ),
         );
@@ -387,23 +391,26 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         return Semantics(
           label: context.l10n.groupCreateGroup,
           button: true,
-          child: FloatingActionButton(
-            onPressed: () => _showCreateGroupDialog(viewModel),
-            tooltip: context.l10n.groupCreateGroup,
-            child: const Stack(
-              children: [
-                Center(
-                  child: ButleryIcon(
-                    ButleryIcons.users,
-                    size: AppDimensions.iconSizeL,
+          child: PressFill(
+            surface: PressSurface.ink,
+            child: FloatingActionButton(
+              onPressed: () => _showCreateGroupDialog(viewModel),
+              tooltip: context.l10n.groupCreateGroup,
+              child: const Stack(
+                children: [
+                  Center(
+                    child: ButleryIcon(
+                      ButleryIcons.users,
+                      size: AppDimensions.iconSizeL,
+                    ),
                   ),
-                ),
-                Positioned(
-                  top: AppDimensions.spacingXs,
-                  right: AppDimensions.spacingXs,
-                  child: CircularIconBadge.add(),
-                ),
-              ],
+                  Positioned(
+                    top: AppDimensions.spacingXs,
+                    right: AppDimensions.spacingXs,
+                    child: CircularIconBadge.add(),
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -104,22 +104,28 @@ class InvitationActions {
 
     if (showAdd && onAddTarget != null) {
       buttons.add(
-        FloatingActionButton(
-          onPressed: onAddTarget,
-          tooltip: addTooltip,
-          heroTag: 'add_target',
-          child: const ButleryIcon(ButleryIcons.plus),
+        PressFill(
+          surface: PressSurface.ink,
+          child: FloatingActionButton(
+            onPressed: onAddTarget,
+            tooltip: addTooltip,
+            heroTag: 'add_target',
+            child: const ButleryIcon(ButleryIcons.plus),
+          ),
         ),
       );
     }
 
     if (showCreate && onCreateGroup != null) {
       buttons.add(
-        FloatingActionButton(
-          onPressed: onCreateGroup,
-          tooltip: createTooltip,
-          heroTag: 'create_group',
-          child: const ButleryIcon(Icons.group_add),
+        PressFill(
+          surface: PressSurface.ink,
+          child: FloatingActionButton(
+            onPressed: onCreateGroup,
+            tooltip: createTooltip,
+            heroTag: 'create_group',
+            child: const ButleryIcon(Icons.group_add),
+          ),
         ),
       );
     }
@@ -127,15 +133,18 @@ class InvitationActions {
     if (showSend && onSendInvitations != null) {
       buttons.add(
         Builder(
-          builder: (context) => FloatingActionButton.extended(
-            onPressed: onSendInvitations,
-            tooltip: sendTooltip,
-            heroTag: 'send_invitations',
-            icon: const ButleryIcon(ButleryIcons.send),
-            label: Text(sendTooltip ?? context.l10n.commonSend),
-            // A labelled FAB is a pill, not the theme's circle (Komponentark
-            // v1:665, tokens.json space.radius.pill).
-            shape: const StadiumBorder(),
+          builder: (context) => PressFill(
+            surface: PressSurface.ink,
+            child: FloatingActionButton.extended(
+              onPressed: onSendInvitations,
+              tooltip: sendTooltip,
+              heroTag: 'send_invitations',
+              icon: const ButleryIcon(ButleryIcons.send),
+              label: Text(sendTooltip ?? context.l10n.commonSend),
+              // A labelled FAB is a pill, not the theme's circle (Komponentark
+              // v1:665, tokens.json space.radius.pill).
+              shape: const StadiumBorder(),
+            ),
           ),
         ),
       );

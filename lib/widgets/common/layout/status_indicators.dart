@@ -13,6 +13,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Status indicators for app state display
 /// This module provides widgets for displaying app status like
@@ -273,10 +274,12 @@ class _BannerFrame extends StatelessWidget {
       child: tappable
           ? Material(
               type: MaterialType.transparency,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: _radius,
-                child: content,
+              child: PressUnchanged(
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: _radius,
+                  child: content,
+                ),
               ),
             )
           : content,

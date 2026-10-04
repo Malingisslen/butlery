@@ -84,7 +84,11 @@ class AppTheme {
       // WCAG 1.4.11 (3:1) non-text floor. Per-component focus rings are
       // declared in button_themes / input_themes.
       focusColor: AppColors.rust,
-      highlightColor: AppColors.rust.withValues(alpha: 0.12),
+
+      // BUT-2205: every ListTile paints a raised tile (listTileTheme), so the
+      // default press and hover fill is the step on raised.
+      highlightColor: ModeColors.of(colorScheme.brightness).pressedOnRaised,
+      hoverColor: ModeColors.of(colorScheme.brightness).pressedOnRaised,
 
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {

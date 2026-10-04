@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// ActionButtons - Utility action buttons with a busy state.
 ///
@@ -395,12 +396,15 @@ class FloatingActionButtonWidget extends StatelessWidget {
       label: semanticLabel,
       button: true,
       enabled: onPressed != null,
-      child: FloatingActionButton(
-        onPressed: onPressed,
-        tooltip: semanticLabel,
-        backgroundColor: backgroundColor ?? cs.primary,
-        foregroundColor: foregroundColor ?? cs.onPrimary,
-        child: child,
+      child: PressFill(
+        surface: PressSurface.ink,
+        child: FloatingActionButton(
+          onPressed: onPressed,
+          tooltip: semanticLabel,
+          backgroundColor: backgroundColor ?? cs.primary,
+          foregroundColor: foregroundColor ?? cs.onPrimary,
+          child: child,
+        ),
       ),
     );
 

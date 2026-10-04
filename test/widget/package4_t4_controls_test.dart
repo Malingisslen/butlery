@@ -30,6 +30,8 @@ import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selecti
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
+import '../infrastructure/helpers/ink_fill.dart';
+
 Widget _app(Widget home, {ThemeData? theme}) => MaterialApp(
   theme: theme ?? AppTheme.lightTheme,
   locale: const Locale('sv'),
@@ -198,6 +200,38 @@ void main() {
         tester.element(find.byType(NavigationRail)),
       );
       expect(theme.focusColor.a, 0);
+    });
+
+    // BUT-2205: the rail rests on the page, so a pressed destination fills
+    // with surface.raised, not the theme's step on raised.
+    testWidgets('a pressed destination fills with surface.raised', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 700,
+            child: AdminRail(selectedIndex: 0, onSelected: (_) {}),
+          ),
+        ),
+      );
+      final destination = find
+          .descendant(
+            of: find.byType(NavigationRail),
+            matching: find.byWidgetPredicate((w) => w is Icon),
+          )
+          .at(1);
+      final gesture = await holdPress(tester, destination);
+      expect(
+        paintsInkFill(
+          tester,
+          destination,
+          AppTheme.lightTheme.colorScheme.surfaceContainerHighest,
+        ),
+        isTrue,
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
     });
   });
   group('chosen row in dark mode', () {

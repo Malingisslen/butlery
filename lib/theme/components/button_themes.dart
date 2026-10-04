@@ -364,8 +364,7 @@ class ButtonThemes {
   /// Background and foreground switch as a pair: both resolve from the same
   /// state, and animationDuration is zero so the background does not fade
   /// under text that has already switched. Pressed gets no Material overlay,
-  /// so no ink tint competes with the pressed saffron. ThemeData's
-  /// highlightColor is untouched (D4).
+  /// so no ink tint competes with the pressed saffron.
   ///
   /// Disabled is the filled button's disabled state, the row drawn in the
   /// saffron panel itself (Komponentark v1:373). Focus is the shared ring.

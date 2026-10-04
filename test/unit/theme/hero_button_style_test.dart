@@ -90,11 +90,9 @@ void main() {
     });
   }
 
-  test('ThemeData.highlightColor is untouched (D4)', () {
-    expect(
-      AppTheme.lightTheme.highlightColor,
-      AppColors.rust.withValues(alpha: 0.12),
-    );
+  test('ThemeData.highlightColor is the pressed step on raised (BUT-2205)', () {
+    expect(AppTheme.lightTheme.highlightColor, const Color(0xFFB4BFA6));
+    expect(AppTheme.darkTheme.highlightColor, const Color(0xFF17251D));
   });
 
   testWidgets('a pressed hero button paints paper on deep saffron', (

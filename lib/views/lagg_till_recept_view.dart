@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-403 identifier scheme (browser a11y tree hooks):
 ///  - `btn-quick-save`  → Snabbspara (top full-width button)
@@ -242,31 +243,33 @@ class _AddRecipeButton extends StatelessWidget {
       child: Material(
         color: color,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ButleryIcon(
-                  icon,
-                  size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-                const SizedBox(height: AppDimensions.spacingSm),
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
+        child: PressUnchanged(
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ButleryIcon(
+                    icon,
+                    size: AppDimensions.iconSizeXl,
                     color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.w600,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  Text(
+                    label,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
