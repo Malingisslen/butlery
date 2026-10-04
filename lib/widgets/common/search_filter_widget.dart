@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 // Export models for backward compatibility
 export 'search_filter/filter_models.dart';
@@ -430,18 +431,21 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
             spacing: AppDimensions.spacingXs,
             runSpacing: AppDimensions.spacingXs,
             children: widget.searchHistory!.map((query) {
-              return InputChip(
-                label: Text(query, style: AppTextStyles.bodySmall),
-                onPressed: () {
-                  _searchController.text = query;
-                  widget.onHistoryTap?.call(query);
-                },
-                onDeleted: widget.onHistoryRemove != null
-                    ? () => widget.onHistoryRemove!(query)
-                    : null,
-                deleteIconColor: cs.onSurfaceVariant,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
+              return PressFill(
+                surface: PressSurface.base,
+                child: InputChip(
+                  label: Text(query, style: AppTextStyles.bodySmall),
+                  onPressed: () {
+                    _searchController.text = query;
+                    widget.onHistoryTap?.call(query);
+                  },
+                  onDeleted: widget.onHistoryRemove != null
+                      ? () => widget.onHistoryRemove!(query)
+                      : null,
+                  deleteIconColor: cs.onSurfaceVariant,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
               );
             }).toList(),
           ),

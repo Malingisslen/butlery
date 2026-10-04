@@ -33,6 +33,7 @@ import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
 /// so the parent Scaffold can drop it straight in.
@@ -709,9 +710,12 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           runSpacing: AppDimensions.spacingSm,
           children: tags
               .map(
-                (tag) => ActionChip(
-                  label: Text(tag.name),
-                  onPressed: () => _selectTag(tag),
+                (tag) => PressFill(
+                  surface: PressSurface.base,
+                  child: ActionChip(
+                    label: Text(tag.name),
+                    onPressed: () => _selectTag(tag),
+                  ),
                 ),
               )
               .toList(),

@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog for handling unknown ingredients found during recipe tagging.
 ///
@@ -188,18 +189,21 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       runSpacing: 8,
       children: commonAllergens.map((allergen) {
         final isSelected = _current.properties.contains(allergen.$1);
-        return FilterChip(
-          label: Text(allergen.$2),
-          selected: isSelected,
-          onSelected: (selected) {
-            setState(() {
-              if (selected) {
-                _current.properties.add(allergen.$1);
-              } else {
-                _current.properties.remove(allergen.$1);
-              }
-            });
-          },
+        return PressFill(
+          surface: isSelected ? PressSurface.ink : PressSurface.base,
+          child: FilterChip(
+            label: Text(allergen.$2),
+            selected: isSelected,
+            onSelected: (selected) {
+              setState(() {
+                if (selected) {
+                  _current.properties.add(allergen.$1);
+                } else {
+                  _current.properties.remove(allergen.$1);
+                }
+              });
+            },
+          ),
         );
       }).toList(),
     );
@@ -222,18 +226,21 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       runSpacing: 8,
       children: dietaryOptions.map((option) {
         final isSelected = _current.properties.contains(option.$1);
-        return FilterChip(
-          label: Text(option.$2),
-          selected: isSelected,
-          onSelected: (selected) {
-            setState(() {
-              if (selected) {
-                _current.properties.add(option.$1);
-              } else {
-                _current.properties.remove(option.$1);
-              }
-            });
-          },
+        return PressFill(
+          surface: isSelected ? PressSurface.ink : PressSurface.base,
+          child: FilterChip(
+            label: Text(option.$2),
+            selected: isSelected,
+            onSelected: (selected) {
+              setState(() {
+                if (selected) {
+                  _current.properties.add(option.$1);
+                } else {
+                  _current.properties.remove(option.$1);
+                }
+              });
+            },
+          ),
         );
       }).toList(),
     );

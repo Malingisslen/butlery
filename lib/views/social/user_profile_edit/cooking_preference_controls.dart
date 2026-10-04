@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Skill-level selector + cuisine affinity chips, bound to [viewModel].
 class CookingPreferenceControls extends StatelessWidget {
@@ -100,17 +101,20 @@ class CookingPreferenceControls extends StatelessWidget {
           runSpacing: AppDimensions.spacingXs,
           children: CuisineConfig.cuisines.map((cuisine) {
             final selected = viewModel.cuisineAffinities.contains(cuisine.tag);
-            return FilterChip(
-              label: Text(cuisine.tag),
-              selected: selected,
-              onSelected: (value) {
-                if (!value || !atMax) {
-                  viewModel.toggleCuisineAffinity(cuisine.tag);
-                }
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusControl,
+            return PressFill(
+              surface: selected ? PressSurface.ink : PressSurface.base,
+              child: FilterChip(
+                label: Text(cuisine.tag),
+                selected: selected,
+                onSelected: (value) {
+                  if (!value || !atMax) {
+                    viewModel.toggleCuisineAffinity(cuisine.tag);
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusControl,
+                  ),
                 ),
               ),
             );

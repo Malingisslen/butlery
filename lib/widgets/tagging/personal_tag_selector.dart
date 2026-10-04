@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
 ///
@@ -262,33 +263,36 @@ class _PersonalTagChip extends StatelessWidget {
           : context.l10n.personalTagChipUnselectedA11y(tag.name),
       selected: isSelected,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        backgroundColor: cs.surface,
-        // Chosen tags and choices sit on the raised surface with a real border,
-        // never an ink tint (enhet-3 valda tonplattor; tokens.json:40-53).
-        // primaryContainer = surface.raised/selected, onPrimaryContainer and
-        // onSurface = text.primary, outline = border.control, in both schemes.
-        // cs.primary is ink in both modes and vanished on dark.
-        selectedColor: cs.primaryContainer,
-        checkmarkColor: cs.onPrimaryContainer,
-        side: BorderSide(
-          color: isSelected ? cs.onPrimaryContainer : cs.outlineVariant,
+      child: PressFill(
+        surface: isSelected ? PressSurface.raised : PressSurface.base,
+        child: FilterChip(
+          label: Text(tag.name),
+          selected: isSelected,
+          onSelected: (_) => onTap(),
+          backgroundColor: cs.surface,
+          // Chosen tags and choices sit on the raised surface with a real border,
+          // never an ink tint.
+          // primaryContainer = surface.raised/selected, onPrimaryContainer and
+          // onSurface = text.primary, outline = border.control, in both schemes.
+          // cs.primary is ink in both modes and vanished on dark.
+          selectedColor: cs.primaryContainer,
+          checkmarkColor: cs.onPrimaryContainer,
+          side: BorderSide(
+            color: isSelected ? cs.onPrimaryContainer : cs.outlineVariant,
+          ),
+          labelStyle: AppTextStyles.bodySmall.copyWith(
+            color: isSelected ? cs.onPrimaryContainer : cs.onSurface,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+          avatar: isSelected
+              ? null
+              : ButleryIcon(
+                  ButleryIcons.tag,
+                  size: AppDimensions.iconSize14,
+                  color: cs.onPrimaryContainer,
+                ),
+          showCheckmark: isSelected,
         ),
-        labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: isSelected ? cs.onPrimaryContainer : cs.onSurface,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-        avatar: isSelected
-            ? null
-            : ButleryIcon(
-                ButleryIcons.tag,
-                size: AppDimensions.iconSize14,
-                color: cs.onPrimaryContainer,
-              ),
-        showCheckmark: isSelected,
       ),
     );
   }

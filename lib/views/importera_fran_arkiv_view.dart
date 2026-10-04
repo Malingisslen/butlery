@@ -18,6 +18,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatefulWidget {
@@ -149,26 +150,32 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                     // text.primary border, never a tint
                                     // (tokens.json:41, :116-119; Grafisk
                                     // manual v6:209).
-                                    return FilterChip(
-                                      label: Text(tag),
-                                      selected: chosen,
-                                      side: BorderSide(
-                                        color: chosen
-                                            ? cs.onSurface
-                                            : cs.outlineVariant,
-                                        width: chosen ? 1.5 : 1,
+                                    return PressFill(
+                                      surface: chosen
+                                          ? PressSurface.raised
+                                          : PressSurface.base,
+                                      child: FilterChip(
+                                        label: Text(tag),
+                                        selected: chosen,
+                                        side: BorderSide(
+                                          color: chosen
+                                              ? cs.onSurface
+                                              : cs.outlineVariant,
+                                          width: chosen ? 1.5 : 1,
+                                        ),
+                                        onSelected: (_) =>
+                                            viewModel.toggleTag(tag),
+                                        // Unchosen stays on paper; only the
+                                        // chosen chip wears the Vald plate.
+                                        backgroundColor: cs.surface,
+                                        selectedColor:
+                                            cs.surfaceContainerHighest,
+                                        checkmarkColor: cs.onSurface,
+                                        labelStyle: AppTextStyles.labelMedium
+                                            .copyWith(
+                                              color: cs.onSurface,
+                                            ),
                                       ),
-                                      onSelected: (_) =>
-                                          viewModel.toggleTag(tag),
-                                      // Unchosen stays on paper; only the
-                                      // chosen chip wears the Vald plate.
-                                      backgroundColor: cs.surface,
-                                      selectedColor: cs.surfaceContainerHighest,
-                                      checkmarkColor: cs.onSurface,
-                                      labelStyle: AppTextStyles.labelMedium
-                                          .copyWith(
-                                            color: cs.onSurface,
-                                          ),
                                     );
                                   }).toList(),
                                 ),
@@ -232,60 +239,80 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     return Wrap(
       spacing: AppDimensions.space4,
       children: [
-        ChoiceChip(
-          label: Text(context.l10n.importFilterAll),
-          selected: viewModel.timeFilter == TimeFilter.all,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
-          backgroundColor: viewModel.timeFilter == TimeFilter.all
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.all
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.all
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: Text(context.l10n.importFilterAll),
+            selected: viewModel.timeFilter == TimeFilter.all,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
+            backgroundColor: viewModel.timeFilter == TimeFilter.all
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.all
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
-        ChoiceChip(
-          label: const Text('<= 15 min'),
-          selected: viewModel.timeFilter == TimeFilter.under15,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under15
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under15
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.under15
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: const Text('<= 15 min'),
+            selected: viewModel.timeFilter == TimeFilter.under15,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
+            backgroundColor: viewModel.timeFilter == TimeFilter.under15
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.under15
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
-        ChoiceChip(
-          label: const Text('<= 30 min'),
-          selected: viewModel.timeFilter == TimeFilter.under30,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under30
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under30
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.under30
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: const Text('<= 30 min'),
+            selected: viewModel.timeFilter == TimeFilter.under30,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
+            backgroundColor: viewModel.timeFilter == TimeFilter.under30
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.under30
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
-        ChoiceChip(
-          label: const Text('<= 60 min'),
-          selected: viewModel.timeFilter == TimeFilter.under60,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under60
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under60
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.under60
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: const Text('<= 60 min'),
+            selected: viewModel.timeFilter == TimeFilter.under60,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
+            backgroundColor: viewModel.timeFilter == TimeFilter.under60
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.under60
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
       ],

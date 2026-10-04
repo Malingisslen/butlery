@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// View for creating new group conversations with friend selection.
 /// Provides comprehensive interface for users to create group messaging conversations
@@ -249,18 +250,21 @@ class _CreateGroupConversationViewState
           spacing: AppDimensions.space4,
           runSpacing: AppDimensions.space4,
           children: viewModel.selectedMembers.map((member) {
-            return Chip(
-              avatar: UserDisplayWidgets.avatar(
-                imageUrl: member.avatarUrl,
-                displayName: member.displayName,
-                size: ImageSize.small,
+            return PressFill(
+              surface: PressSurface.base,
+              child: Chip(
+                avatar: UserDisplayWidgets.avatar(
+                  imageUrl: member.avatarUrl,
+                  displayName: member.displayName,
+                  size: ImageSize.small,
+                ),
+                label: Text(member.displayName),
+                deleteIcon: const ButleryIcon(
+                  ButleryIcons.x,
+                  size: AppDimensions.iconSizeS,
+                ),
+                onDeleted: () => viewModel.toggleMemberSelection(member.uid),
               ),
-              label: Text(member.displayName),
-              deleteIcon: const ButleryIcon(
-                ButleryIcons.x,
-                size: AppDimensions.iconSizeS,
-              ),
-              onDeleted: () => viewModel.toggleMemberSelection(member.uid),
             );
           }).toList(),
         ),

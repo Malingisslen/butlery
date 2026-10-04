@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Friend Category Manager
 /// Handles ONLY interactive friend category management with state.
@@ -209,69 +210,72 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           runSpacing: AppDimensions.spacingXs,
           children: categories.map((category) {
             final isSelected = _selectedCategories.contains(category.id);
-            return FilterChip(
-              selected: isSelected,
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (category.emoji != null && category.emoji!.isNotEmpty) ...[
-                    Text(category.emoji!),
+            return PressFill(
+              surface: isSelected ? PressSurface.raised : PressSurface.base,
+              child: FilterChip(
+                selected: isSelected,
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (category.emoji != null &&
+                        category.emoji!.isNotEmpty) ...[
+                      Text(category.emoji!),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                    ],
+                    Flexible(
+                      child: Text(
+                        category.name,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
                     const SizedBox(width: AppDimensions.spacingXs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingXs,
+                        vertical: AppDimensions.borderWidthStandard,
+                      ),
+                      // The count stands on the page (unchosen) or on the
+                      // surface.selected plate (chosen), opaque both ways and
+                      // never a tint.
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.surface
+                            : Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusControl,
+                        ),
+                      ),
+                      child: Text(
+                        '${category.friendCount}',
+                        style: AppTextStyles.badge.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
                   ],
-                  Flexible(
-                    child: Text(
-                      category.name,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.borderWidthStandard,
-                    ),
-                    // The count stands on the page (unchosen) or on the
-                    // surface.selected plate (chosen), opaque both ways and
-                    // never a tint (tokens.json:40-53, :116-119).
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.surface
-                          : Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
-                    child: Text(
-                      '${category.friendCount}',
-                      style: AppTextStyles.badge.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              onSelected: (selected) => _toggleCategory(category, service),
-              // Chosen is surface.selected with a real border, never a tint
-              // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
-              // :108-119). surfaceContainerHighest is surface.raised, which
-              // carries surface.selected's values in both modes; the border is
-              // text.primary (onSurface): ink on light, paper on dark.
-              selectedColor: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest,
-              checkmarkColor: Theme.of(context).colorScheme.onSurface,
-              labelStyle: AppTextStyles.labelMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              side: BorderSide(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onSurface
-                    : Theme.of(context).colorScheme.outline,
-                width: isSelected ? 1.5 : 1,
+                ),
+                onSelected: (selected) => _toggleCategory(category, service),
+                // Chosen is surface.selected with a real border, never a tint.
+                // surfaceContainerHighest is surface.raised, which
+                // carries surface.selected's values in both modes; the border is
+                // text.primary (onSurface): ink on light, paper on dark.
+                selectedColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
+                checkmarkColor: Theme.of(context).colorScheme.onSurface,
+                labelStyle: AppTextStyles.labelMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                side: BorderSide(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.outline,
+                  width: isSelected ? 1.5 : 1,
+                ),
               ),
             );
           }).toList(),

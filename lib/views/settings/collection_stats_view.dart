@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -472,18 +473,21 @@ class _CompletenessSection extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingSm),
         itemBuilder: (context, index) {
           final recipe = incompleteRecipes[index];
-          return ActionChip(
-            label: Text(
-              recipe.title,
-              style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
-            ),
-            backgroundColor: cs.errorContainer,
-            side: BorderSide.none,
-            shape: const RoundedRectangleBorder(),
-            onPressed: () => Navigator.pushNamed(
-              context,
-              Routes.editRecipe,
-              arguments: recipe,
+          return PressFill(
+            surface: PressSurface.raised,
+            child: ActionChip(
+              label: Text(
+                recipe.title,
+                style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
+              ),
+              backgroundColor: cs.errorContainer,
+              side: BorderSide.none,
+              shape: const RoundedRectangleBorder(),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                Routes.editRecipe,
+                arguments: recipe,
+              ),
             ),
           );
         },
