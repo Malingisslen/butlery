@@ -11,6 +11,7 @@ import 'package:butlery/services/tagging/tag_generator.dart'
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -1224,6 +1225,264 @@ void main() {
     // the `untaggedExclusionMessage` getter.  Filter results are cached; toggling
     // the filter before asserting is the correct way to invalidate the cache.
     // ---------------------------------------------------------------------------
+    group('REC-03 allergen/dietary filter path (safety-critical assertions)', () {
+      // FEATURE_INVENTORY REC-03: "free" is trusted only at 100 % coverage
+      // with valid tagging, AND across every selected allergen, with the
+      // user's manual correction winning over the auto verdict. BUT-1335
+      // above pins the three gates; this group pins the VERDICT half and the
+      // gate boundaries, each with a control that differs in one variable.
+      TagResult tagged({
+        Map<String, TriState> allergen = const {},
+        Map<String, TriState> dietary = const {},
+        double coverage = 1.0,
+        bool hasCoverageAnomaly = false,
+      }) => TagResult(
+        tags: const {},
+        allergenStatus: allergen,
+        dietaryStatus: dietary,
+        coverage: coverage,
+        generatedAt: DateTime(2026),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: hasCoverageAnomaly,
+      );
+
+      Recipe recipeWith(
+        String id,
+        TagResult t, {
+        TagOverrides? overrides,
+        String? createdBy,
+      }) => RecipeFactory.build(
+        id: id,
+        createdBy: createdBy,
+      ).copyWith(tagResult: t, tagOverrides: overrides);
+
+      List<String> ids() => viewModel.recipes.map((r) => r.id).toList();
+
+      test('CONTAINS and UNKNOWN are both excluded; only FREE passes', () {
+        mockRecipeService.setRecipeState(
+          recipes: [
+            recipeWith('free', tagged(allergen: {'gluten': TriState.free})),
+            recipeWith(
+              'contains',
+              tagged(allergen: {'gluten': TriState.contains}),
+            ),
+            recipeWith(
+              'unknown',
+              tagged(allergen: {'gluten': TriState.unknown}),
+            ),
+            // No gluten key at all: the status defaults to UNKNOWN.
+            recipeWith('nokey', tagged(allergen: {'mjölk': TriState.free})),
+          ],
+        );
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          ids(),
+          ['free'],
+          reason:
+              'Allergen-free is a POSITIVE claim: UNKNOWN must be excluded '
+              'exactly like CONTAINS, never treated as "probably fine".',
+        );
+      });
+
+      test('two allergen filters are ANDed: free from one is not enough', () {
+        final glutenFreeNuts = recipeWith(
+          'gf_nuts',
+          tagged(
+            allergen: {'gluten': TriState.free, 'nötter': TriState.contains},
+          ),
+        );
+        final both = recipeWith(
+          'both',
+          tagged(allergen: {'gluten': TriState.free, 'nötter': TriState.free}),
+        );
+        mockRecipeService.setRecipeState(recipes: [glutenFreeNuts, both]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+        expect(ids(), ['gf_nuts', 'both']);
+
+        viewModel.toggleAllergenFilter('nut-free');
+        expect(
+          ids(),
+          ['both'],
+          reason:
+              'Adding a second allergen filter must drop the recipe that '
+              'contains it, however clean it is for the first one.',
+        );
+      });
+
+      test(
+        'a manual CONTAINS override hides a recipe the tagger called FREE',
+        () {
+          final corrected = recipeWith(
+            'corrected',
+            tagged(allergen: {'gluten': TriState.free}),
+            overrides: const TagOverrides(
+              allergenOverrides: {'gluten': TriState.contains},
+            ),
+          );
+          final untouched = recipeWith(
+            'untouched',
+            tagged(allergen: {'gluten': TriState.free}),
+          );
+          mockRecipeService.setRecipeState(recipes: [corrected, untouched]);
+
+          viewModel.toggleAllergenFilter('gluten-free');
+
+          expect(
+            ids(),
+            ['untouched'],
+            reason:
+                'A user who corrected a recipe to "contains gluten" must never '
+                'see it under the gluten-free filter again.',
+          );
+        },
+      );
+
+      test('a manual FREE override shows a recipe the tagger called CONTAINS '
+          '(human wins), but only if the gates pass', () {
+        final corrected = recipeWith(
+          'corrected',
+          tagged(allergen: {'gluten': TriState.contains}),
+          overrides: const TagOverrides(
+            allergenOverrides: {'gluten': TriState.free},
+          ),
+        );
+        // Same override, but 60 % coverage: the gate runs BEFORE overrides
+        // are consulted, so the human correction cannot rescue it.
+        final correctedPartial = recipeWith(
+          'corrected_partial',
+          tagged(allergen: {'gluten': TriState.contains}, coverage: 0.6),
+          overrides: const TagOverrides(
+            allergenOverrides: {'gluten': TriState.free},
+          ),
+        );
+        mockRecipeService.setRecipeState(
+          recipes: [corrected, correctedPartial],
+        );
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(ids(), ['corrected']);
+      });
+
+      test('coverage 0.99 is excluded, 1.0 is kept (the gate is exact)', () {
+        mockRecipeService.setRecipeState(
+          recipes: [
+            recipeWith(
+              'almost',
+              tagged(allergen: {'gluten': TriState.free}, coverage: 0.99),
+            ),
+            recipeWith(
+              'full',
+              tagged(allergen: {'gluten': TriState.free}, coverage: 1.0),
+            ),
+          ],
+        );
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(ids(), ['full']);
+      });
+
+      test('a coverage anomaly (CRIT-2) excludes even at coverage 1.0', () {
+        mockRecipeService.setRecipeState(
+          recipes: [
+            recipeWith(
+              'anomaly',
+              tagged(
+                allergen: {'gluten': TriState.free},
+                hasCoverageAnomaly: true,
+              ),
+            ),
+            recipeWith('clean', tagged(allergen: {'gluten': TriState.free})),
+          ],
+        );
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(ids(), ['clean']);
+      });
+
+      test('the seed bypass covers ONLY a missing analysis: a system recipe '
+          'with partial coverage is excluded like any other', () {
+        mockRecipeService.setRecipeState(
+          recipes: [
+            recipeWith(
+              'seed_partial',
+              tagged(allergen: {'gluten': TriState.free}, coverage: 0.6),
+              createdBy: 'system',
+            ),
+            recipeWith(
+              'seed_contains',
+              tagged(allergen: {'gluten': TriState.contains}),
+              createdBy: 'system',
+            ),
+            RecipeFactory.build(id: 'seed_untagged', createdBy: 'system'),
+          ],
+        );
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          ids(),
+          ['seed_untagged'],
+          reason:
+              'Once a seed HAS tag data it is judged by that data; only the '
+              'never-analysed seed stays visible.',
+        );
+      });
+
+      test('dietary mirrors allergen: CONTAINS/UNKNOWN excluded, override '
+          'wins, AND across two diets', () {
+        mockRecipeService.setRecipeState(
+          recipes: [
+            recipeWith(
+              'veg_only',
+              tagged(
+                dietary: {
+                  'vegetarisk': TriState.free,
+                  'vegansk': TriState.contains,
+                },
+              ),
+            ),
+            recipeWith(
+              'vegan',
+              tagged(
+                dietary: {
+                  'vegetarisk': TriState.free,
+                  'vegansk': TriState.free,
+                },
+              ),
+            ),
+            recipeWith(
+              'unknown',
+              tagged(dietary: {'vegetarisk': TriState.unknown}),
+            ),
+            recipeWith(
+              'corrected_meat',
+              tagged(
+                dietary: {
+                  'vegetarisk': TriState.free,
+                  'vegansk': TriState.free,
+                },
+              ),
+              overrides: const TagOverrides(
+                dietaryOverrides: {'vegetarisk': TriState.contains},
+              ),
+            ),
+          ],
+        );
+
+        viewModel.toggleDietaryFilter('vegetarian');
+        expect(ids(), ['veg_only', 'vegan']);
+
+        viewModel.toggleDietaryFilter('vegan');
+        expect(ids(), ['vegan']);
+      });
+    });
+
     group('BUT-1335 Allergen/Dietary Safety Gate', () {
       // Helpers -----------------------------------------------------------------
 

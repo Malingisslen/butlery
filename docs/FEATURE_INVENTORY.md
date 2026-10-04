@@ -25,14 +25,14 @@
 
 > _Partial refresh 2026-07-14:_ the AUTH and IMP rows above were re-verified against the current test suite (AUTH-11, AUTH-14 now Verified; IMP-06 now Partial — see the Tier-1 list below). The other rows still reflect the 2026-06-21 audit and have not been re-run wholesale.
 
-**Reading the pattern:** the back-end engines and the menu/shopping flows are well-tested. The thinnest coverage is at the *screen* layer of recipe management — the create/edit forms have solid logic tests but almost no tests that drive the actual UI. The security/compliance-sensitive gaps flagged at build time have since been largely closed (MFA, client-side account deletion, receive-share, social extraction all now have tests — see the refreshed Tier-1 list); allergen/dietary filtering (REC-03) remains the one safety-sensitive item still lacking dedicated assertions.
+**Reading the pattern:** the back-end engines and the menu/shopping flows are well-tested. The thinnest coverage is at the *screen* layer of recipe management — the create/edit forms have solid logic tests but almost no tests that drive the actual UI. The security/compliance-sensitive gaps flagged at build time have since been largely closed (MFA, client-side account deletion, receive-share, social extraction all now have tests — see the refreshed Tier-1 list).
 
 ## Gaps worth ticketing
 
 Prioritized by risk, not by count. These are the candidates to turn into Linear tickets; the existing sprint loop can then fix them through its normal sign-off tiers.
 
 **Tier 1 — safety / security / compliance, currently untested:**
-- **REC-03 — Allergen/dietary recipe filtering (Partial).** The high-risk "only show allergen-free at 100% coverage" safety logic lives here; it has VM-level coverage but still lacks dedicated filter-path assertions given the safety stakes. **Still open — the one remaining Tier-1 gap.**
+- **REC-03 — Allergen/dietary recipe filtering.** The high-risk "only show allergen-free at 100% coverage" safety logic lives here. Dedicated filter-path assertions: the `REC-03 allergen/dietary filter path` group in `recipe_list_viewmodel_test.dart` (verdict, AND, override, coverage boundary, anomaly, seed bypass), beside the BUT-1335 gate tests.
 
 _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **AUTH-11 / SET-05 — MFA (SMS).** Service logic now covered by `auth_mfa_service_test.dart` + `mfa_types_test.dart` (BUT-1333: enroll, code delivery, sign-in resolution, error mapping). Residual: the `MfaSettingsView` enrollment screen (SET-05) is still untested at the view layer — a Tier-2 UI gap, not a Tier-1 safety one.
@@ -375,7 +375,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Independent dimensions: time (OR), meal type (OR), rating (highest threshold wins), allergen-free (AND, requires 100% coverage + valid tagging), dietary (AND, same safety gate), personal tags (AND include / OR exclude), favorites-only, pantry-only (async match). Sort + all filters persisted and restored. "Rensa alla" clears.
 - **Edge cases:** Allergen/dietary filters exclude recipes with no tag analysis UNLESS system-seeded (keeps starters visible). Coverage <1.0 or `needsRetagging` → excluded for safety. Pantry filter empty until async resolves.
 - **Validation:** **Safety-critical** — "free" only trusted at 100% coverage with valid tagging.
-- **Test coverage:** Partial — `recipe_list_viewmodel_test.dart`, `personal_tag_filter_chips_test.dart`. The allergen-safety filtering is high-risk and warrants dedicated assertions.
+- **Test coverage:** Partial — `recipe_list_viewmodel_test.dart` (allergen/dietary safety: the BUT-1335 and REC-03 groups), `personal_tag_filter_chips_test.dart`.
 
 #### REC-04: Favorite toggle
 - **Entry:** Heart icon on cards + recipe-detail hero bar.
