@@ -3,8 +3,8 @@
  "source": {
   "file": "tokens.json",
   "repo": "Butlery design system",
-  "commit": "2f518d1",
-  "sha256": "031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687db277c6018",
+  "commit": "c307e18",
+  "sha256": "2560b5f0804e908aac5ce59e54c3300ceac2622b7145bcd4844ddaaad613527c",
   "tokens_version": "1.13",
   "tokens_date": "2026-08-05"
  },
@@ -237,6 +237,15 @@
      "dark": 3.96
     },
     "reason": "Inaktiverade kontroller är undantagna 4,5:1 enligt WCAG 1.4.3. Butlerys eget golv på 3:1 gäller — texten ska gå att läsa, bara inte inbjuda till handling."
+   },
+   {
+    "token": "text.disabled.onInk",
+    "floor": 3,
+    "measured": {
+     "light": 4.73,
+     "dark": 4.73
+    },
+    "reason": "Inaktiverade kontroller är undantagna 4,5:1 enligt WCAG 1.4.3. Butlerys eget golv på 3:1 gäller — texten ska gå att läsa, bara inte inbjuda till handling. Mätt mot surface.ink (#24382C i båda lägena)."
    },
    {
     "token": "border.onInk",

@@ -117,6 +117,10 @@ abstract final class AppModeColors {
   /// outgoing chat bubble (B101).
   static Color borderOnInk() => AppColors.borderOnInk;
 
+  /// semantic text.disabled.onInk #93A48D in both modes: disabled text and
+  /// glyphs on surface.ink.
+  static Color textDisabledOnInk() => AppColors.textDisabledOnInk;
+
   /// semantic surface.base light #F5F4ED, in both modes: an opaque paper card
   /// that carries ink text over a photo scrim, so the text pair does not depend
   /// on the photo behind it (B102). The translucent overlayPaperCard stays for
@@ -352,6 +356,11 @@ final class ModeColors {
   /// (text.accent.onRaised) instead, and on surface.ink use [accentOnInk].
   Color get textAccent =>
       _isDark ? AppColorsDark.textAccent : AppColors.textAccent;
+
+  /// semantic text.link: #8A5212 light, #DCA968 dark. Link text on
+  /// surface.base, surface.raised and the tints; never on surface.ink in
+  /// light mode.
+  Color get textLink => _isDark ? AppColorsDark.textLink : AppColors.textLink;
 }
 
 /// `context.modeColors`: the [ModeColors] for the current theme's brightness.

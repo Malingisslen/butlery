@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:2e8a385d0eb7673602ef45cba801f09dc3732defedd765afb3c92b5391bcb857 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:808b0f4081a148dc5ea362284789f92cb313707e2c3b5be82035ba6b59b70f8c (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -202,6 +202,12 @@ class AppColorsDark {
 
   /// Ifylld kryssruta och radio (BUT-2191). Bar control.checked.foreground (textOnPrimary), 11,36:1 i bada lagena. · semantic.control.checked.background (dark)
   static const Color controlCheckedBackground = Color(0xFF24382C);
+
+  /// Lanktext (BUT-2226). Ytbunden: klarar papper (5,78:1), surface.raised (5,20:1) och de fyra statustintarna (minst 4,88:1) i ljust lage; morkt 7,52:1 pa surface.base, 4,95:1 pa surface.raised och 5,91:1 pa surface.ink. ALDRIG pa surface.ink i ljust lage: #8A5212 ger 1,97:1 dar. · semantic.text.link (dark)
+  static const Color textLink = Color(0xFFDCA968);
+
+  /// Avstangd text pa surface.ink. Harledd, inte ritad; Malin kan prova. Ink ar #24382C i bada lagena, sa vardet ar #93A48D i bada (mork ytas varde, som text.disabled.onRaised morkt). Golv 3:1 (contrastPolicy disabled): 4,73:1 pa ink. Ytbunden till surface.ink. · semantic.text.disabled.onInk (dark)
+  static const Color textDisabledOnInk = Color(0xFF93A48D);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json.

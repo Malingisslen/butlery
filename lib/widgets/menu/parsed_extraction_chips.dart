@@ -81,7 +81,7 @@ class ParsedExtractionChips extends StatelessWidget {
                 child: Text(
                   l10n.weeklyMenuChipsRefinePrompt,
                   style: AppTextStyles.linkSmall.copyWith(
-                    color: scheme.onSurface,
+                    color: colors.textLink,
                   ),
                 ),
               ),

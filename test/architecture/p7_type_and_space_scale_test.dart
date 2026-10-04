@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_roles_pending.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Files that may still carry a raw font size, and how many. Each entry is a
 /// known gap with a Linear follow-up; the count may only go down.
@@ -120,7 +120,7 @@ void main() {
     });
 
     test('calendarCell matches its token: 11/600 at 1.45', () {
-      final style = AppTextRolesPending.calendarCell;
+      final style = AppTextStyles.calendarCell;
       expect(style.fontSize, 11);
       expect(style.fontWeight, FontWeight.w600);
       expect(style.height, 1.45);
