@@ -263,6 +263,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 context,
               ).colorScheme.surfaceContainerHighest,
               checkmarkColor: Theme.of(context).colorScheme.onSurface,
+              labelStyle: AppTextStyles.labelMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               backgroundColor: Theme.of(context).colorScheme.surface,
               side: BorderSide(
                 color: isSelected

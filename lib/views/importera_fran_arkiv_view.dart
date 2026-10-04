@@ -165,6 +165,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                       backgroundColor: cs.surface,
                                       selectedColor: cs.surfaceContainerHighest,
                                       checkmarkColor: cs.onSurface,
+                                      labelStyle: AppTextStyles.labelMedium
+                                          .copyWith(
+                                            color: cs.onSurface,
+                                          ),
                                     );
                                   }).toList(),
                                 ),
