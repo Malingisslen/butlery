@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Invitation target selection widgets.
 class InvitationSelectors {
@@ -200,20 +201,23 @@ class InvitationSelectors {
         spacing: spacing,
         children: availableTypes.map((type) {
           final isSelected = selectedTypes?.contains(type) ?? false;
-          return FilterChip(
-            label: Text(type),
-            selected: isSelected,
-            onSelected: (selected) {
-              if (onTypesChanged != null) {
-                final newSelection = List<String>.from(selectedTypes ?? []);
-                if (selected) {
-                  newSelection.add(type);
-                } else {
-                  newSelection.remove(type);
+          return PressFill(
+            surface: isSelected ? PressSurface.ink : PressSurface.base,
+            child: FilterChip(
+              label: Text(type),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (onTypesChanged != null) {
+                  final newSelection = List<String>.from(selectedTypes ?? []);
+                  if (selected) {
+                    newSelection.add(type);
+                  } else {
+                    newSelection.remove(type);
+                  }
+                  onTypesChanged(newSelection);
                 }
-                onTypesChanged(newSelection);
-              }
-            },
+              },
+            ),
           );
         }).toList(),
       ),
@@ -397,14 +401,17 @@ class InvitationSelectors {
               spacing: 8.0,
               runSpacing: 4.0,
               children: selectedTargets.map((target) {
-                return Chip(
-                  label: Text(target.displayName),
-                  onDeleted: onRemoveTarget != null
-                      ? () => onRemoveTarget(target)
-                      : null,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
+                return PressFill(
+                  surface: PressSurface.raised,
+                  child: Chip(
+                    label: Text(target.displayName),
+                    onDeleted: onRemoveTarget != null
+                        ? () => onRemoveTarget(target)
+                        : null,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                  ),
                 );
               }).toList(),
             ),

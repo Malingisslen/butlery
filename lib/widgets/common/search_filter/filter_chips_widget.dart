@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Filter chips component for displaying filterable options
 class FilterChipsWidget extends StatelessWidget {
@@ -54,19 +55,22 @@ class FilterChipsWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusPill,
                   ),
-                  child: FilterChip(
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (option.icon != null) ...[
-                          ButleryIcon(option.icon),
-                          const SizedBox(height: AppDimensions.spacingXs),
+                  child: PressFill(
+                    surface: isSelected ? PressSurface.ink : PressSurface.base,
+                    child: FilterChip(
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (option.icon != null) ...[
+                            ButleryIcon(option.icon),
+                            const SizedBox(height: AppDimensions.spacingXs),
+                          ],
+                          Text(option.label),
                         ],
-                        Text(option.label),
-                      ],
+                      ),
+                      selected: isSelected,
+                      onSelected: (_) => onToggle(option.id),
                     ),
-                    selected: isSelected,
-                    onSelected: (_) => onToggle(option.id),
                   ),
                 ),
               );

@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedContentSearchBar - Search bar for shared content
 /// Handles search functionality for shared recipes and menus.
@@ -71,18 +72,21 @@ class SharedContentSearchBar {
             if (viewModel.showImported)
               Padding(
                 padding: const EdgeInsets.only(top: AppDimensions.space4),
-                child: Chip(
-                  label: Text(context.l10n.sharedShowingImported),
-                  deleteIcon: const ButleryIcon(
-                    ButleryIcons.x,
-                    size: AppDimensions.iconSize18,
-                  ),
-                  onDeleted: () => viewModel.toggleShowImported(),
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                child: PressFill(
+                  surface: PressSurface.raised,
+                  child: Chip(
+                    label: Text(context.l10n.sharedShowingImported),
+                    deleteIcon: const ButleryIcon(
+                      ButleryIcons.x,
+                      size: AppDimensions.iconSize18,
+                    ),
+                    onDeleted: () => viewModel.toggleShowImported(),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
                 ),
               ),

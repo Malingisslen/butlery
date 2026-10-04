@@ -118,6 +118,14 @@ const Map<String, (Color, Color)> _expected = {
   'accentOnInk': (AppColors.textAccentOnInk, AppColorsDark.textAccentOnInk),
   'textAccent': (AppColors.textAccent, AppColorsDark.textAccent),
   'textLink': (AppColors.textLink, AppColorsDark.textLink),
+  'pressedOnRaised': (
+    AppColors.surfacePressedOnRaised,
+    AppColorsDark.surfacePressedOnRaised,
+  ),
+  'pressedOnInk': (
+    AppColors.surfacePressedOnInk,
+    AppColorsDark.surfacePressedOnInk,
+  ),
   'overlayPaperCard': (AppColors.cardWhite54, AppColorsDark.cardWhite54),
   'surfaceTintWarning': (
     AppColors.surfaceTintWarning,
@@ -179,6 +187,8 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'accentOnInk': (ModeColors c) => c.accentOnInk,
   'textAccent': (ModeColors c) => c.textAccent,
   'textLink': (ModeColors c) => c.textLink,
+  'pressedOnRaised': (ModeColors c) => c.pressedOnRaised,
+  'pressedOnInk': (ModeColors c) => c.pressedOnInk,
   'overlayPaperCard': (ModeColors c) => c.overlayPaperCard,
   'surfaceTintWarning': (ModeColors c) => c.surfaceTintWarning,
   'surfaceTintDanger': (ModeColors c) => c.surfaceTintDanger,
@@ -191,7 +201,7 @@ void main() {
         .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
         .map((m) => m.group(1)!)
         .toSet();
-    expect(modeGetters, hasLength(49));
+    expect(modeGetters, hasLength(51));
     expect(_expected.keys.toSet(), modeGetters);
     expect(_mode.keys.toSet(), modeGetters);
   });

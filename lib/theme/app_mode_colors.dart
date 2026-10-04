@@ -351,6 +351,19 @@ final class ModeColors {
   /// surface.base, surface.raised and the tints; never on surface.ink in
   /// light mode.
   Color get textLink => _isDark ? AppColorsDark.textLink : AppColors.textLink;
+
+  /// semantic surface.pressed.onRaised: a pressed or hovered row that rests
+  /// on surface.raised (BUT-2205, produktbeslut R7-1 = B). Never a resting
+  /// fill, and a disabled row is never pressed.
+  Color get pressedOnRaised => _isDark
+      ? AppColorsDark.surfacePressedOnRaised
+      : AppColors.surfacePressedOnRaised;
+
+  /// semantic surface.pressed.onInk: a pressed or hovered row or button on
+  /// surface.ink (BUT-2205, produktbeslut R7-2 = B).
+  Color get pressedOnInk => _isDark
+      ? AppColorsDark.surfacePressedOnInk
+      : AppColors.surfacePressedOnInk;
 }
 
 /// `context.modeColors`: the [ModeColors] for the current theme's brightness.

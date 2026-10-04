@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Admin-only inbox listing beta feedback newest-first, with the screenshot,
 /// interaction trail and device info captured at submission, plus a triage
@@ -160,11 +161,16 @@ class _StatusFilterBar extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.spacingSm,
               ),
-              child: ChoiceChip(
-                label: Text(label),
-                selected: vm.statusFilter == status,
-                shape: const RoundedRectangleBorder(),
-                onSelected: (_) => vm.setStatusFilter(status),
+              child: PressFill(
+                surface: vm.statusFilter == status
+                    ? PressSurface.ink
+                    : PressSurface.base,
+                child: ChoiceChip(
+                  label: Text(label),
+                  selected: vm.statusFilter == status,
+                  shape: const RoundedRectangleBorder(),
+                  onSelected: (_) => vm.setStatusFilter(status),
+                ),
               ),
             ),
         ],
@@ -436,13 +442,18 @@ class _StatusControl extends StatelessWidget {
       spacing: AppDimensions.spacingSm,
       children: [
         for (final (label, status) in options)
-          ChoiceChip(
-            label: Text(label),
-            selected: entry.status == status,
-            shape: const RoundedRectangleBorder(),
-            onSelected: entry.status == status
-                ? null
-                : (_) => _setStatus(context, status),
+          PressFill(
+            surface: entry.status == status
+                ? PressSurface.ink
+                : PressSurface.base,
+            child: ChoiceChip(
+              label: Text(label),
+              selected: entry.status == status,
+              shape: const RoundedRectangleBorder(),
+              onSelected: entry.status == status
+                  ? null
+                  : (_) => _setStatus(context, status),
+            ),
           ),
       ],
     );

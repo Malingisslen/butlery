@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_helpers.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class InvitationTargetWidgets {
   /// Build invitation target display
@@ -57,12 +58,15 @@ class InvitationTargetWidgets {
     bool showTypeIcon = true,
     VoidCallback? onTap,
   }) {
-    return ActionChip(
-      avatar: showTypeIcon
-          ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
-          : null,
-      label: Text(target.displayName),
-      onPressed: onTap,
+    return PressFill(
+      surface: PressSurface.base,
+      child: ActionChip(
+        avatar: showTypeIcon
+            ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
+            : null,
+        label: Text(target.displayName),
+        onPressed: onTap,
+      ),
     );
   }
 
@@ -228,10 +232,15 @@ class InvitationTargetWidgets {
         spacing: AppDimensions.space4,
         children: availableTypes
             .map(
-              (type) => FilterChip(
-                label: Text(type),
-                selected: selectedTypes.contains(type),
-                onSelected: (_) => onTypeToggled(type),
+              (type) => PressFill(
+                surface: selectedTypes.contains(type)
+                    ? PressSurface.ink
+                    : PressSurface.base,
+                child: FilterChip(
+                  label: Text(type),
+                  selected: selectedTypes.contains(type),
+                  onSelected: (_) => onTypeToggled(type),
+                ),
               ),
             )
             .toList(),

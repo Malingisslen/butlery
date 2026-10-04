@@ -24,6 +24,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Handler for personal tag operations from recipe detail view.
 class RecipePersonalTagHandler {
@@ -438,35 +439,37 @@ class _QuickTagChip extends StatelessWidget {
           : context.l10n.a11yTagUnselected(tag.name),
       selected: isSelected,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        avatar: isSelected
-            ? null
-            : CircleAvatar(
-                radius: 6,
-                backgroundColor: cs.onSurface,
-              ),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        backgroundColor: cs.surface,
-        // surface.selected (surfaceContainerHighest in both schemes) with the
-        // real 2 px border below, never a tint (tokens.json:41, :116-119;
-        // Grafisk manual v6:209).
-        selectedColor: cs.surfaceContainerHighest,
-        checkmarkColor: cs.onSurface,
-        side: BorderSide(
-          color: isSelected ? cs.onSurface : cs.outlineVariant,
-          width: isSelected ? 2 : 1,
-        ),
-        labelStyle:
-            (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
-                .copyWith(
-                  color: isSelected ? cs.onSurface : cs.onSurface,
+      child: PressFill(
+        surface: isSelected ? PressSurface.raised : PressSurface.base,
+        child: FilterChip(
+          label: Text(tag.name),
+          avatar: isSelected
+              ? null
+              : CircleAvatar(
+                  radius: 6,
+                  backgroundColor: cs.onSurface,
                 ),
-        showCheckmark: isSelected,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs,
+          selected: isSelected,
+          onSelected: (_) => onTap(),
+          backgroundColor: cs.surface,
+          // surface.selected (surfaceContainerHighest in both schemes) with the
+          // real 2 px border below, never a tint.
+          selectedColor: cs.surfaceContainerHighest,
+          checkmarkColor: cs.onSurface,
+          side: BorderSide(
+            color: isSelected ? cs.onSurface : cs.outlineVariant,
+            width: isSelected ? 2 : 1,
+          ),
+          labelStyle:
+              (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
+                  .copyWith(
+                    color: isSelected ? cs.onSurface : cs.onSurface,
+                  ),
+          showCheckmark: isSelected,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingSm,
+            vertical: AppDimensions.spacingXs,
+          ),
         ),
       ),
     );

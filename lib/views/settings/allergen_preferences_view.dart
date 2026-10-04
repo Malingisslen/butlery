@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// View for managing user allergen and dietary preferences.
 ///
@@ -139,22 +140,24 @@ class _AllergenPreferencesContent extends StatelessWidget {
               runSpacing: AppDimensions.space4,
               children: AllergenPreferenceOptions.allergens.entries.map((e) {
                 final isSelected = viewModel.isAllergenTracked(e.key);
-                return FilterChip(
-                  label: Text(e.value),
-                  selected: isSelected,
-                  onSelected: (_) => viewModel.toggleAllergen(e.key),
-                  // Chosen is surface.selected with a real border, never a
-                  // tint (Grafisk manual v6:209; tokens.json:40-53,
-                  // :108-119): surfaceContainerHighest (surface.raised, the
-                  // same values) and a text.primary border, in both modes.
-                  selectedColor: cs.surfaceContainerHighest,
-                  checkmarkColor: cs.onSurface,
-                  side: BorderSide(
-                    color: isSelected ? cs.onSurface : cs.outline,
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                  labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onSurface,
+                return PressFill(
+                  surface: isSelected ? PressSurface.raised : PressSurface.base,
+                  child: FilterChip(
+                    label: Text(e.value),
+                    selected: isSelected,
+                    onSelected: (_) => viewModel.toggleAllergen(e.key),
+                    // Chosen is surface.selected with a real border, never a
+                    // tint: surfaceContainerHighest (surface.raised, the
+                    // same values) and a text.primary border, in both modes.
+                    selectedColor: cs.surfaceContainerHighest,
+                    checkmarkColor: cs.onSurface,
+                    side: BorderSide(
+                      color: isSelected ? cs.onSurface : cs.outline,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    labelStyle: AppTextStyles.labelMedium.copyWith(
+                      color: cs.onSurface,
+                    ),
                   ),
                 );
               }).toList(),
@@ -204,22 +207,24 @@ class _AllergenPreferencesContent extends StatelessWidget {
               runSpacing: AppDimensions.space4,
               children: AllergenPreferenceOptions.dietary.entries.map((e) {
                 final isSelected = viewModel.isDietaryTracked(e.key);
-                return FilterChip(
-                  label: Text(e.value),
-                  selected: isSelected,
-                  onSelected: (_) => viewModel.toggleDietary(e.key),
-                  // Chosen is surface.selected with a real border, never a
-                  // tint (Grafisk manual v6:209; tokens.json:40-53,
-                  // :108-119): surfaceContainerHighest (surface.raised, the
-                  // same values) and a text.primary border, in both modes.
-                  selectedColor: cs.surfaceContainerHighest,
-                  checkmarkColor: cs.onSurface,
-                  side: BorderSide(
-                    color: isSelected ? cs.onSurface : cs.outline,
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                  labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onSurface,
+                return PressFill(
+                  surface: isSelected ? PressSurface.raised : PressSurface.base,
+                  child: FilterChip(
+                    label: Text(e.value),
+                    selected: isSelected,
+                    onSelected: (_) => viewModel.toggleDietary(e.key),
+                    // Chosen is surface.selected with a real border, never a
+                    // tint: surfaceContainerHighest (surface.raised, the
+                    // same values) and a text.primary border, in both modes.
+                    selectedColor: cs.surfaceContainerHighest,
+                    checkmarkColor: cs.onSurface,
+                    side: BorderSide(
+                      color: isSelected ? cs.onSurface : cs.outline,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    labelStyle: AppTextStyles.labelMedium.copyWith(
+                      color: cs.onSurface,
+                    ),
                   ),
                 );
               }).toList(),

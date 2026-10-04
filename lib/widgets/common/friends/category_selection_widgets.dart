@@ -9,6 +9,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Category Selection Widgets
 /// Handles ONLY category selection UI components and interaction widgets.
@@ -109,50 +110,55 @@ class CategorySelectionWidgets {
     bool showCount = true,
     bool enabled = true,
   }) {
-    return FilterChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(
-            category.emoji != null ? Icons.emoji_emotions : ButleryIcons.users,
-            size: AppDimensions.iconSizeS,
-            color: isSelected
-                ? Theme.of(context).colorScheme.onPrimary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(category.name),
-          if (showCount) ...[
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              '(${category.friendUserIds.length})',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+    return PressFill(
+      surface: isSelected ? PressSurface.ink : PressSurface.base,
+      child: FilterChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ButleryIcon(
+              category.emoji != null
+                  ? Icons.emoji_emotions
+                  : ButleryIcons.users,
+              size: AppDimensions.iconSizeS,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(category.name),
+            if (showCount) ...[
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(
+                '(${category.friendUserIds.length})',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
-        ],
-      ),
-      selected: isSelected,
-      onSelected: enabled ? (_) => onTap() : null,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      // Chosen is the drawn chip: an ink fill with paper text and check
-      // (Komponentark v1:142); ink text and check on it vanished in both
-      // modes. The text.primary edge is the dark drawing's paper edge
-      // (Komponentark v1:523) and ink-on-ink in light.
-      selectedColor: Theme.of(context).colorScheme.primary,
-      checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-      side: BorderSide(
-        color: isSelected
-            ? Theme.of(context).colorScheme.onSurface
-            : Theme.of(context).colorScheme.outline,
-      ),
-      labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: isSelected
-            ? Theme.of(context).colorScheme.onPrimary
-            : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        selected: isSelected,
+        onSelected: enabled ? (_) => onTap() : null,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        // Chosen is the drawn chip: an ink fill with paper text and check
+        // (Komponentark v1:142); ink text and check on it vanished in both
+        // modes. The text.primary edge is the dark drawing's paper edge
+        // (Komponentark v1:523) and ink-on-ink in light.
+        selectedColor: Theme.of(context).colorScheme.primary,
+        checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+        side: BorderSide(
+          color: isSelected
+              ? Theme.of(context).colorScheme.onSurface
+              : Theme.of(context).colorScheme.outline,
+        ),
+        labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: isSelected
+              ? Theme.of(context).colorScheme.onPrimary
+              : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -165,56 +171,60 @@ class CategorySelectionWidgets {
     required VoidCallback onTap,
     bool enabled = true,
   }) {
-    return FilterChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (category.emoji != null && category.emoji!.isNotEmpty) ...[
-            Text(category.emoji!),
+    return PressFill(
+      surface: isSelected ? PressSurface.raised : PressSurface.base,
+      child: FilterChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (category.emoji != null && category.emoji!.isNotEmpty) ...[
+              Text(category.emoji!),
+              const SizedBox(width: AppDimensions.spacingXs),
+            ],
+            Text(category.name),
             const SizedBox(width: AppDimensions.spacingXs),
-          ],
-          Text(category.name),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXs,
-              vertical: AppDimensions.borderWidthStandard,
-            ),
-            decoration: BoxDecoration(
-              // The count stands on the page (unchosen) or on the paper
-              // plate (chosen), opaque both ways (tokens.json:40-53).
-              color: isSelected
-                  ? Theme.of(context).colorScheme.surface
-                  : Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            ),
-            child: Text(
-              '${category.friendCount}',
-              style: AppTextStyles.badge.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingXs,
+                vertical: AppDimensions.borderWidthStandard,
+              ),
+              decoration: BoxDecoration(
+                // The count stands on the page (unchosen) or on the paper
+                // plate (chosen), opaque both ways.
+                color: isSelected
+                    ? Theme.of(context).colorScheme.surface
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusControl,
+                ),
+              ),
+              child: Text(
+                '${category.friendCount}',
+                style: AppTextStyles.badge.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      selected: isSelected,
-      onSelected: enabled ? (_) => onTap() : null,
-      // Chosen is surface.selected with a real border, never a tint
-      // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
-      // :108-119). surfaceContainerHighest is surface.raised, which
-      // carries surface.selected's values in both modes; the border is
-      // text.primary (onSurface): ink on light, paper on dark.
-      selectedColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      checkmarkColor: Theme.of(context).colorScheme.onSurface,
-      labelStyle: AppTextStyles.labelMedium.copyWith(
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      side: BorderSide(
-        color: isSelected
-            ? Theme.of(context).colorScheme.onSurface
-            : Theme.of(context).colorScheme.onSurfaceVariant,
-        width: isSelected ? 1.5 : 1,
+          ],
+        ),
+        selected: isSelected,
+        onSelected: enabled ? (_) => onTap() : null,
+        // Chosen is surface.selected with a real border, never a tint.
+        // surfaceContainerHighest is surface.raised, which
+        // carries surface.selected's values in both modes; the border is
+        // text.primary (onSurface): ink on light, paper on dark.
+        selectedColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        checkmarkColor: Theme.of(context).colorScheme.onSurface,
+        labelStyle: AppTextStyles.labelMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        side: BorderSide(
+          color: isSelected
+              ? Theme.of(context).colorScheme.onSurface
+              : Theme.of(context).colorScheme.onSurfaceVariant,
+          width: isSelected ? 1.5 : 1,
+        ),
       ),
     );
   }
