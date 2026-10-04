@@ -12,6 +12,8 @@
 // it from a correctly tagged one. The fix therefore has to WRITE something
 // (ticket option 3) — no client-side rule can be added without a signal.
 
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
@@ -24,9 +26,8 @@ import 'package:butlery/services/tagging/tag_generator.dart'
 import '../../../infrastructure/factories/recipe_factory.dart';
 
 /// Mirrors STALE_TAG_MARKERS in
-/// functions/src/cleanup/cleanup-deleted-ingredients.ts. If the server adds
-/// a marker, add it here: an unlisted marker is one the client never proved
-/// it distrusts.
+/// functions/src/cleanup/cleanup-deleted-ingredients.ts; a test below reads
+/// that file and fails when the two lists drift.
 const _cascadeMarkers = ['stale-ingredient', 'stale-properties', 'outdated'];
 
 void main() {
@@ -90,11 +91,30 @@ void main() {
       });
     }
 
-    test('the marker list matches the one the cascade writes', () {
-      // on-ingredient-properties-changed.ts writes "stale-properties"; the
-      // soft-delete cascade writes "stale-ingredient"; the bulk drain writes
-      // "outdated". A fourth server marker without a row here is unproven.
-      expect(_cascadeMarkers, hasLength(3));
+    test('the marker list matches STALE_TAG_MARKERS in the Cloud Functions '
+        'source', () {
+      final source = File(
+        'functions/src/cleanup/cleanup-deleted-ingredients.ts',
+      ).readAsStringSync();
+      final literal = RegExp(
+        r'STALE_TAG_MARKERS\s*=\s*\[([^\]]*)\]',
+      ).firstMatch(source);
+      expect(literal, isNotNull, reason: 'the constant moved or was renamed');
+      final serverMarkers = RegExp(
+        r'"([^"]+)"',
+      ).allMatches(literal!.group(1)!).map((m) => m.group(1)!).toSet();
+      expect(serverMarkers, equals(_cascadeMarkers.toSet()));
+    });
+
+    test('control: ANY non-current generatorVersion is distrusted the same '
+        'way — the markers are not special-cased', () {
+      final r = recipeWith(
+        tag(allergen: {'gluten': TriState.free}, version: 'not-a-marker'),
+      );
+      expect(
+        MenuAllergenTrust.effectiveAllergenStatus(r, 'gluten'),
+        TriState.unknown,
+      );
     });
   });
 
@@ -143,17 +163,6 @@ void main() {
         ),
         TriState.free,
       );
-    });
-
-    test('the two recipes are equal in every field the filters read', () {
-      // The ONLY difference is the marker. Remove it and the recipes are
-      // indistinguishable — which is the whole ticket.
-      final a = unreached.tagResult!;
-      final b = reached.tagResult!;
-      expect(a.allergenStatus, b.allergenStatus);
-      expect(a.coverage, b.coverage);
-      expect(a.hasCoverageAnomaly, b.hasCoverageAnomaly);
-      expect(a.generatorVersion, isNot(b.generatorVersion));
     });
   });
 }

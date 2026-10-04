@@ -162,8 +162,10 @@ void main() {
 
   void stubHousehold({required bool exists}) {
     when(() => household.hasHousehold).thenReturn(exists);
-    // A household whose every member left the allergen screen untouched:
-    // this is what HouseholdService produces for them (BUT-1663 part 1).
+    // An EMPTY household aggregate: the signed-in user's own undeclared
+    // profile contributes nothing on this path (BUT-1663 part 1). The real
+    // service adds the common-allergen floor for OTHER members it cannot
+    // read, never a diet; the mock leaves that out to isolate the diet half.
     when(() => household.aggregateAllergenPreferences()).thenAnswer(
       (_) async => const HouseholdAllergenAggregate.complete(
         UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
@@ -225,8 +227,8 @@ void main() {
       },
     );
 
-    test('BUT-1694 measured: the same undeclared user inside a household of '
-        'undeclared members gets NO filtering at all', () async {
+    test('BUT-1694 measured: the same undeclared user with an EMPTY household '
+        'aggregate gets NO filtering at all', () async {
       await signInWith(profile());
       stubHousehold(exists: true);
 
@@ -235,8 +237,7 @@ void main() {
       expect(generator.lastPoolStats?.trackedAllergenCount, 0);
     });
 
-    test('a DECLARED user is filtered by what they declared, with and without '
-        'a household', () async {
+    test('a DECLARED user is filtered by what they declared', () async {
       await signInWith(
         profile(
           prefs: const UserAllergenPreferences(
@@ -270,8 +271,8 @@ void main() {
     );
 
     test(
-      'BUT-1694: an undeclared user is filtered identically before and after '
-      'a household exists',
+      'BUT-1694: an undeclared user is filtered identically with and without '
+      'an empty household aggregate',
       () async {
         await signInWith(profile());
 

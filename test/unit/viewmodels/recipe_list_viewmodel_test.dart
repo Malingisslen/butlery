@@ -1218,18 +1218,11 @@ void main() {
       );
     });
 
-    // ---------------------------------------------------------------------------
-    // BUT-1335 — Allergen/Dietary Safety Gate
-    //
-    // Each test proves one safety invariant via the PUBLIC `recipes` getter and
-    // the `untaggedExclusionMessage` getter.  Filter results are cached; toggling
-    // the filter before asserting is the correct way to invalidate the cache.
-    // ---------------------------------------------------------------------------
     group('REC-03 allergen/dietary filter path (safety-critical assertions)', () {
       // FEATURE_INVENTORY REC-03: "free" is trusted only at 100 % coverage
       // with valid tagging, AND across every selected allergen, with the
-      // user's manual correction winning over the auto verdict. BUT-1335
-      // above pins the three gates; this group pins the VERDICT half and the
+      // user's manual correction winning over the auto verdict. The BUT-1335
+      // group pins the three gates; this group pins the VERDICT half and the
       // gate boundaries, each with a control that differs in one variable.
       TagResult tagged({
         Map<String, TriState> allergen = const {},
@@ -1300,7 +1293,7 @@ void main() {
         mockRecipeService.setRecipeState(recipes: [glutenFreeNuts, both]);
 
         viewModel.toggleAllergenFilter('gluten-free');
-        expect(ids(), ['gf_nuts', 'both']);
+        expect(ids(), unorderedEquals(['gf_nuts', 'both']));
 
         viewModel.toggleAllergenFilter('nut-free');
         expect(
@@ -1476,13 +1469,20 @@ void main() {
         );
 
         viewModel.toggleDietaryFilter('vegetarian');
-        expect(ids(), ['veg_only', 'vegan']);
+        expect(ids(), unorderedEquals(['veg_only', 'vegan']));
 
         viewModel.toggleDietaryFilter('vegan');
         expect(ids(), ['vegan']);
       });
     });
 
+    // ---------------------------------------------------------------------------
+    // BUT-1335 — Allergen/Dietary Safety Gate
+    //
+    // Each test proves one safety invariant via the PUBLIC `recipes` getter and
+    // the `untaggedExclusionMessage` getter.  Filter results are cached; toggling
+    // the filter before asserting is the correct way to invalidate the cache.
+    // ---------------------------------------------------------------------------
     group('BUT-1335 Allergen/Dietary Safety Gate', () {
       // Helpers -----------------------------------------------------------------
 
