@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:808b0f4081a148dc5ea362284789f92cb313707e2c3b5be82035ba6b59b70f8c (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:d3d1aa4ca126c3a5ba27ccdf39335516c8a8c106256ca0ec577d838395a36088 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -121,6 +121,8 @@ class AppColorsDark {
   static const Color textWarning = Color(0xFFDCA968);
   /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent (dark)
   static const Color textAccent = Color(0xFFDCA968);
+  /// Accenttext pa surface.ink: snackbarens atgard (Komponentark v1:747) och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52). · semantic.text.accent.onInk (dark)
+  static const Color textAccentOnInk = Color(0xFFDCA968);
   /// Avstangd text pa papper (BUT-2191). Ytbunden till surface.base: golvet ar 3:1 (contrastPolicy disabled), och det nas dar (3,32:1 ljust, 3,04:1 morkt) men inte pa surface.raised (2,98:1 ljust, 2,00:1 morkt; dar galler textDisabled, som ar text.disabled.onRaised). Namnet textDisabled ar upptaget i det frysta kontraktet. Aldrig via opacitet. · semantic.text.disabled (dark)
   static const Color textDisabledOnBase = Color(0xFF627061);
   /// Avklarad rad (BUT-2147): genomstrykningen bar betydelsen, completed ar inte disabled. Ytbunden till surface.base: morkt #93A48D ger 6,02:1 dar men 3,96:1 pa surface.raised. · semantic.text.completed (dark)
@@ -145,6 +147,10 @@ class AppColorsDark {
   static const Color textLink = Color(0xFFDCA968);
   /// Avstangd text pa surface.ink. Harledd, inte ritad; Malin kan prova. Ink ar #24382C i bada lagena, sa vardet ar #93A48D i bada (mork ytas varde, som text.disabled.onRaised morkt). Golv 3:1 (contrastPolicy disabled): 4,73:1 pa ink. Ytbunden till surface.ink. · semantic.text.disabled.onInk (dark)
   static const Color textDisabledOnInk = Color(0xFF93A48D);
+  /// Tryck och hover pa en rad som redan ligger pa surface.raised (BUT-2205; R7-1 = B, R7-2 = B). Ljust #B4BFA6, morkt #17251D. Overgaende lage: ljust ar golvet 3:1 for texten i raden (contrastPolicy-undantag, lagst text.secondary.onRaised 3,03); morkt klarar all text 4,5. Aldrig vilande yta. · semantic.surface.pressed.onRaised (dark)
+  static const Color surfacePressedOnRaised = Color(0xFF17251D);
+  /// Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck. · semantic.surface.pressed.onInk (dark)
+  static const Color surfacePressedOnInk = Color(0xFF17251D);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json.

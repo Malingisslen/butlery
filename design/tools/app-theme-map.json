@@ -365,9 +365,9 @@
    "Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk)."
   ],
   "textAccentOnInk": [
-   "palette",
-   "saffronLight",
-   "Snackbarens atgard pa surface.ink (Komponentark v1:747, #E09D50; produktbeslut PQ-09 = A). Palettfarg utan lagesberoende, eftersom ytan ar surface.ink i bada lagena. Star bara pa surface.ink: 5,43:1 dar."
+   "semantic",
+   "text.accent.onInk",
+   "Accenttext pa surface.ink: snackbarens atgard (Komponentark v1:747) och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52)."
   ],
   "textDisabledOnBase": [
    "semantic",
@@ -428,6 +428,16 @@
    "semantic",
    "text.disabled.onInk",
    "Avstangd text pa surface.ink. Harledd, inte ritad; Malin kan prova. Ink ar #24382C i bada lagena, sa vardet ar #93A48D i bada (mork ytas varde, som text.disabled.onRaised morkt). Golv 3:1 (contrastPolicy disabled): 4,73:1 pa ink. Ytbunden till surface.ink."
+  ],
+  "surfacePressedOnRaised": [
+   "semantic",
+   "surface.pressed.onRaised",
+   "Tryck och hover pa en rad som redan ligger pa surface.raised (BUT-2205; R7-1 = B, R7-2 = B). Ljust #B4BFA6, morkt #17251D. Overgaende lage: ljust ar golvet 3:1 for texten i raden (contrastPolicy-undantag, lagst text.secondary.onRaised 3,03); morkt klarar all text 4,5. Aldrig vilande yta."
+  ],
+  "surfacePressedOnInk": [
+   "semantic",
+   "surface.pressed.onInk",
+   "Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck."
   ]
  },
  "aliases": {

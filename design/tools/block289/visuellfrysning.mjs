@@ -55,7 +55,24 @@ const YTREGEL = [
   // mater den mot papper; en ring runt ett kort star pa upphojd yta, sa den
   // provas dar ocksa.
   { TOKEN: 'focusRing', YTA: 'surface.base', KRAV: 3.0, SLAG: 'GRAPHIC' },
-  { TOKEN: 'focusRing', YTA: 'surface.raised', KRAV: 3.0, SLAG: 'GRAPHIC' }
+  { TOKEN: 'focusRing', YTA: 'surface.raised', KRAV: 3.0, SLAG: 'GRAPHIC' },
+  // BUT-2205, R7-1 = B och R7-2 = B (Malin 2026-10-04). En tryckt rad pa
+  // surface.raised star pa surface.pressed.onRaised (#B4BFA6 ljust, #17251D
+  // morkt). Rubrik och brodtext haller 4,5. De ovriga textrollerna i raden har
+  // ett overgaende golv pa 3:1 sa lange fingret ligger kvar (contrastPolicy-
+  // undantaget surface.pressed.onRaised); lagst text.secondary.onRaised 3,03.
+  { TOKEN: 'text.primary', YTA: 'surface.pressed.onRaised', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.body', YTA: 'surface.pressed.onRaised', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.secondary.onRaised', YTA: 'surface.pressed.onRaised', KRAV: 3.0, SLAG: 'PRESSED' },
+  { TOKEN: 'text.accent.onRaised', YTA: 'surface.pressed.onRaised', KRAV: 3.0, SLAG: 'PRESSED' },
+  { TOKEN: 'text.link', YTA: 'surface.pressed.onRaised', KRAV: 3.0, SLAG: 'PRESSED' },
+  { TOKEN: 'text.danger.onRaised', YTA: 'surface.pressed.onRaised', KRAV: 3.0, SLAG: 'PRESSED' },
+  { TOKEN: 'text.success.onRaised', YTA: 'surface.pressed.onRaised', KRAV: 3.0, SLAG: 'PRESSED' },
+  // R7-5 = A. text.accent.onInk star pa surface.ink och pa dess tryckta lage
+  // surface.pressed.onInk (#17251D i bada lagena, R7-2 = B).
+  { TOKEN: 'text.accent.onInk', YTA: 'surface.ink', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.accent.onInk', YTA: 'surface.pressed.onInk', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.disabled.onInk', YTA: 'surface.pressed.onInk', KRAV: 3.0, SLAG: 'DISABLED' }
 ];
 
 export function bygg(rot) {
@@ -135,13 +152,16 @@ export function bygg(rot) {
 
   /* ---- Ytbundna Flutter-konstanter ----
    * En konstant som bara far sta pa EN yta provas mot just den ytan, i bada
-   * lagena. Paket 4: textAccentOnInk ar snackbarens atgard (#E09D50,
-   * Komponentark v1:747, produktbeslut PQ-09 = A). Den ar en palettfarg utan
-   * morkt varde och star pa surface.ink, som ar #24382C i bada lagena. Den
-   * ar inte ytblind: pa papper vore den 2,1:1, och den far darfor aldrig sta
-   * dar. */
+   * lagena. Paket 4: textAccentOnInk ar snackbarens atgard (Komponentark
+   * v1:747). Sedan produktbeslut R7-5 = A (Malin 2026-10-04) ar den
+   * text.accent.onInk: #E09D50 ljust (5,43:1 pa ink), #DCA968 morkt (5,91:1,
+   * som R6-01); PQ-09:s #E09D50 i bada lagena ar ersatt. Den star pa
+   * surface.ink, som ar #24382C i bada lagena, och pa dess tryckta lage
+   * surface.pressed.onInk (#17251D). Den ar inte ytblind: pa papper vore den
+   * 2,1:1, och den far darfor aldrig sta dar. */
   const YTBUNDNA = [
     { NAMN: 'textAccentOnInk', YTA: 'surface.ink', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textAccentOnInk', YTA: 'surface.pressed.onInk', KRAV: 4.5, SLAG: 'READABLE' },
     // Produktbeslut R6-01 = A. textAccent ar text.accent och bunden till
     // surface.base i bada lagena: det ljusa #A15A0A ger 4,30:1 pa
     // surface.raised (dar galler text.accent.onRaised) och ar darfor inte

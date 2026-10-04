@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:48dd5550caf071ee462eb2b38518e97ed2651b75b84a8163b56ea6696a56e05a (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:416889412c5b3b8e5f5dc3646d4aa212392fb9b876499c8b71019837cdfe9ae7 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -36,6 +36,10 @@ class ButleryColors {
   static const surfaceRaisedDark = Color(0xFF2F4437);
   static const surfaceInk = Color(0xFF24382C);
   static const surfaceInkDark = Color(0xFF24382C);
+  static const surfacePressedOnRaised = Color(0xFFB4BFA6);
+  static const surfacePressedOnRaisedDark = Color(0xFF17251D);
+  static const surfacePressedOnInk = Color(0xFF17251D);
+  static const surfacePressedOnInkDark = Color(0xFF17251D);
   static const surfaceSelected = Color(0xFFE6EAD9);
   static const surfaceSelectedDark = Color(0xFF2F4437);
   static const surfaceDisabled = Color(0xFFA9B2A0);
@@ -88,6 +92,8 @@ class ButleryColors {
   static const borderOnInkDark = Color(0xFF3F5145);
   static const textLink = Color(0xFF8A5212);
   static const textLinkDark = Color(0xFFDCA968);
+  static const textAccentOnInk = Color(0xFFE09D50);
+  static const textAccentOnInkDark = Color(0xFFDCA968);
   static const elevationShadow = Color(0x1A17251D);
   static const elevationShadowDark = Color(0x1A17251D);
   static const overlayInkSubtle = Color(0x1A17251D);
@@ -200,6 +206,7 @@ class ButleryMotion {
   static const clocheLift = Duration(milliseconds: 400);
   static const clocheReturn = Duration(milliseconds: 200);
   static const splashLoop = Duration(milliseconds: 5000);
+  static const pulse = Duration(milliseconds: 1200);
   static const Curve curveStandard = Cubic(0.33, 0, 0.2, 1);
   static const Curve curveExit = Cubic(0.4, 0, 1, 1);
   static const Curve curveCeremony = Cubic(0.3, 0, 0.15, 1);
