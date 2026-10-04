@@ -20,6 +20,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class AddPantryItemSheet extends StatefulWidget {
   const AddPantryItemSheet({super.key, this.existingItem});
@@ -323,68 +324,76 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    iconEnabledColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                    iconDisabledColor: AppModeColors.textDisabled(
-                      Theme.of(context).brightness,
-                    ),
-                    initialValue: _unit,
-                    decoration: InputDecoration(
-                      labelText: l10n.pantryUnitLabel,
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
+                  child: PressFill(
+                    surface: PressSurface.base,
+                    child: DropdownButtonFormField<String>(
+                      iconEnabledColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      iconDisabledColor: AppModeColors.textDisabled(
+                        Theme.of(context).brightness,
                       ),
+                      initialValue: _unit,
+                      decoration: InputDecoration(
+                        labelText: l10n.pantryUnitLabel,
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                      ),
+                      // Derived from the STORED unit, not from `_unit`, so an
+                      // off-list row stays on offer after the user picks
+                      // something else and can be picked back.
+                      items: [
+                        for (final unit in unitValues)
+                          DropdownMenuItem(value: unit, child: Text(unit)),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) setState(() => _unit = value);
+                      },
                     ),
-                    // Derived from the STORED unit, not from `_unit`, so an
-                    // off-list row stays on offer after the user picks
-                    // something else and can be picked back.
-                    items: [
-                      for (final unit in unitValues)
-                        DropdownMenuItem(value: unit, child: Text(unit)),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) setState(() => _unit = value);
-                    },
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            DropdownButtonFormField<PantryLocation>(
-              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(
-                Theme.of(context).brightness,
+            PressFill(
+              surface: PressSurface.base,
+              child: DropdownButtonFormField<PantryLocation>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
+                initialValue: _location,
+                decoration: InputDecoration(
+                  labelText: l10n.pantryLocationLabel,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: PantryLocation.fridge,
+                    child: Text(l10n.pantryLocationFridge),
+                  ),
+                  DropdownMenuItem(
+                    value: PantryLocation.freezer,
+                    child: Text(l10n.pantryLocationFreezer),
+                  ),
+                  DropdownMenuItem(
+                    value: PantryLocation.pantry,
+                    child: Text(l10n.pantryLocationPantry),
+                  ),
+                  DropdownMenuItem(
+                    value: PantryLocation.spiceRack,
+                    child: Text(l10n.pantryLocationSpiceRack),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => _location = value);
+                },
               ),
-              initialValue: _location,
-              decoration: InputDecoration(
-                labelText: l10n.pantryLocationLabel,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: PantryLocation.fridge,
-                  child: Text(l10n.pantryLocationFridge),
-                ),
-                DropdownMenuItem(
-                  value: PantryLocation.freezer,
-                  child: Text(l10n.pantryLocationFreezer),
-                ),
-                DropdownMenuItem(
-                  value: PantryLocation.pantry,
-                  child: Text(l10n.pantryLocationPantry),
-                ),
-                DropdownMenuItem(
-                  value: PantryLocation.spiceRack,
-                  child: Text(l10n.pantryLocationSpiceRack),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _location = value);
-              },
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             Semantics(

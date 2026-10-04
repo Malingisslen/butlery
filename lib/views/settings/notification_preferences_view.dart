@@ -19,6 +19,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/views/settings/notification_category_items.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Sentinel value paired with [AnalyticsEvents.notificationPreferenceChanged]
 /// when the master toggle flips. Per-category toggles emit the
@@ -400,24 +401,29 @@ class _NotificationPreferencesViewState
             contentPadding: AppDimensions.paddingSymmetric16x12,
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<DigestFrequency>(
-              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(
-                Theme.of(context).brightness,
-              ),
-              value: _preferences.digestFrequency,
-              isDense: true,
-              isExpanded: true,
-              items: _digestFrequencyItems(l10n),
-              onChanged: _preferences.enabled && !_systemOff
-                  ? (value) {
-                      if (value != null) {
-                        _savePreferences(
-                          _copyPreferences(digestFrequency: value),
-                        );
+            child: PressFill(
+              surface: PressSurface.base,
+              child: DropdownButton<DigestFrequency>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
+                value: _preferences.digestFrequency,
+                isDense: true,
+                isExpanded: true,
+                items: _digestFrequencyItems(l10n),
+                onChanged: _preferences.enabled && !_systemOff
+                    ? (value) {
+                        if (value != null) {
+                          _savePreferences(
+                            _copyPreferences(digestFrequency: value),
+                          );
+                        }
                       }
-                    }
-                  : null,
+                    : null,
+              ),
             ),
           ),
         ),

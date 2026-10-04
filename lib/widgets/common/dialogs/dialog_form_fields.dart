@@ -28,6 +28,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
 /// through [buildTextFormField]; the dropdown, checkbox and switch builders
@@ -365,27 +366,30 @@ class DialogFormFields {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: DropdownButtonFormField<T>(
-        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        iconDisabledColor: AppModeColors.textDisabled(
-          Theme.of(context).brightness,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: DropdownButtonFormField<T>(
+          iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          iconDisabledColor: AppModeColors.textDisabled(
+            Theme.of(context).brightness,
+          ),
+          initialValue: value,
+          items: items,
+          onChanged: enabled ? onChanged : null,
+          decoration: InputDecoration(
+            labelText: labelText,
+            hintText: hintText,
+            prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
+            border: const OutlineInputBorder(),
+          ),
+          validator:
+              validator ??
+              (required
+                  ? (value) => value == null
+                        ? context.l10n.dialogFieldRequired(labelText)
+                        : null
+                  : null),
         ),
-        initialValue: value,
-        items: items,
-        onChanged: enabled ? onChanged : null,
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
-          border: const OutlineInputBorder(),
-        ),
-        validator:
-            validator ??
-            (required
-                ? (value) => value == null
-                      ? context.l10n.dialogFieldRequired(labelText)
-                      : null
-                : null),
       ),
     );
   }

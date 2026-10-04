@@ -29,6 +29,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Show the assisted import dialog.
 ///
@@ -315,41 +316,44 @@ class _ReviewEditStep extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingMd),
 
           // Meal type dropdown
-          DropdownButtonFormField<String>(
-            iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            iconDisabledColor: AppModeColors.textDisabled(
-              Theme.of(context).brightness,
+          PressFill(
+            surface: PressSurface.base,
+            child: DropdownButtonFormField<String>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
+              ),
+              initialValue: viewModel.mealType,
+              decoration: InputDecoration(
+                labelText: context.l10n.importMealType,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: 'breakfast',
+                  child: Text(context.l10n.importMealBreakfast),
+                ),
+                DropdownMenuItem(
+                  value: 'lunch',
+                  child: Text(context.l10n.importMealLunch),
+                ),
+                DropdownMenuItem(
+                  value: 'dinner',
+                  child: Text(context.l10n.importMealDinner),
+                ),
+                DropdownMenuItem(
+                  value: 'snack',
+                  child: Text(context.l10n.importMealSnack),
+                ),
+                DropdownMenuItem(
+                  value: 'dessert',
+                  child: Text(context.l10n.importMealDessert),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) viewModel.setMealType(value);
+              },
             ),
-            initialValue: viewModel.mealType,
-            decoration: InputDecoration(
-              labelText: context.l10n.importMealType,
-              border: const OutlineInputBorder(),
-            ),
-            items: [
-              DropdownMenuItem(
-                value: 'breakfast',
-                child: Text(context.l10n.importMealBreakfast),
-              ),
-              DropdownMenuItem(
-                value: 'lunch',
-                child: Text(context.l10n.importMealLunch),
-              ),
-              DropdownMenuItem(
-                value: 'dinner',
-                child: Text(context.l10n.importMealDinner),
-              ),
-              DropdownMenuItem(
-                value: 'snack',
-                child: Text(context.l10n.importMealSnack),
-              ),
-              DropdownMenuItem(
-                value: 'dessert',
-                child: Text(context.l10n.importMealDessert),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) viewModel.setMealType(value);
-            },
           ),
           const SizedBox(height: AppDimensions.spacingLg),
 

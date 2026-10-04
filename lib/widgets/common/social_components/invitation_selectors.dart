@@ -289,55 +289,59 @@ class InvitationSelectors {
                     style: AppTextStyles.contentLabel,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
-                  DropdownButton<String>(
-                    iconEnabledColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                    iconDisabledColor: AppModeColors.textDisabled(
-                      Theme.of(context).brightness,
-                    ),
-                    value: 'name',
-                    items: [
-                      DropdownMenuItem(
-                        value: 'name',
-                        child: Text(context.l10n.invitationSortByName),
+                  PressFill(
+                    surface: PressSurface.base,
+                    child: DropdownButton<String>(
+                      iconEnabledColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      iconDisabledColor: AppModeColors.textDisabled(
+                        Theme.of(context).brightness,
                       ),
-                      DropdownMenuItem(
-                        value: 'type',
-                        child: Text(context.l10n.invitationSortByType),
-                      ),
-                      DropdownMenuItem(
-                        value: 'members',
-                        child: Text(context.l10n.invitationSortByMembers),
-                      ),
-                    ],
-                    onChanged: (sortBy) {
-                      if (onFilterChanged != null && sortBy != null) {
-                        final sorted = List<InvitationTarget>.from(
-                          filteredTargets,
-                        );
-                        switch (sortBy) {
-                          case 'name':
-                            sorted.sort(
-                              (a, b) => a.displayName.compareTo(b.displayName),
-                            );
-                            break;
-                          case 'type':
-                            sorted.sort(
-                              (a, b) => a.type.name.compareTo(b.type.name),
-                            );
-                            break;
-                          case 'members':
-                            sorted.sort(
-                              (a, b) => (b.memberCount ?? 0).compareTo(
-                                a.memberCount ?? 0,
-                              ),
-                            );
-                            break;
+                      value: 'name',
+                      items: [
+                        DropdownMenuItem(
+                          value: 'name',
+                          child: Text(context.l10n.invitationSortByName),
+                        ),
+                        DropdownMenuItem(
+                          value: 'type',
+                          child: Text(context.l10n.invitationSortByType),
+                        ),
+                        DropdownMenuItem(
+                          value: 'members',
+                          child: Text(context.l10n.invitationSortByMembers),
+                        ),
+                      ],
+                      onChanged: (sortBy) {
+                        if (onFilterChanged != null && sortBy != null) {
+                          final sorted = List<InvitationTarget>.from(
+                            filteredTargets,
+                          );
+                          switch (sortBy) {
+                            case 'name':
+                              sorted.sort(
+                                (a, b) =>
+                                    a.displayName.compareTo(b.displayName),
+                              );
+                              break;
+                            case 'type':
+                              sorted.sort(
+                                (a, b) => a.type.name.compareTo(b.type.name),
+                              );
+                              break;
+                            case 'members':
+                              sorted.sort(
+                                (a, b) => (b.memberCount ?? 0).compareTo(
+                                  a.memberCount ?? 0,
+                                ),
+                              );
+                              break;
+                          }
+                          onFilterChanged(sorted);
                         }
-                        onFilterChanged(sorted);
-                      }
-                    },
+                      },
+                    ),
                   ),
                 ],
               ),

@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// GroupDetailAppBar - App bar component
 /// Provides group-specific app bar with menu actions based on permissions.
@@ -63,95 +64,98 @@ class GroupDetailAppBar {
     final canReportGroup =
         currentUserId != null && currentUserId != group.ownerId;
 
-    return PopupMenuButton<String>(
-      icon: const ButleryIcon(ButleryIcons.moreVertical),
-      onSelected: (value) {
-        if (value == 'report') {
-          ReportContentDialog.show(
-            context: context,
-            contentType: ContentType.group,
-            contentId: group.id,
-            contentOwnerId: group.ownerId,
-          );
-          return;
-        }
-        onMenuAction(value);
-      },
-      itemBuilder: (context) => [
-        // Add members - admin only
-        if (canAddMembers)
-          ButleryMenuItem(
-            value: 'add_members',
-            child: Row(
-              children: [
-                const ButleryIcon(Icons.person_add),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.groupAddMembers),
-              ],
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        onSelected: (value) {
+          if (value == 'report') {
+            ReportContentDialog.show(
+              context: context,
+              contentType: ContentType.group,
+              contentId: group.id,
+              contentOwnerId: group.ownerId,
+            );
+            return;
+          }
+          onMenuAction(value);
+        },
+        itemBuilder: (context) => [
+          // Add members - admin only
+          if (canAddMembers)
+            ButleryMenuItem(
+              value: 'add_members',
+              child: Row(
+                children: [
+                  const ButleryIcon(Icons.person_add),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.groupAddMembers),
+                ],
+              ),
             ),
-          ),
-        // Edit - admin only
-        if (isAdmin)
-          ButleryMenuItem(
-            value: 'edit',
-            child: Row(
-              children: [
-                const ButleryIcon(ButleryIcons.pencil),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.groupEditGroup),
-              ],
+          // Edit - admin only
+          if (isAdmin)
+            ButleryMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  const ButleryIcon(ButleryIcons.pencil),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.groupEditGroup),
+                ],
+              ),
             ),
-          ),
-        // Delete - admin only
-        if (isAdmin)
-          ButleryMenuItem(
-            value: 'delete',
-            child: Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.trash2,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.groupDeleteGroup,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          // Delete - admin only
+          if (isAdmin)
+            ButleryMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.trash2,
                     color: Theme.of(context).colorScheme.error,
                   ),
-                ),
-              ],
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(
+                    context.l10n.groupDeleteGroup,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        // Leave group - for regular members
-        if (!isAdmin)
-          ButleryMenuItem(
-            value: 'leave_group',
-            child: Row(
-              children: [
-                // The menu's own text colour: saffron belongs to a view's
-                // hero action only (Grafisk manual v6:219).
-                const ButleryIcon(Icons.exit_to_app),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.groupLeaveGroup),
-              ],
+          // Leave group - for regular members
+          if (!isAdmin)
+            ButleryMenuItem(
+              value: 'leave_group',
+              child: Row(
+                children: [
+                  // The menu's own text colour: saffron belongs to a view's
+                  // hero action only.
+                  const ButleryIcon(Icons.exit_to_app),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.groupLeaveGroup),
+                ],
+              ),
             ),
-          ),
-        // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
-        if (canReportGroup)
-          ButleryMenuItem(
-            value: 'report',
-            child: Row(
-              children: [
-                ButleryIcon(
-                  Icons.flag_outlined,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.reportContent),
-              ],
+          // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
+          if (canReportGroup)
+            ButleryMenuItem(
+              value: 'report',
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    Icons.flag_outlined,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.reportContent),
+                ],
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Bottom sheet for loading a saved menu.
 class LoadMenuBottomSheet extends StatefulWidget {
@@ -189,43 +190,46 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           context.l10n.menuSavedEarlier,
           style: AppTextStyles.bodySmall,
         ),
-        trailing: PopupMenuButton<String>(
-          icon: const ButleryIcon(ButleryIcons.moreVertical),
-          onSelected: (value) => _handleMenuAction(menu, value),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'load',
-              child: Builder(
-                builder: (context) => Row(
-                  children: [
-                    const ButleryIcon(ButleryIcons.download),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(context.l10n.menuLoad),
-                  ],
+        trailing: PressFill(
+          surface: PressSurface.base,
+          child: PopupMenuButton<String>(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            onSelected: (value) => _handleMenuAction(menu, value),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'load',
+                child: Builder(
+                  builder: (context) => Row(
+                    children: [
+                      const ButleryIcon(ButleryIcons.download),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(context.l10n.menuLoad),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Builder(
-                builder: (context) => Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.trash2,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      context.l10n.commonDelete,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              PopupMenuItem(
+                value: 'delete',
+                child: Builder(
+                  builder: (context) => Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.trash2,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        context.l10n.commonDelete,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         onTap: () => _loadMenu(menu),
       ),

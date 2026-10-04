@@ -9,6 +9,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_theme.dart';
+
 final _chip = RegExp(
   r'(?<![\w.])(FilterChip|ChoiceChip|ActionChip|InputChip|RawChip|Chip)(\.\w+)?\(',
 );
@@ -163,6 +165,15 @@ void main() {
       expect(found, isEmpty);
     },
   );
+
+  test('a chip with no colours of its own rests where the guard assumes', () {
+    // The scan reads a missing selectedColor as ink and a missing
+    // backgroundColor as base; the app's chip theme must agree.
+    for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+      expect(theme.chipTheme.selectedColor, theme.colorScheme.primary);
+      expect(theme.chipTheme.backgroundColor, theme.colorScheme.surface);
+    }
+  });
 
   group('the scan', () {
     test('passes a chip wrapped with the surface its colours give', () {

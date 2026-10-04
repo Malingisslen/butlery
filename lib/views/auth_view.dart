@@ -579,6 +579,8 @@ class _AuthViewState extends State<AuthView> {
       hintStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       filled: true,
       fillColor: cs.surfaceContainerLow,
+      // A field on surface.base: hover takes surface.raised (BUT-2205).
+      hoverColor: cs.surfaceContainerHighest,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,

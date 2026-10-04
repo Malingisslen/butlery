@@ -45,6 +45,7 @@ import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
 /// The week menu's root-bar overflow actions.
@@ -510,54 +511,57 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // menu, so the title always has room.
     return [
       const GroupMenuEntryButton(),
-      PopupMenuButton<_VeckomenyRootAction>(
-        key: const ValueKey('veckomeny-root-more'),
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        tooltip: context.l10n.rootBarMoreActions,
-        onSelected: (action) {
-          switch (action) {
-            case _VeckomenyRootAction.load:
-              unawaited(
-                VeckomenyDialogs.showLoadMenuBottomSheet(
-                  context,
-                  viewModel: viewModel,
-                  onTemplateSelected: (prompt) {
-                    _promptController.text = prompt;
-                    setState(() {});
-                  },
-                ),
-              );
-            case _VeckomenyRootAction.save:
-              unawaited(
-                VeckomenyDialogs.showSaveMenuDialog(
-                  context,
-                  viewModel: viewModel,
-                  availableFriends: _friendsService.friends,
-                ),
-              );
-            case _VeckomenyRootAction.clear:
-              _clearMenu();
-          }
-        },
-        itemBuilder: (menuContext) => [
-          _rootItem(
-            _VeckomenyRootAction.load,
-            ButleryIcons.folder,
-            context.l10n.menuLoadSaved,
-          ),
-          if (viewModel.hasMenu)
+      PressFill(
+        surface: PressSurface.base,
+        child: PopupMenuButton<_VeckomenyRootAction>(
+          key: const ValueKey('veckomeny-root-more'),
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
+          tooltip: context.l10n.rootBarMoreActions,
+          onSelected: (action) {
+            switch (action) {
+              case _VeckomenyRootAction.load:
+                unawaited(
+                  VeckomenyDialogs.showLoadMenuBottomSheet(
+                    context,
+                    viewModel: viewModel,
+                    onTemplateSelected: (prompt) {
+                      _promptController.text = prompt;
+                      setState(() {});
+                    },
+                  ),
+                );
+              case _VeckomenyRootAction.save:
+                unawaited(
+                  VeckomenyDialogs.showSaveMenuDialog(
+                    context,
+                    viewModel: viewModel,
+                    availableFriends: _friendsService.friends,
+                  ),
+                );
+              case _VeckomenyRootAction.clear:
+                _clearMenu();
+            }
+          },
+          itemBuilder: (menuContext) => [
             _rootItem(
-              _VeckomenyRootAction.save,
-              Icons.save,
-              context.l10n.menuSave,
+              _VeckomenyRootAction.load,
+              ButleryIcons.folder,
+              context.l10n.menuLoadSaved,
             ),
-          if (viewModel.hasMenu)
-            _rootItem(
-              _VeckomenyRootAction.clear,
-              ButleryIcons.x,
-              context.l10n.menuClear,
-            ),
-        ],
+            if (viewModel.hasMenu)
+              _rootItem(
+                _VeckomenyRootAction.save,
+                Icons.save,
+                context.l10n.menuSave,
+              ),
+            if (viewModel.hasMenu)
+              _rootItem(
+                _VeckomenyRootAction.clear,
+                ButleryIcons.x,
+                context.l10n.menuClear,
+              ),
+          ],
+        ),
       ),
     ];
   }

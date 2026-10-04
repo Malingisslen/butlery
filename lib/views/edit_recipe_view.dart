@@ -60,6 +60,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -422,29 +423,32 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           // BUT-1845: items and initialValue must come from ONE read of the
           // stored value — the dropdown's constructor assert re-checks the
           // match on every build.
-          DropdownButtonFormField<String>(
-            iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            iconDisabledColor: AppModeColors.textDisabled(
-              Theme.of(context).brightness,
-            ),
-            initialValue: mealTypeOptions.selected,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
-                vertical: AppDimensions.paddingM,
+          PressFill(
+            surface: PressSurface.base,
+            child: DropdownButtonFormField<String>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
               ),
-              border: OutlineInputBorder(),
+              initialValue: mealTypeOptions.selected,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                border: OutlineInputBorder(),
+              ),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              items: mealTypeOptions.values
+                  .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) viewModel.setMealType(value);
+              },
             ),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            items: mealTypeOptions.values
-                .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
-                .toList(),
-            onChanged: (value) {
-              if (value != null) viewModel.setMealType(value);
-            },
           ),
         ],
       ),

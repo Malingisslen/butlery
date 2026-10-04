@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// In-app notification inbox showing notification history.
 class NotificationsView extends StatelessWidget {
@@ -120,20 +121,23 @@ class _NotificationsContentState extends State<_NotificationsContent> {
       actions: [
         // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
         // the action would be a no-op and shouldn't suggest otherwise.
-        PopupMenuButton<String>(
-          icon: const ButleryIcon(ButleryIcons.moreVertical),
-          enabled: hasUnread,
-          onSelected: (value) {
-            if (value == 'mark_all_read') {
-              vm.markAllAsOpened();
-            }
-          },
-          itemBuilder: (context) => [
-            ButleryMenuItem<String>(
-              value: 'mark_all_read',
-              child: Text(context.l10n.notificationsMarkAllRead),
-            ),
-          ],
+        PressFill(
+          surface: PressSurface.base,
+          child: PopupMenuButton<String>(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            enabled: hasUnread,
+            onSelected: (value) {
+              if (value == 'mark_all_read') {
+                vm.markAllAsOpened();
+              }
+            },
+            itemBuilder: (context) => [
+              ButleryMenuItem<String>(
+                value: 'mark_all_read',
+                child: Text(context.l10n.notificationsMarkAllRead),
+              ),
+            ],
+          ),
         ),
       ],
     );

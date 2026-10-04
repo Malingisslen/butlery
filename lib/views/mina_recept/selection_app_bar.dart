@@ -184,80 +184,83 @@ class _BulkMoreMenu extends StatelessWidget {
     final disabled = TextStyle(
       color: AppModeColors.textDisabled(cs.brightness),
     );
-    return PopupMenuButton<_BulkMoreAction>(
-      key: const ValueKey('mina-recept-bulk-more'),
-      icon: const ButleryIcon(ButleryIcons.moreVertical),
-      tooltip: context.l10n.bulkMoreActions,
-      onSelected: (action) {
-        switch (action) {
-          case _BulkMoreAction.share:
-            _openBulkShareDialog(context, viewModel);
-          case _BulkMoreAction.selectAll:
-            // A toggle that can untick (produktregler.md:877).
-            if (viewModel.allSelected) {
-              viewModel.deselectAll();
-            } else {
-              viewModel.selectAll();
-            }
-          case _BulkMoreAction.export:
-            _openBulkExport(context, viewModel);
-          case _BulkMoreAction.delete:
-            _confirmBulkDelete(context, viewModel);
-        }
-      },
-      itemBuilder: (menuContext) {
-        final allSelected = viewModel.allSelected;
-        return [
-          if (withShare)
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<_BulkMoreAction>(
+        key: const ValueKey('mina-recept-bulk-more'),
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        tooltip: context.l10n.bulkMoreActions,
+        onSelected: (action) {
+          switch (action) {
+            case _BulkMoreAction.share:
+              _openBulkShareDialog(context, viewModel);
+            case _BulkMoreAction.selectAll:
+              // A toggle that can untick.
+              if (viewModel.allSelected) {
+                viewModel.deselectAll();
+              } else {
+                viewModel.selectAll();
+              }
+            case _BulkMoreAction.export:
+              _openBulkExport(context, viewModel);
+            case _BulkMoreAction.delete:
+              _confirmBulkDelete(context, viewModel);
+          }
+        },
+        itemBuilder: (menuContext) {
+          final allSelected = viewModel.allSelected;
+          return [
+            if (withShare)
+              PopupMenuItem(
+                value: _BulkMoreAction.share,
+                enabled: hasSelection,
+                child: Text(
+                  menuContext.l10n.bulkShare,
+                  style: hasSelection ? null : disabled,
+                ),
+              ),
+            // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
+            // every recipe is ticked it unticks them. Interpretation: the second
+            // label is not drawn, so it takes the app's "Avmarkera alla".
             PopupMenuItem(
-              value: _BulkMoreAction.share,
+              key: const ValueKey('mina-recept-bulk-select-all'),
+              value: _BulkMoreAction.selectAll,
+              child: Text(
+                allSelected
+                    ? menuContext.l10n.commonDeselectAll
+                    : menuContext.l10n.selectionSelectAllCount(
+                        viewModel.recipes.length,
+                      ),
+                style: const TextStyle(
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+            // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+            PopupMenuItem(
+              value: _BulkMoreAction.export,
               enabled: hasSelection,
               child: Text(
-                menuContext.l10n.bulkShare,
+                menuContext.l10n.bulkExport,
                 style: hasSelection ? null : disabled,
               ),
             ),
-          // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
-          // every recipe is ticked it unticks them. Interpretation: the second
-          // label is not drawn, so it takes the app's "Avmarkera alla".
-          PopupMenuItem(
-            key: const ValueKey('mina-recept-bulk-select-all'),
-            value: _BulkMoreAction.selectAll,
-            child: Text(
-              allSelected
-                  ? menuContext.l10n.commonDeselectAll
-                  : menuContext.l10n.selectionSelectAllCount(
-                      viewModel.recipes.length,
-                    ),
-              style: const TextStyle(
-                fontFeatures: [FontFeature.tabularFigures()],
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              key: const ValueKey('mina-recept-bulk-delete'),
+              value: _BulkMoreAction.delete,
+              enabled: hasSelection,
+              child: Text(
+                menuContext.l10n.bulkDelete,
+                // text.danger on the menu's surface.base: cs.error is the
+                // generated semantic.text.danger, #9C3B23 light and #DE9078
+                // dark.
+                style: hasSelection ? TextStyle(color: cs.error) : disabled,
               ),
             ),
-          ),
-          // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
-          PopupMenuItem(
-            value: _BulkMoreAction.export,
-            enabled: hasSelection,
-            child: Text(
-              menuContext.l10n.bulkExport,
-              style: hasSelection ? null : disabled,
-            ),
-          ),
-          const PopupMenuDivider(),
-          PopupMenuItem(
-            key: const ValueKey('mina-recept-bulk-delete'),
-            value: _BulkMoreAction.delete,
-            enabled: hasSelection,
-            child: Text(
-              menuContext.l10n.bulkDelete,
-              // text.danger on the menu's surface.base: cs.error is the
-              // generated semantic.text.danger, #9C3B23 light and #DE9078
-              // dark (app_colors.dart:290, :326).
-              style: hasSelection ? TextStyle(color: cs.error) : disabled,
-            ),
-          ),
-        ];
-      },
+          ];
+        },
+      ),
     );
   }
 }

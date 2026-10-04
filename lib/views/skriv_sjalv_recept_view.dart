@@ -36,6 +36,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -444,40 +445,43 @@ class _SkrivSjalvReceptViewContentState
                               // ONE read of the stored value — the dropdown's
                               // constructor assert re-checks the match on every
                               // build.
-                              DropdownButtonFormField<String>(
-                                iconEnabledColor: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                                iconDisabledColor: AppModeColors.textDisabled(
-                                  Theme.of(context).brightness,
-                                ),
-                                initialValue: mealTypeOptions.selected,
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingL,
-                                    vertical: AppDimensions.paddingM,
-                                  ),
-                                  border: OutlineInputBorder(),
-                                ),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: Theme.of(
+                              PressFill(
+                                surface: PressSurface.base,
+                                child: DropdownButtonFormField<String>(
+                                  iconEnabledColor: Theme.of(
                                     context,
-                                  ).colorScheme.onSurface,
+                                  ).colorScheme.onSurfaceVariant,
+                                  iconDisabledColor: AppModeColors.textDisabled(
+                                    Theme.of(context).brightness,
+                                  ),
+                                  initialValue: mealTypeOptions.selected,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: AppDimensions.paddingL,
+                                      vertical: AppDimensions.paddingM,
+                                    ),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                  items: mealTypeOptions.values
+                                      .map(
+                                        (mt) => DropdownMenuItem(
+                                          value: mt,
+                                          child: Text(mt),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      viewModel.setMealType(value);
+                                    }
+                                  },
                                 ),
-                                items: mealTypeOptions.values
-                                    .map(
-                                      (mt) => DropdownMenuItem(
-                                        value: mt,
-                                        child: Text(mt),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    viewModel.setMealType(value);
-                                  }
-                                },
                               ),
                             ],
                           ),
@@ -779,7 +783,7 @@ class _SkrivSjalvReceptViewContentState
                 label: context.l10n.recipeSave,
                 child: SizedBox(
                   key: const ValueKey('test-skriv-sjalv-save'),
-                  // The view's one saffron action (Grafisk manual v6:219).
+                  // The view's one saffron action.
                   // Busy shows the plate line in its place.
                   width: double.infinity,
                   child: FilledButton(

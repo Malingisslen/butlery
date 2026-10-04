@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// The sectioned ingredient editor (PR #211). Renders an ordered list of
 /// component headings ("Deg", "Fyllning") and ingredient lines as a single
@@ -252,25 +253,28 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     int rowIndex,
     List<({String id, String label})> headings,
   ) {
-    return PopupMenuButton<String?>(
-      icon: const ButleryIcon(Icons.low_priority),
-      tooltip: context.l10n.recipeMoveToSection,
-      onSelected: (headingId) => onMoveLineToSection(rowIndex, headingId),
-      itemBuilder: (context) => [
-        PopupMenuItem<String?>(
-          value: null,
-          child: Text(context.l10n.recipeMoveToSectionNone),
-        ),
-        for (final h in headings)
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String?>(
+        icon: const ButleryIcon(Icons.low_priority),
+        tooltip: context.l10n.recipeMoveToSection,
+        onSelected: (headingId) => onMoveLineToSection(rowIndex, headingId),
+        itemBuilder: (context) => [
           PopupMenuItem<String?>(
-            value: h.id,
-            child: Text(
-              h.label.isEmpty
-                  ? context.l10n.recipeIngredientHeadingHint
-                  : h.label,
-            ),
+            value: null,
+            child: Text(context.l10n.recipeMoveToSectionNone),
           ),
-      ],
+          for (final h in headings)
+            PopupMenuItem<String?>(
+              value: h.id,
+              child: Text(
+                h.label.isEmpty
+                    ? context.l10n.recipeIngredientHeadingHint
+                    : h.label,
+              ),
+            ),
+        ],
+      ),
     );
   }
 

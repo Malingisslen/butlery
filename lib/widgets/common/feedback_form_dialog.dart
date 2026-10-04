@@ -18,6 +18,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog that collects feedback details and submits via FeedbackService.
 class FeedbackFormDialog extends StatefulWidget {
@@ -76,36 +77,39 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 style: AppTextStyles.labelLarge,
               ),
               const SizedBox(height: AppDimensions.spacingSm),
-              DropdownButtonFormField<FeedbackCategory>(
-                iconEnabledColor: Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant,
-                iconDisabledColor: AppModeColors.textDisabled(
-                  Theme.of(context).brightness,
+              PressFill(
+                surface: PressSurface.base,
+                child: DropdownButtonFormField<FeedbackCategory>(
+                  iconEnabledColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
+                  iconDisabledColor: AppModeColors.textDisabled(
+                    Theme.of(context).brightness,
+                  ),
+                  initialValue: _category,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: FeedbackCategory.bug,
+                      child: Text(context.l10n.feedbackCategoryBug),
+                    ),
+                    DropdownMenuItem(
+                      value: FeedbackCategory.featureRequest,
+                      child: Text(context.l10n.feedbackCategoryFeatureRequest),
+                    ),
+                    DropdownMenuItem(
+                      value: FeedbackCategory.general,
+                      child: Text(context.l10n.feedbackCategoryGeneral),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _category = value);
+                  },
                 ),
-                initialValue: _category,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: FeedbackCategory.bug,
-                    child: Text(context.l10n.feedbackCategoryBug),
-                  ),
-                  DropdownMenuItem(
-                    value: FeedbackCategory.featureRequest,
-                    child: Text(context.l10n.feedbackCategoryFeatureRequest),
-                  ),
-                  DropdownMenuItem(
-                    value: FeedbackCategory.general,
-                    child: Text(context.l10n.feedbackCategoryGeneral),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _category = value);
-                },
               ),
 
               const SizedBox(height: AppDimensions.spacingMd),
