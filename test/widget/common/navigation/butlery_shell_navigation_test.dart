@@ -9,6 +9,7 @@ import 'dart:ui' show Tristate;
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
@@ -19,6 +20,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 final _sv = AppLocalizationsSv();
 
@@ -407,4 +410,48 @@ void main() {
     expect(LayoutScaffolds.shoppingTab, 2);
     expect(LayoutScaffolds.moreTab, 3);
   });
+
+  // BUT-2205: the ink fill around the tabs used to sit above the ink layer,
+  // so neither the tab's drawn splash nor the rail's press showed.
+  testWidgets('a pressed bottom tab is not covered by the ink fill', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(home: (c) => _bar(c, current: 0)));
+    final tab = find.byKey(ValueKey('test-nav-${_routes.first}'));
+    final gesture = await holdPress(tester, tab);
+    expect(pressIsCovered(tester, tab), isFalse);
+    await gesture.cancel();
+  });
+
+  for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+    testWidgets('a pressed rail tab shows the step on ink '
+        '(${theme.brightness.name})', (tester) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        _app(
+          theme: theme,
+          home: (c) => AdaptiveNavigationScaffold(
+            currentIndex: 3,
+            items: ButleryAdaptiveNavigation.getNavigationItems(c),
+            onNavigationChanged: (_) {},
+            body: const Text('body'),
+          ),
+        ),
+      );
+      final tab = find.byKey(ValueKey('test-rail-${_routes.first}'));
+      expect(pressIsCovered(tester, tab), isFalse);
+      final gesture = await holdPress(tester, tab);
+      expect(
+        paintsInkFill(
+          tester,
+          tab,
+          ModeColors.of(theme.brightness).pressedOnInk,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
 }

@@ -28,6 +28,7 @@ import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/widget_mocks.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 
 class _FakeSubstitutions extends Fake implements SubstitutionSuggestionService {
   @override
@@ -227,6 +228,43 @@ void main() {
         final decoration = chip.decoration as BoxDecoration;
         expect(decoration.color, cs.surfaceContainerHighest);
         expect((decoration.border! as Border).top.color, cs.outlineVariant);
+      });
+
+      // BUT-2205: the chip's own fill used to sit above the ink layer, so
+      // the remove × showed no press.
+      testWidgets('a pressed remove × on a related-recipe chip shows the '
+          'step on raised', (tester) async {
+        await tester.pumpWidget(
+          _app(
+            theme,
+            RelatedRecipesEditor(
+              currentRecipeId: 'r-current',
+              relatedRecipes: const [(id: 'r2', title: 'Tacos')],
+              onLink: (_) async => true,
+              onUnlink: (_) async => true,
+            ),
+          ),
+        );
+        final remove = find.descendant(
+          of: find
+              .ancestor(
+                of: find.text('Tacos'),
+                matching: find.byType(DecoratedBox),
+              )
+              .first,
+          matching: find.byType(InkWell),
+        );
+        expect(pressIsCovered(tester, remove), isFalse);
+        final gesture = await holdPress(tester, remove);
+        expect(
+          paintsInkFill(
+            tester,
+            remove,
+            ModeColors.of(theme.brightness).pressedOnRaised,
+          ),
+          isTrue,
+        );
+        await gesture.cancel();
       });
 
       testWidgets('the picker thumbnail placeholder is surface.raised', (

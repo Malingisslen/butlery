@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// What a data action button says about itself: the tone decides the fill,
 /// the border and the colour of its glyph and text.
@@ -34,48 +35,54 @@ class MenuItemBuilders {
     return Semantics(
       label: title,
       button: true,
-      child: InkWell(
-        onTap: onTap != null
-            ? () {
-                Navigator.pop(context);
-                onTap();
-              }
-            : null,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.space4),
-          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-          child: Row(
-            children: [
-              ButleryIcon(
-                icon,
-                size: AppDimensions.iconSizeAction,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.titleMedium,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap != null
+                ? () {
+                    Navigator.pop(context);
+                    onTap();
+                  }
+                : null,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppDimensions.space4),
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    icon,
+                    size: AppDimensions.iconSizeAction,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingL),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.titleMedium,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.bodySmall,
-                    ),
-                  ],
-                ),
+                  ),
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
+                    size: AppDimensions.iconSizeM,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ],
               ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -94,77 +101,85 @@ class MenuItemBuilders {
     return Semantics(
       label: title,
       button: true,
-      child: InkWell(
-        onTap: onTap != null
-            ? () {
-                Navigator.pop(context);
-                onTap();
-              }
-            : null,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.space4),
-          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-          child: Row(
-            children: [
-              Stack(
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap != null
+                ? () {
+                    Navigator.pop(context);
+                    onTap();
+                  }
+                : null,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppDimensions.space4),
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+              child: Row(
                 children: [
-                  ButleryIcon(
-                    icon,
-                    size: AppDimensions.iconSizeAction,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  if (count > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.error,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          count > 99 ? '99+' : '$count',
-                          style: AppTextStyles.badge.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                  Stack(
+                    children: [
+                      ButleryIcon(
+                        icon,
+                        size: AppDimensions.iconSizeAction,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
+                      if (count > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(
+                              AppDimensions.spacingXs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.error,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              count > 99 ? '99+' : '$count',
+                              style: AppTextStyles.badge.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: AppDimensions.spacingL),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.titleMedium,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ],
                     ),
+                  ),
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
+                    size: AppDimensions.iconSizeM,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ],
               ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.titleMedium,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
+            ),
           ),
         ),
       ),

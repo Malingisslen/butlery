@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class IngredientChipInput extends StatefulWidget {
   const IngredientChipInput({
@@ -139,15 +140,21 @@ class _IngredientChip extends StatelessWidget {
           Semantics(
             label: context.l10n.a11yRemoveIngredientChip(label),
             button: true,
-            child: InkWell(
-              onTap: onRemove,
-              child: SizedBox(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                child: ButleryIcon(
-                  ButleryIcons.x,
-                  size: AppDimensions.iconSizeS,
-                  color: cs.onPrimaryContainer,
+            child: Material(
+              type: MaterialType.transparency,
+              child: PressFill(
+                surface: PressSurface.raised,
+                child: InkWell(
+                  onTap: onRemove,
+                  child: SizedBox(
+                    width: AppDimensions.minTouchTarget,
+                    height: AppDimensions.minTouchTarget,
+                    child: ButleryIcon(
+                      ButleryIcons.x,
+                      size: AppDimensions.iconSizeS,
+                      color: cs.onPrimaryContainer,
+                    ),
+                  ),
                 ),
               ),
             ),

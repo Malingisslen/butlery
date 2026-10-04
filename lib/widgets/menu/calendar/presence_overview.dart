@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class PresenceOverview extends StatelessWidget {
   final List<HouseholdRosterMember> roster;
@@ -68,40 +69,46 @@ class PresenceOverview extends StatelessWidget {
             button: true,
             expanded: expanded,
             label: l10n.menuPresenceSummaryTitle,
-            child: InkWell(
-              onTap: onToggleExpanded,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.house,
-                      size: 15,
-                      color: cs.secondary,
+            child: Material(
+              type: MaterialType.transparency,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  onTap: onToggleExpanded,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        summary,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: cs.onSurface,
-                          fontWeight: FontWeight.w600,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.house,
+                          size: 15,
+                          color: cs.secondary,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            summary,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ButleryIcon(
+                          expanded
+                              ? ButleryIcons.chevronUp
+                              : ButleryIcons.chevronDown,
+                          size: 18,
+                          color: cs.outline,
+                        ),
+                      ],
                     ),
-                    ButleryIcon(
-                      expanded
-                          ? ButleryIcons.chevronUp
-                          : ButleryIcons.chevronDown,
-                      size: 18,
-                      color: cs.outline,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

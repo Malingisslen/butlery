@@ -23,6 +23,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -235,26 +236,32 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       child: Semantics(
         label: context.l10n.recipeCommentVisibleTo(audienceStr),
         button: true,
-        child: InkWell(
-          onTap: () => _showAudienceDialog(context, vm),
-          child: Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.eye,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Flexible(
-                child: Text(
-                  context.l10n.recipeCommentVisibleTo(audienceStr),
-                  style: AppTextStyles.bodySmall.copyWith(
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.raised,
+            child: InkWell(
+              onTap: () => _showAudienceDialog(context, vm),
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.eye,
+                    size: AppDimensions.iconSizeS,
                     color: cs.onSurfaceVariant,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: AppDimensions.space4),
+                  Flexible(
+                    child: Text(
+                      context.l10n.recipeCommentVisibleTo(audienceStr),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

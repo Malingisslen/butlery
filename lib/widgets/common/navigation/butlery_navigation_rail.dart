@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// The rail at 768 dp and up (produktregler.md:1054): the bottom row's
 /// vocabulary standing up, drawn in Skarmar v12 etapp 10 #bredskal.
@@ -144,51 +145,57 @@ class _RailTab extends StatelessWidget {
       label: item.accessibleLabel,
       selected: isSelected,
       child: ButleryControlFocus(
-        child: InkWell(
-          key: ValueKey('test-rail-${item.route}'),
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: _minHeight,
-              minWidth: double.infinity,
-            ),
-            child: ExcludeSemantics(
-              child: Stack(
-                children: [
-                  if (isSelected)
-                    PositionedDirectional(
-                      start: 0,
-                      top: AppDimensions.spacingSm,
-                      bottom: AppDimensions.spacingSm,
-                      width: _stripWidth,
-                      child: ColoredBox(color: ink.marker),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingSm,
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          NavBadgedIcon(
-                            icon: isSelected ? item.activeIcon : item.icon,
-                            badgeCount: item.badgeCount,
-                            color: color,
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.ink,
+            child: InkWell(
+              key: ValueKey('test-rail-${item.route}'),
+              onTap: onTap,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: _minHeight,
+                  minWidth: double.infinity,
+                ),
+                child: ExcludeSemantics(
+                  child: Stack(
+                    children: [
+                      if (isSelected)
+                        PositionedDirectional(
+                          start: 0,
+                          top: AppDimensions.spacingSm,
+                          bottom: AppDimensions.spacingSm,
+                          width: _stripWidth,
+                          child: ColoredBox(color: ink.marker),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.spacingSm,
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              NavBadgedIcon(
+                                icon: isSelected ? item.activeIcon : item.icon,
+                                badgeCount: item.badgeCount,
+                                color: color,
+                              ),
+                              const SizedBox(height: AppDimensions.spacingXs),
+                              Text(
+                                item.label,
+                                style: AppTextStyles.navLabel.copyWith(
+                                  color: color,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          Text(
-                            item.label,
-                            style: AppTextStyles.navLabel.copyWith(
-                              color: color,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
