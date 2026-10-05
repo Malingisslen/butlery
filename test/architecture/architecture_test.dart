@@ -168,6 +168,9 @@ void main() {
         // account-deletion CF callable. Singleton access lives here so the
         // service stays mockable.
         'lib/core/di/modules/core_module.dart',
+        // Local test mode points the SDK singletons at the emulators before
+        // the DI graph exists, the same moment main.dart configures them.
+        'lib/core/bootstrap/emulator_bootstrap.dart',
 
         // FCM token-manager: structurally a service but named without
         // "_service" suffix; Firebase Messaging singleton is the contract.
