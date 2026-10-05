@@ -12,6 +12,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
+import 'package:butlery/core/router/shared_import_route.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -62,14 +63,10 @@ class DeepLinkHandler {
           _pendingDeepLink =
               'butlery://import?url=${Uri.encodeComponent(sharedUrl)}';
         } else if (sharedText != null && sharedText.isNotEmpty) {
-          // Text might contain a URL
-          final urlMatch = RegExp(
-            r'https?://[^\s<>"{}|\\^`\[\]]+',
-          ).firstMatch(sharedText);
-          if (urlMatch != null) {
-            _pendingDeepLink =
-                'butlery://import?url=${Uri.encodeComponent(urlMatch.group(0)!)}';
-          }
+          // BUT-2241: text without a link goes to the text import instead of
+          // being dropped; [_handleImportLink] decides which.
+          _pendingDeepLink =
+              'butlery://import?text=${Uri.encodeComponent(sharedText)}';
         } else if (uri.path.length > 1 || uri.queryParameters.isNotEmpty) {
           _pendingDeepLink = uri.toString();
         }
@@ -404,16 +401,21 @@ class DeepLinkHandler {
     }
   }
 
-  /// Handle import link from web share target — navigate to add recipe with URL pre-filled.
+  /// Handle an import link. Any page can build one, so it only prefills and
+  /// never spends the user's imports by itself.
   void _handleImportLink(
     Map<String, String> params,
     BuildContext context,
   ) {
-    final url = params['url'];
-    if (url != null && url.isNotEmpty) {
-      // Land a shared URL on Smart Import (which prefills it), not the generic
-      // add-recipe hub that ignored the argument.
-      Navigator.of(context).pushNamed(Routes.smartImport, arguments: url);
+    final url = params['url'].orEmpty().trim();
+    final route = url.isNotEmpty
+        ? (
+            route: Routes.smartImport,
+            arguments: SmartImportRouteArgs(url, autoStart: false),
+          )
+        : routeForSharedText(params['text'].orEmpty(), autoStart: false);
+    if (route != null) {
+      Navigator.of(context).pushNamed(route.route, arguments: route.arguments);
     }
   }
 

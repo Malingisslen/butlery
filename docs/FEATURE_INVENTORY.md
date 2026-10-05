@@ -544,7 +544,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Test coverage:** Verified — `text_import_viewmodel_test.dart`, `text_import_strategy_test.dart`, `text_import_normalizer_test.dart`.
 
 #### IMP-06: Receive-share (share intent from other apps)
-- **Entry:** OS share sheet → `IncomingShareHandler` → `/photoImport` (shared photos).
+- **Entry:** OS share sheet → `IncomingShareHandler`: photos → `/photoImport`; text with a link → `/smartImport`, started without a tap; other text → `/franSocialaMedier` (BUT-2241). Web Share Target → `DeepLinkHandler`.
 - **User story:** As a user, I want to share a link or text from another app into Butlery and have it routed to the right importer so that importing is one tap from where I found the recipe.
 - **Test coverage:** Partial — `incoming_share_handler_test.dart` (BUT-941) proves the routing decision logic (auth-gate, hold-until-routable, never break startup); `social_media_extractor_test.dart` + `content_detector_service_test.dart` cover the underlying extraction/classification. No device-level share-intent E2E (OS share sheet → app) yet.
 

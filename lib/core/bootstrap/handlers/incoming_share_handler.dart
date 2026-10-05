@@ -10,15 +10,18 @@
 /// share is held pending whenever auth or a live navigator isn't ready yet,
 /// and drained on the next [processPendingShare].
 ///
+/// BUT-2241: a shared text (a link, or recipe text) follows the same
+/// lifecycle and lands where [routeForSharedText] says.
+///
 /// Deliberately separate from [DeepLinkHandler]: that handler owns URI
-/// deep-links; this one owns image-file shares. They never share intent
-/// surface (the native guard claims only `image/*` SEND intents).
+/// deep-links; this one owns what the OS share sheet hands over.
 library;
 
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/router/shared_import_route.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -33,7 +36,9 @@ class IncomingShareHandler {
 
   bool _isInitialized = false;
   List<String>? _pendingPaths;
+  String? _pendingText;
   StreamSubscription<List<String>>? _warmSub;
+  StreamSubscription<String>? _warmTextSub;
 
   bool get isInitialized => _isInitialized;
 
@@ -47,10 +52,20 @@ class IncomingShareHandler {
   @visibleForTesting
   bool Function(List<String> paths) navigate = _defaultNavigate;
 
-  static bool _defaultNavigate(List<String> paths) {
+  static bool _defaultNavigate(List<String> paths) =>
+      _push(Routes.photoImport, paths);
+
+  /// Test seam: navigation for a shared text. Same contract as [navigate].
+  @visibleForTesting
+  bool Function(SharedImportRoute route) navigateText = _defaultNavigateText;
+
+  static bool _defaultNavigateText(SharedImportRoute route) =>
+      _push(route.route, route.arguments);
+
+  static bool _push(String route, Object arguments) {
     final context = appNavigatorKey.currentContext;
     if (context == null || !context.mounted) return false;
-    Navigator.of(context).pushNamed(Routes.photoImport, arguments: paths);
+    Navigator.of(context).pushNamed(route, arguments: arguments);
     return true;
   }
 
@@ -64,7 +79,9 @@ class IncomingShareHandler {
       service ??= ServiceLocator.tryGet<IncomingShareService>();
       if (service != null) {
         _pendingPaths = await service.getInitialSharedImages();
+        _pendingText = await service.getInitialSharedText();
         _warmSub ??= service.mediaStream.listen(_onWarmShare);
+        _warmTextSub ??= service.textStream.listen(_onWarmText);
       }
     } catch (e) {
       // Never let share wiring break startup.
@@ -77,11 +94,29 @@ class IncomingShareHandler {
   /// Route a pending share once a navigator + auth are ready. No-op when
   /// nothing is pending.
   Future<void> processPendingShare() async {
+    final text = _pendingText;
+    if (text != null && _routeText(text)) {
+      _pendingText = null;
+    }
     final paths = _pendingPaths;
     if (paths == null || paths.isEmpty) return;
     if (_route(paths)) {
       _pendingPaths = null;
     }
+  }
+
+  void _onWarmText(String text) {
+    // A newer share replaces one still waiting: the user means the latest.
+    _pendingText = _routeText(text) ? null : text;
+  }
+
+  /// False keeps the text pending, as [_route] does. A blank text is
+  /// consumed: there is nothing to route.
+  bool _routeText(String text) {
+    final route = routeForSharedText(text);
+    if (route == null) return true;
+    if (authResolver()?.currentUser == null) return false;
+    return navigateText(route);
   }
 
   void _onWarmShare(List<String> paths) {
@@ -111,9 +146,13 @@ class IncomingShareHandler {
   void reset() {
     _isInitialized = false;
     _pendingPaths = null;
+    _pendingText = null;
     _warmSub?.cancel();
     _warmSub = null;
+    _warmTextSub?.cancel();
+    _warmTextSub = null;
     authResolver = () => ServiceLocator.tryGet<AuthRepository>();
     navigate = _defaultNavigate;
+    navigateText = _defaultNavigateText;
   }
 }

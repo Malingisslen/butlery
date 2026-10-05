@@ -440,7 +440,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                 if (!mounted) return;
                 Navigator.of(context).pushNamed(
                   app_routes.Routes.smartImport,
-                  arguments: {'url': text},
+                  arguments: text,
                 );
               },
               child: Text(l10n.importClipboardUseUrl),

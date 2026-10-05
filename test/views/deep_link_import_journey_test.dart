@@ -2,7 +2,7 @@
 ///
 /// Proves the full wiring end-to-end:
 ///   auth gate passes → host guard recognises "import" → _handleImportLink
-///   pushNamed(Routes.smartImport, arguments: decodedUrl)
+///   pushNamed(Routes.smartImport)
 ///
 /// The test does NOT render SmartImportView (which pulls in a heavy DI graph).
 /// Instead, onGenerateRoute stubs unknown route names with a trivial Scaffold,
@@ -19,6 +19,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
+import 'package:butlery/core/router/shared_import_route.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
 import '../infrastructure/di/test_service_locator.dart';
@@ -131,15 +132,50 @@ void main() {
           pushedRoute.settings.name,
           equals(Routes.smartImport),
         );
-        expect(
-          pushedRoute.settings.arguments,
-          equals(expectedUrl),
-          reason:
-              'arguments should be the percent-decoded URL, got: '
-              '${pushedRoute.settings.arguments}',
-        );
+        // BUT-2241: any page can build this link, so it only prefills.
+        final args = pushedRoute.settings.arguments! as SmartImportRouteArgs;
+        expect(args.url, expectedUrl);
+        expect(args.autoStart, isFalse);
       },
     );
+
+    Future<RouteSettings> pushFor(WidgetTester tester, String deepLink) async {
+      await tester.pumpWidget(_testApp(observer: observer));
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(Scaffold).first);
+      final before = observer.pushed.length;
+      await tester.runAsync(() async {
+        await handler.processDeepLink(deepLink, context);
+      });
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+      return observer.pushed.skip(before).single.settings;
+    }
+
+    testWidgets('BUT-2241: text holding a link prefills Smart import', (
+      tester,
+    ) async {
+      final settings = await pushFor(
+        tester,
+        'butlery://import?text=${Uri.encodeComponent('Testa! https://www.ica.se/recept/x/')}',
+      );
+
+      expect(settings.name, Routes.smartImport);
+      final args = settings.arguments! as SmartImportRouteArgs;
+      expect(args.url, 'https://www.ica.se/recept/x/');
+      expect(args.autoStart, isFalse);
+    });
+
+    testWidgets('BUT-2241: shared text without a link opens the text import', (
+      tester,
+    ) async {
+      final settings = await pushFor(
+        tester,
+        'butlery://import?text=${Uri.encodeComponent('2 dl mjölk\n3 ägg')}',
+      );
+
+      expect(settings.name, Routes.fromSocialMedia);
+      expect(settings.arguments, '2 dl mjölk\n3 ägg');
+    });
 
     testWidgets(
       'unknown butlery:// host pushes nothing',

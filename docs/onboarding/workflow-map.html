@@ -4060,7 +4060,7 @@
     {
       "id": "flow-imp-3",
       "label": "Dela-till-Butlery & social extraktion",
-      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning via samma delningsmeny är i praktiken DÖD: appen registrerar intent-filter för text/plain, text/html och text/* i manifestet (så den syns i delningsmenyn), men delningspaketet app_links (v6.4.1) returnerar explicit null för ACTION_SEND-intents — EXTRA_TEXT-utläsningen är utkommenterad i pluginets Android-källkod — så ingen delad text/URL når Dart-sidan. Enda fungerande text/URL-ingången är webbens Share Target (query-parametrar), som går till SmartImport = den FULLA pipelinen, inte legacy-vägen. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
+      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning (BUT-2241) läses av MainActivity ur EXTRA_TEXT och går samma native-kanal; webbens Share Target går via djuplänkshanteraren. En text med länk öppnar SmartImport på länken, annan text öppnar textimporten ifylld; från delningsmenyn i appen startar importen utan extra tryck, medan en djuplänk (som vilken sida som helst kan bygga, även webbens Share Target) bara fyller i. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
       "features": [
         "IMP-06",
         "IMP-07"
@@ -4089,11 +4089,31 @@
         },
         {
           "from": "ext-os-share-sheet",
-          "to": "svc-deep-link-handler",
-          "payload": "Text/URL (SEND, mimeType text/*) — avsedd väg via app_links",
-          "transport": "platform-intent",
-          "verified": true,
-          "status": "dead"
+          "to": "svc-incoming-share",
+          "payload": "Text/länk (SEND, mimeType text/*) — EXTRA_TEXT via MainActivity",
+          "transport": "platform-channel",
+          "verified": true
+        },
+        {
+          "from": "svc-incoming-share",
+          "to": "svc-incoming-share-handler",
+          "payload": "Delad text (cold-start eller warm-start)",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
+          "from": "svc-incoming-share-handler",
+          "to": "v-smart-import",
+          "payload": "Text med länk → pushNamed(smartImport, SmartImportRouteArgs) — startar importen",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "svc-incoming-share-handler",
+          "to": "v-fran-sociala-medier",
+          "payload": "Text utan länk → pushNamed(franSocialaMedier, text)",
+          "transport": "navigation",
+          "verified": true
         },
         {
           "from": "ext-os-share-sheet",
@@ -4105,7 +4125,14 @@
         {
           "from": "svc-deep-link-handler",
           "to": "v-smart-import",
-          "payload": "pushNamed(smartImport, url) — fungerande väg, full pipeline",
+          "payload": "pushNamed(smartImport, SmartImportRouteArgs(autoStart: false)) — fyller i länken",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "svc-deep-link-handler",
+          "to": "v-fran-sociala-medier",
+          "payload": "text utan länk → textimporten, ifylld",
           "transport": "navigation",
           "verified": true
         },
