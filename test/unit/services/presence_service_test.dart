@@ -946,8 +946,7 @@ void main() {
     );
   });
 
-  // The group page watched its other members through these and went grey:
-  // with no databaseURL, `ref()` throws synchronously inside initState.
+  // The group page watched its other members through these and went grey.
   group('reads without a databaseURL', () {
     late _DbHarness harness;
     late PresenceService service;

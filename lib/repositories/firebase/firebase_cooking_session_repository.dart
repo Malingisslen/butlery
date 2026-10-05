@@ -5,6 +5,7 @@
 // self-clear within seconds of the user going offline.
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -15,12 +16,18 @@ import 'package:butlery/models/cooking/cooking_session.dart';
 class FirebaseCookingSessionRepository {
   final FirebaseDatabase _database;
 
-  FirebaseCookingSessionRepository({required FirebaseDatabase database})
-    : _database = database;
+  final bool _isWeb;
 
-  /// Same check as PresenceService: with no databaseURL, `ref()` throws
-  /// synchronously, and from [watchSessions] that throw reaches a widget.
-  bool get _configured => _database.app.options.databaseURL != null;
+  FirebaseCookingSessionRepository({
+    required FirebaseDatabase database,
+    bool isWeb = kIsWeb,
+  }) : _database = database,
+       _isWeb = isWeb;
+
+  /// No Firebase app in this repo sets a databaseURL, and on web `ref()` then
+  /// fails with a JS SDK fatal that, from [watchSessions], reaches a widget.
+  /// Web only: the native plugins look the database up from the app instead.
+  bool get _configured => !_isWeb || _database.app.options.databaseURL != null;
 
   /// Root node for all cooking session presence data.
   static const String _rootPath = 'cooking_sessions';

@@ -107,11 +107,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
-  /// No Firebase app in this repo sets a databaseURL, and `ref()` then throws
-  /// synchronously (on web a JS SDK fatal). Every RTDB entry point checks this
-  /// first: a throw from a stream getter lands in a widget's initState and
-  /// greys out the whole screen, as the group page did once it had a second
-  /// member to watch.
+  /// No Firebase app in this repo sets a databaseURL.
   bool get _rtdbConfigured => _database.app.options.databaseURL != null;
 
   @override

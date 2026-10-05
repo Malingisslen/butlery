@@ -101,15 +101,18 @@ void main() {
     repository = FirebaseCookingSessionRepository(database: database);
   });
 
-  // No Firebase app in the repo sets a databaseURL, and `ref()` then throws
-  // synchronously. From watchSessions that throw reached a widget's initState.
-  group('without a databaseURL', () {
+  // No Firebase app in the repo sets a databaseURL.
+  group('on web without a databaseURL', () {
     setUp(() {
       final app = _MockFirebaseApp();
       when(() => app.options).thenReturn(_options());
       when(() => database.app).thenReturn(app);
       when(() => database.ref(any())).thenThrow(
         StateError('Cannot parse Firebase url'),
+      );
+      repository = FirebaseCookingSessionRepository(
+        database: database,
+        isWeb: true,
       );
     });
 
@@ -132,6 +135,22 @@ void main() {
 
       verifyNever(() => database.ref(any()));
     });
+  });
+
+  test('off the web, a missing databaseURL still writes the session', () async {
+    final app = _MockFirebaseApp();
+    when(() => app.options).thenReturn(_options());
+    when(() => database.app).thenReturn(app);
+    repository = FirebaseCookingSessionRepository(
+      database: database,
+      isWeb: false,
+    );
+
+    await repository.startSession(groupId: groupId, session: buildSession());
+
+    verify(
+      () => refs['cooking_sessions/$groupId/$userId']!.set(any()),
+    ).called(1);
   });
 
   group('startSession', () {
