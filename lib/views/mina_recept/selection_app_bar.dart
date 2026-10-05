@@ -306,6 +306,7 @@ Future<void> _openBulkShareDialog(
 
   List<UserProfile> availableFriends = const [];
   try {
+    if (!friendsService.isInitialized) await friendsService.initialize();
     availableFriends = friendsService.friends;
   } catch (_) {
     // Silently continue with empty friends list.

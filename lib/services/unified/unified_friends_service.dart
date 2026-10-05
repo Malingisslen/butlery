@@ -215,7 +215,17 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   FriendsManagementOperations get management => _managementOps;
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
-  Future<void> initialize() async {
+  Future<void>? _initializing;
+
+  /// Share dialogs await this when they open, so it runs once and later
+  /// callers share the same load instead of repeating its reads and writes.
+  Future<void> initialize() =>
+      _initializing ??= _initializeOnce().catchError((Object e, StackTrace st) {
+        _initializing = null;
+        Error.throwWithStackTrace(e, st);
+      });
+
+  Future<void> _initializeOnce() async {
     AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
 
     // Set up auth state change listener (CRITICAL FIX for authentication bug)

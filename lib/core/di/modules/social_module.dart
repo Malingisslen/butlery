@@ -1,5 +1,7 @@
 library;
 
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -514,6 +516,18 @@ class SocialModule implements DIModule {
       // state and loads the profile. Without this, returning users with
       // persisted Firebase sessions get a permanent spinner (BUG-043).
       await container<UserService>().initialize();
+
+      // Loaded at sign-in so a share dialog rarely has to wait for it. Not
+      // awaited, so startup does not wait on it.
+      if (container.isRegistered<UnifiedFriendsService>()) {
+        unawaited(
+          container<UnifiedFriendsService>().initialize().catchError((
+            Object e,
+          ) {
+            AppLogger.warning('Friends list load at sign-in failed: $e');
+          }),
+        );
+      }
     } catch (e) {
       throw DIModuleException(
         name,
