@@ -116,6 +116,31 @@ class ImportManagerResult {
       errorCode = ImportErrorCode.rateLimited,
       rateLimitDenied = details;
 
+  ImportManagerResult._withMetadata(
+    ImportManagerResult r,
+    Map<String, dynamic> this.metadata,
+  ) : isSuccess = r.isSuccess,
+      recipe = r.recipe,
+      errorMessage = r.errorMessage,
+      strategy = r.strategy,
+      warnings = r.warnings,
+      availableStrategies = r.availableStrategies,
+      needsAssistance = r.needsAssistance,
+      extractedText = r.extractedText,
+      suggestedTitle = r.suggestedTitle,
+      thumbnailUrl = r.thumbnailUrl,
+      sourceUrl = r.sourceUrl,
+      likelyIngredientLines = r.likelyIngredientLines,
+      rateLimitDenied = r.rateLimitDenied,
+      errorCode = r.errorCode;
+
+  /// This result, carrying a model call an earlier strategy of the same
+  /// import made (BUT-2239). A result with a call of its own keeps that one.
+  ImportManagerResult withLlmUse(Map<String, dynamic> llmUse) =>
+      llmUse.isEmpty || metadata?['usedLlm'] == true
+      ? this
+      : ImportManagerResult._withMetadata(this, {...?metadata, ...llmUse});
+
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
 

@@ -32,6 +32,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { initializeAdminApp } from "./admin-init";
+import { GOLDEN_CI_UID_HASH } from "./golden-recipe-from-url-core";
 
 export interface ExportedSample {
   id: string;
@@ -125,7 +126,9 @@ export async function runExportLlmSamplesWithDb(
     ? database.collection("llm_response_samples").where("mode", "==", opts.mode)
     : database.collection("llm_response_samples");
   const snapshot = await query.get();
-  const samples = snapshot.docs.map((doc) => projectSample(doc.id, doc.data()));
+  const samples = snapshot.docs
+    .filter((doc) => doc.data().authUidHash !== GOLDEN_CI_UID_HASH)
+    .map((doc) => projectSample(doc.id, doc.data()));
   return sortSamples(samples);
 }
 

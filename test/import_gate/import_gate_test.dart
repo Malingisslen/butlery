@@ -39,36 +39,11 @@ import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 
-import '../fixtures/swedish_sites/arla_test_data.dart';
-import '../fixtures/swedish_sites/ica_test_data.dart';
-import '../fixtures/swedish_sites/koket_test_data.dart';
-import '../fixtures/swedish_sites/recept_test_data.dart';
 import '../unit/services/parsing/_fake_local_recipe_cache.dart';
 import 'gate_scoring.dart';
+import 'site_pages.dart';
 
 const _gateDir = 'test/import_gate';
-
-/// Site pages that already live as Dart constants; the gate's own pages are
-/// HTML files beside `sites/gold.json`.
-const _dartFixtures = <String, String>{
-  'ArlaTestFixtures.chokladbollarComplete':
-      ArlaTestFixtures.chokladbollarComplete,
-  'ArlaTestFixtures.realStructureKassler':
-      ArlaTestFixtures.realStructureKassler,
-  'ArlaTestFixtures.recipeWithoutJsonLd': ArlaTestFixtures.recipeWithoutJsonLd,
-  'IcaTestFixtures.kottbullarComplete': IcaTestFixtures.kottbullarComplete,
-  'IcaTestFixtures.realStructureBananomelett':
-      IcaTestFixtures.realStructureBananomelett,
-  'IcaTestFixtures.recipeWithoutJsonLd': IcaTestFixtures.recipeWithoutJsonLd,
-  'KoketTestFixtures.kottbullarProfessional':
-      KoketTestFixtures.kottbullarProfessional,
-  'KoketTestFixtures.recipeWithoutJsonLd':
-      KoketTestFixtures.recipeWithoutJsonLd,
-  'ReceptTestFixtures.kanelbullarComplete':
-      ReceptTestFixtures.kanelbullarComplete,
-  'ReceptTestFixtures.recipeWithoutJsonLd':
-      ReceptTestFixtures.recipeWithoutJsonLd,
-};
 
 /// Counts every method call except the availability probe, so a fallback that
 /// asks "may I?" and is told yes but then calls nothing still reads as zero.
@@ -171,16 +146,13 @@ void main() {
 
   test('sites: real URL strategy over the site corpus', () async {
     final goldJson =
-        jsonDecode(File('$_gateDir/sites/gold.json').readAsStringSync())
+        jsonDecode(File(siteGoldPath).readAsStringSync())
             as Map<String, dynamic>;
     final scores = <RecipeScore>[];
     for (final entry in goldJson.entries) {
       final j = entry.value as Map<String, dynamic>;
       final source = j['source'] as String;
-      final html = source.startsWith('file:')
-          ? File('$_gateDir/sites/${source.substring(5)}').readAsStringSync()
-          : _dartFixtures[source] ??
-                (throw StateError('okänd fixtur: $source'));
+      final html = sitePageHtml(source);
       final url = j['url'] as String;
 
       final strategy = UrlImportStrategy(

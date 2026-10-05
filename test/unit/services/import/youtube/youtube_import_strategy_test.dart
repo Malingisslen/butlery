@@ -938,4 +938,40 @@ void main() {
       expect(realStrategy.canHandle(lower), isTrue);
     });
   });
+
+  group('BUT-2239: the model call', () {
+    test('"utan AI" hands the transcript to the user without a call', () async {
+      transcript.cannedMetadata = _metadata();
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'Tre ägg, fem deciliter mjölk. Vispa och stek.',
+      );
+
+      final result = await strategy.importV2(
+        _watchUrl,
+        options: {'skipLlm': true},
+      );
+
+      expect(llm.seenTranscripts, isEmpty);
+      expect(result, isA<ImportNeedsAssistance>());
+    });
+
+    test('a call that found nothing still reports its cost', () async {
+      transcript.cannedMetadata = _metadata();
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'Tre ägg, fem deciliter mjölk. Vispa och stek.',
+      );
+      llm.responses.add(
+        const ImportNeedsAssistance(
+          extractedText: 'Tre ägg',
+          message: 'nej',
+          partialData: {'usedLlm': true, 'llmCost': 0.0012},
+        ),
+      );
+
+      final result = await strategy.import(_watchUrl);
+
+      expect(result.metadata?['usedLlm'], isTrue);
+      expect(result.metadata?['llmCost'], 0.0012);
+    });
+  });
 }

@@ -29,7 +29,7 @@
 ///   the raw text and the original image bytes preserved.
 /// - `extractFromImage` neither success nor rawText → ImportFailure with
 ///   ocrFailed code.
-/// - `extractFromHtml` happy path → ImportSuccess with currentTier+1.
+/// - `extractFromPageText` happy path → ImportSuccess with currentTier+1.
 /// - `extractFromTranscript` falls back to ImportNeedsAssistance (NOT
 ///   ImportFailure) when LLM yields no recipe — videoTitle becomes the
 ///   suggested title.
@@ -708,9 +708,9 @@ void main() {
     });
   });
 
-  group('extractFromHtml', () {
+  group('extractFromPageText', () {
     test('asks limiter with fullExtraction operation type', () async {
-      await service.extractFromHtml('<html/>', 'https://x.test');
+      await service.extractFromPageText('<html/>', 'https://x.test');
       expect(
         limiter.seenOperations.single.llmType,
         LlmOperationType.fullExtraction,
@@ -727,7 +727,7 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result = await service.extractFromHtml(
+      final result = await service.extractFromPageText(
         '<html/>',
         'https://example.com/recipe',
       );
@@ -746,7 +746,7 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result = await service.extractFromHtml(
+      final result = await service.extractFromPageText(
         '<html/>',
         'u',
         currentTier: 5,
@@ -764,15 +764,42 @@ void main() {
           estimatedCost: 0,
         );
 
-        final result = await service.extractFromHtml('<html/>', 'u');
+        final result = await service.extractFromPageText('<html/>', 'u');
 
         expect(result, isA<ImportFailure>());
         expect((result as ImportFailure).message, 'no recipe in html');
       },
     );
 
+    test(
+      'a paid call that found nothing reports its cost (BUT-2239)',
+      () async {
+        llm.structureResponse = const StructureRecipeResponse(
+          success: false,
+          estimatedCost: 0.0012,
+        );
+
+        final result = await service.extractFromPageText('text', 'u');
+
+        expect((result as ImportFailure).llmCost, 0.0012);
+        expect(result.llmUse, {'usedLlm': true, 'llmCost': 0.0012});
+      },
+    );
+
+    test('an answer with no cost was no call, and reports none', () async {
+      llm.structureResponse = const StructureRecipeResponse(
+        success: false,
+        estimatedCost: 0,
+      );
+
+      final result = await service.extractFromPageText('text', 'u');
+
+      expect((result as ImportFailure).llmCost, isNull);
+      expect(result.llmUse, isEmpty);
+    });
+
     test('passes sourceUrl through to LlmService', () async {
-      await service.extractFromHtml('<html/>', 'https://src.test');
+      await service.extractFromPageText('<html/>', 'https://src.test');
       expect(llm.lastStructureSourceUrl, 'https://src.test');
       expect(llm.lastStructureMode, StructureMode.extract);
     });
@@ -800,6 +827,34 @@ void main() {
       final assist = result as ImportNeedsAssistance;
       expect(assist.extractedText, 'today we are making pasta');
       expect(assist.suggestedTitle, 'How to make pasta');
+    });
+
+    test(
+      'a paid call that found nothing reports its cost (BUT-2239)',
+      () async {
+        llm.structureResponse = const StructureRecipeResponse(
+          success: false,
+          estimatedCost: 0.0012,
+        );
+
+        final result = await service.extractFromTranscript('text', 'u');
+
+        final assist = result as ImportNeedsAssistance;
+        expect(assist.partialData, {'usedLlm': true, 'llmCost': 0.0012});
+        expect(result.llmUse, {'usedLlm': true, 'llmCost': 0.0012});
+      },
+    );
+
+    test('a transcript answered with no cost reports no call', () async {
+      llm.structureResponse = const StructureRecipeResponse(
+        success: false,
+        estimatedCost: 0,
+      );
+
+      final result = await service.extractFromTranscript('text', 'u');
+
+      expect((result as ImportNeedsAssistance).partialData, isEmpty);
+      expect(result.llmUse, isEmpty);
     });
 
     test(

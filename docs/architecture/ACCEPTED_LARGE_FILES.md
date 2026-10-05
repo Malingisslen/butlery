@@ -90,7 +90,7 @@ Already modular services or well-organized modules within service facades. Furth
 |------|-------|--------|
 | `personal_recipe_module.dart` | 1,100 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1182 | Service facade coordinating 4 modules |
-| `import_manager.dart` | 1,111 | Import pipeline orchestrator — multi-format, multi-tier |
+| `import_manager.dart` | 1,235 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 706 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 708 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
@@ -123,7 +123,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `social_recipe_operations.dart` | 512 | Social recipe sharing/rating ops |
 | `notification_service.dart` | 764 | Push notification dispatch |
 | `share_service.dart` | 612 | Multi-content type sharing — recipes, menus, shopping lists |
-| `import_rate_limiter.dart` | 524 | Single-responsibility Firestore rate-limiter; coherent single concern |
+| `import_rate_limiter.dart` | 525 | Single-responsibility Firestore rate-limiter; coherent single concern |
 | `base_social_coordinator.dart` | 534 | Abstract base coordinator using Template Method pattern; no mixed concerns |
 | `tiktok_pipeline.dart` | 519 | Single 4-tier import pipeline for one platform; coherent extraction strategy |
 | `recipe_persistence_manager.dart` | 518 | Focused manager for atomic save/fork/delete delegated from form VM |
@@ -132,7 +132,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `social_menu_operations.dart` | 552 | SRP module: social menu sharing only (explicit "does not contain" comment) |
 | `text_import_viewmodel.dart` | 508 | Thin VM extending base + mixin; actual logic is in ImportManager |
 | `social_engagement_metrics.dart` | 508 | SRP module: engagement calculation only (explicit "does not contain" comment) |
-| `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |
+| `url_import_strategy.dart` | 619 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 506 | Single-concern auto-save + draft management for recipe form |
 | `recipe_member_manager.dart` | 637 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
 | `weekly_menu_plan_service.dart` | 740 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
