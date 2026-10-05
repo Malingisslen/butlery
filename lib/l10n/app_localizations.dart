@@ -24353,6 +24353,18 @@ abstract class AppLocalizations {
   /// **'Vänförfrågan från {name}, tryck för att markera'**
   String a11yFriendRequestIncoming(String name);
 
+  /// Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Acceptera {name}'**
+  String a11yAcceptFriendRequestFrom(String name);
+
+  /// Screen-reader name of a friend request's decline button, naming whose request it is (BUT-2248). The visible label stays socialDecline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avböj {name}'**
+  String a11yDeclineFriendRequestFrom(String name);
+
   /// Semantics label for a sent friend-request card row.
   ///
   /// In sv, this message translates to:

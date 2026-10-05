@@ -32,6 +32,7 @@ class ActionButtons {
     ActionButtonStyle style = ActionButtonStyle.primary,
     bool isExpanded = false,
     bool enablePressAnimation = true,
+    String? semanticLabel,
   }) {
     final effectiveOnPressed = isLoading ? PlateLineButton.ignore : onPressed;
     final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
@@ -56,6 +57,7 @@ class ActionButtons {
             // never cuts its own name (plattformsmatris.md, systemtextstorlek).
             child: Text(
               effectiveLabel,
+              semanticsLabel: isLoading ? null : semanticLabel,
               textAlign: TextAlign.center,
             ),
           ),
@@ -104,14 +106,14 @@ class ActionButtons {
     if (isLoading) {
       return BusyButtonSemantics(
         busy: true,
-        name: label,
+        name: semanticLabel ?? label,
         busyLabel: loadingText,
         child: sized,
       );
     }
 
     final result = Semantics(
-      label: label,
+      label: semanticLabel ?? label,
       button: true,
       enabled: effectiveOnPressed != null,
       child: sized,
@@ -244,6 +246,7 @@ class ActionButtons {
     String? loadingText,
     bool isExpanded = false,
     bool enablePressAnimation = true,
+    String? semanticLabel,
   }) {
     return actionButton(
       context,
@@ -255,6 +258,7 @@ class ActionButtons {
       style: ActionButtonStyle.outlined,
       isExpanded: isExpanded,
       enablePressAnimation: enablePressAnimation,
+      semanticLabel: semanticLabel,
     );
   }
 
