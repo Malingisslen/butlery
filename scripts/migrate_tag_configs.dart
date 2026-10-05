@@ -258,9 +258,9 @@ Future<void> _migrateAllergens(Directory outputDir) async {
     // Combined allergens
     _allergen(
       key: 'skaldjur',
-      // 'seafood' = safety net: generic-marine-only rows must never prove
-      // skaldjursfri (register audit 2026-07-01). Mirrors allergen_config.dart.
-      triggerProperties: ['crustacean', 'mollusc', 'seafood'],
+      // Mirrors allergen_config.dart (BUT-2234): no 'seafood', fish rows
+      // carry it too.
+      triggerProperties: ['crustacean', 'mollusc'],
       containsTagSv: 'innehåller-skaldjur',
       freeTagSv: 'skaldjursfri',
       containsTagEn: 'contains-shellfish',
@@ -283,7 +283,8 @@ Future<void> _migrateAllergens(Directory outputDir) async {
   final document = {
     'schemaVersion': 1,
     // v2: skaldjur trigger gained 'seafood' (2026-07-02 audit fix)
-    'version': 2,
+    // v3: skaldjur trigger lost 'seafood' again (BUT-2234)
+    'version': 3,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
     'updatedBy': 'migration-script',
     'displayOrder': allergens.map((a) => a['key']).toList(),
@@ -1061,7 +1062,8 @@ Future<void> _migrateProperties(Directory outputDir) async {
 
   final document = {
     'schemaVersion': 1,
-    'version': 1,
+    // v2: caught up with kValidIngredientProperties (BUT-1498 drift)
+    'version': 2,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
     'updatedBy': 'migration-script',
     'validProperties': validProperties..sort(),

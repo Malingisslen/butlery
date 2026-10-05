@@ -70,18 +70,9 @@ class Phase1DietaryCalculator {
     required List<TagDecision> decisions,
     required int coveragePercent,
   }) {
-    if (requiresFullCoverage && lookup.coverage < 1.0) {
-      status[key] = TriState.unknown;
-      decisions.add(
-        TagDecision.dietary(
-          key: key,
-          result: TriState.unknown,
-          reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
-        ),
-      );
-      return;
-    }
-
+    // A matched excluded ingredient decides CONTAINS before coverage is
+    // consulted: the unmatched rows cannot un-know it (BUT-2247). Coverage
+    // only gates the FREE verdicts below.
     final hasExcluded = lookup.hasAnyProperty(excludedProperties);
 
     if (hasExcluded) {
@@ -101,6 +92,15 @@ class Phase1DietaryCalculator {
           result: TriState.contains,
           reason: 'Has excluded property (${excludedProperties.join(", ")})',
           triggeringIngredients: triggers.isNotEmpty ? triggers : null,
+        ),
+      );
+    } else if (requiresFullCoverage && lookup.coverage < 1.0) {
+      status[key] = TriState.unknown;
+      decisions.add(
+        TagDecision.dietary(
+          key: key,
+          result: TriState.unknown,
+          reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
         ),
       );
     } else if (requiredProperties != null) {

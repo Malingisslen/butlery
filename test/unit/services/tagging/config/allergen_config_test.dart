@@ -141,13 +141,9 @@ void main() {
         expect(notterEntry.triggerProperties, ['tree-nut', 'peanut']);
 
         final skaldjurEntry = AllergenConfig.getByKey('skaldjur')!;
-        // 'seafood' added 2026-07-02 (register audit): a generic-marine-only
-        // ingredient must never prove skaldjursfri.
-        expect(skaldjurEntry.triggerProperties, [
-          'crustacean',
-          'mollusc',
-          'seafood',
-        ]);
+        // No 'seafood' (BUT-2234): fish rows carry it, and skaldjur must not
+        // fire on fish.
+        expect(skaldjurEntry.triggerProperties, ['crustacean', 'mollusc']);
       });
     });
 

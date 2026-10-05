@@ -11,7 +11,7 @@ enum TriState {
   /// Recipe is proven free (100% coverage, no ingredients have property).
   free,
 
-  /// Coverage < 100% OR unknown ingredient - we don't know.
+  /// We don't know.
   unknown,
 }
 

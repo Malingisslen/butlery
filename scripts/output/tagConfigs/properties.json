@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": 1,
-  "updatedAt": "2026-07-02T10:32:59.924918Z",
+  "version": 2,
+  "updatedAt": "2026-10-05T07:03:41.521149Z",
   "updatedBy": "migration-script",
   "validProperties": [
     "animal-product",
@@ -23,6 +23,7 @@
     "meat",
     "mollusc",
     "mustard",
+    "needs-cooking",
     "nightshade",
     "peanut",
     "plant-based",
@@ -31,9 +32,10 @@
     "raw-safe",
     "seafood",
     "sesame",
+    "shellfish",
     "soy",
     "sulfites",
     "tree-nut",
-    "wheat"
+    "vegan-friendly"
   ]
 }

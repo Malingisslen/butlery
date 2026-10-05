@@ -217,14 +217,11 @@ class AllergenConfig {
     // Combined allergens
     AllergenEntry(
       key: 'skaldjur',
-      // 'seafood' included as a safety net: a generic-marine-only ingredient
-      // (no fish/crustacean/mollusc detail) must never prove skaldjursfri —
-      // false CONTAINS is acceptable, false FREE is not (register audit
-      // 2026-07-01: validated skaldjursfond carried only 'seafood').
-      // Deliberately NOT added to the 'fisk' key: a specific-property win
-      // shouldn't be overridden by a generic marker on fish-only items (PM
-      // panel condition); sync-time validation enforces detail properties.
-      triggerProperty: 'crustacean OR mollusc OR seafood',
+      // Not 'seafood': fish rows carry it too, so it made every fish dish
+      // innehåller-skaldjur (BUT-2234). A row carrying only 'seafood' is
+      // handled in Phase1AllergenCalculator, which withholds FREE on the
+      // marine keys instead.
+      triggerProperty: 'crustacean OR mollusc',
       containsTag: 'innehåller-skaldjur',
       freeTag: 'skaldjursfri',
       uiGroup: 'seafood',

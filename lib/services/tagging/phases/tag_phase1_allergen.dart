@@ -9,7 +9,22 @@ import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 
 /// Allergen status calculation for Phase 1.
 class Phase1AllergenCalculator {
+  /// The marine detail properties. A row carrying [_genericMarineProperty]
+  /// and none of these is marine of an unknown kind (register audit
+  /// 2026-07-01: the validated skaldjursfond row), so no allergen that
+  /// triggers on one of these can be proven absent from it.
+  static const Set<String> _marineDetailProperties = {
+    'fish',
+    'crustacean',
+    'mollusc',
+  };
+
+  static const String _genericMarineProperty = 'seafood';
+
   /// Calculates allergen status using tri-valued logic.
+  ///
+  /// A matched trigger gives CONTAINS whatever the coverage; coverage < 100%
+  /// only withholds FREE (BUT-2247).
   ///
   /// Returns both status map and decision logs.
   static StatusWithDecisions calculate(
@@ -18,6 +33,7 @@ class Phase1AllergenCalculator {
   ) {
     final status = <String, TriState>{};
     final decisions = <TagDecision>[];
+    final triggersByKey = <String, List<String>>{};
 
     final simpleAllergens = firebaseConfig?.allergens.simpleAllergens;
     final combinedAllergens = firebaseConfig?.allergens.combinedAllergens;
@@ -36,6 +52,7 @@ class Phase1AllergenCalculator {
         final prop = allergen.triggerProperties.first;
         final result = lookup.getPropertyStatus(prop);
         status[allergen.key] = result;
+        triggersByKey[allergen.key] = [prop];
 
         final (reason, triggers) = _explainAllergenDecision(
           lookup: lookup,
@@ -60,6 +77,7 @@ class Phase1AllergenCalculator {
       for (final allergen in static_allergen.AllergenConfig.simpleAllergens) {
         final result = lookup.getPropertyStatus(allergen.triggerProperty);
         status[allergen.key] = result;
+        triggersByKey[allergen.key] = [allergen.triggerProperty];
 
         final (reason, triggers) = _explainAllergenDecision(
           lookup: lookup,
@@ -91,6 +109,7 @@ class Phase1AllergenCalculator {
         }
         final result = lookup.getCombinedPropertyStatus(props);
         status[allergen.key] = result;
+        triggersByKey[allergen.key] = props;
 
         final (reason, triggers) = _explainCombinedAllergenDecision(
           lookup: lookup,
@@ -112,6 +131,7 @@ class Phase1AllergenCalculator {
         final props = allergen.triggerProperties;
         final result = lookup.getCombinedPropertyStatus(props);
         status[allergen.key] = result;
+        triggersByKey[allergen.key] = props;
 
         final (reason, triggers) = _explainCombinedAllergenDecision(
           lookup: lookup,
@@ -130,7 +150,53 @@ class Phase1AllergenCalculator {
       }
     }
 
+    _withholdMarineFreeOnGenericSeafood(
+      lookup: lookup,
+      status: status,
+      decisions: decisions,
+      triggersByKey: triggersByKey,
+    );
+
     return StatusWithDecisions(status: status, decisions: decisions);
+  }
+
+  /// A matched row that says only "marine" cannot prove any marine allergen
+  /// absent: every FREE on an allergen with a marine detail property among
+  /// its triggers becomes UNKNOWN. CONTAINS verdicts are left alone.
+  static void _withholdMarineFreeOnGenericSeafood({
+    required IngredientLookupResult lookup,
+    required Map<String, TriState> status,
+    required List<TagDecision> decisions,
+    required Map<String, List<String>> triggersByKey,
+  }) {
+    final genericMarineRows = lookup.matched
+        .where(
+          (i) =>
+              i.hasProperty(_genericMarineProperty) &&
+              !i.hasAnyProperty(_marineDetailProperties),
+        )
+        .map((i) => i.swedish)
+        .toList();
+    if (genericMarineRows.isEmpty) return;
+
+    for (final entry in triggersByKey.entries) {
+      final key = entry.key;
+      final isMarineKey = entry.value.any(_marineDetailProperties.contains);
+      if (!isMarineKey || status[key] != TriState.free) continue;
+
+      status[key] = TriState.unknown;
+      decisions.removeWhere((d) => d.type == 'allergen' && d.key == key);
+      decisions.add(
+        TagDecision.allergen(
+          key: key,
+          result: TriState.unknown,
+          reason:
+              'Ingredient with only the generic "$_genericMarineProperty" '
+              'property - cannot confirm which marine allergen',
+          triggeringIngredients: genericMarineRows,
+        ),
+      );
+    }
   }
 
   static (String reason, List<String>? triggers) _explainAllergenDecision({
@@ -138,15 +204,6 @@ class Phase1AllergenCalculator {
     required String property,
     required TriState result,
   }) {
-    final coveragePercent = (lookup.coverage * 100).round();
-
-    if (lookup.coverage < 1.0) {
-      return (
-        'Coverage $coveragePercent% < 100% - cannot confirm',
-        null,
-      );
-    }
-
     if (result == TriState.contains) {
       final triggers = lookup.matched
           .where((i) => i.hasProperty(property))
@@ -155,6 +212,14 @@ class Phase1AllergenCalculator {
       return (
         'Ingredient with property "$property" found',
         triggers.isNotEmpty ? triggers : null,
+      );
+    }
+
+    if (lookup.coverage < 1.0) {
+      final coveragePercent = (lookup.coverage * 100).round();
+      return (
+        'Coverage $coveragePercent% < 100% - cannot confirm',
+        null,
       );
     }
 
@@ -171,15 +236,6 @@ class Phase1AllergenCalculator {
     required TriState result,
     required String allergenKey,
   }) {
-    final coveragePercent = (lookup.coverage * 100).round();
-
-    if (lookup.coverage < 1.0) {
-      return (
-        'Coverage $coveragePercent% < 100% - cannot confirm',
-        null,
-      );
-    }
-
     if (result == TriState.contains) {
       final triggers = <String>{};
       for (final prop in properties) {
@@ -193,6 +249,14 @@ class Phase1AllergenCalculator {
       return (
         'Ingredient with property ($propsStr) found',
         triggers.isNotEmpty ? triggers.toList() : null,
+      );
+    }
+
+    if (lookup.coverage < 1.0) {
+      final coveragePercent = (lookup.coverage * 100).round();
+      return (
+        'Coverage $coveragePercent% < 100% - cannot confirm',
+        null,
       );
     }
 
