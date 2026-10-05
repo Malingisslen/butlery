@@ -77,11 +77,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       final preprocessed = TextImportNormalizer.preprocessText(normalized);
 
       // Title from `normalized` (pre-preprocess), NOT `preprocessed`: the
-      // ingredient/instruction splitters in preprocessText mangle a compound
-      // title — "Köttbullar med gräddsås" is torn into "grädd"/"sås" (the
-      // section-header suffix split) and "graddsas" into "gr"/"addsas" (the
-      // English "Add" instruction cue matched inside the word). The original
-      // first line is the real title; the body still parses from `preprocessed`.
+      // ingredient/instruction splitters in preprocessText can cut a line
+      // apart. The original first line is the real title; the body still
+      // parses from `preprocessed`.
       final parsed = await _parseTextToRecipe(preprocessed, normalized);
 
       if (parsed == null) {
@@ -243,9 +241,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     // BUT-1727: a RESCUED GLUTEN ROW is never the recipe title. The headerless
     // fallback loop below already skips these, but THIS path runs first and
-    // every heuristic here misses them: isSectionHeader's word regex breaks on
-    // the trailing colon, and the gluten carve-out deliberately stops "Mjöl:"
-    // being a sub-heading. Any such word of 5+ characters ("Mjöl:",
+    // every heuristic here misses them: the gluten carve-out deliberately
+    // stops "Mjöl:" being a sub-heading. Any such word of 5+ characters ("Mjöl:",
     // "Havregryn:", every *mjöl: compound) would otherwise be consumed as the
     // title AND skipped in STAGE 3, so the gluten row never reaches the flat
     // list the allergen tagging reads.
@@ -272,6 +269,68 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     return '';
+  }
+
+  static final _stepNumber = RegExp(r'^\d{1,2}[.)]$');
+
+  // One word of letters (a hyphen allowed inside), no digit, no colon: the
+  // shape of both a quantity-less ingredient row ("ägg", "sojasås") and a
+  // colon-less component heading ("Ostsås"). The two are told apart by
+  // their surroundings, never by the word itself.
+  static final _bareWord = RegExp(r'^[a-zåäöéA-ZÅÄÖÉ][a-zåäöéA-ZÅÄÖÉ-]*$');
+
+  static final _bulletPrefix = RegExp(r'^[•\-\*]+\s*');
+
+  /// A colon-less heading outside the detector's vocabulary, recognised by its
+  /// shape: a capitalised bare word opening a block, with a quantity-led row
+  /// right under it. All three are required, so a lowercase bare word, one
+  /// inside a block, or one followed by another bare word stays an
+  /// ingredient — the direction that keeps an allergen row in the list.
+  bool _isBlockHeading(List<String> lines, int i, List<bool> startsBlock) {
+    if (!startsBlock[i] || i + 1 >= lines.length) return false;
+    final line = lines[i].trim();
+    if (!_bareWord.hasMatch(line)) return false;
+    final first = line[0];
+    if (first == first.toLowerCase()) return false;
+    if (RecipeSectionDetector.looksLikeIngredient(line)) return false;
+    return _isQuantityRow(lines[i + 1]);
+  }
+
+  /// A row that opens with a count or amount ("12 lasagneplattor",
+  /// "1 rund formfranska", "- 2 tomater"), whether or not a unit follows.
+  /// Yield labels ("4 portioner") are not rows, and a sentence that happens
+  /// to start with a number ("12 nya recept i veckan") is kept out by its
+  /// word count, length and full stop.
+  bool _isQuantityRow(String line) {
+    final t = line.trim().replaceFirst(_bulletPrefix, '');
+    return t.length <= 60 &&
+        !t.endsWith('.') &&
+        t.split(RegExp(r'\s+')).length <= 4 &&
+        _leadingQuantity.hasMatch(t) &&
+        !_yieldLabel.hasMatch(t);
+  }
+
+  // Up to three words of letters and nothing else: "ägg", "riven ost",
+  // "rostade solroskärnor", "salt och peppar".
+  static final _shortPhrase = RegExp(
+    r'^[a-zåäöéA-ZÅÄÖÉ-]+(?:\s+[a-zåäöéA-ZÅÄÖÉ-]+){0,2}$',
+  );
+
+  /// A quantity-less row continuing an ingredient block in a recipe with no
+  /// "Ingredienser" marker: the previous classified line was part of the
+  /// list, and this one is a short phrase that is neither a block-opening
+  /// capitalised word (a heading or stray label, decided above) nor a
+  /// "Till …" group label.
+  bool _isBareRowInIngredientBlock(
+    String line,
+    bool startsBlock,
+    bool afterIngredientRow,
+  ) {
+    if (!afterIngredientRow) return false;
+    final t = line.trim();
+    if (t.length > 30 || !_shortPhrase.hasMatch(t)) return false;
+    if (t.toLowerCase().startsWith('till ')) return false;
+    return !startsBlock || t[0] == t[0].toLowerCase();
   }
 
   /// Check if a line looks like a standalone Instagram username
@@ -358,10 +417,22 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// [titleSource] is the pre-preprocess text used ONLY for the title, so the
   /// ingredient/instruction splitters can't truncate a compound title.
   Future<Recipe?> _parseTextToRecipe(String text, String titleSource) async {
-    final lines = text
-        .split('\n')
-        .where((line) => line.trim().isNotEmpty)
-        .toList();
+    // Blank lines are dropped from `lines`, but WHERE they were is kept: a
+    // line that opens a block after a blank is how a colon-less heading
+    // ("Ostsås", "Montering") tells itself apart from a quantity-less
+    // ingredient row inside a block.
+    final lines = <String>[];
+    final startsBlock = <bool>[];
+    var afterBlank = true;
+    for (final raw in text.split('\n')) {
+      if (raw.trim().isEmpty) {
+        afterBlank = true;
+        continue;
+      }
+      lines.add(raw);
+      startsBlock.add(afterBlank);
+      afterBlank = false;
+    }
 
     if (lines.isEmpty) return null;
 
@@ -401,9 +472,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (RecipeSectionDetector.looksLikeIngredient(line)) break;
         // A sub-group heading ("Deg:") is never the recipe title — skip it so
         // it flows to STAGE 3 and is captured as a section. Needed because
-        // isSectionHeader ignores it (the trailing colon breaks its word
-        // regex), so without this skip a headerless caption whose real title
-        // was rejected above would accept "Deg:" as the title at the guard below.
+        // isSectionHeader ignores it, so without this skip a headerless
+        // caption whose real title was rejected above would accept "Deg:" as
+        // the title at the guard below.
         if (_ingredientSubHeading(line) != null) continue;
         // BUT-1727: the gluten carve-out makes "Råg:" stop being a sub-heading,
         // but it is an INGREDIENT row — never the recipe title. Skip it here
@@ -446,6 +517,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final titleBuffer = StringBuffer();
     bool titleConsumed = titleKey.isEmpty;
 
+    // Whether the last classified line belonged to the ingredient list (a
+    // row, a heading over rows, or the "Ingredienser" marker). A bare word
+    // right after one is a row whose quantity the writer left out, not a
+    // heading and not noise.
+    bool afterIngredientRow = false;
+
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       final lowerLine = line.toLowerCase();
@@ -474,6 +551,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (RecipeSectionDetector.isIngredientHeader(lowerLine)) {
         inIngredients = true;
         inInstructions = false;
+        afterIngredientRow = true;
         // A fresh ingredient block ("Ingredienser:") clears any sub-group
         // carried over from an earlier block.
         currentSection = null;
@@ -483,6 +561,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (RecipeSectionDetector.isInstructionHeader(lowerLine)) {
         inIngredients = false;
         inInstructions = true;
+        afterIngredientRow = false;
         continue;
       }
 
@@ -497,6 +576,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final subHeading = _ingredientSubHeading(line);
         if (subHeading != null) {
           currentSection = subHeading;
+          afterIngredientRow = true;
           continue;
         }
 
@@ -515,36 +595,53 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           if (currentSection != null) {
             sectionByKey.putIfAbsent(key, () => currentSection!);
           }
+          afterIngredientRow = true;
           continue;
         }
       }
 
+      // A bare step number ("1.") is what the sentence splitter leaves of
+      // "1. Blötlägg ärtorna": the steps have started, whatever the next
+      // line scores. Not inside an "Ingredienser" block, where a numbered
+      // list ("1. Mjölk 5 dl") is the rows themselves.
+      if (!inIngredients && _stepNumber.hasMatch(line)) {
+        inIngredients = false;
+        inInstructions = true;
+        afterIngredientRow = false;
+        continue;
+      }
+
       if (RecipeSectionDetector.isGarbage(line)) continue;
 
-      if (RecipeSectionDetector.isSectionHeader(line)) {
+      if (RecipeSectionDetector.isSectionHeader(line) ||
+          _isBlockHeading(lines, i, startsBlock)) {
         final headerKey = lowerLine.trim();
 
         if (RecipeSectionDetector.isInstructionSectionHeader(lowerLine)) {
           inIngredients = false;
           inInstructions = true;
+          afterIngredientRow = false;
           continue;
         }
 
         if (seenIngredientSections.contains(headerKey)) {
           inIngredients = false;
           inInstructions = true;
+          afterIngredientRow = false;
           continue;
         }
 
         if (RecipeSectionDetector.followingTextIsInstruction(lines, i)) {
           inIngredients = false;
           inInstructions = true;
+          afterIngredientRow = false;
           continue;
         }
 
         if (inIngredients) {
           seenIngredientSections.add(headerKey);
         }
+        afterIngredientRow = true;
         continue;
       }
 
@@ -558,6 +655,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
               ingredients.add(ingredient);
               capturedAsIngredient.add(ingredient.toLowerCase());
             }
+            afterIngredientRow = true;
             // Record the current sub-group for this line's STRUCTURED entry.
             // Lines already captured measurement-first in STAGE 1 still get
             // their section here; the flat list is left untouched. Two
@@ -587,7 +685,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (instruction != null && instruction.length > 10) {
           instructions.add(instruction);
         }
-      } else if (RecipeSectionDetector.looksLikeIngredient(line)) {
+        afterIngredientRow = false;
+      } else if (RecipeSectionDetector.looksLikeIngredient(line) ||
+          _isQuantityRow(line) ||
+          _isBareRowInIngredientBlock(
+            line,
+            startsBlock[i],
+            afterIngredientRow,
+          )) {
         final ingredient = _parseIngredientLine(line);
         if (ingredient != null &&
             RecipeSectionDetector.isValidIngredient(ingredient)) {
@@ -595,6 +700,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
             ingredients.add(ingredient);
             capturedAsIngredient.add(ingredient.toLowerCase());
           }
+          afterIngredientRow = true;
           // Stamp the current sub-group even for lines already captured
           // measurement-first in STAGE 1 (the common headerless-caption path).
           if (currentSection != null) {
@@ -606,6 +712,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         }
       } else if (description.isEmpty && line.length > 10 && score < 1) {
         description = line;
+        afterIngredientRow = false;
       }
     }
 
@@ -693,10 +800,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final seenRescued = <bool>[];
 
     for (final ing in ingredients) {
-      // BUT-1727: a rescued bare gluten row ("Råg") is a single short word, so
-      // both filters below read it as an orphan fragment and would undo the
-      // carve-out one stage after it fired. It is exempt from them — but not
-      // from exact-name dedup, so a fuller "2 dl råg" row still wins.
+      // BUT-1727: a rescued bare gluten row ("Råg") is exempt from the two
+      // filters below — but not from exact-name dedup, so a fuller "2 dl råg"
+      // row still wins.
       final isRescuedGluten = exemptFromFilters.contains(ing.toLowerCase());
       if (!isRescuedGluten &&
           (RecipeSectionDetector.isGarbage(ing) ||
@@ -790,14 +896,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// carve-out in [_ingredientSubHeading] refuses ("Råg:" → "Råg"), or null
   /// when [line] is not one.
   ///
-  /// Refusing the heading is not enough on its own: "Råg:" is four characters,
-  /// so `isValidIngredient` drops it as an orphan fragment and the gluten is
-  /// lost anyway. This re-injects it directly, colon-STRIPPED — lookup folds
+  /// Refusing the heading is not enough on its own: this re-injects the row
+  /// directly, colon-STRIPPED — lookup folds
   /// diacritics but strips no punctuation, so "Mjöl:" would query `mjol:`,
   /// match no registry document and take every allergen verdict on the recipe
   /// to UNKNOWN. Colon-only by design: the accepted deviation covers the
-  /// colon-terminated form, and a colon-less bare word keeps the long-standing
-  /// orphan-fragment handling.
+  /// colon-terminated form.
   String? _bareGlutenIngredient(String line) {
     final trimmed = line.trim();
     if (!trimmed.endsWith(':')) return null;
