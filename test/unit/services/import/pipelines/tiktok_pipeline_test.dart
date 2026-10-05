@@ -600,7 +600,10 @@ Pannkakor receptet jag lovat! ✨
 
       expect(result, isNot(isA<ImportSuccess>()));
       expect(llm.seenTranscripts, hasLength(1));
-      expect(llm.seenTranscripts.single, contains('Identifierade ingredienser:'));
+      expect(
+        llm.seenTranscripts.single,
+        contains('Identifierade ingredienser:'),
+      );
     });
   });
 

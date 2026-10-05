@@ -675,7 +675,8 @@ void main() {
           expect(
             after.importsThisMinute,
             0,
-            reason: 'a model call made during an import is not a second '
+            reason:
+                'a model call made during an import is not a second '
                 'import (BUT-2239)',
           );
         },

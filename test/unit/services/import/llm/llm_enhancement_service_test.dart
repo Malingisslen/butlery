@@ -771,6 +771,33 @@ void main() {
       },
     );
 
+    test(
+      'a paid call that found nothing reports its cost (BUT-2239)',
+      () async {
+        llm.structureResponse = const StructureRecipeResponse(
+          success: false,
+          estimatedCost: 0.0012,
+        );
+
+        final result = await service.extractFromPageText('text', 'u');
+
+        expect((result as ImportFailure).llmCost, 0.0012);
+        expect(result.llmUse, {'usedLlm': true, 'llmCost': 0.0012});
+      },
+    );
+
+    test('an answer with no cost was no call, and reports none', () async {
+      llm.structureResponse = const StructureRecipeResponse(
+        success: false,
+        estimatedCost: 0,
+      );
+
+      final result = await service.extractFromPageText('text', 'u');
+
+      expect((result as ImportFailure).llmCost, isNull);
+      expect(result.llmUse, isEmpty);
+    });
+
     test('passes sourceUrl through to LlmService', () async {
       await service.extractFromPageText('<html/>', 'https://src.test');
       expect(llm.lastStructureSourceUrl, 'https://src.test');
