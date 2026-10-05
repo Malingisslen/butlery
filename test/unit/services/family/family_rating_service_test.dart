@@ -43,6 +43,31 @@ class _MockSocialRecipeOperations extends Mock
 class _ThrowingFirestoreRepository extends Mock
     implements FirestoreRepository {}
 
+/// Reads like the deployed rules: `family_ratings` read is gated on
+/// `resource.data.householdId`, which is null for a doc that does not exist,
+/// so a get of a missing rating is PERMISSION_DENIED rather than "not found".
+class _RulesLikeRatingRepository extends FirebaseFamilyRatingRepository {
+  final FakeFirebaseFirestore _fs;
+
+  _RulesLikeRatingRepository(
+    this._fs, {
+    required super.householdRepository,
+    required super.authRepository,
+  }) : super(firestore: _fs);
+
+  @override
+  Future<FamilyRating?> read(String id) async {
+    final snap = await _fs.collection('family_ratings').doc(id).get();
+    if (!snap.exists) {
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+    }
+    return super.read(id);
+  }
+}
+
 const _hh = 'hh-1';
 const _malin = 'user-malin';
 const _johan = 'user-johan';
@@ -182,6 +207,35 @@ void main() {
   }
 
   group('rateAsFamily upsert', () {
+    test('the first rating is stored although the rules deny reading a '
+        'missing rating', () async {
+      final auth =
+          TestServiceLocator.get<AuthRepository>() as FakeAuthRepository;
+      final rulesLike = _RulesLikeRatingRepository(
+        fs,
+        authRepository: auth,
+        householdRepository: FirebaseHouseholdRepository(
+          firestore: fs,
+          authRepository: auth,
+        ),
+      );
+      TestServiceLocator.registerSingleton<FamilyRatingRepository>(rulesLike);
+
+      final saved = await rate(
+        memberId: 'liam',
+        type: HouseholdMemberType.profile,
+        stars: 3,
+        enteredByUid: _malin,
+      );
+
+      expect(saved, isNotNull);
+      final stored = await fs
+          .collection('family_ratings')
+          .doc(FamilyRating.buildId(_recipe, 'liam'))
+          .get();
+      expect(stored.data()?['stars'], 3);
+    });
+
     test('creates a new family rating', () async {
       final saved = await rate(
         memberId: 'liam',

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -200,7 +202,7 @@ class FamilyRatingService extends BaseService {
   /// Upsert preserving the original `createdAt` on re-rating (the rules pin it
   /// immutable). `copyWith` keeps id/createdAt and bumps `lastUpdatedAt`.
   Future<FamilyRating> _upsert(FamilyRating rating) async {
-    final existing = await _ratings.read(rating.id);
+    final existing = await _readExisting(rating.id);
     if (existing == null) {
       return _ratings.create(rating);
     }
@@ -210,6 +212,20 @@ class FamilyRatingService extends BaseService {
     );
     await _ratings.update(updated);
     return updated;
+  }
+
+  /// The read rule is gated on the stored `householdId`, so a get of a rating
+  /// that does not exist yet is denied rather than answered as absent. The id
+  /// carries no household, so the rules cannot allow it without letting anyone
+  /// probe who has rated what. A non-member is still refused, by the create
+  /// rule.
+  Future<FamilyRating?> _readExisting(String id) async {
+    try {
+      return await _ratings.read(id);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') return null;
+      rethrow;
+    }
   }
 
   /// Remove a member's verdict (un-rate). No-op tolerant — the repository

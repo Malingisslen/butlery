@@ -106,7 +106,7 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
       for (final member in _present) {
         final stars = _stars[member.memberId] ?? 0;
         if (stars < 1 || stars > 5) continue;
-        await _familyRatingService.rateAsFamily(
+        final saved = await _familyRatingService.rateAsFamily(
           recipeId: recipeId,
           householdId: householdId,
           memberId: member.memberId,
@@ -114,6 +114,10 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
           stars: stars,
           enteredByUid: uid,
         );
+        // The service answers a failed write with null rather than throwing.
+        if (saved == null) {
+          throw StateError('Family rating was not stored');
+        }
       }
     }, errorPrefix: AppLocale.current.familyRatingSaveFailed);
   }
