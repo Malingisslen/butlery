@@ -575,7 +575,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** 3-step wizard — select ingredient lines (pre-highlighted), select instruction lines (scored), review/edit all fields. Cleans step-number prefixes. Builds a personal recipe with source URL + thumbnail.
 - **Edge cases:** Can't proceed without a selection; portions clamped 1–100, time 0–1440.
 - **Validation:** Per-step validation; save needs title + ≥1 ingredient + ≥1 instruction.
-- **Test coverage:** Partial — base-VM + `import_recipe_journey_test.dart` exercise surrounding flow; no dedicated assisted-import VM test. *(Pure free fallback — no LLM/network.)*
+- **Test coverage:** Partial. *(Pure free fallback — no LLM/network.)*
 
 #### IMP-11: Ingredient-line parsing (CRF / NER / ONNX)
 - **Entry:** Not a screen — runs downstream of every import during parse. *(See ENG-09 for the engine-level view.)*

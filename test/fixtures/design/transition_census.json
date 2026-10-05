@@ -346,16 +346,16 @@
       "id": "TR::FLOW::03::hämtar::ok",
       "flow": "03",
       "status": "TESTED",
-      "test_file": "test/views/import_recipe_journey_test.dart",
-      "test_name": "paste URL → fetch+parse → edit title → save persists edited recipe",
+      "test_file": "test/views/smart_import_link_journey_test.dart",
+      "test_name": "paste URL → fetch+parse → the recipe opens in the editor",
       "tests": [
         {
-          "file": "test/views/import_recipe_journey_test.dart",
-          "name": "paste URL → fetch+parse → edit title → save persists edited recipe"
+          "file": "test/views/smart_import_link_journey_test.dart",
+          "name": "paste URL → fetch+parse → the recipe opens in the editor"
         }
       ],
       "ticket": null,
-      "reason": "Existing journey: the fetched recipe opens for review before it is saved."
+      "reason": "the fetched recipe opens for review."
     },
     {
       "id": "TR::FLOW::03::hämtar::privat-trasig-länk",
