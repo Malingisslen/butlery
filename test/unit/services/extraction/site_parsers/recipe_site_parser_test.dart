@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:html/dom.dart';
 
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
@@ -31,7 +32,7 @@ class _CssFallbackParser extends RecipeSiteParser {
   @override
   String get siteName => 'Example';
   @override
-  Map<String, dynamic>? extractWithCssSelectors(String html) => _recipe;
+  Map<String, dynamic>? extractWithCssSelectors(Document doc) => _recipe;
 }
 
 Map<String, dynamic> _completeRecipe() => {
@@ -92,11 +93,11 @@ void main() {
 
     test('enhanceRecipe returns the recipe unchanged', () {
       final recipe = {'name': 'x'};
-      expect(parser.enhanceRecipe(recipe, '<html></html>'), same(recipe));
+      expect(parser.enhanceRecipe(recipe, Document()), same(recipe));
     });
 
     test('extractWithCssSelectors returns null by default', () {
-      expect(parser.extractWithCssSelectors('<html></html>'), isNull);
+      expect(parser.extractWithCssSelectors(Document()), isNull);
     });
   });
 
