@@ -222,12 +222,18 @@ void main() {
 
         // Assert
         expect(result, true);
-        verify(
+        // The profile is created on createUser's sign-in, before
+        // updateDisplayName, so the name must be held first.
+        verifyInOrder([
+          () => mockAuthRepository.holdRegistrationDisplayName(
+            email: 'newuser@example.com',
+            displayName: 'New User',
+          ),
           () => mockAuthRepository.createUser(
             'newuser@example.com',
             'securePassword123',
           ),
-        ).called(1);
+        ]);
         verify(
           () => mockAuthRepository.updateDisplayName(
             any(),
