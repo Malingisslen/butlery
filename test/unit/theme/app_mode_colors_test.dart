@@ -126,6 +126,12 @@ const Map<String, (Color, Color)> _expected = {
     AppColors.surfacePressedOnInk,
     AppColorsDark.surfacePressedOnInk,
   ),
+  'actionDanger': (AppColors.actionDanger, AppColorsDark.actionDanger),
+  'actionDangerPressed': (
+    AppColors.actionDangerPressed,
+    AppColorsDark.actionDangerPressed,
+  ),
+  'onActionDanger': (AppColors.onActionDanger, AppColorsDark.onActionDanger),
   'overlayPaperCard': (AppColors.cardWhite54, AppColorsDark.cardWhite54),
   'surfaceTintWarning': (
     AppColors.surfaceTintWarning,
@@ -189,6 +195,9 @@ final Map<String, Color Function(ModeColors)> _mode = {
   'textLink': (ModeColors c) => c.textLink,
   'pressedOnRaised': (ModeColors c) => c.pressedOnRaised,
   'pressedOnInk': (ModeColors c) => c.pressedOnInk,
+  'actionDanger': (ModeColors c) => c.actionDanger,
+  'actionDangerPressed': (ModeColors c) => c.actionDangerPressed,
+  'onActionDanger': (ModeColors c) => c.onActionDanger,
   'overlayPaperCard': (ModeColors c) => c.overlayPaperCard,
   'surfaceTintWarning': (ModeColors c) => c.surfaceTintWarning,
   'surfaceTintDanger': (ModeColors c) => c.surfaceTintDanger,
@@ -201,7 +210,7 @@ void main() {
         .allMatches(File('lib/theme/app_mode_colors.dart').readAsStringSync())
         .map((m) => m.group(1)!)
         .toSet();
-    expect(modeGetters, hasLength(51));
+    expect(modeGetters, hasLength(54));
     expect(_expected.keys.toSet(), modeGetters);
     expect(_mode.keys.toSet(), modeGetters);
   });

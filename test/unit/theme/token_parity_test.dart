@@ -27,7 +27,6 @@ const semanticKeysWithoutMember = <String, String>{};
 
 /// The package 8 tickets this file registered in Linear: title in one line.
 /// Empty: every semantic key has a member since BUT-2198 was delivered.
-/// BUT-2191's title is in known_state_findings.dart (registeredTickets).
 const tokenRegisteredTickets = <String, String>{};
 
 const _fixture = 'test/fixtures/design/tokens-semantic.json';

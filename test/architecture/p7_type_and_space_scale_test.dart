@@ -121,6 +121,13 @@ void main() {
       expect(style.fontWeight, FontWeight.w600);
       expect(style.height, 1.45);
     });
+
+    test('tabText matches its token: 13/600 at 1.35 (BUT-2228)', () {
+      final style = AppTextStyles.tabText;
+      expect(style.fontSize, 13);
+      expect(style.fontWeight, FontWeight.w600);
+      expect(style.height, 1.35);
+    });
   });
 
   group('the spacing scale', () {
