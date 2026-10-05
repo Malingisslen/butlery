@@ -404,6 +404,12 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du har inte behörighet för denna åtgärd.';
 
   @override
+  String get errorPageNotFound => 'Sidan kunde inte hittas';
+
+  @override
+  String get errorBackToStart => 'Tillbaka till start';
+
+  @override
   String get errorNotFound => 'Kunde inte hittas.';
 
   @override
@@ -13261,6 +13267,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get emailVerificationResend => 'Skicka igen';
+
+  @override
+  String emailVerificationResendCountdown(int seconds) {
+    return 'Du kan skicka igen om $seconds s';
+  }
 
   @override
   String get emailVerificationContinue => 'Fortsätt ändå';

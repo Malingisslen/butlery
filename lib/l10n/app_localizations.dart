@@ -722,6 +722,18 @@ abstract class AppLocalizations {
   /// **'Du har inte behörighet för denna åtgärd.'**
   String get errorPermissionDenied;
 
+  /// BUT-2146: the headline of the not-found page.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan kunde inte hittas'**
+  String get errorPageNotFound;
+
+  /// BUT-2146: the button on the not-found page that goes to the start view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till start'**
+  String get errorBackToStart;
+
   /// No description provided for @errorNotFound.
   ///
   /// In sv, this message translates to:
@@ -22186,6 +22198,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Skicka igen'**
   String get emailVerificationResend;
+
+  /// BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan skicka igen om {seconds} s'**
+  String emailVerificationResendCountdown(int seconds);
 
   /// No description provided for @emailVerificationContinue.
   ///

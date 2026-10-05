@@ -389,6 +389,14 @@
   "errorServer": "Server error. Please try again later.",
   "errorAuthentication": "Authentication error. Please sign in again.",
   "errorPermissionDenied": "You don't have permission to perform this action.",
+  "errorPageNotFound": "The page could not be found",
+  "@errorPageNotFound": {
+    "description": "BUT-2146: the headline of the not-found page."
+  },
+  "errorBackToStart": "Back to start",
+  "@errorBackToStart": {
+    "description": "BUT-2146: the button on the not-found page that goes to the start view."
+  },
   "errorNotFound": "Could not be found.",
   "errorCouldNotCreate": "Could not create {itemType}",
   "@errorCouldNotCreate": {
@@ -9193,6 +9201,15 @@
     }
   },
   "emailVerificationResend": "Send again",
+  "emailVerificationResendCountdown": "You can send again in {seconds} s",
+  "@emailVerificationResendCountdown": {
+    "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "emailVerificationContinue": "Continue anyway",
   "emailVerificationSuccess": "Email verified.",
   "a11yCookingModeFontScale": "Change text size",
