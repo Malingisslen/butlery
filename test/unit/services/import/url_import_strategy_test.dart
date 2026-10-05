@@ -1269,51 +1269,68 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
 
     /// BUT-2238: the import's one parse event reads Tier 1's detail off the
     /// result, so the strategy must carry it there.
-    test('a Tier 1 recipe carries its tier, attempts and parser version',
-        () async {
-      final good = parseWithQuality(aboveThreshold: true);
-      stubParse(
-        () => ParseResult.success(
-          good.recipe!,
-          totalTime: Duration.zero,
-          unknownDomain: true,
-          tierResults: [
-            TierResult.failure(
-              tierName: 'SchemaOrg',
-              duration: Duration.zero,
-              reason: TierFailureReason.noData,
-            ),
-            const TierResult(
-              tierName: 'SiteConfig',
-              success: true,
-              quality: 0.4,
-              duration: Duration.zero,
-            ),
-            TierResult(
-              tierName: 'RuleBased',
-              success: true,
-              quality: 0.85,
-              duration: const Duration(milliseconds: 7),
-            ),
-          ],
-        ),
-      );
+    test(
+      'a Tier 1 recipe carries its tier, attempts and parser version',
+      () async {
+        final good = parseWithQuality(aboveThreshold: true);
+        stubParse(
+          () => ParseResult.success(
+            good.recipe!,
+            totalTime: Duration.zero,
+            unknownDomain: true,
+            tierResults: [
+              TierResult.failure(
+                tierName: 'SchemaOrg',
+                duration: Duration.zero,
+                reason: TierFailureReason.noData,
+              ),
+              const TierResult(
+                tierName: 'SiteConfig',
+                success: true,
+                quality: 0.4,
+                duration: Duration.zero,
+              ),
+              TierResult(
+                tierName: 'RuleBased',
+                success: true,
+                quality: 0.85,
+                duration: const Duration(milliseconds: 7),
+              ),
+            ],
+          ),
+        );
 
-      final strategy = _strategyWith(
-        (req) async => _htmlResponse(_unstructuredHtml()),
-      );
-      final result = await strategy.import('http://8.8.8.8/recipe');
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(_unstructuredHtml()),
+        );
+        final result = await strategy.import('http://8.8.8.8/recipe');
 
-      expect(result.metadata?['extraction_method'], 'enhanced_parser');
-      expect(result.metadata?['successfulTier'], 'RuleBased');
-      expect(result.metadata?['parserVersion'], parserVersion);
-      expect(result.metadata?['unknownDomain'], isTrue);
-      expect(result.metadata?['tierAttempts'], [
-        {'tier': 'SchemaOrg', 'success': false, 'quality': 0.0, 'durationMs': 0},
-        {'tier': 'SiteConfig', 'success': true, 'quality': 0.4, 'durationMs': 0},
-        {'tier': 'RuleBased', 'success': true, 'quality': 0.85, 'durationMs': 7},
-      ]);
-    });
+        expect(result.metadata?['extraction_method'], 'enhanced_parser');
+        expect(result.metadata?['successfulTier'], 'RuleBased');
+        expect(result.metadata?['parserVersion'], parserVersion);
+        expect(result.metadata?['unknownDomain'], isTrue);
+        expect(result.metadata?['tierAttempts'], [
+          {
+            'tier': 'SchemaOrg',
+            'success': false,
+            'quality': 0.0,
+            'durationMs': 0,
+          },
+          {
+            'tier': 'SiteConfig',
+            'success': true,
+            'quality': 0.4,
+            'durationMs': 0,
+          },
+          {
+            'tier': 'RuleBased',
+            'success': true,
+            'quality': 0.85,
+            'durationMs': 7,
+          },
+        ]);
+      },
+    );
 
     /// BUT-1476: the enhanced parser must ALWAYS be invoked with `useLlm:false`
     /// so it can never fire its own Gemini tier — the Tier 6 LlmExtractionFallback

@@ -187,20 +187,22 @@ void main() {
     expect(spy.events, hasLength(2));
   });
 
-  test('a refused handwritten read leaves the next read to be measured',
-      () async {
-    viewModel.setHandwritten(true);
-    limiter.deny = true;
-    await viewModel.extractHandwrittenForTesting(imageBytes);
-    expect(spy.events, isEmpty, reason: 'a refusal is not measured');
+  test(
+    'a refused handwritten read leaves the next read to be measured',
+    () async {
+      viewModel.setHandwritten(true);
+      limiter.deny = true;
+      await viewModel.extractHandwrittenForTesting(imageBytes);
+      expect(spy.events, isEmpty, reason: 'a refusal is not measured');
 
-    viewModel.setHandwritten(false);
-    limiter.deny = false;
-    await viewModel.addPageForTesting(imageBytes, 'Pannkakor\n\n3 ägg');
+      viewModel.setHandwritten(false);
+      limiter.deny = false;
+      await viewModel.addPageForTesting(imageBytes, 'Pannkakor\n\n3 ägg');
 
-    expect(spy.events, hasLength(1));
-    expect(limiter.recorded, hasLength(1));
-  });
+      expect(spy.events, hasLength(1));
+      expect(limiter.recorded, hasLength(1));
+    },
+  );
 
   test('a restored draft was measured when it was first read', () async {
     await viewModel.persistPhotoDraft(
