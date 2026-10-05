@@ -173,7 +173,7 @@ Intentionally centralized reference data.
 | `recipe_section_detector.dart` | 502 | The single audited heading/ingredient safety hinge — the heuristics must be read together, and each carries the reasoning that stops an allergen-dropping regression; vocabularies already extracted to `heading_word_lists.dart` (BUT-1714) |
 | `html_sanitizer.dart` | 551 | HTML sanitizer rules — cleaning rules table |
 | `ingredient_normalizer.dart` | 536 | Ingredient name normalization — lookup tables |
-| `swedish_pluralization.dart` | 514 | Swedish pluralization rules |
+| `swedish_pluralization.dart` | 545 | Swedish pluralization rules |
 | `code_lexicon_provider.dart` | 511 | Large static lexicon constant (menu-code entries); splitting loses the lookup locality |
 | `social_module.dart` | 577 | DI wiring module — pure registration, no business logic; grows with every new social service |
 | `app_router.dart` | 664 | Centralized routing config — grows with every new screen; splitting would scatter route definitions |

@@ -224,6 +224,20 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             // always read as the default false and the hint re-fired forever.
             hasSeenActivityFeedHint:
                 s['hasSeenActivityFeedHint'] as bool? ?? false,
+            // Written to this sub-doc by setAutoAddBoughtToPantry,
+            // markPantryAutoAddPrompted and the onboarding skip; without the
+            // merge they read as defaults after every login.
+            autoAddBoughtToPantry: SerializationUtils.safeBool(
+              s,
+              'autoAddBoughtToPantry',
+            ),
+            pantryAutoAddPrompted: SerializationUtils.safeBool(
+              s,
+              'pantryAutoAddPrompted',
+            ),
+            onboardingSkippedAt: SerializationUtils.parseDateTimeValue(
+              s['onboardingSkippedAt'],
+            ),
             // BUT-1322: householdSize is a private preference persisted only
             // in this settings sub-doc (toPrivateSettings) — merge it back or
             // the portion-scaling default always reads null.

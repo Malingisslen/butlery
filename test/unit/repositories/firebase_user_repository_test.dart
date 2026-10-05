@@ -302,6 +302,39 @@ void main() {
         );
       });
 
+      test('fetchProfile merges the pantry choice and the onboarding skip '
+          'from the private settings sub-doc', () async {
+        const userId = 'user-123';
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .set({
+              'autoAddBoughtToPantry': true,
+              'pantryAutoAddPrompted': true,
+              'onboardingSkippedAt': Timestamp.fromDate(
+                DateTime.utc(2026, 10, 5),
+              ),
+            });
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(profile!.autoAddBoughtToPantry, isTrue);
+        expect(profile.pantryAutoAddPrompted, isTrue);
+        expect(
+          profile.onboardingSkippedAt?.isAtSameMomentAs(
+            DateTime.utc(2026, 10, 5),
+          ),
+          isTrue,
+        );
+      });
+
       test('fetchProfile defaults hasSeenActivityFeedHint to false when the '
           'settings sub-doc is absent (BUT-1220)', () async {
         // Pre-field accounts / fresh users have no settings doc — the merge

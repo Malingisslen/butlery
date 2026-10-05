@@ -12,8 +12,11 @@ class IngredientParser {
   IngredientParser._();
 
   /// Regex for Swedish fraction and decimal format parsing.
+  ///
+  /// The mixed form ("1 ½") is tried before the bare number: alternation takes
+  /// the first branch that matches, and "1" alone would leave "½" in the name.
   static final RegExp quantityRegex = RegExp(
-    r'^(\d+(?:[,\.]\d+)?|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗]|\d+\s*[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])([A-Za-zÅÄÖåäö]+)?\s*(.+)$',
+    r'^(\d+\s*[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗]|\d+(?:[,\.]\d+)?|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])([A-Za-zÅÄÖåäö]+)?\s*(.+)$',
   );
 
   /// Comprehensive measurement unit set (delegates to UnitDefinitions).

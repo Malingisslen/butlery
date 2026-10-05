@@ -129,6 +129,19 @@ void main() {
         expect(result.name, equals('socker'));
       });
 
+      test('parses a mixed fraction without a unit', () {
+        // A scaled "1 citron" at 1.5x is written "1 ½ citroner"; the recipe
+        // page re-parses that line and showed "1" beside "½ citroner".
+        var result = IngredientParser.parseIngredient('1 ½ citroner');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, isEmpty);
+        expect(result.name, equals('citroner'));
+
+        result = IngredientParser.parseIngredient('2½ ägg');
+        expect(result.quantity, equals(2.5));
+        expect(result.name, equals('ägg'));
+      });
+
       test('should parse packaging units', () {
         var result = IngredientParser.parseIngredient(
           '1 burk krossade tomater',
