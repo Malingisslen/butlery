@@ -2244,12 +2244,6 @@
       "path": "Firebase Storage"
     },
     {
-      "id": "cf-cleanup-cache",
-      "label": "cleanupExpiredCache (02:00 dagligen)",
-      "context": "cloud-function",
-      "path": "functions/src/cleanup/cleanup-cache.ts"
-    },
-    {
       "id": "cf-cleanup-notifications",
       "label": "cleanupOldNotifications (sön 04:00)",
       "context": "cloud-function",
@@ -2296,12 +2290,6 @@
       "label": "onRecipeDeleted — städar Storage-filer",
       "context": "cloud-function",
       "path": "functions/src/cleanup/cleanup-recipe-storage.ts"
-    },
-    {
-      "id": "ds-global-cache",
-      "label": "globalRecipeCache",
-      "context": "datastore",
-      "path": "Firestore"
     },
     {
       "id": "ds-rate-limits",
@@ -2416,7 +2404,7 @@
         {
           "from": "vm-smart-import",
           "to": "svc-import-manager",
-          "payload": "url → 7-stegs vattenfall med GlobalRecipeCache, hastighetsgräns och parse-telemetri",
+          "payload": "url → vattenfall med hastighetsgräns och parse-telemetri",
           "transport": "method call",
           "verified": true
         },
@@ -7182,20 +7170,13 @@
     {
       "id": "flow-eng-4",
       "label": "Schemalagd städning & web-extra",
-      "description": "Sju schemalagda Cloud Functions städar utgångna Firestore-samlingar och en trigger städar Storage-filer vid receptradering. Web-specifikt: en egenbyggd PWA-installationsbanner ovanpå webbläsarens beforeinstallprompt, och en webbanpassad receptutskrift.",
+      "description": "Schemalagda Cloud Functions städar utgångna Firestore-samlingar och en trigger städar Storage-filer vid receptradering. Web-specifikt: en egenbyggd PWA-installationsbanner ovanpå webbläsarens beforeinstallprompt, och en webbanpassad receptutskrift.",
       "features": [
         "ENG-24",
         "ENG-25",
         "ENG-26"
       ],
       "steps": [
-        {
-          "from": "cf-cleanup-cache",
-          "to": "ds-global-cache",
-          "payload": "tar bort utgångna cache-poster (TTL, standard 90 dagar), dagligen 02:00 UTC",
-          "transport": "schemalagd funktion (cron)",
-          "verified": true
-        },
         {
           "from": "cf-cleanup-notifications",
           "to": "ds-notification-history",
