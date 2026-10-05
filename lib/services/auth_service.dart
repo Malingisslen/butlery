@@ -405,7 +405,13 @@ class AuthService extends ChangeNotifier
 
   Future<bool> sendPasswordResetEmail(String email) async {
     return await executeAsync(() async {
-      await _authRepository.sendPasswordResetEmail(email);
+      try {
+        await _authRepository.sendPasswordResetEmail(email);
+      } on FirebaseAuthException catch (e) {
+        // An unknown address gets the same answer as a known one, so the
+        // reset form cannot be used to find out who has an account.
+        if (e.code != 'user-not-found') rethrow;
+      }
       return true;
     }).catchError((e) {
       if (e is FirebaseAuthException) {

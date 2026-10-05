@@ -1,90 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:provider/provider.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/indicators/notification_badge.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/utils/logger.dart';
 
-/// User avatar with aggregated notification badge from multiple sources.
-/// Displays friend requests, group invitations, unread recipes, and menus.
-class RecipeListAvatarBadge extends StatelessWidget {
+/// The user's avatar at the end of the Mer bar; tapping it opens the profile
+/// menu. It reads [UserService] from the service locator because no route
+/// provides it above the Mer tab.
+class RecipeListAvatarBadge extends StatefulWidget {
   const RecipeListAvatarBadge({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer3<
-      UserService,
-      FriendsViewModel,
-      SharedContentCoordinatorViewModel
-    >(
-      builder:
-          (
-            context,
-            userService,
-            friendsViewModel,
-            sharedContentViewModel,
-            child,
-          ) {
-            final totalNotifications = _calculateTotalNotifications(
-              friendsViewModel,
-              sharedContentViewModel,
-            );
+  State<RecipeListAvatarBadge> createState() => _RecipeListAvatarBadgeState();
+}
 
-            return Stack(
-              children: [
-                // UI Redesign: No status indicator per interview decision
-                SocialAvatarComponents.avatar(
-                  user: userService.currentUserProfile,
-                  displayName: userService.currentDisplayName,
-                  size: ImageSize.medium,
-                  showOnlineStatus: false,
-                  onTap: () => _showProfileMenu(context, userService),
-                ),
-                if (totalNotifications > 0)
-                  Positioned(
-                    top: 2,
-                    right: 2,
-                    child: NotificationBadge(count: totalNotifications),
-                  ),
-              ],
-            );
-          },
-    );
+class _RecipeListAvatarBadgeState extends State<RecipeListAvatarBadge> {
+  late final UserService _userService;
+
+  @override
+  void initState() {
+    super.initState();
+    _userService = ServiceLocator.get<UserService>();
   }
 
-  int _calculateTotalNotifications(
-    FriendsViewModel friendsViewModel,
-    SharedContentCoordinatorViewModel sharedContentViewModel,
-  ) {
-    int pendingFriendRequests = 0;
-    int pendingGroupInvitations = 0;
-    int unreadRecipes = 0;
-    int unreadMenus = 0;
-
-    try {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      pendingFriendRequests = friendsViewModel.pendingRequestsCount;
-      pendingGroupInvitations =
-          friendsService.invitations.pendingReceivedInvitations.length;
-      unreadRecipes = sharedContentViewModel.recipeViewModel.unreadCount;
-      unreadMenus = sharedContentViewModel.menuViewModel.unreadCount;
-    } catch (e) {
-      AppLogger.warning(
-        '⚠️ One or more ViewModels disposed - showing fallback notification badge',
-      );
-    }
-
-    return pendingFriendRequests +
-        pendingGroupInvitations +
-        unreadRecipes +
-        unreadMenus;
+  @override
+  Widget build(BuildContext context) {
+    final userService = _userService;
+    return ListenableBuilder(
+      listenable: userService,
+      builder: (context, _) => SocialAvatarComponents.avatar(
+        user: userService.currentUserProfile,
+        displayName: userService.currentDisplayName,
+        size: ImageSize.medium,
+        showOnlineStatus: false,
+        onTap: () => _showProfileMenu(context, userService),
+      ),
+    );
   }
 
   void _showProfileMenu(BuildContext context, UserService userService) {
