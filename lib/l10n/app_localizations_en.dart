@@ -404,6 +404,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'You don\'t have permission to perform this action.';
 
   @override
+  String get errorPageNotFound => 'The page could not be found';
+
+  @override
+  String get errorBackToStart => 'Back to start';
+
+  @override
   String get errorNotFound => 'Could not be found.';
 
   @override
@@ -13234,6 +13240,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailVerificationResend => 'Send again';
+
+  @override
+  String emailVerificationResendCountdown(int seconds) {
+    return 'You can send again in $seconds s';
+  }
 
   @override
   String get emailVerificationContinue => 'Continue anyway';

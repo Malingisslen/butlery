@@ -60,6 +60,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         builder: (context) => ChatViewFacade(
           conversationId: conversation.id,
           conversation: conversation,
+          backTo: context.l10n.messagingTitle,
         ),
       ),
     );

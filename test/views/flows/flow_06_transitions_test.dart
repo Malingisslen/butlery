@@ -5,15 +5,11 @@
 ///
 /// - TR::FLOW::06::verifiera-epost::klart: the link is opened, the account
 ///   is verified and the user is let in. The view polls every 5 s
-///   (lib/views/auth/email_verification_view.dart:33, :62-81), so the
+///   (lib/views/auth/email_verification_view.dart), so the
 ///   verification is seen at the first poll after the link was opened.
 /// - TR::FLOW::06::verifieringslank::utgangen: an expired link means asking
 ///   for a new one. The view offers "Skicka igen", sends a new link, and
-///   holds the next one for 60 s (:34, :84-118). Two known gaps are pinned
-///   below (BUT-2172): the button is not given back after the 60 s, and the
-///   countdown is part of the button's name, where produktregler.md:676
-///   puts it outside the name. The tests find the button as the resend
-///   action, not by the text that carries the countdown.
+///   holds the next one for 60 s.
 ///
 /// The real EmailVerificationView runs under fake time. The fake is the
 /// AuthService edge only: whether the address is verified, the reload, and
@@ -149,20 +145,11 @@ void main() {
       expect(sends, 1, reason: 'no second link inside the 60 s');
     });
 
-    // Known gaps, shrink-only (census PARTIAL, BUT-2172). This pins today's
-    // behaviour, which is wrong on two counts:
-    // - the countdown is built into the button's name,
-    //   "Skicka igen (60s)" (email_verification_view.dart:170-172), where
-    //   produktregler.md:676 puts it outside the name, since a name that
-    //   changes every second is never read out;
-    // - the wait is only read when something else rebuilds the view. The
-    //   5 s poll does not call setState, so the button stays off after the
-    //   60 s.
-    // This test fails once either is fixed; then assert the canonical
-    // behaviour instead, drop the known_gap in
-    // test/fixtures/design/transition_census.json and set the entry TESTED.
-    testWidgets('known gap: the wait is counted in the button name, and the '
-        'button is not given back after the 60 s', (tester) async {
+    // produktregler.md 13.7: the wait sits outside the button's name, since
+    // a name that changes every second is never read out, and the button
+    // comes back when the wait is over (BUT-2146, BUT-2172).
+    testWidgets('the wait is shown under the button, not in its name, and the '
+        'button comes back after the 60 s', (tester) async {
       await tester.pumpWidget(view());
       await tester.pump();
       await tester.tap(resend);
@@ -171,19 +158,28 @@ void main() {
       expect(
         find.descendant(
           of: resend,
-          matching: find.text('${_sv.emailVerificationResend} (60s)'),
+          matching: find.text(_sv.emailVerificationResend),
         ),
         findsOneWidget,
-        reason: 'known gap: the countdown is in the name (produktregler:676)',
+      );
+      expect(
+        find.text(_sv.emailVerificationResendCountdown(60)),
+        findsOneWidget,
       );
 
-      await tester.pump(const Duration(seconds: 90));
-      await tester.pump();
-
+      await tester.pump(const Duration(seconds: 1));
       expect(
-        resendEnabled(tester),
-        isFalse,
-        reason: 'known gap: the action is not given back after the 60 s',
+        find.text(_sv.emailVerificationResendCountdown(59)),
+        findsOneWidget,
+      );
+
+      await tester.pump(const Duration(seconds: 60));
+      expect(resendEnabled(tester), isTrue);
+      expect(
+        find.textContaining(
+          _sv.emailVerificationResendCountdown(0).split('0').first,
+        ),
+        findsNothing,
       );
     });
   });

@@ -25,10 +25,15 @@ class ChatViewFacade extends StatefulWidget {
   final String conversationId;
   final Conversation? conversation;
 
+  /// The view the back arrow returns to, for its accessible name. Null keeps
+  /// the plain "Tillbaka".
+  final String? backTo;
+
   const ChatViewFacade({
     super.key,
     required this.conversationId,
     this.conversation,
+    this.backTo,
   });
 
   @override
@@ -103,6 +108,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
           return Scaffold(
             appBar: ChatAppBar(
               conversation: viewModel.conversation ?? widget.conversation,
+              backTo: widget.backTo,
               onMenuAction: _actionHandler.handleMenuAction,
             ),
             body: Column(
