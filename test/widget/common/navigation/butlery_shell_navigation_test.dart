@@ -80,6 +80,14 @@ Widget _bar(BuildContext context, {int? current, ValueChanged<int>? onTap}) {
 SemanticsNode _node(WidgetTester tester, Finder finder) =>
     tester.getSemantics(finder);
 
+/// The plus's own surface, inside its press.
+final _plusMaterial = find
+    .descendant(
+      of: find.byKey(ButleryAddButton.buttonKey),
+      matching: find.byType(Material),
+    )
+    .first;
+
 void main() {
   group('bottom row', () {
     testWidgets('four tabs in the drawn order, keyed by route', (tester) async {
@@ -180,9 +188,7 @@ void main() {
         await tester.pumpWidget(
           _app(theme: theme, home: (c) => _bar(c, current: 0)),
         );
-        final material = tester.widget<Material>(
-          find.byKey(ButleryAddButton.buttonKey),
-        );
+        final material = tester.widget<Material>(_plusMaterial);
         // action.primary and text.onActionPrimary are the same in both
         // modes (tokens.json semantic).
         expect(material.color, const Color(0xFFCE7C1E));
@@ -239,9 +245,7 @@ void main() {
             .single;
         expect((line.decoration as BoxDecoration?)?.color, saffron);
         // The plus keeps its saffron fill; its ring is paper on ink.
-        final plus = tester.widget<Material>(
-          find.byKey(ButleryAddButton.buttonKey),
-        );
+        final plus = tester.widget<Material>(_plusMaterial);
         expect(plus.color, saffron);
         expect((plus.shape! as CircleBorder).side.color, paper);
       });

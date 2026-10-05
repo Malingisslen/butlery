@@ -396,9 +396,8 @@ class ButleryAddButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(size / 2),
         child: SizedBox.square(
           dimension: size,
-          child: Material(
+          child: SaffronPress(
             key: buttonKey,
-            color: cs.secondary,
             shape: CircleBorder(
               side: ring
                   ? BorderSide(
@@ -408,18 +407,14 @@ class ButleryAddButton extends StatelessWidget {
                     )
                   : BorderSide.none,
             ),
-            clipBehavior: Clip.antiAlias,
-            child: PressUnchanged(
-              child: InkWell(
-                onTap: onPressed,
-                customBorder: const CircleBorder(),
-                child: ExcludeSemantics(
-                  child: ButleryIcon(
-                    ButleryIcons.navAdd,
-                    color: cs.onSecondary,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                ),
+            onTap: onPressed,
+            builder: (context, pressed) => ExcludeSemantics(
+              child: ButleryIcon(
+                ButleryIcons.navAdd,
+                color: pressed
+                    ? AppModeColors.onActionPrimaryPressed(cs.brightness)
+                    : cs.onSecondary,
+                size: AppDimensions.iconSizeL,
               ),
             ),
           ),

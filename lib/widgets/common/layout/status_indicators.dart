@@ -274,7 +274,13 @@ class _BannerFrame extends StatelessWidget {
       child: tappable
           ? Material(
               type: MaterialType.transparency,
-              child: PressUnchanged(
+              // One step darker than the warning tint (R8-2 = A): raised in
+              // light mode; in dark mode the tint is raised itself, so the
+              // step on raised.
+              child: PressFill(
+                surface: Theme.of(context).brightness == Brightness.dark
+                    ? PressSurface.raised
+                    : PressSurface.base,
                 child: InkWell(
                   onTap: onTap,
                   borderRadius: _radius,

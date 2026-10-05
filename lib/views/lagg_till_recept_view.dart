@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -152,7 +153,7 @@ class LaggTillReceptView extends StatelessWidget {
                     semanticIdentifier: 'btn-import-url',
                     label: context.l10n.recipeImportLink,
                     icon: ButleryIcons.link,
-                    color: Theme.of(context).colorScheme.secondary,
+                    saffron: true,
                     size: size,
                     onTap: () => _navigate(context, '/smartImport'),
                   ),
@@ -162,7 +163,7 @@ class LaggTillReceptView extends StatelessWidget {
                     semanticIdentifier: 'btn-write-manually',
                     label: context.l10n.recipeWriteManually,
                     icon: ButleryIcons.pencil,
-                    color: Theme.of(context).colorScheme.primary,
+                    saffron: false,
                     size: size,
                     onTap: () => _navigate(context, '/skrivSjalv'),
                   ),
@@ -178,7 +179,7 @@ class LaggTillReceptView extends StatelessWidget {
                     semanticIdentifier: 'btn-photo-import',
                     label: context.l10n.recipeFromImage,
                     icon: ButleryIcons.image,
-                    color: Theme.of(context).colorScheme.primary,
+                    saffron: false,
                     size: size,
                     onTap: () => _navigate(context, '/photoImport'),
                   ),
@@ -188,7 +189,7 @@ class LaggTillReceptView extends StatelessWidget {
                     semanticIdentifier: 'btn-archive-import',
                     label: context.l10n.recipeFromArchive,
                     icon: ButleryIcons.archive,
-                    color: Theme.of(context).colorScheme.secondary,
+                    saffron: true,
                     size: size,
                     onTap: () => _navigate(context, '/importFranArkiv'),
                   ),
@@ -202,7 +203,7 @@ class LaggTillReceptView extends StatelessWidget {
                 semanticIdentifier: 'btn-voice-import',
                 label: context.l10n.recipeVoiceImport,
                 icon: ButleryIcons.mic,
-                color: Theme.of(context).colorScheme.primary,
+                saffron: false,
                 size: size,
                 onTap: () => _navigate(context, '/voiceImport'),
               ),
@@ -220,7 +221,7 @@ class _AddRecipeButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.icon,
-    required this.color,
+    required this.saffron,
     required this.size,
     required this.onTap,
     this.semanticIdentifier,
@@ -228,7 +229,9 @@ class _AddRecipeButton extends StatelessWidget {
 
   final String label;
   final IconData icon;
-  final Color color;
+
+  /// Saffron (action.primary) rather than ink.
+  final bool saffron;
   final double size;
   final VoidCallback onTap;
 
@@ -237,43 +240,59 @@ class _AddRecipeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+    );
+    Widget content(Color foreground) => Padding(
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ButleryIcon(
+            icon,
+            size: AppDimensions.iconSizeXl,
+            color: foreground,
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
     final tile = SizedBox(
       width: size,
       height: size,
-      child: Material(
-        color: color,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: PressUnchanged(
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ButleryIcon(
-                    icon,
-                    size: AppDimensions.iconSizeXl,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  Text(
-                    label,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+      child: saffron
+          ? SaffronPress(
+              shape: shape,
+              onTap: onTap,
+              builder: (context, pressed) => content(
+                pressed
+                    ? AppModeColors.onActionPrimaryPressed(cs.brightness)
+                    : cs.onPrimary,
+              ),
+            )
+          : Material(
+              color: cs.primary,
+              shape: shape,
+              child: PressFill(
+                surface: PressSurface.ink,
+                child: InkWell(
+                  onTap: onTap,
+                  customBorder: shape,
+                  child: content(cs.onPrimary),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
 
     if (semanticIdentifier != null) {

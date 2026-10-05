@@ -27,22 +27,17 @@ const _waiting = <String, int>{
   'lib/widgets/image/image_picker_widget.dart': 1,
   'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/social/groups/shared_content_card.dart': 1,
-  // Mixed: a tab with its own drawn press (paper at the on-ink 0.18 step)
-  // and the saffron add button, a surface the rule does not cover (BUT-2232).
-  'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 2,
+  // A tab with its own drawn press (paper at the on-ink 0.18 step).
+  'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 1,
   // Raised, or cs.error when the action is destructive (BUT-2232).
   'lib/widgets/image/components/edit_actions_panel.dart': 1,
   // One on surface.raised.
   'lib/widgets/image/components/upload_progress_widgets.dart': 1,
   // A surface the rule does not cover, for the design session (BUT-2232):
-  // saffron, the warning and danger tints, the error colour, photos, the
-  // scanned page, and a send button that is paper in dark mode.
-  'lib/views/lagg_till_recept_view.dart': 1,
-  'lib/views/recipe_detail_view.dart': 1,
-  'lib/widgets/common/layout/status_indicators.dart': 1,
+  // the danger tint, a photo, the scanned page, initials, and a send button
+  // that is paper in dark mode.
   'lib/widgets/common/profile/builders/menu_item_builders.dart': 1,
   'lib/widgets/recipe/comment_form_widget.dart': 1,
-  'lib/widgets/recipe/comment_image_attachments.dart': 1,
   'lib/widgets/recipe/heirloom_section.dart': 1,
   'lib/widgets/social/ping_compose_sheet.dart': 1,
   'lib/widgets/user/user_avatar_widgets.dart': 1,
@@ -158,12 +153,7 @@ void main() {
   // since a condition picks its wrapper.
   test('the design-session surfaces sit in PressUnchanged', () {
     const unchanged = <String, int>{
-      'lib/views/lagg_till_recept_view.dart': 1,
-      'lib/views/recipe_detail_view.dart': 1,
-      'lib/widgets/common/layout/status_indicators.dart': 1,
-      'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 1,
       'lib/widgets/recipe/comment_form_widget.dart': 1,
-      'lib/widgets/recipe/comment_image_attachments.dart': 1,
       'lib/widgets/recipe/heirloom_section.dart': 1,
       'lib/widgets/user/user_avatar_widgets.dart': 1,
     };
