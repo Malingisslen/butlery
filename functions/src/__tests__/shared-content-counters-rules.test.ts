@@ -227,6 +227,37 @@ test("a stranger stepping by TWO is DENIED", async () => {
   );
 });
 
+// BUT-2122: the create limb binds the id. The payload here is exactly the one
+// the FIRST-share test above sends and is ALLOWED at `shared_content`, so the
+// only thing this deny can be measuring is the document id.
+test("a stranger CREATING a counter under a made-up id is DENIED", async () => {
+  await assertFails(
+    env
+      .authenticatedContext(SHARER_UID)
+      .firestore()
+      .doc(`users/${OWNER_UID}/counters/planted-${RUN}`)
+      .set(
+        {
+          unreadSharedRecipes: increment(1),
+          totalSharedContent: increment(1),
+          lastUpdated: serverTimestamp(),
+        },
+        { merge: true }
+      )
+  );
+});
+
+// BUT-2122: the owner's absolute arm is bound to the same id.
+test("the OWNER creating a counter under a made-up id is DENIED", async () => {
+  await assertFails(
+    env
+      .authenticatedContext(OWNER_UID)
+      .firestore()
+      .doc(`users/${OWNER_UID}/counters/mine-${RUN}`)
+      .set({ unreadSharedRecipes: 0, totalSharedContent: 0, lastUpdated: serverTimestamp() })
+  );
+});
+
 test("a stranger CREATING the row at an arbitrary value is DENIED", async () => {
   await assertFails(
     env

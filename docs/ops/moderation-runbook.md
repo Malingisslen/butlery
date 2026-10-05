@@ -89,6 +89,17 @@ Both are satisfied by this flow:
 - The `Settings -> Appeal a removal` mailto (and ToS section 6.1)
   satisfies Google Play's appeal requirement.
 
+## Support: "I can't send to X" / "I can't start a chat with X"
+
+Since BUT-2017 a person someone has blocked is refused when they write to that
+person, open a DM with them, or vote on a menu they share. The app never says
+why, and support must not either:
+confirming a block to the blocked person turns a silent safety control into a
+notification. Check `blocks/{other}_{reporter}` (or the reporter's
+`users/{uid}/block_mirror/current`) to understand the ticket, then answer only
+that it could not be sent. A clock-skew symptom (the app's own message names
+the device clock) is a different cause and is safe to explain.
+
 ## Rollback procedure
 
 Content deletes via the admin review screen are hard deletes at the

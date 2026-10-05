@@ -133,6 +133,12 @@ const ADMIN_UID = "admin-uid";
   surprising suite. The accidental mutant was worth keeping under an accurate name: prefixing
   is a cheap way to reach "make this limb fail closed", which is often the edit a deviation
   entry records as REJECTED and which therefore wants a pinned kill set of its own.
+- **The emulator enforces the per-request document-access cap, and it counts DISTINCT
+  DOCUMENTS, not calls** — measured 2026-10-05 on `realtime_menus/{id}/votes` create
+  (BUT-2017): 14 `exists()`/`get()` calls over TWO documents (the menu plus the voter's
+  mirror read twelve more times) ALLOWED; the same 14 calls over 14 distinct paths were
+  PERMISSION_DENIED. So count a limb's cost by distinct paths (`convOf` referenced four
+  times is one), and a cap probe is two text mutants on the same limb, no arithmetic.
 - **A deny-always mutant on a whole gate is what grades its ALLOW tests, including the
   pinned-green "known gap" ones** — they are fail-closed controls only if they die when the
   gate stops permitting anything. It grades the ungated verbs at the same time: on `poll_votes`

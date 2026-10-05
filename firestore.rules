@@ -199,6 +199,30 @@ service cloud.firestore {
       return !exists(/databases/$(database)/documents/blocks/$(targetUserId + '_' + request.auth.uid));
     }
 
+    // BUT-2017: the room-sized twin of `isNotBlockedBy`. That helper needs ONE
+    // known counterparty; a chat or a shared menu has N, and rules cannot
+    // iterate a list or spend N document reads under the per-request cap. So
+    // the caller's OWN mirror (`users/{uid}/block_mirror/current`, written by
+    // the Admin SDK only) lists everyone who has blocked them, and one
+    // `hasAny` against the room's participant list answers for the whole room.
+    //
+    // Same shape, same decisions as `notBlockedByAnyoneHere()` on `poll_votes`
+    // (BUT-1917): FAILS OPEN on a missing mirror, ignores the `truncated`
+    // flag, and is one-directional — it refuses the BLOCKED person's write and
+    // never the blocker's. The accepted-deviations entries for BUT-1917 and
+    // BUT-2017 carry the reasoning.
+    //
+    // A room document with no `participantIds` key makes the `hasAny` an
+    // evaluation error, which is a deny. Do not "guard" it with
+    // `.get('participantIds', [])`: that would turn the missing roster into a
+    // fail-OPEN.
+    function notBlockedByAnyOf(participantIds) {
+      return !exists(/databases/$(database)/documents/users/$(request.auth.uid)/block_mirror/current)
+        || !get(/databases/$(database)/documents/users/$(request.auth.uid)/block_mirror/current)
+             .data.get('blockedByUserIds', [])
+             .hasAny(participantIds);
+    }
+
     // Burst guard: one guarded write per `seconds` per user and type. The
     // writer must stamp users/{uid}/rate_limits/{collection} in the SAME request
     // with lastWrite == request.time and lastDocId == the call site's key
@@ -627,7 +651,15 @@ service cloud.firestore {
         // The same grant on a document that does not exist yet: the first
         // share for a recipient. `resource` is null there, so the step check
         // above would be an evaluation error rather than a value bound.
+        //
+        // BUT-2122: the id is bound to the one document the app writes
+        // (`_getUserCountersRef` in base_shared_content_repository.dart).
+        // Without it a stranger could plant any number of documents under
+        // somebody else's counters tree at made-up ids; nothing read them,
+        // but it was write space in another person's subtree. The owner's
+        // absolute limb below keeps the wildcard for their own tree.
         allow create: if isAuthenticated()
+          && counterId == 'shared_content'
           && countersShapeOk()
           && counterCreateOk('unreadSharedRecipes')
           && counterCreateOk('unreadSharedMenus')
@@ -637,7 +669,11 @@ service cloud.firestore {
         // BUT-2100: the owner keeps ABSOLUTE writes. `recalculateUnreadCount`
         // (base_shared_content_repository.dart) is the documented repair path
         // and sets a recomputed total, which no ±1 step can express.
-        allow create, update: if isOwner(userId) && countersShapeOk();
+        // BUT-2122: the owner's wildcard is bound to the same id; the repair
+        // path writes `shared_content` and nothing else.
+        allow create, update: if isOwner(userId)
+          && counterId == 'shared_content'
+          && countersShapeOk();
         allow delete: if isOwner(userId);
       }
 
@@ -1422,9 +1458,22 @@ service cloud.firestore {
         allow read: if isAuthenticated()
           && isRealtimeParticipant('realtime_menus', menuId);
 
+        // BUT-2017: the household menu vote is the second ballot surface
+        // beside `poll_votes`, and gets the same gate: nobody on this menu may
+        // have blocked the voter. The menu document is the one
+        // `isRealtimeParticipant` already reads. UPDATE carries it too, or a
+        // blocked voter who had voted before the block could keep steering
+        // their existing row — and every client write to the row is an
+        // update, so resolving or adding an alternative is refused for the
+        // blocked participant as well. Intended, not collateral.
+        function menuRoster() {
+          return get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.participantIds;
+        }
+
         allow create: if isAuthenticated()
           && request.auth.uid == voteId
-          && isRealtimeParticipant('realtime_menus', menuId);
+          && isRealtimeParticipant('realtime_menus', menuId)
+          && notBlockedByAnyOf(menuRoster());
 
         // Update: same uid as the doc id, AND the existing doc's `userId`
         // (if present) matches — defence-in-depth against legacy votes
@@ -1439,7 +1488,8 @@ service cloud.firestore {
             || resource.data.userId == request.auth.uid
           )
           && cannotModify(['userId'])
-          && isRealtimeParticipant('realtime_menus', menuId);
+          && isRealtimeParticipant('realtime_menus', menuId)
+          && notBlockedByAnyOf(menuRoster());
 
         allow delete: if isAuthenticated() && request.auth.uid == voteId;
       }
@@ -1925,6 +1975,12 @@ service cloud.firestore {
         // our own client, a presence requirement binds a tampered one too. Do
         // not re-introduce the `||` hatches to "restore" the old warning.
         && request.resource.data.metadata.creatorId == request.auth.uid
+        // BUT-2017: somebody who has blocked you cannot be opened a new chat
+        // with. EXACT, not the mirror: `directIdBinds` has already pinned the
+        // room to two people, so the counterparty is known and `blocks` is
+        // read directly — no sync lag, no fail-open. The blocker's own create
+        // is untouched (one-directional, as everywhere else).
+        && isNotBlockedBy(otherParticipant(request.resource.data.participantIds))
         && rateLimitStamped('conversations', 3, conversationId);
 
       // Can update if you're a participant (but cannot modify participantIds,
@@ -2402,7 +2458,20 @@ service cloud.firestore {
         && request.resource.data.sentAt is timestamp
         && request.resource.data.sentAt <= request.time + duration.value(1, 'h')
         && isAccountMatured()
-        && isAgeCompliant();
+        && isAgeCompliant()
+        // BUT-2017: a blocked person cannot create a message in a room the
+        // blocker is in — a DM with them, or a group both are members of. The
+        // roster read is the same `convOf` get this limb already pays for.
+        // Soft block (BUT-1951): nobody is removed from a shared group.
+        //
+        // Two arms, because a DM is where a block is used first and the
+        // mirror is written by a trigger seconds AFTER the block row. In a
+        // two-person room the counterparty is known, so `blocks` is read
+        // directly and the gate holds from the moment the block exists; the
+        // mirror arm covers groups, where the counterparty is N people.
+        && (convOf(request.resource.data.conversationId).data.participantIds.size() != 2
+            || isNotBlockedBy(otherParticipant(convOf(request.resource.data.conversationId).data.participantIds)))
+        && notBlockedByAnyOf(convOf(request.resource.data.conversationId).data.participantIds);
 
       // Can update your own messages (content only — identity fields are immutable)
       //
@@ -2589,10 +2658,7 @@ service cloud.firestore {
         // leaves the blocker voting normally. Refusing the blocker would punish
         // the person who used the safety feature.
         function notBlockedByAnyoneHere() {
-          return !exists(/databases/$(database)/documents/users/$(request.auth.uid)/block_mirror/current)
-            || !get(/databases/$(database)/documents/users/$(request.auth.uid)/block_mirror/current)
-                 .data.get('blockedByUserIds', [])
-                 .hasAny(get(/databases/$(database)/documents/conversations/$(pollMessage().data.conversationId)).data.participantIds);
+          return notBlockedByAnyOf(get(/databases/$(database)/documents/conversations/$(pollMessage().data.conversationId)).data.participantIds);
         }
 
         // Every participant reads the tally; only the voter writes their row.

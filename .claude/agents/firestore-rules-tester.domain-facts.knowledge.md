@@ -53,6 +53,14 @@ and malformed shapes when the validator changes.
   each blocking call site for its guard before passing any sentence contrasting an open READ
   limb with a closed write side — that contrast is the load-bearing clause of the deviation
   entry it usually sits in (BUT-2054, 2026-09-09).
+- **A block gate on `messages` create does not reach the `conversations` UPDATE limb, and
+  `lastMessage` is a client-written field there** (deny-list limb; BUT-1903's comment
+  already records it). Measured 2026-10-05 (BUT-2017): with `blocks/{blocker}_{blocked}`
+  standing, the blocked person's message create DENIES and their merge-set of
+  `lastMessage.content` onto the same DM document is ALLOWED — the chat-list preview is a
+  second write path into the blocker's screen. Any sentence saying a blocked person's
+  "writes" into a room are refused is true of `messages` only; probe the parent document's
+  update limb before passing it.
 - **`isNotBlockedBy` sits on CREATE limbs only** (`social_requests`, `recipe_comments`,
   `recipe_ratings`, `user_notifications`) and is a bare `exists()` reading no field — so no
   READ limb in `firestore.rules` is block-gated, and a sentence saying a change to the helper

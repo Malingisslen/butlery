@@ -5441,3 +5441,34 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   textContrastGuideline estimates contrast from the rendered glyph pixels and measures them
   under. WCAG computes contrast on the specified colours. The entries stay in
   `known_a11y_findings.dart` so the matrix still reddens on any new or changed finding.
+
+## BUT-2017 — blocking reaches chat, DMs and menu votes (2026-10-05)
+
+- **The BUT-1917 mirror decisions now cover two more surfaces (BUT-2017, 2026-10-05).**
+  `notBlockedByAnyOf(participantIds)` is the one implementation of the mirror check;
+  `poll_votes` calls it, and so do `messages` create and `realtime_menus/{id}/votes` create
+  and update. Everything the two BUT-1917 entries above decide — fail-OPEN on a missing
+  mirror, the unread `truncated` flag, one direction only, reads not gated — holds on those
+  surfaces unchanged. The vote gate on update also refuses a blocked participant's resolve
+  and add-alternative writes, which are updates to the same row; intended.
+- **A two-person room is gated EXACTLY, not through the mirror (BUT-2017, 2026-10-05).**
+  `conversations` create reads `blocks/{other}_{me}` for the one counterparty
+  `directIdBinds` pins, and `messages` create does the same when the room's
+  `participantIds.size() == 2`, before the mirror arm. The mirror is written by a trigger
+  seconds after the block row, and a DM is where a block is used first; the exact arm closes
+  that window at one more document read. Pinned by `a DM message is refused on the block
+  row alone, before the mirror exists`. Do not fold the DM arm into the mirror arm for
+  uniformity.
+- **Cost: more billed reads on every user's writes (BUT-2017, 2026-10-05).** `exists()` on
+  an absent document is a read. Counted from the rules: a group message pays one more (the
+  mirror), a DM message two more (the block row and the mirror, both arms run), a menu vote
+  one more, a DM create one more. Cents at test-group scale.
+- **A menu owner edited out of their own `participantIds` is outside the vote gate
+  (BUT-2017, 2026-10-05).** `menuRoster()` reads `participantIds` only, while
+  `isRealtimeParticipant` also admits `ownerId`, and any participant may rewrite
+  `participantIds` on `realtime_menus`. Create puts the owner in the array, so reaching
+  the gap takes a hostile edit by another participant first. Named, not closed.
+- **A room document without `participantIds` DENIES (BUT-2017, 2026-10-05).** The `hasAny`
+  on a missing key is an evaluation error. Do not guard it with `.get('participantIds', [])`:
+  that turns a missing roster into a fail-open.
+

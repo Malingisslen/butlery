@@ -74,6 +74,7 @@ lessons that only matter while writing or running tests.
 - En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet … kör kontrollen på det RETURNERADE värdet efter varje omskrivning (BUT-1819, 2026-09-15)
 - Commit-gate coverage is recorded PER RUN with the verdict that run ended on … budget ONE full-file-list pass per gate ending on a pass verdict (BUT-1693, 2026-09-16)
 - A JUSTIFICATION is a claim about the code path you did NOT open … open Y's source before the sentence exists (BUT-1954, 2026-09-16)
+- En statisk sida i ett befintligt hosting-mål publicerar ALLT målet bär — mät vad målet publicerar och vem som når det; olanserat innehåll får en egen sajt med egen grind, och statiska filer behöver ingen build (BUT-890, 2026-10-05)
 
 ## UI/UX
 
