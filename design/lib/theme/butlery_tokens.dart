@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:aeaa174335bd2f3332f1c9dad8b13fd9d21e934563703f39797297f122239411 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:11901c85da424d66b1aa314b7db133a600e7b4783a5c3a0474d28b3a59c1a26f (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -226,6 +226,7 @@ class ButleryType {
   static const TextStyle cardTitle = TextStyle(fontFamily: family, fontSize: 15, fontWeight: FontWeight.w600);
   static const TextStyle label = TextStyle(fontFamily: family, fontSize: 14, fontWeight: FontWeight.w600);
   static const TextStyle listItem = TextStyle(fontFamily: family, fontSize: 13, fontWeight: FontWeight.w600);
+  static const TextStyle tab = TextStyle(fontFamily: family, fontSize: 13, fontWeight: FontWeight.w600);
   static const TextStyle meta = TextStyle(fontFamily: family, fontSize: 12.5, fontWeight: FontWeight.w600);
   static const TextStyle caption = TextStyle(fontFamily: family, fontSize: 12, fontWeight: FontWeight.w400);
   static const TextStyle navLabel = TextStyle(fontFamily: family, fontSize: 11, fontWeight: FontWeight.w700);
