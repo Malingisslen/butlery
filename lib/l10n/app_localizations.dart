@@ -24491,6 +24491,12 @@ abstract class AppLocalizations {
   /// **'Kategori {category}'**
   String a11yToggleShoppingCategory(String category);
 
+  /// The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).
+  ///
+  /// In sv, this message translates to:
+  /// **'{completed} av {total}'**
+  String shoppingCategoryProgress(int completed, int total);
+
   /// Semantics label for the show/hide empty categories row in the shopping list.
   ///
   /// In sv, this message translates to:

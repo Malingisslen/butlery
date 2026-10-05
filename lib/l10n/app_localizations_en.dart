@@ -14667,6 +14667,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String shoppingCategoryProgress(int completed, int total) {
+    return '$completed of $total';
+  }
+
+  @override
   String get a11yToggleEmptyCategories => 'Other categories';
 
   @override
