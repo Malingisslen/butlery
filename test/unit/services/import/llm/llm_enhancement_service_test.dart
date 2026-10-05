@@ -12,8 +12,7 @@
 ///   confidence (0.85), `usedLlm = true`, `requiresReview = true`, and the
 ///   metadata block with originalConfidence/missingFields/llmCost.
 /// - Meal-type inference: tags from the LLM are routed to the correct
-///   mealType ("frukost"→breakfast, "middag"→dinner, "dessert"→dessert,
-///   "mellanmål"→snack, no-match→dinner default).
+///   mealType.
 /// - Default portions: when LLM returns `portions: null`, the recipe gets
 ///   `ParsingTier.kDefaultPortions` (4) — not 0, not null-then-crash.
 /// - LlmException → ImportFailure: rate-limited LlmException maps to
@@ -50,6 +49,7 @@ import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // ---------------------------------------------------------------------------
@@ -390,43 +390,62 @@ void main() {
     }
 
     test(
-      'Swedish "frukost" maps to breakfast',
-      () async => expect(await mealTypeFromTags(['Frukost']), 'breakfast'),
+      'Swedish "frukost" maps to Frukost',
+      () async => expect(await mealTypeFromTags(['Frukost']), 'Frukost'),
     );
 
     test(
-      'English "breakfast" also maps to breakfast',
-      () async => expect(await mealTypeFromTags(['BREAKFAST']), 'breakfast'),
+      'English "breakfast" also maps to Frukost',
+      () async => expect(await mealTypeFromTags(['BREAKFAST']), 'Frukost'),
     );
 
     test(
-      '"lunch" maps to lunch',
-      () async => expect(await mealTypeFromTags(['Lunch']), 'lunch'),
+      '"lunch" maps to Lunch',
+      () async => expect(await mealTypeFromTags(['Lunch']), 'Lunch'),
     );
 
     test(
-      'Swedish "middag" maps to dinner',
-      () async => expect(await mealTypeFromTags(['middag']), 'dinner'),
+      'Swedish "middag" maps to Middag',
+      () async => expect(await mealTypeFromTags(['middag']), 'Middag'),
     );
 
     test(
-      '"dessert" maps to dessert',
-      () async => expect(await mealTypeFromTags(['Dessert']), 'dessert'),
+      '"dessert" maps to Dessert',
+      () async => expect(await mealTypeFromTags(['Dessert']), 'Dessert'),
     );
 
     test(
-      'Swedish "efterrätt" maps to dessert',
-      () async => expect(await mealTypeFromTags(['efterrätt']), 'dessert'),
+      'Swedish "efterrätt" maps to Dessert',
+      () async => expect(await mealTypeFromTags(['efterrätt']), 'Dessert'),
     );
 
     test(
-      'Swedish "mellanmål" maps to snack',
-      () async => expect(await mealTypeFromTags(['mellanmål']), 'snack'),
+      'Swedish "mellanmål" maps to Mellanmål',
+      () async => expect(await mealTypeFromTags(['mellanmål']), 'Mellanmål'),
     );
 
-    test('unknown / empty tags default to dinner (NOT empty string)', () async {
-      expect(await mealTypeFromTags(const []), 'dinner');
-      expect(await mealTypeFromTags(['random']), 'dinner');
+    test('unknown / empty tags default to Middag (NOT empty string)', () async {
+      expect(await mealTypeFromTags(const []), 'Middag');
+      expect(await mealTypeFromTags(['random']), 'Middag');
+    });
+
+    test('the written value is in the recipe form\'s offered list', () async {
+      // The menu generator matches a slot's meal type exactly, so a value
+      // outside the app's vocabulary is never picked for "7 middagar".
+      for (final tags in [
+        ['Frukost'],
+        ['Lunch'],
+        ['middag'],
+        ['Dessert'],
+        ['mellanmål'],
+        <String>[],
+      ]) {
+        expect(
+          RecipeFormState.mealTypes,
+          contains(await mealTypeFromTags(tags)),
+          reason: tags.toString(),
+        );
+      }
     });
   });
 

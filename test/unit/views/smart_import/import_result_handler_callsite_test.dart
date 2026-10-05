@@ -601,4 +601,64 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  // ── (c) A pasted recipe's source label is not a URL match ────────────────
+
+  testWidgets(
+    'checkForDuplicates never looks up the pasted-text source label, so an '
+    'unrelated earlier pasted recipe is not offered as a duplicate',
+    (tester) async {
+      // Arrange: both recipes were pasted, so both carry the same source
+      // label; their titles and ingredients are disjoint. The service is
+      // stubbed to answer the label lookup with the earlier recipe, which is
+      // what the real repository does: the label is stored as the URL.
+      final existingRecipe = _recipe(
+        id: 'existing',
+        title: 'Soppor',
+        sourceUrl: 'Importerat från text',
+        ingredients: const ['potatis', 'lök', 'buljong'],
+      );
+      mockRecipeService.setRecipeState(
+        recipes: [existingRecipe],
+        isInitialized: true,
+      );
+      when(
+        () => mockRecipeService.findBySourceUrl('Importerat från text'),
+      ).thenAnswer((_) async => [existingRecipe]);
+
+      final candidate = _recipe(
+        id: 'new',
+        title: 'Pannkakor',
+        sourceUrl: 'Importerat från text',
+        ingredients: const ['ägg', 'mjöl', 'smör'],
+      );
+
+      late BuildContext capturedContext;
+      await tester.pumpWidget(
+        _testApp(
+          Builder(
+            builder: (ctx) {
+              capturedContext = ctx;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final result =
+          await tester.runAsync(
+            () async => ImportResultHandler.checkForDuplicates(
+              capturedContext,
+              candidate,
+            ),
+          ) ??
+          false;
+
+      expect(result, isTrue);
+      verifyNever(() => mockRecipeService.findBySourceUrl(any()));
+      await tester.pump();
+      expect(find.text('Spara som nytt'), findsNothing);
+    },
+  );
 }

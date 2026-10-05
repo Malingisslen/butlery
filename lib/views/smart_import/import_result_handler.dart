@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -51,6 +52,13 @@ abstract final class ImportResultHandler {
   static double clampToExactMatchFloor(double score) =>
       score < _exactMatchMinScore ? _exactMatchMinScore : score;
 
+  /// A pasted or archived recipe carries a source label rather than an
+  /// address, and every recipe from that source shares it, so matching on it
+  /// would offer any earlier one as the duplicate.
+  @visibleForTesting
+  static bool isDedupableSourceUrl(String? sourceUrl) =>
+      isSafeExternalUrl(sourceUrl);
+
   /// Checks for duplicates and, if none (or user chose "save as new"),
   /// navigates to the recipe editor.
   ///
@@ -69,8 +77,8 @@ abstract final class ImportResultHandler {
       List<Recipe> matches = [];
       double matchScore = 1.0;
 
-      if (sourceUrl != null && sourceUrl.isNotEmpty) {
-        matches = await recipeService.findBySourceUrl(sourceUrl);
+      if (isDedupableSourceUrl(sourceUrl)) {
+        matches = await recipeService.findBySourceUrl(sourceUrl!);
       }
 
       // Fall back to title match

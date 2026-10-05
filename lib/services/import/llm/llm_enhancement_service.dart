@@ -418,28 +418,29 @@ class LlmEnhancementService extends BaseService {
     if (lowercaseTags.any(
       (t) => t.contains('frukost') || t.contains('breakfast'),
     )) {
-      return 'breakfast';
+      return 'Frukost';
     }
     if (lowercaseTags.any((t) => t.contains('lunch'))) {
-      return 'lunch';
+      return 'Lunch';
     }
     if (lowercaseTags.any(
       (t) => t.contains('middag') || t.contains('dinner'),
     )) {
-      return 'dinner';
+      return 'Middag';
     }
     if (lowercaseTags.any(
       (t) => t.contains('dessert') || t.contains('efterrätt'),
     )) {
-      return 'dessert';
+      return 'Dessert';
     }
     if (lowercaseTags.any(
       (t) => t.contains('snacks') || t.contains('mellanmål'),
     )) {
-      return 'snack';
+      return 'Mellanmål';
     }
 
-    // Default to dinner
-    return 'dinner';
+    // The menu generator matches a slot's meal type exactly, in the app's
+    // Swedish vocabulary, so a recipe that says nothing is a dinner.
+    return 'Middag';
   }
 }
