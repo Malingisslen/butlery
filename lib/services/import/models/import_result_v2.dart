@@ -205,11 +205,19 @@ class ImportNeedsScreenshot extends ImportResultV2 {
   /// User-friendly message explaining why screenshot is needed
   final String message;
 
+  /// Whether a model call was made before the screenshot was asked for.
+  final bool usedLlm;
+
+  /// What that call cost, in USD, as the server reported it.
+  final double? llmCost;
+
   const ImportNeedsScreenshot({
     required this.platform,
     required this.url,
     this.thumbnailUrl,
     required this.message,
+    this.usedLlm = false,
+    this.llmCost,
   });
 }
 
@@ -233,6 +241,10 @@ class ImportFailure extends ImportResultV2 {
   /// Which tier failed
   final int? tier;
 
+  /// What the model call behind this failure cost, in USD, as the server
+  /// reported it. Null when no call reached the model.
+  final double? llmCost;
+
   const ImportFailure({
     required this.message,
     required this.errorCode,
@@ -240,6 +252,7 @@ class ImportFailure extends ImportResultV2 {
     this.technicalDetails,
     this.pipeline,
     this.tier,
+    this.llmCost,
   });
 
   /// Create from exception — generic user message, technical details logged only.
@@ -371,6 +384,7 @@ extension ImportResultV2LegacyAdapter on ImportResultV2 {
           'url': screenshot.url,
           'thumbnailUrl': screenshot.thumbnailUrl,
           'needsScreenshot': true,
+          ...screenshot.llmUse,
         },
       ),
       final ImportPartial partial => ImportResult.assistance(
@@ -385,8 +399,31 @@ extension ImportResultV2LegacyAdapter on ImportResultV2 {
           'errorCode': failure.errorCode.name,
           'pipeline': failure.pipeline,
           'tier': failure.tier,
+          ...failure.llmUse,
         },
       ),
     };
   }
+}
+
+extension ImportResultV2LlmUse on ImportResultV2 {
+  /// The model call behind this result, under the metadata keys the import's
+  /// parse event reads (BUT-2239). Empty when no call reached the model, so a
+  /// strategy can spread it into whatever result it finally returns.
+  Map<String, dynamic> get llmUse => switch (this) {
+    final ImportSuccess s when s.usedLlm => {
+      'usedLlm': true,
+      'llmCost': ?s.metadata?['llmCost'],
+    },
+    final ImportNeedsAssistance a when a.partialData?['usedLlm'] == true => {
+      'usedLlm': true,
+      'llmCost': ?a.partialData?['llmCost'],
+    },
+    ImportNeedsScreenshot(usedLlm: true, :final llmCost) => {
+      'usedLlm': true,
+      'llmCost': ?llmCost,
+    },
+    ImportFailure(:final llmCost?) => {'usedLlm': true, 'llmCost': llmCost},
+    _ => const {},
+  };
 }

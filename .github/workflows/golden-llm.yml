@@ -74,8 +74,8 @@ jobs:
           corpus_filter='${{ inputs.corpus || 'all' }}'
 
           case "$corpus_filter" in
-            all|categorize_ingredient|ner) ;;
-            recipe_from_url|ocr_recipe|enhance_recipe|generate_menu)
+            all|categorize_ingredient|ner|recipe_from_url) ;;
+            ocr_recipe|enhance_recipe|generate_menu)
               echo "::warning::Corpus '$corpus_filter' is wired in the dispatch dropdown but not yet implemented (BUT-889 / BUT-1006-1008). Skipping."
               exit 0
               ;;
@@ -103,14 +103,58 @@ jobs:
             flutter test test/golden/llm/ner_test.dart
           fi
 
+          # BUT-2239: the paid corpus. The Dart step only builds the inputs;
+          # the calls run in the next step, and only with cloud access.
+          if [ "$corpus_filter" = "all" ] || [ "$corpus_filter" = "recipe_from_url" ]; then
+            echo "▶ recipe_from_url inputs"
+            flutter test test/golden/llm/recipe_from_url_inputs_test.dart
+            echo "recipe_from_url=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Live only once the repository variables naming a Workload Identity
+      # provider and service account exist; until then the script writes a
+      # "skipped" summary and calls nothing.
+      - name: Authenticate to Google Cloud
+        if: steps.run.outputs.recipe_from_url == 'true' && vars.GCP_WORKLOAD_IDENTITY_PROVIDER != ''
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_GOLDEN_SERVICE_ACCOUNT }}
+
+      - uses: actions/setup-node@v4
+        if: steps.run.outputs.recipe_from_url == 'true'
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Run recipe_from_url corpus
+        if: steps.run.outputs.recipe_from_url == 'true'
+        working-directory: functions
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.GCP_PROJECT_ID || '' }}
+        run: |
+          npm ci
+          npx ts-node src/admin/golden-recipe-from-url.ts \
+            ../build/golden-llm/recipe_from_url_inputs.json \
+            ../goldens-recipe_from_url.json
+
       - name: Cost guard
         if: always()
         run: |
-          # Aggregate token cost across all corpora that ran.
-          # Foundation: no live calls yet, so we exit 0.
-          # Follow-up corpora MUST emit JSON containing total_cost_usd
-          # so this guard can sum and assert.
-          echo "Cost guard placeholder — no live calls in foundation pass"
+          # Sums total_cost_usd across every corpus summary that carries one.
+          shopt -s nullglob
+          files=(goldens-*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No corpus summaries"
+            exit 0
+          fi
+          total=$(jq -s '[.[] | .total_cost_usd? // 0] | add' "${files[@]}")
+          echo "Total cost: \$${total} (cap \$${COST_CAP_USD})"
+          if [ "$(jq -n --argjson t "$total" --argjson c "$COST_CAP_USD" '$t > $c')" = "true" ]; then
+            echo "::error::LLM goldens cost \$${total}, over the \$${COST_CAP_USD} cap"
+            exit 1
+          fi
 
       - name: Upload summary
         if: always()
@@ -127,7 +171,6 @@ jobs:
         with:
           script: |
             // Open an issue on regression so the operator gets pinged.
-            // Foundation pass: no-op — only fires once corpora are wired.
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,

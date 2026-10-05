@@ -176,44 +176,50 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // Use best available HTML for remaining tiers
       final bestHtml = scraperHtml ?? httpHtml;
+      // Tiers 5 and 6 read the same text: the page with its markup stripped.
+      final pageText = bestHtml != null && bestHtml.length > 100
+          ? HtmlSanitizer.stripToPlainText(bestHtml)
+          : null;
 
       // Tier 5: HTML text parse
-      if (bestHtml != null && bestHtml.length > 100) {
-        final textResult = await _tryHtmlTextParse(bestHtml, url);
+      if (bestHtml != null && pageText != null) {
+        final textResult = await _tryHtmlTextParse(bestHtml, pageText, url);
         if (textResult != null) {
           return _atTier(textResult, 'HtmlTextParse');
         }
       }
 
-      // Tier 6: LLM extraction
-      if (bestHtml != null && bestHtml.length > 100) {
-        final llmResult = await _llmFallback.tryExtraction(
-          bestHtml,
-          url,
-          strategyName,
-        );
+      // Tier 6: LLM extraction, unless the user chose to go on without AI.
+      var llm = LlmFallbackOutcome.none;
+      if (pageText != null && options?['skipLlm'] != true) {
+        llm = await _llmFallback.tryExtraction(pageText, url, strategyName);
+        final llmResult = llm.result;
         if (llmResult != null) {
           return _atTier(llmResult, 'LLM');
         }
       }
+      // A call that found nothing was still paid for: whatever answers the
+      // import from here carries its cost.
+      ImportResult paid(ImportResult r) =>
+          llm.llmUse.isEmpty ? r : r.withMetadata(llm.llmUse);
 
       // BUT-1650: no tier beat the held below-threshold enhanced parse (the
       // Tier 6 LLM included) — return it as the floor rather than dropping to
       // user-assist/failure. It carries real parsed structure, so it is a
       // better outcome than Tier 7 for the user.
       if (belowThresholdEnhanced != null) {
-        return belowThresholdEnhanced;
+        return paid(belowThresholdEnhanced);
       }
 
       // Tier 7: User-assisted import
       if (bestHtml != null && bestHtml.length > 100) {
         final assistedResult = _createUserAssistedResult(bestHtml, url);
         if (assistedResult != null) {
-          return _atTier(assistedResult, 'UserAssisted');
+          return paid(_atTier(assistedResult, 'UserAssisted'));
         }
       }
 
-      return _createFailureResult(url, bestHtml, httpFetch);
+      return paid(_createFailureResult(url, bestHtml, httpFetch));
     } catch (e) {
       AppLogger.error('URL import failed', e);
       return ImportResult.failure(
@@ -333,8 +339,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  Future<ImportResult?> _tryHtmlTextParse(String html, String url) async {
-    final plainText = HtmlSanitizer.stripToPlainText(html);
+  Future<ImportResult?> _tryHtmlTextParse(
+    String html,
+    String plainText,
+    String url,
+  ) async {
     if (plainText.length <= 100) return null;
 
     // BUT-1070: if the page has JSON-LD structured data but no Recipe @type,

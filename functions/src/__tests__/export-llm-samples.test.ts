@@ -219,6 +219,20 @@ test("BUT-1659: createdAt projected to ISO string, missing → null", async () =
   }
 });
 
+// BUT-2239: the nightly AI corpus calls the server as "golden-ci"; its rows
+// are fixture pages, not users' imports, and stay out of the mining set.
+test("BUT-2239: the nightly corpus's own samples are not exported", async () => {
+  const store: FakeStore = {
+    docs: [
+      { id: "user", createdAtMs: 100 },
+      { id: "ci", createdAtMs: 200, extra: { authUidHash: "golden-ci" } },
+    ],
+  };
+  const rows = await runExportLlmSamplesWithDb(makeFakeDb(store), {});
+  const ids = rows.map((r: { id: string }) => r.id).join(",");
+  if (ids !== "user") throw new Error(`expected only the user row, got ${ids}`);
+});
+
 // Test 5: empty collection yields a well-formed empty array (not undefined).
 test("BUT-1659: empty collection yields []", async () => {
   const rows = await runExportLlmSamplesWithDb(makeFakeDb({ docs: [] }), {});

@@ -285,6 +285,19 @@ class ImportManager {
       }
 
       ImportManagerResult? failure;
+      // An import asks the model at most once (BUT-2239): once a platform
+      // strategy has made a call, later strategies run without AI and the
+      // call's cost rides on whatever result the import ends with.
+      var spent = const <String, dynamic>{};
+      void noteCall(ImportManagerResult result) {
+        if (result.metadata?['usedLlm'] != true) return;
+        spent = {
+          'usedLlm': true,
+          'llmCost': ?result.metadata?['llmCost'],
+        };
+        options = {...?options, 'skipLlm': true};
+      }
+
       final youtubeStrategy = _youtubeStrategy;
       if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
         // Phase: analyzing — about to parse via YouTube strategy
@@ -317,6 +330,7 @@ class ImportManager {
         }
 
         // YouTube strategy failed, continue with other strategies
+        noteCall(result);
         failure = _keepBetterFailure(failure, result);
       }
 
@@ -330,6 +344,7 @@ class ImportManager {
           return result;
         }
         // TikTok pipeline failed, continue with other strategies
+        noteCall(result);
         failure = _keepBetterFailure(failure, result);
       }
 
@@ -346,6 +361,7 @@ class ImportManager {
           await _saveToCacheIfUrl(input, result);
           return result;
         }
+        noteCall(result);
         failure = _keepBetterFailure(failure, result);
       }
 
@@ -359,12 +375,12 @@ class ImportManager {
         if (result.isSuccess) {
           onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
-          return result;
+          return result.withLlmUse(spent);
         }
         // Tier-7: an assisted-import result is a terminal outcome, not a
         // fallback-worthy miss — return it instead of trying other strategies.
         if (result.needsAssistance) {
-          return result;
+          return result.withLlmUse(spent);
         }
         failure = _keepBetterFailure(failure, result);
       }
@@ -376,16 +392,16 @@ class ImportManager {
           if (result.isSuccess) {
             onProgress?.call('creating');
             await _saveToCacheIfUrl(input, result);
-            return result;
+            return result.withLlmUse(spent);
           }
           if (result.needsAssistance) {
-            return result;
+            return result.withLlmUse(spent);
           }
           failure = _keepBetterFailure(failure, result);
         }
       }
 
-      return _noRecipeResult(failure);
+      return _noRecipeResult(failure).withLlmUse(spent);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',

@@ -2,7 +2,7 @@
 ///
 /// Tier structure:
 /// 1. WebScraper caption extraction via InstagramContentExtractor (free, client-side)
-/// 2. LLM structuring of extracted caption (paid, ~$0.005)
+/// 2. LLM structuring of extracted caption (paid)
 /// 3. User-assisted import with extracted text (free)
 /// 4. Request user screenshot (free)
 library;
@@ -103,13 +103,14 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
       'InstagramPipeline: Got caption (${captionText.length} chars)',
     );
 
-    // Tier 2: LLM extraction from caption
-    final llmResult = await _llmService.extractFromTranscript(
-      captionText,
-      input,
-    );
+    // Tier 2: LLM extraction from caption, unless the user chose to go on
+    // without AI.
+    final ImportResultV2? llmResult = options?['skipLlm'] == true
+        ? null
+        : await _llmService.extractFromTranscript(captionText, input);
+    final llmUse = llmResult?.llmUse ?? const <String, dynamic>{};
 
-    if (llmResult.isSuccess) {
+    if (llmResult != null && llmResult.isSuccess) {
       // BUT-1114: persist Instagram post URL + raw caption so the detail view
       // can link back to the original and offline re-extract can replay.
       // Mirrors the BUT-980/BUT-1045 wiring on tiktok_pipeline's tier-2/3
@@ -133,6 +134,7 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
         usedLlm: true,
         requiresReview: true,
         metadata: {
+          ...llmUse,
           'postUrl': input,
           'thumbnailUrl': thumbnailUrl,
         },
@@ -158,7 +160,7 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
         suggestedTitle: _extractTitleFromCaption(captionText),
         thumbnailUrl: thumbnailUrl,
         message: AppLocale.current.importErrorNoRecipeFound,
-        partialData: {'postUrl': input},
+        partialData: {...llmUse, 'postUrl': input},
       );
     }
 
@@ -168,6 +170,8 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
       url: input,
       thumbnailUrl: thumbnailUrl,
       message: AppLocale.current.importErrorNoRecipeFound,
+      usedLlm: llmUse['usedLlm'] == true,
+      llmCost: llmUse['llmCost'] as double?,
     );
   }
 

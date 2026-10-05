@@ -225,16 +225,16 @@ class LlmEnhancementService extends BaseService {
     }
   }
 
-  /// Extract recipe from HTML using LLM as final fallback.
-  ///
-  /// Used when all rule-based extraction methods fail.
-  Future<ImportResultV2> extractFromHtml(
-    String html,
+  /// Extract a recipe from a web page's readable text, as the final fallback
+  /// when every rule-based tier failed. [pageText] is the page with its markup
+  /// stripped, never raw HTML (BUT-2239).
+  Future<ImportResultV2> extractFromPageText(
+    String pageText,
     String url, {
     int currentTier = 3,
   }) async {
     AppLogger.debug(
-      'LlmEnhancementService: Extracting from HTML (${html.length} chars)',
+      'LlmEnhancementService: Extracting from page text (${pageText.length} chars)',
     );
 
     // Check rate limit
@@ -254,7 +254,7 @@ class LlmEnhancementService extends BaseService {
 
     try {
       final response = await _llmService.structureRecipe(
-        text: html,
+        text: pageText,
         mode: StructureMode.extract,
         sourceUrl: url,
       );
@@ -281,6 +281,7 @@ class LlmEnhancementService extends BaseService {
         errorCode: ImportErrorCode.parsingFailed,
         pipeline: 'website',
         tier: currentTier + 1,
+        llmCost: _paidCost(response),
       );
     } on LlmException catch (e) {
       return ImportFailure(
@@ -346,10 +347,14 @@ class LlmEnhancementService extends BaseService {
       }
 
       // Return for user assistance if LLM fails
+      final cost = _paidCost(response);
       return ImportNeedsAssistance(
         extractedText: transcript,
         suggestedTitle: videoTitle,
         message: 'AI kunde inte extrahera receptet från videon.',
+        partialData: {
+          if (cost != null) ...{'usedLlm': true, 'llmCost': cost},
+        },
       );
     } on LlmException catch (e) {
       return ImportFailure(
@@ -366,6 +371,12 @@ class LlmEnhancementService extends BaseService {
 
   /// Check if LLM enhancement is available (not rate limited).
   Future<bool> isAvailable() => _llmService.isAvailable();
+
+  /// The cost of a call that reached the model, or null when the answer came
+  /// before any call: a denied or short-circuited request is
+  /// answered with a cost of 0, and the server bills at least 0.001.
+  static double? _paidCost(StructureRecipeResponse response) =>
+      response.estimatedCost > 0 ? response.estimatedCost : null;
 
   // Private Helpers
 
