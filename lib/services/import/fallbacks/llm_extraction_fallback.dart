@@ -1,6 +1,7 @@
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -20,8 +21,12 @@ class LlmFallbackOutcome {
 
 /// Handles LLM-based recipe extraction as a fallback when structured data is unavailable.
 class LlmExtractionFallback {
-  /// The Cloud Function refuses longer input (`structure-recipe.ts`).
-  static const maxInputChars = 50000;
+  static const maxInputChars = llmMaxInputChars;
+
+  /// [pageText] as the server will accept it: cut to [maxInputChars].
+  static String serverInput(String pageText) => pageText.length > maxInputChars
+      ? pageText.substring(0, maxInputChars)
+      : pageText;
 
   LlmEnhancementService? _llmService;
 
@@ -60,11 +65,8 @@ class LlmExtractionFallback {
     AppLogger.info('LlmExtractionFallback: Trying LLM extraction for $url');
 
     try {
-      final input = pageText.length > maxInputChars
-          ? pageText.substring(0, maxInputChars)
-          : pageText;
       final llmResult = await llm.extractFromPageText(
-        input,
+        serverInput(pageText),
         url,
         currentTier: 3,
       );

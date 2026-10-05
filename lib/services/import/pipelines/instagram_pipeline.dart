@@ -2,7 +2,7 @@
 ///
 /// Tier structure:
 /// 1. WebScraper caption extraction via InstagramContentExtractor (free, client-side)
-/// 2. LLM structuring of extracted caption (paid, ~$0.005)
+/// 2. LLM structuring of extracted caption (paid)
 /// 3. User-assisted import with extracted text (free)
 /// 4. Request user screenshot (free)
 library;
@@ -170,6 +170,8 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
       url: input,
       thumbnailUrl: thumbnailUrl,
       message: AppLocale.current.importErrorNoRecipeFound,
+      usedLlm: llmUse['usedLlm'] == true,
+      llmCost: llmUse['llmCost'] as double?,
     );
   }
 

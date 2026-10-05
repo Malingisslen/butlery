@@ -830,6 +830,34 @@ void main() {
     });
 
     test(
+      'a paid call that found nothing reports its cost (BUT-2239)',
+      () async {
+        llm.structureResponse = const StructureRecipeResponse(
+          success: false,
+          estimatedCost: 0.0012,
+        );
+
+        final result = await service.extractFromTranscript('text', 'u');
+
+        final assist = result as ImportNeedsAssistance;
+        expect(assist.partialData, {'usedLlm': true, 'llmCost': 0.0012});
+        expect(result.llmUse, {'usedLlm': true, 'llmCost': 0.0012});
+      },
+    );
+
+    test('a transcript answered with no cost reports no call', () async {
+      llm.structureResponse = const StructureRecipeResponse(
+        success: false,
+        estimatedCost: 0,
+      );
+
+      final result = await service.extractFromTranscript('text', 'u');
+
+      expect((result as ImportNeedsAssistance).partialData, isEmpty);
+      expect(result.llmUse, isEmpty);
+    });
+
+    test(
       'success → ImportSuccess(pipeline=video, tier=5, confidence=0.75)',
       () async {
         llm.structureResponse = StructureRecipeResponse(

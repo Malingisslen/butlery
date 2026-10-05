@@ -35,12 +35,6 @@
 ///    them in, the detail view loses its "Open on TikTok" link AND the
 ///    offline re-extract loses its source payload.
 ///
-/// 6) **Emoji-parsed but LLM fails → fall through to tier 3** — when emoji
-///    parsing finds ≥3 ingredients but the emoji-LLM path doesn't yield
-///    success, the pipeline must NOT short-circuit; it must try the raw-
-///    caption LLM (tier 3). Asserts the LlmService is called a *second*
-///    time with raw caption (not the formatted emoji block).
-///
 /// 7) **Tier 3 caption-LLM success** — plain prose caption → tier 3,
 ///    `method='caption-llm'`, confidence 0.65, recipe enriched with
 ///    sourceUrl + SourceArtefact (BUT-980 / BUT-1045 on the tier-3 path).
@@ -569,7 +563,7 @@ Pannkakor receptet jag lovat! ✨
   });
 
   // =========================================================================
-  // 6) Emoji parsing succeeded but LLM failed → fall through to tier 3
+  // 6) Emoji parsing succeeded but LLM failed
   // =========================================================================
   group('emoji-parsed but emoji-LLM failed', () {
     const input = 'https://www.tiktok.com/@chefanna/video/7123456789012345678';
@@ -874,12 +868,12 @@ Pannkakor receptet jag lovat! ✨
       expect((result as ImportNeedsAssistance).extractedText, caption);
     });
 
-    test('a failed call still reports its cost', () async {
+    test('a call that found nothing still reports its cost', () async {
       llm.responses.add(
-        const ImportFailure(
+        const ImportNeedsAssistance(
+          extractedText: 'Tre ägg',
           message: 'nej',
-          errorCode: ImportErrorCode.parsingFailed,
-          llmCost: 0.0012,
+          partialData: {'usedLlm': true, 'llmCost': 0.0012},
         ),
       );
       final pipeline = _pipelineWith(

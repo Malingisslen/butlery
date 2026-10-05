@@ -209,7 +209,6 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
       message:
           'AI kunde inte extrahera receptet. Markera receptdelar manuellt.',
       partialData: {
-        ...llmResult.llmUse,
         'videoId': videoId,
         'sourceUrl': metadata?.watchUrl,
       },

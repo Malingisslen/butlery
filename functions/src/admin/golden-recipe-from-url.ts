@@ -19,6 +19,7 @@ import * as fs from "fs";
 import { calculateGeminiCost, MAX_TOKENS } from "../llm/gemini-client";
 import { runStructureRecipe } from "../llm/structure-recipe";
 import {
+  GOLDEN_CI_UID_HASH,
   GoldenInput,
   GoldenOutcome,
   GoldenSummary,
@@ -27,7 +28,7 @@ import {
   summariseRun,
 } from "./golden-recipe-from-url-core";
 
-// The system prompt and schema ride on every call; 4,000 tokens covers them.
+// The system prompt and schema ride on every call.
 const PROMPT_OVERHEAD_TOKENS = 4000;
 
 function ceilingFor(input: GoldenInput): number {
@@ -65,7 +66,7 @@ async function main(): Promise<void> {
     try {
       const res = await runStructureRecipe(
         { text: input.text, mode: "extract", sourceUrl: input.url },
-        "golden-ci"
+        GOLDEN_CI_UID_HASH
       );
       spent += res.estimatedCost;
       outcomes.push({
@@ -93,6 +94,7 @@ async function main(): Promise<void> {
   }
   console.log(`recipe_from_url: ${summary.calls} calls, $${summary.total_cost_usd.toFixed(5)}`);
   if (summary.over_cap) process.exitCode = 1;
+  await admin.app().delete();
 }
 
 main().catch((e) => {

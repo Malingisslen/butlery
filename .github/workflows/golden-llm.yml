@@ -121,6 +121,13 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_GOLDEN_SERVICE_ACCOUNT }}
 
+      - uses: actions/setup-node@v4
+        if: steps.run.outputs.recipe_from_url == 'true'
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
       - name: Run recipe_from_url corpus
         if: steps.run.outputs.recipe_from_url == 'true'
         working-directory: functions

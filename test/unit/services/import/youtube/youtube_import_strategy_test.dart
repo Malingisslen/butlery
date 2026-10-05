@@ -955,16 +955,16 @@ void main() {
       expect(result, isA<ImportNeedsAssistance>());
     });
 
-    test('a failed call still reports its cost', () async {
+    test('a call that found nothing still reports its cost', () async {
       transcript.cannedMetadata = _metadata();
       transcript.cannedTranscript = TranscriptResult.success(
         transcript: 'Tre ägg, fem deciliter mjölk. Vispa och stek.',
       );
       llm.responses.add(
-        const ImportFailure(
+        const ImportNeedsAssistance(
+          extractedText: 'Tre ägg',
           message: 'nej',
-          errorCode: ImportErrorCode.parsingFailed,
-          llmCost: 0.0012,
+          partialData: {'usedLlm': true, 'llmCost': 0.0012},
         ),
       );
 

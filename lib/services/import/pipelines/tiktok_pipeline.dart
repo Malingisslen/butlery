@@ -287,6 +287,8 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
       url: input,
       thumbnailUrl: metadata?.thumbnailUrl,
       message: AppLocale.current.tiktokNoRecipeInDescription,
+      usedLlm: llmUse['usedLlm'] == true,
+      llmCost: llmUse['llmCost'] as double?,
     );
   }
 

@@ -31,12 +31,9 @@ void main() {
 
     for (final entry in gold.entries) {
       final j = entry.value as Map<String, dynamic>;
-      final stripped = HtmlSanitizer.stripToPlainText(
-        sitePageHtml(j['source'] as String),
+      final text = LlmExtractionFallback.serverInput(
+        HtmlSanitizer.stripToPlainText(sitePageHtml(j['source'] as String)),
       );
-      final text = stripped.length > LlmExtractionFallback.maxInputChars
-          ? stripped.substring(0, LlmExtractionFallback.maxInputChars)
-          : stripped;
 
       expect(text, isNot(contains('<')), reason: '${entry.key}: markup left');
       expect(text.trim(), isNotEmpty, reason: '${entry.key}: nothing to send');

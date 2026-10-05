@@ -1,9 +1,15 @@
 /**
  * Pure scoring for the nightly `recipe_from_url` AI corpus (BUT-2239).
  *
- * Split from golden-recipe-from-url.ts because that script initialises the
- * Admin SDK at import time and cannot be imported by a unit test.
+ * Split from golden-recipe-from-url.ts because that script
+ * cannot be imported by a unit test.
  */
+
+/**
+ * The uid hash the nightly corpus calls the server with. Its sample rows are
+ * not users' imports, so the sample export drops them.
+ */
+export const GOLDEN_CI_UID_HASH = "golden-ci";
 
 /** One page as the app would send it: the stripped text, already cut. */
 export interface GoldenInput {
@@ -96,8 +102,7 @@ export function skippedSummary(reason: string, capUsd: number): GoldenSummary {
 }
 
 /**
- * Whether the next call could still fit under the cap, judged by the most a
- * call can cost. The run stops before a call that could cross it.
+ * Whether the next call could still fit under the cap.
  */
 export function mayCall(spentUsd: number, perCallCeilingUsd: number, capUsd: number): boolean {
   return spentUsd + perCallCeilingUsd <= capUsd;

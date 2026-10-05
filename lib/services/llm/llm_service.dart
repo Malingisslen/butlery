@@ -120,6 +120,7 @@ class LlmService extends BaseService {
         error: message,
         estimatedCost: 0.0,
       ),
+      recordUsageOnFailure: true,
     );
 
     if (response.success) {
@@ -260,6 +261,7 @@ class LlmService extends BaseService {
         error: message,
         estimatedCost: 0.0,
       ),
+      recordUsageOnFailure: true,
     );
 
     if (response.success) {

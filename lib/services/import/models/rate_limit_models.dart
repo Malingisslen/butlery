@@ -129,7 +129,7 @@ enum LlmOperationType {
   ingredientLines,
 }
 
-/// The ceiling of one model call, in USD, at the list price the Cloud Function
+/// One model call, in USD, at the list price the Cloud Function
 /// bills (`gemini-client.ts`: Gemini 2.5 Flash-Lite, 0.10 per million input
 /// tokens, 0.40 per million output tokens).
 double llmCallCeilingUsd({
@@ -137,13 +137,15 @@ double llmCallCeilingUsd({
   required int outputTokens,
 }) => (inputTokens * 0.10 + outputTokens * 0.40) / 1000000;
 
-/// The largest input the server accepts: 50,000 characters, counted at three
-/// characters per token so the ceiling stays a ceiling for Swedish text.
-const llmMaxInputTokens = 50000 ~/ 3;
+/// The Cloud Function refuses longer input (`structure-recipe.ts`).
+const llmMaxInputChars = 50000;
+
+/// [llmMaxInputChars] counted at three characters per token.
+const llmMaxInputTokens = llmMaxInputChars ~/ 3;
 
 /// Extension for LLM operation costs
 extension LlmOperationCost on LlmOperationType {
-  /// The most one call of this type can cost: the largest input plus the
+  /// The largest input plus the
   /// server's output cap (2,000 tokens; 1,000 for ingredient lines). Vision is
   /// held to the same input ceiling; its image token count is not measured.
   double get estimatedCost => llmCallCeilingUsd(

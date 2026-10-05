@@ -373,7 +373,7 @@ class LlmEnhancementService extends BaseService {
   Future<bool> isAvailable() => _llmService.isAvailable();
 
   /// The cost of a call that reached the model, or null when the answer came
-  /// from the client before any call: a denied or short-circuited request is
+  /// before any call: a denied or short-circuited request is
   /// answered with a cost of 0, and the server bills at least 0.001.
   static double? _paidCost(StructureRecipeResponse response) =>
       response.estimatedCost > 0 ? response.estimatedCost : null;

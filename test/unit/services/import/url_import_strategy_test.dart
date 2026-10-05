@@ -52,6 +52,7 @@
 ///   - ParsedRecipeCache.store (requires production DI registration).
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -83,6 +84,7 @@ import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 /// Records every `parseFromUrl` call so the single-escalation contract
@@ -1510,6 +1512,60 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(result.metadata?['llmCost'], 0.0012);
     });
 
+    test(
+      'the held rough parse carries the cost of the call before it',
+      () async {
+        final parser = _MockRecipeParserService();
+        GetIt.instance.registerSingleton<RecipeParserService>(parser);
+        addTearDown(() => GetIt.instance.unregister<RecipeParserService>());
+        when(
+          () => parser.parseFromUrl(
+            url: any(named: 'url'),
+            htmlContent: any(named: 'htmlContent'),
+            qualityThreshold: any(named: 'qualityThreshold'),
+            useCache: any(named: 'useCache'),
+            useLlm: any(named: 'useLlm'),
+          ),
+        ).thenAnswer(
+          (_) async => ParseResult.success(
+            ParsedRecipe(
+              title: FieldResult.success('Rough Dish'),
+              portions: FieldResult.failed('no'),
+              ingredients: FieldResult.success(<ParsedIngredient>[
+                const ParsedIngredient(
+                  name: 'mjöl',
+                  originalLine: '2 dl mjöl',
+                  quantity: '2',
+                  unit: 'dl',
+                  confidence: ParseConfidence.high,
+                ),
+              ]),
+              instructions: FieldResult.failed('no'),
+              totalTime: FieldResult.failed('no'),
+              metadata: ParseMetadata(
+                source: ImportSource.url,
+                tierResults: const [],
+                totalParseTime: Duration.zero,
+                parserVersion: 'test',
+                timestamp: DateTime(2026, 1, 1),
+              ),
+            ),
+            totalTime: Duration.zero,
+          ),
+        );
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(_unstructuredHtml()),
+        );
+
+        final result = await strategy.import('http://8.8.8.8/blog');
+
+        expect(result.isSuccess, isTrue, reason: 'the premise: the floor');
+        expect(llm.seen, hasLength(1), reason: 'the premise: the call ran');
+        expect(result.metadata?['usedLlm'], isTrue);
+        expect(result.metadata?['llmCost'], 0.0012);
+      },
+    );
+
     test("a link import makes one call with the app's strategy list", () async {
       TestWidgetsFlutterBinding.ensureInitialized();
       SharedPreferences.setMockInitialValues({});
@@ -1533,6 +1589,53 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(spy.events.single.usedLlm, isTrue);
       expect(spy.events.single.estimatedCostUsd, 0.0012);
     });
+
+    test('a TikTok caption that needs a screenshot is still one call, and '
+        'the import keeps its cost', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      final getIt = GetIt.instance;
+      final client = MockClient(
+        (req) async =>
+            req.url.host == 'www.tiktok.com' && req.url.path == '/oembed'
+            ? http.Response(
+                jsonEncode({'title': 'Kvällsmat!'}),
+                200,
+                headers: {'content-type': 'application/json'},
+              )
+            : _htmlResponse(_unstructuredHtml()),
+      );
+      if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+      getIt.registerSingleton<http.Client>(client);
+      getIt.registerSingleton<TikTokPipeline>(
+        TikTokPipeline(llmService: llm, client: client),
+      );
+      addTearDown(() {
+        if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+        if (getIt.isRegistered<TikTokPipeline>()) {
+          getIt.unregister<TikTokPipeline>();
+        }
+      });
+
+      final spy = _SpyParseEventLogger();
+      await ImportManager(
+        _MockPersonalRecipeOperations(),
+        eventLogger: spy,
+      ).autoImport('https://www.tiktok.com/@kock/video/123');
+
+      expect(
+        llm.transcripts,
+        hasLength(1),
+        reason: 'the premise: TikTok asked',
+      );
+      expect(
+        llm.seen,
+        isEmpty,
+        reason: 'the link fallback asks no second time',
+      );
+      expect(spy.events.single.usedLlm, isTrue);
+      expect(spy.events.single.estimatedCostUsd, 0.0012);
+    });
   });
 }
 
@@ -1542,6 +1645,22 @@ class _CountingLlm extends Fake implements LlmEnhancementService {
 
   @override
   Future<bool> isAvailable() async => true;
+
+  final List<String> transcripts = [];
+
+  @override
+  Future<ImportResultV2> extractFromTranscript(
+    String transcript,
+    String videoUrl, {
+    String? videoTitle,
+  }) async {
+    transcripts.add(transcript);
+    return ImportNeedsAssistance(
+      extractedText: transcript,
+      message: 'nej',
+      partialData: const {'usedLlm': true, 'llmCost': 0.0012},
+    );
+  }
 
   @override
   Future<ImportResultV2> extractFromPageText(
