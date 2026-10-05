@@ -66,6 +66,22 @@ void main() {
     ServiceLocator.initialize(DIContainer());
 
     when(() => mockAuthRepository.currentUserId).thenReturn('test-user');
+    // Each raw row looks up to the registry id of the same name.
+    when(
+      () => mockLookupService.lookupFromRaw(
+        any(),
+        userId: any(named: 'userId'),
+      ),
+    ).thenAnswer(
+      (inv) async => IngredientLookupResult(
+        matched: [
+          for (final raw in inv.positionalArguments[0] as List<String>)
+            _ingredientData(raw, raw),
+        ],
+        unmatched: const [],
+        coverage: 1.0,
+      ),
+    );
 
     service = IngredientMatchService(
       lookupService: mockLookupService,
@@ -81,7 +97,7 @@ void main() {
   group('matchRecipes', () {
     test('empty ingredient set returns empty results', () async {
       final recipes = [
-        _recipe(id: 'r1', title: 'Test', normalized: ['chicken']),
+        _recipe(id: 'r1', title: 'Test', raw: ['chicken']),
       ];
 
       final results = await service.matchRecipes(
@@ -97,7 +113,7 @@ void main() {
         _recipe(
           id: 'r1',
           title: 'Simple',
-          normalized: ['chicken', 'rice'],
+          raw: ['chicken', 'rice'],
         ),
       ];
 
@@ -118,7 +134,7 @@ void main() {
         _recipe(
           id: 'r1',
           title: 'Bowl',
-          normalized: ['chicken', 'rice', 'onion', 'pepper'],
+          raw: ['chicken', 'rice', 'onion', 'pepper'],
         ),
       ];
 
@@ -136,7 +152,7 @@ void main() {
 
     test('zero-overlap recipes are excluded', () async {
       final recipes = [
-        _recipe(id: 'r1', title: 'Tofu', normalized: ['tofu', 'soy-sauce']),
+        _recipe(id: 'r1', title: 'Tofu', raw: ['tofu', 'soy-sauce']),
       ];
 
       final results = await service.matchRecipes(
@@ -152,12 +168,12 @@ void main() {
         _recipe(
           id: 'r1',
           title: 'Low match',
-          normalized: ['chicken', 'rice', 'onion', 'pepper'],
+          raw: ['chicken', 'rice', 'onion', 'pepper'],
         ),
         _recipe(
           id: 'r2',
           title: 'High match',
-          normalized: ['chicken', 'rice'],
+          raw: ['chicken', 'rice'],
         ),
       ];
 
@@ -171,10 +187,46 @@ void main() {
       expect(results[1].recipe.core.id, 'r1'); // 50%
     });
 
-    test('recipes with null ingredientsNormalized are skipped', () async {
+    test('matches on registry ids, not on the stored names', () async {
+      // What the app stores: cleaned Swedish names in ingredientsNormalized,
+      // while the selection holds registry ids. Comparing the two found
+      // nothing for any recipe.
+      final recipe = _recipe(
+        id: 'r1',
+        title: 'Fish & chips',
+        normalized: ['potatis', 'citron'],
+        raw: ['500 g potatis', '1 citron'],
+      );
+      when(
+        () => mockLookupService.lookupFromRaw(
+          ['500 g potatis', '1 citron'],
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer(
+        (_) async => IngredientLookupResult(
+          matched: [
+            _ingredientData('potato', 'potatis'),
+            _ingredientData('lemon', 'citron'),
+          ],
+          unmatched: const [],
+          coverage: 1.0,
+        ),
+      );
+
+      final results = await service.matchRecipes(
+        selectedIngredientIds: {'potato'},
+        recipes: [recipe],
+      );
+
+      expect(results, hasLength(1));
+      expect(results.first.matchPercent, 0.5);
+      expect(results.first.missingIngredientIds, ['lemon']);
+    });
+
+    test('recipes without ingredients are skipped', () async {
       final recipes = [
-        _recipe(id: 'r1', title: 'Legacy', normalized: null),
-        _recipe(id: 'r2', title: 'Modern', normalized: ['chicken']),
+        _recipe(id: 'r1', title: 'Empty', raw: const []),
+        _recipe(id: 'r2', title: 'Modern', raw: ['chicken']),
       ];
 
       final results = await service.matchRecipes(
@@ -183,20 +235,7 @@ void main() {
       );
 
       expect(results, hasLength(1));
-      expect(results.first.recipe.core.id, 'r2');
-    });
-
-    test('recipes with empty ingredientsNormalized are skipped', () async {
-      final recipes = [
-        _recipe(id: 'r1', title: 'Empty', normalized: []),
-      ];
-
-      final results = await service.matchRecipes(
-        selectedIngredientIds: {'chicken'},
-        recipes: recipes,
-      );
-
-      expect(results, isEmpty);
+      expect(results.first.recipe.id, 'r2');
     });
   });
 

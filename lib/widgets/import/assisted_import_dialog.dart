@@ -330,23 +330,23 @@ class _ReviewEditStep extends StatelessWidget {
               ),
               items: [
                 DropdownMenuItem(
-                  value: 'breakfast',
+                  value: 'Frukost',
                   child: Text(context.l10n.importMealBreakfast),
                 ),
                 DropdownMenuItem(
-                  value: 'lunch',
+                  value: 'Lunch',
                   child: Text(context.l10n.importMealLunch),
                 ),
                 DropdownMenuItem(
-                  value: 'dinner',
+                  value: 'Middag',
                   child: Text(context.l10n.importMealDinner),
                 ),
                 DropdownMenuItem(
-                  value: 'snack',
+                  value: 'Mellanmål',
                   child: Text(context.l10n.importMealSnack),
                 ),
                 DropdownMenuItem(
-                  value: 'dessert',
+                  value: 'Dessert',
                   child: Text(context.l10n.importMealDessert),
                 ),
               ],

@@ -47,7 +47,7 @@ class RealtimeRecipeUtils {
           ingredients: List<String>.from(realtimeRecipe['ingredients'] ?? []),
           instructions: List<String>.from(realtimeRecipe['instructions'] ?? []),
           imageUrls: List<String>.from(realtimeRecipe['imageUrls'] ?? []),
-          mealType: realtimeRecipe['mealType'] ?? 'Lunch',
+          mealType: realtimeRecipe['mealType'] ?? 'Middag',
           createdAt: clock.now(),
           updatedAt: clock.now(),
         ),

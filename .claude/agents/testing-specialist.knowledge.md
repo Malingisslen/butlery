@@ -87,6 +87,11 @@ gap):**
 
 **Tokens that reliably land with ZERO test hits** — check each by name, whatever the round's
 other suites prove:
+- **A surface NO suite has ever pumped is itself unmeasured, and its first pump is the cheapest
+  instrument** — the assisted-import dialog's footer could not lay out at all
+  (theme `minimumSize` width `double.infinity` inside a `Row`+`Spacer`), found the moment a
+  vocabulary pin first opened it. When `grep -rln '<Widget>' test/` is zero, demand the pump
+  before grading anything the widget renders (2026-10-05, archive).
 - **"Owes no test" turns on whether an ASSERTION LANE EXISTS, never on the change being small,
   structural or a mere wrapper — and the lane question is SETTLED BY RUNNING a scratch probe, not
   by predicting a deadlock.** When the suite already drives the real VM, already opens the

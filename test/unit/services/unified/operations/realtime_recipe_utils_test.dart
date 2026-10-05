@@ -186,7 +186,7 @@ void main() {
         expect(result.description, isEmpty);
         expect(result.ingredients, isEmpty);
         expect(result.instructions, isEmpty);
-        expect(result.core.mealType, equals('Lunch')); // Default value
+        expect(result.core.mealType, equals('Middag')); // Default value
       });
 
       test('should throw error for invalid realtimeRecipe type', () {

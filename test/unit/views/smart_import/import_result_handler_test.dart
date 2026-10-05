@@ -122,4 +122,46 @@ void main() {
       },
     );
   });
+
+  group('ImportResultHandler.isDedupableSourceUrl', () {
+    // Every pasted recipe carries the same source label, so the label must
+    // not reach the source-URL lookup: it would match any earlier pasted
+    // recipe and the sheet would call two unrelated recipes 80 % alike.
+    test('rejects the pasted-text and archive source labels', () {
+      expect(
+        ImportResultHandler.isDedupableSourceUrl('Importerat från text'),
+        isFalse,
+      );
+      expect(
+        ImportResultHandler.isDedupableSourceUrl('Imported from text'),
+        isFalse,
+      );
+      expect(
+        ImportResultHandler.isDedupableSourceUrl('Från Butlerys arkiv'),
+        isFalse,
+      );
+    });
+
+    test('rejects null, empty and scheme-less text', () {
+      expect(ImportResultHandler.isDedupableSourceUrl(null), isFalse);
+      expect(ImportResultHandler.isDedupableSourceUrl(''), isFalse);
+      expect(
+        ImportResultHandler.isDedupableSourceUrl('Mormors kokbok s. 12'),
+        isFalse,
+      );
+    });
+
+    test('accepts an http or https address', () {
+      expect(
+        ImportResultHandler.isDedupableSourceUrl(
+          'https://www.ica.se/recept/pannkakor-1234/',
+        ),
+        isTrue,
+      );
+      expect(
+        ImportResultHandler.isDedupableSourceUrl('http://example.com/r'),
+        isTrue,
+      );
+    });
+  });
 }

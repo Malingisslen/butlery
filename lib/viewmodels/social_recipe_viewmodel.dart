@@ -151,7 +151,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
     List<String> ingredients = const [],
     List<String> instructions = const [],
     List<String> imageUrls = const [],
-    String mealType = 'Lunch',
+    String mealType = 'Middag',
     int? portions,
     int? timeMinutes,
     double? rating,
