@@ -102,6 +102,10 @@ async function seed(
       .collection("users").doc(s.owner)
       .collection("friends").doc(s.invitee)
       .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
+    await db
+      .collection("users").doc(s.invitee)
+      .collection("friends").doc(s.owner)
+      .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
   }
   await db.collection("social_requests").doc(s.invitationId).set({
     type: "groupInvitation",
@@ -166,7 +170,6 @@ async function run_(): Promise<void> {
 
   {
     const s = await seed("selffriend", { friends: false });
-    // The invitee's OWN list is client-writable, so it proves nothing.
     await db
       .collection("users").doc(s.invitee)
       .collection("friends").doc(s.owner)
@@ -176,6 +179,20 @@ async function run_(): Promise<void> {
       () => acceptGroupInvitationWithDeps(db, s.invitee, s.invitationId),
       "permission-denied",
     );
+  }
+
+  {
+    const s = await seed("inviterforged", { friends: false });
+    await db
+      .collection("users").doc(s.owner)
+      .collection("friends").doc(s.invitee)
+      .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
+    await expectThrows(
+      "refuses when only the inviter's own list names the invitee",
+      () => acceptGroupInvitationWithDeps(db, s.invitee, s.invitationId),
+      "permission-denied",
+    );
+    check("inviter-forged: group unchanged", (await members(s)).length === 1);
   }
 
   {

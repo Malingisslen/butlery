@@ -109,16 +109,19 @@ export async function acceptGroupInvitationWithDeps(
     const groupRef = database
       .collection("users").doc(fromUserId)
       .collection("friend_categories").doc(groupId);
-    // The INVITER's copy: the caller can write its own friends list, so only
-    // the inviter's side (written by the inviter or acceptFriendRequest)
-    // proves the friendship.
-    const friendRef = database
+    // Each side's friends list is client-writable by its own owner, so only
+    // both copies together show a friendship neither party made up alone.
+    const inviterSideRef = database
       .collection("users").doc(fromUserId)
       .collection("friends").doc(callerUid);
+    const inviteeSideRef = database
+      .collection("users").doc(callerUid)
+      .collection("friends").doc(fromUserId);
 
-    const [groupSnap, friendSnap] = await Promise.all([
+    const [groupSnap, inviterSide, inviteeSide] = await Promise.all([
       tx.get(groupRef),
-      tx.get(friendRef),
+      tx.get(inviterSideRef),
+      tx.get(inviteeSideRef),
     ]);
 
     if (!groupSnap.exists) {
@@ -131,7 +134,7 @@ export async function acceptGroupInvitationWithDeps(
         "Invitation does not come from the group's owner.",
       );
     }
-    if (!friendSnap.exists) {
+    if (!inviterSide.exists || !inviteeSide.exists) {
       throw new HttpsError(
         "permission-denied",
         "Only a friend's invitation can be accepted.",
