@@ -1,0 +1,36 @@
+{
+  "form": "\"Till formen:\" med två varor på en rad",
+  "title": "Sockerkaka",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "bakpulver"
+    },
+    {
+      "key": "ströbröd",
+      "allergen": "gluten"
+    }
+  ],
+  "headings": [
+    "Till formen"
+  ]
+}

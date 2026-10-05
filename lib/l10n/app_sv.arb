@@ -395,6 +395,14 @@
   "errorServer": "Serverfel. Försök igen senare.",
   "errorAuthentication": "Autentiseringsfel. Logga in igen.",
   "errorPermissionDenied": "Du har inte behörighet för denna åtgärd.",
+  "errorPageNotFound": "Sidan kunde inte hittas",
+  "@errorPageNotFound": {
+    "description": "BUT-2146: the headline of the not-found page."
+  },
+  "errorBackToStart": "Tillbaka till start",
+  "@errorBackToStart": {
+    "description": "BUT-2146: the button on the not-found page that goes to the start view."
+  },
   "errorNotFound": "Kunde inte hittas.",
   "errorCouldNotCreate": "Kunde inte skapa {itemType}",
   "@errorCouldNotCreate": {
@@ -9266,6 +9274,15 @@
     }
   },
   "emailVerificationResend": "Skicka igen",
+  "emailVerificationResendCountdown": "Du kan skicka igen om {seconds} s",
+  "@emailVerificationResendCountdown": {
+    "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "emailVerificationContinue": "Fortsätt ändå",
   "emailVerificationSuccess": "E-posten är verifierad.",
   "a11yCookingModeFontScale": "Ändra textstorlek",

@@ -1,0 +1,24 @@
+{
+  "form": "knippe och rader utan mängd",
+  "title": "Gravad lax",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "laxfilé",
+      "allergen": "fisk"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "dill"
+    },
+    {
+      "key": "vitpeppar"
+    }
+  ],
+  "headings": []
+}

@@ -318,18 +318,29 @@
     {
       "id": "TR::FLOW::03::hämtar::betalvägg",
       "flow": "03",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-      "test_name": "\"$english\" → \"$swedish\"",
+      "status": "PARTIAL",
+      "test_file": "test/unit/services/import/import_failure_cause_test.dart",
+      "test_name": "a 403 says the page requires login",
       "tests": [
         {
-          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-          "name": "\"$english\" → \"$swedish\"",
-          "group": "startImport — error localization"
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a 403 says the page requires login"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a page that is only a login form says it requires login"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a login wall with a quantity line fails as a login wall, not as help"
         }
       ],
-      "ticket": "BUT-2168",
-      "reason": "The line \"Sidan kräver inloggning\" and the paste route are built and mapped from a \"login required\" cause (smart_import_viewmodel.dart:555-556, tested), but no import strategy reports a login wall (no such text in lib/services/import), so the user reads \"Receptet kunde inte importeras.\""
+      "ticket": null,
+      "reason": "The URL strategy reports a login wall (403, or a page with a password field) and the view model's message is \"Sidan kräver inloggning\".",
+      "known_gap": {
+        "reason": "Tested through the view model only: no test drives the screen this failure reaches, so the drawn outcome on it is unverified.",
+        "ticket": "BUT-2168"
+      }
     },
     {
       "id": "TR::FLOW::03::hämtar::ok",
@@ -361,25 +372,28 @@
       "ticket": null,
       "reason": "Existing test: a failed link keeps the link and offers \"Klistra in texten\".",
       "known_gap": {
-        "reason": "A private or broken link (non-200) ends in the URL strategy's generic failure (url_import_strategy.dart:484-494), which is shown as \"Receptet kunde inte importeras.\" and not as \"Länken kunde inte läsas\".",
+        "reason": "A broken link (404) shows \"Kunde inte nå sidan\" (test/unit/services/import/import_failure_cause_test.dart), not the drawn \"Länken kunde inte läsas\".",
         "ticket": "BUT-2168"
       }
     },
     {
       "id": "TR::FLOW::03::hämtar::sidan-har-inget-recept",
       "flow": "03",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-      "test_name": "\"$english\" → \"$swedish\"",
+      "status": "PARTIAL",
+      "test_file": "test/unit/services/import/import_failure_cause_test.dart",
+      "test_name": "a readable page without a recipe says no recipe was found",
       "tests": [
         {
-          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-          "name": "\"$english\" → \"$swedish\"",
-          "group": "startImport — error localization"
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a readable page without a recipe says no recipe was found"
         }
       ],
-      "ticket": "BUT-2168",
-      "reason": "\"Inget recept hittades\" is mapped from a \"no recipe found\" cause, which no strategy emits. A page without a recipe ends either in the assisted import (when HTML was fetched, url_import_strategy.dart:219-227) or in the generic \"Receptet kunde inte importeras.\" The drawn \"Vi hittade inget recept på sidan\" + Skriv själv is not reached."
+      "ticket": null,
+      "reason": "A readable page with no recipe on it fails with its own cause and the view model's message is \"Inget recept hittades\".",
+      "known_gap": {
+        "reason": "Tested through the view model only: no test drives the screen this failure reaches, so the drawn outcome on it is unverified.",
+        "ticket": "BUT-2168"
+      }
     },
     {
       "id": "TR::FLOW::03::länkfält::importera",
@@ -966,7 +980,7 @@
     {
       "id": "TR::FLOW::06::verifieringslank::utgangen",
       "flow": "06",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/views/flows/flow_06_transitions_test.dart",
       "test_name": "Skicka igen sends a new link, and no second one is sent inside the 60 s wait",
       "tests": [
@@ -974,18 +988,15 @@
           "file": "test/views/flows/flow_06_transitions_test.dart",
           "name": "Skicka igen sends a new link, and no second one is sent inside the 60 s wait",
           "group": "TR::FLOW::06::verifieringslank::utgangen"
+        },
+        {
+          "file": "test/views/flows/flow_06_transitions_test.dart",
+          "name": "the wait is shown under the button, not in its name, and the button comes back after the 60 s",
+          "group": "TR::FLOW::06::verifieringslank::utgangen"
         }
       ],
-      "ticket": null,
-      "reason": "New test: a new link can be asked for.",
-      "known_gap": {
-        "reason": "Two things fail. The 60 s wait is only read when something else rebuilds the view; the 5 s poll does not call setState, so \"Skicka igen\" stays off after the wait (lib/views/auth/email_verification_view.dart:62-94). And the countdown is built into the button's name, \"Skicka igen (60s)\" (email_verification_view.dart:170-172), where produktregler.md:676 puts it outside the name.",
-        "test": {
-          "file": "test/views/flows/flow_06_transitions_test.dart",
-          "name": "known gap: the wait is counted in the button name, and the button is not given back after the 60 s"
-        },
-        "ticket": "BUT-2172"
-      }
+      "ticket": "BUT-2172",
+      "reason": "New test: a new link can be asked for."
     },
     {
       "id": "TR::FLOW::07::first-ask::forklaring-fore-systemdialog",

@@ -1,0 +1,27 @@
+{
+  "form": "kontroll: alla rader med mängd",
+  "title": "Pannkakor",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    }
+  ],
+  "headings": []
+}

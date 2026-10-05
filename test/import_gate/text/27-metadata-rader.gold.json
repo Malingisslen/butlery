@@ -1,0 +1,36 @@
+{
+  "form": "raderna \"Portioner:\" och \"Tid:\" före listan",
+  "title": "Stekt torsk med äggsås",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "torskfilé",
+      "allergen": "fisk"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "persilja"
+    },
+    {
+      "key": "potatis"
+    }
+  ],
+  "headings": [
+    "Gör så här"
+  ]
+}

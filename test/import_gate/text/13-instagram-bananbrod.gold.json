@@ -1,0 +1,36 @@
+{
+  "form": "Instagram-text med emojis och hashtags",
+  "title": "Bananbröd",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "bananer"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "bakpulver"
+    },
+    {
+      "key": "valnötter",
+      "allergen": "nötter"
+    }
+  ],
+  "headings": [
+    "Du behöver",
+    "Gör så här"
+  ]
+}

@@ -53,7 +53,7 @@ For allergen and dietary tags, we use **three states**, not two:
 |-------|---------|----------|
 | **CONTAINS** | Recipe contains the allergen | At least one ingredient has the property |
 | **FREE** | Recipe is proven free | 100% coverage + no ingredient has property |
-| **UNKNOWN** | We don't know | Coverage < 100% OR unknown ingredient |
+| **UNKNOWN** | We don't know | No ingredient has the property, and coverage < 100% |
 
 ### Why This Is Critical
 
@@ -90,8 +90,8 @@ CONTAINS > UNKNOWN > FREE
 
 | Tag Type | Coverage Requirement | Consequence on Uncertainty |
 |----------|---------------------|---------------------------|
-| Allergen (contains/free) | 100% | Set UNKNOWN |
-| Dietary (vegetarian, vegan) | 100% | Set UNKNOWN |
+| Allergen (contains/free) | 100% for FREE | FREE withheld (UNKNOWN); a matched trigger is still CONTAINS |
+| Dietary (vegetarian, vegan) | 100% for FREE | FREE withheld (UNKNOWN); a matched exclusion is still CONTAINS |
 | Protein identity | 80% | Set anyway if clear main ingredient |
 | Cuisine | 60% | Set based on key ingredients |
 | Practical/Mood | 60% | Set based on available info |
@@ -673,8 +673,8 @@ class IngredientLookupResult {
 
 ```dart
 TriState getPropertyStatus(String property) {
-  if (coverage < 1.0) return TriState.unknown;
   if (hasProperty(property)) return TriState.contains;
+  if (coverage < 1.0) return TriState.unknown;
   return TriState.free;
 }
 ```

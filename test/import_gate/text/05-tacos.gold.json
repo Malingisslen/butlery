@@ -1,0 +1,38 @@
+{
+  "form": "rader utan mängd (tortillabröd, gräddfil)",
+  "title": "Fredagstacos",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "nötfärs"
+    },
+    {
+      "key": "tacokrydda"
+    },
+    {
+      "key": "tortillabröd",
+      "allergen": "gluten"
+    },
+    {
+      "key": "gräddfil",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "ost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "isbergssallad"
+    },
+    {
+      "key": "tomater"
+    },
+    {
+      "key": "gurka"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

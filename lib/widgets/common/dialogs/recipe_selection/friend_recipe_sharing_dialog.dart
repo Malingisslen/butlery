@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -9,16 +10,13 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/recipe_selection_viewmodel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Dialog for sharing recipes with friends
 class FriendRecipeSharingDialog extends StatelessWidget {
@@ -146,7 +144,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                   itemCount: viewModel.filteredRecipes.length,
                   itemBuilder: (context, index) {
                     final unifiedRecipe = viewModel.filteredRecipes[index];
-                    return FriendRecipeListItem(
+                    return RecipeShareListItem(
                       recipe: unifiedRecipe,
                       isSelected: viewModel.isRecipeSelected(unifiedRecipe.id),
                       isAlreadyShared: viewModel.isRecipeAlreadyShared(
@@ -238,178 +236,5 @@ class FriendRecipeSharingDialog extends StatelessWidget {
         what: viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
       );
     }
-  }
-}
-
-/// Recipe list item for friend sharing
-class FriendRecipeListItem extends StatelessWidget {
-  final Recipe recipe;
-  final bool isSelected;
-  final bool isAlreadyShared;
-  final ValueChanged<bool> onSelectionChanged;
-
-  const FriendRecipeListItem({
-    super.key,
-    required this.recipe,
-    required this.isSelected,
-    required this.isAlreadyShared,
-    required this.onSelectionChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      leading: recipe.imageUrls.isNotEmpty
-          ? NetworkImageWidget(
-              imageUrl: recipe.imageUrls.first,
-              width: AppDimensions.iconSizeXl,
-              height: AppDimensions.iconSizeXl,
-              fit: BoxFit.contain,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              errorWidget: _buildPlaceholder(context),
-            )
-          : _buildPlaceholder(context),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              recipe.title,
-              style: isAlreadyShared
-                  ? AppTextStyles.titleMediumMuted
-                  : AppTextStyles.titleMedium,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (isAlreadyShared)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingXs,
-                vertical: AppDimensions.spacingXs,
-              ),
-              decoration: BoxDecoration(
-                color: context.modeColors.surfaceTintSuccess,
-                borderRadius: BorderRadius.zero,
-              ),
-              child: Text(
-                context.l10n.dialogAlreadyShared,
-                style: AppTextStyles.labelSmallSuccess.copyWith(
-                  color: context.modeColors.onSuccessContainer,
-                ),
-              ),
-            ),
-        ],
-      ),
-      subtitle: _buildSubtitle(context),
-      trailing: Checkbox(
-        value: isSelected,
-        onChanged: (value) => onSelectionChanged(value ?? false),
-        activeColor: isAlreadyShared ? cs.onSurfaceVariant : cs.primary,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      ),
-      onTap: () => onSelectionChanged(!isSelected),
-    );
-  }
-
-  Widget _buildSubtitle(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final successColor = context.modeColors.success;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          recipe.mealType,
-          style: isAlreadyShared
-              ? AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.onSurfaceVariant,
-                )
-              : AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.onSurface,
-                ),
-        ),
-        if (recipe.description.isNotEmpty)
-          Text(
-            recipe.description,
-            style: isAlreadyShared
-                ? AppTextStyles.metadataEmphasized
-                : AppTextStyles.bodySmall,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Row(
-          children: [
-            if (recipe.timeMinutes != null) ...[
-              ButleryIcon(
-                ButleryIcons.clock,
-                size: AppDimensions.iconSizeM,
-                color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                '${recipe.timeMinutes} min',
-                style: isAlreadyShared
-                    ? AppTextStyles.bodySmall.copyWith(
-                        color: successColor,
-                        fontSize: AppTextStyles.labelSmall.fontSize,
-                      )
-                    : AppTextStyles.bodySmall.copyWith(
-                        fontSize: AppTextStyles.labelSmall.fontSize,
-                      ),
-              ),
-            ],
-            if (recipe.portions != null) ...[
-              if (recipe.timeMinutes != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
-                Text('•', style: AppTextStyles.bodySmall),
-                const SizedBox(height: AppDimensions.spacingM),
-              ],
-              ButleryIcon(
-                ButleryIcons.users,
-                size: AppDimensions.iconSizeM,
-                color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                '${recipe.portions} port',
-                style: isAlreadyShared
-                    ? AppTextStyles.bodySmall.copyWith(
-                        color: successColor,
-                        fontSize: AppTextStyles.labelSmall.fontSize,
-                      )
-                    : AppTextStyles.bodySmall.copyWith(
-                        fontSize: AppTextStyles.labelSmall.fontSize,
-                      ),
-              ),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlaceholder(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final successColor = context.modeColors.success;
-    return Container(
-      width: AppDimensions.iconSizeXl,
-      height: AppDimensions.iconSizeXl,
-      decoration: BoxDecoration(
-        color: isAlreadyShared
-            ? context.modeColors.surfaceTintSuccess
-            : cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: ButleryIcon(
-        ButleryIcons.utensils,
-        color: isAlreadyShared ? successColor : cs.onSurface,
-        size: AppDimensions.iconSizeAction,
-      ),
-    );
   }
 }

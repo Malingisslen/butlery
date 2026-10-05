@@ -1,0 +1,45 @@
+{
+  "form": "komponentrubriker \"Fyllning:\" och \"Garnering:\" med rader utan mängd",
+  "title": "Smörgåstårta",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "formfranska",
+      "allergen": "gluten"
+    },
+    {
+      "key": "räkor",
+      "allergen": "skaldjur"
+    },
+    {
+      "key": "majonnäs",
+      "allergen": "ägg"
+    },
+    {
+      "key": "färskost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "dill"
+    },
+    {
+      "key": "gurka"
+    },
+    {
+      "key": "citron"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "rädisor"
+    }
+  ],
+  "headings": [
+    "Bröd",
+    "Fyllning",
+    "Garnering",
+    "Gör så här"
+  ]
+}

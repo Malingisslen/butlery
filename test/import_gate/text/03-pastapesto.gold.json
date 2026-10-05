@@ -1,0 +1,35 @@
+{
+  "form": "enheten kruka, rader utan mängd",
+  "title": "Pasta med färsk pesto",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "spaghetti",
+      "allergen": "gluten"
+    },
+    {
+      "key": "basilika"
+    },
+    {
+      "key": "parmesanost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "pinjenötter",
+      "allergen": "nötter"
+    },
+    {
+      "key": "vitlöksklyfta"
+    },
+    {
+      "key": "olivolja"
+    },
+    {
+      "key": "salt"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Instruktioner"
+  ]
+}

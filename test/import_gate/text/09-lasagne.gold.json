@@ -1,0 +1,45 @@
+{
+  "form": "komponentrubriker utan kolon",
+  "title": "Lasagne",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "nötfärs"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "krossade tomater"
+    },
+    {
+      "key": "tomatpuré"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "ost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "lasagneplattor",
+      "allergen": "gluten"
+    }
+  ],
+  "headings": [
+    "Köttfärssås",
+    "Ostsås",
+    "Montering",
+    "Gör så här"
+  ]
+}

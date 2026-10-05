@@ -1,0 +1,48 @@
+{
+  "form": "komponentrubrik \"Gräddsås:\"",
+  "title": "Köttbullar med gräddsås",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "nötfärs"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "ströbröd",
+      "allergen": "gluten"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "grädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "soja",
+      "allergen": "soja"
+    },
+    {
+      "key": "kalvfond"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    }
+  ],
+  "headings": [
+    "Köttbullar",
+    "Gräddsås",
+    "Gör så här"
+  ]
+}

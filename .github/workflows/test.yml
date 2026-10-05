@@ -18,8 +18,8 @@ name: Run Tests
 #    on push-to-main. The 55% floor is unchanged — only re-timed (BUT-1149).
 #
 # What still gates a PR: ubuntu unit (3 shards) + widget + views + golden +
-# integration here, plus firestore-rules / E2E / Architecture / Build Validation
-# in their own workflows. Coverage + cross-OS are nightly/main only.
+# evaluation + import_gate + integration here, plus firestore-rules / E2E /
+# Architecture / Build Validation in their own workflows. Coverage + cross-OS are nightly/main only.
 
 on:
   push:
@@ -161,7 +161,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [widget, views, golden, evaluation]
+        # import_gate (BUT-2236): the import corpora in test/import_gate/,
+        # scored against gold and held to its floors.json; prints its table
+        # into the job summary.
+        suite: [widget, views, golden, evaluation, import_gate]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 

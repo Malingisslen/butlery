@@ -13,7 +13,7 @@ description: >
 ## Grundregler
 
 1. **Tri-State, INTE Boolean** - Allergen/dietary-status är ALLTID `TriState.contains | free | unknown`
-2. **Coverage avgör säkerhet** - `coverage < 1.0` → alla allergens/dietary = `unknown`
+2. **Coverage avgör säkerhet** - `coverage < 1.0` håller inne `free`; en träff är `contains` ändå
 3. **5-fas pipeline** - Phase1 → Phase2 → Phase3 → Phase4 → Phase5 (strikt ordning)
 4. **FREE kräver bevis** - En allergen är `free` ENDAST om 100% coverage OCH ingen ingrediens har egenskapen
 5. **UNKNOWN är default** - Saknad data = `unknown` (säkert för allergiker)

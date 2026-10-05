@@ -6120,3 +6120,29 @@ with a plain subject, so the sentence now asserts that named writers ARE Admin-S
 — without asserting that the list is exhaustive. That is strictly weaker and strictly true.
 
 Parse re-verified after the edit (`initializeTestEnvironment`, throwaway project id): OK.
+
+## 2026-10-05 — BUT-2017 / BUT-2122 review (block gates on messages/DM/menu votes; counterId bound)
+
+Rules `firestore.rules` (4072 lines, LF today), suites conversations 104/104, realtime-menus 13/13,
+poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built by
+`scratchpad/mut-b17.js` (anchor count asserted == 1), each run under its own lowercase project id:
+
+- conv-no-gate (drop `isNotBlockedBy(otherParticipant(...))` from conversations create): B1 red
+  ALONE. B3 ("deny holds when the blocker is first") stayed GREEN — it targets
+  `direct_{blocker}_{blocked}`, which B2 (declared before it) CREATES, so B3 is an UPDATE refused
+  on `createdAt`/`metadata.creatorId`. Vacuous as a create test; BUT-1831's deterministic-id trap.
+- msg-no-dm-arm: M5 red alone. msg-no-mirror-arm: M1 red alone.
+- msg-dm-two-directional (also read `blocks/{me}_{other}` in the messages DM arm): 104/104 — no
+  test pins the direction of the DM arm on messages; M4 runs with the block row already deleted.
+  conv-two-directional on conversations create: B2 red, so that surface IS pinned.
+- vote-create-no-gate: V1 red alone. vote-update-no-gate: V3 red alone.
+- ctr-stranger-unbound: both BUT-2122 denies red (the owner's `{0,0}` payload passes the unbound
+  stranger arm). ctr-owner-unbound: owner deny red alone.
+- mirror-fail-closed (drop `!exists(mirror) ||`): conversations 98/104 (M3, M6, M4 + three
+  older sends), realtime-menus 9/13 (V4, V5, tests 1 and 4), poll-votes 48/56 — fail-open is
+  pinned on all three surfaces.
+- cap-same-doc-12 vs cap-distinct-12 on votes create: 14 calls / 2 docs ALLOWED (test 1 green;
+  V2 red only because the mutant's `!exists(mirror)` is false when a mirror exists), 14 distinct
+  docs DENIED (test 1, V2, V4, V5 red). Emulator cap is per distinct document.
+- Standalone probe (deleted in the same call): blocked person, block row standing, DM seeded —
+  message create DENIED; `set({lastMessage: {...}}, {merge: true})` on the conversation ALLOWED.

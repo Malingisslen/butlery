@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": 1,
-  "updatedAt": "2026-10-05T06:09:30.784178Z",
+  "version": 2,
+  "updatedAt": "2026-10-05T09:51:45.993551Z",
   "updatedBy": "migration-script",
   "validProperties": [
     "animal-product",

@@ -1,0 +1,30 @@
+{
+  "form": "kopierat från ica.se: mängd och vara på separata rader",
+  "title": "Krämig kycklinggryta",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "kycklinglårfilé"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "matlagningsgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "curry"
+    },
+    {
+      "key": "kokosmjölk"
+    },
+    {
+      "key": "ris"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

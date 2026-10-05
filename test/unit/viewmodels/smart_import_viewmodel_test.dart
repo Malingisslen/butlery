@@ -27,9 +27,6 @@
 ///   ImportManagerResult.rateLimit(RateLimitDenied) — when the manager
 ///   surfaces structured details the VM MUST use them verbatim. The
 ///   string-match path remains as a back-compat fallback. Pinned both ways.
-/// - localizeImportError pattern order: "could not save" check comes *after*
-///   network check; a "network save failed" message gets the network label.
-///   Asserted explicitly.
 /// - triggerManualImport bypasses _setPhase's lastStepBeforeError sync — the
 ///   currentStep getter reads stale _lastStepBeforeError. Pinned.
 
@@ -44,6 +41,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/import_progress_tracker.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
@@ -583,25 +581,48 @@ void main() {
   });
 
   group('startImport — error localization', () {
-    /// English failures from the manager must be localized for display.
-    /// Each `_localizeImportError` branch corresponds to a real production
-    /// error string; the VM must not leak raw English to users.
-    final cases = <String, String>{
-      'no import strategy found': 'Kunde inte tolka receptet',
-      'could not parse content': 'Kunde inte tolka receptet',
-      'no recipe found': 'Inget recept hittades',
-      'invalid url': 'Ogiltig URL',
-      'login required': 'Sidan kräver inloggning',
-      'authentication failure': 'Sidan kräver inloggning',
-      'could not read text': 'Kunde inte läsa texten i bilden',
-      'OCR failed': 'Kunde inte läsa texten i bilden',
-      'operation cancelled': 'Importen avbröts',
-      // P5-U06: an unknown cause says what did not happen, never a bare
-      // "Ett oväntat fel uppstod" (content-style-guide.md:94).
-      'something else entirely': 'Receptet kunde inte importeras.',
+    /// BUT-2237: the screen's text is chosen by the cause CODE the import
+    /// reported, never by words in the English message.
+    final cases = <ImportErrorCode, String>{
+      ImportErrorCode.urlNotAccessible: 'Kunde inte nå sidan',
+      ImportErrorCode.platformBlocked: 'Sidan kräver inloggning',
+      ImportErrorCode.noRecipeContent: 'Inget recept hittades',
+      ImportErrorCode.parsingFailed: 'Kunde inte tolka receptet',
+      ImportErrorCode.invalidUrl: 'Ogiltig URL',
+      ImportErrorCode.ocrFailed: 'Kunde inte läsa texten i bilden',
+      ImportErrorCode.saveFailed: 'Kunde inte spara receptet',
+      ImportErrorCode.cancelled: 'Importen avbröts',
+      ImportErrorCode.network: 'Ingen internetanslutning',
     };
-    cases.forEach((english, swedish) {
-      test('"$english" → "$swedish"', () async {
+    cases.forEach((code, swedish) {
+      test('${code.name} → "$swedish"', () async {
+        when(
+          () => mockImportManager.autoImport(
+            any(),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              ImportManagerResult.failure('any English text', errorCode: code),
+        );
+        viewModel.updateInput('https://example.com');
+
+        final r = (await viewModel.startImport()) as ImportFailed;
+
+        expect(r.message, swedish);
+        expect(r.errorCode, code);
+        expect(
+          viewModel.error,
+          swedish,
+          reason: 'setError should mirror the localized message',
+        );
+      });
+    });
+
+    /// The words that USED to pick the text pick nothing now: a failure with
+    /// no code says what did not happen (P5-U06), whatever its message says.
+    for (final english in ['login required', 'no recipe found', 'OCR failed']) {
+      test('uncoded "$english" → "Receptet kunde inte importeras."', () async {
         when(
           () => mockImportManager.autoImport(
             any(),
@@ -611,15 +632,10 @@ void main() {
         viewModel.updateInput('https://example.com');
 
         final r = (await viewModel.startImport()) as ImportFailed;
-
-        expect(r.message, swedish);
-        expect(
-          viewModel.error,
-          swedish,
-          reason: 'setError should mirror the localized message',
-        );
+        expect(r.message, 'Receptet kunde inte importeras.');
+        expect(r.errorCode, isNull);
       });
-    });
+    }
 
     /// Null errorMessage (manager returned isSuccess=false with no detail)
     /// must still say what did not happen: never "Okänt fel" alone (P5-U06).
@@ -1248,63 +1264,6 @@ void main() {
       tracker.start();
       expect(tracker.isRunning, isTrue);
       tracker.dispose();
-    });
-  });
-
-  group('_localizeImportError pattern ordering — BUT-1145', () {
-    /// BUT-1145: A message like "could not save: network unreachable" matches
-    /// BOTH the generic network heuristic (contains "network") AND the
-    /// specific "could not save" branch. The specific branch must win,
-    /// otherwise users see "could not reach the page" when the real problem
-    /// is a save failure that happens to mention the word "network".
-    test('failure containing "could not save" + network word maps to '
-        'importErrorCouldNotSaveRecipe (not the network error)', () async {
-      when(
-        () => mockImportManager.autoImport(
-          any(),
-          onProgress: any(named: 'onProgress'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            ImportManagerResult.failure('could not save: network unreachable'),
-      );
-      viewModel.updateInput('https://example.com/recipe');
-
-      final r = (await viewModel.startImport()) as ImportFailed;
-
-      // Swedish copy: "Kunde inte spara receptet" — NOT a network error.
-      expect(
-        r.message,
-        'Kunde inte spara receptet',
-        reason:
-            'specific "could not save" pattern must precede the generic network heuristic',
-      );
-    });
-
-    /// Same shape for "could not read" + network word — the OCR/read branch
-    /// must win over the network branch.
-    test('failure containing "could not read" + network word maps to '
-        'importErrorCouldNotReadImage', () async {
-      when(
-        () => mockImportManager.autoImport(
-          any(),
-          onProgress: any(named: 'onProgress'),
-        ),
-      ).thenAnswer(
-        (_) async => ImportManagerResult.failure(
-          'could not read image: network timeout fetching OCR backend',
-        ),
-      );
-      viewModel.updateInput('https://example.com/recipe');
-
-      final r = (await viewModel.startImport()) as ImportFailed;
-
-      expect(
-        r.message,
-        'Kunde inte läsa texten i bilden',
-        reason:
-            'specific "could not read" pattern must precede the generic network heuristic',
-      );
     });
   });
 

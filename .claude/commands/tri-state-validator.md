@@ -16,7 +16,7 @@ description: >
 **TriState har TRE värden, inte två:**
 - `contains` - Receptet innehåller allergenen
 - `free` - Receptet är BEVISAT fritt (100% coverage)
-- `unknown` - Vi vet inte (coverage < 100% eller okända ingredienser)
+- `unknown` - Vi vet inte (ingen träff OCH coverage < 100%)
 
 ## Kritiska Fel att Fånga
 
@@ -88,17 +88,14 @@ switch (status) {
 ## Coverage Rule
 
 ```dart
-// UNKNOWN is ALWAYS default when coverage < 100%
-if (tagResult.coverage < 1.0) {
-  // All allergen/dietary = TriState.unknown
-}
+// Coverage < 100% withholds FREE only (BUT-2247): a matched trigger is
+// CONTAINS whatever the unmatched rows are; no trigger + gaps = UNKNOWN.
 ```
 
 | Situation | Coverage | Behavior |
 |-----------|----------|----------|
 | No ingredients | 1.0 | Complete analysis (nothing to analyze) |
 | All unknown | 0.0 | Everything UNKNOWN |
-| 9 of 10 known | 0.9 | Everything UNKNOWN (not 100%) |
 
 ## Coverage-Aware UI
 

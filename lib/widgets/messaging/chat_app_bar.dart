@@ -18,12 +18,16 @@ import 'package:butlery/widgets/common/press_fill.dart';
 /// Clean chat app bar with conversation info and menu actions
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Conversation? conversation;
+
+  /// The view the back arrow returns to; null keeps the plain "Tillbaka".
+  final String? backTo;
   final Function(String) onMenuAction;
   final void Function(Object error)? onError;
 
   const ChatAppBar({
     super.key,
     this.conversation,
+    this.backTo,
     required this.onMenuAction,
     this.onError,
   });
@@ -57,6 +61,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     // conversation's name, with the participant count as the line under it
     // (Komponentark v1 §01 pattern 2; Skarmar v12 del 2 'Chatt'; B-45).
     return ButleryTopBar.undersida(
+      backTo: backTo,
       title: conversation == null
           ? context.l10n.chatTitle
           : (conversation?.title).orEmpty(),

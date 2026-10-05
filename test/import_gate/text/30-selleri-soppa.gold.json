@@ -1,0 +1,31 @@
+{
+  "form": "selleri och smör utan mängd",
+  "title": "Rotsellerisoppa",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "rotselleri",
+      "allergen": "selleri"
+    },
+    {
+      "key": "potatisar"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "hönsbuljong"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "vispgrädde",
+      "allergen": "mjölk"
+    }
+  ],
+  "headings": [
+    "Gör så här"
+  ]
+}

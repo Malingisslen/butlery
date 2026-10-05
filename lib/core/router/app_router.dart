@@ -3,6 +3,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -629,6 +630,7 @@ class AppRouter {
 
   /// Create error route with scale animation
   static Route<dynamic> _errorRoute([String? message]) {
+    if (message != null) AppLogger.warning(message);
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
         appBar: ButleryTopBar.undersida(title: context.l10n.errorTitle),
@@ -643,7 +645,7 @@ class AppRouter {
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
-                message ?? 'Sidan kunde inte hittas',
+                context.l10n.errorPageNotFound,
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -651,7 +653,7 @@ class AppRouter {
               ElevatedButton(
                 onPressed: () =>
                     Navigator.of(context).pushReplacementNamed(Routes.home),
-                child: const Text('Tillbaka till start'),
+                child: Text(context.l10n.errorBackToStart),
               ),
             ],
           ),

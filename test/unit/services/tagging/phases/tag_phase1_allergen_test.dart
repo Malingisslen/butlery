@@ -5,8 +5,9 @@
 /// These run against the STATIC allergen fallback (firebaseConfig = null), so
 /// they pin the real shipped allergen keys (gluten / mjölk / ...). The tri-valued
 /// math itself lives in IngredientLookupResult.getPropertyStatus:
-///   - coverage < 1.0            → UNKNOWN (can't confirm — safety-critical)
-///   - a matched ingredient with the trigger property → CONTAINS
+///   - a matched ingredient with the trigger property → CONTAINS, whatever
+///     the coverage (BUT-2247)
+///   - no trigger, coverage < 1.0 → UNKNOWN (can't confirm — safety-critical)
 ///   - full coverage, no trigger → FREE
 library;
 
@@ -87,10 +88,9 @@ void main() {
     );
 
     test(
-      'UNKNOWN: coverage < 1.0 cannot confirm, even if the trigger is present',
+      'BUT-2247: CONTAINS when the trigger is present, even at coverage < 1.0',
       () {
-        // Safety-critical: a partial lookup must NOT report FREE/CONTAINS — an
-        // unanalysed ingredient could carry the allergen.
+        // An unanalysed row cannot un-know a matched trigger.
         final lookup = IngredientLookupResult(
           matched: [
             TaggingTestHelper.ingredient('vetemjöl', 'grain', {
@@ -103,9 +103,27 @@ void main() {
 
         final result = Phase1AllergenCalculator.calculate(lookup, null);
 
-        expect(result.status['gluten'], TriState.unknown);
+        expect(result.status['gluten'], TriState.contains);
+        final decision = result.decisions.firstWhere((d) => d.key == 'gluten');
+        expect(decision.triggeringIngredients, ['vetemjöl']);
       },
     );
+
+    test('UNKNOWN: coverage < 1.0 and no trigger cannot confirm FREE', () {
+      // Safety-critical: a partial lookup must NOT report FREE — an
+      // unanalysed ingredient could carry the allergen.
+      final lookup = IngredientLookupResult(
+        matched: [TaggingTestHelper.ingredient('ris', 'grain', const {})],
+        unmatched: const ['okänd ingrediens'],
+        coverage: 0.5,
+      );
+
+      final result = Phase1AllergenCalculator.calculate(lookup, null);
+
+      expect(result.status['gluten'], TriState.unknown);
+      final decision = result.decisions.firstWhere((d) => d.key == 'gluten');
+      expect(decision.reason, contains('Coverage 50% < 100%'));
+    });
 
     test('a CONTAINS decision records the triggering ingredient', () {
       // mjölk → trigger property "dairy".
@@ -223,14 +241,34 @@ void main() {
       expect(result.status['X-allergen'], TriState.free);
     });
 
-    test('simple allergen from config: coverage < 1.0 → UNKNOWN', () {
+    test(
+      'simple allergen from config: trigger present at coverage < 1.0 → '
+      'CONTAINS (BUT-2247)',
+      () {
+        final config = _configWithAllergens([
+          _allergenEntry('X-allergen', ['prop-x']),
+        ]);
+        final lookup = IngredientLookupResult(
+          matched: [
+            TaggingTestHelper.ingredient('xfood', 'test', {'prop-x'}),
+          ],
+          unmatched: const ['okänd'],
+          coverage: 0.5,
+        );
+
+        final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+        expect(result.status['X-allergen'], TriState.contains);
+      },
+    );
+
+    test('simple allergen from config: no trigger at coverage < 1.0 → '
+        'UNKNOWN', () {
       final config = _configWithAllergens([
         _allergenEntry('X-allergen', ['prop-x']),
       ]);
       final lookup = IngredientLookupResult(
-        matched: [
-          TaggingTestHelper.ingredient('xfood', 'test', {'prop-x'}),
-        ],
+        matched: [TaggingTestHelper.ingredient('ris', 'grain', const {})],
         unmatched: const ['okänd'],
         coverage: 0.5,
       );
@@ -284,14 +322,38 @@ void main() {
       },
     );
 
-    test('combined allergen from config: coverage < 1.0 → UNKNOWN', () {
+    test(
+      'combined allergen from config: trigger present at coverage < 1.0 → '
+      'CONTAINS (BUT-2247)',
+      () {
+        final config = _configWithAllergens([
+          _allergenEntry('X-combined', ['prop-a', 'prop-b']),
+        ]);
+        final lookup = IngredientLookupResult(
+          matched: [
+            TaggingTestHelper.ingredient('bfood', 'test', {'prop-b'}),
+          ],
+          unmatched: const ['okänd'],
+          coverage: 0.5,
+        );
+
+        final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+        expect(result.status['X-combined'], TriState.contains);
+        final decision = result.decisions.firstWhere(
+          (d) => d.key == 'X-combined',
+        );
+        expect(decision.triggeringIngredients, ['bfood']);
+      },
+    );
+
+    test('combined allergen from config: no trigger at coverage < 1.0 → '
+        'UNKNOWN', () {
       final config = _configWithAllergens([
         _allergenEntry('X-combined', ['prop-a', 'prop-b']),
       ]);
       final lookup = IngredientLookupResult(
-        matched: [
-          TaggingTestHelper.ingredient('bfood', 'test', {'prop-b'}),
-        ],
+        matched: [TaggingTestHelper.ingredient('ris', 'grain', const {})],
         unmatched: const ['okänd'],
         coverage: 0.5,
       );

@@ -35,6 +35,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
 
   late final AuthService _authService;
   Timer? _pollTimer;
+  // Redraws once a second through the resend wait, so the countdown moves
+  // and the button comes back when the wait is over.
+  Timer? _cooldownTicker;
   bool _isSending = false;
   bool _verified = false;
   String? _errorMessage;
@@ -105,6 +108,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
     try {
       await _authService.sendEmailVerification();
       _lastResendTime = clock.now();
+      _startCooldownTicker();
     } catch (e) {
       if (mounted) {
         setState(
@@ -134,8 +138,21 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
         : l.emailVerificationResendFailedBecause(cause);
   }
 
+  void _startCooldownTicker() {
+    _cooldownTicker?.cancel();
+    _cooldownTicker = Timer.periodic(const Duration(seconds: 1), (ticker) {
+      if (!mounted) {
+        ticker.cancel();
+        return;
+      }
+      setState(() {});
+      if (_canResend) ticker.cancel();
+    });
+  }
+
   @override
   void dispose() {
+    _cooldownTicker?.cancel();
     _pollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -168,9 +185,6 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
     }
 
     final resendDisabled = _isSending || !_canResend;
-    final cooldownText = !_canResend
-        ? '${l.emailVerificationResend} (${_resendCooldownRemaining}s)'
-        : l.emailVerificationResend;
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -225,12 +239,24 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                           const SizedBox(height: AppDimensions.spacingXxl),
                           ActionButtons.primaryButton(
                             context,
-                            label: cooldownText,
+                            label: l.emailVerificationResend,
                             onPressed: resendDisabled
                                 ? null
                                 : _resendVerification,
                             isLoading: _isSending,
                           ),
+                          if (!_canResend) ...[
+                            const SizedBox(height: AppDimensions.spacingSm),
+                            Text(
+                              l.emailVerificationResendCountdown(
+                                _resendCooldownRemaining,
+                              ),
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                           const SizedBox(height: AppDimensions.spacingM),
                           TextButton(
                             onPressed: () {

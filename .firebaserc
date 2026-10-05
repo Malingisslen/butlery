@@ -8,6 +8,9 @@
         ],
         "app": [
           "butlery-app-1"
+        ],
+        "legal": [
+          "butlery-legal"
         ]
       }
     }

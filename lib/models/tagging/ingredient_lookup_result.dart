@@ -106,17 +106,18 @@ class IngredientLookupResult {
 
   // TriState calculations for properties
 
-  /// Calculates TriState for a property based on coverage and presence.
+  /// Calculates TriState for a property based on presence and coverage.
   ///
-  /// - CONTAINS: At least one ingredient has the property
+  /// - CONTAINS: At least one matched ingredient has the property. A known
+  ///   trigger is known whatever the unmatched rows are (BUT-2247).
+  /// - UNKNOWN: Coverage < 100% and no matched ingredient has the property
   /// - FREE: 100% coverage AND no ingredient has the property
-  /// - UNKNOWN: Coverage < 100%
   TriState getPropertyStatus(String property) {
-    if (coverage < 1.0) {
-      return TriState.unknown;
-    }
     if (hasProperty(property)) {
       return TriState.contains;
+    }
+    if (coverage < 1.0) {
+      return TriState.unknown;
     }
     return TriState.free;
   }
@@ -125,11 +126,11 @@ class IngredientLookupResult {
   ///
   /// Used for allergens like 'nuts' = tree-nut OR peanut.
   TriState getCombinedPropertyStatus(List<String> properties) {
-    if (coverage < 1.0) {
-      return TriState.unknown;
-    }
     if (hasAnyProperty(properties)) {
       return TriState.contains;
+    }
+    if (coverage < 1.0) {
+      return TriState.unknown;
     }
     return TriState.free;
   }
@@ -139,11 +140,11 @@ class IngredientLookupResult {
   /// Dietary checks are CONTAINS (has excluded property) or FREE.
   /// Example: vegetarian = no 'meat' and no 'seafood'.
   TriState getDietaryStatus(List<String> excludedProperties) {
-    if (coverage < 1.0) {
-      return TriState.unknown;
-    }
     if (hasAnyProperty(excludedProperties)) {
       return TriState.contains;
+    }
+    if (coverage < 1.0) {
+      return TriState.unknown;
     }
     return TriState.free;
   }

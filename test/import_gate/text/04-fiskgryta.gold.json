@@ -1,0 +1,36 @@
+{
+  "form": "enheten knippe, räkor",
+  "title": "Fiskgryta med räkor",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "lök"
+    },
+    {
+      "key": "morötter"
+    },
+    {
+      "key": "dill"
+    },
+    {
+      "key": "torskfilé",
+      "allergen": "fisk"
+    },
+    {
+      "key": "räkor",
+      "allergen": "skaldjur"
+    },
+    {
+      "key": "vispgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "fiskbuljong",
+      "allergen": "fisk"
+    },
+    {
+      "key": "tomatpuré"
+    }
+  ],
+  "headings": []
+}

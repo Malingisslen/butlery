@@ -33,6 +33,7 @@ import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -139,6 +140,8 @@ Conversation _groupConversation({
     groupId: groupId,
   );
 }
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 /// Records every route pushed onto the navigator so a test can inspect what
 /// the view asked for, rather than what the destination happened to render.
@@ -439,6 +442,56 @@ void main() {
         expect(find.text(_loadingCopy), findsNothing);
       },
     );
+  });
+
+  // BUT-2146: the chat opened from the inbox names the inbox on its back
+  // arrow. The chat builds for real, so the name has to pass both the list's
+  // push and the chat screen on its way to the bar.
+  testWidgets('a chat opened from the inbox says "Tillbaka till Meddelanden"', (
+    tester,
+  ) async {
+    final flags = _MockFeatureFlags();
+    when(() => flags.isEnabled(any())).thenReturn(true);
+    TestServiceLocator.registerMock<FeatureFlagService>(flags);
+    final conversation = _directConversation(
+      id: 'conv-1',
+      otherUserId: 'other-1',
+      otherDisplayName: 'Anna',
+    );
+    when(
+      () => messagingService.getConversation(any()),
+    ).thenAnswer((_) async => conversation);
+    when(
+      () => messagingService.markConversationAsRead(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => messagingService.getConversationMessagesPage(
+        conversationId: any(named: 'conversationId'),
+        historyStart: any(named: 'historyStart'),
+        limit: any(named: 'limit'),
+        startAfter: any(named: 'startAfter'),
+      ),
+    ).thenAnswer((_) async => const <Message>[]);
+    when(
+      () => messagingService.getConversationMessages(
+        conversationId: any(named: 'conversationId'),
+        historyStart: any(named: 'historyStart'),
+        limit: any(named: 'limit'),
+      ),
+    ).thenAnswer((_) => const Stream<List<Message>>.empty());
+    TestServiceLocator.registerMock<MessagingService>(messagingService);
+
+    await pumpView(tester);
+    await tester.pump();
+    conversationsController.add([conversation]);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(ConversationListItem));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    final sv = lookupAppLocalizations(const Locale('sv'));
+    expect(find.byTooltip(sv.commonBackTo(sv.messagingTitle)), findsOneWidget);
   });
 
   group('ConversationsListView — group info destination (BUT-1857)', () {

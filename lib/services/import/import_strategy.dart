@@ -1,4 +1,5 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 
 /// Strategy pattern interface for recipe import (text, URL, photo, archive).
 abstract class ImportStrategy {
@@ -22,21 +23,30 @@ class ImportResult {
   final String? suggestedTitle;
   final List<int>? likelyIngredientLines;
 
+  /// Why a failure happened, as a code the screen can choose its text from.
+  /// Null on success and assistance, and on a failure no cause was found for.
+  final ImportErrorCode? errorCode;
+
   ImportResult.success(this.recipe, {this.warnings, this.metadata})
     : isSuccess = true,
       errorMessage = null,
+      errorCode = null,
       needsAssistance = false,
       extractedText = null,
       suggestedTitle = null,
       likelyIngredientLines = null;
 
-  ImportResult.failure(this.errorMessage, {this.warnings, this.metadata})
-    : isSuccess = false,
-      recipe = null,
-      needsAssistance = false,
-      extractedText = null,
-      suggestedTitle = null,
-      likelyIngredientLines = null;
+  ImportResult.failure(
+    this.errorMessage, {
+    this.warnings,
+    this.metadata,
+    this.errorCode,
+  }) : isSuccess = false,
+       recipe = null,
+       needsAssistance = false,
+       extractedText = null,
+       suggestedTitle = null,
+       likelyIngredientLines = null;
 
   ImportResult.assistance({
     required this.extractedText,
@@ -47,6 +57,7 @@ class ImportResult {
        needsAssistance = true,
        recipe = null,
        errorMessage = null,
+       errorCode = null,
        warnings = null;
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;

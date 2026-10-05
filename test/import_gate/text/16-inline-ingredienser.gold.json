@@ -1,0 +1,30 @@
+{
+  "form": "ingredienser på en rad, kommaseparerade",
+  "title": "Enkel tomatsoppa",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "lök"
+    },
+    {
+      "key": "krossade tomater"
+    },
+    {
+      "key": "grönsaksbuljong"
+    },
+    {
+      "key": "matlagningsgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "salt"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}
