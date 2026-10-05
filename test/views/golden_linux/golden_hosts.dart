@@ -67,89 +67,99 @@ final StateHost syncQueueHost = StateHost(
 /// No friend group is registered and there is no cooking-session module, so
 /// the presence bar and "X lagar just nu" stay hidden, as for a user without
 /// a household: both read live streams that a fixed picture cannot hold.
-final StateHost minaReceptHost = StateHost(
-  build: (ctx) async {
-    final recipeService = MockUnifiedRecipeService()
-      ..setRecipeState(
-        recipes: _library(),
-        isInitialized: true,
-        currentUserId: _me,
-        currentUserDisplayName: 'Malin',
-      );
-    when(recipeService.initialize).thenAnswer((_) async {});
-    TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
+final StateHost minaReceptHost = minaReceptHostWith();
 
-    // Order is kept as given, so the picture does not depend on a sort.
-    registerFallbackValue(SortCriteria.title);
-    final search = MockSearchService();
-    when(
-      () => search.sortRecipes(
-        any(),
-        any(),
-        ascending: any(named: 'ascending'),
-      ),
-    ).thenAnswer((i) => i.positionalArguments[0] as List<Recipe>);
-    TestServiceLocator.registerMock<SearchService>(search);
+/// [minaReceptHost], optionally with a never-cooked recipe, which fills the
+/// discovery shelf above the cards, and optionally in list mode.
+StateHost minaReceptHostWith({bool dormantRecipe = false, bool grid = true}) =>
+    StateHost(
+      build: (ctx) async {
+        final recipeService = MockUnifiedRecipeService()
+          ..setRecipeState(
+            recipes: _library(dormantRecipe: dormantRecipe),
+            isInitialized: true,
+            currentUserId: _me,
+            currentUserDisplayName: 'Malin',
+          );
+        when(recipeService.initialize).thenAnswer((_) async {});
+        TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
 
-    // The real view model over the fakes above. A factory, because the view
-    // disposes the one it takes.
-    TestServiceLocator.registerFactory<RecipeListViewModel>(
-      () => RecipeListViewModel(
-        recipeService: recipeService,
-        searchService: search,
-        tagEditingService: TagEditingService(),
-      ),
+        // Order is kept as given, so the picture does not depend on a sort.
+        registerFallbackValue(SortCriteria.title);
+        final search = MockSearchService();
+        when(
+          () => search.sortRecipes(
+            any(),
+            any(),
+            ascending: any(named: 'ascending'),
+          ),
+        ).thenAnswer((i) => i.positionalArguments[0] as List<Recipe>);
+        TestServiceLocator.registerMock<SearchService>(search);
+
+        // The real view model over the fakes above. A factory, because the view
+        // disposes the one it takes.
+        TestServiceLocator.registerFactory<RecipeListViewModel>(
+          () => RecipeListViewModel(
+            recipeService: recipeService,
+            searchService: search,
+            tagEditingService: TagEditingService(),
+          ),
+        );
+
+        TestServiceLocator.registerMock<PersistenceService>(
+          _ViewModePersistence(grid: grid),
+        );
+        TestServiceLocator.registerMock<UserService>(_SignedInUser());
+
+        TestServiceLocator.registerMock<FriendsViewModel>(
+          MockFriendsViewModel(),
+        );
+        TestServiceLocator.registerMock<SharedContentCoordinatorViewModel>(
+          MockFactory.createSharedContentCoordinatorViewModel(),
+        );
+
+        final tags = MockPersonalTagService();
+        // Without these the view model's load fails and retries on a timer.
+        when(tags.getAllTags).thenAnswer((_) async => []);
+        when(tags.getAllGroups).thenAnswer((_) async => []);
+        when(tags.watchTagsWithGroups).thenAnswer((_) => const Stream.empty());
+        TestServiceLocator.registerMock<PersonalTagService>(tags);
+        TestServiceLocator.registerMock<PersonalTagViewModel>(
+          PersonalTagViewModel(service: tags),
+        );
+
+        // No curated month: the seasonal banner stays out of the column.
+        TestServiceLocator.registerMock<SeasonalHeroService>(
+          SeasonalHeroService()
+            ..debugInjectMonths(const <int, SeasonalMonth>{}),
+        );
+
+        // HemViewModel.fromServices reads these for tonight's dish.
+        final plan = _MockWeeklyMenuPlanService();
+        when(() => plan.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: _tonight(), readFailed: false),
+        );
+        TestServiceLocator.registerMock<WeeklyMenuPlanService>(plan);
+        final pantry = _MockPantryService();
+        when(() => pantry.getAll(any())).thenAnswer((_) async => const []);
+        TestServiceLocator.registerMock<PantryService>(pantry);
+
+        return const MinaReceptView();
+      },
+      // The view loads its social data after 1.5 s (_safeLoadSocialData); the
+      // runner's own pump is shorter, so let that timer fire inside the test.
+      reach: (tester, ctx) async {
+        await tester.pump(const Duration(milliseconds: 1600));
+        // An asset decodes outside fake time, so a placeholder illustration no
+        // earlier screen in the run has shown would draw blank.
+        await tester.runAsync(() async {
+          for (final element in find.byType(Image).evaluate()) {
+            await precacheImage((element.widget as Image).image, element);
+          }
+        });
+        await tester.pump();
+      },
     );
-
-    TestServiceLocator.registerMock<PersistenceService>(_GridPersistence());
-    TestServiceLocator.registerMock<UserService>(_SignedInUser());
-
-    TestServiceLocator.registerMock<FriendsViewModel>(MockFriendsViewModel());
-    TestServiceLocator.registerMock<SharedContentCoordinatorViewModel>(
-      MockFactory.createSharedContentCoordinatorViewModel(),
-    );
-
-    final tags = MockPersonalTagService();
-    // Without these the view model's load fails and retries on a timer.
-    when(tags.getAllTags).thenAnswer((_) async => []);
-    when(tags.getAllGroups).thenAnswer((_) async => []);
-    when(tags.watchTagsWithGroups).thenAnswer((_) => const Stream.empty());
-    TestServiceLocator.registerMock<PersonalTagService>(tags);
-    TestServiceLocator.registerMock<PersonalTagViewModel>(
-      PersonalTagViewModel(service: tags),
-    );
-
-    // No curated month: the seasonal banner stays out of the column.
-    TestServiceLocator.registerMock<SeasonalHeroService>(
-      SeasonalHeroService()..debugInjectMonths(const <int, SeasonalMonth>{}),
-    );
-
-    // HemViewModel.fromServices reads these for tonight's dish.
-    final plan = _MockWeeklyMenuPlanService();
-    when(() => plan.readWeek(any())).thenAnswer(
-      (_) async => WeeklyMenuPlanRead(plan: _tonight(), readFailed: false),
-    );
-    TestServiceLocator.registerMock<WeeklyMenuPlanService>(plan);
-    final pantry = _MockPantryService();
-    when(() => pantry.getAll(any())).thenAnswer((_) async => const []);
-    TestServiceLocator.registerMock<PantryService>(pantry);
-
-    return const MinaReceptView();
-  },
-  // The view loads its social data after 1.5 s (_safeLoadSocialData); the
-  // runner's own pump is shorter, so let that timer fire inside the test.
-  reach: (tester, ctx) async {
-    await tester.pump(const Duration(milliseconds: 1600));
-    // An asset decodes outside fake time, so a placeholder illustration no
-    // earlier screen in the run has shown would draw blank.
-    await tester.runAsync(() async {
-      for (final element in find.byType(Image).evaluate()) {
-        await precacheImage((element.widget as Image).image, element);
-      }
-    });
-    await tester.pump();
-  },
-);
 
 const _me = 'test-user-123';
 
@@ -167,10 +177,14 @@ class _SignedInUser extends MockUserService {
   String? get currentUserId => _me;
 }
 
-/// The grid is the stored display preference, which the view model reads.
-class _GridPersistence extends PersistenceService {
+/// Grid or list is the stored display preference, which the view model reads.
+class _ViewModePersistence extends PersistenceService {
+  _ViewModePersistence({required this.grid});
+
+  final bool grid;
+
   @override
-  Future<bool> getIsGridView() async => true;
+  Future<bool> getIsGridView() async => grid;
 }
 
 class _MockWeeklyMenuPlanService extends Mock
@@ -192,16 +206,15 @@ WeeklyMenuPlan _tonight() =>
 
 /// Dates are relative to [goldenNow], never to the real clock. Every recipe
 /// was cooked within the last 60 days, so neither discovery shelf (never
-/// cooked for 60 days, favourites not cooked for 90) has anything to show:
-/// with a shelf in the column the library body overflows on the 360 x 800
-/// surface and the grid is pushed out of sight.
-List<Recipe> _library() {
+/// cooked for 60 days, favourites not cooked for 90) has anything to show,
+/// unless [dormantRecipe] adds one never cooked.
+List<Recipe> _library({bool dormantRecipe = false}) {
   Recipe recipe(
     String id,
     String title,
     int minutes,
     double rating,
-    int cookedDaysAgo, {
+    int? cookedDaysAgo, {
     bool favourite = false,
     List<String> ingredients = const ['1 gul lök'],
   }) {
@@ -215,7 +228,9 @@ List<Recipe> _library() {
               ..ingredients = ingredients
               ..createdAt = created
               ..updatedAt = created
-              ..lastCookedAt = goldenNow.subtract(Duration(days: cookedDaysAgo))
+              ..lastCookedAt = cookedDaysAgo == null
+                  ? null
+                  : goldenNow.subtract(Duration(days: cookedDaysAgo))
               ..tags = const [])
             .build();
     r.core.isFavorite = favourite;
@@ -234,6 +249,7 @@ List<Recipe> _library() {
     recipe('r2', 'Linsgryta med kokos', 35, 4.0, 40, favourite: true),
     recipe('r3', 'Citronrisotto', 30, 4.5, 21),
     recipe('r4', 'Rårakor med lingon', 25, 3.5, 30),
+    if (dormantRecipe) recipe('r5', 'Kålpudding', 90, 0, null),
   ];
 }
 
