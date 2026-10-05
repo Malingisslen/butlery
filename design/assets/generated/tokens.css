@@ -2,7 +2,7 @@
   GENERERAD FIL — ändra källan, inte den här.
   system 2.1 · tokens 1.13
   generator tools/gen-css.mjs v1.3
-  källfingeravtryck sha256:8d568568f8f09bd101b7e49d080a484aecd94fddf24bba905349f901e3b098d3 (4 indatafiler, generatorns källa inräknad)
+  källfingeravtryck sha256:c6c818d2bbbcd55bcafc04f0b9d627839c3ab0ef71f4c6d35043ab60e6c62f00 (4 indatafiler, generatorns källa inräknad)
   genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 */
 
@@ -156,6 +156,8 @@
   --butlery-type-stat-weight: 700;
   --butlery-type-stepper-size: 17px;
   --butlery-type-stepper-weight: 600;
+  --butlery-type-tab-size: 13px;
+  --butlery-type-tab-weight: 600;
   --butlery-type-title-size: 22px;
   --butlery-type-title-tracking: -0.4px;
   --butlery-type-title-weight: 700;

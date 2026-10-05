@@ -631,7 +631,8 @@
   "statNumber": "stat",
   "cookingStep": "cookingStep",
   "captionBase": "caption",
-  "calendarCell": "calendarCell"
+  "calendarCell": "calendarCell",
+  "tabText": "tab"
  },
  "typeAliases": {
   "titleSmall": "headlineSmall",
@@ -640,7 +641,6 @@
   "captionText": "captionBase",
   "buttonPrimary": "labelLarge",
   "buttonTextStyle": "labelLarge",
-  "tabText": "labelMedium",
   "navigationText": "labelSmall",
   "navLabel": "labelSmall",
   "cardTitle": "titleMedium",
