@@ -380,6 +380,7 @@ extension ImportResultV2LegacyAdapter on ImportResultV2 {
       ),
       final ImportFailure failure => ImportResult.failure(
         failure.message,
+        errorCode: failure.errorCode,
         metadata: {
           'errorCode': failure.errorCode.name,
           'pipeline': failure.pipeline,

@@ -10,6 +10,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
@@ -109,7 +110,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       final domain = _extractDomain(url);
 
       // Fetch HTML — try simple HTTP first
-      final httpHtml = await _fetcher.fetchHtmlWithTimeout(url);
+      final httpFetch = await _fetcher.fetchHtml(url);
+      final httpHtml = httpFetch.html;
       AppLogger.debug(
         'UrlImportStrategy: HTTP fetch for $domain → ${httpHtml == null ? "null" : "${httpHtml.length} chars"}',
       );
@@ -228,11 +230,12 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       _logImportEvent(url, domain, null, false, stopwatch);
-      return _createFailureResult(url, bestHtml);
+      return _createFailureResult(url, bestHtml, httpFetch);
     } catch (e) {
       AppLogger.error('URL import failed', e);
       return ImportResult.failure(
         'Could not import recipe from URL. Please try again.',
+        errorCode: ImportErrorCode.parsingFailed,
         metadata: {
           'strategy': strategyName,
         },
@@ -467,11 +470,15 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final plainText = HtmlSanitizer.stripToPlainText(html);
     if (plainText.length <= 50) return null;
 
-    AppLogger.info('UrlImportStrategy: Returning for user-assisted import');
     final suggestedTitle = HtmlUtilities.extractTitleFromHtml(html);
     final lines = plainText.split('\n');
     final likelyIngredients = IngredientLineDetector.findIngredientLines(lines);
+    // BUT-2237: help is offered for a page that holds something to finish by
+    // hand. A login form, or a page with no ingredient line at all, is a
+    // failure with its own cause rather than a dead-end help screen.
+    if (likelyIngredients.isEmpty || _loginForm.hasMatch(html)) return null;
 
+    AppLogger.info('UrlImportStrategy: Returning for user-assisted import');
     return ImportResult.assistance(
       extractedText: plainText,
       suggestedTitle: suggestedTitle,
@@ -481,17 +488,48 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  ImportResult _createFailureResult(String url, String? htmlResult) {
+  ImportResult _createFailureResult(
+    String url,
+    String? htmlResult,
+    HtmlFetch httpFetch,
+  ) {
+    final code = failureCodeFor(htmlResult, httpFetch);
     return ImportResult.failure(
-      'Could not extract recipe from URL. The page may not contain a valid recipe.',
+      switch (code) {
+        ImportErrorCode.urlNotAccessible => 'Could not reach the page.',
+        ImportErrorCode.platformBlocked => 'The page requires login.',
+        _ => 'No recipe found on the page.',
+      },
+      errorCode: code,
       metadata: {
         'strategy': strategyName,
         'url': url,
         'html_fetched': htmlResult != null,
         'html_length': htmlResult?.length ?? 0,
+        if (httpFetch.statusCode != null) 'http_status': httpFetch.statusCode,
       },
     );
   }
+
+  /// Why every tier gave up. Only reached after tiers 1–7 all declined, so a
+  /// page that WAS read held no structured recipe and no ingredient lines.
+  @visibleForTesting
+  static ImportErrorCode failureCodeFor(String? html, HtmlFetch httpFetch) {
+    if (html == null) {
+      final status = httpFetch.statusCode;
+      return status == 401 || status == 403
+          ? ImportErrorCode.platformBlocked
+          : ImportErrorCode.urlNotAccessible;
+    }
+    return _loginForm.hasMatch(html)
+        ? ImportErrorCode.platformBlocked
+        : ImportErrorCode.noRecipeContent;
+  }
+
+  static final _loginForm = RegExp(
+    r'''<input[^>]+type\s*=\s*["']?password''',
+    caseSensitive: false,
+  );
 
   String? _extractDomain(String url) {
     try {
