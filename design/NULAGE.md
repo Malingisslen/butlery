@@ -4,7 +4,7 @@ Den här filen säger var arbetet står **i dag**. Den är kort med avsikt: om d
 läser äldre sessioner, arbetsplaner eller granskningsanteckningar först får du
 en föråldrad bild.
 
-Senast uppdaterad: 2026-09-28.
+Senast uppdaterad: 2026-10-05.
 
 ---
 
@@ -16,7 +16,7 @@ Underlaget är fryst i tre skilda lager. De räknar aldrig om varandra.
 |---|---|---|---|
 | **Krav** (Block 287) | skärmkorpusens element och de 772 produktkraven | `04f7f59` | `fas2/block287k-frysning.json` |
 | **Beteende** (Block 288) | 82 tillämpliga vytillstånd, 81 krävda övergångar i åtta flöden, 33 krävda interaktionstillstånd | `b5fcf5c` | `fas2/block288-uxfrysning.json` |
-| **Leverans** (Block 289) | tokens, mappning, generatorer och de genererade Flutter-filerna, plus kontrastkontraktet | `3f38556` (omfryst runda 6) | `fas2/block289-visuell-leverans.json` |
+| **Leverans** (Block 289) | tokens, mappning, generatorer och de genererade Flutter-filerna, plus kontrastkontraktet | fryses om med varje leverans till appen; gällande bindning står i artefakten | `fas2/block289-visuell-leverans.json` |
 
 Alla tre reproducerar byteidentiskt ur en ren utcheckning. Kör proven med:
 
@@ -26,11 +26,14 @@ node tools/block288/uxprov.mjs --root=<rot>
 node tools/block289/visuellprov.mjs --root=<rot>
 ```
 
-Malins 20 produktbeslut från 2026-09-23 ligger i `fas2/produktbeslut-2026-09-23.json` och styr paket 3–8. Det som skjuts upp ligger i Linear (BUT-2140…2167).
+Malins 20 produktbeslut från 2026-09-23 ligger i `fas2/produktbeslut-2026-09-23.json` och styr paket 3–8. Senare beslutsrundor ligger i `fas2/produktbeslut-<datum>.json`, en fil per runda; den senaste är runda 8 (2026-10-05). Det som skjuts upp ligger i Linear.
 
-Noll öppna designbeslut. De fyra som fanns är avgjorda och nedtecknade i
-`fas2/ux-beslut.json` — en överstyrd rad raderas aldrig, den behåller sin
-tidigare status och pekar ut sitt beslut.
+UX-besluten i Block 288 är avgjorda och nedtecknade i `fas2/ux-beslut.json`
+— en överstyrd rad raderas aldrig, den behåller sin tidigare status och pekar
+ut sitt beslut. Ett öppet designbeslut: om Block 287 ska frysas om för att
+rita mörka varianter av reglage, rullningslist och radio i komponentarket
+(BUT-2252). Komponentarket hör till skärmkorpusen, som är orörd sedan
+frysningen.
 
 ---
 
@@ -61,10 +64,12 @@ Ordningen är bunden. Paket 2 börjar inte förrän paket 1 är oberoende gransk
 Räknat i appen av `tools/design_migration_census.dart`; hela listan står i
 appens `docs/design-migration/census.md` (genereras, redigeras aldrig för hand).
 
+Talen nedan är censusen på appens main 2026-10-05 (`ea4b867`).
+
 - **Paket 8 klart** (Q8-01 = A): testerna är gröna och varje känd brist har en registrerad biljett. Ingen brist saknar biljett.
-- **Migrationen är inte klar:** 362 kända brister (tillgänglighet 216, vytillstånd 70, flödesövergångar 32, kontrast 16, interaktion 18, tokens 10; PR #278, runda 6) och 398 ikonanvändningar utan ritad glyf (BUT-2166).
-- **49 av 81** flödesövergångar är testade. 10 är halvfärdiga, 17 är byggda men går inte att nå (tvåstegsverifiering BUT-2142, offlinekö BUT-2162, realtidssynk BUT-2151) och 5 saknas.
-- **27 av 53** rent visuella vytillstånd klarar både ljust och mörkt läge.
+- **Migrationen är inte klar:** 63 kända brister (flödesövergångar 31, tillgänglighet 12, interaktionskontroller 10, kontrast 5, interaktion 5) och 393 ikonanvändningar utan ritad glyf (BUT-2166). De fem kontrastbristerna är dataskalans par, som designrepot strök 2026-10-05 (BUT-2191); de försvinner när appen vendrar om tokens.
+- **50 av 81** flödesövergångar är testade. 11 är halvfärdiga, 15 är byggda men går inte att nå (bland annat tvåstegsverifiering BUT-2142, offlinekö BUT-2162, realtidssynk BUT-2151) och 5 saknas.
+- **53 av 53** rent visuella vytillstånd klarar både ljust och mörkt läge.
 - Migrationen är klar först när listorna över kända brister är tomma.
 
 ---
@@ -89,7 +94,7 @@ appens `docs/design-migration/census.md` (genereras, redigeras aldrig för hand)
 |---|---|
 | "det tokeniserade sökfältet är oavgjort" | avgjort i Block 286: sammansatt visuellt läge, inget eget tillstånd |
 | "fas 2-mätningen behöver granskas" | passerad; Block 287–289 är frysta ovanpå den |
-| "designsystemet är två av sju faser in" | tre frysningar klara och paket 1 av 8 committat |
+| "designsystemet är två av sju faser in" | tre frysningar klara och alla åtta paket på appens main |
 | `fas2/block287-frysning.json` (utan `k`) | **ogiltigförklarad**, bygger på den gamla positionsidentiteten |
 
 Detaljerna om Block 287 står i `fas2/BLOCK287.md`.
