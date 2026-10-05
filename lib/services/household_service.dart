@@ -159,19 +159,12 @@ class HouseholdService extends BaseService {
     return HouseholdAllergenAggregate.degraded(preferences: _floorOnly);
   }
 
-  /// The signed-in user's own preferences as the MENU filters by them
-  /// (BUT-2085, BUT-1694). Not [UserService.allergenPreferences]: that getter
-  /// substitutes [UserAllergenPreferences.defaults] for a user who never
-  /// opened the allergen screen, which is the right suggestion for the
-  /// settings screen and the wrong filter — it would hold the menu to the
-  /// default diets.
-  ///
-  /// An untouched screen means "no allergies" (BUT-1663) only when the
-  /// settings were actually read; a profile whose settings read failed, or
-  /// no profile at all, gets the common-allergen floor as an unreadable
-  /// household member does. The generator and the opt-out dialog that names
-  /// what the generator stops protecting both read this, so they cannot
-  /// drift apart.
+  /// What the MENU filters by for the signed-in user alone (BUT-2085,
+  /// BUT-1694) — read by the generator AND the opt-out dialog that names what
+  /// it stops protecting, so the two cannot drift. Not
+  /// [UserService.allergenPreferences], which substitutes `defaults`, diets
+  /// included, for an untouched screen; untouched means "no allergies"
+  /// (BUT-1663) only when the settings were read, else the floor applies.
   static UserAllergenPreferences ownMenuPreferences(UserProfile? profile) {
     final declared = profile?.allergenPreferences;
     if (declared != null) return declared;
