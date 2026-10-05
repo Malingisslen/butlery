@@ -20,10 +20,6 @@
 │ ImportManager.autoImport = THE entry point: rate-limit → GlobalRecipeCache   │
 │ lookup → platform pipelines (YouTube/TikTok/Instagram) → strategy loop       │
 │ (Archive, Url, Text, File, Photo). Parse-only; save happens after user review│
-│ ⚠ A SECOND, degraded URL pipeline exists: OS share sheet AND the manual      │
-│   '/importViaUrl' screen use the legacy WebScraper path (no platform         │
-│   pipelines, no cache, no rate limiter, no parse telemetry). Only the        │
-│   "Importera länk" tile → /smartImport uses the full pipeline.               │
 └──────────────────────────────────────────────────────────────────────────────┘
         │  UrlImportStrategy = 7-tier waterfall (its Tier 1+3 call ↓)
         ▼

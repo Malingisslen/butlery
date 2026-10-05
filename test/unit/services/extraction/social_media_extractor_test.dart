@@ -372,8 +372,6 @@ void main() {
     });
 
     // BUT-1336 — Criterion 2: failure-path carries success==false + non-null error.
-    // The existing tests above only assert isA<ExtractionResult>; they never check
-    // the failure contract that receive_share_view depends on.
     group('extractFromUrl failure path (BUT-1336)', () {
       // Intent: extractFromUrl returns success==false and a non-null error string
       // when the ExtractionManager itself reports failure. Would fail if the facade
@@ -406,8 +404,7 @@ void main() {
           expect(
             result.error,
             isNotNull,
-            reason:
-                'The error string must not be dropped — receive_share_view reads result.error',
+            reason: 'The error string must not be dropped',
           );
         },
       );
@@ -437,15 +434,13 @@ void main() {
           expect(
             result.error,
             isNotNull,
-            reason:
-                'The fallback path must populate error so receive_share_view can display it',
+            reason: 'The fallback path must populate error',
           );
         },
       );
 
       // Intent: every failure that flows through the facade carries a non-null
-      // metadata['reason'] code, so receive_share_view passes a meaningful errorType
-      // to logExtractionError instead of always-null analytics. BUT-1348 fix (flipped
+      // metadata['reason'] code. BUT-1348 fix (flipped
       // from the BUT-1336 characterization test). Would fail if a failure branch
       // dropped the reason key.
       //
@@ -483,8 +478,7 @@ void main() {
             result.metadata['reason'],
             isNotNull,
             reason:
-                'BUT-1348: every failure ExtractionResult must carry a reason code so '
-                'receive_share_view logs a meaningful errorType, not null.',
+                'BUT-1348: every failure ExtractionResult must carry a reason code',
           );
           expect(
             knownReasons,
@@ -515,7 +509,7 @@ void main() {
       );
 
       // Intent: the per-branch reason codes that production failure paths stamp are
-      // exactly the stable set receive_share_view expects. Constructed directly because
+      // exactly the stable set. Constructed directly because
       // the WebView/network branches can't be driven in a unit test. Would fail if a
       // code were renamed away from the agreed set. BUT-1348.
       test('failure reason codes belong to the stable set (BUT-1348)', () {

@@ -19,7 +19,6 @@ discovery, real flake-fix, or user correction.
 |---|---|---|
 | Allergen preferences | `allergen_preferences_view_test.dart` | User sets allergens → state persists across navigation |
 | Onboarding | `onboarding_journey_test.dart` | First-launch flow → first recipe imported |
-| Import recipe | `import_recipe_journey_test.dart` | URL/text → parsed recipe in user's library |
 | Cooking mode | `cooking_mode_journey_test.dart` | Recipe → cooking mode → step navigation |
 | Menu → shopping | `menu_to_shopping_journey_test.dart` | Weekly menu → consolidated shopping list |
 | Share recipe | `share_recipe_journey_test.dart` | Recipe → friend → recipient sees it |

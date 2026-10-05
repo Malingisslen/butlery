@@ -496,29 +496,6 @@ class MockFactory {
     return mock;
   }
 
-  /// Create mock URL import viewmodel
-  static production.MockUrlImportViewModel createUrlImportViewModel({
-    bool isLoading = false,
-    String? error,
-    String url = '',
-    String extractedText = '',
-    bool hasExtractedText = false,
-    bool canFetch = false,
-    String sourceUrl = '',
-  }) {
-    final mock = production.MockUrlImportViewModel();
-    mock.setUrlImportState(
-      isLoading: isLoading,
-      error: error,
-      url: url,
-      extractedText: extractedText,
-      hasExtractedText: hasExtractedText,
-      canFetch: canFetch,
-      sourceUrl: sourceUrl,
-    );
-    return mock;
-  }
-
   /// Create mock photo import viewmodel
   static PhotoImportViewModel createPhotoImportViewModel({
     bool isLoading = false,

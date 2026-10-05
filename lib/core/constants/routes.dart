@@ -16,9 +16,6 @@ class Routes {
   /// from Swedish (laggTill) to English (BUT-967).
   static const String addRecipe = '/laggTill';
 
-  /// URL import route
-  static const String importViaUrl = '/importViaUrl';
-
   /// Photo import route
   static const String photoImport = '/photoImport';
 
@@ -48,9 +45,6 @@ class Routes {
 
   /// Recipe editing route. URL value kept (BUT-967).
   static const String editRecipe = '/redigeraRecept';
-
-  /// Shared recipe reception route
-  static const String receiveShare = '/receiveShare';
 
   /// Weekly menu route. URL value kept (BUT-967).
   static const String weeklyMenu = '/veckomeny';
@@ -126,7 +120,6 @@ class Routes {
   /// Routes requiring authentication
   static const Set<String> authenticatedRoutes = {
     addRecipe,
-    importViaUrl,
     photoImport,
     voiceImport,
     quickCapture,
@@ -137,7 +130,6 @@ class Routes {
     fileImport,
     recipeDetail,
     editRecipe,
-    receiveShare,
     weeklyMenu,
     realtimeMenu,
     shoppingList,
@@ -172,7 +164,6 @@ class Routes {
 
   /// Routes using slide-from-bottom animation
   static const Set<String> bottomSlideRoutes = {
-    importViaUrl,
     photoImport,
     voiceImport,
     quickCapture,
@@ -181,7 +172,6 @@ class Routes {
     importFromArchive,
     smartImport,
     fileImport,
-    receiveShare,
   };
 
   /// Routes using slide-from-right animation
@@ -270,7 +260,6 @@ class Routes {
 
     // Recipe management
     addRecipe,
-    importViaUrl,
     photoImport,
     voiceImport,
     quickCapture,
@@ -281,7 +270,6 @@ class Routes {
     fileImport,
     recipeDetail,
     editRecipe,
-    receiveShare,
 
     // Menu & Shopping
     weeklyMenu,
@@ -357,7 +345,6 @@ class Routes {
     buffer.writeln('\nRECIPE ROUTES:');
     for (final route in [
       addRecipe,
-      importViaUrl,
       photoImport,
       voiceImport,
       quickCapture,
@@ -366,7 +353,6 @@ class Routes {
       importFromArchive,
       recipeDetail,
       editRecipe,
-      receiveShare,
     ]) {
       buffer.writeln('  $route');
     }

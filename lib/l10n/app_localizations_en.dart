@@ -5009,9 +5009,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importTryAdjustFilters => 'Try adjusting search or filters';
 
   @override
-  String get importViaUrl => 'Import via URL';
-
-  @override
   String get indicatorOfflineMode => 'No connection';
 
   @override

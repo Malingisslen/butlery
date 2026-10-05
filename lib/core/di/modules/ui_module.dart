@@ -21,7 +21,6 @@ import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
-import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
@@ -134,7 +133,6 @@ class UIModule implements DIModule {
     GroupInvitationsViewModel,
     // Import ViewModels
     TextImportViewModel,
-    UrlImportViewModel,
     PhotoImportViewModel,
     ArchiveImportViewModel,
 
@@ -329,13 +327,6 @@ class UIModule implements DIModule {
       // Text Import ViewModel
       container.registerFactory<TextImportViewModel>(
         () => TextImportViewModel(
-          importManager: container<ImportManager>(),
-        ),
-      );
-
-      // URL Import ViewModel
-      container.registerFactory<UrlImportViewModel>(
-        () => UrlImportViewModel(
           importManager: container<ImportManager>(),
         ),
       );

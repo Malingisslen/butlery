@@ -3353,7 +3353,6 @@
   "importTipsContent": "Klistra in hela receptet inklusive ingredienser. Se till att ingredienser kommer före instruktioner. Texten kan komma från Instagram, TikTok, Facebook etc.",
   "importTipsTitle": "Tips för bästa resultat",
   "importTryAdjustFilters": "Prova att justera sökning eller filter",
-  "importViaUrl": "Importera via URL",
   "indicatorOfflineMode": "Ingen anslutning",
   "@indicatorOfflineMode": {
     "description": "Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value."

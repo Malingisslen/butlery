@@ -325,20 +325,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logManualCopyFallback({
-    required String platform,
-    String? reason,
-  }) async {
-    await logEvent(
-      name: AnalyticsEvents.manualCopyFallback,
-      parameters: {
-        'platform': platform,
-        'reason': ?reason,
-      },
-    );
-  }
-
-  @override
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,

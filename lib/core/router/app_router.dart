@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -27,7 +26,6 @@ import 'package:butlery/views/fran_sociala_medier_view.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/veckomeny_view.dart' as vecko;
-import 'package:butlery/views/receive_share_view.dart';
 
 // Shell layout (IndexedStack for tab state preservation)
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -242,7 +240,6 @@ class AppRouter {
             // Legacy plain-text argument (pre-BUT-928 callers)
             initialText = arguments;
           } else if (arguments is Map<String, dynamic>) {
-            // Map arguments from URL import / photo-OCR handoff
             initialText = arguments['text'] as String?;
             sourceUrl = arguments['sourceUrl'] as String?;
             // BUT-928: overall OCR confidence from the photo-import preview.
@@ -284,20 +281,6 @@ class AppRouter {
           }
           return _buildRoute(
             EditRecipeView(recipe: recipe),
-            settings,
-            Routes.getAnimationType(routeName),
-          );
-
-        case Routes.receiveShare:
-          final shareData = settings.arguments as Map<String, dynamic>?;
-          if (shareData == null) {
-            return _errorRoute('Share data missing');
-          }
-          return _buildRoute(
-            ReceiveShareView(
-              content: (shareData['content'] as String?).orEmpty(),
-              type: shareData['type'] as String? ?? 'text',
-            ),
             settings,
             Routes.getAnimationType(routeName),
           );

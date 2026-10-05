@@ -541,33 +541,6 @@ void main() {
           expect(captured['error_category'], equals(expectedCategory));
         }
       });
-
-      test('should log manual copy fallback', () async {
-        // Arrange
-        const platform = 'ica';
-        const reason = 'extraction_failed';
-
-        // Act
-        await repository.logManualCopyFallback(
-          platform: platform,
-          reason: reason,
-        );
-
-        // Assert
-        final captured =
-            verify(
-                  () => mockAnalytics.logEvent(
-                    name: 'manual_copy_fallback',
-                    parameters: captureAny(named: 'parameters'),
-                  ),
-                ).captured.single
-                as Map<String, Object>;
-
-        expect(captured['platform'], equals(platform));
-        expect(captured['reason'], equals(reason));
-        // BUT-518: redundant — Firebase Analytics server-stamps every event.
-        expect(captured.containsKey('timestamp'), isFalse);
-      });
     });
 
     group('recipe events', () {

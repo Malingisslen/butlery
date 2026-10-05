@@ -103,12 +103,6 @@ void main() {
         ),
       ).thenAnswer((_) async {});
       when(
-        () => mockRepo.logManualCopyFallback(
-          platform: any(named: 'platform'),
-          reason: any(named: 'reason'),
-        ),
-      ).thenAnswer((_) async {});
-      when(
         () => mockRepo.logRecipeCreated(
           source: any(named: 'source'),
           hasImage: any(named: 'hasImage'),
@@ -276,19 +270,6 @@ void main() {
             error: 'blocked',
             errorType: 'custom_error',
             imageFormat: 'unknown',
-          ),
-        ).called(1);
-      });
-
-      test('should log manual copy fallback', () async {
-        await service.logManualCopyFallback(
-          platform: SourcePlatform.tiktok,
-          reason: 'User chose manual',
-        );
-        verify(
-          () => mockRepo.logManualCopyFallback(
-            platform: 'tiktok',
-            reason: 'User chose manual',
           ),
         ).called(1);
       });

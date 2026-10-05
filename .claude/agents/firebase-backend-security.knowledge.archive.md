@@ -11037,3 +11037,20 @@ Re-review same day: `LiveMenuExport.minimise` now walks `menuSnapshot` with `dis
 withholds a non-map snapshot, and the drift test walks every `*DisplayName` path of a menu with
 a populated dish. Nested erasure gap filed as BUT-2214; the unplanned deviation entry removed.
 Verdict pass.
+
+## 2026-10-05 — BUT-2240 file import through ImportManager.importFile (review, pass)
+
+Scope given: import_manager.dart, import_event.dart, file_import_strategy.dart, the three
+analytics repository files (logManualCopyFallback removal only), log-parse-event.ts
+(VALID_STRATEGIES gains "file"). Staged index held 62 files; only the seven named were graded.
+Order in importFile: pickFile -> cancel returns before any limiter read -> checkLimit(basic('auto'))
+-> denial returns before _record -> importPicked -> one _record (parse event + recordUsage +
+analytics). ImportRateLimiter's counters are source-agnostic: ImportOperation.sourceType reaches
+only a debug log line in recordUsage, so basic('file') bills the same ceilings as other channels.
+A picker throw propagates to FileImportViewModel's catch and writes nothing. The file event
+payload carries no file name, no url, no domain (channel != link, so countsForSite is false);
+daily-snapshots buckets it under domain "unknown" like text/photo/voice since BUT-2238.
+Analytics import_started/import_success go through ImportEventsTracker.hasAnalyticsConsent and
+carry only channel.name. parse_events residual on erasure is BUT-1570 (accepted). Dart
+strategyIds and TS VALID_STRATEGIES compared by hand: equal sets. No strategyName other than
+the file strategy contains "file". Tests not executed: no flutter binary, no functions/node_modules.

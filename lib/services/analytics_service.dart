@@ -327,12 +327,6 @@ class AnalyticsService extends BaseService {
     imageFormat: imageFormat,
   );
 
-  Future<void> logManualCopyFallback({
-    required SourcePlatform platform,
-    String? reason,
-  }) =>
-      _importTracker.logManualCopyFallback(platform: platform, reason: reason);
-
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
