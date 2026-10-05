@@ -507,4 +507,43 @@ void main() {
       }
     });
   });
+
+  // Felkartan punkt 2 (2026-10-05). `isSectionHeader` used to call ANY
+  // lowercase single word under 15 characters a heading, and `isGarbage` and
+  // `isValidIngredient` both defer to it, so a quantity-less row was dropped
+  // from the list that allergen tagging reads. Vocabulary only now.
+  group('isSectionHeader — vocabulary only', () {
+    for (final heading in [
+      'tillbehör',
+      'Dressing',
+      'Till servering',
+      'såsen',
+    ]) {
+      test('"$heading" is a heading', () {
+        expect(RecipeSectionDetector.isSectionHeader(heading), isTrue);
+      });
+    }
+
+    for (final row in ['ägg', 'parmesanost', 'tortillabröd', 'krutonger']) {
+      test('"$row" is not a heading, not garbage, and a valid ingredient', () {
+        expect(RecipeSectionDetector.isSectionHeader(row), isFalse);
+        expect(RecipeSectionDetector.isGarbage(row), isFalse);
+        expect(RecipeSectionDetector.isValidIngredient(row), isTrue);
+      });
+    }
+  });
+
+  group('isValidIngredient — lone unit tokens only', () {
+    for (final unit in ['msk', 'dl', 'krm']) {
+      test('a lone "$unit" is an OCR fragment, not an ingredient', () {
+        expect(RecipeSectionDetector.isValidIngredient(unit), isFalse);
+      });
+    }
+
+    for (final word in ['ägg', 'smör', 'senap', 'mjölk']) {
+      test('a lone "$word" is an ingredient', () {
+        expect(RecipeSectionDetector.isValidIngredient(word), isTrue);
+      });
+    }
+  });
 }

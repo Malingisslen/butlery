@@ -8,7 +8,13 @@ import 'package:butlery/utils/text/swedish_word_boundary.dart';
 /// Provides section header detection, instruction scoring, and content
 /// classification for Swedish and English recipe text.
 class RecipeSectionDetector {
-  /// Known recipe section headers in Swedish
+  /// Known recipe section headers in Swedish. This vocabulary is the ONLY way
+  /// a colon-less single word is read as a heading: a bare word outside it
+  /// ("ägg", "parmesanost", "tortillabröd") is an ingredient row whose
+  /// quantity the writer left out, and reading it as a heading deletes it
+  /// from the list allergen tagging reads. The caption-shaped headings a
+  /// pasted recipe uses without a colon ("Dressing", "Garnering",
+  /// "Tillbehör") are listed so they still leave the list.
   static const sectionHeaders = {
     // Ingredient sections
     'såsen',
@@ -22,6 +28,22 @@ class RecipeSectionDetector {
     'köttet',
     'gräddsåsen',
     'till servering',
+    'servering',
+    'tillbehör',
+    'dressing',
+    'garnering',
+    'fyllning',
+    'deg',
+    'topping',
+    'glasyr',
+    'frosting',
+    'marinad',
+    'montering',
+    'pensling',
+    'botten',
+    'smet',
+    'röra',
+    'kryddblandning',
     // Instruction sections
     'gör så här',
     'tillagning',
@@ -141,18 +163,16 @@ class RecipeSectionDetector {
     return HeadingWordLists.isBareGlutenWord(label) ? label : null;
   }
 
-  /// Check if text is a section header (like "biffen", "såsen")
+  /// Check if text is a section header (like "biffen", "såsen").
+  ///
+  /// Vocabulary only. This used to greenlight ANY lowercase single word under
+  /// 15 characters as a component name, and because [isGarbage] and
+  /// [isValidIngredient] both defer here, every quantity-less ingredient row
+  /// ("ägg", "smör", "parmesanost") was dropped as a heading. A heading
+  /// outside the vocabulary is recognised by its SHAPE in the text import
+  /// strategy, which can see the lines around it; this function cannot.
   static bool isSectionHeader(String text) {
-    final clean = text.toLowerCase().trim();
-    // Check known headers
-    if (sectionHeaders.contains(clean)) return true;
-    // Single word < 15 chars that could be a component name
-    if (clean.length < 15 &&
-        !clean.contains(' ') &&
-        RegExp(r'^[a-zåäö]+$').hasMatch(clean)) {
-      return true;
-    }
-    return false;
+    return sectionHeaders.contains(text.toLowerCase().trim());
   }
 
   /// Check if a section header indicates instruction content
@@ -304,10 +324,12 @@ class RecipeSectionDetector {
       return false;
     }
 
-    // Reject orphan fragments (single short words without measurements)
-    if (text.length < 6 &&
-        !text.contains(RegExp(r'\d')) &&
-        text.split(' ').length == 1) {
+    // A lone unit token ("msk", "dl") is an OCR fragment, never an
+    // ingredient. A lone short WORD is not rejected: a quantity-less row
+    // ("ägg", "smör", "senap") carries its allergen, and dropping the row
+    // loses the allergen with it.
+    final trimmed = text.trim();
+    if (!trimmed.contains(' ') && _subHeadingUnitGuard.hasMatch(trimmed)) {
       return false;
     }
 
