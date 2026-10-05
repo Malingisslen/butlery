@@ -51,6 +51,11 @@ const YTREGEL = [
   // tokens.json contrastPairs.
   { TOKEN: 'text.onActionPrimary', YTA: 'action.primary', KRAV: 4.5, SLAG: 'READABLE' },
   { TOKEN: 'text.onActionPrimaryPressed', YTA: 'action.primaryPressed', KRAV: 4.5, SLAG: 'READABLE' },
+  // R8-5 = B (BUT-2232, Malin 2026-10-05). Den roda knappen ar ett undantag
+  // for tva knappar. Forgrunden ar densamma i vila och nedtryckt: papper i
+  // ljust lage, inkDeep i morkt.
+  { TOKEN: 'text.onActionDanger', YTA: 'action.danger', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.onActionDanger', YTA: 'action.dangerPressed', KRAV: 4.5, SLAG: 'READABLE' },
   // Fokusringen ar grafik, inte text: golvet ar graphicAndUi 3:1. contrastPairs
   // mater den mot papper; en ring runt ett kort star pa upphojd yta, sa den
   // provas dar ocksa.

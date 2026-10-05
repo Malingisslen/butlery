@@ -354,6 +354,21 @@
    "text.onActionPrimaryPressed",
    "Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed."
   ],
+  "actionDanger": [
+   "semantic",
+   "action.danger",
+   "Rod fylld knapp, bara roststartens inspelningsknapp och uppladdningens felknapp (R8-5 = B, BUT-2232). Byts alltid i par med onActionDanger."
+  ],
+  "actionDangerPressed": [
+   "semantic",
+   "action.dangerPressed",
+   "Nedtryckt actionDanger. Forgrunden ar fortfarande onActionDanger."
+  ],
+  "onActionDanger": [
+   "semantic",
+   "text.onActionDanger",
+   "Ikon och text pa actionDanger och actionDangerPressed."
+  ],
   "textWarning": [
    "semantic",
    "text.warning",

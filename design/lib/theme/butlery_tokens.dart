@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:842caa5667f39b4b7095531d626f7689596ae36e87ad26e7d464e8637771ae43 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:eeb2c0c2089a9ad690f33d3b761e86427a21f287359927dc653735fa6d81b2c6 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -54,6 +54,12 @@ class ButleryColors {
   static const actionPrimaryDark = Color(0xFFCE7C1E);
   static const actionPrimaryPressed = Color(0xFF9A5C14);
   static const actionPrimaryPressedDark = Color(0xFF9A5C14);
+  static const actionDanger = Color(0xFF9C3B23);
+  static const actionDangerDark = Color(0xFFDE9078);
+  static const actionDangerPressed = Color(0xFF7B2E1C);
+  static const actionDangerPressedDark = Color(0xFFD67557);
+  static const textOnActionDanger = Color(0xFFF5F4ED);
+  static const textOnActionDangerDark = Color(0xFF17251D);
   static const controlCheckedBackground = Color(0xFF24382C);
   static const controlCheckedBackgroundDark = Color(0xFF24382C);
   static const controlCheckedForeground = Color(0xFFF5F4ED);

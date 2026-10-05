@@ -2,11 +2,13 @@
   GENERERAD FIL — ändra källan, inte den här.
   system 2.1 · tokens 1.13
   generator tools/gen-css.mjs v1.3
-  källfingeravtryck sha256:67aaf067097658e8b1d1b7fbd8eef4918133109e8d0aad6921077160c3ad62bb (4 indatafiler, generatorns källa inräknad)
+  källfingeravtryck sha256:634097c6acc7eaafd0a1930d89cbba4b97f30cbe5340cbe83f931932ddc3886b (4 indatafiler, generatorns källa inräknad)
   genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 */
 
 :root {
+  --butlery-action-danger-pressed: #7B2E1C;
+  --butlery-action-danger: #9C3B23;
   --butlery-action-primary-pressed: #9A5C14;
   --butlery-action-primary: #CE7C1E;
   --butlery-avatar-1-fill: #4A5C43;
@@ -113,6 +115,7 @@
   --butlery-text-disabled-on-raised: #788477;
   --butlery-text-disabled: #7D897C;
   --butlery-text-link: #8A5212;
+  --butlery-text-on-action-danger: #F5F4ED;
   --butlery-text-on-action-primary-pressed: #F5F4ED;
   --butlery-text-on-action-primary: #17251D;
   --butlery-text-primary: #24382C;
@@ -164,6 +167,8 @@
 }
 
 [data-theme="dark"] {
+  --butlery-action-danger-pressed: #D67557;
+  --butlery-action-danger: #DE9078;
   --butlery-action-primary-pressed: #9A5C14;
   --butlery-action-primary: #CE7C1E;
   --butlery-border-control: rgba(245,244,237,0.4);
@@ -206,6 +211,7 @@
   --butlery-text-disabled-on-raised: #93A48D;
   --butlery-text-disabled: #627061;
   --butlery-text-link: #DCA968;
+  --butlery-text-on-action-danger: #17251D;
   --butlery-text-on-action-primary-pressed: #F5F4ED;
   --butlery-text-on-action-primary: #17251D;
   --butlery-text-primary: #F5F4ED;
