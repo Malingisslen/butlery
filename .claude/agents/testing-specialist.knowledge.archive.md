@@ -40163,3 +40163,38 @@ Also: `MenuService` (`menu_service.dart:512`) matches `r.mealType.toLowerCase() 
 The first pump of that never-pumped surface failed with "BoxConstraints forces an infinite width": `button_themes.dart:185/212/247` give Filled/Text/Outlined `minimumSize: Size(double.infinity, minTouchTarget)` and `ImportDialogFooter` put them in a `Row` with a `Spacer`. Fix: a `static const _fitLabel = ButtonStyle(minimumSize: WidgetStatePropertyAll(Size(0, minTouchTarget)))` on the four footer buttons (same shape as `hem_section.dart:326`). Pinned by the new test's `takeException` line, which was red before the fix. Residual, not this change: ten other widgets host Filled/Text buttons beside a `Spacer()` (grep `Spacer()` ∩ `FilledButton|TextButton` under lib/widgets: group_dialog_components, image_gallery_widget, menu_load_dialog, invitation_actions, invitation_selectors, blocked_users_section, menu_recipe_selection_dialog, group_recipe_sharing_dialog, friend_recipe_sharing_dialog, tag_editor_dialog) — each is either already styled or the same latent crash; a ticket, graded by pumping each once.
 
 Verdict flipped to pass. The "matches exactly" wording (menu_service compares lowercased) left standing as Info.
+
+### 2026-10-05 — Huvudrätt→Middag review: coverage records no DA for `return` lines; label branch settled by a replica probe [trigger: review]
+
+Staged diff: `_guessMealType` returned 'Huvudrätt' from the `typ: huvudrätt` label branch and
+the inline `contains('huvudrätt')` branch; both now return 'Middag', which is ALSO the method's
+fallback. Two table rows added ('Typ: Huvudrätt\nKöttbullar', 'Huvudrätt - Lasagne' → 'Middag').
+The rows pin the FORWARD direction only (the old value must not come back); deleting either branch
+stays green by construction, because the default now coincides — the guards chapter's dead-code
+rule. The caller's own revert probe on the inline branch reddened 'Huvudrätt - Lasagne'; the label
+branch was unprobed, and its row would be green through the inline branch even if preprocessing
+had broken the `Typ: Huvudrätt` label.
+
+Coverage read on the table test (`--coverage`, awk on `text_import_strategy.dart`): DA records exist
+for every CONDITION line (1083, 1084, 1087, 1090, 1095, 1098, 1101, 1104, 1107, 1110, 1113, 1118,
+1121, 1122, 1123, 1124, 1127) and for NONE of the `return '<literal>';` lines (1091, 1099, 1102,
+1105, 1111, 1114, 1119, 1125, 1128, 1134). So the DA on the `if` says the row reached the condition,
+not that it took the branch. The DA counts are also not loop counts (1123 is reached by three rows,
+records 1) — treat them as reached/not-reached only.
+
+Settled with a test-side replica (`test/unit/services/import/_zz_probe_test.dart`, deleted after):
+ran each fixture through `strategy.normalizeText` + `TextImportNormalizer.preprocessText` and asked
+the label regex directly. Label row's preprocessed text: `Typ: Huvudrätt\nKöttbullar\nIngredienser\n:\n2 dl mjölk\nInstruktioner\n:\nVispa.`
+(the `Ingredienser:` colon is split onto its own line, the `Typ: Huvudrätt` label is NOT) — regex
+matches, so reverting line 1099 to 'Huvudrätt' would redden the row. Inline row: label regex does
+not match, `contains('huvudrätt')` does, and no earlier inline word (frukost, fralla, lunch, middag)
+is present — sole discriminator for line 1123. `git status --porcelain` clean of the probe afterwards.
+
+Also this round: the index moved mid-review (two more staged files appeared between my first
+`--name-only` and the porcelain check — a comment strike in
+`test/widget/views/recipe_form_meal_type_dropdown_test.dart` and one sentence in
+`docs/onboarding/workflow-map.html`); re-listed and read the Dart one, then the index moved a
+THIRD time (a stale clause I was about to file as Info was struck by the coordinator, and a test
+renamed) — each move re-read with `Read`, because the ledger pins bytes. Core card was at 14,992
+chars, so the `RecipeFactory.build`-has-no-`tagResult` principle moved verbatim to the
+parsing-tagging-menu chapter to make room for the return-line coverage principle.

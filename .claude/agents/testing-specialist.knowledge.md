@@ -53,11 +53,14 @@ compress it.**
   failure names the WRONG tests while the tally is right. Grep `\[E\]`, never the running names.
 - **When the question is only "is this line REACHED at all", coverage answers it with no `lib/`
   write** — `flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suites>`, then
-  `awk '/^SF:.*<file>/,/^end_of_record/' | grep '^DA:<line>,'`; a `0` is the finding. ~10s, no
-  restore, no parallel-session clobber, no auto-mode classifier. A reached line can still be
-  unasserted, so reach for a mutant only for "does any test DISCRIMINATE this expression"
-  (BUT-1831). The same report settles a widget test turning on a COLLABORATOR's state: read the
-  DA hit on the RHS LINE of an `&&`, which evaluates only when the LHS was true (BUT-1908).
+  `awk '/^SF:.*<file>/,/^end_of_record/' | grep '^DA:<line>,'`; a `0` is the finding; ~10s, no
+  restore, no clobber. A reached line can still be unasserted, so a mutant is for "does any test
+  DISCRIMINATE this expression" (BUT-1831). The RHS line of an `&&` is hit only when the LHS was
+  true (BUT-1908). **A bare `return <literal>;` line gets NO `DA` record at all**, so a branch
+  whose body is only that return shows its CONDITION hit and nothing about which way it went — and
+  when the branch converges on the fallback value, the test is green by either route. Settle it
+  with a test-side replica that runs the fixture through the same preprocessing and asks the
+  condition's predicate directly (meal-type Huvudrätt, 2026-10-05).
 ### Coverage decisions
 Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 55% project
 (2026-07-11); don't file generic "raise coverage" tickets.
@@ -117,12 +120,6 @@ other suites prove:
 | All production mocks | `test/infrastructure/mocks/production_mocks.dart` |
 | Typed mock factory | `test/infrastructure/factories/mock_factory.dart` |
 | `MockMenuService` (NOT in production_mocks.dart) | `test/infrastructure/mocks/service_mocks.dart` |
-
-**`RecipeFactory.build` has NO `tagResult`/`tagOverrides` param; `RecipeBuilder` does.** Every
-tagging-gated render (`recipe.tagResult != null` guards the card's allergen/dietary rows) is
-UNREACHABLE from a factory-built fixture, so a test written on the factory passes vacuously rather
-than failing to compile — that is how BUT-1780 shipped "fixed" with no badge ever on screen. Use
-`RecipeBuilder().withTagResult(...)` for anything badge- or tag-related.
 
 ### Vacuity patterns — the recurring ways a "passing" test proves nothing
 The single most repeated finding across months of review.
