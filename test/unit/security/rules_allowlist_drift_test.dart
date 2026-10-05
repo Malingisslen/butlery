@@ -863,7 +863,7 @@ void main() {
     // _allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      45,
+      44,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
