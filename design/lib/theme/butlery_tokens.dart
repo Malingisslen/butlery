@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:11901c85da424d66b1aa314b7db133a600e7b4783a5c3a0474d28b3a59c1a26f (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:842caa5667f39b4b7095531d626f7689596ae36e87ad26e7d464e8637771ae43 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -47,7 +47,7 @@ class ButleryColors {
   static const borderSubtle = Color(0xFFCCD1C2);
   static const borderSubtleDark = Color(0x2EF5F4ED);
   static const borderControl = Color(0xFF7D897C);
-  static const borderControlDark = Color(0x59F5F4ED);
+  static const borderControlDark = Color(0x66F5F4ED);
   static const borderStatusWarning = Color(0xFFD8B784);
   static const borderStatusWarningDark = Color(0xFFDCA968);
   static const actionPrimary = Color(0xFFCE7C1E);
