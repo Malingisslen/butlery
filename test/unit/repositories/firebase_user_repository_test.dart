@@ -824,6 +824,44 @@ void main() {
         ); // Should exclude current user
       });
 
+      test('finds a profile stored the way saveProfile writes it', () async {
+        // saveProfile writes toFirestoreEditable(), which carries no isHidden;
+        // only moderation writes that field.
+        final stored = _createUserProfile(
+          'user-1',
+          displayName: 'Test14',
+        ).toFirestoreEditable();
+        expect(stored.containsKey('isHidden'), isFalse);
+        await _seedUserProfile(fakeFirestore, 'user-1', stored);
+
+        final results = await repository.searchProfiles('test14');
+
+        expect(results.map((p) => p.uid), ['user-1']);
+      });
+
+      test('leaves out a profile a moderator has hidden', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          'user-1',
+          _createUserProfile('user-1', displayName: 'Visible Anna').toFirestore(),
+        );
+        await _seedUserProfile(
+          fakeFirestore,
+          'user-2',
+          _createUserProfile(
+              'user-2',
+              displayName: 'Hidden Anna',
+            ).toFirestoreEditable()
+            ..['isHidden'] = true,
+        );
+
+        final hidden = await repository.searchProfiles('hidden');
+        final visible = await repository.searchProfiles('visible');
+
+        expect(hidden, isEmpty);
+        expect(visible.map((p) => p.uid), ['user-1']);
+      });
+
       test('should return empty list for empty query', () async {
         // Act
         final results = await repository.searchProfiles('');
