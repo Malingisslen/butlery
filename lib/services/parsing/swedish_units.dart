@@ -11,7 +11,7 @@ const kSwedishUnits = <String>{
   'msk', 'tsk', 'krm', 'matsked', 'tesked', 'kryddmått',
   // Packaging / countable units
   'st', 'bit', 'burk', 'pkt', 'paket', 'förp', 'påse',
-  'skiva', 'klyfta', 'knippe', 'nypa', 'skvätt',
+  'skiva', 'klyfta', 'knippe', 'kruka', 'bunt', 'nypa', 'skvätt',
   // Pinch / dollop / drop
   'näve', 'klick', 'droppe',
   // Serving
@@ -48,6 +48,8 @@ const kMaxAmountByUnit = <String, double>{
   'st': 500,
   'nypa': 20,
   'knippe': 20,
+  'kruka': 20,
+  'bunt': 20,
   'klyfta': 50,
   'skiva': 50,
   'port': 50,

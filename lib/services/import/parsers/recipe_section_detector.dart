@@ -77,7 +77,7 @@ class RecipeSectionDetector {
   /// treats å/ä/ö as non-word, so `\bl\b` matched the last letter of "Kål".
   static final _subHeadingUnitGuard = SwedishWordBoundary.boundedRegExp(
     r'dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|paket|förp|'
-    r'nypa|knippe|klyfta|skiva|bit|näve|klick|droppe',
+    r'nypa|knippe|kruka|bunt|klyfta|skiva|bit|näve|klick|droppe',
     caseSensitive: false,
   );
 
@@ -159,6 +159,30 @@ class RecipeSectionDetector {
         ? clean.substring(0, clean.length - 1).trim()
         : clean;
     return HeadingWordLists.isBareGlutenWord(label) ? label : null;
+  }
+
+  /// A block title ("Ingredienser", "Gör så här:", "Ingredients") that a site
+  /// emitted as an entry of its ingredient list. [componentSubHeadingLabel]
+  /// answers null for these because they are not component groups, and a
+  /// caller that reads that null as "ingredient" forwards the title to the
+  /// parser, where no registry row matches it and every allergen verdict on
+  /// the recipe turns UNKNOWN. Exact, colon-stripped vocabulary plus the
+  /// anchored ingredient-header check; the loose `contains` form of
+  /// [isInstructionHeader] is deliberately not consulted, so an ingredient
+  /// row that merely contains one of its words stays a row.
+  static bool isGenericBlockMarker(String text) {
+    final clean = text.trim();
+    final label = clean.endsWith(':')
+        ? clean.substring(0, clean.length - 1).trim()
+        : clean;
+    final lower = label.toLowerCase();
+    if (lower.isEmpty) return false;
+    // A title that runs into the first row ("Ingredienser: 2 dl mjölk") is a
+    // row, and this runs before the sub-heading guard that would say so.
+    if (RegExp(r'\d').hasMatch(label)) return false;
+    if (_subHeadingUnitGuard.hasMatch(label)) return false;
+    return HeadingWordLists.genericBlockMarkers.contains(lower) ||
+        isIngredientHeader(lower);
   }
 
   /// Check if text is a section header (like "biffen", "såsen").

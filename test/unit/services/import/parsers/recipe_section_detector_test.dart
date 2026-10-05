@@ -533,6 +533,14 @@ void main() {
     }
   });
 
+  group('componentSubHeadingLabel — potted and bunched herbs are rows', () {
+    for (final line in ['Kruka basilika:', 'Bunt persilja:', 'Knippe dill:']) {
+      test('"$line" stays an ingredient row', () {
+        expect(RecipeSectionDetector.componentSubHeadingLabel(line), isNull);
+      });
+    }
+  });
+
   group('isValidIngredient — lone unit tokens only', () {
     for (final unit in ['msk', 'dl', 'krm']) {
       test('a lone "$unit" is an OCR fragment, not an ingredient', () {
@@ -543,6 +551,38 @@ void main() {
     for (final word in ['ägg', 'smör', 'senap', 'mjölk']) {
       test('a lone "$word" is an ingredient', () {
         expect(RecipeSectionDetector.isValidIngredient(word), isTrue);
+      });
+    }
+  });
+  group('isGenericBlockMarker — block markers are never ingredient rows', () {
+    for (final line in [
+      'Ingredienser',
+      'Ingredienser:',
+      'INGREDIENSER',
+      'Gör så här:',
+      'Ingredients',
+      'Du behöver',
+    ]) {
+      test('"$line" is a block marker', () {
+        expect(RecipeSectionDetector.isGenericBlockMarker(line), isTrue);
+      });
+    }
+
+    for (final line in [
+      'salt',
+      'ägg',
+      'Deg:',
+      'Mjöl:',
+      'Gräddsås',
+      'häll i resten av ingredienser',
+      '2 dl grädde',
+      'Ingredienser: 2 dl mjölk',
+      'Ingredienser 500 g vetemjöl',
+      'Du behöver 2 ägg',
+      'Du behöver en burk krossade tomater',
+    ]) {
+      test('"$line" is not a block marker', () {
+        expect(RecipeSectionDetector.isGenericBlockMarker(line), isFalse);
       });
     }
   });

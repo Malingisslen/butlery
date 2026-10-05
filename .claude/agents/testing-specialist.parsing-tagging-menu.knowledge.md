@@ -101,6 +101,15 @@
   `Future.wait` must not discard already-materialized results mid-batch.
 - A cross-copy "single source of truth" test must READ every copy — an unexported duplicate still
   drifts. Windows: `/c/tools/flutter/bin/flutter test <forward-slash-path>` via Bash works directly.
+  **The unit vocabulary is FOUR hand-mirrored tables, and a diff that touches two of them owes a
+  grep of the other two**: `UnitDefinitions.standaloneUnits` (regex parser), `kSwedishUnits`
+  (LlmTier unknown-unit DROP), `kMaxAmountByUnit` (LlmTier ceiling, falls back to 10000 so a
+  missing key is permissive, not fatal) and `RecipeSectionDetector._subHeadingUnitGuard` (whose
+  own comment says "mirror it here"). `grep -rln 'kSwedishUnits\|kMaxAmountByUnit' test/` was
+  ZERO files on 2026-10-05, so a unit added there is pinned only by the regex-parser suite while
+  the LLM path can drop the row green. Same round: a `.map(strip ?? t)` step appended to a
+  `where`-filter chain is the identity on every existing fixture — grade it by grepping the suite
+  for a line INSIDE its domain (a lone gluten word + colon), not by the two filters beside it.
 
 ### Menu & tagging domain
 - Weighted-random selectors: assert WEIGHT MATH via a `@visibleForTesting debug*` hook, never the
