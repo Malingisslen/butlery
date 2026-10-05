@@ -1,7 +1,7 @@
-/// BUT-2239: a `structureRecipe` call the server answers with
-/// `success: false` has still been billed (`structure-recipe.ts` returns the
-/// model's cost on an unparseable answer), so the client limiter must count
-/// it, for both the whole-recipe and the ingredient-line entry point.
+/// BUT-2239: `structure-recipe.ts` returns the model's cost on an
+/// unparseable answer, so the client limiter must count it, for both the
+/// whole-recipe and the ingredient-line entry point. A kill-switch answer
+/// costs nothing and must not use up a daily slot.
 library;
 
 import 'package:butlery/models/account/user_consent.dart';
@@ -38,38 +38,49 @@ class _FakeConsentService extends Fake implements ConsentService {
 
 class _FailedResult extends Fake
     implements HttpsCallableResult<Map<String, dynamic>> {
+  _FailedResult(this.cost);
+  final double cost;
+
   @override
   Map<String, dynamic> get data => {
     'success': false,
     'error': 'Kunde inte tolka AI-svaret som ett recept.',
-    'estimatedCost': 0.0012,
+    'estimatedCost': cost,
   };
 }
 
 class _FailingCallable extends Fake implements HttpsCallable {
+  _FailingCallable(this.cost);
+  final double cost;
+
   @override
   Future<HttpsCallableResult<T>> call<T extends Object?>([
     Object? parameters,
-  ]) async => _FailedResult() as HttpsCallableResult<T>;
+  ]) async => _FailedResult(cost) as HttpsCallableResult<T>;
 }
 
 class _FakeFunctions extends Fake implements FirebaseFunctions {
+  _FakeFunctions(this.cost);
+  final double cost;
+
   @override
   HttpsCallable httpsCallable(String name, {HttpsCallableOptions? options}) =>
-      _FailingCallable();
+      _FailingCallable(cost);
 }
 
 void main() {
   late _RecordingRateLimiter limiter;
   late LlmService service;
 
+  LlmService serviceAnswering(double cost) => LlmService(
+    rateLimiter: limiter,
+    consentService: _FakeConsentService(),
+    functions: _FakeFunctions(cost),
+  );
+
   setUp(() {
     limiter = _RecordingRateLimiter();
-    service = LlmService(
-      rateLimiter: limiter,
-      consentService: _FakeConsentService(),
-      functions: _FakeFunctions(),
-    );
+    service = serviceAnswering(0.0012);
   });
 
   test('a failed structureRecipe call is recorded with its cost', () async {
@@ -90,4 +101,13 @@ void main() {
       expect(limiter.recorded, [0.0012]);
     },
   );
+
+  test('a kill-switch answer, which cost nothing, is not recorded', () async {
+    final response = await serviceAnswering(0).structureRecipe(
+      text: 'Pannkakor',
+    );
+
+    expect(response.success, isFalse);
+    expect(limiter.recorded, isEmpty);
+  });
 }

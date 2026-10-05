@@ -311,7 +311,7 @@ class LlmService extends BaseService {
   /// 1. GDPR consent check
   /// 2. Rate-limit guard
   /// 3. Firebase Cloud Function call + response parsing
-  /// 4. Usage recording (on success, or always if [recordUsageOnFailure])
+  /// 4. Usage recording (on success, or on a billed failure if [recordUsageOnFailure])
   /// 5. Error handling (Firebase and generic exceptions)
   Future<T> _executeLlmCall<T>({
     required ImportOperation operation,
@@ -366,8 +366,8 @@ class LlmService extends BaseService {
       _backendBreaker.recordSuccess();
 
       final success = _isSuccessful(response);
-      if (success || recordUsageOnFailure) {
-        final cost = _extractCost(response);
+      final cost = _extractCost(response);
+      if (success || (recordUsageOnFailure && cost > 0)) {
         await _rateLimiter.recordUsage(operation, llmCost: cost);
       }
 

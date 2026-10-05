@@ -54,47 +54,50 @@ async function main(): Promise<void> {
   }
 
   admin.initializeApp();
-  const inputs = JSON.parse(fs.readFileSync(inputsPath, "utf8")) as GoldenInput[];
-  const outcomes: GoldenOutcome[] = [];
-  let spent = 0;
+  try {
+    const inputs = JSON.parse(fs.readFileSync(inputsPath, "utf8")) as GoldenInput[];
+    const outcomes: GoldenOutcome[] = [];
+    let spent = 0;
 
-  for (const input of inputs) {
-    if (!mayCall(spent, ceilingFor(input), capUsd)) {
-      console.log(`recipe_from_url: stopping before ${input.id}, cap reached`);
-      break;
+    for (const input of inputs) {
+      if (!mayCall(spent, ceilingFor(input), capUsd)) {
+        console.log(`recipe_from_url: stopping before ${input.id}, cap reached`);
+        break;
+      }
+      try {
+        const res = await runStructureRecipe(
+          { text: input.text, mode: "extract", sourceUrl: input.url },
+          GOLDEN_CI_UID_HASH
+        );
+        spent += res.estimatedCost;
+        outcomes.push({
+          id: input.id,
+          title: res.recipe?.title,
+          ingredientNames: res.recipe?.ingredients.map((i) => i.name),
+          estimatedCost: res.estimatedCost,
+          ...(res.success ? {} : { error: res.error ?? "no recipe" }),
+        });
+      } catch (e) {
+        // A call that threw may still have been billed: count it at its ceiling.
+        spent += ceilingFor(input);
+        outcomes.push({ id: input.id, estimatedCost: ceilingFor(input), error: String(e) });
+      }
     }
-    try {
-      const res = await runStructureRecipe(
-        { text: input.text, mode: "extract", sourceUrl: input.url },
-        GOLDEN_CI_UID_HASH
+
+    const summary = summariseRun(inputs, outcomes, capUsd);
+    write(summary);
+    for (const p of summary.pages) {
+      console.log(
+        `${p.id}: title ${p.titleMatches ? "ok" : "MISS"}, ` +
+          `${p.ingredientsFound}/${p.goldIngredients} ingredients, $${p.costUsd.toFixed(5)}` +
+          (p.error ? ` (${p.error})` : "")
       );
-      spent += res.estimatedCost;
-      outcomes.push({
-        id: input.id,
-        title: res.recipe?.title,
-        ingredientNames: res.recipe?.ingredients.map((i) => i.name),
-        estimatedCost: res.estimatedCost,
-        ...(res.success ? {} : { error: res.error ?? "no recipe" }),
-      });
-    } catch (e) {
-      // A call that threw may still have been billed: count it at its ceiling.
-      spent += ceilingFor(input);
-      outcomes.push({ id: input.id, estimatedCost: ceilingFor(input), error: String(e) });
     }
+    console.log(`recipe_from_url: ${summary.calls} calls, $${summary.total_cost_usd.toFixed(5)}`);
+    if (summary.over_cap) process.exitCode = 1;
+  } finally {
+    await admin.app().delete();
   }
-
-  const summary = summariseRun(inputs, outcomes, capUsd);
-  write(summary);
-  for (const p of summary.pages) {
-    console.log(
-      `${p.id}: title ${p.titleMatches ? "ok" : "MISS"}, ` +
-        `${p.ingredientsFound}/${p.goldIngredients} ingredients, $${p.costUsd.toFixed(5)}` +
-        (p.error ? ` (${p.error})` : "")
-    );
-  }
-  console.log(`recipe_from_url: ${summary.calls} calls, $${summary.total_cost_usd.toFixed(5)}`);
-  if (summary.over_cap) process.exitCode = 1;
-  await admin.app().delete();
 }
 
 main().catch((e) => {
