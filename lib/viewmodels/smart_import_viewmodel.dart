@@ -17,6 +17,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/import_progress_tracker.dart';
@@ -88,7 +89,11 @@ class ImportFailed extends SmartImportResult {
   /// (produktregler.md:557, 9.2 Fel: "listan ritas").
   final List<ImportRoute> routes;
 
-  const ImportFailed(this.message, {this.routes = const []});
+  /// The cause the import reported, when it reported one. [message] is the
+  /// text chosen from it.
+  final ImportErrorCode? errorCode;
+
+  const ImportFailed(this.message, {this.routes = const [], this.errorCode});
 }
 
 /// P5-U06: another way to the same recipe after a failed import
@@ -389,8 +394,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     // Check for other errors
     if (!result.isSuccess) {
       return _fail(
-        _localizeImportError(result.errorMessage),
+        result.errorCode?.swedishMessage ??
+            AppLocale.current.importErrorNotImported,
         strategies: result.availableStrategies,
+        errorCode: result.errorCode,
       );
     }
 
@@ -448,10 +455,18 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// P5-U06: a failed import, three-part (content-style-guide.md:87-97):
   /// [message] says what happened, [failurePreserved] what was kept, and the
   /// routes are what you can do instead (produktregler.md:557).
-  ImportFailed _fail(String message, {List<String>? strategies}) {
+  ImportFailed _fail(
+    String message, {
+    List<String>? strategies,
+    ImportErrorCode? errorCode,
+  }) {
     _setPhase(ImportPhase.error);
     setError(message);
-    final failResult = ImportFailed(message, routes: _routesFor(strategies));
+    final failResult = ImportFailed(
+      message,
+      routes: _routesFor(strategies),
+      errorCode: errorCode,
+    );
     _lastResult = failResult;
     return failResult;
   }
@@ -520,50 +535,6 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   }
 
   // Private Helpers
-
-  /// Maps English error messages from ImportManager to localized strings.
-  String _localizeImportError(String? errorMessage) {
-    // P5-U06: never a bare "Okänt fel"; the line says what did not happen.
-    if (errorMessage == null) return AppLocale.current.importErrorNotImported;
-
-    final lower = errorMessage.toLowerCase();
-    final l10n = AppLocale.current;
-
-    if (lower.contains('no import strategy') ||
-        lower.contains('could not parse')) {
-      return l10n.importErrorCouldNotParseRecipe;
-    }
-    if (lower.contains('no recipe found')) {
-      return l10n.importErrorNoRecipeFound;
-    }
-    // BUT-1145: specific 'could not read' / 'could not save' checks must run
-    // BEFORE the generic network heuristic. Otherwise a message like
-    // "could not save: network unreachable" gets mis-labelled as a network
-    // error and the user is told the wrong thing.
-    if (lower.contains('could not read') || lower.contains('ocr')) {
-      return l10n.importErrorCouldNotReadImage;
-    }
-    if (lower.contains('could not save')) {
-      return l10n.importErrorCouldNotSaveRecipe;
-    }
-    if (_isNetworkError(lower)) {
-      return l10n.importErrorCouldNotReachPage;
-    }
-    if (lower.contains('invalid url')) {
-      return l10n.importErrorInvalidUrl;
-    }
-    if (lower.contains('login required') || lower.contains('authentication')) {
-      return l10n.importErrorLoginRequired;
-    }
-    if (lower.contains('cancelled') || lower.contains('canceled')) {
-      return l10n.importErrorCancelled;
-    }
-    if (lower.contains('no internet')) {
-      return l10n.importErrorNoInternet;
-    }
-
-    return l10n.importErrorNotImported;
-  }
 
   void _setPhase(ImportPhase phase) {
     if (isDisposed) return;

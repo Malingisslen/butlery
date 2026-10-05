@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 
 /// Result of import manager operation
@@ -38,6 +39,10 @@ class ImportManagerResult {
   /// the error string.
   final RateLimitDenied? rateLimitDenied;
 
+  /// The failing strategy's own cause, carried unchanged from its
+  /// [ImportResult.errorCode] so the screen can pick its text by code.
+  final ImportErrorCode? errorCode;
+
   ImportManagerResult.success(
     this.recipe, {
     this.strategy,
@@ -45,6 +50,7 @@ class ImportManagerResult {
     this.metadata,
   }) : isSuccess = true,
        errorMessage = null,
+       errorCode = null,
        availableStrategies = null,
        needsAssistance = false,
        extractedText = null,
@@ -60,8 +66,9 @@ class ImportManagerResult {
     this.warnings,
     this.recipe,
     this.availableStrategies,
+    this.metadata,
+    this.errorCode,
   }) : isSuccess = false,
-       metadata = null,
        needsAssistance = false,
        extractedText = null,
        suggestedTitle = null,
@@ -83,6 +90,7 @@ class ImportManagerResult {
        needsAssistance = true,
        recipe = null,
        errorMessage = null,
+       errorCode = null,
        warnings = null,
        availableStrategies = null,
        rateLimitDenied = null;
@@ -105,6 +113,7 @@ class ImportManagerResult {
       thumbnailUrl = null,
       sourceUrl = null,
       likelyIngredientLines = null,
+      errorCode = ImportErrorCode.rateLimited,
       rateLimitDenied = details;
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;

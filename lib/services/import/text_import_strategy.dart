@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
@@ -86,6 +87,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (parsed == null) {
         return ImportResult.failure(
           'Could not parse recipe from text. Please check the format.',
+          errorCode: ImportErrorCode.noRecipeContent,
         );
       }
 
@@ -127,6 +129,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     } catch (e) {
       return ImportResult.failure(
         'Error parsing text: $e',
+        errorCode: ImportErrorCode.parsingFailed,
         metadata: {'strategy': strategyName},
       );
     }

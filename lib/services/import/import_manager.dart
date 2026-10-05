@@ -22,6 +22,7 @@ import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -163,6 +164,38 @@ class ImportManager {
   List<ImportStrategy> get availableStrategies =>
       List.unmodifiable(_strategies);
 
+  /// Of two strategy failures, keep the one that knows its cause: the first
+  /// failure carrying an [ImportErrorCode] wins over any without one, and
+  /// [ImportErrorCode.unknown] counts as not knowing.
+  static ImportManagerResult _keepBetterFailure(
+    ImportManagerResult? kept,
+    ImportManagerResult next,
+  ) => kept == null || (!_knowsCause(kept) && _knowsCause(next)) ? next : kept;
+
+  static bool _knowsCause(ImportManagerResult r) =>
+      r.errorCode != null && r.errorCode != ImportErrorCode.unknown;
+
+  /// The answer when no strategy produced a recipe: the kept strategy
+  /// failure with its message, code and metadata, or the generic line when
+  /// no strategy even tried.
+  ImportManagerResult _noRecipeResult(ImportManagerResult? failure) {
+    final strategies = _strategies.map((s) => s.strategyName).toList();
+    if (failure == null) {
+      return ImportManagerResult.failure(
+        'No import strategy could handle the provided input',
+        availableStrategies: strategies,
+      );
+    }
+    return ImportManagerResult.failure(
+      failure.errorMessage ?? 'Parse failed',
+      strategy: failure.strategy,
+      warnings: failure.warnings,
+      metadata: failure.metadata,
+      errorCode: failure.errorCode,
+      availableStrategies: strategies,
+    );
+  }
+
   /// Auto-detects strategy and parses recipe WITHOUT saving (for preview/validation).
   /// ```dart
   /// final r = await im.autoParseOnly(text); if (r.isSuccess) showPreview(r.recipe!);
@@ -172,6 +205,7 @@ class ImportManager {
     Map<String, dynamic>? options,
   }) async {
     try {
+      ImportManagerResult? failure;
       // Try preferred strategy first if provided
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
         final result = await _parseWithStrategy(
@@ -182,6 +216,7 @@ class ImportManager {
         if (result.isSuccess) {
           return result;
         }
+        failure = _keepBetterFailure(failure, result);
       }
 
       // Try all compatible strategies
@@ -191,14 +226,11 @@ class ImportManager {
           if (result.isSuccess) {
             return result;
           }
+          failure = _keepBetterFailure(failure, result);
         }
       }
 
-      // No strategy could handle the input
-      return ImportManagerResult.failure(
-        'No import strategy could handle the provided input',
-        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
-      );
+      return _noRecipeResult(failure);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -237,6 +269,7 @@ class ImportManager {
         return cacheResult;
       }
 
+      ImportManagerResult? failure;
       final youtubeStrategy = _youtubeStrategy;
       if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
         // Phase: analyzing — about to parse via YouTube strategy
@@ -269,6 +302,7 @@ class ImportManager {
         }
 
         // YouTube strategy failed, continue with other strategies
+        failure = _keepBetterFailure(failure, result);
       }
 
       final tiktokPipeline = _tiktokPipeline;
@@ -281,6 +315,7 @@ class ImportManager {
           return result;
         }
         // TikTok pipeline failed, continue with other strategies
+        failure = _keepBetterFailure(failure, result);
       }
 
       final instagramPipeline = _instagramPipeline;
@@ -296,6 +331,7 @@ class ImportManager {
           await _saveToCacheIfUrl(input, result);
           return result;
         }
+        failure = _keepBetterFailure(failure, result);
       }
 
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
@@ -315,6 +351,7 @@ class ImportManager {
         if (result.needsAssistance) {
           return result;
         }
+        failure = _keepBetterFailure(failure, result);
       }
 
       for (final strategy in _strategies) {
@@ -329,14 +366,11 @@ class ImportManager {
           if (result.needsAssistance) {
             return result;
           }
+          failure = _keepBetterFailure(failure, result);
         }
       }
 
-      // No strategy could handle the input
-      return ImportManagerResult.failure(
-        'No import strategy could handle the provided input',
-        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
-      );
+      return _noRecipeResult(failure);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -791,6 +825,8 @@ class ImportManager {
           importResult.errorMessage ?? 'Parse failed',
           strategy: strategy.strategyName,
           warnings: importResult.warnings,
+          metadata: importResult.metadata,
+          errorCode: importResult.errorCode,
         );
       }
 

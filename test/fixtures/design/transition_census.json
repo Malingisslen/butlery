@@ -318,18 +318,29 @@
     {
       "id": "TR::FLOW::03::hämtar::betalvägg",
       "flow": "03",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-      "test_name": "\"$english\" → \"$swedish\"",
+      "status": "PARTIAL",
+      "test_file": "test/unit/services/import/import_failure_cause_test.dart",
+      "test_name": "a 403 says the page requires login",
       "tests": [
         {
-          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-          "name": "\"$english\" → \"$swedish\"",
-          "group": "startImport — error localization"
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a 403 says the page requires login"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a page that is only a login form says it requires login"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a login wall with a quantity line fails as a login wall, not as help"
         }
       ],
-      "ticket": "BUT-2168",
-      "reason": "The line \"Sidan kräver inloggning\" and the paste route are built and mapped from a \"login required\" cause (smart_import_viewmodel.dart:555-556, tested), but no import strategy reports a login wall (no such text in lib/services/import), so the user reads \"Receptet kunde inte importeras.\""
+      "ticket": null,
+      "reason": "The URL strategy reports a login wall (403, or a page with a password field) and the view model's message is \"Sidan kräver inloggning\".",
+      "known_gap": {
+        "reason": "Tested through the view model only: no test drives the screen this failure reaches, so the drawn outcome on it is unverified.",
+        "ticket": "BUT-2168"
+      }
     },
     {
       "id": "TR::FLOW::03::hämtar::ok",
@@ -361,25 +372,28 @@
       "ticket": null,
       "reason": "Existing test: a failed link keeps the link and offers \"Klistra in texten\".",
       "known_gap": {
-        "reason": "A private or broken link (non-200) ends in the URL strategy's generic failure (url_import_strategy.dart:484-494), which is shown as \"Receptet kunde inte importeras.\" and not as \"Länken kunde inte läsas\".",
+        "reason": "A broken link (404) shows \"Kunde inte nå sidan\" (test/unit/services/import/import_failure_cause_test.dart), not the drawn \"Länken kunde inte läsas\".",
         "ticket": "BUT-2168"
       }
     },
     {
       "id": "TR::FLOW::03::hämtar::sidan-har-inget-recept",
       "flow": "03",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-      "test_name": "\"$english\" → \"$swedish\"",
+      "status": "PARTIAL",
+      "test_file": "test/unit/services/import/import_failure_cause_test.dart",
+      "test_name": "a readable page without a recipe says no recipe was found",
       "tests": [
         {
-          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-          "name": "\"$english\" → \"$swedish\"",
-          "group": "startImport — error localization"
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a readable page without a recipe says no recipe was found"
         }
       ],
-      "ticket": "BUT-2168",
-      "reason": "\"Inget recept hittades\" is mapped from a \"no recipe found\" cause, which no strategy emits. A page without a recipe ends either in the assisted import (when HTML was fetched, url_import_strategy.dart:219-227) or in the generic \"Receptet kunde inte importeras.\" The drawn \"Vi hittade inget recept på sidan\" + Skriv själv is not reached."
+      "ticket": null,
+      "reason": "A readable page with no recipe on it fails with its own cause and the view model's message is \"Inget recept hittades\".",
+      "known_gap": {
+        "reason": "Tested through the view model only: no test drives the screen this failure reaches, so the drawn outcome on it is unverified.",
+        "ticket": "BUT-2168"
+      }
     },
     {
       "id": "TR::FLOW::03::länkfält::importera",

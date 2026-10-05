@@ -24,9 +24,8 @@
 ///    - JSON-LD recipe HTML → Tier 2 (schema.org) success with the right
 ///      `extraction_method` and recipe content carried through.
 ///    - Long unstructured HTML (no detectable ingredients/instructions) →
-///      Tier 7 (user-assistance) result with `tier: 7` in metadata (BUT-1077:
-///      quality gate added so prose-only pages fall through to user-assist
-///      rather than becoming a low-quality Tier 5 success). NOT a hard failure.
+///      a `noRecipeContent` failure, never a low-quality Tier 5 success
+///      (BUT-1077, BUT-2237).
 ///    - HTML with detectable recipe structure (ingredients OR instructions) →
 ///      Tier 5 success with `extraction_method=html_text_parse`.
 ///    - Tiny HTML body → hard failure carrying `html_fetched=true,
@@ -66,6 +65,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/field_result.dart';
@@ -125,7 +125,7 @@ String _jsonLdRecipeHtml({
 ''';
 }
 
-/// Long, recipe-free prose — must reach Tier 7 (user assistance).
+/// Long, recipe-free prose.
 String _unstructuredHtml() {
   return '''
 <!doctype html>
@@ -320,31 +320,19 @@ void main() {
 
     /// BUT-1077: pure prose (no ingredients, no instructions detectable) must
     /// NOT produce a Tier 5 success — that would present a garbage recipe to
-    /// the user. The quality gate in `_tryHtmlTextParse` checks that
-    /// `TextImportStrategy` found at least one ingredient OR instruction;
-    /// pure blog prose has neither, so Tier 5 returns null and we fall
-    /// through to Tier 7 (user-assisted import).
-    ///
-    /// This pins the chosen product-intent contract: prose-only pages →
-    /// user-assistance, NOT a low-quality success-with-warnings.
-    test('unstructured prose HTML (no recipe structure) → Tier 7 '
-        'user-assistance, NOT a Tier 5 low-quality success', () async {
+    /// the user. BUT-2237: with no ingredient line to finish by hand, Tier 7
+    /// declines too, and the import fails with the cause "no recipe".
+    test('unstructured prose HTML (no recipe structure) → noRecipeContent '
+        'failure, NOT a Tier 5 low-quality success', () async {
       final strategy = _strategyWith(
         (req) async => _htmlResponse(_unstructuredHtml()),
       );
 
       final result = await strategy.import('http://8.8.8.8/blog');
 
-      expect(
-        result.needsAssistance,
-        isTrue,
-        reason:
-            'BUT-1077: prose with no ingredients/instructions must fall '
-            'through to Tier 7 (user-assisted), not be presented as a recipe',
-      );
       expect(result.isSuccess, isFalse);
-      expect(result.extractedText, isNotNull);
-      expect(result.metadata?['tier'], 7);
+      expect(result.needsAssistance, isFalse);
+      expect(result.errorCode, ImportErrorCode.noRecipeContent);
     });
 
     /// BUT-1077: Tier 5 quality gate passes when there IS actual recipe
@@ -641,17 +629,13 @@ void main() {
 
     /// JSON-LD that ISN'T a Recipe (e.g. @type=Article) must NOT trigger
     /// the schema.org tier — the extractor returns null and we fall
-    /// through. The body has only prose (no ingredients/instructions), so
-    /// BUT-1077's quality gate in Tier 5 kicks in and falls through to
-    /// Tier 7 (user-assisted import).
+    /// through.
     ///
     /// This is the key invariant: a non-Recipe JSON-LD type must not be
     /// claimed as a structured-data extraction. Otherwise we'd present
-    /// news articles as recipes with high confidence. Tier 7 (user-
-    /// assistance) is the correct result — better than a low-quality
-    /// success-with-warnings.
+    /// news articles as recipes with high confidence.
     test('JSON-LD @type=Article does NOT trigger Tier 2; pure prose page '
-        'reaches Tier 7 (user-assisted) — never claims schema.org', () async {
+        'fails as noRecipeContent — never claims schema.org', () async {
       const html = '''
 <!doctype html>
 <html><head><script type="application/ld+json">
@@ -678,19 +662,10 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
             'doing so would mark news articles as high-confidence recipes',
       );
 
-      // BUT-1077: pure prose → Tier 5 quality gate fails (no ingredients,
-      // no instructions) → falls through to Tier 7 (user-assistance).
-      // Tier 7 is a clearer signal to the user than a low-quality success.
-      expect(
-        result.needsAssistance,
-        isTrue,
-        reason:
-            'BUT-1077: article page with no recipe structure must reach '
-            'Tier 7 (user-assistance), not be presented as a recipe',
-      );
+      // BUT-1077 / BUT-2237: pure prose → no tier claims it, and the
+      // failure names the cause.
       expect(result.isSuccess, isFalse);
-      expect(result.extractedText, isNotNull);
-      expect(result.metadata?['tier'], 7);
+      expect(result.errorCode, ImportErrorCode.noRecipeContent);
     });
 
     /// BUT-1070 companion: when Tier 5 DOES fire on a page with non-Recipe
@@ -868,12 +843,11 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       },
     );
 
-    /// Positive/negative pairing: a prose page falls through to Tier 7
-    /// (user-assistance) with no produced recipe, so there is no `url`-tagged
-    /// anchor to retrieve. Pins that the capture rides on a produced recipe,
-    /// not on every import attempt.
+    /// Positive/negative pairing: a prose page produces no recipe, so there
+    /// is no `url`-tagged anchor to retrieve. Pins that the capture rides on
+    /// a produced recipe, not on every import attempt.
     test(
-      'prose page reaching Tier 7 produces no url-tagged snapshot',
+      'prose page without a recipe produces no url-tagged snapshot',
       () async {
         final strategy = _strategyWith(
           (req) async => _htmlResponse(_unstructuredHtml()),
@@ -881,7 +855,7 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
 
         final result = await strategy.import('http://8.8.8.8/blog');
 
-        expect(result.needsAssistance, isTrue);
+        expect(result.isSuccess, isFalse);
         expect(result.recipe, isNull);
       },
     );
