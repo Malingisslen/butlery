@@ -32,9 +32,7 @@ typedef ConfigBackedPhases = ({
 /// Bump on any tagging logic change so needsRetagging detects stale recipes.
 /// 2.2.0: seafood→skaldjur safety net + vegetarisk/vegansk/kosher exclusion
 /// fixes + 87 register corrections (2026-07-02) — retag flushes stale
-/// pre-fix verdicts. Known cost: global-cache hits re-tag client-side per
-/// hit until entries age out (write-back blocked by cache-poisoning rules;
-/// roadmap P1). Accepted: safety > cost at current scale.
+/// pre-fix verdicts.
 /// 2.3.0: a matched trigger gives CONTAINS regardless of coverage (BUT-2247)
 /// and skaldjur no longer fires on the generic 'seafood' property
 /// (BUT-2234) — retag flushes the all-UNKNOWN and fish-as-shellfish verdicts.

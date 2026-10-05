@@ -16,7 +16,7 @@ class ContentFingerprint {
   // Normalization primitives (units, stop words, ingredient/title cleaning)
   // are shared with CanonicalPoolKey via RecipeTextNormalizer. See
   // content_fingerprint_golden_test.dart — the extracted logic is pinned so
-  // this cache-critical fingerprint cannot drift.
+  // this fingerprint cannot drift.
 
   /// Generate a content fingerprint for a recipe.
   ///

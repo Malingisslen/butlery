@@ -1,15 +1,5 @@
 // C1 (pooled-ratings plan, Data/Integrations must-have): byte-for-byte OUTPUT
 // pinning for ContentFingerprint.generate().
-//
-// GlobalRecipeCache PERSISTS the fingerprint (Firestore field + `fp_<hash>`
-// doc-ID fallback + equality query), so ANY change to the fingerprint silently
-// orphans already-cached rows and re-triggers duplicate extraction LLM calls.
-// The shared-normalizer extraction (plan decision 3) must be behavior-
-// preserving; this golden test fails on ANY drift, not just on a red unit test.
-//
-// If this test fails after an intentional fingerprint change, that change is a
-// cache-invalidating event — bump the cache version deliberately and re-pin,
-// do NOT just update the strings to make it green.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/import/cache/content_fingerprint.dart';
@@ -75,9 +65,8 @@ void main() {
     ),
   };
 
-  // Pinned outputs captured from the implementation as of 2026-07-27. A change
-  // here is a cache-invalidating event — bump the cache version deliberately,
-  // do NOT edit these strings to go green.
+  // Pinned outputs captured from the implementation as of 2026-07-27. Do NOT
+  // edit these strings to go green.
   //
   // RE-PINNED ONCE, DELIBERATELY (BUT-1713, 2026-07-27). The unit-stripping
   // regex used Dart's ASCII `\b`, which treats å/ä/ö as non-word characters and
@@ -86,10 +75,6 @@ void main() {
   // `st` the tail of "höst". Five of the six fixtures below hashed a mutilated
   // ingredient name ("mjö", "gul ök"). Swapping the regex onto
   // SwedishWordBoundary is a correctness fix, so the fingerprint MUST move.
-  // GlobalRecipeCache has no version constant to bump — the fingerprint IS the
-  // key (`contentFingerprint` field + `fp_<hash>` doc id), so the one-time cost
-  // is that pre-existing content-fingerprint rows stop matching: URL-hash
-  // lookups are unaffected, and a content miss re-extracts once. Accepted.
   // 'flygande_jakob' is unchanged, which is the sanity check that this moved
   // only the Swedish-letter cases.
   //
@@ -98,13 +83,8 @@ void main() {
   // "ca 2 dl grädde" normalized to "2 grädde": no leading digit existed while
   // the regex looked, and removing "ca" afterwards stranded the amount. The
   // same ingredient therefore hashed differently depending on whether the
-  // writer typed "ca" — which is precisely the duplicate-extraction the
-  // fingerprint exists to prevent. The two steps are now ordered qualifier-
-  // first. Cost is the same one-time cost as the BUT-1713 re-pin: content-
-  // fingerprint rows for qualifier-carrying recipes stop matching and
-  // re-extract once; URL-hash lookups are unaffected. That cost is accepted
-  // here rather than solved: the cache still has no parser-version key to bump
-  // (BUT-1737), so a re-pin IS the invalidation mechanism. ONE fixture moved —
+  // writer typed "ca". The two steps are now ordered qualifier-first. ONE
+  // fixture moved —
   // 'parenthetical_and_approx', the only one containing "ca"/"ungefär" — and
   // the other five are byte-identical, which is the sanity check that this
   // change reached nothing else.
@@ -167,12 +147,7 @@ void main() {
     });
   });
 
-  // BUT-1739 review addition. The pins above prove the normalized NAME and the
-  // hash of one fixture; neither states the invariant the reorder exists for —
-  // that a writer typing "ca" does not create a second cache entry for a recipe
-  // the cache already holds, which is a duplicate LLM extraction per import.
-  // Asserted at the level GlobalRecipeCache actually keys on.
-  group('qualifier-invariance of the fingerprint (the cache-hit contract)', () {
+  group('qualifier-invariance of the fingerprint', () {
     const bare = ['1 kg högrev', '2 st lök', '3 dl buljong', '500 g potatis'];
     const qualified = [
       'ca 1 kg högrev',
@@ -227,10 +202,7 @@ void main() {
         expect(
           actual,
           golden[e.key],
-          reason:
-              'ContentFingerprint drift for ${e.key} — this invalidates the '
-              'live GlobalRecipeCache. Bump the cache version deliberately '
-              'instead of re-pinning to green.',
+          reason: 'ContentFingerprint drift for ${e.key}',
         );
       });
     }

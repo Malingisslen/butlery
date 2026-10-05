@@ -96,7 +96,6 @@ abstract final class FirestoreCollections {
 
   static const String shoppingListTemplates = 'shopping_list_templates';
   static const String categoryOverrides = 'category_overrides';
-  static const String globalRecipeCache = 'globalRecipeCache';
 
   // ── User subcollections (under users/{userId}/) ──
 

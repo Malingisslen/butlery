@@ -254,7 +254,8 @@ jobs:
                    snapshotRecipesDaily snapshotParsingCorrectionsDaily \
                    snapshotOpsDaily snapshotFeedbackDaily detectAnomalies \
                    correlateNotificationEffectiveness northStarWeekly \
-                   drainRatingAggregations drainPooledRatingAggregations; do
+                   drainRatingAggregations drainPooledRatingAggregations \
+                   cleanupExpiredCache; do
             echo "Retiring $f (no-op if already gone)"
             firebase functions:delete "$f" \
               --region europe-west1 \
@@ -384,7 +385,7 @@ jobs:
       #   - onUserDeleted                     — GDPR cascade; critical correctness.
       #   - verifySignupAge                   — ADR-0002 age-gate; gates UGC paths.
       #   - requestAccountDeletion            — account family; GDPR Article 17.
-      #   - cleanupExpiredCache               — cleanup scheduler anchor.
+      #   - cleanupOldAuditLogs               — cleanup scheduler anchor.
       #   - drainRatingAggregations           — rating aggregation scheduler anchor.
       #   (Migration function backfillRecipeCommentsDenorm deliberately excluded —
       #    it is lifecycle-bound and may be removed; checking it would cause false
@@ -423,7 +424,7 @@ jobs:
             "onUserDeleted"
             "verifySignupAge"
             "requestAccountDeletion"
-            "cleanupExpiredCache"
+            "cleanupOldAuditLogs"
             # Was "drainRatingAggregations" until the scheduler merge: the two
             # rating drains and the ten daily analytics jobs now run inside
             # `drainAggregations` / `dailyAnalytics` (one Cloud Scheduler job per

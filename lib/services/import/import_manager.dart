@@ -22,9 +22,6 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
-import 'package:butlery/services/import/cache/global_recipe_cache.dart';
-import 'package:butlery/services/import/cache/cache_entry.dart';
-import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -48,10 +45,6 @@ class ImportManager {
   /// at construction (see ParseEventLogger), so the default is test-safe too.
   final ParseEventLogger _eventLogger;
 
-  /// Lazily initialized cache reference
-  GlobalRecipeCache? _cache;
-  UrlNormalizer? _urlNormalizer;
-
   ImportManager(this._personalOperations, {ParseEventLogger? eventLogger})
     : _eventLogger = eventLogger ?? ParseEventLogger() {
     _initializeStrategies();
@@ -66,30 +59,6 @@ class ImportManager {
     ParseEventLogger? eventLogger,
   }) : _eventLogger = eventLogger ?? ParseEventLogger() {
     _strategies.addAll(strategies);
-  }
-
-  /// Get the global recipe cache (lazy initialization with graceful fallback)
-  GlobalRecipeCache? get _globalCache {
-    if (_cache != null) return _cache;
-    try {
-      _cache = ServiceLocator.get<GlobalRecipeCache>();
-      return _cache;
-    } catch (e) {
-      AppLogger.debug('ImportManager: GlobalRecipeCache not available: $e');
-      return null;
-    }
-  }
-
-  /// Get the URL normalizer (lazy initialization with graceful fallback)
-  UrlNormalizer? get _normalizer {
-    if (_urlNormalizer != null) return _urlNormalizer;
-    try {
-      _urlNormalizer = ServiceLocator.get<UrlNormalizer>();
-      return _urlNormalizer;
-    } catch (e) {
-      AppLogger.debug('ImportManager: UrlNormalizer not available: $e');
-      return null;
-    }
   }
 
   /// Get the YouTube import strategy (lazy initialization with graceful fallback)
@@ -276,13 +245,8 @@ class ImportManager {
         }
       }
 
-      // Phase: fetching — cache check and strategy selection
+      // Phase: fetching — strategy selection
       onProgress?.call('fetching');
-
-      final cacheResult = await _checkCacheForUrl(input);
-      if (cacheResult != null) {
-        return cacheResult;
-      }
 
       ImportManagerResult? failure;
       // An import asks the model at most once (BUT-2239): once a platform
@@ -291,10 +255,7 @@ class ImportManager {
       var spent = const <String, dynamic>{};
       void noteCall(ImportManagerResult result) {
         if (result.metadata?['usedLlm'] != true) return;
-        spent = {
-          'usedLlm': true,
-          'llmCost': ?result.metadata?['llmCost'],
-        };
+        spent = {'usedLlm': true, 'llmCost': ?result.metadata?['llmCost']};
         options = {...?options, 'skipLlm': true};
       }
 
@@ -311,7 +272,6 @@ class ImportManager {
         // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result;
         }
 
@@ -340,7 +300,6 @@ class ImportManager {
         final result = await _parseWithStrategy(tiktokPipeline, input, options);
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result;
         }
         // TikTok pipeline failed, continue with other strategies
@@ -358,7 +317,6 @@ class ImportManager {
         );
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result;
         }
         noteCall(result);
@@ -374,7 +332,6 @@ class ImportManager {
         );
         if (result.isSuccess) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result.withLlmUse(spent);
         }
         // Tier-7: an assisted-import result is a terminal outcome, not a
@@ -391,7 +348,6 @@ class ImportManager {
           final result = await _parseWithStrategy(strategy, input, options);
           if (result.isSuccess) {
             onProgress?.call('creating');
-            await _saveToCacheIfUrl(input, result);
             return result.withLlmUse(spent);
           }
           if (result.needsAssistance) {
@@ -604,11 +560,18 @@ class ImportManager {
     }
   }
 
+  // Domain-like input without a scheme, e.g. "ica.se/recept/...".
+  static final _domainPattern = RegExp(
+    r'^[\w\-]+\.[\w\-]+(?:\.[\w\-]+)*(?:/.*)?$',
+    caseSensitive: false,
+  );
+
   bool _looksLikeLink(String input) {
-    final normalizer = _normalizer;
-    if (normalizer != null) return normalizer.looksLikeUrl(input);
-    final uri = Uri.tryParse(input.trim());
-    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
+    final trimmed = input.trim().toLowerCase();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return true;
+    }
+    return _domainPattern.hasMatch(trimmed);
   }
 
   ImportChannel _channelForStrategy(String strategyName, String input) =>
@@ -947,10 +910,7 @@ class ImportManager {
       final saveResult = await _personalOperations.addUnifiedRecipe(recipe);
 
       if (saveResult.isSuccess) {
-        return ImportManagerResult.success(
-          recipe,
-          strategy: 'direct_save',
-        );
+        return ImportManagerResult.success(recipe, strategy: 'direct_save');
       } else {
         return ImportManagerResult.failure(
           'Failed to save recipe: ${saveResult.message}',
@@ -1009,9 +969,8 @@ class ImportManager {
 
       // HIGH-1: Generate preview tags for immediate allergen/dietary display.
       // Preview tagging is an optional enhancement — it must NEVER fail an
-      // already-parsed recipe. Wrap it in its own guard (mirrors
-      // _retagCachedRecipe) so a tagging throw falls back to the untagged
-      // recipe instead of discarding the parse.
+      // already-parsed recipe. Wrap it in its own guard so a tagging throw
+      // falls back to the untagged recipe instead of discarding the parse.
       var recipeWithPreview = importResult.recipe!;
       final taggingService = _taggingService;
       if (taggingService != null && recipeWithPreview.tagResult == null) {
@@ -1063,221 +1022,5 @@ class ImportManager {
     }
 
     return 0.5; // Default confidence
-  }
-
-  /// Check if input looks like a URL and return cached result if available.
-  Future<ImportManagerResult?> _checkCacheForUrl(String input) async {
-    final cache = _globalCache;
-    final normalizer = _normalizer;
-
-    if (cache == null || normalizer == null) {
-      return null; // Cache not available
-    }
-
-    // Only check cache for URL-like inputs
-    if (!normalizer.looksLikeUrl(input)) {
-      return null;
-    }
-
-    try {
-      final cacheEntry = await cache.findByUrl(input);
-
-      if (cacheEntry == null) {
-        return null; // Cache miss
-      }
-
-      // Create recipe from cached data
-      var recipe = _recipeFromCacheEntry(cacheEntry);
-      if (recipe == null) {
-        AppLogger.warning('ImportManager: Invalid recipe data in cache');
-        return null;
-      }
-
-      // HIGH-2: Check if cached recipe needs retagging.
-      // NOTE (2026-07-02): the retag result is deliberately NOT written back
-      // to the shared cache entry — firestore.rules restricts cache updates
-      // to access stats as a cache-poisoning defense (a client-writable
-      // shared recipe would let one user's tags, incl. user-defined
-      // ingredient overrides, become canonical for everyone). Per-hit
-      // client-side retag is the accepted cost; see roadmap P1.
-      final needsRetagging = _cachedRecipeNeedsRetagging(recipe, cacheEntry);
-      if (needsRetagging) {
-        AppLogger.info(
-          'ImportManager: Cache hit but needs retagging '
-          '(age: ${cacheEntry.ageInDays} days)',
-        );
-        recipe = await _retagCachedRecipe(recipe);
-      }
-
-      // Note: Recipe is NOT saved here - user will save after reviewing in editor
-
-      AppLogger.info(
-        'ImportManager: Loaded from cache '
-        '(source: ${cacheEntry.sourceType}, domain: ${cacheEntry.domain})',
-      );
-
-      return ImportManagerResult.success(
-        recipe,
-        strategy: 'cache',
-        metadata: {
-          'fromCache': true,
-          'cacheAge': cacheEntry.ageInDays,
-          'originalPipeline': cacheEntry.extractionMeta.pipeline,
-          'originalTier': cacheEntry.extractionMeta.tier,
-          'originalMethod': cacheEntry.extractionMeta.method,
-          'retagged': needsRetagging,
-        },
-      );
-    } catch (e) {
-      AppLogger.debug('ImportManager: Cache lookup failed: $e');
-      return null; // Continue with normal import on cache error
-    }
-  }
-
-  /// Save successful import result to cache if input is a URL.
-  Future<void> _saveToCacheIfUrl(
-    String input,
-    ImportManagerResult result,
-  ) async {
-    final sourceType = _sourceTypeFromStrategy(result.strategy);
-
-    final cache = _globalCache;
-    final normalizer = _normalizer;
-
-    if (cache == null || normalizer == null) {
-      return; // Cache not available
-    }
-
-    // Only cache URL-based imports
-    if (!normalizer.looksLikeUrl(input)) {
-      return;
-    }
-
-    // Don't cache if already from cache
-    if (result.metadata?['fromCache'] == true) {
-      return;
-    }
-
-    if (result.recipe == null) {
-      return;
-    }
-
-    try {
-      final recipeData = result.recipe!.toJson();
-
-      // BUT-1484: thread the pipeline's actually-computed tier + confidence
-      // (carried in the strategy result metadata) into the cache entry instead
-      // of hardcoding, so cross-user cache analytics reflect real extraction
-      // quality. `tier` is the strategy's numeric tier (some paths emit a
-      // non-int marker like 'multi'); confidence comes from the parser's
-      // `overallQuality` score (0.0–1.0). Both fall back to the prior defaults
-      // when a strategy doesn't emit them.
-      final meta = result.metadata;
-      final computedTier = meta?['tier'];
-      final computedConfidence = meta?['overallQuality'];
-      final extractionMeta = ExtractionMeta(
-        pipeline: sourceType,
-        tier: computedTier is int ? computedTier : 0,
-        method: result.strategy ?? 'unknown',
-        confidence: computedConfidence is num
-            ? computedConfidence.toDouble()
-            : 0.8,
-      );
-
-      await cache.save(
-        input: input,
-        recipeData: recipeData,
-        extractionMeta: extractionMeta,
-        sourceType: sourceType,
-      );
-
-      AppLogger.debug(
-        'ImportManager: Saved to cache (source: $sourceType)',
-      );
-    } catch (e) {
-      // Don't fail import if cache save fails
-      AppLogger.debug('ImportManager: Cache save failed: $e');
-    }
-  }
-
-  /// Create a Recipe from cache entry data.
-  Recipe? _recipeFromCacheEntry(CacheEntry entry) {
-    try {
-      return Recipe.fromJson(entry.recipe);
-    } catch (e) {
-      AppLogger.warning('ImportManager: Failed to parse cached recipe: $e');
-      return null;
-    }
-  }
-
-  /// Determine source type from strategy name.
-  String _sourceTypeFromStrategy(String? strategy) {
-    if (strategy == null) return 'unknown';
-
-    final lower = strategy.toLowerCase();
-    if (lower.contains('url')) return 'website';
-    if (lower.contains('youtube')) return 'youtube';
-    if (lower.contains('tiktok')) return 'tiktok';
-    if (lower.contains('instagram')) return 'instagram';
-    if (lower.contains('photo') || lower.contains('ocr')) return 'ocr';
-    if (lower.contains('voice')) return 'voice';
-    if (lower.contains('text')) return 'text';
-    if (lower.contains('archive')) return 'archive';
-
-    return 'website'; // Default for URL imports
-  }
-
-  /// HIGH-2: Checks if a cached recipe needs retagging.
-  ///
-  /// Returns true if:
-  /// - Cache entry is older than 30 days
-  /// - Recipe has no tags
-  /// - Recipe's tagResult indicates it needs retagging
-  bool _cachedRecipeNeedsRetagging(Recipe recipe, CacheEntry cacheEntry) {
-    // Age-based retagging (> 30 days)
-    if (cacheEntry.ageInDays > 30) {
-      return true;
-    }
-
-    // No tags at all
-    final tagResult = recipe.tagResult;
-    if (tagResult == null) {
-      return true;
-    }
-
-    // Check if tagResult indicates it needs retagging
-    return tagResult.needsRetagging;
-  }
-
-  /// HIGH-2: Retags a cached recipe.
-  ///
-  /// Returns the recipe with updated tags, or the original recipe if
-  /// tagging fails.
-  Future<Recipe> _retagCachedRecipe(Recipe recipe) async {
-    final taggingService = _taggingService;
-    if (taggingService == null) {
-      return recipe; // Can't retag without service
-    }
-
-    try {
-      final tagResult = await taggingService.generateTags(recipe);
-      if (tagResult != null) {
-        AppLogger.success(
-          '✅ Retagged cached recipe with ${tagResult.tags.length} tags '
-          '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
-        );
-        return Recipe(
-          core: recipe.core.copyWith(tagResult: tagResult),
-          type: recipe.type,
-          socialData: recipe.socialData,
-          realtimeData: recipe.realtimeData,
-          offlineData: recipe.offlineData,
-        );
-      }
-    } catch (e) {
-      AppLogger.warning('Failed to retag cached recipe: $e');
-    }
-
-    return recipe; // Return original on failure
   }
 }

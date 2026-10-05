@@ -211,19 +211,13 @@ const TARGETS: {
 ];
 
 /**
- * Every TTL policy declared today: 13 pre-existing + 2 (BUT-1699) + 4 (BUT-1792)
- * + 1 (BUT-2046, `report_history`) + 1 (P5-U26b, `overwritten_versions`)
- * + 1 (P6-U09 review, `mfa_recovery_attempts`)
- * + 1 (P5-U27b, `recipe_suggestions`).
- *
  * The SET, not just the count. A count catches a `--force` prune (net loss),
  * which is the main threat — but it stays green when one entry is deleted and
  * another added in the same edit. Since the groups are named anyway, asserting
  * the set costs nothing and catches the swap too.
  *
  * Verified against production 2026-07-31 (`gcloud firestore fields ttls list`):
- * 13 of these were live and ACTIVE before the BUT-1699 deploy, and the 2 that
- * ticket added went from absent to present after it — which is also the
+ * the 2 entries BUT-1699 added went from absent to present after its deploy — which is also the
  * empirical proof that declaring in this file is what creates a policy. The 4
  * BUT-1792 entries have NOT been checked against a project, and neither has the
  * BUT-2046 one: they are declared here and become real on the next
@@ -236,7 +230,6 @@ const EXPECTED_TTL_GROUPS = [
   "deletion_audit_logs",
   "dismissals",
   "engagements",
-  "globalRecipeCache",
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",

@@ -117,16 +117,7 @@ not new systems.
 - [x] **Server-side daily LLM cap** (S) → BUT-1477
   Cost ceilings are client-only; server per-minute buckets allow ~4.3k calls/user/day. Add
   a per-day counter in the existing rate-limiter transaction.
-- [ ] **Write retagged results back to GlobalRecipeCache** (was S — actually L)
-  ATTEMPTED + REVERTED 2026-07-02: a client-side write-back is **impossible by design** —
-  firestore.rules restricts cache updates to access stats as a deliberate cache-poisoning
-  defense (code review confirmed: loosening it would let one client's tags, incl. per-user
-  ingredient overrides and partial timeout results, become canonical shared allergen data).
-  Real fix requires a server-side path (Cloud Function re-running the tagging engine —
-  which is Dart client code, so this means a TS port or a headless tagging service) OR
-  accepting per-hit client retag cost. Accepted for now (pre-launch scale, pennies);
-  revisit before user growth. The 2.2.0 retag bump shipped WITHOUT it (Legal condition —
-  known-wrong FREE verdicts must not persist — outweighed the FinOps deferral at ~1 user).
+- [x] **Write retagged results back to GlobalRecipeCache** → moot: the cache was removed (BUT-2244)
 - [ ] **TTL on `parse_events`** (S) → BUT-1478 — grows unbounded, one doc per import attempt, stores raw
   userId+URL forever (also a quiet GDPR surface). Mirror the `llm_response_samples` TTL.
 - [x] **Confirm Gemini pricing constants** (S) → BUT-1479 — BUT-1187 TODO; all cost telemetry and the
@@ -145,8 +136,7 @@ not new systems.
   ever bumping `kTagGeneratorVersion` at scale (currently: every client re-tags everything).
 - [ ] **Rebuild `TagGenerator` when config loads late** (S) → BUT-1483 — constructed once from
   `configOrNull`; a slow/failed config fetch pins the session to static fallback rules.
-- [x] **Thread real tier/confidence into cache `ExtractionMeta`** (S) → BUT-1484 — currently hardcoded
-  `tier: 0, confidence: 0.8`; the real tier is computed and discarded.
+- [x] **Thread real tier/confidence into cache `ExtractionMeta`** (S) → BUT-1484
 - [ ] **One `ImportResultV2→legacy` adapter** (S) → BUT-1485 — currently copied in 3 pipelines.
 - [ ] **Correction-upload failure metric** (S) → BUT-1486 — unknown-tier and salt-not-loaded drops are
   silent (return 0, debug log); mirror `parseEventLogFailed` (BUT-616 pattern). Also

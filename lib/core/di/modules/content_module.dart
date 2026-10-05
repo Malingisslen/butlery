@@ -86,11 +86,6 @@ import 'package:butlery/services/extraction/site_parsers/arla_recipe_parser.dart
 import 'package:butlery/services/extraction/site_parsers/koket_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/recept_recipe_parser.dart';
 
-// Import cache services
-import 'package:butlery/services/import/cache/url_normalizer.dart';
-import 'package:butlery/services/import/cache/content_fingerprint.dart';
-import 'package:butlery/services/import/cache/global_recipe_cache.dart';
-
 // Import rate limiting
 import 'package:butlery/services/import/import_rate_limiter.dart';
 
@@ -199,10 +194,6 @@ class ContentModule implements DIModule {
     ContentDetectorService,
     PermissionService, // Moved from CollaborationModule for proper module ordering
     FirebaseRecipePresenceRepository, // Moved from CollaborationModule for UnifiedRecipeService
-    // Import cache services
-    UrlNormalizer,
-    ContentFingerprint,
-    GlobalRecipeCache,
     // Import rate limiting
     ImportRateLimiter,
     // LLM services
@@ -285,16 +276,13 @@ class ContentModule implements DIModule {
     // Depends only on CookEventRepository so it stays testable without a
     // full UnifiedRecipeService graph.
     container.registerLazySingleton<RecipeCookingService>(
-      () => RecipeCookingService(
-        cookEventRepository: app<CookEventRepository>(),
-      ),
+      () =>
+          RecipeCookingService(cookEventRepository: app<CookEventRepository>()),
       dispose: (s) => s.dispose(),
     );
 
     container.registerLazySingleton<UnifiedMenuService>(
-      () => UnifiedMenuService(
-        firestoreRepository: app<FirestoreRepository>(),
-      ),
+      () => UnifiedMenuService(firestoreRepository: app<FirestoreRepository>()),
       dispose: (s) => s.dispose(),
     );
 
@@ -339,9 +327,7 @@ class ContentModule implements DIModule {
     );
 
     container.registerLazySingleton<InstagramPipeline>(
-      () => InstagramPipeline(
-        llmService: container<LlmEnhancementService>(),
-      ),
+      () => InstagramPipeline(llmService: container<LlmEnhancementService>()),
     );
 
     // BUT-202: substitution suggestions — user-scoped because it depends on
@@ -364,25 +350,21 @@ class ContentModule implements DIModule {
     // deps — registered alongside other cooking services for discoverability.
     // BUT-1242: now multi-timer + backgrounded-expiry notifications.
     container.registerLazySingleton<StepTimerService>(
-      () => StepTimerService(
-        notifications: app<LocalTimerNotificationService>(),
-      ),
+      () =>
+          StepTimerService(notifications: app<LocalTimerNotificationService>()),
     );
 
     // Recipe parser service — depends on LlmService (user-scoped)
-    container.registerLazySingleton<RecipeParserService>(
-      () {
-        final authRepo = app<auth.AuthRepository>() as FirebaseAuthRepository;
-        return RecipeParserService(
-          getCurrentUserId: () => authRepo.currentUser?.uid ?? 'anonymous',
-          siteConfigRepository: app<SiteConfigRepository>(),
-          llmService: container<LlmService>(),
-          ingredientStrategy: app<IngredientParsingStrategy>(),
-          neuralLineClassifier: app<NeuralLineClassifier>(),
-        );
-      },
-      dispose: (s) => s.close(),
-    );
+    container.registerLazySingleton<RecipeParserService>(() {
+      final authRepo = app<auth.AuthRepository>() as FirebaseAuthRepository;
+      return RecipeParserService(
+        getCurrentUserId: () => authRepo.currentUser?.uid ?? 'anonymous',
+        siteConfigRepository: app<SiteConfigRepository>(),
+        llmService: container<LlmService>(),
+        ingredientStrategy: app<IngredientParsingStrategy>(),
+        neuralLineClassifier: app<NeuralLineClassifier>(),
+      );
+    }, dispose: (s) => s.close());
 
     // The cold-start load runs before sign-in, when the ingredients read is
     // still denied, so the list is fetched here instead of during the first
@@ -442,25 +424,6 @@ class ContentModule implements DIModule {
       // UnifiedRecipeService, ImportManager, UnifiedMenuService, OfflineService:
       // registered in configureUserScope
 
-      // URL normalizer for consistent cache keys
-      container.registerLazySingleton<UrlNormalizer>(
-        () => UrlNormalizer(),
-      );
-
-      // Content fingerprint generator for recipe deduplication
-      container.registerLazySingleton<ContentFingerprint>(
-        () => ContentFingerprint(),
-      );
-
-      // Global recipe cache for cross-user deduplication
-      container.registerLazySingleton<GlobalRecipeCache>(
-        () => GlobalRecipeCache(
-          firestoreRepository: container<FirestoreRepository>(),
-          urlNormalizer: container<UrlNormalizer>(),
-          fingerprinter: container<ContentFingerprint>(),
-        ),
-      );
-
       // Import rate limiter for cost protection
       container.registerLazySingleton<ImportRateLimiter>(
         () => ImportRateLimiter(
@@ -475,9 +438,7 @@ class ContentModule implements DIModule {
 
       // YouTube transcript service for fetching video transcripts
       container.registerLazySingleton<YouTubeTranscriptService>(
-        () => YouTubeTranscriptService(
-          client: container<http.Client>(),
-        ),
+        () => YouTubeTranscriptService(client: container<http.Client>()),
       );
 
       // Site config repository for dynamic CSS selectors from Firestore
@@ -509,14 +470,11 @@ class ContentModule implements DIModule {
       // Metric-registry assembler: fetches admin data per category (lazy) and
       // runs the pure resolvers. Fetchers wrap the existing admin repositories.
       container.registerLazySingleton<MetricsAssembler>(
-        () => MetricsAssembler(
-          [
-            RecipeCategoryFetcher(container<RecipeStatsRepository>()),
-            ImportCategoryFetcher(container<SiteConfigRepository>()),
-            EngagementCategoryFetcher(container<EngagementRepository>()),
-          ],
-          snapshots: container<DailySnapshotRepository>(),
-        ),
+        () => MetricsAssembler([
+          RecipeCategoryFetcher(container<RecipeStatsRepository>()),
+          ImportCategoryFetcher(container<SiteConfigRepository>()),
+          EngagementCategoryFetcher(container<EngagementRepository>()),
+        ], snapshots: container<DailySnapshotRepository>()),
       );
 
       // Firebase Storage instance for model loaders
@@ -566,9 +524,8 @@ class ContentModule implements DIModule {
         () => WhisperModelManager(storage: container<FirebaseStorage>()),
       );
       container.registerLazySingleton<VoiceCaptureService>(
-        () => VoiceCaptureService(
-          modelManager: container<WhisperModelManager>(),
-        ),
+        () =>
+            VoiceCaptureService(modelManager: container<WhisperModelManager>()),
         dispose: (s) => s.dispose(),
       );
 
@@ -681,14 +638,10 @@ class ContentModule implements DIModule {
       );
 
       // Search service for content discovery
-      container.registerLazySingleton<SearchService>(
-        () => SearchService(),
-      );
+      container.registerLazySingleton<SearchService>(() => SearchService());
 
       // Share service for content sharing
-      container.registerLazySingleton<ShareService>(
-        () => ShareService(),
-      );
+      container.registerLazySingleton<ShareService>(() => ShareService());
 
       // Storage repository for storage operations
       container.registerLazySingleton<StorageRepository>(
@@ -710,15 +663,11 @@ class ContentModule implements DIModule {
 
       // Image upload service for upload coordination with retry and progress
       container.registerLazySingleton<ImageUploadService>(
-        () => ImageUploadService(
-          storageService: container<StorageService>(),
-        ),
+        () => ImageUploadService(storageService: container<StorageService>()),
       );
 
       // Backup service for recipe data export and import
-      container.registerLazySingleton<BackupService>(
-        () => BackupService(),
-      );
+      container.registerLazySingleton<BackupService>(() => BackupService());
 
       // Social media extractor for content extraction from social platforms
       container.registerLazySingleton<SocialMediaExtractor>(
@@ -817,7 +766,6 @@ class ContentModule implements DIModule {
         'BackupService': container<BackupService>(),
         'SocialMediaExtractor': container<SocialMediaExtractor>(),
         'ExtractionManager': container<ExtractionManager>(),
-        'GlobalRecipeCache': container<GlobalRecipeCache>(),
         'ImportRateLimiter': container<ImportRateLimiter>(),
         'SiteConfigRepository': container<SiteConfigRepository>(),
       };

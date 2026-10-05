@@ -236,6 +236,14 @@ void main() {
       expect(spy.events.single.parserVersion, '2.0.0');
     });
 
+    test('a link typed without a scheme is still a link', () async {
+      final url = _CannedUrlStrategy(ImportResult.success(recipe));
+
+      await managerWith([url]).autoImport('ica.se/recept/pasta');
+
+      expect(spy.events.single.channel, ImportChannel.link);
+    });
+
     test('a re-parse of an import already measured writes nothing', () async {
       final limiter = installLimiter();
 

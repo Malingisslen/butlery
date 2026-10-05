@@ -68,10 +68,8 @@ class TagResult {
   /// H3: Decision logs explaining why each allergen/dietary status was set.
   ///
   /// [toFirestore] does NOT emit them, so they never reach `isValidTagResult`'s
-  /// key allowlist on `recipes`. [toJson] DOES — and TWO consumers of it are not
-  /// local: see the note on [toFirestore] for where that map ends up. Say two,
-  /// not one: an auditor who checks only `shared_content` misses
-  /// `globalRecipeCache`, which is where the live denial in BUT-1826 sits.
+  /// key allowlist on `recipes`. [toJson] DOES — see the note on [toFirestore]
+  /// for where that map ends up.
   final List<TagDecision>? decisions;
 
   /// MED-2/V2: Explicit error reason when tagging fails.
@@ -372,49 +370,16 @@ class TagResult {
   /// and its only live effect was that flipping it once for one investigation
   /// would have reproduced that three-week outage. `decisions` is still carried
   /// in memory and still written by `toJson()`, which is reached through
-  /// `Recipe.toJson` (`recipe_unified.dart`) — about fifteen call sites, mostly
-  /// local JSON caches, plus backup, SharedPreferences persistence, offline
-  /// storage, menu storage and import.
+  /// `Recipe.toJson` (`recipe_unified.dart`).
   ///
-  /// TWO of them ATTEMPT to write the whole map to Firestore:
-  /// `SocialMenuOperations.shareMenuWithFriends` (into `shared_content`, and
-  /// `shareMenuWithGroup` delegates to it) and `ImportManager` via
-  /// `GlobalRecipeCache.save` (into the top-level `globalRecipeCache`).
-  ///
-  /// Only the first LANDS today. The import path is denied on every attempt for
-  /// unrelated reasons — the rules require four fields the writer never sends
-  /// (BUT-1826). Two things that sentence must not be stretched into:
-  ///
-  /// 1. It is NOT "has never reached that collection". Before 2026-03-15 the
-  ///    rule was a bare `allow create: if isAuthenticated()` (89face532), and
-  ///    the same writer path already cached `recipe.toJson()` (since
-  ///    2025-12-13). Entries carry a 30-180 day TTL by SOURCE TYPE — website 90,
-  ///    youtube 180, tiktok/instagram 60, text/ocr 30 — so only the 180-day tier
-  ///    written just before the cutoff still reaches today. Stronger still, and
-  ///    the reason this is not academic: `expireAt` was only added to
-  ///    `CacheEntry` on 2026-03-24, AFTER the rule tightened, so rows from
-  ///    before the cutoff carry none and the Firestore TTL policy can never
-  ///    collect them — only the cleanup function's `cachedAt + ttlDays`
-  ///    derivation reaches them. Say "not since 2026-03-15", never "never".
-  /// 2. It is NOT protection. It is an unrelated bug and it will be fixed.
-  ///
-  /// Key SHAPE is constrained on one of the two, asymmetrically.
-  /// `shared_content` uses only a FLOOR (`hasRequiredFields`, i.e.
-  /// `keys().hasAll`). `globalRecipeCache` uses a floor on CREATE but restricts
-  /// UPDATES to `['accessCount', 'lastAccessedAt']` — and `save` overwrites a
-  /// deterministic docId (`urlHash ?? 'fp_<fingerprint>'` — two branches, both
-  /// deterministic) with `SetOptions(merge: false)`, so
-  /// re-caching a URL already in the collection is an UPDATE in rules terms and
-  /// is already shape-constrained. Whoever fixes BUT-1826 by adding the four
-  /// required fields fixes the create branch only; every TTL refresh stays
-  /// denied. Neither collection calls `isValidTagResult`.
+  /// `SocialMenuOperations.shareMenuWithFriends` writes the whole map to
+  /// Firestore (into `shared_content`, and `shareMenuWithGroup` delegates to
+  /// it). `shared_content` uses only a FLOOR (`hasRequiredFields`, i.e.
+  /// `keys().hasAll`) and does not call `isValidTagResult`.
   ///
   /// So a new `toJson` key is safe on the share path and safe by ACCIDENT —
   /// the day it gains a `keys().hasOnly`, every `toJson` key becomes a rules
-  /// concern. Count both paths before assuming otherwise. This paragraph has
-  /// been wrong four times: it named one consumer when there are two, then the
-  /// wrong method, then claimed the import write had never happened, then
-  /// claimed neither path constrained shape.
+  /// concern.
   ///
   /// TWO tests keep `decisions` out of this map. Re-adding the emission
   /// reddens BOTH; they diverge only once the allowlist is widened too, and
