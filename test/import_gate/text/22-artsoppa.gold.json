@@ -1,0 +1,29 @@
+{
+  "form": "kort recept, \"Till servering\" med rad utan mängd",
+  "title": "Ärtsoppa",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "ärtor"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "sidfläsk"
+    },
+    {
+      "key": "timjan"
+    },
+    {
+      "key": "mejram"
+    },
+    {
+      "key": "senap",
+      "allergen": "senap"
+    }
+  ],
+  "headings": [
+    "Till servering"
+  ]
+}

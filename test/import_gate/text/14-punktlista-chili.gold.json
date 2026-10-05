@@ -1,0 +1,35 @@
+{
+  "form": "punktlista med \"-\" och \"•\"",
+  "title": "Chili sin carne",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "lök"
+    },
+    {
+      "key": "vitlöksklyftor"
+    },
+    {
+      "key": "krossade tomater"
+    },
+    {
+      "key": "kidneybönor"
+    },
+    {
+      "key": "svarta bönor"
+    },
+    {
+      "key": "spiskummin"
+    },
+    {
+      "key": "chiliflakes"
+    },
+    {
+      "key": "koriander"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Tillagning"
+  ]
+}

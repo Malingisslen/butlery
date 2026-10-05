@@ -1,0 +1,35 @@
+{
+  "form": "kopierat från köket.se: \"Så här gör du\", portioner i rubrik",
+  "title": "Laxpasta med citron",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "tagliatelle",
+      "allergen": "gluten"
+    },
+    {
+      "key": "laxfilé",
+      "allergen": "fisk"
+    },
+    {
+      "key": "crème fraiche",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "citron"
+    },
+    {
+      "key": "dill"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "svartpeppar"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Så här gör du"
+  ]
+}

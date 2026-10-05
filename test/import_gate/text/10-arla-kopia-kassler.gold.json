@@ -1,0 +1,34 @@
+{
+  "form": "kopierat från arla.se: vara och mängd på separata kolumner",
+  "title": "Kassler i ugn med senap",
+  "steps": 5,
+  "ingredients": [
+    {
+      "key": "kassler"
+    },
+    {
+      "key": "färskost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "dijonsenap",
+      "allergen": "senap"
+    },
+    {
+      "key": "honung"
+    },
+    {
+      "key": "tomater"
+    },
+    {
+      "key": "råris"
+    },
+    {
+      "key": "salladsmix"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

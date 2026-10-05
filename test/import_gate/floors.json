@@ -1,0 +1,159 @@
+{
+  "corpora": {
+    "sites": {
+      "recall": 1.0,
+      "headingLeaks": 0,
+      "titleExact": 13,
+      "stepsExact": 8,
+      "portionsExact": 10,
+      "timeExact": 9,
+      "failures": 0
+    },
+    "text": {
+      "recall": 0.7083,
+      "headingLeaks": 1,
+      "titleExact": 15,
+      "stepsExact": 10,
+      "portionsExact": 0,
+      "timeExact": 0,
+      "failures": 0
+    }
+  },
+  "knownRed": [
+    {
+      "fixture": "text/01-caesarsallad",
+      "key": "krutonger",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/01-caesarsallad",
+      "key": "parmesanost",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/01-caesarsallad",
+      "key": "ägg",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/03-pastapesto",
+      "key": "parmesanost",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/03-pastapesto",
+      "key": "pinjenötter",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/05-tacos",
+      "key": "gräddfil",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/05-tacos",
+      "key": "tortillabröd",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/09-lasagne",
+      "key": "lasagneplattor",
+      "reason": "Rad med mängd tappas ur ingredienslistan (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/13-instagram-bananbrod",
+      "key": "valnötter",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/15-steg-rubriker-grot",
+      "key": "mjölk",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/18-smorgastarta",
+      "key": "formfranska",
+      "reason": "Rad med mängd tappas ur ingredienslistan (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/18-smorgastarta",
+      "key": "ägg",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/20-sushibowl",
+      "key": "sesamfrön",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/20-sushibowl",
+      "key": "sojasås",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/21-kanelbullar",
+      "key": "smör",
+      "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/22-artsoppa",
+      "key": "senap",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/23-broccolisoppa-tillbehor",
+      "key": "fetaost",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/25-wok-jordnotter",
+      "key": "fisksås",
+      "reason": "Ändelsen \"-sås\" klyvs av raden, så \"fisksås\" blir \"fisk\" och \"sojasås\" blir \"soja\" (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/25-wok-jordnotter",
+      "key": "jordnötter",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/25-wok-jordnotter",
+      "key": "sojasås",
+      "reason": "Ändelsen \"-sås\" klyvs av raden, så \"fisksås\" blir \"fisk\" och \"sojasås\" blir \"soja\" (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/25-wok-jordnotter",
+      "key": "äggnudlar",
+      "reason": "Rad med mängd tappas ur ingredienslistan (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/26-sockerkaka-formen",
+      "key": "smör",
+      "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/29-rodbetssallad",
+      "key": "fetaost",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/29-rodbetssallad",
+      "key": "valnötter",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/29-rodbetssallad",
+      "key": "yoghurt",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    },
+    {
+      "fixture": "text/30-selleri-soppa",
+      "key": "rotselleri",
+      "reason": "Rad med mängd tappas ur ingredienslistan (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/30-selleri-soppa",
+      "key": "smör",
+      "reason": "Rad utan mängd tappas (felkartan punkt 2, ägs av tråden \"Förbättringsplan vid sidan av migrationen\")."
+    }
+  ]
+}
