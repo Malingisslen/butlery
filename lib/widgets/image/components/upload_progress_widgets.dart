@@ -439,43 +439,50 @@ class UploadProgressWidgets {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        // The destructive button is the red one the photo grid and the picker
-        // already draw; onError carries its text at 4.5:1 in both modes.
+        // The destructive button keeps its red fill (R8-5 = B, BUT-2232):
+        // action.danger, one opaque step darker while pressed.
         final fill = isDestructive
-            ? cs.error
+            ? context.modeColors.actionDanger
             : AppModeColors.surfacePaperOnPhoto();
-        final ink = isDestructive ? cs.onError : cs.primary;
+        final ink = isDestructive
+            ? context.modeColors.onActionDanger
+            : cs.primary;
         return Semantics(
           label: context.l10n.a11yBulkUploadAction(label),
           button: true,
-          child: InkWell(
-            onTap: onTap,
+          child: Material(
+            color: fill,
             borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+              // The paper button's press on a photo is not decided
+              // (BUT-2232), so it keeps the unchanged fill it showed before.
+              overlayColor: WidgetStatePropertyAll(
+                isDestructive ? context.modeColors.actionDangerPressed : fill,
               ),
-              decoration: BoxDecoration(
-                color: fill,
-                borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ButleryIcon(
-                    icon,
-                    color: ink,
-                    size: AppDimensions.iconSizeS,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Text(
-                    label,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingS,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(
+                      icon,
                       color: ink,
+                      size: AppDimensions.iconSizeS,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.spacingXs),
+                    Text(
+                      label,
+                      style: AppTextStyles.metadataEmphasized.copyWith(
+                        color: ink,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

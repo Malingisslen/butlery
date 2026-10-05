@@ -23,17 +23,39 @@ import 'package:butlery/services/upload/upload_models.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
 
+// No Scaffold: its page Material is paper, the same colour as the paper
+// buttons, so a button that lost its own fill would still read as paper.
 Widget _themed(ThemeData theme, Widget child) => createLocalizedTestApp(
-  child: Theme(data: theme, child: child),
+  wrapInScaffold: false,
+  child: Theme(
+    data: theme,
+    child: Material(type: MaterialType.transparency, child: child),
+  ),
 );
 
-BoxDecoration _fillAround(WidgetTester tester, Finder of) => tester
-    .widgetList<Container>(
-      find.ancestor(of: of, matching: find.byType(Container)),
-    )
-    .map((c) => c.decoration)
-    .whereType<BoxDecoration>()
-    .firstWhere((d) => d.color != null);
+/// The nearest fill under [of]: a decorated Container, or a Material whose
+/// colour an InkWell's pressed overlay paints on.
+BoxDecoration _fillAround(WidgetTester tester, Finder of) {
+  final nearest = tester.widget(
+    find
+        .ancestor(
+          of: of,
+          matching: find.byWidgetPredicate(
+            (w) =>
+                (w is Container &&
+                    w.decoration is BoxDecoration &&
+                    (w.decoration! as BoxDecoration).color != null) ||
+                (w is Material &&
+                    w.type != MaterialType.transparency &&
+                    w.color != null),
+          ),
+        )
+        .first,
+  );
+  return nearest is Material
+      ? BoxDecoration(color: nearest.color)
+      : (nearest as Container).decoration! as BoxDecoration;
+}
 
 Color? _textColor(WidgetTester tester, Finder of) =>
     tester.widget<Text>(of).style?.color;

@@ -364,6 +364,22 @@ final class ModeColors {
   Color get pressedOnInk => _isDark
       ? AppColorsDark.surfacePressedOnInk
       : AppColors.surfacePressedOnInk;
+
+  /// semantic action.danger: the red fill, for the voice import's record
+  /// button and the upload's error button only (R8-5 = B, BUT-2232). Always
+  /// paired with [onActionDanger].
+  Color get actionDanger =>
+      _isDark ? AppColorsDark.actionDanger : AppColors.actionDanger;
+
+  /// semantic action.dangerPressed: [actionDanger] pressed or hovered.
+  Color get actionDangerPressed => _isDark
+      ? AppColorsDark.actionDangerPressed
+      : AppColors.actionDangerPressed;
+
+  /// semantic text.onActionDanger: icon and text on [actionDanger] and
+  /// [actionDangerPressed].
+  Color get onActionDanger =>
+      _isDark ? AppColorsDark.onActionDanger : AppColors.onActionDanger;
 }
 
 /// `context.modeColors`: the [ModeColors] for the current theme's brightness.

@@ -32,8 +32,8 @@ const _waiting = <String, int>{
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 2,
   // Raised, or cs.error when the action is destructive (BUT-2232).
   'lib/widgets/image/components/edit_actions_panel.dart': 1,
-  // Mixed: one on surface.raised and one hidden.
-  'lib/widgets/image/components/upload_progress_widgets.dart': 2,
+  // One on surface.raised.
+  'lib/widgets/image/components/upload_progress_widgets.dart': 1,
   // A surface the rule does not cover, for the design session (BUT-2232):
   // saffron, the warning and danger tints, the error colour, photos, the
   // scanned page, and a send button that is paper in dark mode.
@@ -41,7 +41,6 @@ const _waiting = <String, int>{
   'lib/views/recipe_detail_view.dart': 1,
   'lib/widgets/common/layout/status_indicators.dart': 1,
   'lib/widgets/common/profile/builders/menu_item_builders.dart': 1,
-  'lib/widgets/import/voice_section_card.dart': 1,
   'lib/widgets/recipe/comment_form_widget.dart': 1,
   'lib/widgets/recipe/comment_image_attachments.dart': 1,
   'lib/widgets/recipe/heirloom_section.dart': 1,
