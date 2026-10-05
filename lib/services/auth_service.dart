@@ -110,6 +110,10 @@ class AuthService extends ChangeNotifier
       clearError();
       setLoading(true);
 
+      _authRepository.holdRegistrationDisplayName(
+        email: email,
+        displayName: displayName,
+      );
       final UserCredential credential = await _authRepository.createUser(
         email,
         password,

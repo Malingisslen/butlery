@@ -1,14 +1,12 @@
 // Regression test for the onboarding-chain CRITICAL bug: a successful REGISTER
-// must NOT manually pushReplacement to MinaReceptView. AuthView lives in the
-// '/' subtree, so a manual replace tears out AuthWrapper and skips
-// email-verification, the GDPR age gate, onboarding, and starter-content
-// seeding. Only a returning user (LOGIN) is sent straight to the recipe list;
-// register lets the auth-state change drive AuthWrapper into onboarding.
+// must NOT manually pushReplacement to MinaReceptView. Register lets the auth-state change drive AuthWrapper into
+// onboarding; login replaces the route with a fresh AuthWrapper.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations.dart';
@@ -26,8 +24,7 @@ import '../../../test_support/base_unit_test.dart';
 const _kPumpCap = Duration(seconds: 2);
 
 /// Counts pushReplacement onto the navigator. The login path does a manual
-/// `Navigator.pushReplacement(MaterialPageRoute(MinaReceptView))`; register
-/// must not.
+/// `Navigator.pushReplacement`; register must not.
 class _ReplaceObserver extends NavigatorObserver {
   int replaceCount = 0;
   Route<dynamic>? lastNewRoute;
@@ -55,11 +52,9 @@ void main() {
       await TestServiceLocator.initialize();
       observer = _ReplaceObserver();
 
-      // The real login destination is LayoutScaffolds.mainMenu (an IndexedStack
-      // that inflates every tab's ViewModel + services) — far too heavy to build
-      // in a navigation unit test. Point the production seam at a lightweight
-      // placeholder so we can assert that pushReplacement FIRED without standing
-      // up the whole app shell.
+      // Point the production seam at a lightweight placeholder so we can
+      // assert that pushReplacement FIRED without standing up the whole app
+      // shell.
       originalDestination = AuthView.postLoginDestinationBuilder;
       AuthView.postLoginDestinationBuilder = (_) => const SizedBox.shrink();
 
@@ -114,7 +109,7 @@ void main() {
     }
 
     testWidgets(
-      'successful LOGIN pushReplacement-es to MinaReceptView (returning user)',
+      'successful LOGIN replaces the auth route (returning user)',
       (tester) async {
         await tester.pumpWidget(appUnderTest());
         await tester.pumpAndSettle(_kPumpCap);
@@ -137,9 +132,17 @@ void main() {
         expect(
           observer.replaceCount,
           1,
-          reason: 'login must send the returning user straight to the list',
+          reason: 'login must replace the auth route',
         );
         expect(observer.lastNewRoute, isNotNull);
+        expect(
+          identical(
+            (observer.lastNewRoute! as MaterialPageRoute).builder,
+            AuthView.postLoginDestinationBuilder,
+          ),
+          isTrue,
+          reason: 'login must route through the seam the default test pins',
+        );
       },
     );
 
@@ -204,9 +207,7 @@ void main() {
         expect(
           observer.replaceCount,
           0,
-          reason:
-              'register must NOT pushReplacement — that would tear out '
-              'AuthWrapper and skip verification/age-gate/onboarding/seeding',
+          reason: 'register must NOT pushReplacement',
         );
         expect(
           find.byType(MinaReceptView),
@@ -215,5 +216,18 @@ void main() {
         );
       },
     );
+
+    test('LOGIN lands on AuthWrapper, so its verification and onboarding '
+        'gates still run', () {
+      expect(
+        originalDestination(_FakeContext()),
+        isA<AuthWrapper>(),
+        reason:
+            'an account that registered but never finished onboarding must '
+            'meet the age check when it logs in again',
+      );
+    });
   });
 }
+
+class _FakeContext extends Fake implements BuildContext {}

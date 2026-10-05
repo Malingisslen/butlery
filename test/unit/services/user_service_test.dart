@@ -237,6 +237,82 @@ void main() {
         expect(userService.currentUserProfile, isNotNull);
         expect(userService.currentUserProfile?.uid, equals('test_user_123'));
       });
+
+      // createUser signs in before updateDisplayName runs, so the Auth user
+      // still has no display name when the profile is auto-created. The name
+      // is held for test1@example.com.
+      Future<String?> autoCreatedName({
+        required String email,
+        String? authDisplayName,
+      }) async {
+        final freshUser = MockFactory.createMockUser(
+          uid: 'test_user_123',
+          email: email,
+          displayName: authDisplayName,
+        );
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: freshUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => mockAuthRepository.registrationDisplayNameFor(any()),
+        ).thenAnswer(
+          (inv) => inv.positionalArguments.first == 'test1@example.com'
+              ? 'Testperson Ett'
+              : null,
+        );
+        when(
+          () => mockUserRepository.ensureBaseUserDocument(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => null);
+        final saved = <UserProfile>[];
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as UserProfile);
+        });
+        when(
+          () => mockUserRepository.recordTermsAcceptance(any(), any()),
+        ).thenAnswer((_) async {});
+
+        await userService.initialize();
+
+        expect(saved, isNotEmpty, reason: 'premise: the profile was created');
+        return saved.first.displayName;
+      }
+
+      test('a profile created on the registration sign-in takes the name typed '
+          'at registration, not the e-mail prefix', () async {
+        expect(
+          await autoCreatedName(email: 'test1@example.com'),
+          'Testperson Ett',
+        );
+      });
+
+      test('another account never takes a name held for a different '
+          'address', () async {
+        expect(await autoCreatedName(email: 'other@example.com'), 'other');
+      });
+
+      test('a display name already on the Auth user wins over a held '
+          'name', () async {
+        expect(
+          await autoCreatedName(
+            email: 'test1@example.com',
+            authDisplayName: 'Auth Namn',
+          ),
+          'Auth Namn',
+        );
+      });
     });
 
     group('Profile Management', () {

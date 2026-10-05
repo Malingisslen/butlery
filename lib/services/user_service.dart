@@ -590,6 +590,7 @@ class UserService extends ChangeNotifier
 
         final displayName =
             user.displayName ??
+            _authRepository.registrationDisplayNameFor(user.email) ??
             user.email!.split('@')[0]; // Use email prefix as default
 
         _currentUserProfile = await createOrUpdateProfile(

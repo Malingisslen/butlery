@@ -196,6 +196,53 @@ void main() {
       });
     });
 
+    group('Registration display name', () {
+      setUp(() {
+        when(() => mockFirebaseAuth.signOut()).thenAnswer((_) async {});
+      });
+      tearDown(() => repository.signOut());
+
+      test('a name held by one instance is read by another', () {
+        // UserService and AuthService each build their own repository.
+        repository.holdRegistrationDisplayName(
+          email: 'a@example.se',
+          displayName: 'Testperson Ett',
+        );
+
+        final other = FirebaseAuthRepository(firebaseAuth: mockFirebaseAuth);
+
+        expect(
+          other.registrationDisplayNameFor('a@example.se'),
+          'Testperson Ett',
+        );
+      });
+
+      test('the name is only handed to the address it was typed for', () {
+        repository.holdRegistrationDisplayName(
+          email: 'a@example.se',
+          displayName: 'Testperson Ett',
+        );
+
+        expect(
+          repository.registrationDisplayNameFor(' A@Example.se '),
+          'Testperson Ett',
+        );
+        expect(repository.registrationDisplayNameFor('b@example.se'), isNull);
+        expect(repository.registrationDisplayNameFor(null), isNull);
+      });
+
+      test('sign-out drops the held name', () async {
+        repository.holdRegistrationDisplayName(
+          email: 'a@example.se',
+          displayName: 'Testperson Ett',
+        );
+
+        await repository.signOut();
+
+        expect(repository.registrationDisplayNameFor('a@example.se'), isNull);
+      });
+    });
+
     group('Password Reset', () {
       test('should send password reset email', () async {
         // Arrange

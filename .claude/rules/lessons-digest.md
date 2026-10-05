@@ -86,6 +86,7 @@ lessons that only matter while writing or running tests.
 - Dart RegExp `\b` is ASCII-only — bound Swedish tokens with explicit lookarounds
 - Firestore `sum()`/`average()` with a filter on a DIFFERENT field needs a COMPOSITE index
 - A FAILED_PRECONDITION's `create_composite` token base64url-decodes to Firestore's OWN index spec
+- Ett värde som fångas för en identitet och läses över ett auth-byte nycklas till identiteten (e-post/uid), aldrig rensas på händelser — och en kapplöpningsrättelse är oprövad tills den körts i riktiga appen (2026-10-05)
 - A boundary/heuristic/attribution bug usually has a TWIN CLASS — grep sibling classes by NAME (not path) (BUT-1691, BUT-1697)
 - A harness picking between two on-disk shapes for the same fact must choose on the property that decides TRUTH (2026-08-05, [Workflow])
 - A wrong-path Firestore read is a bug CLASS … Grep the CONSTANT for every reader AND writer (BUT-1724)
