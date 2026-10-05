@@ -843,16 +843,18 @@ void main() {
         await _seedUserProfile(
           fakeFirestore,
           'user-1',
-          _createUserProfile('user-1', displayName: 'Visible Anna').toFirestore(),
+          _createUserProfile(
+            'user-1',
+            displayName: 'Visible Anna',
+          ).toFirestore(),
         );
         await _seedUserProfile(
           fakeFirestore,
           'user-2',
           _createUserProfile(
-              'user-2',
-              displayName: 'Hidden Anna',
-            ).toFirestoreEditable()
-            ..['isHidden'] = true,
+            'user-2',
+            displayName: 'Hidden Anna',
+          ).toFirestoreEditable()..['isHidden'] = true,
         );
 
         final hidden = await repository.searchProfiles('hidden');
@@ -867,12 +869,11 @@ void main() {
           fakeFirestore,
           'user-1',
           _createUserProfile(
-              'user-1',
-              displayName: 'Hidden Anna',
-              email: 'anna@example.com',
-              allowEmailSearch: true,
-            ).toFirestoreEditable()
-            ..['isHidden'] = true,
+            'user-1',
+            displayName: 'Hidden Anna',
+            email: 'anna@example.com',
+            allowEmailSearch: true,
+          ).toFirestoreEditable()..['isHidden'] = true,
         );
 
         final results = await repository.searchProfiles('anna@example.com');
