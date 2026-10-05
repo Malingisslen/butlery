@@ -367,6 +367,7 @@ class RecipeDetailViewModel extends BaseViewModel {
 
     return await executeAsync(() async {
       final isFirstTime = _recipe.lastCookedAt == null;
+      final countBefore = _recipe.core.cookCount;
 
       // One atomic WriteBatch: the cook-event doc + FieldValue.increment(1)
       // on cookCount/lastCookedAt commit together (BUT-838), keyed
@@ -381,7 +382,11 @@ class RecipeDetailViewModel extends BaseViewModel {
       if (success) {
         // Optimistic local update — mirrors the atomic Firestore change so UI
         // reflects new state without waiting for the recipe stream to echo.
-        _recipe = RecipeOperations.markAsCooked(_recipe);
+        // The echo can land while the write is awaited; bumping on top of it
+        // counted one cook twice.
+        if (_recipe.core.cookCount == countBefore) {
+          _recipe = RecipeOperations.markAsCooked(_recipe);
+        }
         notifyListeners();
 
         await _analyticsService.logRecipeCooked(

@@ -333,6 +333,32 @@ void main() {
         ).called(1);
       });
 
+      test(
+        'counts one cook when the stream delivers the write first',
+        () async {
+          // The write's own snapshot can reach the recipe stream while the
+          // write is still being awaited; the screen then said "Lagat 2 gånger"
+          // for one cook.
+          final written = testRecipe.copyWith(
+            cookCount: 1,
+            lastCookedAt: DateTime.now(),
+            updatedAt: DateTime.now().add(const Duration(seconds: 1)),
+          );
+          when(() => mockCookingService.markAsCooked(any())).thenAnswer((
+            _,
+          ) async {
+            mockRecipeService.setRecipeState(recipes: [written]);
+            mockRecipeService.emitState(RecipeStateData(recipes: [written]));
+            await Future<void>.delayed(Duration.zero);
+            return true;
+          });
+
+          await viewModel.markAsCooked();
+
+          expect(viewModel.recipe.core.cookCount, 1);
+        },
+      );
+
       test('should handle mark as cooked failure', () async {
         // Arrange — cooking service returns false (write rejected by
         // session guard or underlying repo failure).
