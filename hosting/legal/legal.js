@@ -113,6 +113,11 @@
         while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
           items.push(lines[i].trim().replace(/^[-*]\s+/, ''));
           i++;
+          // A hard-wrapped item continues on indented lines.
+          while (i < lines.length && /^\s+\S/.test(lines[i]) && !/^\s*[-*]\s+/.test(lines[i])) {
+            items[items.length - 1] += ' ' + lines[i].trim();
+            i++;
+          }
         }
         out.push('<ul>' + items.map(function (it) {
           return '<li>' + inline(escapeHtml(it)) + '</li>';
@@ -133,6 +138,10 @@
         while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
           nitems.push(lines[i].trim().replace(/^\d+\.\s+/, ''));
           i++;
+          while (i < lines.length && /^\s+\S/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) {
+            nitems[nitems.length - 1] += ' ' + lines[i].trim();
+            i++;
+          }
         }
         out.push('<ol>' + nitems.map(function (it) {
           return '<li>' + inline(escapeHtml(it)) + '</li>';

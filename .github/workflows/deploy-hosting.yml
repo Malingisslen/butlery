@@ -50,8 +50,8 @@ jobs:
 
       - name: Assemble the site
         # Pages at the root, markdown under assets/legal/ (the path legal.js
-        # fetches). Fails if any of the eight files is missing or empty, so a
-        # rename in assets/legal/ cannot publish a page that renders nothing.
+        # fetches). Fails if any of the files is missing or empty, so a rename
+        # in assets/legal/ cannot publish a page that renders nothing.
         run: |
           rm -rf build/legal-site
           mkdir -p build/legal-site/assets/legal
@@ -88,9 +88,11 @@ jobs:
 
       - name: Ensure the legal site exists
         run: |
-          SITE=$(node -e "console.log(require('./.firebaserc').targets['butlery-app-1'].hosting.legal[0])")
+          SITE=$(jq -r '.targets["butlery-app-1"].hosting.legal[0]' .firebaserc)
+          test -n "$SITE" && test "$SITE" != "null" || { echo "::error::no legal hosting target in .firebaserc" >&2; exit 1; }
           echo "SITE=$SITE" >> "$GITHUB_ENV"
-          if firebase hosting:sites:list --project butlery-app-1 --json | grep -q "\"$SITE\""; then
+          # The CLI prints each site as "projects/<n>/sites/<id>".
+          if firebase hosting:sites:list --project butlery-app-1 --json | grep -q "/sites/$SITE\""; then
             echo "Site $SITE exists."
           else
             firebase hosting:sites:create "$SITE" --project butlery-app-1 --non-interactive
