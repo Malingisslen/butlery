@@ -37,8 +37,7 @@ class IngredientMatchService extends BaseService {
   final IngredientLookupService _lookupService;
   final IngredientRepository _ingredientRepository;
 
-  /// Session cache: recipe ID → normalized ingredient IDs.
-  /// Avoids re-normalizing the same legacy recipe across multiple searches.
+  /// Session cache: recipe ID and rows → registry ingredient IDs.
   final Map<String, Set<String>> _normalizationCache = {};
 
   IngredientMatchService({
@@ -50,37 +49,30 @@ class IngredientMatchService extends BaseService {
   @override
   String get serviceName => 'IngredientMatchService';
 
-  /// Core matching: intersect [selectedIngredientIds] with each recipe's
-  /// `ingredientsNormalized`. Recipes without normalized data are skipped.
-  /// Returns results sorted by match% descending (zero-overlap excluded).
+  /// Scores [recipes] by the share of their ingredients in
+  /// [selectedIngredientIds]. Returns results sorted by match% descending
+  /// (zero-overlap excluded).
+  ///
+  /// The ids come from looking the raw ingredient rows up in the registry.
+  /// `ingredientsNormalized` holds cleaned Swedish names ("potatis"), not
+  /// registry ids ("potato"), so it can never intersect the selection.
   Future<List<IngredientMatchResult>> matchRecipes({
     required Set<String> selectedIngredientIds,
     required List<Recipe> recipes,
   }) => _matchWithResolver(
     selectedIngredientIds: selectedIngredientIds,
     recipes: recipes,
-    resolveNormalized: (recipe) async {
-      final n = recipe.core.ingredientsNormalized;
-      return (n != null && n.isNotEmpty) ? n.toSet() : null;
-    },
+    resolveNormalized: _lookupIds,
     operationName: 'matchRecipes',
   );
 
-  /// Like [matchRecipes] but handles legacy recipes (null ingredientsNormalized)
-  /// by normalizing their raw ingredients in-memory via [IngredientLookupService].
-  /// Results are cached per recipe ID for the session lifetime.
+  /// Same as [matchRecipes]; kept for the ingredient-search caller.
   Future<List<IngredientMatchResult>> matchRecipesWithNormalization({
     required Set<String> selectedIngredientIds,
     required List<Recipe> recipes,
-  }) => _matchWithResolver(
+  }) => matchRecipes(
     selectedIngredientIds: selectedIngredientIds,
     recipes: recipes,
-    resolveNormalized: (recipe) async {
-      final n = recipe.core.ingredientsNormalized;
-      if (n != null && n.isNotEmpty) return n.toSet();
-      return _lazyNormalize(recipe);
-    },
-    operationName: 'matchRecipesWithNormalization',
   );
 
   Future<List<IngredientMatchResult>> _matchWithResolver({
@@ -158,16 +150,18 @@ class IngredientMatchService extends BaseService {
     return names;
   }
 
-  /// Normalizes a legacy recipe's raw ingredients in-memory and caches the
+  /// Looks a recipe's raw ingredients up in the registry and caches the
   /// result. Returns null if the recipe has no raw ingredients.
   /// Includes both taxonomy-matched IDs and unmatched normalized strings
   /// so that match % reflects the full ingredient list.
-  Future<Set<String>?> _lazyNormalize(Recipe recipe) async {
-    final cached = _normalizationCache[recipe.id];
-    if (cached != null) return cached;
-
+  Future<Set<String>?> _lookupIds(Recipe recipe) async {
     final rawIngredients = recipe.core.ingredients;
     if (rawIngredients.isEmpty) return null;
+
+    // Keyed on the rows too, so an edited recipe is looked up again.
+    final cacheKey = '${recipe.id}\x00${Object.hashAll(rawIngredients)}';
+    final cached = _normalizationCache[cacheKey];
+    if (cached != null) return cached;
 
     try {
       final lookupResult = await _lookupService.lookupFromRaw(rawIngredients);
@@ -177,7 +171,7 @@ class IngredientMatchService extends BaseService {
         ...lookupResult.unmatched,
       };
       if (ids.isNotEmpty) {
-        _normalizationCache[recipe.id] = ids;
+        _normalizationCache[cacheKey] = ids;
       }
       return ids.isEmpty ? null : ids;
     } catch (e) {
