@@ -281,7 +281,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `photo_import_viewmodel.dart` | 872 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
 | `friends_viewmodel.dart` | 622 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
 | `fcm_service.dart` | 728 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
-| `menu_generator.dart` | 591 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |
+| `menu_generator.dart` | 807 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |
 | `intelligent_cache_manager.dart` | 601 | Behavior-analysis, prefetching, friend-activity cache, and eviction policies are separable strategies |
 
 ## Categories
