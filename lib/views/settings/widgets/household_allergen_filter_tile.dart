@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -68,13 +69,38 @@ class _HouseholdAllergenFilterTileState
     // Fetch the household's tracked allergens so the warning can name the ones
     // opting out actually exposes, then require an explicit confirm.
     final aggregate = await _householdService?.aggregateAllergenPreferences();
+    final withDiners = await _withDinerProfiles(aggregate);
     if (!mounted) return;
-    final confirmed = await _confirmTurnOff(aggregate);
+    final confirmed = await _confirmTurnOff(withDiners);
     if (confirmed == true) {
       await _persist(false);
     }
     // If not confirmed, nothing persists — the controlled switch never moved
     // (still bound to the unchanged `on` value), so it stays ON.
+  }
+
+  /// The menu drops the family's diner profiles (children) together with the
+  /// member accounts when this toggle goes off, so the warning names their
+  /// allergens too; the account union alone never saw a child.
+  Future<HouseholdAllergenAggregate?> _withDinerProfiles(
+    HouseholdAllergenAggregate? aggregate,
+  ) async {
+    if (aggregate == null) return null;
+    final widened = await const PresentDinerPrefsResolver().addHouseholdDiners(
+      aggregate.preferences,
+    );
+    if (widened == null || !widened.changed) return aggregate;
+    if (widened.prefs.isComplete && aggregate.isRosterComplete) {
+      return HouseholdAllergenAggregate.completeWithMissing(
+        preferences: widened.prefs.preferences,
+        missingMemberIds: aggregate.missingMemberIds,
+      );
+    }
+    return HouseholdAllergenAggregate.degraded(
+      preferences: widened.prefs.preferences,
+      unresolvedMemberIds: aggregate.unresolvedMemberIds,
+      missingMemberIds: aggregate.missingMemberIds,
+    );
   }
 
   /// Persists the flag, surfacing an error if the write fails so the user is

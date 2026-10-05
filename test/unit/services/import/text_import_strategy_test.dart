@@ -920,34 +920,27 @@ Ingredienser:
       });
 
       test('should detect Swedish meal types', () async {
-        // Arrange
         final mealTypeTests = {
           'Frukost: Havregrynsgröt': 'Frukost',
           'Lunch - Sallad med kyckling': 'Lunch',
           'Middag: Laxfilé med potatis': 'Middag',
           'Fika - Kanelbullar': 'Fika',
+          // Nothing in the text names a meal: the recipe must land where the
+          // menu generator looks for "7 middagar", as the URL import does.
+          'Pannkakor': 'Middag',
         };
 
-        // Act & Assert
         for (final entry in mealTypeTests.entries) {
           final text =
-              '${entry.key}\nIngredienser:\nTest\nInstruktioner:\nTest';
+              '${entry.key}\nIngredienser:\n2 dl mjölk\nInstruktioner:\nVispa.';
           final result = await strategy.import(text);
 
-          if (result.isSuccess && result.recipe != null) {
-            // Meal type detection is basic - looks for keywords in text
-            // With colon in title, it may not detect properly
-            if (entry.key.toLowerCase().contains('fika')) {
-              expect(result.recipe!.mealType, equals('Fika'));
-            } else {
-              // Other meal types default to 'Lunch' when not detected
-              expect(
-                result.recipe!.mealType,
-                anyOf([equals(entry.value), equals('Lunch')]),
-                reason: 'May default to Lunch for: ${entry.key}',
-              );
-            }
-          }
+          expect(result.isSuccess, isTrue, reason: entry.key);
+          expect(
+            result.recipe!.mealType,
+            equals(entry.value),
+            reason: entry.key,
+          );
         }
       });
 

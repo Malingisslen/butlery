@@ -449,7 +449,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       filterByDietary: true,
     );
 
-    final pool = generator.availableRecipes;
+    final pool = await generator.getAvailableRecipesAsync();
     if (pool.isEmpty) return const [];
 
     // Group by meal type to encourage variety — cheap deterministic
