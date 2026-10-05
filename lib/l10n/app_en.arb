@@ -10629,6 +10629,18 @@
       }
     }
   },
+  "shoppingCategoryProgress": "{completed} of {total}",
+  "@shoppingCategoryProgress": {
+    "description": "The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "a11yToggleEmptyCategories": "Other categories",
   "@a11yToggleEmptyCategories": {
     "description": "Semantics label for the show/hide empty categories row in the shopping list."

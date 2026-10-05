@@ -14695,6 +14695,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String shoppingCategoryProgress(int completed, int total) {
+    return '$completed av $total';
+  }
+
+  @override
   String get a11yToggleEmptyCategories => 'Övriga kategorier';
 
   @override

@@ -5,7 +5,6 @@ import 'package:butlery/core/keyboard/app_actions.dart'
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/theme/app_text_styles.dart';
@@ -21,8 +20,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main content area for shopping list.
 ///
-/// **UI Redesign:** Category headers with collapse/expand, progress indicators,
-/// and category-specific colors from ModeColors.category* constants.
+/// **UI Redesign:** Category headers with collapse/expand.
 ///
 /// Kept as static class for backward compatibility. Use [ShoppingListContent.build]
 /// for the static variant, or [ShoppingListContentWidget] for the stateful version
@@ -382,9 +380,14 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     int startingIndex = 0,
   }) {
     final cs = Theme.of(context).colorScheme;
-    final categoryColor = isCompleted
-        ? cs.onSurfaceVariant
-        : ShoppingListContentWidget.getCategoryColor(context, category);
+    // Skarmar v12 del 2 #inkop draws the rule in ink (light, :881) and in
+    // border.control (dark, :986), which is the dark scheme's outline.
+    final ruleColor = Theme.of(context).brightness == Brightness.dark
+        ? cs.outline
+        : cs.onSurface;
+    final labelStyle = AppTextStyles.overline.copyWith(
+      color: cs.onSurfaceVariant,
+    );
 
     final isCollapsed = _collapsedCategories.contains(category);
     final isDragOver = _dragOverCategory == category;
@@ -425,102 +428,73 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                     }
                   });
                 },
+                // #inkop: an uppercase heading over a hairline with "N av M"
+                // at the right, no category-coloured plate and no bar of its
+                // own.
+                // Min 48px keeps the collapse toggle a full tap target.
                 child: AnimatedContainer(
+                  key: ValueKey(
+                    isCompleted
+                        ? 'shopping-category-header-bought-$category'
+                        : 'shopping-category-header-$category',
+                  ),
                   duration: AppMotion.micro.respectingMotion(
                     context,
                   ),
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingMd,
-                    vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                  constraints: const BoxConstraints(
+                    minHeight: AppDimensions.minTouchTarget,
                   ),
-                  margin: const EdgeInsets.only(
-                    bottom: AppDimensions.spacingSm,
+                  padding: const EdgeInsets.only(
+                    top: AppDimensions.spacingMd,
+                    bottom: AppDimensions.spacingXs,
                   ),
                   decoration: BoxDecoration(
-                    color: categoryColor,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                    border: isDragOver
-                        ? Border.all(color: cs.onPrimary, width: 2)
-                        : null,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          // Chevron icon
-                          ButleryIcon(
-                            isCollapsed
-                                ? ButleryIcons.chevronDown
-                                : ButleryIcons.chevronUp,
-                            color: cs.onPrimary,
-                            size: AppDimensions.iconSizeM,
-                          ),
-                          const SizedBox(width: AppDimensions.spacingSm),
-                          Expanded(
-                            // Outer Semantics on the GestureDetector announces
-                            // this row as a toggle button; nesting `header:
-                            // true` here would make TalkBack stutter through
-                            // both roles. The button-with-toggled state is
-                            // more informative for the actionable case.
-                            child: Text(
-                              ShoppingCategory.displayName(
-                                category,
-                              ).toUpperCase(),
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: cs.onPrimary,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 2,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          // Progress badge: X/Y format
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.spacingSm,
-                              vertical: AppDimensions.badgePaddingY,
-                            ),
-                            // A real border in the header's own foreground,
-                            // never a faded fill (tokens.json:40-53).
-                            decoration: BoxDecoration(
-                              border: Border.all(color: cs.onPrimary),
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.radiusControl,
-                              ),
-                            ),
-                            child: Text(
-                              progress != null
-                                  ? '${progress.completed}/${progress.total}'
-                                  : '${items.length}',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: cs.onPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+                    color: isDragOver ? cs.surfaceContainerHighest : null,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: ruleColor,
+                        width: isDragOver ? 2 : 1,
                       ),
-                      // Progress indicator
-                      if (progress != null && progress.total > 0) ...[
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        // The category's progress is the determinate plate
-                        // line (Komponentark v1:305; B-18: no bar of its
-                        // own; "Tallrikslinje — vald flik och progress",
-                        // v1:844). The badge beside it already says the
-                        // count, so the line is not read out on its own.
-                        ExcludeSemantics(
-                          child: PlateLine(
-                            key: const ValueKey(
-                              'shopping-category-progress',
-                            ),
-                            value: progress.completed / progress.total,
-                          ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        // Outer Semantics on the GestureDetector announces
+                        // this row as a toggle button; nesting `header:
+                        // true` here would make TalkBack stutter through
+                        // both roles.
+                        child: Text(
+                          ShoppingCategory.displayName(
+                            category,
+                          ).toUpperCase(),
+                          style: labelStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        progress != null
+                            ? context.l10n.shoppingCategoryProgress(
+                                progress.completed,
+                                progress.total,
+                              )
+                            : '${items.length}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                      ButleryIcon(
+                        isCollapsed
+                            ? ButleryIcons.chevronDown
+                            : ButleryIcons.chevronUp,
+                        color: cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeS,
+                      ),
                     ],
                   ),
                 ),
