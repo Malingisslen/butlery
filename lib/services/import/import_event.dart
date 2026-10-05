@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 
 /// How the raw material came in. Stored on the parse event, and validated
@@ -105,7 +106,7 @@ class ImportEvent {
 
   /// Short id for a strategy name.
   static String strategyId(String? strategyName) {
-    final lower = strategyName?.toLowerCase() ?? '';
+    final lower = strategyName.orEmpty().toLowerCase();
     return strategyIds.firstWhere(lower.contains, orElse: () => 'unknown');
   }
 
