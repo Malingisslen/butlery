@@ -212,8 +212,13 @@ class ShoppingListManagementModule {
 
   Future<bool> updateList(UnifiedShoppingList list) async {
     try {
+      final previous = lists.where((l) => l.id == list.id).firstOrNull;
+
       // Update in Firebase
       await repository.update(list);
+      if (list.type != ListType.collaborative) {
+        await _persistPersonalItems(previous, list);
+      }
 
       // Update local state
       final listIndex = lists.indexWhere((l) => l.id == list.id);
@@ -227,6 +232,35 @@ class ShoppingListManagementModule {
     } catch (e) {
       AppLogger.error('Failed to update list', e);
       return false;
+    }
+  }
+
+  /// A personal list's items live in its `items` subcollection, which is what
+  /// the next launch reads; `update` writes only the parent document
+  /// (BUT-1723). The change is taken against the copy in memory, never the
+  /// stored rows, so a stale caller cannot delete a row it never saw, and a
+  /// row passed through unchanged costs no write.
+  Future<void> _persistPersonalItems(
+    UnifiedShoppingList? previous,
+    UnifiedShoppingList list,
+  ) async {
+    final before = <String, UnifiedShoppingItem>{
+      for (final item in previous?.items ?? const <UnifiedShoppingItem>[])
+        item.id: item,
+    };
+    final changed = list.items
+        .where((item) => !identical(before[item.id], item))
+        .toList();
+    final keptIds = {for (final item in list.items) item.id};
+    final removedIds = before.keys
+        .where((id) => !keptIds.contains(id))
+        .toList();
+
+    if (changed.isNotEmpty) {
+      await repository.addItemsBatch(list.id, changed);
+    }
+    if (removedIds.isNotEmpty) {
+      await repository.removeItemsBatch(list.id, removedIds);
     }
   }
 
