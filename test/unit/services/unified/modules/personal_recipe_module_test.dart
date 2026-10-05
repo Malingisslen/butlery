@@ -157,6 +157,25 @@ void main() {
         expect(lastError, isNotNull);
       });
 
+      test('a created recipe carries parsed ingredients', () async {
+        // The menu's shopping list sums amounts from these; without them
+        // '1 gul lök' from three recipes became one row of 1.
+        final id = await module.createPersonalRecipe(
+          title: 'Kycklingcurry',
+          ingredients: ['1 gul lök', '2 msk currypulver', 'Salt'],
+          instructions: ['Koka'],
+        );
+        expect(id, isNotNull);
+
+        final saved = module.popLastCreatedRecipe()!;
+        final structured = saved.core.structuredIngredients!;
+        expect(structured[0].amount, 1);
+        expect(structured[0].name, 'gul lök');
+        expect(structured[1].amount, 2);
+        expect(structured[1].unit, 'msk');
+        expect(structured[2].amount, isNull);
+      });
+
       test('should fail update when not authenticated', () async {
         currentUserId = null;
         final result = await module.updatePersonalRecipe(testRecipe);
