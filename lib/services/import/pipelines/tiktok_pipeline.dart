@@ -184,66 +184,37 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
 
     AppLogger.info('TikTokPipeline: Got caption (${caption.length} chars)');
 
-    // Tier 2: Check for emoji-based recipe format
+    // Tier 2: an emoji-formatted caption is structured before the model
+    // reads it. Either way the model is asked once (BUT-2239).
     final emojiParsed = _parseEmojiIngredients(caption);
-    if (emojiParsed != null && emojiParsed.ingredients.isNotEmpty) {
+    final emojiCount = emojiParsed?.ingredients.length ?? 0;
+    final emojiInput = emojiParsed != null && emojiCount >= 3
+        ? _formatEmojiParsedForLlm(emojiParsed, caption)
+        : null;
+    final fromEmoji = emojiInput != null;
+    if (fromEmoji) {
       AppLogger.info(
-        'TikTokPipeline: Emoji parsing found ${emojiParsed.ingredients.length} ingredients',
+        'TikTokPipeline: Emoji parsing found $emojiCount ingredients',
       );
-
-      // If we have enough structure, try to build a recipe
-      if (emojiParsed.ingredients.length >= 3) {
-        // Tier 3: Use LLM to structure the emoji-parsed content
-        final llmResult = await _llmService.extractFromTranscript(
-          _formatEmojiParsedForLlm(emojiParsed, caption),
-          input,
-          videoTitle: metadata?.title,
-        );
-
-        if (llmResult.isSuccess) {
-          // BUT-980: persist TikTok video URL so the detail view can link
-          // back to the original. LLM-extracted recipes don't carry source
-          // — has to be wired in here on the success path.
-          final llmRecipe = (llmResult as ImportSuccess).recipe;
-          // BUT-1045: persist the caption payload for offline re-extract.
-          final artefact = SourceArtefact(
-            type: SourceArtefactType.tiktokCaption,
-            payload: caption,
-            fetchedAt: clock.now(),
-          );
-          return ImportSuccess(
-            recipe: llmRecipe.copyWith(
-              sourceUrl: input,
-              sourceArtefact: artefact,
-            ),
-            confidence: 0.7,
-            pipeline: 'tiktok',
-            tier: 2,
-            method: 'emoji-llm',
-            usedLlm: true,
-            requiresReview: true,
-            metadata: {
-              'videoUrl': input,
-              'authorName': metadata?.authorName,
-              'thumbnailUrl': metadata?.thumbnailUrl,
-              'emojiIngredientCount': emojiParsed.ingredients.length,
-            },
-          );
-        }
-      }
     }
 
-    // Tier 3: Try LLM extraction on raw caption
+    if (options?['skipLlm'] == true) {
+      return _withoutRecipe(caption, input, metadata, const {});
+    }
+
+    // Tier 3: LLM extraction
     final llmResult = await _llmService.extractFromTranscript(
-      caption,
+      emojiInput ?? caption,
       input,
       videoTitle: metadata?.title,
     );
 
     if (llmResult.isSuccess) {
-      // BUT-980: persist TikTok video URL (caption-LLM tier-3 path).
+      // BUT-980: persist TikTok video URL so the detail view can link back to
+      // the original. LLM-extracted recipes don't carry source — has to be
+      // wired in here on the success path.
       final llmRecipe = (llmResult as ImportSuccess).recipe;
-      // BUT-1045: persist the caption payload (tier-3 caption-LLM path).
+      // BUT-1045: persist the caption payload for offline re-extract.
       final artefact = SourceArtefact(
         type: SourceArtefactType.tiktokCaption,
         payload: caption,
@@ -254,16 +225,18 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
           sourceUrl: input,
           sourceArtefact: artefact,
         ),
-        confidence: 0.65,
+        confidence: fromEmoji ? 0.7 : 0.65,
         pipeline: 'tiktok',
-        tier: 3,
-        method: 'caption-llm',
+        tier: fromEmoji ? 2 : 3,
+        method: fromEmoji ? 'emoji-llm' : 'caption-llm',
         usedLlm: true,
         requiresReview: true,
         metadata: {
+          ...llmResult.llmUse,
           'videoUrl': input,
           'authorName': metadata?.authorName,
           'thumbnailUrl': metadata?.thumbnailUrl,
+          if (fromEmoji) 'emojiIngredientCount': emojiCount,
         },
       );
     }
@@ -283,15 +256,25 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
       );
     }
 
-    // Tier 4: User-assisted or screenshot
+    return _withoutRecipe(caption, input, metadata, llmResult.llmUse);
+  }
+
+  /// Tier 4: the caption for the user to mark up, or a screenshot request when
+  /// it is too short to hold a recipe. [llmUse] is the model call already made.
+  ImportResultV2 _withoutRecipe(
+    String caption,
+    String input,
+    TikTokMetadata? metadata,
+    Map<String, dynamic> llmUse,
+  ) {
     if (caption.length > 50) {
-      // We have some caption, offer user-assisted
       return ImportNeedsAssistance(
         extractedText: caption,
         suggestedTitle: _extractTitleFromCaption(caption),
         thumbnailUrl: metadata?.thumbnailUrl,
         message: AppLocale.current.tiktokCouldNotExtractRecipe,
         partialData: {
+          ...llmUse,
           'videoUrl': input,
           'authorName': metadata?.authorName,
         },

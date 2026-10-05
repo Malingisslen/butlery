@@ -453,16 +453,19 @@ class ImportRateLimiter extends BaseService {
         ? current.monthWindowStart
         : now;
 
-    // Calculate new counters (reset if window changed)
+    // Calculate new counters (reset if window changed). A model call made
+    // during an import is not a second import (BUT-2239): it moves only the
+    // AI counters and the cost.
+    final imports = operation.requiresLlm ? 0 : 1;
     final newMinuteCount = minuteWindow == current.minuteWindowStart
-        ? current.importsThisMinute + 1
-        : 1;
+        ? current.importsThisMinute + imports
+        : imports;
     final newHourCount = hourWindow == current.hourWindowStart
-        ? current.importsThisHour + 1
-        : 1;
+        ? current.importsThisHour + imports
+        : imports;
     final newDayCount = dayWindow == current.dayWindowStart
-        ? current.importsToday + 1
-        : 1;
+        ? current.importsToday + imports
+        : imports;
 
     // LLM counters
     int newEnhancements = dayWindow == current.dayWindowStart

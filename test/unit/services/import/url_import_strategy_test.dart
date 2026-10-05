@@ -60,9 +60,14 @@ import 'package:http/testing.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -77,6 +82,8 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
+import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 /// Records every `parseFromUrl` call so the single-escalation contract
 /// (BUT-1476) and the below-threshold fall-through (BUT-1650) can be asserted.
@@ -1440,4 +1447,123 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(result.recipe!.core.title, 'Rough Dish');
     });
   });
+
+  // -----------------------------------------------------------------------
+  // BUT-2239: Tier 6 reads the page text, at most once, and reports its cost
+  // -----------------------------------------------------------------------
+  group('Tier 6 AI fallback (BUT-2239)', () {
+    late _CountingLlm llm;
+
+    setUp(() {
+      llm = _CountingLlm();
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<LlmEnhancementService>()) {
+        getIt.unregister<LlmEnhancementService>();
+      }
+      getIt.registerSingleton<LlmEnhancementService>(llm);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<LlmEnhancementService>()) {
+        getIt.unregister<LlmEnhancementService>();
+      }
+      app_provider.ServiceLocator.reset();
+    });
+
+    test('reads the stripped text, cut to what the server accepts', () async {
+      final prose = 'Det var en vacker dag i parken. ' * 8000;
+      final page = _unstructuredHtml().replaceFirst(
+        '</article>',
+        '<p>$prose</p></article>',
+      );
+      expect(page.length, greaterThan(245000), reason: 'the premise');
+
+      final strategy = _strategyWith((req) async => _htmlResponse(page));
+      await strategy.import('http://8.8.8.8/blog');
+
+      expect(llm.seen, hasLength(1));
+      expect(llm.seen.single.length, LlmExtractionFallback.maxInputChars);
+      expect(llm.seen.single, isNot(contains('<')));
+    });
+
+    test('"utan AI" makes no call', () async {
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+      await strategy.import('http://8.8.8.8/blog', options: {'skipLlm': true});
+
+      expect(llm.seen, isEmpty);
+    });
+
+    test('a call that found nothing still reports its cost', () async {
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+      final result = await strategy.import('http://8.8.8.8/blog');
+
+      expect(llm.seen, hasLength(1), reason: 'the premise: the call ran');
+      expect(result.isSuccess, isFalse);
+      expect(result.metadata?['usedLlm'], isTrue);
+      expect(result.metadata?['llmCost'], 0.0012);
+    });
+
+    test("a link import makes one call with the app's strategy list", () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+      getIt.registerSingleton<http.Client>(
+        MockClient((req) async => _htmlResponse(_unstructuredHtml())),
+      );
+      addTearDown(() {
+        if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+      });
+
+      final spy = _SpyParseEventLogger();
+      await ImportManager(
+        _MockPersonalRecipeOperations(),
+        eventLogger: spy,
+      ).autoImport('http://8.8.8.8/blog');
+
+      expect(llm.seen, hasLength(1));
+      expect(spy.events, hasLength(1));
+      expect(spy.events.single.usedLlm, isTrue);
+      expect(spy.events.single.estimatedCostUsd, 0.0012);
+    });
+  });
 }
+
+/// Answers every page with a paid failure and records what it was sent.
+class _CountingLlm extends Fake implements LlmEnhancementService {
+  final List<String> seen = [];
+
+  @override
+  Future<bool> isAvailable() async => true;
+
+  @override
+  Future<ImportResultV2> extractFromPageText(
+    String pageText,
+    String url, {
+    int currentTier = 3,
+  }) async {
+    seen.add(pageText);
+    return const ImportFailure(
+      message: 'nej',
+      errorCode: ImportErrorCode.parsingFailed,
+      llmCost: 0.0012,
+    );
+  }
+}
+
+class _SpyParseEventLogger extends ParseEventLogger {
+  final List<ImportEvent> events = [];
+
+  @override
+  void log(ImportEvent event) => events.add(event);
+}
+
+class _MockPersonalRecipeOperations extends Mock
+    implements PersonalRecipeOperations {}

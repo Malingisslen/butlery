@@ -29,7 +29,7 @@
 ///   the raw text and the original image bytes preserved.
 /// - `extractFromImage` neither success nor rawText → ImportFailure with
 ///   ocrFailed code.
-/// - `extractFromHtml` happy path → ImportSuccess with currentTier+1.
+/// - `extractFromPageText` happy path → ImportSuccess with currentTier+1.
 /// - `extractFromTranscript` falls back to ImportNeedsAssistance (NOT
 ///   ImportFailure) when LLM yields no recipe — videoTitle becomes the
 ///   suggested title.
@@ -708,9 +708,9 @@ void main() {
     });
   });
 
-  group('extractFromHtml', () {
+  group('extractFromPageText', () {
     test('asks limiter with fullExtraction operation type', () async {
-      await service.extractFromHtml('<html/>', 'https://x.test');
+      await service.extractFromPageText('<html/>', 'https://x.test');
       expect(
         limiter.seenOperations.single.llmType,
         LlmOperationType.fullExtraction,
@@ -727,7 +727,7 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result = await service.extractFromHtml(
+      final result = await service.extractFromPageText(
         '<html/>',
         'https://example.com/recipe',
       );
@@ -746,7 +746,7 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result = await service.extractFromHtml(
+      final result = await service.extractFromPageText(
         '<html/>',
         'u',
         currentTier: 5,
@@ -764,7 +764,7 @@ void main() {
           estimatedCost: 0,
         );
 
-        final result = await service.extractFromHtml('<html/>', 'u');
+        final result = await service.extractFromPageText('<html/>', 'u');
 
         expect(result, isA<ImportFailure>());
         expect((result as ImportFailure).message, 'no recipe in html');
@@ -772,7 +772,7 @@ void main() {
     );
 
     test('passes sourceUrl through to LlmService', () async {
-      await service.extractFromHtml('<html/>', 'https://src.test');
+      await service.extractFromPageText('<html/>', 'https://src.test');
       expect(llm.lastStructureSourceUrl, 'https://src.test');
       expect(llm.lastStructureMode, StructureMode.extract);
     });

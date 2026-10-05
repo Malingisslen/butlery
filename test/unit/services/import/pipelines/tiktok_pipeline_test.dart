@@ -579,13 +579,13 @@ Pannkakor receptet jag lovat! ✨
 🥛 5 dl mjölk
 🧈 50 g smör''';
 
-    test('falls through to tier-3 caption-LLM with the RAW caption '
-        '(not the formatted emoji block)', () async {
-      // Tier-2 LLM fails, tier-3 LLM succeeds.
+    test('the emoji-structured caption is the only model call: a failure '
+        'is not followed by a second (BUT-2239)', () async {
       llm.responses.add(
         const ImportFailure(
           message: 'no recipe',
           errorCode: ImportErrorCode.parsingFailed,
+          llmCost: 0.0012,
         ),
       );
       llm.responses.add(_llmSuccess());
@@ -598,24 +598,9 @@ Pannkakor receptet jag lovat! ✨
 
       final result = await pipeline.importV2(input);
 
-      expect(result, isA<ImportSuccess>());
-      final s = result as ImportSuccess;
-      expect(
-        s.tier,
-        3,
-        reason:
-            'tier-2 failure must not be the final answer; '
-            'tier-3 has to fire as the second LLM attempt',
-      );
-      expect(s.method, 'caption-llm');
-      expect(
-        llm.seenTranscripts.length,
-        2,
-        reason: 'two LLM attempts: emoji-formatted, then raw',
-      );
-      expect(llm.seenTranscripts[0], contains('Identifierade ingredienser:'));
-      // Tier-3 sees the raw caption (no formatter header).
-      expect(llm.seenTranscripts[1], emojiCaption);
+      expect(result, isNot(isA<ImportSuccess>()));
+      expect(llm.seenTranscripts, hasLength(1));
+      expect(llm.seenTranscripts.single, contains('Identifierade ingredienser:'));
     });
   });
 
@@ -860,6 +845,77 @@ Pannkakor receptet jag lovat! ✨
       final resp = await tracking.get(Uri.parse('https://example.com/'));
       expect(resp.statusCode, 200);
       expect(sendCount, 1);
+    });
+  });
+
+  group('BUT-2239: the model call', () {
+    const input = 'https://www.tiktok.com/@chefanna/video/7123456789012345678';
+    const caption =
+        'En lång och fin beskrivning av mitt favoritrecept på pannkakor som '
+        'är längre än femtio tecken så vi hamnar i lång-caption-grenen.';
+
+    test('"utan AI" hands the caption to the user without a call', () async {
+      final pipeline = _pipelineWith(
+        llm: llm,
+        responder: (_) async => _oembedJson(title: caption),
+      );
+      addTearDown(pipeline.dispose);
+
+      final result = await pipeline.importV2(
+        input,
+        options: {'skipLlm': true},
+      );
+
+      expect(llm.seenTranscripts, isEmpty);
+      expect(result, isA<ImportNeedsAssistance>());
+      expect((result as ImportNeedsAssistance).extractedText, caption);
+    });
+
+    test('a failed call still reports its cost', () async {
+      llm.responses.add(
+        const ImportFailure(
+          message: 'nej',
+          errorCode: ImportErrorCode.parsingFailed,
+          llmCost: 0.0012,
+        ),
+      );
+      final pipeline = _pipelineWith(
+        llm: llm,
+        responder: (_) async => _oembedJson(title: caption),
+      );
+      addTearDown(pipeline.dispose);
+
+      final result = await pipeline.import(input);
+
+      expect(result.needsAssistance, isTrue);
+      expect(result.metadata?['usedLlm'], isTrue);
+      expect(result.metadata?['llmCost'], 0.0012);
+    });
+
+    test('a successful call keeps its cost', () async {
+      llm.responses.add(
+        ImportSuccess(
+          recipe: _recipe(),
+          confidence: 0.75,
+          pipeline: 'video',
+          tier: 5,
+          method: 'llm-transcript',
+          usedLlm: true,
+          requiresReview: true,
+          metadata: const {'llmCost': 0.0012},
+        ),
+      );
+      final pipeline = _pipelineWith(
+        llm: llm,
+        responder: (_) async => _oembedJson(title: caption),
+      );
+      addTearDown(pipeline.dispose);
+
+      final result = await pipeline.import(input);
+
+      expect(result.isSuccess, isTrue);
+      expect(result.metadata?['usedLlm'], isTrue);
+      expect(result.metadata?['llmCost'], 0.0012);
     });
   });
 }

@@ -674,8 +674,9 @@ void main() {
           expect(after.llmOperationsThisMonth, 1);
           expect(
             after.importsThisMinute,
-            1,
-            reason: 'LLM op also counts as an import for per-window limits',
+            0,
+            reason: 'a model call made during an import is not a second '
+                'import (BUT-2239)',
           );
         },
       );

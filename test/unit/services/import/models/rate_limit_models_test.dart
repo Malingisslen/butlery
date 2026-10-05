@@ -48,7 +48,7 @@ void main() {
       final op = ImportOperation.withLlm('url', LlmOperationType.enhancement);
       expect(op.requiresLlm, isTrue);
       expect(op.llmType, LlmOperationType.enhancement);
-      expect(op.estimatedCost, 0.01);
+      expect(op.estimatedCost, LlmOperationType.enhancement.estimatedCost);
     });
   });
 
@@ -56,20 +56,23 @@ void main() {
     setUp(() async => await BaseUnitTest.setupUnit());
     tearDown(() => BaseUnitTest.resetMocks());
 
-    test('enhancement cost is 0.01', () {
-      expect(LlmOperationType.enhancement.estimatedCost, 0.01);
+    // Worked by hand from the list price: 16,666 input tokens at 0.10 and
+    // the output cap at 0.40, per million tokens.
+    test('a call that can return a whole recipe costs at most 0.0025 USD', () {
+      for (final type in [
+        LlmOperationType.enhancement,
+        LlmOperationType.fullExtraction,
+        LlmOperationType.vision,
+      ]) {
+        expect(type.estimatedCost, closeTo(0.0024666, 1e-6), reason: '$type');
+      }
     });
 
-    test('fullExtraction cost is 0.03', () {
-      expect(LlmOperationType.fullExtraction.estimatedCost, 0.03);
-    });
-
-    test('vision cost is 0.04', () {
-      expect(LlmOperationType.vision.estimatedCost, 0.04);
-    });
-
-    test('ingredientLines cost is 0.005', () {
-      expect(LlmOperationType.ingredientLines.estimatedCost, 0.005);
+    test('ingredient lines have the smaller output cap', () {
+      expect(
+        LlmOperationType.ingredientLines.estimatedCost,
+        closeTo(0.0020666, 1e-6),
+      );
     });
   });
 
