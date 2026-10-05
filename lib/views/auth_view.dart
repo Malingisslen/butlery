@@ -16,7 +16,6 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -24,18 +23,21 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
+import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
 
-  /// The screen a returning user is sent to after a successful LOGIN.
+  /// The screen a user is sent to after a successful LOGIN.
   /// Overridable in tests so the post-login navigation can be asserted without
-  /// inflating the entire main-menu service graph. Defaults to the real shell.
+  /// inflating the entire main-menu service graph. Defaults to AuthWrapper, so
+  /// an account that never verified its e-mail or finished onboarding (and with
+  /// it the age check) meets those gates on login too, not only on cold start.
   @visibleForTesting
   static WidgetBuilder postLoginDestinationBuilder = (context) =>
-      LayoutScaffolds.mainMenu(initialIndex: 0);
+      const AuthWrapper();
 
   @override
   State<AuthView> createState() => _AuthViewState();
@@ -764,7 +766,6 @@ class _AuthViewState extends State<AuthView> {
       );
     }
 
-    // Only a returning user (login) is sent straight to the recipe list.
     // A successful REGISTER must NOT navigate manually: AuthView lives in the
     // '/' subtree, so pushReplacement here replaces the whole route and tears
     // out AuthWrapper — skipping email-verification, the GDPR age gate,
@@ -772,12 +773,9 @@ class _AuthViewState extends State<AuthView> {
     // drive AuthWrapper routes the new user through verification -> onboarding.
     if (success && wasLoginMode && mounted) {
       AppLogger.debug(
-        'AuthView: LOGIN SUCCESS - Direct navigation to main app',
+        'AuthView: LOGIN SUCCESS',
       );
 
-      // Route into the main nav shell (LayoutScaffolds.mainMenu), not the bare
-      // MinaReceptView — the bare view has no bottom navigation bar, so logging
-      // in used to land on a recipe list with no nav until the user moved tabs.
       final navigator = Navigator.of(context);
       navigator.pushReplacement(
         MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
