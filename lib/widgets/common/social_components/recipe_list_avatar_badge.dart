@@ -8,8 +8,7 @@ import 'package:butlery/core/constants/routes.dart';
 
 /// The user's avatar at the end of the Mer bar; tapping it opens the profile
 /// menu. It reads [UserService] from the service locator because no route
-/// provides it above the Mer tab, and draws no count: in #mer the counts sit
-/// on the rows.
+/// provides it above the Mer tab.
 class RecipeListAvatarBadge extends StatefulWidget {
   const RecipeListAvatarBadge({super.key});
 
