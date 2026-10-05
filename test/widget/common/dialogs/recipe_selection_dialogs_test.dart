@@ -16,7 +16,7 @@
 ///      `showMenuRecipeSelector` returns `Future<List<Recipe>?>`. A wrong
 ///      signature would fail at static analysis time, so this also runs as
 ///      a compile-time contract test.
-///   2. **Inner list items** — [FriendRecipeListItem] and
+///   2. **Inner list items** — [RecipeShareListItem] and
 ///      [MenuRecipeListItem] are pure `StatelessWidget`s; they render
 ///      recipe metadata, the localized Swedish badge ("Delad"), and wire
 ///      tap/checkbox callbacks. These items are what end-users actually
@@ -29,9 +29,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -134,13 +136,13 @@ void main() {
     );
   });
 
-  group('FriendRecipeListItem rendering', () {
+  group('RecipeShareListItem rendering', () {
     testWidgets('renders title, mealType, description, time, and portions', (
       tester,
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -160,7 +162,7 @@ void main() {
     testWidgets('checkbox value reflects isSelected=true', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: true,
             isAlreadyShared: false,
@@ -180,7 +182,7 @@ void main() {
       bool? lastValue;
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -206,7 +208,7 @@ void main() {
       bool? lastValue;
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -227,7 +229,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: true,
@@ -246,7 +248,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -264,7 +266,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(description: ''),
             isSelected: false,
             isAlreadyShared: false,
@@ -282,7 +284,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(timeMinutes: null),
             isSelected: false,
             isAlreadyShared: false,
@@ -301,7 +303,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(portions: null),
             isSelected: false,
             isAlreadyShared: false,
@@ -320,7 +322,7 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           _wrap(
-            FriendRecipeListItem(
+            RecipeShareListItem(
               recipe: _recipe(),
               isSelected: false,
               isAlreadyShared: false,
@@ -332,6 +334,33 @@ void main() {
 
         expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       },
+    );
+  });
+
+  // BUT-2208: the friend dialog's copy of this row spaced the time, the dot
+  // and the portions with heights, so they ran together.
+  testWidgets('the time, the dot and the portions sit apart', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        RecipeShareListItem(
+          recipe: _recipe(),
+          isSelected: false,
+          isAlreadyShared: false,
+          onSelectionChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    double gap(Finder left, Finder right) =>
+        tester.getTopLeft(right).dx - tester.getTopRight(left).dx;
+    expect(
+      gap(find.byIcon(ButleryIcons.clock), find.text('30 min')),
+      AppDimensions.spacingXs,
+    );
+    expect(gap(find.text('30 min'), find.text('•')), AppDimensions.spacingM);
+    expect(
+      gap(find.text('•'), find.byIcon(ButleryIcons.users)),
+      AppDimensions.spacingM,
     );
   });
 
@@ -523,7 +552,7 @@ void main() {
           'and carries onSuccessContainer text', (tester) async {
         await tester.pumpWidget(
           _wrapThemed(
-            FriendRecipeListItem(
+            RecipeShareListItem(
               recipe: _recipe(),
               isSelected: false,
               isAlreadyShared: true,
@@ -546,7 +575,7 @@ void main() {
         for (final shared in [false, true]) {
           await tester.pumpWidget(
             _wrapThemed(
-              FriendRecipeListItem(
+              RecipeShareListItem(
                 recipe: _recipe(),
                 isSelected: false,
                 isAlreadyShared: shared,

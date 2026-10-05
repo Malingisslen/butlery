@@ -205,7 +205,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              borderRadius: BorderRadius.zero,
             ),
             child: Text(
               context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
