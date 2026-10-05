@@ -1,5 +1,5 @@
 {
- "$om": "Malins beslut om tryckläge, timerstorlek, pulser och guld på mörkgrönt, fattade 2026-10-04 på 2026-10-04-beslut-runda-7.html ('Tryck, timer och puls'); svaret 'Beslut runda 7: R7-1 B, R7-2 B, R7-3 C, R7-4 B, R7-5 A'. Dessutom BUT-2205, som Malin besvarade tidigare samma dag.",
+ "$om": "Malins beslut om tryckläge, timerstorlek, pulser och guld på mörkgrönt, fattade 2026-10-04 på 2026-10-04-beslut-runda-7.html ('Tryck, timer och puls'); svaret 'Beslut runda 7: R7-1 B, R7-2 B, R7-3 C, R7-4 B, R7-5 A'. Dessutom BUT-2205, som Malin besvarade tidigare samma dag. Och D1 (BUT-2191), som Malin besvarade i Linear samma dag.",
  "beslutat_av": "Malin",
  "datum": "2026-10-04",
  "princip": "Samma som runda 6: så mycket 'samma' som möjligt i appen. Opacitet visar aldrig ett tillstånd. Fyra av fem frågor besvarades emot rekommendationen; det står i varje rads not.",
@@ -45,6 +45,13 @@
    "ersatter": "PQ-09 (produktbeslut-2026-09-23.json) i mörkt läge: \"Ny token (text.accent.onInk = #E09D50)\" = A, alltså #E09D50 i båda lägena. Styrande är R6-01 (produktbeslut-2026-09-28.json).",
    "innebord": "text.accent.onInk är ljust #E09D50 (saffronLight, 5,43:1 på ink) och mörkt #DCA968 (text.accent mörkt, 5,91:1). Snackbarens åtgärd följer Ikväll-rubriken och resten av appen i mörkt läge. AppColors.textAccentOnInk = #E09D50, AppColorsDark.textAccentOnInk = #DCA968.",
    "not": "Följer rekommendationen. Ersätter PQ-09 (2026-09-23, #E09D50 i båda lägena) i mörkt läge; R6-01 (2026-09-28) är det senare och styrande beslutet. Ljust läge oförändrat."
+  },
+  {
+   "id": "D1",
+   "beslut": "B",
+   "biljett": "BUT-2191",
+   "innebord": "De fem kontrastparen dataScale.onFill.step1–5 på dataScale.sequential[0–4] stryks ur tokens.json contrastPairs (35 → 30) tills en vy ritar skalan. Mätt 2026-10-04: ingen vy i appen ritar dataScale.sequential; adminvyns diagram (lib/views/admin/widgets/metric_charts.dart) tar sin palett från ColorScheme. Svaret 2026-10-04 i BUT-2191: \"kör som du rekommenderar\".",
+   "not": "Skalan och onFill-värdena står kvar i tokens.json dataScale oförändrade. Appen vendrar om contrast_pairs.json och tar bort de fem knownContrastGaps-raderna."
   }
  ]
 }
