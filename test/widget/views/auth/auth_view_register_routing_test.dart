@@ -1,8 +1,5 @@
 // Regression test for the onboarding-chain CRITICAL bug: a successful REGISTER
-// must NOT manually pushReplacement to MinaReceptView. AuthView lives in the
-// '/' subtree, so a manual replace tears out AuthWrapper and skips
-// email-verification, the GDPR age gate, onboarding, and starter-content
-// seeding. Register lets the auth-state change drive AuthWrapper into
+// must NOT manually pushReplacement to MinaReceptView. Register lets the auth-state change drive AuthWrapper into
 // onboarding; login replaces the route with a fresh AuthWrapper.
 
 import 'package:flutter/material.dart';
@@ -138,6 +135,14 @@ void main() {
           reason: 'login must replace the auth route',
         );
         expect(observer.lastNewRoute, isNotNull);
+        expect(
+          identical(
+            (observer.lastNewRoute! as MaterialPageRoute).builder,
+            AuthView.postLoginDestinationBuilder,
+          ),
+          isTrue,
+          reason: 'login must route through the seam the default test pins',
+        );
       },
     );
 
@@ -202,9 +207,7 @@ void main() {
         expect(
           observer.replaceCount,
           0,
-          reason:
-              'register must NOT pushReplacement — that would tear out '
-              'AuthWrapper and skip verification/age-gate/onboarding/seeding',
+          reason: 'register must NOT pushReplacement',
         );
         expect(
           find.byType(MinaReceptView),

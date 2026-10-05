@@ -766,11 +766,9 @@ class _AuthViewState extends State<AuthView> {
       );
     }
 
-    // A successful REGISTER must NOT navigate manually: AuthView lives in the
-    // '/' subtree, so pushReplacement here replaces the whole route and tears
-    // out AuthWrapper — skipping email-verification, the GDPR age gate,
-    // onboarding, and starter-content seeding. Letting the auth-state change
-    // drive AuthWrapper routes the new user through verification -> onboarding.
+    // A successful REGISTER must NOT navigate manually: letting the auth-state
+    // change drive AuthWrapper routes the new user through verification ->
+    // onboarding.
     if (success && wasLoginMode && mounted) {
       AppLogger.debug(
         'AuthView: LOGIN SUCCESS',
@@ -782,8 +780,7 @@ class _AuthViewState extends State<AuthView> {
       );
       SessionEndNotice.clear();
       // After a timeout, the same account lands where it was
-      // (TR::FLOW::06::session::utgang; Q-P6-E07). Any other account, or
-      // no remembered place, lands on Hem.
+      // (TR::FLOW::06::session::utgang; Q-P6-E07).
       final userId = ServiceLocator.get<AuthService>().currentUserId;
       final returnTo = userId == null
           ? null
