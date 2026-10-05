@@ -148,8 +148,12 @@ class PersonalTagViewModel extends ChangeNotifier
     _loadFailed = false;
 
     try {
-      _tags = await _service.getAllTags();
-      _groups = await _service.getAllGroups();
+      final (tags, groups) = await (
+        _service.getAllTags(),
+        _service.getAllGroups(),
+      ).wait;
+      _tags = tags;
+      _groups = groups;
       _invalidateUnusedTagsCache();
 
       _watchTagsWithGroups();
