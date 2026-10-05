@@ -1,0 +1,28 @@
+{
+  "form": "gemener, dubbla mellanslag, ingen rubrik",
+  "title": "korvstroganoff",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "falukorv"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "matlagningsgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "tomatpuré"
+    },
+    {
+      "key": "senap",
+      "allergen": "senap"
+    },
+    {
+      "key": "ris"
+    }
+  ],
+  "headings": []
+}

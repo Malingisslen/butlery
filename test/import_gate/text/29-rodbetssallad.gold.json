@@ -1,0 +1,34 @@
+{
+  "form": "rader utan mängd: yoghurt, valnötter, fetaost",
+  "title": "Rödbetssallad med fetaost",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "rödbetor"
+    },
+    {
+      "key": "ruccola"
+    },
+    {
+      "key": "fetaost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "valnötter",
+      "allergen": "nötter"
+    },
+    {
+      "key": "yoghurt",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "honung"
+    },
+    {
+      "key": "olivolja"
+    }
+  ],
+  "headings": [
+    "Gör så här"
+  ]
+}

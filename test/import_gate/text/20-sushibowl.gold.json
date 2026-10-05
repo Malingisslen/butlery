@@ -1,0 +1,37 @@
+{
+  "form": "sojasås och sesamfrön utan mängd",
+  "title": "Sushibowl med lax",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "sushiris"
+    },
+    {
+      "key": "laxfilé",
+      "allergen": "fisk"
+    },
+    {
+      "key": "avokado"
+    },
+    {
+      "key": "gurka"
+    },
+    {
+      "key": "sojasås",
+      "allergen": "soja"
+    },
+    {
+      "key": "sesamfrön",
+      "allergen": "sesam"
+    },
+    {
+      "key": "wasabi"
+    },
+    {
+      "key": "ingefära"
+    }
+  ],
+  "headings": [
+    "Gör så här"
+  ]
+}

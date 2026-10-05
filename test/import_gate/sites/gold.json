@@ -1,0 +1,478 @@
+{
+  "arla-chokladbollar": {
+    "url": "https://www.arla.se/recept/chokladbollar/",
+    "source": "ArlaTestFixtures.chokladbollarComplete",
+    "title": "Chokladbollar",
+    "steps": 4,
+    "portions": 20,
+    "timeMinutes": 15,
+    "ingredients": [
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "socker"
+      },
+      {
+        "key": "havregryn",
+        "allergen": "gluten"
+      },
+      {
+        "key": "kaffe"
+      },
+      {
+        "key": "kakao"
+      },
+      {
+        "key": "vaniljsocker"
+      },
+      {
+        "key": "pärlsocker"
+      }
+    ],
+    "headings": []
+  },
+  "arla-kassler": {
+    "url": "https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/",
+    "source": "ArlaTestFixtures.realStructureKassler",
+    "title": "Platshållarrätt två",
+    "steps": 4,
+    "portions": 4,
+    "timeMinutes": null,
+    "ingredients": [
+      {
+        "key": "kassler"
+      },
+      {
+        "key": "färskost",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "dijonsenap",
+        "allergen": "senap"
+      },
+      {
+        "key": "honung"
+      },
+      {
+        "key": "tomater"
+      },
+      {
+        "key": "basilika"
+      },
+      {
+        "key": "råris"
+      },
+      {
+        "key": "salladsmix"
+      }
+    ],
+    "headings": []
+  },
+  "arla-pannkakor-utan-jsonld": {
+    "url": "https://www.arla.se/recept/pannkakor/",
+    "source": "ArlaTestFixtures.recipeWithoutJsonLd",
+    "title": "Fluffiga pannkakor",
+    "steps": 4,
+    "portions": 4,
+    "timeMinutes": 20,
+    "ingredients": [
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "mellanmjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "vetemjöl",
+        "allergen": "gluten"
+      },
+      {
+        "key": "salt"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      }
+    ],
+    "headings": []
+  },
+  "ica-kottbullar": {
+    "url": "https://www.ica.se/recept/kottbullar/",
+    "source": "IcaTestFixtures.kottbullarComplete",
+    "title": "Klassiska köttbullar med gräddsås",
+    "steps": 6,
+    "portions": 4,
+    "timeMinutes": 45,
+    "ingredients": [
+      {
+        "key": "nötfärs"
+      },
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "ströbröd",
+        "allergen": "gluten"
+      },
+      {
+        "key": "mjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "lök"
+      },
+      {
+        "key": "salt"
+      },
+      {
+        "key": "peppar"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "grädde",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "soja",
+        "allergen": "soja"
+      },
+      {
+        "key": "gelé"
+      },
+      {
+        "key": "salt och peppar"
+      }
+    ],
+    "headings": [
+      "För gräddsås"
+    ]
+  },
+  "ica-bananomelett": {
+    "url": "https://www.ica.se/recept/bananomelett/",
+    "source": "IcaTestFixtures.realStructureBananomelett",
+    "title": "Platshållarrätt ett",
+    "steps": 4,
+    "portions": 2,
+    "timeMinutes": 30,
+    "ingredients": [
+      {
+        "key": "banan"
+      },
+      {
+        "key": "majsolja"
+      },
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "salt"
+      },
+      {
+        "key": "svartpeppar"
+      },
+      {
+        "key": "persilja"
+      }
+    ],
+    "headings": []
+  },
+  "ica-kladdkaka-utan-jsonld": {
+    "url": "https://www.ica.se/recept/kladdkaka/",
+    "source": "IcaTestFixtures.recipeWithoutJsonLd",
+    "title": "Klassisk kladdkaka",
+    "steps": 5,
+    "portions": 8,
+    "timeMinutes": 30,
+    "ingredients": [
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "socker"
+      },
+      {
+        "key": "vetemjöl",
+        "allergen": "gluten"
+      },
+      {
+        "key": "kakao"
+      },
+      {
+        "key": "vaniljsocker"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      }
+    ],
+    "headings": []
+  },
+  "koket-kottbullar": {
+    "url": "https://www.koket.se/kottbullar",
+    "source": "KoketTestFixtures.kottbullarProfessional",
+    "title": "Klassiska svenska köttbullar",
+    "steps": 3,
+    "portions": 4,
+    "timeMinutes": 45,
+    "ingredients": [
+      {
+        "key": "nötfärs"
+      },
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "ströbröd",
+        "allergen": "gluten"
+      },
+      {
+        "key": "mjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "lök"
+      },
+      {
+        "key": "salt"
+      },
+      {
+        "key": "peppar"
+      }
+    ],
+    "headings": []
+  },
+  "koket-kladdkaka-utan-jsonld": {
+    "url": "https://www.koket.se/kladdkaka",
+    "source": "KoketTestFixtures.recipeWithoutJsonLd",
+    "title": "Saftig kladdkaka",
+    "steps": 4,
+    "portions": 8,
+    "timeMinutes": 40,
+    "ingredients": [
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "socker"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "vetemjöl",
+        "allergen": "gluten"
+      },
+      {
+        "key": "kakao"
+      }
+    ],
+    "headings": []
+  },
+  "recept-kanelbullar": {
+    "url": "https://www.recept.se/recept/kanelbullar",
+    "source": "ReceptTestFixtures.kanelbullarComplete",
+    "title": "Klassiska kanelbullar",
+    "steps": 4,
+    "portions": 25,
+    "timeMinutes": 45,
+    "ingredients": [
+      {
+        "key": "mjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "jäst"
+      },
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "socker"
+      },
+      {
+        "key": "kardemumma"
+      },
+      {
+        "key": "vetemjöl",
+        "allergen": "gluten"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "kanel"
+      },
+      {
+        "key": "pärlsocker"
+      }
+    ],
+    "headings": []
+  },
+  "recept-pannkakor-utan-jsonld": {
+    "url": "https://www.recept.se/recept/pannkakor",
+    "source": "ReceptTestFixtures.recipeWithoutJsonLd",
+    "title": "Klassiska svenska pannkakor",
+    "steps": 4,
+    "portions": 10,
+    "timeMinutes": 30,
+    "ingredients": [
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "mjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "vetemjöl",
+        "allergen": "gluten"
+      },
+      {
+        "key": "salt"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      }
+    ],
+    "headings": []
+  },
+  "tasteline-fiskgratang": {
+    "url": "https://www.tasteline.com/recept/platshallarratt-tre/",
+    "source": "file:tasteline-fiskgratang.html",
+    "title": "Platshållarrätt tre",
+    "steps": 5,
+    "portions": 4,
+    "timeMinutes": 50,
+    "ingredients": [
+      {
+        "key": "torskfilé",
+        "allergen": "fisk"
+      },
+      {
+        "key": "potatis"
+      },
+      {
+        "key": "mjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "smör",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "räkor",
+        "allergen": "skaldjur"
+      },
+      {
+        "key": "dill"
+      },
+      {
+        "key": "matlagningsgrädde",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "dijonsenap",
+        "allergen": "senap"
+      },
+      {
+        "key": "ost",
+        "allergen": "mjölk"
+      }
+    ],
+    "headings": [
+      "Sås"
+    ]
+  },
+  "matblogg-wprm-linssoppa": {
+    "url": "https://matblogg.example/linssoppa/",
+    "source": "file:matblogg-wprm-linssoppa.html",
+    "title": "Platshållarrätt fyra",
+    "steps": 3,
+    "portions": 6,
+    "timeMinutes": 40,
+    "ingredients": [
+      {
+        "key": "röda linser"
+      },
+      {
+        "key": "lök"
+      },
+      {
+        "key": "morötter"
+      },
+      {
+        "key": "krossade tomater"
+      },
+      {
+        "key": "kokosmjölk"
+      },
+      {
+        "key": "grönsaksbuljong"
+      },
+      {
+        "key": "spiskummin"
+      },
+      {
+        "key": "koriander"
+      },
+      {
+        "key": "yoghurt",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "sesamfrön",
+        "allergen": "sesam"
+      }
+    ],
+    "headings": []
+  },
+  "mikrodata-ugnsomelett": {
+    "url": "https://receptsamling.example/ugnsomelett",
+    "source": "file:mikrodata-ugnsomelett.html",
+    "title": "Platshållarrätt fem",
+    "steps": 3,
+    "portions": 4,
+    "timeMinutes": 35,
+    "ingredients": [
+      {
+        "key": "ägg",
+        "allergen": "ägg"
+      },
+      {
+        "key": "mjölk",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "bacon"
+      },
+      {
+        "key": "purjolök"
+      },
+      {
+        "key": "ost",
+        "allergen": "mjölk"
+      },
+      {
+        "key": "salt och peppar"
+      }
+    ],
+    "headings": []
+  }
+}

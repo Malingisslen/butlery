@@ -1,0 +1,22 @@
+{
+  "form": "\"Steg 1\" i stället för siffror",
+  "title": "Havregrynsgröt",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "havregryn",
+      "allergen": "gluten"
+    },
+    {
+      "key": "vatten"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    }
+  ],
+  "headings": []
+}

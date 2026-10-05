@@ -1,0 +1,52 @@
+{
+  "form": "rader utan mängd, komponentrubrik med kolon, \"Till servering\"",
+  "title": "Caesarsallad",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "romansallad"
+    },
+    {
+      "key": "kycklingfiléer"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "parmesanost",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "bröd",
+      "allergen": "gluten"
+    },
+    {
+      "key": "olivolja"
+    },
+    {
+      "key": "majonnäs",
+      "allergen": "ägg"
+    },
+    {
+      "key": "vitlöksklyfta"
+    },
+    {
+      "key": "citronsaft"
+    },
+    {
+      "key": "dijonsenap",
+      "allergen": "senap"
+    },
+    {
+      "key": "krutonger",
+      "allergen": "gluten"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Dressing",
+    "Till servering",
+    "Gör så här"
+  ]
+}

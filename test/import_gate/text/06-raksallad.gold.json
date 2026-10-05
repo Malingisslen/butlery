@@ -1,0 +1,33 @@
+{
+  "form": "sammansatta ord (räksallad), enheten bunt",
+  "title": "Räksallad med ägg",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "räkor",
+      "allergen": "skaldjur"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "gräslök"
+    },
+    {
+      "key": "majonnäs",
+      "allergen": "ägg"
+    },
+    {
+      "key": "crème fraiche",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "citronsaft"
+    },
+    {
+      "key": "salt och peppar"
+    }
+  ],
+  "headings": []
+}

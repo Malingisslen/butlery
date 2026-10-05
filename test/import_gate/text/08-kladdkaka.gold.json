@@ -1,0 +1,32 @@
+{
+  "form": "kontroll med \"Så gör du\"",
+  "title": "Kladdkaka",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "strösocker"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "kakao"
+    },
+    {
+      "key": "vaniljsocker"
+    }
+  ],
+  "headings": [
+    "Du behöver",
+    "Så gör du"
+  ]
+}
