@@ -2287,6 +2287,212 @@ test("conversation_memberships CONTROL: the same owner can write category_prefer
   );
 });
 
+// ============================================================================
+// BUT-2017: blocking reaches the DM create and the message create
+// ============================================================================
+//
+// The block button shipped in BUT-1951 (2026-09-08). Until BUT-2017 the rules
+// let a blocked person open a new DM with their blocker and write into any
+// room the blocker was in. Two gates, two shapes, deliberately:
+//
+//   - `conversations` create reads `blocks/{other}_{me}` DIRECTLY. A direct
+//     conversation has exactly one counterparty (directIdBinds pins it), so the
+//     check is exact and does not depend on the mirror trigger having run.
+//   - `messages` create reads the sender's own `users/{me}/block_mirror/current`
+//     and crosses it with the room's `participantIds` — BUT-1917's shape, with
+//     BUT-1917's fail-open on a missing mirror.
+//
+// One-directional throughout: only the BLOCKED person's write is refused.
+// Every deny below has an allow control that differs in one fact only.
+
+const B_BLOCKER = `b17-blocker-${RUN}`;
+const B_BLOCKED = `b17-blocked-${RUN}`;
+const B_BYSTANDER = `b17-bystander-${RUN}`;
+// Matured (email_verified) and age-compliant, so the only conjunct a deny can
+// be measuring is the block gate.
+const B_CLAIMS = { email_verified: true, ageCompliant: true };
+
+async function seedBlockRow(blockerId: string, blockedId: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`blocks/${blockerId}_${blockedId}`).set({
+      blockerId,
+      blockedId,
+      blockedAt: new Date().toISOString(),
+    });
+  });
+}
+
+async function deleteBlockRow(blockerId: string, blockedId: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`blocks/${blockerId}_${blockedId}`).delete();
+  });
+}
+
+// The mirror is Admin-SDK-only in production (`syncBlockMirror`); the same
+// three keys it writes.
+async function seedMirror(uid: string, blockers: string[]): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${uid}/block_mirror/current`).set({
+      blockedByUserIds: blockers,
+      sourceRev: 1,
+      truncated: false,
+    });
+  });
+}
+
+async function deleteMirror(uid: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${uid}/block_mirror/current`).delete();
+  });
+}
+
+async function seedRoom(convId: string, participantIds: string[]): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`conversations/${convId}`).set({
+      participantIds,
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: participantIds.length > 2,
+    });
+  });
+}
+
+function sendMessage(convId: string, senderId: string, msgId: string): Promise<void> {
+  return env
+    .authenticatedContext(senderId, B_CLAIMS)
+    .firestore()
+    .doc(`messages/${msgId}`)
+    .set(messageBody(convId, senderId, new Date()));
+}
+
+// B1: DENY — the blocked person cannot open a DM with the person who blocked them.
+test("BUT-2017: a blocked person cannot create a DM with their blocker", async () => {
+  await seedBlockRow(B_BLOCKER, B_BLOCKED);
+  try {
+    await assertFails(
+      createConversation(
+        B_BLOCKED,
+        directId(B_BLOCKED, B_BLOCKER),
+        convBody([B_BLOCKED, B_BLOCKER], { metadata: { creatorId: B_BLOCKED } })
+      )
+    );
+  } finally {
+    await deleteBlockRow(B_BLOCKER, B_BLOCKED);
+  }
+});
+
+// B2: ALLOW (control) — the same create with the block row in the OTHER
+// direction: the blocker may still open the chat. One-directional by decision.
+test("BUT-2017: the blocker can still create a DM with the person they blocked (one-directional)", async () => {
+  await seedBlockRow(B_BLOCKER, B_BLOCKED);
+  try {
+    await assertSucceeds(
+      createConversation(
+        B_BLOCKER,
+        directId(B_BLOCKER, B_BLOCKED),
+        convBody([B_BLOCKER, B_BLOCKED], { metadata: { creatorId: B_BLOCKER } })
+      )
+    );
+  } finally {
+    await deleteBlockRow(B_BLOCKER, B_BLOCKED);
+  }
+});
+
+// B3: DENY — the gate reads the counterparty whichever index they sit at.
+// Own per-run uid pair: B2 creates directId(B_BLOCKER, B_BLOCKED), so reusing it
+// here would make this an UPDATE refused by the update limb, not by the gate.
+test("BUT-2017: the DM deny holds when the blocker is first in participantIds", async () => {
+  const blocker = `b17-b3-blocker-${RUN}`;
+  const blocked = `b17-b3-blocked-${RUN}`;
+  await seedBlockRow(blocker, blocked);
+  try {
+    await assertFails(
+      createConversation(
+        blocked,
+        directId(blocker, blocked),
+        convBody([blocker, blocked], { metadata: { creatorId: blocked } })
+      )
+    );
+  } finally {
+    await deleteBlockRow(blocker, blocked);
+  }
+});
+
+// M1: DENY — a blocked member cannot write into a group the blocker is in.
+test("BUT-2017: a blocked member cannot send a message into a room their blocker is in", async () => {
+  const room = `b17-room-${RUN}`;
+  await seedRoom(room, [B_BLOCKER, B_BLOCKED, B_BYSTANDER]);
+  await seedMirror(B_BLOCKED, [B_BLOCKER]);
+  try {
+    await assertFails(sendMessage(room, B_BLOCKED, `b17-m1-${RUN}`));
+  } finally {
+    await deleteMirror(B_BLOCKED);
+  }
+});
+
+// M2: ALLOW (control) — same sender, same room, same payload; the mirror lists
+// somebody who is NOT in the room. The only fact that changed is the overlap.
+test("BUT-2017: a member whose blocker is not in the room can still send (control)", async () => {
+  const room = `b17-room-ctl-${RUN}`;
+  await seedRoom(room, [B_BLOCKER, B_BLOCKED, B_BYSTANDER]);
+  await seedMirror(B_BLOCKED, [`b17-outsider-${RUN}`]);
+  try {
+    await assertSucceeds(sendMessage(room, B_BLOCKED, `b17-m2-${RUN}`));
+  } finally {
+    await deleteMirror(B_BLOCKED);
+  }
+});
+
+// M3: ALLOW — no mirror document at all FAILS OPEN (BUT-1917's decision,
+// extended to this surface in the accepted-deviations entry). A THREE-person
+// room, so the exact DM arm is not what lets this through.
+test("BUT-2017: a sender with no mirror document is allowed (fail-open, BUT-1917)", async () => {
+  const room = `b17-room-nomirror-${RUN}`;
+  await seedRoom(room, [B_BLOCKER, B_BLOCKED, B_BYSTANDER]);
+  await deleteMirror(B_BLOCKED);
+  await assertSucceeds(sendMessage(room, B_BLOCKED, `b17-m3-${RUN}`));
+});
+
+// M5: DENY — the DM arm is EXACT. A block row exists and NO mirror document
+// exists (the trigger has not run yet); the mirror arm alone would fail open
+// here, so this deny is measuring the `blocks` read.
+test("BUT-2017: a DM message is refused on the block row alone, before the mirror exists", async () => {
+  const dm = directId(B_BLOCKED, B_BLOCKER);
+  await seedRoom(dm, [B_BLOCKED, B_BLOCKER]);
+  await deleteMirror(B_BLOCKED);
+  await seedBlockRow(B_BLOCKER, B_BLOCKED);
+  try {
+    await assertFails(sendMessage(dm, B_BLOCKED, `b17-m5-${RUN}`));
+  } finally {
+    await deleteBlockRow(B_BLOCKER, B_BLOCKED);
+  }
+});
+
+// M6: ALLOW (control for M5) — same DM, same sender, no block row, no mirror.
+test("BUT-2017: the same DM message is allowed without the block row (control)", async () => {
+  const dm = directId(B_BLOCKED, B_BLOCKER);
+  await seedRoom(dm, [B_BLOCKED, B_BLOCKER]);
+  await deleteMirror(B_BLOCKED);
+  await deleteBlockRow(B_BLOCKER, B_BLOCKED);
+  await assertSucceeds(sendMessage(dm, B_BLOCKED, `b17-m6-${RUN}`));
+});
+
+// M4: ALLOW — the blocker writes normally into the shared room. The room has
+// two participants and BOTH the block row and the mirror stand, so this pins
+// one-directional on the DM arm and the mirror arm alike: a mutant that also
+// reads blocks/{me}_{other} turns this red.
+test("BUT-2017: the blocker can still send into the shared room (one-directional)", async () => {
+  const room = `b17-room-blocker-${RUN}`;
+  await seedRoom(room, [B_BLOCKER, B_BLOCKED]);
+  await seedBlockRow(B_BLOCKER, B_BLOCKED);
+  await seedMirror(B_BLOCKED, [B_BLOCKER]);
+  try {
+    await assertSucceeds(sendMessage(room, B_BLOCKER, `b17-m4-${RUN}`));
+  } finally {
+    await deleteMirror(B_BLOCKED);
+    await deleteBlockRow(B_BLOCKER, B_BLOCKED);
+  }
+});
+
 async function run(): Promise<void> {
   console.log(
     "conversations rules tests — minor-DM gate (BUT-674), creator binding " +

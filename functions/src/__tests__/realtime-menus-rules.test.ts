@@ -23,8 +23,13 @@ import {
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
 
-const PROJECT_ID = "butlery-rules-rt-menus";
-const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
+// MUTATION-PROBE SEAM (same contract as poll-votes-rules.test.ts): both values
+// are overridable so a probe can point this suite at a MUTATED COPY of
+// firestore.rules under a FRESH projectId without touching the real file.
+const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-rules-rt-menus";
+const RULES_PATH =
+  process.env.PROBE_RULES_PATH ??
+  path.resolve(__dirname, "../../../firestore.rules");
 
 const OWNER_UID = "rt-menu-owner";
 const PARTICIPANT_UID = "rt-menu-participant";
@@ -268,6 +273,115 @@ test(
     );
   }
 );
+
+// ============================================================================
+// BUT-2017: the menu vote is a ballot surface, and blocking reaches it
+// ============================================================================
+//
+// `poll_votes` got this gate in BUT-1917; the household menu vote is the
+// second, identical surface. The voter's own `users/{uid}/block_mirror/current`
+// (Admin-SDK-written) is crossed with the menu's `participantIds`. Fail-open on
+// a missing mirror and one-directional, both by BUT-1917's decisions.
+
+const BLOCKED_UID = "rt-menu-blocked";
+const MENU_BLOCK_ID = "rt-menu-block-1";
+
+async function seedMirror(uid: string, blockers: string[]): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${uid}/block_mirror/current`).set({
+      blockedByUserIds: blockers,
+      sourceRev: 1,
+      truncated: false,
+    });
+  });
+}
+
+async function deleteMirror(uid: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${uid}/block_mirror/current`).delete();
+  });
+}
+
+async function seedBlockMenu(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`realtime_menus/${MENU_BLOCK_ID}`).set({
+      ownerId: OWNER_UID,
+      participants: [
+        { userId: OWNER_UID, joinedAt: new Date() },
+        { userId: BLOCKED_UID, joinedAt: new Date() },
+      ],
+      participantIds: [OWNER_UID, BLOCKED_UID],
+      createdAt: new Date(),
+    });
+  });
+}
+
+function castVote(uid: string, choice: string): Promise<void> {
+  return env
+    .authenticatedContext(uid)
+    .firestore()
+    .doc(`realtime_menus/${MENU_BLOCK_ID}/votes/${uid}`)
+    .set({ userId: uid, choice, createdAt: new Date() });
+}
+
+// V1: DENY — the owner has blocked this participant; their vote is refused.
+test("BUT-2017: a participant blocked by someone on the menu cannot create a vote", async () => {
+  await seedBlockMenu();
+  await seedMirror(BLOCKED_UID, [OWNER_UID]);
+  try {
+    await assertFails(castVote(BLOCKED_UID, "tacos"));
+  } finally {
+    await deleteMirror(BLOCKED_UID);
+  }
+});
+
+// V2: ALLOW (control) — same voter, same menu, same payload; the mirror names
+// somebody who is not on this menu.
+test("BUT-2017: a participant whose blocker is not on the menu can vote (control)", async () => {
+  await seedBlockMenu();
+  await seedMirror(BLOCKED_UID, [STRANGER_UID]);
+  try {
+    await assertSucceeds(castVote(BLOCKED_UID, "tacos"));
+  } finally {
+    await deleteMirror(BLOCKED_UID);
+  }
+});
+
+// V3: DENY — the gate is on UPDATE too: a vote cast before the block cannot
+// be steered afterwards. V2 left the row in place, so this write is an update.
+test("BUT-2017: a blocked participant cannot update the vote they cast before the block", async () => {
+  await seedBlockMenu();
+  await seedMirror(BLOCKED_UID, [OWNER_UID]);
+  try {
+    await assertFails(
+      env
+        .authenticatedContext(BLOCKED_UID)
+        .firestore()
+        .doc(`realtime_menus/${MENU_BLOCK_ID}/votes/${BLOCKED_UID}`)
+        .update({ choice: "pizza" })
+    );
+  } finally {
+    await deleteMirror(BLOCKED_UID);
+  }
+});
+
+// V4: ALLOW — no mirror document fails open (BUT-1917).
+test("BUT-2017: a voter with no mirror document is allowed (fail-open, BUT-1917)", async () => {
+  await seedBlockMenu();
+  await deleteMirror(BLOCKED_UID);
+  await assertSucceeds(castVote(BLOCKED_UID, "pasta"));
+});
+
+// V5: ALLOW — the blocker votes normally (one-directional).
+test("BUT-2017: the blocker can still vote on the shared menu (one-directional)", async () => {
+  await seedBlockMenu();
+  await seedMirror(BLOCKED_UID, [OWNER_UID]);
+  try {
+    await assertSucceeds(castVote(OWNER_UID, "soppa"));
+  } finally {
+    await deleteMirror(BLOCKED_UID);
+  }
+});
 
 async function run(): Promise<void> {
   console.log("BUT-773: realtime_menus/votes rules tests\n");
