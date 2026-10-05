@@ -42,8 +42,6 @@ const Map<String, String> registeredTickets = {
       'Shopping list conflict: no "Listan uppdaterades av namn" notice (produktregler.md:101)',
   'BUT-2199': 'Shared list header draws light text.body (#37453A) in dark mode',
   'BUT-2190': 'Member management dialog overflows by 68 px at 360 dp',
-  'BUT-2191':
-      'Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered)',
   'BUT-2192':
       'Layout overflows at 320 dp or at 150/200 % text (auth, settings, recipe detail, week menu)',
   'BUT-2193':

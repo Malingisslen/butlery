@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:f2351ff5321272c34493161b611dcc7a52b342a1e4af247c3bf37bd300ad4f3b (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:6cdf7a5be9d3fde3676e09c964fb71a9d316479b69358f673fa4ccb08f510605 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -167,6 +167,14 @@ class AppTextStyles {
     height: 1.45,
   );
 
+  /// tokens: typography.roles.tab — 13/600 · flikens etikett i vila 13/600; vald flik bär boldWeight 700, alltså 13/700 (Komponentark v1:38, 106, 112-113). Tallrikslinjen under vald flik är ordets bredd + 5 px per sida, mätt. Radhöjd som listItem. BUT-2228.
+  static TextStyle get tabText => const TextStyle(
+    fontFamily: family,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    height: 1.35,
+  );
+
   // ── Alias · samma stil, historiska namn ──
   static TextStyle get titleSmall => headlineSmall;
   static TextStyle get buttonText => labelLarge;
@@ -174,7 +182,6 @@ class AppTextStyles {
   static TextStyle get captionText => captionBase;
   static TextStyle get buttonPrimary => labelLarge;
   static TextStyle get buttonTextStyle => labelLarge;
-  static TextStyle get tabText => labelMedium;
   static TextStyle get navigationText => labelSmall;
   static TextStyle get navLabel => labelSmall;
   static TextStyle get cardTitle => titleMedium;

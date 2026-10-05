@@ -27,8 +27,14 @@ import 'package:butlery/widgets/image/recipe_image_widget.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
+// No Scaffold: its page Material is paper, the same colour as the paper
+// buttons, so a button that lost its own fill would still read as paper.
 Widget _themed(ThemeData theme, Widget child) => createLocalizedTestApp(
-  child: Theme(data: theme, child: child),
+  wrapInScaffold: false,
+  child: Theme(
+    data: theme,
+    child: Material(type: MaterialType.transparency, child: child),
+  ),
 );
 
 double _luminance(Color c) {
@@ -43,13 +49,29 @@ double _contrast(Color fg, Color bg) {
   return (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
 }
 
-BoxDecoration _fillAround(WidgetTester tester, Finder of) => tester
-    .widgetList<Container>(
-      find.ancestor(of: of, matching: find.byType(Container)),
-    )
-    .map((c) => c.decoration)
-    .whereType<BoxDecoration>()
-    .firstWhere((d) => d.color != null);
+/// The nearest fill under [of]: a decorated Container, or a Material whose
+/// colour an InkWell's pressed overlay paints on.
+BoxDecoration _fillAround(WidgetTester tester, Finder of) {
+  final nearest = tester.widget(
+    find
+        .ancestor(
+          of: of,
+          matching: find.byWidgetPredicate(
+            (w) =>
+                (w is Container &&
+                    w.decoration is BoxDecoration &&
+                    (w.decoration! as BoxDecoration).color != null) ||
+                (w is Material &&
+                    w.type != MaterialType.transparency &&
+                    w.color != null),
+          ),
+        )
+        .first,
+  );
+  return nearest is Material
+      ? BoxDecoration(color: nearest.color)
+      : (nearest as Container).decoration! as BoxDecoration;
+}
 
 Color? _textColor(WidgetTester tester, Finder of) =>
     tester.widget<Text>(of).style?.color;
@@ -87,7 +109,7 @@ void main() {
     final cs = theme.colorScheme;
 
     group('B101 photo widgets ($name)', () {
-      testWidgets('1: failed upload "Ta bort" is red with onError, '
+      testWidgets('1: failed upload "Ta bort" is action.danger, '
           '"Försök igen" is opaque paper with ink', (tester) async {
         const failed = ImageUploadStatus(
           state: ImageUploadState.failed,
@@ -95,17 +117,21 @@ void main() {
         );
         await tester.pumpWidget(_themed(theme, _overlay(failed)));
 
+        final danger = ModeColors.of(cs.brightness);
         final remove = find.text('Ta bort');
-        expect(_fillAround(tester, remove).color, cs.error);
-        expect(_textColor(tester, remove), cs.onError);
-        expect(_contrast(cs.onError, cs.error), greaterThanOrEqualTo(4.5));
+        expect(_fillAround(tester, remove).color, danger.actionDanger);
+        expect(_textColor(tester, remove), danger.onActionDanger);
+        expect(
+          _contrast(danger.onActionDanger, danger.actionDanger),
+          greaterThanOrEqualTo(4.5),
+        );
         final removeIcon = tester.widget<ButleryIcon>(
           find.descendant(
             of: find.ancestor(of: remove, matching: find.byType(Row)).first,
             matching: find.byType(ButleryIcon),
           ),
         );
-        expect(removeIcon.color, cs.onError);
+        expect(removeIcon.color, danger.onActionDanger);
 
         final retry = find.text('Försök igen');
         final retryFill = _fillAround(tester, retry).color!;
