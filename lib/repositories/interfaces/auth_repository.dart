@@ -11,6 +11,18 @@ abstract class AuthRepository {
   /// Update user display name.
   Future<void> updateDisplayName(User user, String displayName);
 
+  /// Holds the name typed at registration for [email] until sign-out.
+  /// `createUser` signs the account in before the name can be set, so the
+  /// profile created on that sign-in reads the name from here.
+  void holdRegistrationDisplayName({
+    required String email,
+    required String displayName,
+  });
+
+  /// The held name when [email] is the address it was typed for, else null.
+  /// Keyed by address so a name can never land on another account's profile.
+  String? registrationDisplayNameFor(String? email);
+
   /// Alternative sign in method with named parameters.
   Future<void> signIn({
     required String email,

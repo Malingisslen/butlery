@@ -8,6 +8,9 @@ class FirebaseAuthRepository implements AuthRepository {
 
   // Cached auth state protection against Firebase NULL emissions
   User? _cachedUser;
+  // Static: services build their own repository instances, and the one that
+  // registers is not the one UserService reads.
+  static ({String email, String displayName})? _registrationName;
   bool _ignoreInitialNull = false;
 
   FirebaseAuthRepository({FirebaseAuth? firebaseAuth})
@@ -113,6 +116,24 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  void holdRegistrationDisplayName({
+    required String email,
+    required String displayName,
+  }) {
+    _registrationName = (
+      email: email.trim().toLowerCase(),
+      displayName: displayName,
+    );
+  }
+
+  @override
+  String? registrationDisplayNameFor(String? email) {
+    final held = _registrationName;
+    if (held == null || email == null) return null;
+    return email.trim().toLowerCase() == held.email ? held.displayName : null;
+  }
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {
     await _firebaseAuth.sendPasswordResetEmail(email: email);
   }
@@ -122,6 +143,7 @@ class FirebaseAuthRepository implements AuthRepository {
     await _firebaseAuth.signOut();
     _cachedUser = null;
     _ignoreInitialNull = false;
+    _registrationName = null;
   }
 
   @override
