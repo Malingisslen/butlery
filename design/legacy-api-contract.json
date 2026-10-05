@@ -7,6 +7,8 @@
  "appColors": {
   "members": [
    "accent",
+   "actionDanger",
+   "actionDangerPressed",
    "actionPrimary",
    "actionPrimaryPressed",
    "backgroundDark",
@@ -76,6 +78,7 @@
    "neutralDark",
    "neutralLight",
    "neutralMedium",
+   "onActionDanger",
    "onActionPrimary",
    "onActionPrimaryPressed",
    "onError",
@@ -254,6 +257,8 @@
   "source": "tokens.json · semantic[*].dark",
   "$regel": "Varje medlem MASTE vara det morka laget av ett semantiskt token i tokens.json. Ingen appforfattad kanonisk farg far sta har, ingen paletfarg (de saknar lagesberoende), och ingen medlem far forekomma tva ganger. Medlemsnamnen ar desamma som i den ljusa leveransen.",
   "members": [
+   "actionDanger",
+   "actionDangerPressed",
    "actionPrimary",
    "actionPrimaryPressed",
    "backgroundTint",
@@ -274,6 +279,7 @@
    "info",
    "infoContainer",
    "neutralLight",
+   "onActionDanger",
    "onActionPrimary",
    "onActionPrimaryPressed",
    "onErrorContainer",
@@ -354,6 +360,8 @@
    "warningText"
   ],
   "semanticTokens": [
+   "action.danger",
+   "action.dangerPressed",
    "action.primary",
    "action.primaryPressed",
    "border.control",
@@ -396,6 +404,7 @@
    "text.disabled.onInk",
    "text.disabled.onRaised",
    "text.link",
+   "text.onActionDanger",
    "text.onActionPrimary",
    "text.onActionPrimaryPressed",
    "text.primary",
@@ -754,6 +763,27 @@
     "SEMANTIC_TOKEN": "text.onActionPrimaryPressed",
     "TOKENS_JSON_PATH": "semantic[\"text.onActionPrimaryPressed\"].dark",
     "DARK_VALUE": "#F5F4ED",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "actionDanger",
+    "SEMANTIC_TOKEN": "action.danger",
+    "TOKENS_JSON_PATH": "semantic[\"action.danger\"].dark",
+    "DARK_VALUE": "#DE9078",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "actionDangerPressed",
+    "SEMANTIC_TOKEN": "action.dangerPressed",
+    "TOKENS_JSON_PATH": "semantic[\"action.dangerPressed\"].dark",
+    "DARK_VALUE": "#D67557",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "onActionDanger",
+    "SEMANTIC_TOKEN": "text.onActionDanger",
+    "TOKENS_JSON_PATH": "semantic[\"text.onActionDanger\"].dark",
+    "DARK_VALUE": "#17251D",
     "KIND": "CANONICAL"
    },
    {
