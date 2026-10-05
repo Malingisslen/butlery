@@ -987,12 +987,15 @@ class PersonalRecipeModule with StreamManagementMixin {
           '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
         );
 
-        // Audit trail for allergen/dietary changes
-        await _logTagModification(
-          recipe: recipe,
-          previousTags: previousTagResult,
-          newTags: tagResult,
-          source: source,
+        // Audit trail for allergen/dietary changes. Not awaited: offline the
+        // write does not complete until the device reconnects.
+        unawaited(
+          _logTagModification(
+            recipe: recipe,
+            previousTags: previousTagResult,
+            newTags: tagResult,
+            source: source,
+          ),
         );
 
         return Recipe(
