@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart' show find;
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -139,6 +140,14 @@ final StateHost minaReceptHost = StateHost(
   // runner's own pump is shorter, so let that timer fire inside the test.
   reach: (tester, ctx) async {
     await tester.pump(const Duration(milliseconds: 1600));
+    // An asset decodes outside fake time, so a placeholder illustration no
+    // earlier screen in the run has shown would draw blank.
+    await tester.runAsync(() async {
+      for (final element in find.byType(Image).evaluate()) {
+        await precacheImage((element.widget as Image).image, element);
+      }
+    });
+    await tester.pump();
   },
 );
 
