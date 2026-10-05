@@ -246,7 +246,7 @@ abstract final class AnalyticsEvents {
   static const taggingCacheDesync = 'tagging_cache_desync';
   static const taggingConfigValidationError = 'tagging_config_validation_error';
   static const dataIntegrityCheck = 'data_integrity_check';
-  // BUT-616: emitted when ParseEventLogger.logEvent's callable invocation
+  // BUT-616: emitted when ParseEventLogger.log's callable invocation
   // fails, so we can measure parse-event loss rate. Params: error_code
   // (Firebase Functions code or 'unknown'), cause (truncated message).
   static const parseEventLogFailed = 'parse_event_log_failed';

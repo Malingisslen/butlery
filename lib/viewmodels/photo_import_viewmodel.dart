@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
+import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -67,6 +68,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// flow is simply the `length == 1` case — [_imageBytes]/[_ocrText] stay the
   /// live combined state so no existing consumer changes.
   final List<_PhotoPage> _pages = [];
+
+  /// This import has written its one parse event (BUT-2238). Adding, removing
+  /// or reordering a page re-parses the same import, so it writes no second.
+  bool _measured = false;
 
   /// BUT-684: user opted in to handwritten-recipe mode. When true the pick
   /// pipeline routes the image through the LLM-vision path (which uses a
@@ -323,6 +328,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
   @override
   String get importType => 'photo';
 
+  @override
+  void clearImportData() {
+    _measured = false;
+    super.clearImportData();
+  }
+
   /// Captures a photo from the camera and runs the OCR + auto-parse pipeline.
   /// Starts a fresh import — replaces any existing pages.
   Future<void> pickImageFromCamera() async {
@@ -569,6 +580,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
         ),
       );
     notifyListeners();
+    // The draft's import was measured when it was first read.
+    _measured = true;
     await _autoParseOcrText(_ocrText);
     return true;
   }
@@ -754,6 +767,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         'isHandwritten': _isHandwritten,
       },
     );
+    _measured = result.rateLimitDenied == null;
 
     if (result.isSuccess && result.recipe != null) {
       final recipe = result.recipe!;
@@ -871,7 +885,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// is not a degraded path; it is the path that ships today.
   Future<void> _autoParseOcrText(String text, {DocumentLayout? layout}) async {
     try {
-      final result = await importManager.autoParseMulti(text, layout: layout);
+      final channel = _measured ? null : ImportChannel.photo;
+      _measured = true;
+      final result = await importManager.autoParseMulti(
+        text,
+        layout: layout,
+        channel: channel,
+      );
       final recipes = result.successfulRecipes;
       _parsedRecipes
         ..clear()

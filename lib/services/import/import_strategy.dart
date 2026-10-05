@@ -60,6 +60,21 @@ class ImportResult {
        errorCode = null,
        warnings = null;
 
+  ImportResult._copy(ImportResult r, this.metadata)
+    : isSuccess = r.isSuccess,
+      recipe = r.recipe,
+      errorMessage = r.errorMessage,
+      warnings = r.warnings,
+      needsAssistance = r.needsAssistance,
+      extractedText = r.extractedText,
+      suggestedTitle = r.suggestedTitle,
+      likelyIngredientLines = r.likelyIngredientLines,
+      errorCode = r.errorCode;
+
+  /// The same result with [extra] merged over its metadata.
+  ImportResult withMetadata(Map<String, dynamic> extra) =>
+      ImportResult._copy(this, {...?metadata, ...extra});
+
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
 }

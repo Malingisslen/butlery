@@ -49,8 +49,6 @@
 ///   - Tier 3/4 web-scraper paths (WebScraper requires `flutter_inappwebview`
 ///     platform code; the existing
 ///     `test/unit/services/extraction/web_scraper_test.dart` covers it).
-///   - ParseEventLogger side effects (Firebase Functions — covered by its
-///     own unit test).
 ///   - ParsedRecipeCache.store (requires production DI registration).
 library;
 
@@ -72,6 +70,7 @@ import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
@@ -316,6 +315,7 @@ void main() {
         reason:
             'Tier 2 uses the schema.org extractor when Tier 1 is unavailable',
       );
+      expect(result.metadata?['successfulTier'], 'StructuredExtraction');
     });
 
     /// BUT-1077: pure prose (no ingredients, no instructions detectable) must
@@ -387,6 +387,7 @@ void main() {
         'html_text_parse',
       );
       expect(result.metadata?['tier'], 5);
+      expect(result.metadata?['successfulTier'], 'HtmlTextParse');
       expect(
         result.warnings,
         contains('Extracted from HTML text - quality may vary'),
@@ -1265,6 +1266,71 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
         ),
       ).thenAnswer((_) async => build());
     }
+
+    /// BUT-2238: the import's one parse event reads Tier 1's detail off the
+    /// result, so the strategy must carry it there.
+    test(
+      'a Tier 1 recipe carries its tier, attempts and parser version',
+      () async {
+        final good = parseWithQuality(aboveThreshold: true);
+        stubParse(
+          () => ParseResult.success(
+            good.recipe!,
+            totalTime: Duration.zero,
+            unknownDomain: true,
+            tierResults: [
+              TierResult.failure(
+                tierName: 'SchemaOrg',
+                duration: Duration.zero,
+                reason: TierFailureReason.noData,
+              ),
+              const TierResult(
+                tierName: 'SiteConfig',
+                success: true,
+                quality: 0.4,
+                duration: Duration.zero,
+              ),
+              TierResult(
+                tierName: 'RuleBased',
+                success: true,
+                quality: 0.85,
+                duration: const Duration(milliseconds: 7),
+              ),
+            ],
+          ),
+        );
+
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(_unstructuredHtml()),
+        );
+        final result = await strategy.import('http://8.8.8.8/recipe');
+
+        expect(result.metadata?['extraction_method'], 'enhanced_parser');
+        expect(result.metadata?['successfulTier'], 'RuleBased');
+        expect(result.metadata?['parserVersion'], parserVersion);
+        expect(result.metadata?['unknownDomain'], isTrue);
+        expect(result.metadata?['tierAttempts'], [
+          {
+            'tier': 'SchemaOrg',
+            'success': false,
+            'quality': 0.0,
+            'durationMs': 0,
+          },
+          {
+            'tier': 'SiteConfig',
+            'success': true,
+            'quality': 0.4,
+            'durationMs': 0,
+          },
+          {
+            'tier': 'RuleBased',
+            'success': true,
+            'quality': 0.85,
+            'durationMs': 7,
+          },
+        ]);
+      },
+    );
 
     /// BUT-1476: the enhanced parser must ALWAYS be invoked with `useLlm:false`
     /// so it can never fire its own Gemini tier — the Tier 6 LlmExtractionFallback

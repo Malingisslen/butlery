@@ -30,7 +30,6 @@ import 'package:butlery/services/import/heuristics/ingredient_line_detector.dart
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
-import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 /// Imports recipes from web URLs using multi-tier extraction (structured data, scraping, LLM fallback).
 class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
@@ -38,7 +37,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   final HttpContentFetcher _fetcher;
   final LlmExtractionFallback _llmFallback;
-  final ParseEventLogger _eventLogger = ParseEventLogger();
   RecipeParserService? _parserService;
 
   UrlImportStrategy({
@@ -106,7 +104,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }) async {
     try {
       final url = input.trim();
-      final stopwatch = Stopwatch()..start();
       final domain = _extractDomain(url);
 
       // Fetch HTML — try simple HTTP first
@@ -136,8 +133,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (httpHtml != null) {
         final structuredResult = _tryStructuredExtraction(httpHtml, url);
         if (structuredResult != null) {
-          _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
-          return structuredResult;
+          return _atTier(structuredResult, 'StructuredExtraction');
         }
       }
 
@@ -168,16 +164,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
           url,
         );
         if (scraperStructuredResult != null) {
-          _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
-          return scraperStructuredResult;
+          return _atTier(scraperStructuredResult, 'StructuredExtraction');
         }
       }
 
       // Tier 4: Web scraper text extraction fallback
       final scraperResult = await _tryWebScraperFallback(url);
       if (scraperResult != null) {
-        _logImportEvent(url, domain, 'WebScraper', true, stopwatch);
-        return scraperResult;
+        return _atTier(scraperResult, 'WebScraper');
       }
 
       // Use best available HTML for remaining tiers
@@ -187,8 +181,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (bestHtml != null && bestHtml.length > 100) {
         final textResult = await _tryHtmlTextParse(bestHtml, url);
         if (textResult != null) {
-          _logImportEvent(url, domain, 'HtmlTextParse', true, stopwatch);
-          return textResult;
+          return _atTier(textResult, 'HtmlTextParse');
         }
       }
 
@@ -200,8 +193,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
           strategyName,
         );
         if (llmResult != null) {
-          _logImportEvent(url, domain, 'LLM', true, stopwatch, usedLlm: true);
-          return llmResult;
+          return _atTier(llmResult, 'LLM');
         }
       }
 
@@ -210,13 +202,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       // user-assist/failure. It carries real parsed structure, so it is a
       // better outcome than Tier 7 for the user.
       if (belowThresholdEnhanced != null) {
-        _logImportEvent(
-          url,
-          domain,
-          'EnhancedParserBelowThreshold',
-          true,
-          stopwatch,
-        );
         return belowThresholdEnhanced;
       }
 
@@ -224,12 +209,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (bestHtml != null && bestHtml.length > 100) {
         final assistedResult = _createUserAssistedResult(bestHtml, url);
         if (assistedResult != null) {
-          _logImportEvent(url, domain, 'UserAssisted', true, stopwatch);
-          return assistedResult;
+          return _atTier(assistedResult, 'UserAssisted');
         }
       }
 
-      _logImportEvent(url, domain, null, false, stopwatch);
       return _createFailureResult(url, bestHtml, httpFetch);
     } catch (e) {
       AppLogger.error('URL import failed', e);
@@ -540,24 +523,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
   }
 
-  void _logImportEvent(
-    String url,
-    String? domain,
-    String? successfulTier,
-    bool success,
-    Stopwatch stopwatch, {
-    bool? usedLlm,
-  }) {
-    _eventLogger.logEvent(
-      url: url,
-      source: 'url',
-      success: success,
-      parseTimeMs: stopwatch.elapsedMilliseconds,
-      domain: domain,
-      successfulTier: successfulTier,
-      usedLlm: usedLlm,
-    );
-  }
+  /// Names the tier that answered, for the import's one parse event.
+  static ImportResult _atTier(ImportResult result, String tier) =>
+      result.withMetadata({'successfulTier': tier});
 
   ImportResult _convertParsedRecipeToImportResult(
     ParseResult parseResult,
@@ -621,6 +589,21 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'fromCache': parseResult.fromCache,
         'parseTime': parseResult.totalTime.inMilliseconds,
         'overallQuality': parsed.overallQuality,
+        'parserVersion': parserVersion,
+        'successfulTier': ?parseResult.tierResults
+            .where((t) => t.success)
+            .lastOrNull
+            ?.tierName,
+        'tierAttempts': [
+          for (final t in parseResult.tierResults)
+            {
+              'tier': t.tierName,
+              'success': t.success,
+              'quality': t.quality,
+              'durationMs': t.duration.inMilliseconds,
+            },
+        ],
+        if (parseResult.unknownDomain) 'unknownDomain': true,
       },
     );
   }

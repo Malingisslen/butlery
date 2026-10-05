@@ -12,8 +12,7 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 /// Thin by design: the input is the ALREADY-ASSEMBLED canonical recipe
 /// text from voice_transcript_assembler.dart, and parsing is delegated to
 /// [TextImportStrategy]. The strategy exists so voice gets its own
-/// identity end-to-end (Data/Integrations panel condition): the 'Voice
-/// Import' name maps to parse_events source 'voice', and the recipe's
+/// identity end-to-end (Data/Integrations panel condition): the recipe's
 /// provenance is stamped [SourceArtefactType.voiceDictation] — dictated
 /// recipes must never pollute the pasted-text telemetry bucket.
 class VoiceImportStrategy implements ImportStrategy {

@@ -1,5 +1,3 @@
-import 'package:butlery/services/parsing/parse_event_logger.dart';
-
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/analytics/platform_bucket.dart';
 import 'package:butlery/services/analytics/trackers/parse_events_tracker.dart';
@@ -69,6 +67,13 @@ class ParseResult {
   /// Total parsing time.
   final Duration totalTime;
 
+  /// Every tier that ran, in order. The parser itself writes no event
+  /// (BUT-2238).
+  final List<TierResult> tierResults;
+
+  /// The page's domain has no stored site config.
+  final bool unknownDomain;
+
   const ParseResult({
     this.recipe,
     required this.success,
@@ -76,28 +81,38 @@ class ParseResult {
     this.userMessage,
     this.fromCache = false,
     required this.totalTime,
+    this.tierResults = const [],
+    this.unknownDomain = false,
   });
 
   factory ParseResult.success(
     ParsedRecipe recipe, {
     bool fromCache = false,
     required Duration totalTime,
+    List<TierResult> tierResults = const [],
+    bool unknownDomain = false,
   }) => ParseResult(
     recipe: recipe,
     success: true,
     fromCache: fromCache,
     totalTime: totalTime,
+    tierResults: tierResults,
+    unknownDomain: unknownDomain,
   );
 
   factory ParseResult.failure(
     String error, {
     required Duration totalTime,
     String? userMessage,
+    List<TierResult> tierResults = const [],
+    bool unknownDomain = false,
   }) => ParseResult(
     success: false,
     error: error,
     userMessage: userMessage,
     totalTime: totalTime,
+    tierResults: tierResults,
+    unknownDomain: unknownDomain,
   );
 }
 
@@ -161,9 +176,6 @@ class RecipeParserService extends BaseService {
     failureThreshold: 3,
     resetTime: const Duration(minutes: 2),
   );
-
-  /// Server-side parse event logger.
-  final ParseEventLogger _parseEventLogger = ParseEventLogger();
 
   /// Parsing tiers in execution order.
   late final List<ParsingTier> _tiers;
@@ -267,14 +279,6 @@ class RecipeParserService extends BaseService {
     // Check security
     if (!context.isSecure) {
       AppLogger.warning('$serviceName: Content failed security check');
-      _logParseEvent(
-        url: url,
-        source: context.source.name,
-        success: false,
-        fromCache: false,
-        parseTimeMs: stopwatch.elapsedMilliseconds,
-        domain: context.domain,
-      );
       return ParseResult.failure(
         'Content failed security validation',
         totalTime: stopwatch.elapsed,
@@ -285,14 +289,6 @@ class RecipeParserService extends BaseService {
     if (useCache) {
       final cached = await _checkCache(context);
       if (cached != null) {
-        _logParseEvent(
-          url: url,
-          source: context.source.name,
-          success: true,
-          fromCache: true,
-          parseTimeMs: stopwatch.elapsedMilliseconds,
-          domain: context.domain,
-        );
         return ParseResult.success(
           cached,
           fromCache: true,
@@ -329,20 +325,12 @@ class RecipeParserService extends BaseService {
     final result = tierData.recipe;
 
     if (result == null) {
-      _logParseEvent(
-        url: url,
-        source: context.source.name,
-        success: false,
-        fromCache: false,
-        parseTimeMs: stopwatch.elapsedMilliseconds,
-        domain: context.domain,
-        tierResults: tierData.tierResults,
-        unknownDomain: isUnknownDomain,
-      );
       return ParseResult.failure(
         'Could not extract recipe from content',
         totalTime: stopwatch.elapsed,
         userMessage: _pickUserMessage(),
+        tierResults: tierData.tierResults,
+        unknownDomain: isUnknownDomain,
       );
     }
 
@@ -351,29 +339,12 @@ class RecipeParserService extends BaseService {
       await _cacheResult(context, result);
     }
 
-    final successfulTier = tierData.tierResults
-        .where((t) => t.success)
-        .lastOrNull;
-    _logParseEvent(
-      url: url,
-      source: context.source.name,
-      success: true,
-      fromCache: false,
-      parseTimeMs: stopwatch.elapsedMilliseconds,
-      domain: context.domain,
-      successfulTier: successfulTier?.tierName,
-      finalQuality: result.overallQuality,
-      usedLlm: tierData.tierResults.any(
-        (t) => t.tierName == 'LLM' && t.success,
-      ),
-      totalCostSek: tierData.tierResults.fold<double>(
-        0,
-        (sum, t) => sum + (t.costSek ?? 0),
-      ),
+    return ParseResult.success(
+      result,
+      totalTime: stopwatch.elapsed,
       tierResults: tierData.tierResults,
       unknownDomain: isUnknownDomain,
     );
-    return ParseResult.success(result, totalTime: stopwatch.elapsed);
   }
 
   /// Parse a recipe from plain text.
@@ -400,42 +371,19 @@ class RecipeParserService extends BaseService {
     final result = tierData.recipe;
 
     if (result == null) {
-      _logParseEvent(
-        url: null,
-        source: source.name,
-        success: false,
-        fromCache: false,
-        parseTimeMs: stopwatch.elapsedMilliseconds,
-        tierResults: tierData.tierResults,
-      );
       return ParseResult.failure(
         'Could not extract recipe from text',
         totalTime: stopwatch.elapsed,
         userMessage: _pickUserMessage(),
+        tierResults: tierData.tierResults,
       );
     }
 
-    final successfulTier = tierData.tierResults
-        .where((t) => t.success)
-        .lastOrNull;
-    _logParseEvent(
-      url: null,
-      source: source.name,
-      success: true,
-      fromCache: false,
-      parseTimeMs: stopwatch.elapsedMilliseconds,
-      successfulTier: successfulTier?.tierName,
-      finalQuality: result.overallQuality,
-      usedLlm: tierData.tierResults.any(
-        (t) => t.tierName == 'LLM' && t.success,
-      ),
-      totalCostSek: tierData.tierResults.fold<double>(
-        0,
-        (sum, t) => sum + (t.costSek ?? 0),
-      ),
+    return ParseResult.success(
+      result,
+      totalTime: stopwatch.elapsed,
       tierResults: tierData.tierResults,
     );
-    return ParseResult.success(result, totalTime: stopwatch.elapsed);
   }
 
   /// Whether a tier should be skipped for the given context.
@@ -455,7 +403,7 @@ class RecipeParserService extends BaseService {
   /// Run parsing tiers in order until quality threshold is met.
   ///
   /// Returns both the merged recipe and the raw tier results so callers
-  /// can extract metrics (successfulTier, quality, cost) for analytics.
+  /// can extract metrics (successfulTier, quality) for analytics.
   Future<({ParsedRecipe? recipe, List<TierResult> tierResults})> _runTiers(
     ParsingContext context, {
     required double qualityThreshold,
@@ -850,66 +798,5 @@ class RecipeParserService extends BaseService {
     } catch (e) {
       AppLogger.debug('$serviceName: tier analytics emit failed: $e');
     }
-  }
-
-  /// Log parse event to server for analytics (fire-and-forget).
-  ///
-  /// This method sends parse statistics to the server but doesn't
-  /// block or fail the parsing operation. Errors are silently ignored.
-  void _logParseEvent({
-    required String? url,
-    required String source,
-    required bool success,
-    required bool fromCache,
-    required int parseTimeMs,
-    String? domain,
-    String? successfulTier,
-    double? finalQuality,
-    bool? usedLlm,
-    double? totalCostSek,
-    List<TierResult>? tierResults,
-    bool unknownDomain = false,
-  }) {
-    // Prefer a successful tier's promptVersion; fall back to any tier that
-    // got far enough to receive a version from the server.
-    String? promptVersion;
-    String? fallbackPromptVersion;
-    if (tierResults != null) {
-      for (final t in tierResults) {
-        if (t.promptVersion == null) continue;
-        if (t.success) {
-          promptVersion = t.promptVersion;
-        } else {
-          fallbackPromptVersion = t.promptVersion;
-        }
-      }
-      promptVersion ??= fallbackPromptVersion;
-    }
-
-    _parseEventLogger.logEvent(
-      url: url,
-      source: source,
-      success: success,
-      fromCache: fromCache,
-      parseTimeMs: parseTimeMs,
-      parserVersion: parserVersion,
-      domain: domain,
-      successfulTier: successfulTier,
-      finalQuality: finalQuality,
-      usedLlm: usedLlm,
-      totalCostSek: totalCostSek,
-      tierAttempts: tierResults
-          ?.map(
-            (t) => <String, dynamic>{
-              'tier': t.tierName,
-              'success': t.success,
-              'quality': t.quality,
-              'durationMs': t.duration.inMilliseconds,
-            },
-          )
-          .toList(),
-      unknownDomain: unknownDomain,
-      promptVersion: promptVersion,
-    );
   }
 }
