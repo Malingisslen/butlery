@@ -15,6 +15,11 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
+import 'package:butlery/models/diner_profile.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -30,6 +35,13 @@ import 'package:butlery/services/menu/menu_scoring.dart';
 // Local pure-Mock MenuService — the centralized one has concrete @override
 // methods that prevent mocktail stubbing with when().
 class _MockMenuService extends Mock implements MenuService {}
+
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockDinerProfileRepository extends Mock
+    implements DinerProfileRepository {}
+
+class _MockPermissionService extends Mock implements PermissionService {}
 
 // Local pure-Mock AnalyticsService — the centralized one's delegate methods
 // return null instead of Future<void>, crashing await calls.
@@ -830,6 +842,73 @@ void main() {
           analyticsService: mockAnalyticsService,
         );
       }
+
+      test(
+        'the vote sheet\'s async pool drops a child\'s fish recipe that the '
+        'sync single-user pool keeps',
+        () async {
+          final householdRepo = _MockHouseholdRepository();
+          final dinerRepo = _MockDinerProfileRepository();
+          final permission = _MockPermissionService();
+          when(() => permission.currentUserId).thenReturn('u1');
+          when(() => householdRepo.getForUser('u1')).thenAnswer(
+            (_) async => [
+              Household(
+                id: 'hh1',
+                name: Household.defaultName,
+                members: const [],
+                createdBy: 'u1',
+                createdAt: DateTime(2026),
+                updatedAt: DateTime(2026),
+              ),
+            ],
+          );
+          when(() => dinerRepo.getByHousehold('hh1')).thenAnswer(
+            (_) async => [
+              DinerProfile(
+                id: 'kid',
+                householdId: 'hh1',
+                name: 'Testbarn',
+                ageBand: DinerAgeBand.child,
+                allergenPreferences: const UserAllergenPreferences(
+                  trackedAllergens: {'fisk'},
+                  trackedDietary: {},
+                ),
+                createdBy: 'u1',
+              ),
+            ],
+          );
+          TestServiceLocator.registerMock<HouseholdRepository>(householdRepo);
+          TestServiceLocator.registerMock<DinerProfileRepository>(dinerRepo);
+          TestServiceLocator.registerMock<PermissionService>(permission);
+          addTearDown(() {
+            TestServiceLocator.unregister<HouseholdRepository>();
+            TestServiceLocator.unregister<DinerProfileRepository>();
+            TestServiceLocator.unregister<PermissionService>();
+          });
+
+          final fish = recipeWith(
+            'fish',
+            tagWith(allergen: {'fisk': TriState.contains}),
+          );
+          final veg = recipeWith(
+            'veg',
+            tagWith(allergen: {'fisk': TriState.free}),
+          );
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {},
+              trackedDietary: {},
+            ),
+            recipes: [fish, veg],
+          );
+          addTearDown(vm.dispose);
+
+          expect(vm.availableRecipes.map((r) => r.id), contains('fish'));
+          final pool = await vm.getAvailableRecipesAsync();
+          expect(pool.map((r) => r.id), ['veg']);
+        },
+      );
 
       test(
         'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',
