@@ -178,6 +178,8 @@ class FriendRequestCard {
                         child: HeroButton(
                           key: ValueKey('friendRequest.accept.${request.id}'),
                           label: context.l10n.commonAccept,
+                          semanticLabel: context.l10n
+                              .a11yAcceptFriendRequestFrom(displayName),
                           icon: ButleryIcons.check,
                           onPressed: viewModel.isLoading
                               ? null
@@ -191,6 +193,8 @@ class FriendRequestCard {
                         child: ActionButtons.outlinedButton(
                           context,
                           label: context.l10n.socialDecline,
+                          semanticLabel: context.l10n
+                              .a11yDeclineFriendRequestFrom(displayName),
                           icon: ButleryIcons.x,
                           onPressed: viewModel.isLoading
                               ? null

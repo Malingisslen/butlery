@@ -10451,6 +10451,24 @@
       }
     }
   },
+  "a11yAcceptFriendRequestFrom": "Accept {name}",
+  "@a11yAcceptFriendRequestFrom": {
+    "description": "Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDeclineFriendRequestFrom": "Decline {name}",
+  "@a11yDeclineFriendRequestFrom": {
+    "description": "Screen-reader name of a friend request's decline button, naming whose request it is (BUT-2248). The visible label stays socialDecline.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yFriendRequestSent": "Sent request to {name}, press to select",
   "@a11yFriendRequestSent": {
     "description": "Semantics label for a sent friend-request card row.",

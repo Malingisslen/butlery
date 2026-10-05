@@ -31,6 +31,7 @@ class HeroButton extends StatelessWidget {
     this.busyLabel,
     this.icon,
     this.expand = false,
+    this.semanticLabel,
     super.key,
   });
 
@@ -54,12 +55,17 @@ class HeroButton extends StatelessWidget {
   /// Whether the button fills the available width.
   final bool expand;
 
+  /// What a screen reader says instead of [label], when the visible word
+  /// alone does not say which row the button acts on (BUT-2248).
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final hero = ComponentThemes.heroButtonStyle(cs);
     final text = Text(
       busy ? (busyLabel ?? label) : label,
+      semanticsLabel: busy ? null : semanticLabel,
       // BUT-2219: a label wraps rather than ellipsising; a button never
       // cuts its name (plattformsmatris.md).
       textAlign: TextAlign.center,
@@ -85,7 +91,7 @@ class HeroButton extends StatelessWidget {
     }
     return BusyButtonSemantics(
       busy: busy,
-      name: label,
+      name: semanticLabel ?? label,
       busyLabel: busyLabel,
       child: button,
     );
