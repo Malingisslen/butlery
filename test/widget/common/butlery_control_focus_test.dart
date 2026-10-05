@@ -12,6 +12,7 @@
 /// butlery_focus_ring_test.dart.
 library;
 
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/components/navigation_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -93,7 +95,16 @@ Future<void> _tabInto(WidgetTester tester) async {
 }
 
 class _Case {
-  const _Case(this.build, this.box, {this.onInk = false});
+  const _Case(
+    this.build,
+    this.box, {
+    this.onInk = false,
+    this.minTarget = false,
+  });
+
+  /// The box is laid out at its content's size and the ring is drawn at
+  /// least 48 × 48 dp around it; the tap area is an ancestor InkWell.
+  final bool minTarget;
 
   /// The control stands on surface.ink in both modes (NAV-INK: the bottom
   /// row, Komponentark v1:662), so its ring is paper in both ("papper på
@@ -188,15 +199,28 @@ final _cases = <String, _Case>{
         child: TabBar(
           overlayColor: ButleryControlFocus.withoutFocusTint(null),
           tabs: const [
-            ButleryTab(text: 'Mina'),
-            ButleryTab(text: 'Delade'),
+            ButleryTab(text: 'Ja'),
+            ButleryTab(text: 'Nej'),
           ],
         ),
       ),
     ),
     () => find.byType(ButleryAncestorFocusRing).first,
+    minTarget: true,
   ),
 };
+
+/// The rectangle the ring goes around for [c].
+Rect _ringRect(WidgetTester tester, _Case c) {
+  final r = tester.getRect(c.box());
+  if (!c.minTarget) return r;
+  expect(r.width, lessThan(48), reason: 'the premise: the ring has to grow');
+  return Rect.fromCenter(
+    center: r.center,
+    width: math.max(r.width, 48),
+    height: math.max(r.height, 48),
+  );
+}
 
 void main() {
   setUp(() {
@@ -221,9 +245,16 @@ void main() {
         await _pump(tester, c.build(), theme: theme);
         await _tabInto(tester);
 
-        final rect = tester.getRect(c.box());
-        expect(rect.width, greaterThanOrEqualTo(48), reason: 'hit width');
-        expect(rect.height, greaterThanOrEqualTo(48), reason: 'hit height');
+        final rect = _ringRect(tester, c);
+        final hit = c.minTarget
+            ? tester.getRect(
+                find
+                    .ancestor(of: c.box(), matching: find.byType(InkWell))
+                    .first,
+              )
+            : rect;
+        expect(hit.width, greaterThanOrEqualTo(48), reason: 'hit width');
+        expect(hit.height, greaterThanOrEqualTo(48), reason: 'hit height');
         final expected = c.onInk ? AppColorsDark.focusRing : ring;
         for (final p in _ringPoints(rect)) {
           expect(await _pixel(tester, p), expected, reason: '$name at $p');
@@ -243,13 +274,49 @@ void main() {
       );
       await _tabInto(tester);
 
-      final rect = tester.getRect(c.box());
+      final rect = _ringRect(tester, c);
       final ring = c.onInk ? AppColorsDark.focusRing : AppColors.focusRing;
       for (final p in _ringPoints(rect)) {
         expect(await _pixel(tester, p), isNot(ring), reason: '$name at $p');
       }
     });
   }
+
+  // BUT-2228: the selected tab's plate line is the word plus 5 px a side
+  // (Komponentark v1:106), also for a word narrower than the 48 dp target.
+  testWidgets('view tab: the plate line hugs a short word', (tester) async {
+    await _pump(
+      tester,
+      const SizedBox(
+        width: 300,
+        child: DefaultTabController(
+          length: 2,
+          child: TabBar(
+            tabs: [
+              ButleryTab(text: 'Ja'),
+              ButleryTab(text: 'Nej'),
+            ],
+          ),
+        ),
+      ),
+    );
+    final word = tester.getRect(find.text('Ja'));
+    final tab = tester.getRect(find.byType(TabBar));
+    expect(word.width, lessThan(38), reason: 'the premise: a short word');
+    final y = tab.bottom - NavigationThemes.tabPlateLineHeight / 2;
+    const overhang = NavigationThemes.tabPlateLineOverhang;
+    final line = AppColors.progressIndicator;
+    expect(await _pixel(tester, Offset(word.left - overhang + 2, y)), line);
+    expect(await _pixel(tester, Offset(word.right + overhang - 2, y)), line);
+    expect(
+      await _pixel(tester, Offset(word.left - overhang - 3, y)),
+      isNot(line),
+    );
+    expect(
+      await _pixel(tester, Offset(word.right + overhang + 3, y)),
+      isNot(line),
+    );
+  });
 
   // A card rings only for its own focus: a heart or menu inside it rings
   // just that button (lib/widgets/recipe/recipe_card.dart).

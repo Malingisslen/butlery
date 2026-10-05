@@ -80,6 +80,17 @@ class IngredientRegistryService extends BaseService {
         }),
       );
 
+      // Before sign-in the ingredients read is denied and every group comes
+      // back empty; marking that as enriched would pin the static list for
+      // the whole session.
+      if (results.every((ingredients) => ingredients.isEmpty)) {
+        AppLogger.debug(
+          'No Firestore ingredients yet, keeping the static registry',
+          serviceName,
+        );
+        return;
+      }
+
       for (final ingredients in results) {
         for (final item in ingredients) {
           combined.add(item.swedish.toLowerCase().trim());
