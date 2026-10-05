@@ -12,17 +12,28 @@ const _bootstrapSettings = Settings(
 );
 
 class FirestoreBootstrap {
-  static Future<void> configure({FirebaseFirestore? firestore}) async {
+  /// [connect] runs after the settings and before the first read. Local test
+  /// mode passes the emulator wiring here: on web the instance is created at
+  /// that call, so settings applied after it would be ignored.
+  static Future<void> configure({
+    FirebaseFirestore? firestore,
+    void Function(FirebaseFirestore db)? connect,
+  }) async {
     final db = firestore ?? FirebaseFirestore.instance;
     try {
       db.settings = _bootstrapSettings;
+    } catch (_) {
+      // Settings already applied — happens on hot restart.
+      connect?.call(db);
+      return;
+    }
+    connect?.call(db);
 
+    try {
       if (kIsWeb) {
         await _recoverWebPersistenceIfCorrupted(db);
       }
-    } catch (_) {
-      // Settings already applied — happens on hot restart.
-    }
+    } catch (_) {}
   }
 
   // Firestore JS SDK 12.x can leave IndexedDB in a stuck state after an

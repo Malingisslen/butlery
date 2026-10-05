@@ -7,6 +7,7 @@
 /// integration tests under `test/integration/web/`.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,5 +37,28 @@ void main() {
         completes,
       );
     });
+
+    test('configure() applies the settings before connect runs', () async {
+      final firestore = _RecordingFirestore();
+      FirebaseFirestore? connected;
+
+      await FirestoreBootstrap.configure(
+        firestore: firestore,
+        connect: (db) {
+          connected = db;
+          firestore.events.add('connect');
+        },
+      );
+
+      expect(connected, same(firestore));
+      expect(firestore.events, ['settings', 'connect']);
+    });
   });
+}
+
+class _RecordingFirestore extends FakeFirebaseFirestore {
+  final events = <String>[];
+
+  @override
+  set settings(Settings settings) => events.add('settings');
 }

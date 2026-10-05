@@ -19,6 +19,9 @@ npm-debug.log*
 # Environment and secrets
 .env
 .env.local
+# Dummy values scripts/emulator/start.sh writes for the local emulator suite
+.env.demo-butlery
+.secret.local
 
 # IDE
 .idea/
