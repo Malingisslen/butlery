@@ -343,8 +343,7 @@ void main() {
         ).called(1);
       });
 
-      test('should handle password reset errors', () async {
-        // Arrange
+      test('an unknown address gets the same answer as a known one', () async {
         when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenAnswer(
           (_) async => throw FirebaseAuthException(
             code: 'user-not-found',
@@ -352,14 +351,12 @@ void main() {
           ),
         );
 
-        // Act
         final result = await authService.sendPasswordResetEmail(
           'unknown@example.com',
         );
 
-        // Assert
-        expect(result, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
+        expect(result, true);
+        expect(authService.errorMessage, isNull);
       });
     });
 
@@ -1324,19 +1321,20 @@ void main() {
         // Arrange - First error
         when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenThrow(
           FirebaseAuthException(
-            code: 'user-not-found',
-            message: 'User not found',
+            code: 'user-disabled',
+            message: 'User disabled',
           ),
         );
 
         // Act
         final result1 = await authService.sendPasswordResetEmail(
-          'unknown@example.com',
+          'disabled@example.com',
         );
 
         // Assert
         expect(result1, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
+        final firstError = authService.errorMessage;
+        expect(firstError, contains('inaktiverats'));
 
         // Arrange - Second error during recovery attempt
         when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenThrow(
@@ -1354,10 +1352,7 @@ void main() {
         // Assert - Should update to new error
         expect(result2, false);
         expect(authService.errorMessage, contains('Nätverksfel'));
-        expect(
-          authService.errorMessage,
-          isNot(contains('Fel email eller lösenord')),
-        );
+        expect(authService.errorMessage, isNot(firstError));
       });
     });
 

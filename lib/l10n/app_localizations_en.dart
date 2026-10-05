@@ -14565,6 +14565,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yAcceptFriendRequestFrom(String name) {
+    return 'Accept $name';
+  }
+
+  @override
+  String a11yDeclineFriendRequestFrom(String name) {
+    return 'Decline $name';
+  }
+
+  @override
   String a11yFriendRequestSent(String name) {
     return 'Sent request to $name, press to select';
   }

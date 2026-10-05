@@ -31,7 +31,6 @@ class MoreView extends StatelessWidget {
   const MoreView({super.key, this.avatar = const RecipeListAvatarBadge()});
 
   /// The avatar at the end of the bar (#mer draws the user's initial).
-  /// Replaceable so the view can be tested without the social providers.
   final Widget avatar;
 
   /// The key of the row that opens [route]. Identity is the destination.
