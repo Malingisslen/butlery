@@ -241,9 +241,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     // BUT-1727: a RESCUED GLUTEN ROW is never the recipe title. The headerless
     // fallback loop below already skips these, but THIS path runs first and
-    // every heuristic here misses them: isSectionHeader's word regex breaks on
-    // the trailing colon, and the gluten carve-out deliberately stops "Mjöl:"
-    // being a sub-heading. Any such word of 5+ characters ("Mjöl:",
+    // every heuristic here misses them: the gluten carve-out deliberately
+    // stops "Mjöl:" being a sub-heading. Any such word of 5+ characters ("Mjöl:",
     // "Havregryn:", every *mjöl: compound) would otherwise be consumed as the
     // title AND skipped in STAGE 3, so the gluten row never reaches the flat
     // list the allergen tagging reads.
@@ -473,9 +472,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (RecipeSectionDetector.looksLikeIngredient(line)) break;
         // A sub-group heading ("Deg:") is never the recipe title — skip it so
         // it flows to STAGE 3 and is captured as a section. Needed because
-        // isSectionHeader ignores it (the trailing colon breaks its word
-        // regex), so without this skip a headerless caption whose real title
-        // was rejected above would accept "Deg:" as the title at the guard below.
+        // isSectionHeader ignores it, so without this skip a headerless
+        // caption whose real title was rejected above would accept "Deg:" as
+        // the title at the guard below.
         if (_ingredientSubHeading(line) != null) continue;
         // BUT-1727: the gluten carve-out makes "Råg:" stop being a sub-heading,
         // but it is an INGREDIENT row — never the recipe title. Skip it here
@@ -603,8 +602,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // A bare step number ("1.") is what the sentence splitter leaves of
       // "1. Blötlägg ärtorna": the steps have started, whatever the next
-      // line scores.
-      if (_stepNumber.hasMatch(line)) {
+      // line scores. Not inside an "Ingredienser" block, where a numbered
+      // list ("1. Mjölk 5 dl") is the rows themselves.
+      if (!inIngredients && _stepNumber.hasMatch(line)) {
         inIngredients = false;
         inInstructions = true;
         afterIngredientRow = false;
@@ -800,10 +800,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final seenRescued = <bool>[];
 
     for (final ing in ingredients) {
-      // BUT-1727: a rescued bare gluten row ("Råg") is a single short word, so
-      // both filters below read it as an orphan fragment and would undo the
-      // carve-out one stage after it fired. It is exempt from them — but not
-      // from exact-name dedup, so a fuller "2 dl råg" row still wins.
+      // BUT-1727: a rescued bare gluten row ("Råg") is exempt from the two
+      // filters below — but not from exact-name dedup, so a fuller "2 dl råg"
+      // row still wins.
       final isRescuedGluten = exemptFromFilters.contains(ing.toLowerCase());
       if (!isRescuedGluten &&
           (RecipeSectionDetector.isGarbage(ing) ||
@@ -897,14 +896,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// carve-out in [_ingredientSubHeading] refuses ("Råg:" → "Råg"), or null
   /// when [line] is not one.
   ///
-  /// Refusing the heading is not enough on its own: "Råg:" is four characters,
-  /// so `isValidIngredient` drops it as an orphan fragment and the gluten is
-  /// lost anyway. This re-injects it directly, colon-STRIPPED — lookup folds
+  /// Refusing the heading is not enough on its own: this re-injects the row
+  /// directly, colon-STRIPPED — lookup folds
   /// diacritics but strips no punctuation, so "Mjöl:" would query `mjol:`,
   /// match no registry document and take every allergen verdict on the recipe
   /// to UNKNOWN. Colon-only by design: the accepted deviation covers the
-  /// colon-terminated form, and a colon-less bare word keeps the long-standing
-  /// orphan-fragment handling.
+  /// colon-terminated form.
   String? _bareGlutenIngredient(String line) {
     final trimmed = line.trim();
     if (!trimmed.endsWith(':')) return null;

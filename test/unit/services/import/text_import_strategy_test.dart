@@ -678,13 +678,46 @@ void main() {
       });
 
       test('a sentence that starts with a number is not a row', () async {
+        // One fixture per refusing conjunct: five words, and a full stop.
         const text =
             'Logga in\n\n'
             'Logga in för att läsa vidare. Vi har många recept.\n'
-            '12 nya recept i veckan';
+            '12 nya recept i veckan\n'
+            '3 recept varje vecka.';
         final result = await strategy.import(text);
         expect(ingredientsOf(result), isEmpty);
       });
+
+      test('a numbered list under "Ingredienser" stays rows', () async {
+        const text =
+            'Pannkakor\n\n'
+            'Ingredienser:\n'
+            '1. Mjölk 5 dl\n'
+            '2. Ägg 3 st\n'
+            '3. Vetemjöl 3 dl\n\n'
+            'Gör så här:\n'
+            'Vispa ihop och stek.';
+        final result = await strategy.import(text);
+        final ings = ingredientsOf(result);
+        expect(ings.join(' | '), contains('mjölk'));
+        expect(ings.join(' | '), contains('ägg'));
+        expect(ings.join(' | '), contains('vetemjöl'));
+      });
+
+      test(
+        'a capitalised list word opening a paragraph above a quantity row is a row',
+        () async {
+          const text =
+              'Kaka\n\n'
+              'Smör\n'
+              '2 dl mjölk\n\n'
+              'Gör så här\n'
+              'Blanda och grädda.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('smör'));
+          expect(ings, contains('2 dl mjölk'));
+        },
+      );
     });
 
     group('Initialization', () {

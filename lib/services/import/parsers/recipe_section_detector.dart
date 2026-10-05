@@ -100,9 +100,7 @@ class RecipeSectionDetector {
   /// returns null (→ stays an ingredient). A heading must clear ALL of: not a
   /// generic ingredient/instruction block marker, no digit, no unit token,
   /// label length ≤ 40, and be either colon-terminated OR in the curated
-  /// [sectionHeaders] vocabulary. Deliberately NOT [isSectionHeader], which
-  /// greenlights any short single word ("salt", "socker") and would eat real
-  /// ingredients.
+  /// [sectionHeaders] vocabulary.
   static String? componentSubHeadingLabel(String text) {
     final clean = text.trim();
     if (clean.isEmpty) return null;
