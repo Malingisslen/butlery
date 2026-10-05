@@ -10,8 +10,7 @@
 // cases pin.
 //
 // The form loads the stored value verbatim (`recipe_form_state.dart`,
-// `_mealType = recipe.mealType` in `_loadRecipeData`). Text import contributes
-// 'Huvudrätt', which is in no list at all.
+// `_mealType = recipe.mealType` in `_loadRecipeData`).
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -155,7 +154,7 @@ void main() {
       expect(mealTypeDropdown(tester).initialValue, 'dinner');
     });
 
-    // From `_guessMealType`, and in NO list anywhere in the app.
+    // In NO list anywhere in the app.
     testWidgets('a Swedish value outside the offered list renders', (
       tester,
     ) async {

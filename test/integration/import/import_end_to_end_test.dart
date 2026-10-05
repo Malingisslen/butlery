@@ -475,7 +475,7 @@ void main() {
         // Assert - Metadata extracted
         expect(result.recipe!.portions, equals(4));
         expect(result.recipe!.timeMinutes, equals(40));
-        expect(result.recipe!.mealType, equals('Huvudrätt'));
+        expect(result.recipe!.mealType, equals('Middag'));
 
         // Assert - Sections parsed
         expect(result.recipe!.ingredients, contains('500 g köttfärs'));
