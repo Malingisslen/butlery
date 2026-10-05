@@ -2529,7 +2529,7 @@
     {
       "id": "flow-voice-import",
       "label": "tala in recept (röstimport)",
-      "description": "IMP-12 (kb-whisper-planen, riktning B beslutad 2026-07-13): tre guidade sektioner (namn → ingredienser → gör så här) dikteras i valfri ordning i voice_import_view; varje sektion transkriberas PÅ ENHETEN av KB-Whisper via VoiceCaptureService (ljudet raderas på alla utfallsvägar), texten är alltid redigerbar. voice_transcript_assembler bygger kanonisk svensk recepttext (Ingredienser:/Gör så här:-rubriker, ingrediensuppräkning splittras per rad) så den deterministiska textparsern klarar jobbet utan LLM. ImportManager.importVoiceTranscript är ingången: rate-limit + parse_events med källtagg 'voice' (aldrig 'text' — mätbarhetsvillkor från integrationsgranskningen), VoiceImportStrategy stämplar SourceArtefactType.voiceDictation. Lyckad parse → SkrivSjalvReceptView-granskning; svag parse → assisted-import-dialogen.",
+      "description": "IMP-12 (kb-whisper-planen, riktning B beslutad 2026-07-13): tre guidade sektioner (namn → ingredienser → gör så här) dikteras i valfri ordning i voice_import_view; varje sektion transkriberas PÅ ENHETEN av KB-Whisper via VoiceCaptureService (ljudet raderas på alla utfallsvägar), texten är alltid redigerbar. voice_transcript_assembler bygger kanonisk svensk recepttext (Ingredienser:/Gör så här:-rubriker, ingrediensuppräkning splittras per rad) så den deterministiska textparsern klarar jobbet utan LLM. ImportManager.importVoiceTranscript är ingången: rate-limit + en parse_events-rad med kanalen 'voice' (aldrig 'text' — mätbarhetsvillkor från integrationsgranskningen), VoiceImportStrategy stämplar SourceArtefactType.voiceDictation. Lyckad parse → SkrivSjalvReceptView-granskning; svag parse → assisted-import-dialogen.",
       "features": [
         "IMP-12"
       ],
@@ -2544,7 +2544,7 @@
         {
           "from": "v-voice-import",
           "to": "svc-import-manager",
-          "payload": "importVoiceTranscript(assemblerad kanonisk recepttext) — rate-limit basic('auto') + parse_events source='voice' via _parseWithStrategy-chokepointen",
+          "payload": "importVoiceTranscript(assemblerad kanonisk recepttext) — rate-limit basic('auto') + en parse_events-rad med channel='voice', skriven av ImportManager efter importen (BUT-2238)",
           "transport": "method call",
           "verified": true
         },

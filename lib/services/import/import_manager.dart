@@ -21,6 +21,7 @@ import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
+import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
@@ -247,6 +248,22 @@ class ImportManager {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
     void Function(String phase)? onProgress,
+  }) => _measured(
+    _looksLikeLink(input) ? ImportChannel.link : ImportChannel.text,
+    input,
+    () => _autoImport(
+      input,
+      preferredStrategy: preferredStrategy,
+      options: options,
+      onProgress: onProgress,
+    ),
+  );
+
+  Future<ImportManagerResult> _autoImport(
+    String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+    void Function(String phase)? onProgress,
   }) async {
     try {
       // Rate limit check for basic imports
@@ -400,6 +417,15 @@ class ImportManager {
   Future<ImportManagerResult> importSinglePhoto(
     String input, {
     Map<String, dynamic>? options,
+  }) => _measured(
+    ImportChannel.photo,
+    input,
+    () => _importSinglePhoto(input, options: options),
+  );
+
+  Future<ImportManagerResult> _importSinglePhoto(
+    String input, {
+    Map<String, dynamic>? options,
   }) async {
     try {
       final rateLimiter = _rateLimiter;
@@ -441,6 +467,15 @@ class ImportManager {
   Future<ImportManagerResult> importVoiceTranscript(
     String input, {
     Map<String, dynamic>? options,
+  }) => _measured(
+    ImportChannel.voice,
+    input,
+    () => _importVoiceTranscript(input, options: options),
+  );
+
+  Future<ImportManagerResult> _importVoiceTranscript(
+    String input, {
+    Map<String, dynamic>? options,
   }) async {
     try {
       final rateLimiter = _rateLimiter;
@@ -461,15 +496,7 @@ class ImportManager {
         );
       }
 
-      final result = await _parseWithStrategy(strategy, input, options);
-      // Unlike photo (metered on its LLM-vision bucket), voice consumes no
-      // metered downstream resource — the basic bucket IS its quota, so a
-      // successful import must record usage or the checkLimit above is
-      // inert (review finding #6: unlimited voice imports).
-      if (result.isSuccess) {
-        await _recordImportUsage('voice');
-      }
-      return result;
+      return await _parseWithStrategy(strategy, input, options);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -478,17 +505,68 @@ class ImportManager {
     }
   }
 
-  /// Record successful import usage for rate limiting.
-  Future<void> _recordImportUsage(String sourceType) async {
+  /// Runs one import and then measures it (BUT-2238): exactly one parse
+  /// event, and one use of the import quota whatever the outcome. A request
+  /// the rate limiter refused is neither measured nor counted.
+  Future<ImportManagerResult> _measured(
+    ImportChannel channel,
+    String input,
+    Future<ImportManagerResult> Function() run,
+  ) async {
+    final stopwatch = Stopwatch()..start();
+    final result = await run();
+    await _finishImport(channel, input, result, stopwatch.elapsed);
+    return result;
+  }
+
+  Future<void> _finishImport(
+    ImportChannel channel,
+    String input,
+    ImportManagerResult result,
+    Duration elapsed,
+  ) async {
+    if (result.rateLimitDenied != null) return;
+    _eventLogger.log(
+      ImportEvent.fromResult(
+        result,
+        channel: channel,
+        input: input,
+        elapsed: elapsed,
+      ),
+    );
     try {
-      await _rateLimiter?.recordUsage(ImportOperation.basic(sourceType));
+      await _rateLimiter?.recordUsage(ImportOperation.basic(channel.name));
     } catch (e) {
       AppLogger.debug('ImportManager: Failed to record import usage: $e');
     }
   }
 
+  bool _looksLikeLink(String input) {
+    final normalizer = _normalizer;
+    if (normalizer != null) return normalizer.looksLikeUrl(input);
+    final uri = Uri.tryParse(input.trim());
+    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
+  }
+
+  ImportChannel _channelForStrategy(String strategyName, String input) =>
+      switch (ImportEvent.strategyId(strategyName)) {
+        'photo' => ImportChannel.photo,
+        'voice' => ImportChannel.voice,
+        _ => _looksLikeLink(input) ? ImportChannel.link : ImportChannel.text,
+      };
+
   /// Import using a specific strategy
   Future<ImportManagerResult> importWithStrategy(
+    String strategyName,
+    String input, {
+    Map<String, dynamic>? options,
+  }) => _measured(
+    _channelForStrategy(strategyName, input),
+    input,
+    () => _importWithStrategy(strategyName, input, options: options),
+  );
+
+  Future<ImportManagerResult> _importWithStrategy(
     String strategyName,
     String input, {
     Map<String, dynamic>? options,
@@ -658,6 +736,36 @@ class ImportManager {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
     DocumentLayout? layout,
+    ImportChannel channel = ImportChannel.text,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    final batch = await _autoParseMulti(
+      input,
+      preferredStrategy: preferredStrategy,
+      options: options,
+      layout: layout,
+    );
+    // One page is one import, however many recipes it held: the event
+    // describes the first recipe found, or the failure that knew its cause.
+    final answer =
+        batch.results
+            .where((r) => r.isSuccess && r.recipe != null)
+            .firstOrNull ??
+        _noRecipeResult(
+          batch.results.fold<ImportManagerResult?>(
+            null,
+            (kept, r) => _keepBetterFailure(kept, r),
+          ),
+        );
+    await _finishImport(channel, input, answer, stopwatch.elapsed);
+    return batch;
+  }
+
+  Future<BatchImportResult> _autoParseMulti(
+    String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+    DocumentLayout? layout,
   }) async {
     // [layout] is where the words sat on the page, when a reader measured
     // them. Only the photo path can supply it; the paste path never can, so it
@@ -795,15 +903,9 @@ class ImportManager {
     String input,
     Map<String, dynamic>? options,
   ) async {
-    final stopwatch = Stopwatch()..start();
     try {
       // Execute import strategy to parse recipe
       final importResult = await strategy.import(input, options: options);
-
-      // BUT-1470: log a server-side parse event for every import path at this
-      // shared choke point, so photo/text/social imports are measured the way
-      // URL imports already are.
-      _logParseEvent(strategy, importResult, stopwatch.elapsedMilliseconds);
 
       // Tier-7 recovery: a strategy can return `needsAssistance` (extracted
       // text the parser couldn't structure) instead of a recipe. This is NOT
@@ -841,8 +943,7 @@ class ImportManager {
       // Preview tagging is an optional enhancement — it must NEVER fail an
       // already-parsed recipe. Wrap it in its own guard (mirrors
       // _retagCachedRecipe) so a tagging throw falls back to the untagged
-      // recipe instead of discarding the parse and double-logging the parse
-      // event (BUT-1470 telemetry) via the outer catch.
+      // recipe instead of discarding the parse.
       var recipeWithPreview = importResult.recipe!;
       final taggingService = _taggingService;
       if (taggingService != null && recipeWithPreview.tagResult == null) {
@@ -872,49 +973,11 @@ class ImportManager {
         metadata: importResult.metadata,
       );
     } catch (e) {
-      // BUT-1597: an exception thrown before a result is returned is still a
-      // parse outcome — log it (success=false) so exception failures are
-      // measured, not just the success/needsAssistance/failure return paths.
-      // Mirrors _logParseEvent's UrlImportStrategy skip (it self-logs per-tier)
-      // to avoid double-counting. Never throws: ParseEventLogger swallows errors.
-      if (strategy is! UrlImportStrategy) {
-        _eventLogger.logEvent(
-          url: null,
-          source: _sourceTypeFromStrategy(strategy.strategyName),
-          success: false,
-          parseTimeMs: stopwatch.elapsedMilliseconds,
-        );
-      }
       return ImportManagerResult.failure(
         'Parse execution error: $e',
         strategy: strategy.strategyName,
       );
     }
-  }
-
-  /// BUT-1470: emit a fire-and-forget parse event for a strategy outcome.
-  ///
-  /// [UrlImportStrategy] already logs its own per-tier parse events (and its
-  /// enhanced-parser tier logs again via RecipeParserService), so it is skipped
-  /// here to avoid double-counting the most common import path. Every other
-  /// strategy (photo/OCR, text, archive, and the social pipelines) had no
-  /// parse-event coverage before this — this is the single choke point that
-  /// closes that gap. Never throws: ParseEventLogger swallows its own errors.
-  void _logParseEvent(
-    ImportStrategy strategy,
-    ImportResult result,
-    int parseTimeMs,
-  ) {
-    if (strategy is UrlImportStrategy) return;
-
-    _eventLogger.logEvent(
-      // The input for these paths is raw text / image bytes / a file id, not a
-      // fetchable URL, so there is no meaningful `url` to record.
-      url: null,
-      source: _sourceTypeFromStrategy(strategy.strategyName),
-      success: result.isSuccess && result.recipe != null,
-      parseTimeMs: parseTimeMs,
-    );
   }
 
   double _calculateConfidence(ImportStrategy strategy, String input) {
@@ -1003,13 +1066,12 @@ class ImportManager {
     }
   }
 
-  /// Save successful import result to cache if input is a URL, and record usage.
+  /// Save successful import result to cache if input is a URL.
   Future<void> _saveToCacheIfUrl(
     String input,
     ImportManagerResult result,
   ) async {
     final sourceType = _sourceTypeFromStrategy(result.strategy);
-    await _recordImportUsage(sourceType);
 
     final cache = _globalCache;
     final normalizer = _normalizer;

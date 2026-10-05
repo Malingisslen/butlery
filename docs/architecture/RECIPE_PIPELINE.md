@@ -89,14 +89,14 @@ audit's core finding — check it before trusting any description of the pipelin
 | `llm_response_samples` capture | **WRITE-ONLY** | Every paid Gemini call captured "for mining"; no reader exists; 30-day TTL deletes before use. |
 | Prompt A/B infrastructure | **BUILT, unused** | Bucketing + per-bucket logging fully threaded; no experiment configured. |
 | Correction capture (flywheel intake) | **~1 of 8 paths** | Only Tier-1 URL imports write the ParsedRecipeCache snapshot the diff needs. Photo/OCR, text-paste, Instagram/TikTok/YouTube, and URL tiers 2–7 produce **zero** training data. |
-| Parse telemetry (`parse_events`) | **URL path only** | Photo/text/social imports emit no parse events — their success rate is invisible to the admin dashboard. |
+| Parse telemetry (`parse_events`) | **Every channel** | One event per import, written by `ImportManager` (BUT-2238). |
 | Household/present-diner allergen filtering | **DEAD CODE** | `getAvailableRecipesAsync()` has zero production callers; all menu generation uses the sync single-user getter. Its tests call the dead method directly and stay green. **CRITICAL, roadmap P0.** |
 | Menu generation vs user tag overrides | **GAP** | Recipe-list filtering honors overrides + coverage + needsRetagging guards; menu generation reads raw `tagResult` with none of them. A user's manual "this DOES contain gluten" correction is ignored by menus. |
 | `TagGenerator.generate()` | **DEAD** | ~175-line duplicate orchestrator, zero production callers; live path is `TaggingPipelineRunner`. Yet `tag_generator_test.dart` (3,300 lines) pins it 142 times, and the "Import → Tagging Integration" test also runs it. |
 | Tag-config change → retag | **MISSING LINK** | `needsRetagging` keys only on the code constant `kTagGeneratorVersion`; a remote `tag_configs` change never invalidates existing tags. Conversely, bumping the constant makes every client re-tag everything (no server-side batch path). |
 | Tagging correction loop | **MISSING** | User tag/allergen overrides are display-only; "the auto-tagger got an allergen wrong" leaves no queryable trace anywhere. |
 | Menu engagement signals | **MISSING** | Swaps/regenerations/rejections not logged at all — menu quality (the monetization linchpin) is unmeasurable. |
-| Corpus eval harnesses (`tools/corpus/`, tag scorecard) | **NOT GATED** | Exist and run manually; no CI workflow references them. (CRF golden set IS CI-gated at ≥85%; tagging golden runs in the golden suite.) |
+| Corpus eval harnesses (`tools/corpus/`, tag scorecard) | **Partly gated** | The tag scorecard (`test/evaluation/`) and the import gate (`test/import_gate/`) run in `test.yml`. (CRF golden set IS CI-gated at ≥85%; tagging golden runs in the golden suite.) |
 
 ## The learning loop, honestly
 

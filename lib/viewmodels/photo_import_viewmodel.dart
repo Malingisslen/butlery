@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
+import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -871,7 +872,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// is not a degraded path; it is the path that ships today.
   Future<void> _autoParseOcrText(String text, {DocumentLayout? layout}) async {
     try {
-      final result = await importManager.autoParseMulti(text, layout: layout);
+      final result = await importManager.autoParseMulti(
+        text,
+        layout: layout,
+        channel: ImportChannel.photo,
+      );
       final recipes = result.successfulRecipes;
       _parsedRecipes
         ..clear()

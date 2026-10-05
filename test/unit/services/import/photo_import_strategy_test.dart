@@ -139,20 +139,19 @@ void main() {
         expect(strategy.canHandle('PHOTO'), isTrue);
       });
 
-      test('should accept any non-empty string', () {
-        // Arrange
+      test('rejects links and pasted text (BUT-2238)', () {
         const inputs = [
-          'image_import',
-          'camera_capture',
+          'https://www.ica.se/recept/kladdkaka/',
+          'kladdkaka',
+          'Pannkakor\n3 ägg\n6 dl mjölk',
           'gallery_photo',
         ];
 
-        // Act & Assert
         for (final input in inputs) {
           expect(
             strategy.canHandle(input),
-            isTrue,
-            reason: 'Should handle: $input',
+            isFalse,
+            reason: 'must not answer for: $input',
           );
         }
       });
