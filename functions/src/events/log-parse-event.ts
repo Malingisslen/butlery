@@ -2,8 +2,7 @@
  * Parse Event Logging - Server-side analytics for recipe parsing
  *
  * P1-4 Security: Tier attempts array is validated per-entry (max 10,
- * tier names checked against VALID_TIERS, values clamped). Client also
- * sends domain and unknownDomain flag for site coverage analytics.
+ * tier names checked against VALID_TIERS, values clamped).
  */
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
@@ -44,7 +43,7 @@ export function computeExpireAt(nowMs: number): admin.firestore.Timestamp {
 
 /**
  * BUT-2238: an import writes ONE event, from the app's ImportManager. These
- * lists mirror the Dart side (ImportChannel, ImportEvent.strategyId and
+ * lists mirror the Dart side (ImportChannel, ImportEvent.strategyIds and
  * ImportErrorCode in lib/services/import/); import_event_vocabulary_test.dart
  * reads this file and fails when the two drift.
  */
@@ -239,7 +238,7 @@ export function sanitizeParseEvent(data: ParseEventData) {
     channel: oneOf(data.channel, VALID_CHANNELS),
     strategy: oneOf(data.strategy, VALID_STRATEGIES),
     outcome,
-    success: Boolean(data.success),
+    success: outcome === "recipe",
     errorCode: outcome === "failure" ? oneOf(data.errorCode, VALID_ERROR_CODES) : null,
     fromCache: Boolean(data.fromCache),
     parseTimeMs: clamp(data.parseTimeMs, 0, 60000),
@@ -251,6 +250,31 @@ export function sanitizeParseEvent(data: ParseEventData) {
     ...(tierAttempts ? { tierAttempts } : {}),
     ...(data.unknownDomain === true ? { unknownDomain: true } : {}),
   };
+}
+
+type SanitizedParseEvent = ReturnType<typeof sanitizeParseEvent>;
+
+/** An event must say where it came from: a link, or a channel. */
+export function isLoggable(fields: SanitizedParseEvent): boolean {
+  return Boolean(fields.url || fields.channel);
+}
+
+/** Strategies that answer a link without running the site's own parser. */
+const NOT_SITE_PARSERS = ["youtube", "tiktok", "instagram", "cache"];
+
+/**
+ * Whether an event moves the site_configs counters, which feed
+ * SiteConfig.isReliable and so the parser's quality bar for that domain. Only
+ * a live parse of a recipe site says anything about the site's selectors: a
+ * cache hit and the social pipelines do not.
+ */
+export function countsForSite(fields: SanitizedParseEvent): boolean {
+  return (
+    Boolean(fields.domain) &&
+    fields.channel === "link" &&
+    !fields.fromCache &&
+    !NOT_SITE_PARSERS.includes(fields.strategy ?? "")
+  );
 }
 
 /**
@@ -284,7 +308,7 @@ export const logParseEvent = onCall(
     await enforceRateLimit(userId, "logParseEvent");
 
     const fields = sanitizeParseEvent(data);
-    if (!fields.url && !fields.channel) {
+    if (!isLoggable(fields)) {
       throw new HttpsError(
         "invalid-argument",
         "Either url or channel must be provided"
@@ -304,7 +328,7 @@ export const logParseEvent = onCall(
       await getDb().collection("parse_events").add(trustedFields);
 
       // Update site_configs success/failure counts (server-side, replaces dead client writes)
-      if (trustedFields.domain) {
+      if (countsForSite(fields) && fields.domain) {
         const siteUpdate: Record<string, unknown> = trustedFields.success
           ? {
               successCount: admin.firestore.FieldValue.increment(1),
@@ -318,7 +342,7 @@ export const logParseEvent = onCall(
 
         await getDb()
           .collection("site_configs")
-          .doc(trustedFields.domain)
+          .doc(fields.domain)
           .set(siteUpdate, { merge: true });
       }
 

@@ -215,6 +215,38 @@ void main() {
       },
     );
 
+    test('a tier that is not a string is dropped, not thrown', () async {
+      final url = _CannedUrlStrategy(
+        ImportResult.success(recipe, metadata: {'successfulTier': 6}),
+      );
+
+      final r = await managerWith([url]).autoImport('https://ica.se/x');
+
+      expect(r.isSuccess, isTrue, reason: 'telemetry never fails an import');
+      expect(spy.events.single.successfulTier, isNull);
+    });
+
+    test('a link carries the parser version', () async {
+      final url = _CannedUrlStrategy(
+        ImportResult.success(recipe, metadata: {'parserVersion': '2.0.0'}),
+      );
+
+      await managerWith([url]).autoImport('https://ica.se/x');
+
+      expect(spy.events.single.parserVersion, '2.0.0');
+    });
+
+    test('a re-parse of an import already measured writes nothing', () async {
+      final limiter = installLimiter();
+
+      await managerWith([
+        _SucceedingStrategy(recipe),
+      ]).autoParseMulti('Pannkakor\n\n3 ägg', channel: null);
+
+      expect(spy.events, isEmpty);
+      expect(limiter.recorded, isEmpty);
+    });
+
     test('an assisted outcome is neither a recipe nor a failure', () async {
       mockStrategy.setStrategyState(strategyName: 'Text Import');
       when(
@@ -323,6 +355,23 @@ void main() {
         'usedLlm': false,
         'errorCode': 'noRecipeContent',
       });
+    });
+
+    test('a link typed without a scheme still names its site', () {
+      final e = ImportEvent.fromResult(
+        ImportManagerResult.failure('nej'),
+        channel: ImportChannel.link,
+        input: ' ica.se/recept/x ',
+        elapsed: Duration.zero,
+      );
+      expect(e.url, 'https://ica.se/recept/x');
+      final shared = ImportEvent.fromResult(
+        ImportManagerResult.failure('nej'),
+        channel: ImportChannel.link,
+        input: 'ica.se/x?ref=https://a.se',
+        elapsed: Duration.zero,
+      );
+      expect(shared.url, 'https://ica.se/x?ref=https://a.se');
     });
 
     test('strategy ids: voice is told apart from text', () {

@@ -7,6 +7,18 @@
   Shared word lists and cross-port VECTORS: compiled-in consts or one shared
   JSON fixture, pinned on BOTH sides, never a runtime load.
 
+### Telemetry callables (events/)
+- **A counter a callable bumps from a client event is only as true as the set of events
+  the client sends.** When a client change widens WHICH outcomes reach the callable
+  (cache hits, assisted results, new channels, social pipelines), re-check every aggregate
+  the handler writes against the new population, even if the CF lines are untouched.
+  `site_configs.successCount`/`failureCount` feed `SiteConfig.isReliable` → the parser's
+  quality bar, so only a live site parse may move them: gate in an exported pure predicate
+  (`countsForSite`) and derive `success` from the validated `outcome`, never a second
+  client flag.
+- A Dart test pins `VALID_*` lists by regex `export const NAME\s*=\s*\[([^\]]*)\]` — no type
+  annotation before `=`, no `]` inside the list.
+
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a Firestore `system/prompts`
   override doc is live — ship a matching prod-doc update. A new prompt field

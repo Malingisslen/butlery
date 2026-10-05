@@ -20,6 +20,7 @@ class ImportEvent {
   final int parseTimeMs;
   final String? url;
   final String? successfulTier;
+  final String? parserVersion;
   final double? finalQuality;
   final bool usedLlm;
   final double? estimatedCostUsd;
@@ -35,6 +36,7 @@ class ImportEvent {
     this.fromCache = false,
     this.url,
     this.successfulTier,
+    this.parserVersion,
     this.finalQuality,
     this.usedLlm = false,
     this.estimatedCostUsd,
@@ -60,14 +62,17 @@ class ImportEvent {
     final quality = meta['overallQuality'];
     final cost = meta['llmCost'];
     final attempts = meta['tierAttempts'];
+    final tier = meta['successfulTier'];
+    final version = meta['parserVersion'];
     return ImportEvent(
       channel: channel,
       strategy: strategyId(result.strategy),
       outcome: outcome,
       parseTimeMs: elapsed.inMilliseconds,
       fromCache: meta['fromCache'] == true,
-      url: channel == ImportChannel.link ? input.trim() : null,
-      successfulTier: meta['successfulTier'] as String?,
+      url: channel == ImportChannel.link ? _withScheme(input.trim()) : null,
+      successfulTier: tier is String ? tier : null,
+      parserVersion: version is String ? version : null,
       finalQuality: quality is num ? quality.toDouble() : null,
       usedLlm: meta['usedLlm'] == true,
       estimatedCostUsd: cost is num ? cost.toDouble() : null,
@@ -79,8 +84,7 @@ class ImportEvent {
     );
   }
 
-  /// The ids [strategyId] can return, in the order it tests them: voice
-  /// before text so dictated imports never land in the pasted-text bucket.
+  /// The ids [strategyId] can return, in the order it tests them.
   static const strategyIds = [
     'cache',
     'youtube',
@@ -93,6 +97,11 @@ class ImportEvent {
     'archive',
     'unknown',
   ];
+
+  /// A link typed without a scheme still names a site: the Cloud Function
+  /// reads the domain off the url and can only parse one with a scheme.
+  static String _withScheme(String url) =>
+      Uri.tryParse(url)?.hasScheme == true ? url : 'https://$url';
 
   /// Short id for a strategy name.
   static String strategyId(String? strategyName) {
@@ -109,6 +118,7 @@ class ImportEvent {
     'parseTimeMs': parseTimeMs,
     'url': ?url,
     'successfulTier': ?successfulTier,
+    'parserVersion': ?parserVersion,
     'finalQuality': ?finalQuality,
     'usedLlm': usedLlm,
     'estimatedCostUsd': ?estimatedCostUsd,

@@ -2,6 +2,8 @@
 /// ```dart
 /// final im = ImportManager(ops); await im.autoImport(text);
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -154,9 +156,7 @@ class ImportManager {
       TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
       PhotoImportStrategy(), // 4. Photo import (OCR extraction)
       // 5. Voice dictation — canHandle() always false (explicitly launched
-      // from the voice wizard, never auto-selected); registered so
-      // importVoiceTranscript flows through _parseWithStrategy and gets
-      // parse-event telemetry under its own 'voice' source tag.
+      // from the voice wizard, never auto-selected).
       VoiceImportStrategy(),
     ]);
   }
@@ -198,9 +198,7 @@ class ImportManager {
   }
 
   /// Auto-detects strategy and parses recipe WITHOUT saving (for preview/validation).
-  /// ```dart
-  /// final r = await im.autoParseOnly(text); if (r.isSuccess) showPreview(r.recipe!);
-  Future<ImportManagerResult> autoParseOnly(
+  Future<ImportManagerResult> _autoParseOnly(
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
@@ -410,10 +408,7 @@ class ImportManager {
   /// strategy's result directly so that message survives to the ViewModel.
   ///
   /// The rate-limit CHECK mirrors [autoImport] (same local `basic('auto')` check
-  /// → structured `rateLimit(denied)` on denial). It does not record basic-bucket
-  /// usage on success — the cost is metered on the LLM vision bucket, same as the
-  /// normal multi-page photo path (`autoParseMulti`), so handwritten stays
-  /// consistent with the rest of the photo feature.
+  /// → structured `rateLimit(denied)` on denial).
   Future<ImportManagerResult> importSinglePhoto(
     String input, {
     Map<String, dynamic>? options,
@@ -461,9 +456,7 @@ class ImportManager {
   ///
   /// Mirrors [importSinglePhoto]: rate-limit check up front (structured
   /// denial survives to the ViewModel), then straight to the voice
-  /// strategy via [_parseWithStrategy] — the telemetry choke point — so
-  /// dictated imports are rate-limited AND logged under source 'voice'
-  /// (the direct TextImportStrategy call would silently skip both).
+  /// strategy via [_parseWithStrategy].
   Future<ImportManagerResult> importVoiceTranscript(
     String input, {
     Map<String, dynamic>? options,
@@ -534,6 +527,12 @@ class ImportManager {
         elapsed: elapsed,
       ),
     );
+    // Not awaited: the quota write retries on a transient error, and an
+    // offline failure must reach the user without waiting for it.
+    unawaited(_recordUsage(channel));
+  }
+
+  Future<void> _recordUsage(ImportChannel channel) async {
     try {
       await _rateLimiter?.recordUsage(ImportOperation.basic(channel.name));
     } catch (e) {
@@ -712,7 +711,7 @@ class ImportManager {
   ///
   /// [MultiRecipeSplitter] segments the text; when it finds a single recipe it
   /// returns `[input]`, so this collapses to exactly the existing
-  /// [autoParseOnly] behaviour (wrapped in a 1-element [BatchImportResult]).
+  /// [_autoParseOnly] behaviour (wrapped in a 1-element [BatchImportResult]).
   /// Callers that want a picker check `successfulRecipes.length > 1`.
   ///
   /// **The single-recipe path is no longer byte-unchanged, and that is
@@ -731,12 +730,16 @@ class ImportManager {
   /// reasons: the splitter's guarantee is worth keeping, and the eval arms can
   /// only measure a trim if it sits outside `split`.
   /// A run without a [layout] is still byte-identical to before.
+  ///
+  /// [channel] null means this parse belongs to an import that was already
+  /// measured — a page added, removed or reordered, a restored draft, the
+  /// text behind a handwritten photo — so it writes no event and uses no quota.
   Future<BatchImportResult> autoParseMulti(
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
     DocumentLayout? layout,
-    ImportChannel channel = ImportChannel.text,
+    ImportChannel? channel = ImportChannel.text,
   }) async {
     final stopwatch = Stopwatch()..start();
     final batch = await _autoParseMulti(
@@ -745,6 +748,7 @@ class ImportManager {
       options: options,
       layout: layout,
     );
+    if (channel == null) return batch;
     // One page is one import, however many recipes it held: the event
     // describes the first recipe found, or the failure that knew its cause.
     final answer =
@@ -797,7 +801,7 @@ class ImportManager {
     final errors = <String>[];
 
     for (final block in blocks) {
-      final result = await autoParseOnly(
+      final result = await _autoParseOnly(
         block,
         preferredStrategy: preferredStrategy,
         options: options,
@@ -1152,8 +1156,6 @@ class ImportManager {
     if (lower.contains('tiktok')) return 'tiktok';
     if (lower.contains('instagram')) return 'instagram';
     if (lower.contains('photo') || lower.contains('ocr')) return 'ocr';
-    // Voice before text: dictated transcripts must never blend into the
-    // pasted-text telemetry bucket (Data/Integrations panel condition).
     if (lower.contains('voice')) return 'voice';
     if (lower.contains('text')) return 'text';
     if (lower.contains('archive')) return 'archive';

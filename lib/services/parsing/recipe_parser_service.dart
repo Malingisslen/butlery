@@ -67,8 +67,8 @@ class ParseResult {
   /// Total parsing time.
   final Duration totalTime;
 
-  /// Every tier that ran, in order. The import's one parse event reports
-  /// them; the parser itself writes no event (BUT-2238).
+  /// Every tier that ran, in order. The parser itself writes no event
+  /// (BUT-2238).
   final List<TierResult> tierResults;
 
   /// The page's domain has no stored site config.
@@ -403,7 +403,7 @@ class RecipeParserService extends BaseService {
   /// Run parsing tiers in order until quality threshold is met.
   ///
   /// Returns both the merged recipe and the raw tier results so callers
-  /// can extract metrics (successfulTier, quality, cost) for analytics.
+  /// can extract metrics (successfulTier, quality) for analytics.
   Future<({ParsedRecipe? recipe, List<TierResult> tierResults})> _runTiers(
     ParsingContext context, {
     required double qualityThreshold,

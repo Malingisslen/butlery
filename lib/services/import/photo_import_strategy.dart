@@ -18,7 +18,6 @@
 /// - Swedish measurement units preserved (dl, msk, tsk, krm)
 /// **Usage Examples:**
 /// ```dart
-/// // From PhotoImportViewModel
 /// final result = await importManager.autoImport('photo', options: {
 ///   'imageBytes': imageBytes,
 ///   'sourceType': 'camera', // or 'gallery'

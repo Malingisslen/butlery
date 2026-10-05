@@ -589,6 +589,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'fromCache': parseResult.fromCache,
         'parseTime': parseResult.totalTime.inMilliseconds,
         'overallQuality': parsed.overallQuality,
+        'parserVersion': parserVersion,
         'successfulTier': ?parseResult.tierResults
             .where((t) => t.success)
             .lastOrNull

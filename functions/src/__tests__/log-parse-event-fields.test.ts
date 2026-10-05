@@ -6,7 +6,11 @@
  * Run with: npx ts-node src/__tests__/log-parse-event-fields.test.ts
  */
 
-import { sanitizeParseEvent } from "../events/log-parse-event";
+import {
+  countsForSite,
+  isLoggable,
+  sanitizeParseEvent,
+} from "../events/log-parse-event";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
 const failure = {
@@ -103,6 +107,57 @@ const cases: UnitCase[] = [
       });
       assertEqual(f.url, "https://www.ica.se/recept/x/", "token stripped");
       assertEqual(f.domain, "ica.se", "domain");
+    },
+  },
+  {
+    name: "success is the outcome, not a separate client flag",
+    fn: async () => {
+      assertEqual(
+        sanitizeParseEvent({ ...failure, success: true }).success,
+        false,
+        "a failure claiming success"
+      );
+      assertEqual(
+        sanitizeParseEvent({ ...failure, outcome: "recipe" }).success,
+        true,
+        "a recipe"
+      );
+    },
+  },
+  {
+    name: "an event needs a link or a channel",
+    fn: async () => {
+      assertEqual(isLoggable(sanitizeParseEvent({ parseTimeMs: 1 })), false, "neither");
+      assertEqual(isLoggable(sanitizeParseEvent(failure)), true, "channel");
+    },
+  },
+  {
+    name: "only a live parse of a recipe site moves the site counters",
+    fn: async () => {
+      const live = {
+        channel: "link",
+        strategy: "url",
+        outcome: "recipe",
+        url: "https://www.ica.se/recept/x/",
+      };
+      assertEqual(countsForSite(sanitizeParseEvent(live)), true, "live parse");
+      assertEqual(
+        countsForSite(sanitizeParseEvent({ ...live, fromCache: true })),
+        false,
+        "cache hit"
+      );
+      for (const strategy of ["youtube", "tiktok", "instagram", "cache"]) {
+        assertEqual(
+          countsForSite(sanitizeParseEvent({ ...live, strategy })),
+          false,
+          strategy
+        );
+      }
+      assertEqual(
+        countsForSite(sanitizeParseEvent({ ...live, channel: "text" })),
+        false,
+        "pasted text naming a url"
+      );
     },
   },
 ];

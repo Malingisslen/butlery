@@ -95,7 +95,7 @@ class ImportRateLimiter extends BaseService {
 
   /// Record a completed import operation.
   ///
-  /// Call this after a successful import to update usage counters.
+  /// Call this after an import to update usage counters.
   Future<void> recordUsage(
     ImportOperation operation, {
     double? llmCost,
