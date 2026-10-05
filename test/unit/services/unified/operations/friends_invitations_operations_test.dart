@@ -356,6 +356,83 @@ void main() {
         expect(invitation.id, isNot(contains(senderUid)));
         expect(invitation.id, isNot(contains(inviteeUid)));
       });
+
+      group('accepting (BUT-2265)', () {
+        GroupInvitation pending() => GroupInvitation(
+          id: 'inv-1',
+          groupId: 'group-1',
+          groupName: 'Hemma',
+          groupEmoji: '🏠',
+          fromUserId: 'owner-1',
+          fromUserName: 'Owner',
+          toUserId: 'test-user-123',
+          sentAt: DateTime(2026, 10, 5),
+        );
+        final joined = FriendCategory(
+          id: 'group-1',
+          name: 'Hemma',
+          ownerId: 'owner-1',
+          friendUserIds: const ['owner-1', 'test-user-123'],
+          createdAt: DateTime(2026, 10, 5),
+          updatedAt: DateTime(2026, 10, 5),
+        );
+
+        setUp(() {
+          mockParentService.addSentInvitationInternal(pending());
+        });
+
+        test('joins through the server, then reads the group', () async {
+          when(
+            () => mockFriendsRepository.acceptGroupInvitation('inv-1'),
+          ).thenAnswer((_) async {});
+          when(
+            () => mockCategoryRepository.getCategory('owner-1', 'group-1'),
+          ).thenAnswer((_) async => joined);
+
+          final ok = await operations.acceptGroupInvitation('inv-1');
+
+          expect(ok, isTrue);
+          verifyInOrder([
+            () => mockFriendsRepository.acceptGroupInvitation('inv-1'),
+            () => mockCategoryRepository.getCategory('owner-1', 'group-1'),
+          ]);
+          verifyNever(
+            () => mockCategoryRepository.addSelfToCategory(any(), any()),
+          );
+          expect(
+            mockParentService.getSentInvitationByIdInternal('inv-1')!.status,
+            GroupInvitationStatus.accepted,
+          );
+        });
+
+        test('reports failure when the server refuses', () async {
+          when(
+            () => mockFriendsRepository.acceptGroupInvitation('inv-1'),
+          ).thenThrow(Exception('permission-denied'));
+
+          final ok = await operations.acceptGroupInvitation('inv-1');
+
+          expect(ok, isFalse);
+          verifyNever(() => mockCategoryRepository.getCategory(any(), any()));
+          expect(
+            mockParentService.getSentInvitationByIdInternal('inv-1')!.status,
+            GroupInvitationStatus.pending,
+          );
+        });
+
+        test('still succeeds when the joined group cannot be read', () async {
+          when(
+            () => mockFriendsRepository.acceptGroupInvitation('inv-1'),
+          ).thenAnswer((_) async {});
+          when(
+            () => mockCategoryRepository.getCategory('owner-1', 'group-1'),
+          ).thenThrow(Exception('unavailable'));
+
+          final ok = await operations.acceptGroupInvitation('inv-1');
+
+          expect(ok, isTrue);
+        });
+      });
     });
 
     group('Invitation Management', () {

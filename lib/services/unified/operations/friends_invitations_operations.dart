@@ -645,50 +645,28 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      var existingGroup = _getCategories().getCategoryById(invitation.groupId);
+      // BUT-2265: the group rules admit only the owner and existing members,
+      // so the server adds the invitee and marks the invitation accepted.
+      await _friendsRepository.acceptGroupInvitation(invitationId);
 
-      if (existingGroup == null) {
-        try {
-          final fetchedGroup = await _categoryRepository.getCategory(
-            invitation.fromUserId,
-            invitation.groupId,
-          );
-
-          if (fetchedGroup != null) {
-            _addCategoryInternal(fetchedGroup);
-            existingGroup = fetchedGroup;
-          } else {
-            AppLogger.error('Group not found in Firestore');
-            return false;
-          }
-        } catch (e) {
-          AppLogger.error('Failed to fetch group from Firestore', e);
-          return false;
-        }
-      }
-
-      final addedToGroup = await _getCategories().addFriendToCategory(
-        invitation.toUserId,
-        invitation.groupId,
-        skipFriendshipCheck: true,
-        skipPermissionCheck: true,
-      );
-
-      if (!addedToGroup) {
-        AppLogger.error(
-          'Failed to add user to group after accepting invitation',
+      // Readable now that the caller is a member. The join has already
+      // happened, so a failed read must not report the accept as failed.
+      try {
+        final joinedGroup = await _categoryRepository.getCategory(
+          invitation.fromUserId,
+          invitation.groupId,
         );
-        return false;
+        if (joinedGroup != null) {
+          _addCategoryInternal(joinedGroup);
+        }
+      } catch (e) {
+        AppLogger.warning('Joined group could not be read yet: $e');
       }
 
       final acceptedInvitation = invitation.accept();
 
       _updateSentInvitationInternal(invitationId, acceptedInvitation);
       _notifyListeners();
-      await _updateInvitationStatusInternal(
-        acceptedInvitation.id,
-        acceptedInvitation.status,
-      );
 
       GroupEventBus.memberAdded();
       AppLogger.success('Group invitation accepted successfully');
