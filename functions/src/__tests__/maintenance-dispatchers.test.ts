@@ -38,16 +38,18 @@ if (admin.apps.length === 0) {
 }
 
 import {
-  runTaskChain,
-  MaintenanceTask,
   DAILY_ANALYTICS_TASKS,
   WEEKLY_REPORT_TASKS,
   SNAPSHOT_PRODUCER_TASKS,
+  deadDrainQueues,
+} from "../scheduled/maintenance-dispatchers";
+import {
+  runTaskChain,
+  MaintenanceTask,
   CHAIN_DEADLINE_MS,
   CHAIN_TIMEOUT_SECONDS,
   TASK_TIMEOUT_MS,
-  deadDrainQueues,
-} from "../scheduled/maintenance-dispatchers";
+} from "../scheduled/task-chain";
 
 let totalRun = 0;
 let totalFailed = 0;
