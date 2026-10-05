@@ -44,11 +44,6 @@ class HouseholdAllergenSharingTile extends StatefulWidget {
 
 class _HouseholdAllergenSharingTileState
     extends State<HouseholdAllergenSharingTile> {
-  static const _nothingDeclared = UserAllergenPreferences(
-    trackedAllergens: {},
-    trackedDietary: {},
-  );
-
   /// The household this member would share into, resolved once. Null means
   /// there is nothing to share with — the row stays hidden rather than
   /// offering a switch whose result nobody could read.
@@ -235,7 +230,7 @@ class _HouseholdAllergenSharingTileState
         // would impose a caution they never chose — and because the household
         // AND-folds this field, one such share strips every unverified recipe
         // from everyone's menu.
-        final shared = prefs ?? _nothingDeclared;
+        final shared = prefs ?? UserAllergenPreferences.none;
         return HouseholdAllergenShare(
           householdId: householdId,
           userId: userId,

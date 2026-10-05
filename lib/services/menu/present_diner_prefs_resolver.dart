@@ -81,7 +81,9 @@ class PresentDinerPrefsResolver {
       final householdService = ServiceLocator.tryGet<HouseholdService>();
       accounts = householdService == null
           ? HouseholdAllergenAggregate.degraded(
-              preferences: HouseholdService.widenWithSafetyFloor(_noAllergens),
+              preferences: HouseholdService.widenWithSafetyFloor(
+                UserAllergenPreferences.none,
+              ),
             )
           : await householdService.aggregateAllergenPreferencesFor(
               presentAccounts,
@@ -89,7 +91,7 @@ class PresentDinerPrefsResolver {
     }
 
     final folded = _foldDiners(
-      accounts?.preferences ?? _noAllergens,
+      accounts?.preferences ?? UserAllergenPreferences.none,
       presentDiners.map((d) => d.allergenPreferences),
     );
     return PresentDinerPrefs(
@@ -187,7 +189,7 @@ class PresentDinerPrefsResolver {
     final householdService = ServiceLocator.tryGet<HouseholdService>();
     final UserAllergenPreferences base;
     if (householdService == null) {
-      base = _noAllergens;
+      base = UserAllergenPreferences.none;
     } else if (householdService.hasHousehold) {
       base =
           (await householdService.aggregateAllergenPreferences()).preferences;
@@ -201,9 +203,4 @@ class PresentDinerPrefsResolver {
       isComplete: false,
     );
   }
-
-  static const _noAllergens = UserAllergenPreferences(
-    trackedAllergens: {},
-    trackedDietary: {},
-  );
 }

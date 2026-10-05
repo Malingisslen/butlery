@@ -9,6 +9,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
@@ -158,6 +159,26 @@ class HouseholdService extends BaseService {
     return HouseholdAllergenAggregate.degraded(preferences: _floorOnly);
   }
 
+  /// The signed-in user's own preferences as the MENU filters by them
+  /// (BUT-2085, BUT-1694). Not [UserService.allergenPreferences]: that getter
+  /// substitutes [UserAllergenPreferences.defaults] for a user who never
+  /// opened the allergen screen, which is the right suggestion for the
+  /// settings screen and the wrong filter — it would hold the menu to the
+  /// default diets.
+  ///
+  /// An untouched screen means "no allergies" (BUT-1663) only when the
+  /// settings were actually read; a profile whose settings read failed, or
+  /// no profile at all, gets the common-allergen floor as an unreadable
+  /// household member does. The generator and the opt-out dialog that names
+  /// what the generator stops protecting both read this, so they cannot
+  /// drift apart.
+  static UserAllergenPreferences ownMenuPreferences(UserProfile? profile) {
+    final declared = profile?.allergenPreferences;
+    if (declared != null) return declared;
+    if (profile?.settingsMerged ?? false) return UserAllergenPreferences.none;
+    return _floorOnly;
+  }
+
   /// [base] widened with the common-allergen floor and the UNKNOWN escape
   /// hatch shut — the answer for a set of diners this device could not read.
   /// Dietary choices pass through untouched, for the reason given on
@@ -175,7 +196,7 @@ class HouseholdService extends BaseService {
   /// hatch shut so only recipes proven free get through. Kept in one place —
   /// it is the most safety-critical value in this file and two copies would
   /// drift.
-  UserAllergenPreferences get _floorOnly => _buildPreferences(
+  static UserAllergenPreferences get _floorOnly => _buildPreferences(
     allergens: _allergenSafetyFloor,
     dietary: const {},
     includeUnknown: false,

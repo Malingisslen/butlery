@@ -5,15 +5,18 @@
 // settings read, `allergenPreferences` null).
 //
 // The generator is wired exactly as MenuViewModel wires it (both filter
-// flags on, menu_viewmodel.dart) and reads a REAL UserService, not a mock,
-// so the defaults substitution in `UserService.allergenPreferences` is on
-// the measured path. The household path is a mock HouseholdService, as in
+// flags on, menu_viewmodel.dart) and reads a REAL UserService, not a mock:
+// the profile carries null and the getter substitutes defaults, so the two
+// sources disagree exactly as in production, and a generator that reads the
+// getter turns the second group red. Keep this suite OFF the shared
+// `stubOwnPreferences` helper, which makes both sources agree. The
+// household path is a mock HouseholdService, as in
 // menu_household_allergen_test.dart.
 //
 // The generator reads the PROFILE, not `UserService.allergenPreferences`
 // (BUT-1663: an untouched screen means "no allergies", never the default
-// diets); the first group pins that the getter still substitutes defaults
-// for the settings screen, the second what the menu filters by.
+// diets); the first group pins that the getter still substitutes defaults,
+// the second what the menu filters by.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -258,6 +261,7 @@ void main() {
         final withHousehold = await pool();
 
         expect(withoutHousehold, withHousehold);
+        expect(withHousehold, ['meat', 'vegan', 'nuts']);
       },
     );
 
@@ -266,6 +270,21 @@ void main() {
       'floor with UNKNOWN shut, never by a diet',
       () async {
         await signInWith(profile(settingsMerged: false));
+        // A dish whose floor allergen is UNKNOWN: only the shut hatch drops it.
+        final unknownNuts = recipeWith(
+          'unknown',
+          tag(
+            allergen: {
+              for (final a in UserAllergenPreferences.defaults.trackedAllergens)
+                a: a == 'nötter' ? TriState.unknown : TriState.free,
+            },
+            dietary: {'vegetarisk': TriState.free, 'vegansk': TriState.free},
+          ),
+        );
+        recipeService.setRecipeState(
+          isInitialized: true,
+          recipes: [meatDish(), veganDish(), nutDish(), unknownNuts],
+        );
 
         expect(syncPool(), ['meat', 'vegan']);
         expect(await pool(), ['meat', 'vegan']);

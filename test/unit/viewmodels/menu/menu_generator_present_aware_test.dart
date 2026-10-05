@@ -430,11 +430,17 @@ void main() {
 
     test('total failure with no household, user never set preferences: the '
         'floor applies but no diet is imposed', () async {
-      // The profile carries no preferences at all; the generator must not
-      // substitute the defaults, whose tracked diets would reach this path.
+      // Production shape for a profile that carries no preferences: the
+      // profile itself is empty, and `UserService.allergenPreferences`
+      // substitutes the defaults, whose tracked diets must not reach this
+      // path. The two sources DISAGREE on purpose, so a reader that falls
+      // back to the getter turns this test red.
       when(
         () => userService.currentUserProfile,
       ).thenReturn(_profile(_self, settingsMerged: true));
+      when(
+        () => userService.allergenPreferences,
+      ).thenReturn(UserAllergenPreferences.defaults);
       when(() => roster.tryGetRoster(any())).thenAnswer((_) async => null);
       generator
         ..filterByDietary = true

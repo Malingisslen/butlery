@@ -131,7 +131,8 @@ void main() {
         expect(ticked.untrackAllergen('gluten').includeUnknownInMenu, isTrue);
       });
 
-      test('defaults suggest four allergens and therefore read false', () {
+      test('defaults are undecided and, tracking allergens, read false', () {
+        expect(UserAllergenPreferences.defaults.trackedAllergens, isNotEmpty);
         expect(
           UserAllergenPreferences.defaults.includeUnknownInMenuChoice,
           isNull,
@@ -192,18 +193,17 @@ void main() {
         );
       });
 
-      test('equality distinguishes undecided from an explicit answer', () {
-        expect(
-          withAllergy,
-          isNot(withAllergy.copyWith(includeUnknownInMenu: false)),
+      test('equality and hashCode distinguish undecided from an explicit '
+          'answer and match two undecided copies', () {
+        final decided = withAllergy.copyWith(includeUnknownInMenu: false);
+        expect(withAllergy, isNot(decided));
+        // Non-const, so this is a different object and `==` has to compare.
+        final twin = UserAllergenPreferences(
+          trackedAllergens: {'nötter'},
+          trackedDietary: {},
         );
-        expect(
-          withAllergy,
-          const UserAllergenPreferences(
-            trackedAllergens: {'nötter'},
-            trackedDietary: {},
-          ),
-        );
+        expect(withAllergy, twin);
+        expect(withAllergy.hashCode, twin.hashCode);
       });
     },
   );

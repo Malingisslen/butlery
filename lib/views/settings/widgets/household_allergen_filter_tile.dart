@@ -125,14 +125,16 @@ class _HouseholdAllergenFilterTileState
   }
 
   /// Natural-language list of the allergens that opting OUT actually stops
-  /// filtering — the household union MINUS the owner's OWN tracked allergens,
-  /// which single-user (owner-only) filtering still protects after the opt-out.
+  /// filtering — the household union MINUS what the menu filters by for the
+  /// owner alone after the opt-out ([HouseholdService.ownMenuPreferences]).
   /// Naming an owner-own allergen would be a false statement in the safety
   /// dialog (it stays filtered either way). Empty when opting out exposes
   /// nothing new (then the generic body is used).
   String _newlyUnprotectedNames(UserAllergenPreferences? prefs) {
     if (prefs == null) return '';
-    final owner = _userService.allergenPreferences;
+    final owner = HouseholdService.ownMenuPreferences(
+      _userService.currentUserProfile,
+    );
     final allergens = prefs.trackedAllergens.difference(owner.trackedAllergens);
     final dietary = prefs.trackedDietary.difference(owner.trackedDietary);
     final labels = <String>[

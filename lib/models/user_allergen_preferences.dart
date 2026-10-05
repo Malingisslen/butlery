@@ -43,6 +43,13 @@ class UserAllergenPreferences {
   /// The stored answer behind [includeUnknownInMenu]; null means undecided.
   bool? get includeUnknownInMenuChoice => _includeUnknownInMenu;
 
+  /// Nothing tracked and nothing decided: what a read-and-empty profile
+  /// filters by, and the base every union starts from.
+  static const none = UserAllergenPreferences(
+    trackedAllergens: {},
+    trackedDietary: {},
+  );
+
   /// Default preferences with common allergens.
   static const defaults = UserAllergenPreferences(
     trackedAllergens: {
@@ -216,8 +223,9 @@ class UserAllergenPreferences {
 
   @override
   int get hashCode => Object.hash(
-    trackedAllergens,
-    trackedDietary,
+    // `==` compares set CONTENTS; a Set's own hashCode is identity.
+    Object.hashAllUnordered(trackedAllergens),
+    Object.hashAllUnordered(trackedDietary),
     showOnCards,
     showOnDetail,
     showCoverage,

@@ -232,6 +232,11 @@ class UserService extends ChangeNotifier
           joinedAt: now,
           lastActiveAt: now,
           isOnline: true,
+          // This service is writing the first settings doc right now, so the
+          // settings ARE known: empty. Left false, the menu would treat the
+          // whole first session as a failed read and filter by the
+          // common-allergen floor (HouseholdService.ownMenuPreferences).
+          settingsMerged: true,
           showOnlineStatus: showOnlineStatus ?? true,
           shareActivityToFeed: shareActivityToFeed ?? true,
           activityFeedEventTypes: activityFeedEventTypes ?? const {},

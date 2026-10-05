@@ -29,13 +29,23 @@ class _MockUserService extends Mock implements UserService {}
 
 class _MockHouseholdService extends Mock implements HouseholdService {}
 
-UserProfile _profile({required bool useHousehold}) => UserProfile(
+/// The dialog subtracts what the MENU filters by for the owner alone
+/// (`HouseholdService.ownMenuPreferences`), read from the profile: declared
+/// [prefs] as is, none with the settings read done = nothing, none with the
+/// read failed = the common-allergen floor.
+UserProfile _profile({
+  required bool useHousehold,
+  UserAllergenPreferences? prefs,
+  bool settingsMerged = true,
+}) => UserProfile(
   uid: 'u1',
   displayName: 'Test',
   email: 't@example.com',
   joinedAt: DateTime(2024, 1, 1),
   lastActiveAt: DateTime(2024, 1, 1),
   useHouseholdAllergens: useHousehold,
+  allergenPreferences: prefs,
+  settingsMerged: settingsMerged,
 );
 
 void main() {
@@ -211,21 +221,84 @@ void main() {
     );
 
     testWidgets(
+      'an owner whose settings read FAILED is floor-protected alone, so a '
+      'floor allergen is NOT named as newly exposed',
+      (tester) async {
+        when(() => household.hasHousehold).thenReturn(true);
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(useHousehold: true, settingsMerged: false),
+        );
+        when(
+          () => userService.allergenPreferences,
+        ).thenReturn(UserAllergenPreferences.defaults);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'an owner whose settings were read and hold nothing is NOT protected '
+      'alone, so a floor allergen IS named — even though the getter would '
+      'claim the owner tracks it',
+      (tester) async {
+        when(() => household.hasHousehold).thenReturn(true);
+        // Production shape: profile read and empty, getter substituting the
+        // defaults. The two sources disagree on gluten, so a dialog reading
+        // the getter would wrongly subtract it and show the generic body.
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(useHousehold: true, settingsMerged: true),
+        );
+        when(
+          () => userService.allergenPreferences,
+        ).thenReturn(UserAllergenPreferences.defaults);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
       'the warning names only NEWLY-exposed allergens, not the owner\'s own',
       (tester) async {
         // Owner already tracks gluten (stays filtered after opt-out); the
         // household adds laktos. Only laktos becomes newly exposed, so the
         // warning must name laktos and NOT gluten.
         when(() => household.hasHousehold).thenReturn(true);
+        const ownerGluten = UserAllergenPreferences(
+          trackedAllergens: {'gluten'},
+          trackedDietary: {},
+        );
         when(
           () => userService.currentUserProfile,
-        ).thenReturn(_profile(useHousehold: true));
-        when(() => userService.allergenPreferences).thenReturn(
-          const UserAllergenPreferences(
-            trackedAllergens: {'gluten'},
-            trackedDietary: {},
-          ),
-        );
+        ).thenReturn(_profile(useHousehold: true, prefs: ownerGluten));
+        when(() => userService.allergenPreferences).thenReturn(ownerGluten);
         when(() => household.aggregateAllergenPreferences()).thenAnswer(
           (_) async => const HouseholdAllergenAggregate.complete(
             UserAllergenPreferences(

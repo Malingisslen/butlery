@@ -281,6 +281,29 @@ void main() {
         ).called(1);
       });
 
+      test('a profile the service CREATES is settings-merged: it wrote the '
+          'first settings doc itself, so the menu must not floor the first '
+          'session as a failed read', () async {
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => null);
+        expect(userService.currentUserProfile, isNull);
+
+        final result = await userService.createOrUpdateProfile(
+          displayName: 'Ny användare',
+        );
+
+        expect(result?.settingsMerged, isTrue);
+        expect(result?.allergenPreferences, isNull);
+        expect(userService.currentUserProfile?.settingsMerged, isTrue);
+      });
+
       test('should not update profile when not authenticated', () async {
         // Arrange
         mockAuthRepository.setAuthState(
