@@ -1,7 +1,7 @@
 /// P8-U02: every declared contrast pair, measured on the colours the app
 /// was generated with, in light and in dark.
 ///
-/// Source: tokens.json contrastPairs (35 pairs) and contrastPolicy, vendored
+/// Source: tokens.json contrastPairs and contrastPolicy, vendored
 /// in test/fixtures/design/contrast_pairs.json with the file's sha256. Each
 /// token is resolved to the generated member whose doc line names it
 /// ("· semantic.text.primary", "(dark)" in app_colors_dark.dart), so the
@@ -21,15 +21,7 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 
 /// Pairs that cannot be measured today, by "fg on bg", with their ticket.
-/// The dataScale tokens live outside tokens.json semantic, and the generator
-/// has no kind for them yet.
-const knownContrastGaps = <String, String>{
-  'dataScale.onFill.step1 on dataScale.sequential[0]': 'BUT-2191',
-  'dataScale.onFill.step2 on dataScale.sequential[1]': 'BUT-2191',
-  'dataScale.onFill.step3 on dataScale.sequential[2]': 'BUT-2191',
-  'dataScale.onFill.step4 on dataScale.sequential[3]': 'BUT-2191',
-  'dataScale.onFill.step5 on dataScale.sequential[4]': 'BUT-2191',
-};
+const knownContrastGaps = <String, String>{};
 
 /// Pairs that are measured and fall under their floor in at least one mode,
 /// by "fg on bg", with their ticket. Shrink-only: the test fails when such a
@@ -39,7 +31,7 @@ const knownContrastFailures = <String, String>{};
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    'a2d2bafafa14c6b918c797ad4b22ef81393b4ebeb96f71c723fd7ceb018afaa3';
+    'f5bcf844d33b5c6907745b03b4ee1cf1850a55266c084ef24dd4c003333c56de';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',
@@ -108,9 +100,9 @@ void main() {
     'dark': _tokenValues('lib/theme/app_colors_dark.dart', dark: true),
   };
 
-  test('the fixture is tokens.json as vendored, 35 pairs', () {
+  test('the fixture is tokens.json as vendored', () {
     expect((fixture['source'] as Map)['sha256'], _tokensSha256);
-    expect(pairs, hasLength(35));
+    expect(pairs, hasLength(32));
     final policy = fixture['contrastPolicy'] as Map<String, dynamic>;
     expect((policy['floors'] as Map)['smallText'], 4.5);
   });

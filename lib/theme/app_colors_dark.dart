@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:d3d1aa4ca126c3a5ba27ccdf39335516c8a8c106256ca0ec577d838395a36088 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:34ef5282a0e1bed20f41f95fb42bf8b5cfd5983c07a6229305cd8b5d66cf7d33 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -51,7 +51,7 @@ class AppColorsDark {
   static const Color textMedium = Color(0xFFA9B2A0);
 
   /// semantic.border.control (dark)
-  static const Color placeholderIcon = Color(0x59F5F4ED);
+  static const Color placeholderIcon = Color(0x66F5F4ED);
 
   /// LEGACY_ALIAS for lasbar sekundartext. Lag tidigare pa text.disabled, vilket var semantiskt fel: appen anvander den till lasbar text, inte till avstangd. Ytsakert varde eftersom en Flutter-konstant inte kan valja per yta. Pensioneras i paket 7. · semantic.text.secondary.onRaised (dark)
   static const Color textLight = Color(0xFFA9B2A0);
@@ -166,6 +166,15 @@ class AppColorsDark {
 
   /// Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed. · semantic.text.onActionPrimaryPressed (dark)
   static const Color onActionPrimaryPressed = Color(0xFFF5F4ED);
+
+  /// Rod fylld knapp, bara roststartens inspelningsknapp och uppladdningens felknapp (R8-5 = B, BUT-2232). Byts alltid i par med onActionDanger. · semantic.action.danger (dark)
+  static const Color actionDanger = Color(0xFFDE9078);
+
+  /// Nedtryckt actionDanger. Forgrunden ar fortfarande onActionDanger. · semantic.action.dangerPressed (dark)
+  static const Color actionDangerPressed = Color(0xFFD67557);
+
+  /// Ikon och text pa actionDanger och actionDangerPressed. · semantic.text.onActionDanger (dark)
+  static const Color onActionDanger = Color(0xFF17251D);
 
   /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning (dark)
   static const Color textWarning = Color(0xFFDCA968);

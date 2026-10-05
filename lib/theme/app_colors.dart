@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:f2351ff5321272c34493161b611dcc7a52b342a1e4af247c3bf37bd300ad4f3b (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:6cdf7a5be9d3fde3676e09c964fb71a9d316479b69358f673fa4ccb08f510605 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -228,6 +228,15 @@ class AppColors {
   /// Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed. · semantic.text.onActionPrimaryPressed
   static const Color onActionPrimaryPressed = Color(0xFFF5F4ED);
 
+  /// Rod fylld knapp, bara roststartens inspelningsknapp och uppladdningens felknapp (R8-5 = B, BUT-2232). Byts alltid i par med onActionDanger. · semantic.action.danger
+  static const Color actionDanger = Color(0xFF9C3B23);
+
+  /// Nedtryckt actionDanger. Forgrunden ar fortfarande onActionDanger. · semantic.action.dangerPressed
+  static const Color actionDangerPressed = Color(0xFF7B2E1C);
+
+  /// Ikon och text pa actionDanger och actionDangerPressed. · semantic.text.onActionDanger
+  static const Color onActionDanger = Color(0xFFF5F4ED);
+
   /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning
   static const Color textWarning = Color(0xFF8A5212);
 
@@ -379,7 +388,7 @@ class AppColors {
     onSurface: Color(0xFFF5F4ED),
     surfaceContainerHighest: Color(0xFF2F4437),
     onSurfaceVariant: Color(0xFFA9B2A0),
-    outline: Color(0x59F5F4ED),
+    outline: Color(0x66F5F4ED),
     outlineVariant: Color(0x2EF5F4ED),
     shadow: Color(0x1A17251D),
     scrim: Color(0x9917251D),

@@ -75,8 +75,7 @@ class NavigationThemes {
   /// Labels: the selected word is text.primary (cs.onSurface: #24382C light,
   /// #F5F4ED dark) at weight 700, the resting word text.secondary
   /// (cs.onSurfaceVariant) at weight 600, as
-  /// drawn in Komponentark v1:106, :112-113. The size stays the app's
-  /// tabText (12.5); the drawing's 13 is not a token size here. A view that
+  /// drawn in Komponentark v1:106, :112-113. A view that
   /// sets its own labelColor (friends_list_view.dart,
   /// group_shared_content_section.dart) still overrides this.
   ///
