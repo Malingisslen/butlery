@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:3e1f627de6df68e74cef0a3d377bb021c71ff2255c0f0e587a472302556754bf (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:fb0e632e916321d6eee890ff495499238e0f443e306279240c9f7c23d4295f7a (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -40,7 +40,7 @@ class AppColorsDark {
   /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. Sedan B96-1 (BUT-2196, 2026-09-30) har text.secondary samma varde, #5B6959/#A9B2A0. · semantic.text.secondary.onRaised (dark)
   static const Color textMedium = Color(0xFFA9B2A0);
   /// semantic.border.control (dark)
-  static const Color placeholderIcon = Color(0x59F5F4ED);
+  static const Color placeholderIcon = Color(0x66F5F4ED);
   /// LEGACY_ALIAS for lasbar sekundartext. Lag tidigare pa text.disabled, vilket var semantiskt fel: appen anvander den till lasbar text, inte till avstangd. Ytsakert varde eftersom en Flutter-konstant inte kan valja per yta. Pensioneras i paket 7. · semantic.text.secondary.onRaised (dark)
   static const Color textLight = Color(0xFFA9B2A0);
   /// semantic.control.checked.foreground (dark)

@@ -487,7 +487,7 @@
     "FLUTTER_MEMBER": "placeholderIcon",
     "SEMANTIC_TOKEN": "border.control",
     "TOKENS_JSON_PATH": "semantic[\"border.control\"].dark",
-    "DARK_VALUE": "rgba(245,244,237,0.35)",
+    "DARK_VALUE": "rgba(245,244,237,0.4)",
     "KIND": "CANONICAL"
    },
    {
@@ -998,7 +998,7 @@
     "FLUTTER_MEMBER": "outline",
     "SEMANTIC_TOKEN": "border.control",
     "TOKENS_JSON_PATH": "semantic[\"border.control\"].dark",
-    "DARK_VALUE": "rgba(245,244,237,0.35)",
+    "DARK_VALUE": "rgba(245,244,237,0.4)",
     "KIND": "ALIAS"
    },
    {

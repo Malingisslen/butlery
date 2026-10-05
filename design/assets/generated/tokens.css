@@ -2,7 +2,7 @@
   GENERERAD FIL — ändra källan, inte den här.
   system 2.1 · tokens 1.13
   generator tools/gen-css.mjs v1.3
-  källfingeravtryck sha256:c6c818d2bbbcd55bcafc04f0b9d627839c3ab0ef71f4c6d35043ab60e6c62f00 (4 indatafiler, generatorns källa inräknad)
+  källfingeravtryck sha256:67aaf067097658e8b1d1b7fbd8eef4918133109e8d0aad6921077160c3ad62bb (4 indatafiler, generatorns källa inräknad)
   genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 */
 
@@ -166,7 +166,7 @@
 [data-theme="dark"] {
   --butlery-action-primary-pressed: #9A5C14;
   --butlery-action-primary: #CE7C1E;
-  --butlery-border-control: rgba(245,244,237,0.35);
+  --butlery-border-control: rgba(245,244,237,0.4);
   --butlery-border-on-ink: #3F5145;
   --butlery-border-status-warning: #DCA968;
   --butlery-border-subtle: rgba(245,244,237,0.18);
