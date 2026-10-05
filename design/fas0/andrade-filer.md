@@ -78,7 +78,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg` | `f490e61aa99d9be40b17682446167037ba153f21e0049fd164e2ab9bb91edb6b` |
 | `FONT-VERSION.txt` | `b9b7731a213a7f4ae7d36bb8a5bdbb9ebd91c4dd093b8d08443d3a397e92cbcf` |
 | `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
-| `NULAGE.md` | `8e4857cb40cdab9f5192d0c6fa05147a53a9dd9e936f967a5751be503ea07750` |
+| `NULAGE.md` | `e9f179ba0e3661514953a8f7a3ea80ec3dc1a3b98da14739423a97fb888fd458` |
 | `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
 | `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
 | `artifacts.json` | `c631797a965d29c126347fcb50c3fb48876c26456067094b5d099e3530dd8b37` |
