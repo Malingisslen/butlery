@@ -1021,7 +1021,7 @@ Ramar: `#insthushall` `#instportion` `#jurriktlinjer` `#sokpanel` `#admmatning` 
   - **Högst tre färgade serier** (`maxColouredSeries: 3`), och de tas ur steg **1, 2 och 5** — de tre som går att skilja åt i gråskala. **Fyra eller fler serier är ingen graf, det är en tabell.**
   - **Statusfärg får bara användas när statusen *är* datan** (en felkvot i `text.danger`, en lyckandegrad i `text.success`) — och serien ska då **namnges**, aldrig bara färgas. I övrigt är statusfärger förbjudna i data.
   - **Ordningen bär informationen** (KO-12): staplar sorteras efter storlek, linjer märks vid sin slutpunkt, matriser behåller sin etikettkolumn.
-  - **Steg 4 och 5 bär aldrig papper** — de kräver ink ovanpå. Paren är mätta och står i `contrastPairs`.
+  - **Steg 4 och 5 bär aldrig papper** — de kräver ink ovanpå (`dataScale.onFill`). Paren står inte i `contrastPairs` så länge ingen vy ritar skalan; de läggs tillbaka med den första vyn som gör det (D1 = B, BUT-2191, Malin 2026-10-04).
 - **20.6 Adminvyer.** Gleshet före lansering förklaras **i** tabellen. Ett fält som ofta fastnar i parsningen är en **uppgift**, inte en siffra: raden leder till importerna.
 - **20.7 Bilduppladdning.** Per-bild-tillstånd, aldrig en samlad stapel. Faller den primära bilden flyttas omslaget **och det sägs**.
 - **20.8 Sammanslagning av recept.** Skillnaderna fält för fält, förval på det befintliga receptet, och tre löften: båda bildmängderna behålls, anteckningar och betyg följer med, **menyplaceringar pekas om**.
