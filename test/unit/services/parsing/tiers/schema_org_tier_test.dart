@@ -887,6 +887,35 @@ void main() {
     );
 
     test(
+      'a generic block marker entry ("Ingredienser") is dropped and clears '
+      'the group',
+      () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kanelbullar",
+  "recipeIngredient": [
+    "Ingredienser",
+    "Deg:",
+    "5 dl vetemjol",
+    "Ingredienser:",
+    "25 g jast"
+  ],
+  "recipeInstructions": ["Baka."]
+}
+''');
+        final result = await tier.parse(urlContextFor(html));
+
+        expect(result.success, isTrue);
+        expect(strategy.receivedLines, ['5 dl vetemjol', '25 g jast']);
+        expect(
+          result.recipe!.ingredients.value!.map((i) => i.section),
+          ['Deg', null],
+        );
+      },
+    );
+
+    test(
       'a bare ingredient (no colon, not vocab) is NEVER dropped as heading',
       () async {
         final html = htmlWithJsonLd('''
@@ -979,6 +1008,20 @@ void main() {
           getIt.unregister<FeatureFlagService>();
         }
         ServiceLocator.reset();
+      });
+
+      test('capture off ⇒ a block title entry still leaves the list', () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Sas",
+  "recipeIngredient": ["Ingredienser", "Deg:", "2 dl gradde"],
+  "recipeInstructions": ["Koka."]
+}
+''');
+        await tier.parse(urlContextFor(html));
+
+        expect(strategy.receivedLines, ['Deg:', '2 dl gradde']);
       });
 
       test(

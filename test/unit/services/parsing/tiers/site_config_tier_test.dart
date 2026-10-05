@@ -877,6 +877,52 @@ void main() {
 
   // ----- tier identity -----------------------------------------------------
 
+  group('heading rows inside the ingredient selector', () {
+    /// Sites render component headings ("Fyllning:") and the block title
+    /// ("Ingredienser") inside the same list the selector matches. Forwarded
+    /// to the parser they become phantom rows that allergen tagging cannot
+    /// resolve.
+    test('block markers and colon headings are not forwarded', () async {
+      final tier = SiteConfigTier(
+        ingredientStrategy: strategy,
+        preloadedConfig: fullConfig(),
+      );
+      final ctx = urlContextFor(
+        htmlWith(
+          ingredients: [
+            'Ingredienser',
+            '3 dl mjol',
+            'Fyllning:',
+            '3 agg',
+            'salt',
+          ],
+        ),
+      );
+
+      final result = await tier.parse(ctx);
+
+      expect(result.success, isTrue);
+      expect(strategy.receivedLines, ['3 dl mjol', '3 agg', 'salt']);
+    });
+
+    test(
+      'a lone gluten word with a colon stays a row, colon stripped',
+      () async {
+        final tier = SiteConfigTier(
+          ingredientStrategy: strategy,
+          preloadedConfig: fullConfig(),
+        );
+        final ctx = urlContextFor(
+          htmlWith(ingredients: ['Mjöl:', '2 dl socker']),
+        );
+
+        await tier.parse(ctx);
+
+        expect(strategy.receivedLines, ['Mjöl', '2 dl socker']);
+      },
+    );
+  });
+
   group('tier identity', () {
     /// Priority 2 = runs after SchemaOrg (1), before RuleBased (3). The
     /// orchestrator order depends on this ordering — BUT-1064 tier

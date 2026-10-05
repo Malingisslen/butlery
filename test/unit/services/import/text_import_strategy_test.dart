@@ -578,6 +578,27 @@ void main() {
               .toList();
 
       test(
+        'a parenthetical note is not cut into a second row '
+        '("olja (till stekning)")',
+        () async {
+          // The instruction-word split used to fire inside "stekning", which
+          // left "olja (till" and a "stekning)" row for the shopping list.
+          const text =
+              'Biff\n\n'
+              'Ingredienser\n'
+              '500 g nötfärs\n'
+              'olja (till stekning)\n'
+              '1 ägg\n\n'
+              'Gör så här\n'
+              'Stek biffarna.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings.where((i) => i.contains('stekning')), isEmpty);
+          expect(ings.where((i) => i.startsWith('olja')).length, 1);
+          expect(ings, contains('1 ägg'));
+        },
+      );
+
+      test(
         'bare rows under an "Ingredienser" header stay in the list',
         () async {
           const text =
