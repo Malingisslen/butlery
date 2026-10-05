@@ -22,6 +22,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
+import 'package:butlery/core/bootstrap/emulator_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
 
 // DI modules + bootstrap stages (shared with admin_main.dart)
@@ -87,8 +88,13 @@ Future<void> main() async {
 
         // Initialize Firebase with configuration from compile-time --dart-define
         await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
+          options: EmulatorBootstrap.enabled
+              ? EmulatorBootstrap.options(
+                  DefaultFirebaseOptions.currentPlatform,
+                )
+              : DefaultFirebaseOptions.currentPlatform,
         );
+        if (EmulatorBootstrap.enabled) await EmulatorBootstrap.configure();
 
         // Must run before any DI module instantiates FirestoreRepository.
         await FirestoreBootstrap.configure();
@@ -98,17 +104,19 @@ Future<void> main() async {
         await Future.wait([
           if (!kIsWeb)
             FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
-          FirebaseAppCheck.instance.activate(
-            providerWeb: ReCaptchaV3Provider(
-              '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+          // The emulators do not enforce App Check.
+          if (!EmulatorBootstrap.enabled)
+            FirebaseAppCheck.instance.activate(
+              providerWeb: ReCaptchaV3Provider(
+                '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+              ),
+              providerAndroid: kDebugMode
+                  ? const AndroidDebugProvider()
+                  : const AndroidPlayIntegrityProvider(),
+              providerApple: kDebugMode
+                  ? const AppleDebugProvider()
+                  : const AppleAppAttestWithDeviceCheckFallbackProvider(),
             ),
-            providerAndroid: kDebugMode
-                ? const AndroidDebugProvider()
-                : const AndroidPlayIntegrityProvider(),
-            providerApple: kDebugMode
-                ? const AppleDebugProvider()
-                : const AppleAppAttestWithDeviceCheckFallbackProvider(),
-          ),
         ]);
 
         // Set up native error handlers (after Crashlytics available)
