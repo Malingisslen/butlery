@@ -19,8 +19,9 @@ start in release.
 
 ## What keeps it away from production
 
-- The app runs as project `demo-butlery`. A `demo-` project has no production
-  counterpart, so a call that misses the emulator wiring fails.
+- The app runs as project `demo-butlery` with a placeholder API key. A `demo-` project
+  has no production counterpart and Google refuses the key, so a call that misses the
+  emulator wiring fails.
 - `EmulatorBootstrap.configure()` throws if Firebase was initialised with any other
   project, and both entry points throw in a release or native build.
 - `functions/scripts/seed-emulator.js` refuses to run without emulator hosts and a

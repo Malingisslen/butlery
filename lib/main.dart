@@ -97,14 +97,17 @@ Future<void> main() async {
         if (EmulatorBootstrap.enabled) await EmulatorBootstrap.configure();
 
         // Must run before any DI module instantiates FirestoreRepository.
-        await FirestoreBootstrap.configure();
+        await FirestoreBootstrap.configure(
+          connect: EmulatorBootstrap.enabled
+              ? EmulatorBootstrap.connectFirestore
+              : null,
+        );
 
         // Default Crashlytics to disabled until consent is verified (GDPR)
         // App Check can proceed immediately (security, not analytics)
         await Future.wait([
           if (!kIsWeb)
             FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
-          // The emulators do not enforce App Check.
           if (!EmulatorBootstrap.enabled)
             FirebaseAppCheck.instance.activate(
               providerWeb: ReCaptchaV3Provider(

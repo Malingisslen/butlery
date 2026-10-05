@@ -29,8 +29,12 @@ void main() {
       expect(local().databaseURL, isNull);
     });
 
+    test('swaps the production API key for a placeholder', () {
+      expect(local().apiKey, EmulatorBootstrap.apiKey);
+      expect(local().apiKey, isNot(production.apiKey));
+    });
+
     test('keeps the identifiers the web SDK needs to start', () {
-      expect(local().apiKey, production.apiKey);
       expect(local().appId, production.appId);
       expect(local().messagingSenderId, production.messagingSenderId);
     });
@@ -62,6 +66,13 @@ void main() {
     test('refuses a release build before touching Firebase', () {
       expect(
         () => EmulatorBootstrap.configure(releaseMode: true, isWeb: true),
+        throwsStateError,
+      );
+    });
+
+    test('refuses a native build before touching Firebase', () {
+      expect(
+        () => EmulatorBootstrap.configure(releaseMode: false, isWeb: false),
         throwsStateError,
       );
     });

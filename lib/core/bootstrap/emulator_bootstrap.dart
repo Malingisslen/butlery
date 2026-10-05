@@ -25,6 +25,7 @@ class EmulatorBootstrap {
   );
 
   static const String projectId = 'demo-butlery';
+  static const String apiKey = 'demo-api-key';
 
   // Must match the `emulators` block in firebase.json.
   static const int authPort = 9099;
@@ -36,9 +37,11 @@ class EmulatorBootstrap {
   // cached per region, so wiring each one here covers later instanceFor calls.
   static const List<String> functionRegions = ['us-central1', 'europe-west1'];
 
-  /// Production has no databaseURL, so none is set here either: the presence
-  /// code that needs one stays off, as in production. measurementId is left
-  /// out so analytics cannot report local runs into the production property.
+  /// The API key is a placeholder so an Auth call that missed the emulator is
+  /// refused by Google instead of reaching the production user pool; the
+  /// emulators accept any key. Production has no databaseURL, so none is set
+  /// here either: the presence code that needs one stays off. measurementId
+  /// is left out so analytics cannot report local runs into production.
   static FirebaseOptions options(
     FirebaseOptions base, {
     bool releaseMode = kReleaseMode,
@@ -46,7 +49,7 @@ class EmulatorBootstrap {
   }) {
     _refuseOutsideLocalWeb(releaseMode: releaseMode, isWeb: isWeb);
     return FirebaseOptions(
-      apiKey: base.apiKey,
+      apiKey: apiKey,
       appId: base.appId,
       messagingSenderId: base.messagingSenderId,
       projectId: projectId,
@@ -55,8 +58,8 @@ class EmulatorBootstrap {
     );
   }
 
-  /// Must run right after `Firebase.initializeApp` and before anything reads
-  /// or writes: Firestore refuses a host change once it has been used.
+  /// Firestore is wired separately by [connectFirestore], through
+  /// `FirestoreBootstrap.configure`, so its settings land first.
   static Future<void> configure({
     bool releaseMode = kReleaseMode,
     bool isWeb = kIsWeb,
@@ -71,7 +74,6 @@ class EmulatorBootstrap {
     }
 
     installEmulatorAppCheckToken(app.options.appId);
-    FirebaseFirestore.instance.useFirestoreEmulator(host, firestorePort);
     await FirebaseAuth.instance.useAuthEmulator(host, authPort);
     await FirebaseStorage.instance.useStorageEmulator(host, storagePort);
     for (final region in functionRegions) {
@@ -80,6 +82,9 @@ class EmulatorBootstrap {
       ).useFunctionsEmulator(host, functionsPort);
     }
   }
+
+  static void connectFirestore(FirebaseFirestore db) =>
+      db.useFirestoreEmulator(host, firestorePort);
 
   // Native builds start a default app from google-services.json before Dart
   // runs, so local mode is limited to web.
