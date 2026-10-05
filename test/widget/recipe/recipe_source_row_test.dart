@@ -20,6 +20,7 @@ library;
 
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -126,4 +127,35 @@ void main() {
       expect(find.byType(Text), findsNothing);
     });
   });
+
+  // R8-11 = A: the source link is text.link, #8A5212 light and #DCA968 dark.
+  for (final (mode, theme, link) in [
+    ('light', AppTheme.lightTheme, const Color(0xFF8A5212)),
+    ('dark', AppTheme.darkTheme, const Color(0xFFDCA968)),
+  ]) {
+    testWidgets('a source link is text.link ($mode)', (tester) async {
+      final recipe = RecipeFactory.build(
+        title: 'Pannkakor',
+        sourceUrl: 'https://www.ica.se/recept/pannkakor/',
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          locale: const Locale('sv'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) =>
+                  RecipeDetailSharedWidgets.buildSourceRow(context, recipe),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final text = tester.widget<Text>(find.textContaining('www.ica.se'));
+      expect(text.style?.decoration, TextDecoration.underline);
+      expect(text.style?.color, link);
+    });
+  }
 }
