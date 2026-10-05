@@ -9,6 +9,7 @@ import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -270,9 +271,17 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     List<String> texts,
     ParsingContext context,
   ) async {
+    // A site's ingredient selector also matches the headings rendered inside
+    // the list ("Ingredienser", "Fyllning:"). Forwarded, they become rows no
+    // registry entry matches. Same predicates as the schema.org tier; the
+    // group a colon heading names is not stamped here because this tier
+    // carries no sections.
     final cleaned = texts
         .map((t) => t.replaceAll(RegExp(r'\s+'), ' ').trim())
         .where((t) => t.isNotEmpty)
+        .where((t) => !RecipeSectionDetector.isGenericBlockMarker(t))
+        .where((t) => RecipeSectionDetector.componentSubHeadingLabel(t) == null)
+        .map((t) => RecipeSectionDetector.bareGlutenIngredientLabel(t) ?? t)
         .toList();
 
     return _ingredientStrategy.parseLines(

@@ -17,6 +17,8 @@
 // Ringen visas vid tangentbordsfokus (FocusHighlightMode.traditional), som
 // CSS :focus-visible (beslut D3). Det gäller även textfält.
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -63,6 +65,11 @@ enum FocusRingBounds {
   /// the user types in, without the helper, error or counter line under
   /// it. Falls back to the whole child if no text field box is found.
   textFieldBox,
+
+  /// The whole child, grown evenly to at least the 48 dp touch target. For a
+  /// control laid out at its content's size, such as a tab whose plate line
+  /// is measured from the word, while its tap area is wider.
+  minTouchTarget,
 }
 
 /// Draws the canonical focus ring around [child].
@@ -125,6 +132,13 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
   /// at paint time so it always matches the current layout.
   Rect _target(Size childSize) {
     final whole = Offset.zero & childSize;
+    if (widget.bounds == FocusRingBounds.minTouchTarget) {
+      return Rect.fromCenter(
+        center: whole.center,
+        width: math.max(whole.width, AppDimensions.minTouchTarget),
+        height: math.max(whole.height, AppDimensions.minTouchTarget),
+      );
+    }
     if (widget.bounds == FocusRingBounds.child || !mounted) return whole;
     final root = context.findRenderObject();
     if (root is! RenderBox) return whole;
@@ -209,7 +223,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
                 borderRadius: widget.borderRadius,
                 inflate: -AppDimensions.focusRingWidth / 2,
                 target: _target,
-                followsLayout: widget.bounds != FocusRingBounds.child,
+                followsLayout: widget.bounds == FocusRingBounds.textFieldBox,
               )
             : null,
         child: child,
@@ -232,7 +246,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
                 borderRadius: widget.borderRadius,
                 inflate: ButleryFocusRing.inflate,
                 target: _target,
-                followsLayout: widget.bounds != FocusRingBounds.child,
+                followsLayout: widget.bounds == FocusRingBounds.textFieldBox,
               ),
             ),
           ),

@@ -474,6 +474,29 @@ void main() {
       });
     });
 
+    group('potted herbs (felkartan punkt 3)', () {
+      // "1 kruka koriander" used to parse as the name "kruka koriander",
+      // which no registry row matches, so one herb row turned every
+      // allergen verdict on the recipe to UNKNOWN.
+      test('1 kruka koriander → koriander, unit kruka', () {
+        final parsed = IngredientParser.parseIngredient('1 kruka koriander');
+        expect(parsed.name, 'koriander');
+        expect(parsed.unit, 'kruka');
+        expect(parsed.quantity, 1.0);
+      });
+
+      test('2 krukor basilika and 1 bunt persilja', () {
+        expect(
+          IngredientParser.parseIngredient('2 krukor basilika').name,
+          'basilika',
+        );
+        expect(
+          IngredientParser.parseIngredient('1 bunt persilja').name,
+          'persilja',
+        );
+      });
+    });
+
     group('RegexParseResult model', () {
       test('should create parsed ingredient correctly', () {
         const parsed = RegexParseResult(

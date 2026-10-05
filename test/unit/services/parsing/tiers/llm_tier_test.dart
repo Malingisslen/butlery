@@ -10,6 +10,7 @@ import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/llm_service.dart';
+import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/services/parsing/tiers/llm_tier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 
@@ -426,6 +427,48 @@ void main() {
         expect(names, contains('mjol'));
         expect(names, contains('agg'));
         expect(names, isNot(contains('vatten')));
+      });
+
+      test('keeps the potted and bunched herb units (kruka, bunt)', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'koriander', amount: 1, unit: 'kruka'),
+              ExtractedIngredient(name: 'persilja', amount: 1, unit: 'bunt'),
+              ExtractedIngredient(name: 'vatten', amount: 2, unit: 'glass'),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        final names = result.recipe!.ingredients.value!
+            .map((i) => i.name)
+            .toList();
+        expect(names, ['koriander', 'persilja']);
+      });
+
+      test('21 kruka koriander is above the herb-unit ceiling', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'koriander', amount: 21, unit: 'kruka'),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
+      });
+
+      test('every amount ceiling names a unit kSwedishUnits carries', () {
+        expect(kSwedishUnits, containsAll(kMaxAmountByUnit.keys));
       });
 
       test('returns no-data when ALL ingredients have unknown units', () async {

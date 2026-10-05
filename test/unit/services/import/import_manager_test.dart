@@ -15,9 +15,6 @@ import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
-import 'package:butlery/services/import/cache/global_recipe_cache.dart';
-import 'package:butlery/services/import/cache/cache_entry.dart';
-import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -67,30 +64,6 @@ class _FakeLlmFailure extends Fake implements LlmEnhancementService {
   }
 }
 
-/// BUT-1484 / BUT-1647 acceptance #3: a Fake GlobalRecipeCache that captures the
-/// [ExtractionMeta] threaded into `save(...)` so a test can assert the tier /
-/// confidence the pipeline computed. It is a `Fake` (concrete `save`/`findByUrl`
-/// bodies), NOT a `Mock` — the test needs a real in-memory capture, not `when()`
-/// stubbing. `findByUrl` returns null so the cache-read short-circuit in
-/// autoImport is a clean miss and the import proceeds to the strategy + save.
-class _CapturingGlobalRecipeCache extends Fake implements GlobalRecipeCache {
-  ExtractionMeta? captured;
-
-  @override
-  Future<CacheEntry?> findByUrl(String url) async => null;
-
-  @override
-  Future<bool> save({
-    required String input,
-    required Map<String, dynamic> recipeData,
-    required ExtractionMeta extractionMeta,
-    required String sourceType,
-  }) async {
-    captured = extractionMeta;
-    return true;
-  }
-}
-
 void main() {
   // Constructing a real PhotoImportStrategy (importSinglePhoto tests) builds
   // OCRExtractionService.instance, which reads SharedPreferences on init —
@@ -124,10 +97,9 @@ void main() {
       ).thenAnswer((_) async => RecipeOperationResult.success('Added'));
 
       // Use withStrategies to avoid Firebase init in UrlImportStrategy
-      importManager = ImportManager.withStrategies(
-        mockPersonalOps,
-        [textStrategy],
-      );
+      importManager = ImportManager.withStrategies(mockPersonalOps, [
+        textStrategy,
+      ]);
     });
 
     tearDown(() async {
@@ -256,10 +228,9 @@ Gör så här:
           (_) async => import_strategy.ImportResult.success(testRecipe),
         );
 
-        final mgr = ImportManager.withStrategies(
-          mockPersonalOps,
-          [textStrategy],
-        );
+        final mgr = ImportManager.withStrategies(mockPersonalOps, [
+          textStrategy,
+        ]);
 
         final result = await mgr.autoImport(
           'some recipe text',
@@ -360,17 +331,16 @@ Gör så här:
         when(
           () => mockStrategy.import(any(), options: any(named: 'options')),
         ).thenAnswer(
-          (_) async => import_strategy.ImportResult.assistance(
-            extractedText: 'partial',
-          ),
+          (_) async =>
+              import_strategy.ImportResult.assistance(extractedText: 'partial'),
         );
 
         // mockStrategy is in the strategy list (not preferred) so it is reached
         // via the fallback loop.
-        final mgr = ImportManager.withStrategies(
-          mockPersonalOps,
-          [mockStrategy, textStrategy],
-        );
+        final mgr = ImportManager.withStrategies(mockPersonalOps, [
+          mockStrategy,
+          textStrategy,
+        ]);
         final result = await mgr.autoImport('recipe');
 
         expect(result.needsAssistance, isTrue);
@@ -477,10 +447,10 @@ Gör så här:
           (_) async => import_strategy.ImportResult.success(testRecipe),
         );
 
-        final result = await importManager.batchImport(
-          ['a', 'b'],
-          preferredStrategy: mockStrategy,
-        );
+        final result = await importManager.batchImport([
+          'a',
+          'b',
+        ], preferredStrategy: mockStrategy);
 
         expect(result.successCount, equals(2));
         verify(
@@ -503,9 +473,9 @@ Gör så här:
       });
 
       test('should handle save failure', () async {
-        when(() => mockPersonalOps.addUnifiedRecipe(testRecipe)).thenAnswer(
-          (_) async => RecipeOperationResult.failure('DB error'),
-        );
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(testRecipe),
+        ).thenAnswer((_) async => RecipeOperationResult.failure('DB error'));
 
         final result = await importManager.saveImportedRecipe(testRecipe);
 
@@ -671,80 +641,73 @@ Gör så här:
         app_provider.ServiceLocator.reset();
       });
 
-      test(
-        'a denied rate limit returns a structured rateLimit result '
-        '(not a swallowed generic failure)',
-        () async {
-          const denied = RateLimitDenied(
-            message: 'Too many imports per minute',
-            retryAfter: Duration(seconds: 30),
-            limitType: LimitType.perMinute,
-            suggestedAction: FallbackAction.retryLater,
-          );
-          final getIt = GetIt.instance;
-          if (getIt.isRegistered<ImportRateLimiter>()) {
-            getIt.unregister<ImportRateLimiter>();
-          }
-          getIt.registerSingleton<ImportRateLimiter>(_StubRateLimiter(denied));
-          app_provider.ServiceLocator.reset();
-          app_provider.ServiceLocator.initialize(DIContainer());
+      test('a denied rate limit returns a structured rateLimit result '
+          '(not a swallowed generic failure)', () async {
+        const denied = RateLimitDenied(
+          message: 'Too many imports per minute',
+          retryAfter: Duration(seconds: 30),
+          limitType: LimitType.perMinute,
+          suggestedAction: FallbackAction.retryLater,
+        );
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ImportRateLimiter>()) {
+          getIt.unregister<ImportRateLimiter>();
+        }
+        getIt.registerSingleton<ImportRateLimiter>(_StubRateLimiter(denied));
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
 
-          final mgr = ImportManager.withStrategies(mockPersonalOps, [
-            PhotoImportStrategy(),
-          ]);
+        final mgr = ImportManager.withStrategies(mockPersonalOps, [
+          PhotoImportStrategy(),
+        ]);
 
-          final result = await mgr.importSinglePhoto(
-            'photo',
-            options: {'imageBytes': imageBytes, 'isHandwritten': true},
-          );
+        final result = await mgr.importSinglePhoto(
+          'photo',
+          options: {'imageBytes': imageBytes, 'isHandwritten': true},
+        );
 
-          expect(result.isSuccess, isFalse);
-          expect(result.strategy, 'rate_limited');
-          expect(result.rateLimitDenied, isNotNull);
-          expect(result.rateLimitDenied!.limitType, LimitType.perMinute);
-          expect(
-            result.errorMessage,
-            isNot(contains('No import strategy')),
-            reason: 'the rate-limit denial must not be swallowed',
-          );
-        },
-      );
+        expect(result.isSuccess, isFalse);
+        expect(result.strategy, 'rate_limited');
+        expect(result.rateLimitDenied, isNotNull);
+        expect(result.rateLimitDenied!.limitType, LimitType.perMinute);
+        expect(
+          result.errorMessage,
+          isNot(contains('No import strategy')),
+          reason: 'the rate-limit denial must not be swallowed',
+        );
+      });
 
-      test(
-        'a strategy failure surfaces the strategy own message, preserved '
-        '(NOT the generic multi-strategy miss)',
-        () async {
-          final fakeLlm = _FakeLlmFailure('kunde inte tolka handstilen');
-          final getIt = GetIt.instance;
-          if (getIt.isRegistered<LlmEnhancementService>()) {
-            getIt.unregister<LlmEnhancementService>();
-          }
-          getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
-          // No ImportRateLimiter registered → _rateLimiter resolves null → the
-          // rate-limit check is skipped and we reach the strategy.
-          app_provider.ServiceLocator.reset();
-          app_provider.ServiceLocator.initialize(DIContainer());
+      test('a strategy failure surfaces the strategy own message, preserved '
+          '(NOT the generic multi-strategy miss)', () async {
+        final fakeLlm = _FakeLlmFailure('kunde inte tolka handstilen');
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<LlmEnhancementService>()) {
+          getIt.unregister<LlmEnhancementService>();
+        }
+        getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
+        // No ImportRateLimiter registered → _rateLimiter resolves null → the
+        // rate-limit check is skipped and we reach the strategy.
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
 
-          final mgr = ImportManager.withStrategies(mockPersonalOps, [
-            PhotoImportStrategy(),
-          ]);
+        final mgr = ImportManager.withStrategies(mockPersonalOps, [
+          PhotoImportStrategy(),
+        ]);
 
-          final result = await mgr.importSinglePhoto(
-            'photo',
-            options: {'imageBytes': imageBytes, 'isHandwritten': true},
-          );
+        final result = await mgr.importSinglePhoto(
+          'photo',
+          options: {'imageBytes': imageBytes, 'isHandwritten': true},
+        );
 
-          expect(result.isSuccess, isFalse);
-          expect(
-            result.errorMessage,
-            'kunde inte tolka handstilen',
-            reason:
-                'the strategy failure message must pass through unswallowed',
-          );
-          expect(result.errorMessage, isNot(contains('No import strategy')));
-          expect(fakeLlm.calls, 1, reason: 'exactly one vision call');
-        },
-      );
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.errorMessage,
+          'kunde inte tolka handstilen',
+          reason: 'the strategy failure message must pass through unswallowed',
+        );
+        expect(result.errorMessage, isNot(contains('No import strategy')));
+        expect(fakeLlm.calls, 1, reason: 'exactly one vision call');
+      });
 
       test(
         'returns a clear failure when no photo strategy is registered',
@@ -760,148 +723,6 @@ Gör så här:
 
           expect(result.isSuccess, isFalse);
           expect(result.errorMessage, contains('No photo import strategy'));
-        },
-      );
-    });
-
-    // BUT-1484 / BUT-1647 acceptance #3: `_saveToCacheIfUrl` threads the
-    // pipeline's computed tier (`metadata['tier']`) and confidence
-    // (`metadata['overallQuality']`) from the strategy result INTO the cache
-    // ExtractionMeta, falling back to tier:0 / confidence:0.8 when they are
-    // absent or the wrong type. This is a DIFFERENT layer from
-    // ExtractionMeta.fromMap/empty (cache_entry.dart), whose confidence
-    // fallback is 0.0 — the threading fallback is 0.8. These tests pin the
-    // 0.8-layer contract; the fromMap 0.0-layer tests live in
-    // global_recipe_cache_test.dart.
-    group('cache tier/confidence threading (BUT-1484, acceptance #3)', () {
-      late _CapturingGlobalRecipeCache fakeCache;
-
-      setUp(() {
-        fakeCache = _CapturingGlobalRecipeCache();
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<GlobalRecipeCache>()) {
-          getIt.unregister<GlobalRecipeCache>();
-        }
-        if (getIt.isRegistered<UrlNormalizer>()) {
-          getIt.unregister<UrlNormalizer>();
-        }
-        getIt.registerSingleton<GlobalRecipeCache>(fakeCache);
-        getIt.registerSingleton<UrlNormalizer>(UrlNormalizer());
-        app_provider.ServiceLocator.reset();
-        app_provider.ServiceLocator.initialize(DIContainer());
-      });
-
-      tearDown(() {
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<GlobalRecipeCache>()) {
-          getIt.unregister<GlobalRecipeCache>();
-        }
-        if (getIt.isRegistered<UrlNormalizer>()) {
-          getIt.unregister<UrlNormalizer>();
-        }
-        app_provider.ServiceLocator.reset();
-      });
-
-      /// Drives a URL import through the preferred mock strategy carrying
-      /// [metadata], returning the ExtractionMeta the manager saved to cache.
-      Future<ExtractionMeta?> runUrlImport(
-        Map<String, dynamic>? metadata,
-      ) async {
-        when(() => mockStrategy.canHandle(any())).thenReturn(true);
-        mockStrategy.setStrategyState(strategyName: 'website');
-        when(
-          () => mockStrategy.import(any(), options: any(named: 'options')),
-        ).thenAnswer(
-          (_) async => import_strategy.ImportResult.success(
-            testRecipe,
-            metadata: metadata,
-          ),
-        );
-
-        final mgr = ImportManager.withStrategies(
-          mockPersonalOps,
-          [textStrategy],
-        );
-        final result = await mgr.autoImport(
-          'https://example.com/recipe',
-          preferredStrategy: mockStrategy,
-        );
-
-        expect(
-          result.isSuccess,
-          isTrue,
-          reason: 'the URL import must succeed so the cache-save branch runs',
-        );
-        return fakeCache.captured;
-      }
-
-      test(
-        'seeded tier/overallQuality flow into the cache ExtractionMeta',
-        () async {
-          final meta = await runUrlImport({'tier': 5, 'overallQuality': 0.42});
-
-          expect(
-            meta,
-            isNotNull,
-            reason: 'a URL import must reach cache.save with an ExtractionMeta',
-          );
-          expect(
-            meta!.tier,
-            5,
-            reason:
-                'acceptance #3: a real seeded tier is threaded through, not hardcoded',
-          );
-          expect(
-            meta.confidence,
-            0.42,
-            reason:
-                'acceptance #3: overallQuality becomes the cache confidence verbatim',
-          );
-        },
-      );
-
-      test(
-        'absent tier/overallQuality fall back to tier 0 / confidence 0.8',
-        () async {
-          // Metadata present but without the tier/overallQuality keys.
-          final meta = await runUrlImport({'unrelated': 'value'});
-
-          expect(meta, isNotNull);
-          expect(
-            meta!.tier,
-            0,
-            reason: 'acceptance #3: a missing tier falls back to 0',
-          );
-          expect(
-            meta.confidence,
-            0.8,
-            reason:
-                'acceptance #3: a missing overallQuality falls back to 0.8 '
-                '(the threading-layer default, NOT the fromMap 0.0 default)',
-          );
-        },
-      );
-
-      test(
-        'wrong-typed tier/overallQuality fall back to tier 0 / confidence 0.8',
-        () async {
-          final meta = await runUrlImport(
-            {'tier': 'multi', 'overallQuality': 'high'},
-          );
-
-          expect(meta, isNotNull);
-          expect(
-            meta!.tier,
-            0,
-            reason:
-                'acceptance #3: a non-int tier marker like "multi" falls back to 0',
-          );
-          expect(
-            meta.confidence,
-            0.8,
-            reason:
-                'acceptance #3: a non-num overallQuality ("high") falls back to 0.8',
-          );
         },
       );
     });

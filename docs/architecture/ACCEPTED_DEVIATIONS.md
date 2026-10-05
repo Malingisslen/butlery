@@ -5472,3 +5472,7 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   on a missing key is an evaluation error. Do not guard it with `.get('participantIds', [])`:
   that turns a missing roster into a fail-open.
 
+- **SUPERSEDES one clause of the ADR-0020 burst-guard entry (BUT-2244, 2026-10-05).** Retired:
+  "`globalRecipeCache` create keeps the old `rateLimitWrite`, pending BUT-1826." The
+  `match /globalRecipeCache/{docId}` block is deleted from `firestore.rules`; `rateLimitWrite`
+  stays defined there with no caller.

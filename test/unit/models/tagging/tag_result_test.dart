@@ -940,10 +940,7 @@ void main() {
     // BUT-1492: The existing round-trip tests only exercise data written by the
     // CURRENT schema (V2). These pin the read-time-only V0→V2 migration
     // (_migrateSchema, invoked by fromFirestore/fromJson) — the path that reads
-    // OLD stored blobs — and the cross-user cache path, i.e. a TagResult one user
-    // computed being read back by another via the shared Firestore store (recipes
-    // and their tagResult are shared cross-user through the global recipe cache /
-    // recipe sharing, deserialized via TagResult.fromFirestore).
+    // OLD stored blobs.
     group('L12: schema migration V0→V2 (read-time-only)', () {
       test(
         'V0 Firestore blob (no schemaVersion) reads and re-stamps to current',

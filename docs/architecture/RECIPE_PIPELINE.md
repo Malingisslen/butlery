@@ -17,8 +17,8 @@
         │
         ▼
 ┌── IMPORT (lib/services/import/) ─────────────────────────────────────────────┐
-│ ImportManager.autoImport = THE entry point: rate-limit → GlobalRecipeCache   │
-│ lookup → platform pipelines (YouTube/TikTok/Instagram) → strategy loop       │
+│ ImportManager.autoImport = THE entry point: rate-limit → platform pipelines  │
+│ (YouTube/TikTok/Instagram) → strategy loop                                   │
 │ (Archive, Url, Text, File, Photo). Parse-only; save happens after user review│
 └──────────────────────────────────────────────────────────────────────────────┘
         │  UrlImportStrategy = 7-tier waterfall (its Tier 1+3 call ↓)
@@ -116,9 +116,8 @@ not new systems — see the roadmap.
 ## Cross-cutting facts worth knowing
 
 - **Allergen safety spine:** global `ingredients` collection (client-write-denied) → `IngredientLookupService` → Phase 1 TriState. Two writers mutate that collection: `sync-ingredients.ts` (Sheet CSV; the duplicate `tools/sync_ingredients.dart` was deleted 2026-07-03, BUT-1467) and alias learning. Since BUT-1467 the sync fails closed on malformed CSV, preserves `learnedAliasesSv`, repairs TTL lifecycle state, and writes a per-run diff report (`docs/tagging/data/sync-reports/`) + `system_events` row highlighting allergen-property removals — the validation gate between a Google-Sheet cell edit and production allergen verdicts.
-- **Cost design is real:** deterministic-first everywhere, selective LLM enhance, cross-user GlobalRecipeCache (90–180d TTLs), 4 layers of spend controls, gemini-2.5-flash-lite. Two big leaks: full `ingredients` collection fetched per session + hourly (dominant read cost, roadmap P1), and stale cache hits re-tag on every hit without writing back.
+- **Cost design is real:** deterministic-first everywhere, selective LLM enhance, 4 layers of spend controls, gemini-2.5-flash-lite. Big leak: full `ingredients` collection fetched per session + hourly (dominant read cost, roadmap P1).
 - **Rate-limit asymmetry:** the $0.50/day / $10/month LLM ceilings are client-side only; the server allows ~4,300 structureRecipe calls/user/day via per-minute buckets alone.
-- **Cache provenance is fabricated:** every GlobalRecipeCache entry records `tier: 0, confidence: 0.8` — the real winning tier is computed and discarded, so cache ROI and LLM-spend attribution are unmeasurable.
 - **`ExtractionMeta`/`ParsingContext` side channels:** `SchemaOrgTier` writes `jsonLdData` that `LlmTier` reads — tier reordering breaks silently.
 - **`ingredient_categorizer.dart` is NOT tagging** — it's shopping-list bucketing; relocated to `lib/services/shopping/` (BUT-1487, previously mis-homed under `tagging/` by historical accident).
 - **Version keys:** `parserVersion` 2.0.0 (parse cache), `kTagGeneratorVersion` 2.1.0 (retag trigger), `PROMPT_VERSION` 2.1.0 (changelog-guarded), CRF `bundledWeightVersion`, TagResult schema V2 (read-time-only migration, never written back).

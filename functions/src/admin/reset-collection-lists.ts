@@ -140,7 +140,6 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "realtime_resources" },
   { name: "deep_links", subcollections: ["clicks"] },
   { name: "parsing_corrections" },
-  { name: "globalRecipeCache" },
   { name: "parse_events" },
   { name: "connectivity_test" },
   { name: "audit_logs", subcollections: ["deletions"] },

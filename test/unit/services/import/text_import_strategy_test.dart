@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 
 // Production imports
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -560,6 +561,182 @@ void main() {
             isNot(contains('vispa')),
             reason: 'the instruction line is not an ingredient',
           );
+        },
+      );
+    });
+
+    // Felkartan punkt 2 (2026-10-05): a pasted recipe's rows WITHOUT a
+    // quantity ("ägg", "parmesanost", "sojasås") were read as headings and
+    // dropped, and every allergen on such a row went with them. These cases
+    // pin the opposite direction: a bare word is a row unless its vocabulary
+    // or its shape (a capitalised word opening a paragraph above quantity
+    // rows) says heading.
+    group('Quantity-less ingredient rows are kept (felkartan punkt 2)', () {
+      List<String> ingredientsOf(ImportResult result) =>
+          (result.recipe?.ingredients ?? const <String>[])
+              .map((i) => i.toLowerCase())
+              .toList();
+
+      test(
+        'a parenthetical note is not cut into a second row '
+        '("olja (till stekning)")',
+        () async {
+          // The instruction-word split used to fire inside "stekning", which
+          // left "olja (till" and a "stekning)" row for the shopping list.
+          const text =
+              'Biff\n\n'
+              'Ingredienser\n'
+              '500 g nötfärs\n'
+              'olja (till stekning)\n'
+              '1 ägg\n\n'
+              'Gör så här\n'
+              'Stek biffarna.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings.where((i) => i.contains('stekning')), isEmpty);
+          expect(ings.where((i) => i.startsWith('olja')).length, 1);
+          expect(ings, contains('1 ägg'));
+        },
+      );
+
+      test(
+        'bare rows under an "Ingredienser" header stay in the list',
+        () async {
+          const text =
+              'Caesarsallad\n\n'
+              'Ingredienser\n'
+              '1 romansallad\n'
+              '2 kycklingfiléer\n'
+              'krutonger\n'
+              'parmesanost\n'
+              'ägg\n\n'
+              'Gör så här\n'
+              'Blanda allt och servera.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('krutonger'));
+          expect(ings, contains('parmesanost'));
+          expect(ings, contains('ägg'));
+        },
+      );
+
+      test(
+        'a headerless list keeps bare rows after its quantity rows',
+        () async {
+          const text =
+              'Sushibowl\n\n'
+              '2 dl sushiris\n'
+              '1 avokado\n'
+              'sojasås\n'
+              'sesamfrön\n\n'
+              'Gör så här\n'
+              'Lägg allt i skålar.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('sojasås'), reason: 'kept whole, not "soja"');
+          expect(ings, contains('sesamfrön'));
+        },
+      );
+
+      test(
+        'a vocabulary heading without a colon leaves the list, its rows stay',
+        () async {
+          const text =
+              'Broccolisoppa\n\n'
+              '500 g broccoli\n'
+              '1 potatis\n\n'
+              'Tillbehör\n'
+              'rostade solroskärnor\n'
+              'fetaost\n\n'
+              'Gör så här\n'
+              'Koka och mixa.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, isNot(contains('tillbehör')));
+          expect(ings, contains('rostade solroskärnor'));
+          expect(ings, contains('fetaost'));
+        },
+      );
+
+      test(
+        'a capitalised word opening a paragraph above quantity rows is a heading',
+        () async {
+          // With and without an "Ingredienser" marker: under the marker every
+          // valid-looking line is a row unless its shape says heading.
+          for (final marker in ['', 'Ingredienser\n']) {
+            final text =
+                'Lasagne\n\n'
+                '$marker'
+                '500 g nötfärs\n'
+                '1 gul lök\n\n'
+                'Ostsås\n'
+                '50 g smör\n'
+                '6 dl mjölk\n\n'
+                'Gör så här\n'
+                'Varva och grädda.';
+            final ings = ingredientsOf(await strategy.import(text));
+            expect(
+              ings,
+              isNot(contains('ostsås')),
+              reason: 'marker: "$marker"',
+            );
+            expect(ings, contains('50 g smör'));
+            expect(ings, contains('6 dl mjölk'));
+          }
+        },
+      );
+
+      test('a numbered step after a bare row is a step, not a row', () async {
+        const text =
+            'Ärtsoppa\n\n'
+            '500 g gula ärtor\n\n'
+            'Till servering\n'
+            'senap\n\n'
+            '1. Blötlägg ärtorna över natten.\n'
+            '2. Koka ärtorna i 1,5 timme.\n'
+            '3. Servera med senap.';
+        final result = await strategy.import(text);
+        final ings = ingredientsOf(result);
+        expect(ings, contains('senap'));
+        expect(ings, isNot(contains('blötlägg ärtorna över natten.')));
+        expect(result.recipe!.instructions.length, 3);
+      });
+
+      test('a sentence that starts with a number is not a row', () async {
+        // One fixture per refusing conjunct: five words, and a full stop.
+        const text =
+            'Logga in\n\n'
+            'Logga in för att läsa vidare. Vi har många recept.\n'
+            '12 nya recept i veckan\n'
+            '3 recept varje vecka.';
+        final result = await strategy.import(text);
+        expect(ingredientsOf(result), isEmpty);
+      });
+
+      test('a numbered list under "Ingredienser" stays rows', () async {
+        const text =
+            'Pannkakor\n\n'
+            'Ingredienser:\n'
+            '1. Mjölk 5 dl\n'
+            '2. Ägg 3 st\n'
+            '3. Vetemjöl 3 dl\n\n'
+            'Gör så här:\n'
+            'Vispa ihop och stek.';
+        final result = await strategy.import(text);
+        final ings = ingredientsOf(result);
+        expect(ings.join(' | '), contains('mjölk'));
+        expect(ings.join(' | '), contains('ägg'));
+        expect(ings.join(' | '), contains('vetemjöl'));
+      });
+
+      test(
+        'a capitalised list word opening a paragraph above a quantity row is a row',
+        () async {
+          const text =
+              'Kaka\n\n'
+              'Smör\n'
+              '2 dl mjölk\n\n'
+              'Gör så här\n'
+              'Blanda och grädda.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('smör'));
+          expect(ings, contains('2 dl mjölk'));
         },
       );
     });
@@ -1124,10 +1301,7 @@ Check out @cooking_tips for more
         // Act
         final result = await strategy.import(socialMediaPost);
 
-        // Assert — single-word ingredients like "Chicken" are rejected by
-        // isValidIngredient because isSectionHeader treats single lowercase
-        // words < 15 chars as ambiguous. The import succeeds but ingredients
-        // may be empty since all are single words after hashtag stripping.
+        // Assert — the title is what this case pins.
         expect(result.isSuccess, isTrue);
         final recipe = result.recipe!;
 
@@ -1264,9 +1438,7 @@ Koka potatisen i 20 minuter.
         // Act
         final result = await strategy.import(minimal);
 
-        // Assert — "Recipe", "Flour", "Mix" are all single words < 15 chars,
-        // treated as section headers by isSectionHeader. Title remains empty,
-        // ingredients/instructions are empty. Import still succeeds with defaults.
+        // Assert — import still succeeds with defaults.
         expect(result.isSuccess, isTrue);
         expect(result.recipe, isNotNull);
       });

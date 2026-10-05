@@ -277,13 +277,10 @@ class MultiRecipeSplitter {
     if (t.length < 3 || t.length > 60) return false;
     if (_leadingDigit.hasMatch(t)) return false;
     // Colon-terminated lines are sub-section headers ("För såsen:", "Gräddsås:",
-    // "Ingredienser:"), never recipe titles. (We deliberately do NOT use
-    // `isSectionHeader` — its single-word heuristic rejects real one-word titles
-    // like "Pannkakor".)
+    // "Ingredienser:"), never recipe titles.
     if (t.endsWith(':')) return false;
-    // NB: deliberately not using `isGarbage` — it delegates to the single-word
-    // `isSectionHeader` heuristic and so flags real one-word titles ("Pannkakor")
-    // as garbage. The digit/length/header guards here cover the noise cases.
+    // NB: deliberately not using `isGarbage`. The digit/length/header guards
+    // here cover the noise cases.
     if (RecipeSectionDetector.isIngredientHeader(t)) return false;
     if (RecipeSectionDetector.isInstructionHeader(t.toLowerCase())) {
       return false;

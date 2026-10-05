@@ -6,6 +6,9 @@
  * The user document itself is at `/users/{userId}` and the privacy-sensitive
  * preferences live at `/users/{userId}/settings/preferences`.
  *
+ * It also pins that the removed `globalRecipeCache` path stays closed
+ * (BUT-2244).
+ *
  * Each test name states the behavior it proves. Failure => either the rules
  * regressed or the product contract changed; decide which before editing.
  *
@@ -733,6 +736,74 @@ test(
     );
   }
 );
+
+// ============================================================================
+// GLOBAL RECIPE CACHE — REMOVED (BUT-2244)
+// The `match /globalRecipeCache/{docId}` block is deleted, so the path falls
+// through to the terminal `match /{document=**}`. One deny per verb the old
+// block granted (read, create, update), sent by a signed-in user, which is
+// the actor that block admitted.
+// ============================================================================
+
+function cacheEntryBody(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    url: "https://example.com/recept",
+    title: "Köttbullar",
+    createdBy: OWNER_UID,
+    createdAt: new Date(),
+    ...extra,
+  };
+}
+
+async function seedCacheEntry(id: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin.firestore().doc(`globalRecipeCache/${id}`).set(cacheEntryBody({ accessCount: 1 }));
+  });
+}
+
+// G0: control: the same signed-in actor can still read a sibling
+//     infrastructure collection, so the denies below are not an auth or
+//     ruleset-load failure.
+test("globalRecipeCache: control: signed-in user can read site_configs", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin.firestore().doc("site_configs/example.com").set({ domain: "example.com" });
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(ctx.firestore().doc("site_configs/example.com").get());
+});
+
+// G1: signed-in user cannot get a cache entry.
+test("globalRecipeCache: signed-in user cannot read a cache entry", async () => {
+  await seedCacheEntry(`g1-${RUN}`);
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(ctx.firestore().doc(`globalRecipeCache/g1-${RUN}`).get());
+});
+
+// G2: signed-in user cannot list the collection.
+test("globalRecipeCache: signed-in user cannot list the collection", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(ctx.firestore().collection("globalRecipeCache").get());
+});
+
+// G3: signed-in user cannot create an entry in their own name.
+test("globalRecipeCache: signed-in user cannot create a cache entry", async () => {
+  const id = `g3-${RUN}`;
+  await env.withSecurityRulesDisabled(async (admin) => {
+    const snap = await admin.firestore().doc(`globalRecipeCache/${id}`).get();
+    if (snap.exists) throw new Error(`G3 fixture ${id} already exists; this would test update`);
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(ctx.firestore().doc(`globalRecipeCache/${id}`).set(cacheEntryBody()));
+});
+
+// G4: signed-in user cannot bump the access statistics on an entry.
+test("globalRecipeCache: signed-in user cannot update access statistics", async () => {
+  await seedCacheEntry(`g4-${RUN}`);
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`globalRecipeCache/g4-${RUN}`).update({ accessCount: 2, lastAccessedAt: new Date() })
+  );
+});
 
 async function run(): Promise<void> {
   console.log("BUT-448: recipes + users rules tests\n");

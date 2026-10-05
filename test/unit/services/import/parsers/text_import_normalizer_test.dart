@@ -210,9 +210,7 @@ void main() {
         },
       );
 
-      test('should also split words containing Swedish section substrings', () {
-        // "oystersås" contains "sås" which matches Pattern 2 as a section
-        // header, so it gets split further into "oyster" + "sås"
+      test('keeps a word whose tail is a lowercase section word whole', () {
         final result = TextImportNormalizer.splitConcatenatedIngredients(
           'oystersås2 msk',
         );
@@ -220,8 +218,29 @@ void main() {
             .split('\n')
             .where((l) => l.trim().isNotEmpty)
             .toList();
-        expect(lines.length, greaterThanOrEqualTo(3));
-        expect(lines, contains('oyster'));
+        expect(lines, equals(['oystersås', '2 msk']));
+      });
+
+      test(
+        'still splits a capitalised section header off the previous word',
+        () {
+          final result = TextImportNormalizer.splitConcatenatedIngredients(
+            '2 dl mjölkSås2 msk smör',
+          );
+          final lines = result
+              .split('\n')
+              .where((l) => l.trim().isNotEmpty)
+              .map((l) => l.trim())
+              .toList();
+          expect(lines, equals(['2 dl mjölk', 'Sås', '2 msk smör']));
+        },
+      );
+
+      test('keeps "portioner" whole when nothing capitalised follows', () {
+        final result = TextImportNormalizer.splitConcatenatedIngredients(
+          '2 portioner',
+        );
+        expect(result, equals('2 portioner'));
       });
 
       test(
@@ -478,11 +497,24 @@ void main() {
         expect(result, contains('1.5 msk'));
       });
 
-      test('should normalize multiple line breaks', () {
+      test('a typed paragraph break survives as exactly one blank line', () {
         final result = TextImportNormalizer.preprocessText(
           'Rad 1\n\n\nRad 2',
         );
-        // Multiple newlines should be collapsed to single
+        expect(result, equals('Rad 1\n\nRad 2'));
+      });
+
+      test('a line break the splitters insert is not a paragraph break', () {
+        final result = TextImportNormalizer.preprocessText(
+          '2 dl mjölkSås2 msk smör',
+        );
+        expect(result, isNot(contains('\n\n')));
+      });
+
+      test('should normalize multiple line breaks', () {
+        final result = TextImportNormalizer.preprocessText(
+          'Rad 1\nRad 2',
+        );
         expect(result, isNot(contains('\n\n')));
       });
 
@@ -503,6 +535,17 @@ void main() {
           'allting klart Servera med ris',
         );
         expect(result, contains('\nServera'));
+      });
+
+      test('an instruction word inside another word does not split it', () {
+        expect(
+          TextImportNormalizer.preprocessText('rostade solroskärnor'),
+          equals('rostade solroskärnor'),
+        );
+        expect(
+          TextImportNormalizer.preprocessText('köttbullar med graddsas'),
+          equals('köttbullar med graddsas'),
+        );
       });
 
       test('should handle an empty string', () {

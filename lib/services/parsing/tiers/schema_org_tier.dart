@@ -252,13 +252,22 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   /// set as the current group for subsequent lines. A trailing heading (no
   /// ingredient follows) is dropped entirely — it groups nothing.
   (List<String>, List<String?>) _splitHeadings(List<String> rawLines) {
+    // The kill switch turns off GROUPING. A block title is not a group and
+    // is never an ingredient, so it leaves the list on both sides of it.
     if (!isSectionCaptureEnabled) {
-      return (rawLines, const <String?>[]);
+      final entries = rawLines
+          .where((line) => !RecipeSectionDetector.isGenericBlockMarker(line))
+          .toList();
+      return (entries, const <String?>[]);
     }
     final lines = <String>[];
     final sections = <String?>[];
     String? current;
     for (final line in rawLines) {
+      if (RecipeSectionDetector.isGenericBlockMarker(line)) {
+        current = null;
+        continue;
+      }
       final label = RecipeSectionDetector.componentSubHeadingLabel(line);
       if (label != null) {
         current = label;
