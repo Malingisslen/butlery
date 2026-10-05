@@ -68,7 +68,7 @@ enum MenuPrefSource {
 /// like a bug (BUT-1464, PM conditions 1-3).
 class MenuPoolStats {
   /// Recipes removed by the allergen/dietary filter (household union when a
-  /// household exists, otherwise the single user's own preferences).
+  /// household exists).
   final int hiddenByAllergenFilter;
 
   /// Recipes that stayed in the pool despite an UNKNOWN effective status for
@@ -134,8 +134,7 @@ class MenuGenerator {
   ///
   /// Defaults to TRUE (safety-by-default, BUT-1464): once a household exists,
   /// one member's allergy keeps those recipes out of everyone's menus without
-  /// any setup step. With no household this is a no-op (single-user filtering,
-  /// unchanged).
+  /// any setup step. With no household this is a no-op.
   ///
   /// BUT-1465: now driven by the persisted per-user opt-out — read live from the
   /// profile (like [_userService.allergenPreferences]) so the settings toggle
@@ -233,16 +232,13 @@ class MenuGenerator {
   ///
   /// Priority: present-diner union (opt-in, NON-EMPTY set required — an empty
   /// "no one selected" list must NOT disable filtering) → whole-household
-  /// union (when [useHouseholdAllergens] and a household exists) → the single
-  /// user's own preferences. Every fall-through lands on a FILTERED pool,
-  /// never an unfiltered one.
+  /// union → the single user's own preferences. Every fall-through lands on a
+  /// FILTERED pool, never an unfiltered one.
   Future<(UserAllergenPreferences, MenuPrefSource)>
   _resolveActivePrefs() async {
     final present = presentMemberIds;
     if (present != null && present.isNotEmpty) {
-      final resolved = await const PresentDinerPrefsResolver().resolve(
-        present,
-      );
+      final resolved = await const PresentDinerPrefsResolver().resolve(present);
       if (resolved != null) {
         return (
           resolved.preferences,
@@ -252,19 +248,39 @@ class MenuGenerator {
         );
       }
     }
-    if (useHouseholdAllergens) {
-      final householdService = ServiceLocator.tryGet<HouseholdService>();
-      if (householdService != null && householdService.hasHousehold) {
-        final aggregate = await householdService.aggregateAllergenPreferences();
+    final householdService = ServiceLocator.tryGet<HouseholdService>();
+    final hasFriendHousehold = householdService?.hasHousehold ?? false;
+    var (prefs, source) = (
+      _userService.allergenPreferences,
+      MenuPrefSource.singleUser,
+    );
+    if (useHouseholdAllergens && hasFriendHousehold) {
+      final aggregate = await householdService!.aggregateAllergenPreferences();
+      (prefs, source) = (
+        aggregate.preferences,
+        aggregate.isRosterComplete
+            ? MenuPrefSource.household
+            : MenuPrefSource.householdIncomplete,
+      );
+    }
+    // Family diner profiles (children) join the union. The household toggle
+    // is only shown with a friend-based household, so without one a stale
+    // `false` must not silently drop a child's allergens.
+    if (useHouseholdAllergens || !hasFriendHousehold) {
+      final withDiners = await const PresentDinerPrefsResolver()
+          .addHouseholdDiners(prefs);
+      if (withDiners != null && withDiners.changed) {
+        final complete =
+            withDiners.prefs.isComplete && !source.isRosterIncomplete;
         return (
-          aggregate.preferences,
-          aggregate.isRosterComplete
+          withDiners.prefs.preferences,
+          complete
               ? MenuPrefSource.household
               : MenuPrefSource.householdIncomplete,
         );
       }
     }
-    return (_userService.allergenPreferences, MenuPrefSource.singleUser);
+    return (prefs, source);
   }
 
   /// Filter recipes using explicit prefs — the ONE allergen/dietary filter

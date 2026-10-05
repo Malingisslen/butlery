@@ -317,11 +317,19 @@ class TestServiceLocator {
     when(
       () => householdRepo.ensureForUser(any()),
     ).thenAnswer((_) async => Household.create(creatorId: 'test-user-123'));
+    // No household and no diner profiles by default: the menu generator reads
+    // both, and an unstubbed read throws, which the generator rightly treats
+    // as an unreadable family (safety floor).
+    when(
+      () => householdRepo.getForUser(any()),
+    ).thenAnswer((_) async => const []);
     getIt.registerSingleton<HouseholdRepository>(householdRepo);
 
-    getIt.registerSingleton<DinerProfileRepository>(
-      _MockDinerProfileRepository(),
-    );
+    final dinerRepo = _MockDinerProfileRepository();
+    when(
+      () => dinerRepo.getByHousehold(any()),
+    ).thenAnswer((_) async => const []);
+    getIt.registerSingleton<DinerProfileRepository>(dinerRepo);
   }
 
   /// Register all service mocks
