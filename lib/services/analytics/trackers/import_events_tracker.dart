@@ -108,15 +108,4 @@ class ImportEventsTracker extends BaseTracker {
       imageFormat: imageFormat,
     );
   }
-
-  /// Log manual copy fallback usage
-  Future<void> logManualCopyFallback({
-    required SourcePlatform platform,
-    String? reason,
-  }) async {
-    await repository.logManualCopyFallback(
-      platform: platform.toString().split('.').last,
-      reason: reason,
-    );
-  }
 }

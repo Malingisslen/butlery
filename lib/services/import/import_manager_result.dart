@@ -173,6 +173,26 @@ class BatchImportResult {
   bool get allSuccessful => successCount == totalProcessed;
 }
 
+/// What [ImportManager.importFile] gives the batch preview.
+class FileImportResult {
+  final List<Recipe> recipes;
+  final RateLimitDenied? rateLimitDenied;
+  final bool cancelled;
+
+  const FileImportResult(this.recipes)
+    : rateLimitDenied = null,
+      cancelled = false;
+
+  const FileImportResult.cancelled()
+    : recipes = const [],
+      rateLimitDenied = null,
+      cancelled = true;
+
+  const FileImportResult.rateLimit(RateLimitDenied this.rateLimitDenied)
+    : recipes = const [],
+      cancelled = false;
+}
+
 /// Import suggestion with confidence rating
 class ImportSuggestion {
   final ImportStrategy strategy;

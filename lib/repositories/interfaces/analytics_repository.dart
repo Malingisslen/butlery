@@ -89,12 +89,6 @@ abstract class AnalyticsRepository {
     String imageFormat,
   });
 
-  /// Log manual copy fallback usage
-  Future<void> logManualCopyFallback({
-    required String platform,
-    String? reason,
-  });
-
   /// Log recipe creation
   Future<void> logRecipeCreated({
     required String source,

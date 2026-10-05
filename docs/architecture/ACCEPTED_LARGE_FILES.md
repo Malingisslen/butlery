@@ -90,7 +90,7 @@ Already modular services or well-organized modules within service facades. Furth
 |------|-------|--------|
 | `personal_recipe_module.dart` | 1,100 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1182 | Service facade coordinating 4 modules |
-| `import_manager.dart` | 1,235 | Import pipeline orchestrator — multi-format, multi-tier |
+| `import_manager.dart` | 1,283 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 706 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 708 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
@@ -219,7 +219,6 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `conversations_list_view.dart` | 564 | Conversations list screen |
 | `base_dialog.dart` | 541 | Base dialog widget |
 | `menu_viewmodel.dart` | 608 | Weekly menu VM |
-| `receive_share_view.dart` | 562 | Incoming share intent handler |
 | `shopping_member_management_dialog.dart` | 562 | Shopping list member management dialog |
 | `photo_import_view.dart` | 648 | Photo import screen |
 | `social_invitation_components.dart` | 520 | Pure facade delegating to focused invitation sub-modules |

@@ -102,7 +102,6 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | ID | Feature | Tests |
 |---|---|---|
 | IMP-01 | URL import (single + batch) | Verified |
-| IMP-02 | Recipe-index (listing-page) expansion | Partial |
 | IMP-03 | Smart (unified) import | Verified |
 | IMP-04 | Photo / OCR import (multi-page) | Verified |
 | IMP-05 | Text / paste import | Verified |
@@ -513,19 +512,12 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 ### Recipe Import
 
 #### IMP-01: URL import (single + multi-URL batch)
-- **Entry:** `/importViaUrl`; also from ReceiveShare for detected recipe URLs.
+- **Entry:** `/smartImport` (via `ImportManager.autoImport`).
 - **User story:** As a home cook, I want to paste one or several recipe links and have them fetched and parsed so that I don't retype recipes from sites I browse.
 - **Expected behavior:** Single URL → platform detect + mobile→web conversion → headless extraction → parse → editor. Multiple URLs (various separators, de-duplicated) → sequential batch fetch (never concurrent — cost/rate-limit safety) with per-URL progress + retry, partial-success tolerance, combined handoff to the multi-recipe picker. Pre-fetch suggestions flag known sites, keywords, social links.
 - **Edge cases:** Empty/malformed URL; non-http(s); private/reserved host blocked (SSRF guard); whole-batch failure surfaces batch error while good rows stay importable.
 - **Validation:** Localized URL validation; only well-formed fetchable URLs kept.
-- **Test coverage:** Verified — `url_import_viewmodel_test.dart`, `url_import_strategy_test.dart`, `import_via_url_view_multi_test.dart`.
-
-#### IMP-02: Recipe-index (listing-page) expansion
-- **Entry:** Opt-in banner within `/importViaUrl` after an index page is detected.
-- **User story:** As a user pasting a category/index page, I want the app to offer to import every recipe it links to so that I can bulk-add a collection in one step.
-- **Expected behavior:** Probe-fetches (SSRF-guarded), harvests recipe links, shows "import all N" only when link count ≥ threshold. On opt-in runs the sequential batch fetch. Never auto-runs.
-- **Edge cases:** Single page / fetch fail / too few links → no banner (silent). URL edited mid-probe clears stale links.
-- **Test coverage:** Partial — via `url_import_viewmodel_test.dart` (no dedicated expander test).
+- **Test coverage:** Verified — `url_import_strategy_test.dart`.
 
 #### IMP-03: Smart (unified) import
 - **Entry:** `/smartImport` — primary "Importera länk" tile, deep-link target, empty-state CTA.
@@ -552,14 +544,12 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Test coverage:** Verified — `text_import_viewmodel_test.dart`, `text_import_strategy_test.dart`, `text_import_normalizer_test.dart`.
 
 #### IMP-06: Receive-share (share intent from other apps)
-- **Entry:** `/receiveShare` — OS share sheet hands content to the app.
+- **Entry:** OS share sheet → `IncomingShareHandler` → `/photoImport` (shared photos).
 - **User story:** As a user, I want to share a link or text from another app into Butlery and have it routed to the right importer so that importing is one tap from where I found the recipe.
-- **Expected behavior:** Classifies the shared content (social URL / recipe URL / recipe text / plain) + platform, renders an adaptive screen routing each to the right importer with a manual-copy fallback. Threads import-funnel analytics.
-- **Edge cases:** Extraction failure → inline error + retry + manual copy. No URL → text import.
 - **Test coverage:** Partial — `incoming_share_handler_test.dart` (BUT-941) proves the routing decision logic (auth-gate, hold-until-routable, never break startup); `social_media_extractor_test.dart` + `content_detector_service_test.dart` cover the underlying extraction/classification. No device-level share-intent E2E (OS share sheet → app) yet.
 
 #### IMP-07: Social-media URL extraction (Instagram/TikTok/YouTube)
-- **Entry:** ReceiveShare auto-extract + URL-import suggestion.
+- **Entry:** `/smartImport` via `ImportManager.autoImport`.
 - **User story:** As a user, I want to pull recipe text out of an Instagram/TikTok/YouTube post so that I can import recipes that live inside social posts.
 - **Expected behavior:** Detects platform, selects a strategy, returns extracted text + metadata. YouTube has a tiered strategy (video-ID → metadata → transcript → LLM), falling back to user-assisted import with the transcript, then a manual-screenshot state.
 - **Edge cases:** Failure carries a `reason` for analytics; YouTube with no transcript → manual fallback; paywalled posts → extraction error.
@@ -585,7 +575,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** 3-step wizard — select ingredient lines (pre-highlighted), select instruction lines (scored), review/edit all fields. Cleans step-number prefixes. Builds a personal recipe with source URL + thumbnail.
 - **Edge cases:** Can't proceed without a selection; portions clamped 1–100, time 0–1440.
 - **Validation:** Per-step validation; save needs title + ≥1 ingredient + ≥1 instruction.
-- **Test coverage:** Partial — base-VM + `import_recipe_journey_test.dart` exercise surrounding flow; no dedicated assisted-import VM test. *(Pure free fallback — no LLM/network.)*
+- **Test coverage:** Partial. *(Pure free fallback — no LLM/network.)*
 
 #### IMP-11: Ingredient-line parsing (CRF / NER / ONNX)
 - **Entry:** Not a screen — runs downstream of every import during parse. *(See ENG-09 for the engine-level view.)*

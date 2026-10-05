@@ -73,7 +73,7 @@ abstract final class AnalyticsEvents {
   // BUT-545: dedicated outcome events for the onboarding import page so
   // the activation funnel can distinguish "tried-and-imported" from
   // "tried-and-failed" from "skipped". The generic import_started/success
-  // events still fire alongside (with `source: 'onboarding'`) for the
+  // events still fire alongside for the
   // unified import funnel; these add the onboarding-specific dimension.
   static const onboardingImportAttempted = 'onboarding_import_attempted';
   static const onboardingImportSucceeded = 'onboarding_import_succeeded';
@@ -220,7 +220,6 @@ abstract final class AnalyticsEvents {
   // so we avoided a wasted paid LLM parse. Measures cost saved.
   static const importWarnDialogCancelled = 'import_warn_dialog_cancelled';
   static const extractionError = 'extraction_error';
-  static const manualCopyFallback = 'manual_copy_fallback';
   static const importTierSucceeded = 'import_tier_succeeded';
   static const importTierFailed = 'import_tier_failed';
 

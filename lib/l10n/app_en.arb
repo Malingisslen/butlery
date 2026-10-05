@@ -3347,7 +3347,6 @@
   "importTipsContent": "Paste the full recipe including ingredients. Make sure ingredients come before instructions. Text can come from Instagram, TikTok, Facebook etc.",
   "importTipsTitle": "Tips for best results",
   "importTryAdjustFilters": "Try adjusting search or filters",
-  "importViaUrl": "Import via URL",
   "indicatorOfflineMode": "No connection",
   "@indicatorOfflineMode": {
     "description": "Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value."

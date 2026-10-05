@@ -224,18 +224,19 @@ class _HouseholdAllergenSharingTileState
       // timestamp and the mirror timestamp disagreeing about the same act.
       HouseholdAllergenShare buildShare() {
         final now = clock.now();
+        // A member who entered nothing shares an EMPTY list, not the
+        // defaults: `UserAllergenPreferences.defaults` names four allergens,
+        // and its `includeUnknownInMenu` therefore reads false. Sharing that
+        // would impose a caution they never chose — and because the household
+        // AND-folds this field, one such share strips every unverified recipe
+        // from everyone's menu.
+        final shared = prefs ?? UserAllergenPreferences.none;
         return HouseholdAllergenShare(
           householdId: householdId,
           userId: userId,
-          trackedAllergens: prefs?.trackedAllergens ?? const {},
-          trackedDietary: prefs?.trackedDietary ?? const {},
-          // NOT `?? false`: a member who entered nothing runs on the class
-          // default, which is TRUE. Sharing false would impose a caution they
-          // never chose — and because the household AND-folds this field, one
-          // such share strips every unverified recipe from everyone's menu.
-          includeUnknownInMenu:
-              prefs?.includeUnknownInMenu ??
-              UserAllergenPreferences.defaults.includeUnknownInMenu,
+          trackedAllergens: shared.trackedAllergens,
+          trackedDietary: shared.trackedDietary,
+          includeUnknownInMenu: shared.includeUnknownInMenu,
           consentGranted: true,
           consentVersion: HouseholdAllergenShare.currentConsentVersion,
           consentGrantedAt: now,

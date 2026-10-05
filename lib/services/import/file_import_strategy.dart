@@ -114,30 +114,40 @@ class FileImportStrategy extends ImportStrategy {
   /// Import multiple recipes from file
   Future<List<Recipe>> importMultiple({Map<String, dynamic>? options}) async {
     try {
-      final result = await _contentProvider.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'],
-        withData: true,
-      );
-
-      if (result == null || result.files.isEmpty) {
-        return [];
-      }
-
-      final file = result.files.first;
-      if (file.bytes == null) {
-        throw Exception('Could not read file');
-      }
-
-      return await importMultipleFromContent(
-        file.bytes!,
-        (file.extension?.toLowerCase()).orEmpty(),
-        options: options,
-      );
+      final file = await pickFile();
+      if (file == null) return [];
+      return await importPicked(file, options: options);
     } catch (e) {
       AppLogger.error('File import failed', e);
       return [];
     }
+  }
+
+  /// Asks the user for one file; null when they picked none.
+  Future<PlatformFile?> pickFile() async {
+    final result = await _contentProvider.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'],
+      withData: true,
+    );
+    return result?.files.firstOrNull;
+  }
+
+  /// Every recipe in a file the user picked.
+  Future<List<Recipe>> importPicked(
+    PlatformFile file, {
+    Map<String, dynamic>? options,
+  }) async {
+    final bytes = file.bytes;
+    if (bytes == null) {
+      AppLogger.error('File import failed: could not read file');
+      return [];
+    }
+    return importMultipleFromContent(
+      bytes,
+      (file.extension?.toLowerCase()).orEmpty(),
+      options: options,
+    );
   }
 
   /// Import multiple recipes from content directly (for testing)

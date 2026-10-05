@@ -511,7 +511,7 @@ Tänk på appen som en fabrikslinje med två axlar:
 **Vertikal axel (din egen pipeline):** import → samling → meny → inköp → laga.
 **Horisontell axel (socialt):** vänner/grupper → dela recept & menyer → realtids-kollaborativa listor/menyer → meddelanden.
 
-**Import-tratten → samling:** sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. `lagg_till_recept_view` erbjuder 4 (smartImport, manuell, foto, arkiv); `smart_import` absorberar själv URL + text + sociala medier; `receive_share_view` är en OS-nivå-ingång; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.
+**Import-tratten → samling:** sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. `lagg_till_recept_view` erbjuder 4 (smartImport, manuell, foto, arkiv); `smart_import` absorberar själv URL + text + sociala medier; delade foton från OS-delningsmenyn går till fotoimporten; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.
 
 **Recept → meny → inköp-pipelinen (kärnvärdesslingan):** ett recept i samlingen kan läggas till veckomenyn. Menyns dialog (`showShoppingListSelector`) genererar en inköpslista från alla menyns ingredienser och navigerar till inköpsfliken. Alternativt genererar ett enskilt recepts detaljsida en inköpslista direkt. Båda trattas in i `UnifiedShoppingViewModel.addItemsToList`.
 

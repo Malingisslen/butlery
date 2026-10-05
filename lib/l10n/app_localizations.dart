@@ -8443,12 +8443,6 @@ abstract class AppLocalizations {
   /// **'Prova att justera sökning eller filter'**
   String get importTryAdjustFilters;
 
-  /// No description provided for @importViaUrl.
-  ///
-  /// In sv, this message translates to:
-  /// **'Importera via URL'**
-  String get importViaUrl;
-
   /// Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value.
   ///
   /// In sv, this message translates to:

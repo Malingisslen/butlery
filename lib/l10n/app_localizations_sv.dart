@@ -5014,9 +5014,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importTryAdjustFilters => 'Prova att justera sökning eller filter';
 
   @override
-  String get importViaUrl => 'Importera via URL';
-
-  @override
   String get indicatorOfflineMode => 'Ingen anslutning';
 
   @override

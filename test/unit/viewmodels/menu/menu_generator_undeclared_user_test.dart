@@ -5,15 +5,18 @@
 // settings read, `allergenPreferences` null).
 //
 // The generator is wired exactly as MenuViewModel wires it (both filter
-// flags on, menu_viewmodel.dart) and reads a REAL UserService, not a mock,
-// so the defaults substitution in `UserService.allergenPreferences` is on
-// the measured path. The household path is a mock HouseholdService, as in
+// flags on, menu_viewmodel.dart) and reads a REAL UserService, not a mock:
+// the profile carries null and the getter substitutes defaults, so the two
+// sources disagree exactly as in production, and a generator that reads the
+// getter turns the second group red. Keep this suite OFF the shared
+// `stubOwnPreferences` helper, which makes both sources agree. The
+// household path is a mock HouseholdService, as in
 // menu_household_allergen_test.dart.
 //
-// Tests marked `skip:` state the INTENDED behaviour (BUT-1663: an untouched
-// screen means "no allergies", never the default diets). They are red on
-// the current code; the fix flips the skip off. The unskipped tests pin the
-// mechanism and the parts that are already right.
+// The generator reads the PROFILE, not `UserService.allergenPreferences`
+// (BUT-1663: an untouched screen means "no allergies", never the default
+// diets); the first group pins that the getter still substitutes defaults,
+// the second what the menu filters by.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -119,7 +122,12 @@ void main() {
     ),
   );
 
-  UserProfile profile({UserAllergenPreferences? prefs}) => UserProfile(
+  UserProfile profile({
+    UserAllergenPreferences? prefs,
+    // The private settings doc WAS read and carried no preferences: this is
+    // the declaration BUT-1663 distinguishes from a failed read.
+    bool settingsMerged = true,
+  }) => UserProfile(
     uid: _uid,
     displayName: 'Ny användare',
     email: 'ny@example.com',
@@ -127,9 +135,7 @@ void main() {
     joinedAt: DateTime(2026),
     lastActiveAt: DateTime(2026),
     allergenPreferences: prefs,
-    // The private settings doc WAS read and carried no preferences: this is
-    // the declaration BUT-1663 distinguishes from a failed read.
-    settingsMerged: true,
+    settingsMerged: settingsMerged,
   );
 
   /// Signs in [_uid] and loads [p] through the real UserService.
@@ -214,29 +220,6 @@ void main() {
       expect(prefs.trackedAllergens, hasLength(4));
     });
 
-    test(
-      'BUT-2085 measured: with no household the undeclared user\'s menu '
-      'pool keeps ONLY the vegan dish, on both the sync and async paths',
-      () async {
-        await signInWith(profile());
-
-        expect(syncPool(), ['vegan']);
-        expect(await pool(), ['vegan']);
-        expect(generator.lastPoolStats?.prefSource, MenuPrefSource.singleUser);
-        expect(generator.lastPoolStats?.trackedAllergenCount, 4);
-      },
-    );
-
-    test('BUT-1694 measured: the same undeclared user with an EMPTY household '
-        'aggregate gets NO filtering at all', () async {
-      await signInWith(profile());
-      stubHousehold(exists: true);
-
-      expect(await pool(), ['meat', 'vegan', 'nuts']);
-      expect(generator.lastPoolStats?.prefSource, MenuPrefSource.household);
-      expect(generator.lastPoolStats?.trackedAllergenCount, 0);
-    });
-
     test('a DECLARED user is filtered by what they declared', () async {
       await signInWith(
         profile(
@@ -253,7 +236,7 @@ void main() {
     });
   });
 
-  group('intended behaviour (BUT-1663: untouched screen = no allergies)', () {
+  group('menu filtering (BUT-1663: untouched screen = no allergies)', () {
     test(
       'BUT-2085: an undeclared user with no household gets the unfiltered '
       'pool — no diet and no allergen is imposed',
@@ -265,9 +248,6 @@ void main() {
         expect(generator.lastPoolStats?.prefSource, MenuPrefSource.singleUser);
         expect(generator.lastPoolStats?.trackedAllergenCount, 0);
       },
-      skip:
-          'BUT-2085: red until the singleUser branch of _resolveActivePrefs '
-          '(and the sync filters) stop reading UserService.allergenPreferences',
     );
 
     test(
@@ -281,8 +261,38 @@ void main() {
         final withHousehold = await pool();
 
         expect(withoutHousehold, withHousehold);
+        expect(withHousehold, ['meat', 'vegan', 'nuts']);
       },
-      skip: 'BUT-1694: red until BUT-2085\'s fix lands (same branch)',
+    );
+
+    test(
+      'a profile whose settings read FAILED is filtered by the common-allergen '
+      'floor with UNKNOWN shut, never by a diet',
+      () async {
+        await signInWith(profile(settingsMerged: false));
+        // A dish whose floor allergen is UNKNOWN: only the shut hatch drops it.
+        final unknownNuts = recipeWith(
+          'unknown',
+          tag(
+            allergen: {
+              for (final a in UserAllergenPreferences.defaults.trackedAllergens)
+                a: a == 'nötter' ? TriState.unknown : TriState.free,
+            },
+            dietary: {'vegetarisk': TriState.free, 'vegansk': TriState.free},
+          ),
+        );
+        recipeService.setRecipeState(
+          isInitialized: true,
+          recipes: [meatDish(), veganDish(), nutDish(), unknownNuts],
+        );
+
+        expect(syncPool(), ['meat', 'vegan']);
+        expect(await pool(), ['meat', 'vegan']);
+        expect(
+          generator.lastPoolStats?.trackedAllergenCount,
+          UserAllergenPreferences.defaults.trackedAllergens.length,
+        );
+      },
     );
   });
 }

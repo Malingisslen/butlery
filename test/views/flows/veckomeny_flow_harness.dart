@@ -175,7 +175,12 @@ class VeckomenyFlowHarness {
         userId: flowUserId,
       ),
     );
-    user = UserProfileFactory.build(uid: flowUserId);
+    // Settings read and empty: the menu filters by nothing (BUT-2085). Left
+    // unmerged, the generator would apply the common-allergen floor with
+    // UNKNOWN shut and drop every untagged flow recipe.
+    user = UserProfileFactory.build(
+      uid: flowUserId,
+    ).copyWith(settingsMerged: true);
     final users = _Users(user);
     TestServiceLocator.registerMock<UserService>(users);
 

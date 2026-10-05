@@ -19,7 +19,6 @@ discovery, real flake-fix, or user correction.
 |---|---|---|
 | Allergen preferences | `allergen_preferences_view_test.dart` | User sets allergens → state persists across navigation |
 | Onboarding | `onboarding_journey_test.dart` | First-launch flow → first recipe imported |
-| Import recipe | `import_recipe_journey_test.dart` | URL/text → parsed recipe in user's library |
 | Cooking mode | `cooking_mode_journey_test.dart` | Recipe → cooking mode → step navigation |
 | Menu → shopping | `menu_to_shopping_journey_test.dart` | Weekly menu → consolidated shopping list |
 | Share recipe | `share_recipe_journey_test.dart` | Recipe → friend → recipient sees it |
@@ -162,3 +161,6 @@ ONCE in BOTH the compliant and the rejected journeys. The VM sets
 belt doesn't re-verify — pinning that the check fires at the gate, not twice.
 A second under-15 affordance (`Key('age_gate_set_minor')`,
 `year - 10`) parallels the existing adult one.
+
+### Harness runs hide framework errors (2026-10-05) [Pattern discovered]
+`pumpState` (test/views/design_states) swallows framework errors and overflows into `run.capture`, so a green smoke pump proves nothing. When building a host for a view nobody pumps, probe `capture.exceptions` and `capture.overflows` once and read the visible `Text`s. Host recipe for `MinaReceptView` is `minaReceptHost` in `test/views/golden_linux/golden_hosts.dart`: fakes at the service edge, the view's own view models real, list view model registered as a factory because the view disposes it. Detail in the archive.

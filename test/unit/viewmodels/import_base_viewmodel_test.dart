@@ -42,22 +42,6 @@ class TestTextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   String get importType => 'text';
 }
 
-// Test implementation with UrlImportMixin
-class TestUrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
-  TestUrlImportViewModel({required super.importManager});
-
-  @override
-  String get importType => 'url';
-
-  @override
-  Future<String> fetchContentFromUrl(String url) async {
-    if (url.contains('error')) {
-      throw Exception('Failed to fetch URL');
-    }
-    return 'Fetched content from $url';
-  }
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -65,7 +49,6 @@ void main() {
   late MockTextImportStrategy mockTextStrategy;
   late TestImportViewModel viewModel;
   late TestTextImportViewModel textViewModel;
-  late TestUrlImportViewModel urlViewModel;
 
   // Default recipe returned by the text strategy stub
   final defaultImportedRecipe = RecipeFactory.build(
@@ -102,13 +85,11 @@ void main() {
 
     viewModel = TestImportViewModel(importManager: mockImportManager);
     textViewModel = TestTextImportViewModel(importManager: mockImportManager);
-    urlViewModel = TestUrlImportViewModel(importManager: mockImportManager);
   });
 
   tearDown(() async {
     viewModel.dispose();
     textViewModel.dispose();
-    urlViewModel.dispose();
   });
 
   tearDownAll(() async {
@@ -589,131 +570,6 @@ void main() {
     });
   });
 
-  group('UrlImportMixin', () {
-    test('should initialize with empty URL', () {
-      expect(urlViewModel.url, isEmpty);
-      expect(urlViewModel.extractedText, isEmpty);
-      expect(urlViewModel.hasExtractedText, isFalse);
-      expect(urlViewModel.canFetch, isFalse);
-      expect(urlViewModel.canImport, isFalse);
-    });
-
-    test('should update URL', () {
-      urlViewModel.updateUrl('https://example.com/recipe');
-
-      expect(urlViewModel.url, equals('https://example.com/recipe'));
-      expect(urlViewModel.canFetch, isTrue);
-    });
-
-    test('should validate URL format', () {
-      urlViewModel.updateUrl('invalid-url');
-      expect(urlViewModel.canFetch, isFalse);
-
-      urlViewModel.updateUrl('https://valid.com');
-      expect(urlViewModel.canFetch, isTrue);
-
-      urlViewModel.updateUrl('http://valid.com');
-      expect(urlViewModel.canFetch, isTrue);
-
-      urlViewModel.updateUrl('ftp://invalid.com');
-      expect(urlViewModel.canFetch, isFalse);
-    });
-
-    test('should fetch content from URL successfully', () async {
-      urlViewModel.updateUrl('https://example.com/recipe');
-
-      await urlViewModel.fetchFromUrl();
-
-      expect(urlViewModel.hasExtractedText, isTrue);
-      expect(urlViewModel.extractedText, contains('Fetched content'));
-      expect(urlViewModel.sourceUrl, equals('https://example.com/recipe'));
-    });
-
-    test('should handle fetch error', () async {
-      urlViewModel.updateUrl('https://error.com');
-
-      await urlViewModel.fetchFromUrl();
-
-      expect(urlViewModel.hasExtractedText, isFalse);
-      expect(urlViewModel.hasError, isTrue);
-    });
-
-    test('BUG-32: fetch failure surfaces an error state without leaking an '
-        'unhandled async error', () async {
-      urlViewModel.updateUrl('https://error.com');
-
-      // The fetch throws inside executeAsync (which rethrows). fetchFromUrl
-      // must NOT propagate that rethrow — a leaked async error would crash the
-      // zone. It should instead settle with an error state and no spinner.
-      await expectLater(urlViewModel.fetchFromUrl(), completes);
-
-      expect(urlViewModel.hasError, isTrue);
-      expect(urlViewModel.isLoading, isFalse);
-      expect(urlViewModel.hasExtractedText, isFalse);
-    });
-
-    test('should not fetch with invalid URL', () async {
-      urlViewModel.updateUrl('invalid-url');
-
-      await urlViewModel.fetchFromUrl();
-
-      // Swedish locale: 'Ange en giltig URL'
-      expect(urlViewModel.error, equals('Ange en giltig URL'));
-      expect(urlViewModel.hasExtractedText, isFalse);
-    });
-
-    test('should perform URL import successfully', () async {
-      urlViewModel.updateUrl('https://example.com');
-      await urlViewModel.fetchFromUrl();
-
-      final recipe = RecipeFactory.build(title: 'URL Recipe');
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.success(recipe));
-
-      await urlViewModel.performImport();
-
-      expect(urlViewModel.hasParsedRecipe, isTrue);
-      expect(urlViewModel.parsedRecipe?.title, equals('URL Recipe'));
-    });
-
-    test('should handle import without extracted text', () async {
-      await urlViewModel.performImport();
-
-      // Swedish locale
-      expect(
-        urlViewModel.error,
-        equals('Inget inneh\u00e5ll kunde h\u00e4mtas fr\u00e5n URL:en'),
-      );
-      expect(urlViewModel.hasParsedRecipe, isFalse);
-    });
-
-    test('should clear URL and data', () {
-      urlViewModel.updateUrl('https://example.com');
-      urlViewModel.setParsedRecipe(RecipeFactory.build());
-
-      urlViewModel.clearUrl();
-
-      expect(urlViewModel.url, isEmpty);
-      expect(urlViewModel.extractedText, isEmpty);
-      expect(urlViewModel.parsedRecipe, isNull);
-    });
-
-    test('should return correct import type', () {
-      expect(urlViewModel.importType, equals('url'));
-    });
-
-    test('should provide URL-specific debug state', () {
-      urlViewModel.updateUrl('https://example.com');
-
-      final debugState = urlViewModel.debugState;
-
-      expect(debugState['url'], equals('https://example.com'));
-      expect(debugState['hasExtractedText'], isFalse);
-      expect(debugState['canFetch'], isTrue);
-    });
-  });
-
   group('ImportBaseViewModel - Integration Tests', () {
     test('should complete full text import workflow', () async {
       textViewModel.updateInputText('Recipe: Pasta');
@@ -722,18 +578,6 @@ void main() {
 
       expect(success, isTrue);
       expect(textViewModel.hasParsedRecipe, isTrue);
-
-      verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-    });
-
-    test('should complete full URL import workflow', () async {
-      urlViewModel.updateUrl('https://example.com/recipe');
-      await urlViewModel.fetchFromUrl();
-
-      final success = await urlViewModel.completeImport();
-
-      expect(success, isTrue);
-      expect(urlViewModel.hasParsedRecipe, isTrue);
 
       verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
     });
@@ -912,26 +756,6 @@ void main() {
       viewModel.preserveOrSetParsedRecipe(null);
 
       expect(viewModel.parsedRecipe?.title, 'Keep me');
-    });
-
-    test('should handle URL fetch error', () async {
-      final timeoutViewModel = TestUrlImportViewModel(
-        importManager: mockImportManager,
-      );
-
-      timeoutViewModel.updateUrl('https://error.com');
-
-      // executeAsync rethrows the exception from fetchContentFromUrl
-      try {
-        await timeoutViewModel.fetchFromUrl();
-      } catch (_) {
-        // Expected
-      }
-
-      expect(timeoutViewModel.hasError, isTrue);
-      expect(timeoutViewModel.error, isNotNull);
-
-      timeoutViewModel.dispose();
     });
 
     test('should use Swedish error messages for validation', () async {

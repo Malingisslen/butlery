@@ -137,8 +137,7 @@ class MenuGenerator {
   /// any setup step. With no household this is a no-op.
   ///
   /// BUT-1465: now driven by the persisted per-user opt-out — read live from the
-  /// profile (like [_userService.allergenPreferences]) so the settings toggle
-  /// takes effect immediately. A missing/unreadable value reads as `true`
+  /// profile so the settings toggle takes effect immediately. A missing/unreadable value reads as `true`
   /// (fail-safe: never silently stop filtering a household member's allergens).
   bool get useHouseholdAllergens =>
       _userService.currentUserProfile?.useHouseholdAllergens ?? true;
@@ -250,10 +249,7 @@ class MenuGenerator {
     }
     final householdService = ServiceLocator.tryGet<HouseholdService>();
     final hasFriendHousehold = householdService?.hasHousehold ?? false;
-    var (prefs, source) = (
-      _userService.allergenPreferences,
-      MenuPrefSource.singleUser,
-    );
+    var (prefs, source) = (_ownPrefs, MenuPrefSource.singleUser);
     if (useHouseholdAllergens && hasFriendHousehold) {
       final aggregate = await householdService!.aggregateAllergenPreferences();
       (prefs, source) = (
@@ -342,20 +338,17 @@ class MenuGenerator {
   /// Single-user allergen filtering (sync pool only) — same trust-guarded
   /// filter as the async paths, fed by the user's own preferences.
   List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(
-        recipes,
-        _userService.allergenPreferences,
-        allergens: true,
-      );
+      _filterByPrefs(recipes, _ownPrefs, allergens: true);
 
   /// Single-user dietary filtering (sync pool only) — see
   /// [_filterByAllergenPreferences].
   List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(
-        recipes,
-        _userService.allergenPreferences,
-        allergens: false,
-      );
+      _filterByPrefs(recipes, _ownPrefs, allergens: false);
+
+  /// The signed-in user's own preferences as the MENU filters by them —
+  /// see [HouseholdService.ownMenuPreferences] (BUT-2085, BUT-1694).
+  UserAllergenPreferences get _ownPrefs =>
+      HouseholdService.ownMenuPreferences(_userService.currentUserProfile);
 
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 

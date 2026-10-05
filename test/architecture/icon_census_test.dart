@@ -131,11 +131,6 @@ const Map<String, Map<String, int>> _residue = {
     'no_photography_outlined': 1,
     'restore': 2,
   },
-  'lib/views/receive_share_view.dart': {
-    'content_paste': 1,
-    'public': 1,
-    'text_fields': 1,
-  },
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart': {
     'music_note': 1,
     'open_in_new': 1,

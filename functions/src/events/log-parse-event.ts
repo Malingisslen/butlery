@@ -57,6 +57,7 @@ export const VALID_STRATEGIES = [
   "tiktok",
   "instagram",
   "archive",
+  "file",
   "cache",
   "unknown",
 ];

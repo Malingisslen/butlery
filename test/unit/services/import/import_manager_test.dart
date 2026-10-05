@@ -172,26 +172,20 @@ void main() {
 
       // BUT-1572: every other test builds the manager via withStrategies, so
       // nothing pins what the DEFAULT constructor actually registers. This
-      // guards the real _initializeStrategies() registry — in particular that
-      // PhotoImportStrategy survived the BUT-1487 cleanup that removed
-      // FileImportStrategy (whose canHandle() is always false, so it was
-      // unreachable in the auto loops). A regression that drops the photo/OCR
-      // strategy or re-adds the dead file strategy would break silently
-      // otherwise.
+      // guards the real _initializeStrategies() registry.
       test('default constructor registers the expected strategy set', () {
         final defaultManager = ImportManager(mockPersonalOps);
         final strategies = defaultManager.availableStrategies;
 
-        // The five strategies wired in _initializeStrategies, in priority
-        // order. VoiceImportStrategy (IMP-12) is registered last with
-        // canHandle()==false — reachable only via importVoiceTranscript,
-        // never the auto loops.
-        expect(strategies, hasLength(5));
+        // VoiceImportStrategy (IMP-12) and FileImportStrategy (BUT-2240)
+        // answer canHandle()==false — never the auto loops.
+        expect(strategies, hasLength(6));
         expect(strategies[0], isA<ArchiveImportStrategy>());
         expect(strategies[1], isA<UrlImportStrategy>());
         expect(strategies[2], isA<TextImportStrategy>());
         expect(strategies[3], isA<PhotoImportStrategy>());
         expect(strategies[4], isA<VoiceImportStrategy>());
+        expect(strategies[5], isA<FileImportStrategy>());
 
         // PhotoImportStrategy specifically must remain registered — it backs
         // the OCR / handwritten photo import path.
@@ -199,14 +193,6 @@ void main() {
           strategies.whereType<PhotoImportStrategy>(),
           isNotEmpty,
           reason: 'PhotoImportStrategy must stay in the default registry',
-        );
-
-        // FileImportStrategy was deliberately unregistered in BUT-1487
-        // (unreachable in the auto loops) and must not creep back.
-        expect(
-          strategies.whereType<FileImportStrategy>(),
-          isEmpty,
-          reason: 'FileImportStrategy is intentionally not registered',
         );
       });
     });

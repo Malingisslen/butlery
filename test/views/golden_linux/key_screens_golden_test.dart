@@ -1,4 +1,4 @@
-/// P8-U04: golden baselines for eleven key screens, light and dark, made
+/// P8-U04: golden baselines for the key screens, light and dark, made
 /// and compared on Linux only (linux_golden_helper.dart).
 ///
 /// Each screen is a U01 harness state (test/views/design_states), so the
@@ -24,20 +24,22 @@ import '../design_states/state_runner.dart';
 import 'golden_hosts.dart';
 import 'linux_golden_helper.dart';
 
-/// One key screen: the U01 row it is, or its own host, and how long to let
-/// it run before the picture.
+/// One key screen: the U01 row it is, or its own host, how long to let it
+/// run before the picture, and the text scale it is drawn at.
 class _KeyScreen {
   const _KeyScreen(
     this.name, {
     this.row,
     this.host,
     this.after = Duration.zero,
+    this.textScale = 1.0,
   });
 
   final String name;
   final String? row;
   final StateHost? host;
   final Duration after;
+  final double textScale;
 }
 
 final _screens = <_KeyScreen>[
@@ -52,12 +54,19 @@ final _screens = <_KeyScreen>[
   ),
   const _KeyScreen('inkopslista', row: 'inköpslista::DEFAULT'),
   const _KeyScreen('receptdetalj', row: 'receptdetalj::DEFAULT'),
+  _KeyScreen('mina_recept', host: minaReceptHost),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
   const _KeyScreen('matlagningslage', row: 'matlagningsläge::DEFAULT'),
   _KeyScreen('skafferi', host: pantryWithItemsHost),
   _KeyScreen('mer', host: moreHost),
   _KeyScreen('vantar_pa_synk', host: syncQueueHost),
   const _KeyScreen('inloggning', row: 'start::DEFAULT'),
+  // The recipe detail at 200 % text.
+  const _KeyScreen(
+    'receptdetalj_200',
+    row: 'receptdetalj::DEFAULT',
+    textScale: 2.0,
+  ),
 ];
 
 void main() {
@@ -70,7 +79,7 @@ void main() {
   });
 
   test('every key screen names a harness row or a host', () {
-    expect(_screens, hasLength(11));
+    expect(_screens, hasLength(13));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);
@@ -114,6 +123,7 @@ void main() {
                 row,
                 mode,
                 host: screen.host,
+                textScale: screen.textScale,
               );
               if (screen.after > Duration.zero) {
                 await tester.pump(screen.after);

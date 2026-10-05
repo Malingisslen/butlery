@@ -83,7 +83,6 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
-import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
@@ -4707,71 +4706,6 @@ class MockOptimisticUpdateManager extends Mock
   }
 
   // All other methods left without implementation to allow stubbing with when()
-}
-
-/// Mock implementation of UrlImportViewModel
-class MockUrlImportViewModel extends Mock implements UrlImportViewModel {
-  // Configuration state
-  bool _isLoading = false;
-  String? _error;
-  String _url = '';
-  String _extractedText = '';
-  bool _hasExtractedText = false;
-  bool _canFetch = false;
-  String _sourceUrl = '';
-
-  /// Configure mock state for tests
-  void setUrlImportState({
-    bool isLoading = false,
-    String? error,
-    String url = '',
-    String extractedText = '',
-    bool hasExtractedText = false,
-    bool canFetch = false,
-    String sourceUrl = '',
-  }) {
-    _isLoading = isLoading;
-    _error = error;
-    _url = url;
-    _extractedText = extractedText;
-    _hasExtractedText = hasExtractedText;
-    _canFetch = canFetch;
-    _sourceUrl = sourceUrl;
-  }
-
-  // Getters for configured state (tests can access)
-  @override
-  bool get isLoading => _isLoading;
-  @override
-  String? get error => _error;
-  @override
-  String get url => _url;
-  @override
-  String get extractedText => _extractedText;
-  @override
-  bool get hasExtractedText => _hasExtractedText;
-  @override
-  bool get canFetch => _canFetch;
-  @override
-  String get sourceUrl => _sourceUrl;
-  @override
-  bool get isMultiUrl => false;
-  @override
-  List<UrlImportResult> get urlResults => const [];
-  @override
-  bool get hasAnyUrlSuccess => false;
-  @override
-  int get successfulUrlCount => 0;
-  @override
-  bool get isIndexPageCandidate => false;
-  @override
-  List<String> get indexPageLinks => const [];
-  @override
-  String get successfulBatchText => '';
-  @override
-  bool get hasError => _error != null;
-
-  // All methods left without implementation to allow stubbing with when()
 }
 
 /// Mock implementation of PhotoImportViewModel

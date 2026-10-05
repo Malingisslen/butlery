@@ -25,7 +25,6 @@ const _plateLineFiles = [
   'lib/widgets/tagging/tag_result_display.dart',
   'lib/widgets/import/import_progress_widget.dart',
   'lib/views/smart_import/import_widgets.dart',
-  'lib/views/import_via_url_view.dart',
   'lib/views/file_import_view.dart',
   'lib/widgets/import/voice_section_card.dart',
   'lib/widgets/common/menu_persistence/menu_load_dialog.dart',
