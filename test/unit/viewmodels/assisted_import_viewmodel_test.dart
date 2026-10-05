@@ -327,6 +327,16 @@ Steg 2. Tillsätt kyckling och stek''';
       expect(vm.portions, equals(100));
       expect(vm.timeMinutes, equals(1440));
     });
+
+    test('a recipe whose meal type was never chosen is a Middag', () {
+      // The menu generator matches a slot's meal type exactly, in the app's
+      // Swedish vocabulary; the old 'dinner' default was never picked for
+      // "7 middagar".
+      final vm = advanceToReview();
+      addTearDown(vm.dispose);
+
+      expect(vm.buildRecipe().mealType, 'Middag');
+    });
   });
 
   // ---------------------------------------------------------------------------

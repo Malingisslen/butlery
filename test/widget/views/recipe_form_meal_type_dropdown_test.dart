@@ -9,14 +9,9 @@
 // now go through `RecipeFormViewModel.mealTypeOptions`, which is what these
 // cases pin.
 //
-// This is the app's own default path, not a legacy-data edge case. The assisted
-// import writes ENGLISH values (`assisted_import_viewmodel.dart:77` defaults to
-// 'dinner', written at :352) and then pushes this very screen with that recipe
-// (`import_result_handler.dart:237` -> `app_router.dart:200`), whose form loads
-// the value verbatim (`recipe_form_state.dart`, `_mealType = recipe.mealType`
-// in `_loadRecipeData` — cited by name, not by line, precisely because this
-// change's own additions moved it). Text import contributes
-// 'Huvudrätt' (`text_import_strategy.dart:990`), which is in no list at all.
+// The form loads the stored value verbatim (`recipe_form_state.dart`,
+// `_mealType = recipe.mealType` in `_loadRecipeData`). Text import contributes
+// 'Huvudrätt', which is in no list at all.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -149,9 +144,7 @@ void main() {
         .map((item) => item.value)
         .toList();
 
-    // The assisted import's untouched default. Nothing about this recipe is
-    // unusual — this is what one ordinary import produces.
-    testWidgets('an English value from assisted import renders', (
+    testWidgets('an English value renders', (
       tester,
     ) async {
       await pumpSkrivSjalv(tester, 'dinner');
@@ -162,8 +155,7 @@ void main() {
       expect(mealTypeDropdown(tester).initialValue, 'dinner');
     });
 
-    // From `_guessMealType`, and in NO list anywhere in the app — not the six
-    // Swedish ones, not the five English ones.
+    // From `_guessMealType`, and in NO list anywhere in the app.
     testWidgets('a Swedish value outside the offered list renders', (
       tester,
     ) async {

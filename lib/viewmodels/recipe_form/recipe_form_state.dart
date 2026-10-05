@@ -84,10 +84,9 @@ class RecipeFormState extends ChangeNotifier {
   /// BUT-1845: the meal types to offer for a recipe that stores [storedValue],
   /// widened to include whatever that recipe actually carries.
   ///
-  /// `mealType` is a free-form `String` and several writers disagree with
-  /// [mealTypes]: the assisted import writes English (`'dinner'` by default),
-  /// text import can produce `'Huvudrätt'`, and the LLM enhancement writes
-  /// lowercase English. `DropdownButtonFormField` asserts in its CONSTRUCTOR —
+  /// `mealType` is a free-form `String` and writers disagree with
+  /// [mealTypes]: text import can produce `'Huvudrätt'`.
+  /// `DropdownButtonFormField` asserts in its CONSTRUCTOR —
   /// so on every build, not just the first — that exactly one item matches its
   /// value. Binding `items:` to [mealTypes] while `initialValue:` holds one of
   /// those values therefore throws on build in debug and renders a blank

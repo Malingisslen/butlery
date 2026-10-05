@@ -74,7 +74,7 @@ class AssistedImportViewModel extends BaseViewModel {
   int _timeMinutes = 0;
   int get timeMinutes => _timeMinutes;
 
-  String _mealType = 'dinner';
+  String _mealType = 'Middag';
   String get mealType => _mealType;
 
   /// Editable ingredient list (after selection, can be modified).

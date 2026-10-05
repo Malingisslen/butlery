@@ -211,7 +211,7 @@ void main() {
             ingredients: <String>[],
             instructions: <String>[],
             imageUrls: <String>[],
-            mealType: 'Lunch', // Default meal type in viewmodel
+            mealType: 'Middag', // Default meal type in viewmodel
             portions: null, // These are optional parameters
             timeMinutes: null,
             rating: null,
