@@ -16,7 +16,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/household_service.dart';
@@ -30,6 +29,7 @@ import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../infrastructure/helpers/own_preferences_stub.dart';
 
 class _MockHouseholdService extends Mock implements HouseholdService {}
 
@@ -117,15 +117,11 @@ void main() {
   }
 
   void householdToggle({required bool on}) {
-    when(() => userService.currentUserProfile).thenReturn(
-      UserProfile(
-        uid: _self,
-        displayName: 'Test',
-        email: 't@example.com',
-        joinedAt: DateTime(2026),
-        lastActiveAt: DateTime(2026),
-        useHouseholdAllergens: on,
-      ),
+    stubOwnPreferences(
+      userService,
+      const UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
+      uid: _self,
+      useHouseholdAllergens: on,
     );
   }
 
@@ -139,7 +135,8 @@ void main() {
     userService = MockUserService();
     // The adult has no allergies, so every exclusion below comes from the
     // child's diner profile.
-    when(() => userService.allergenPreferences).thenReturn(
+    stubOwnPreferences(
+      userService,
       const UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
     );
     generator = MenuGenerator(

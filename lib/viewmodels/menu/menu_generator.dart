@@ -250,10 +250,7 @@ class MenuGenerator {
     }
     final householdService = ServiceLocator.tryGet<HouseholdService>();
     final hasFriendHousehold = householdService?.hasHousehold ?? false;
-    var (prefs, source) = (
-      _userService.allergenPreferences,
-      MenuPrefSource.singleUser,
-    );
+    var (prefs, source) = (_ownPrefs, MenuPrefSource.singleUser);
     if (useHouseholdAllergens && hasFriendHousehold) {
       final aggregate = await householdService!.aggregateAllergenPreferences();
       (prefs, source) = (
@@ -342,20 +339,34 @@ class MenuGenerator {
   /// Single-user allergen filtering (sync pool only) — same trust-guarded
   /// filter as the async paths, fed by the user's own preferences.
   List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(
-        recipes,
-        _userService.allergenPreferences,
-        allergens: true,
-      );
+      _filterByPrefs(recipes, _ownPrefs, allergens: true);
 
   /// Single-user dietary filtering (sync pool only) — see
   /// [_filterByAllergenPreferences].
   List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(
-        recipes,
-        _userService.allergenPreferences,
-        allergens: false,
-      );
+      _filterByPrefs(recipes, _ownPrefs, allergens: false);
+
+  /// The signed-in user's own preferences as the MENU reads them (BUT-2085,
+  /// BUT-1694). Not [UserService.allergenPreferences]: that getter substitutes
+  /// [UserAllergenPreferences.defaults] for a user who never opened the
+  /// allergen screen, which is the right suggestion for the settings screen
+  /// and the wrong filter here — it would hold the menu to the default diets.
+  ///
+  /// An untouched screen means "no allergies" (BUT-1663) only when the
+  /// settings were actually read; a profile whose settings read failed gets
+  /// the common-allergen floor, as an unreadable household member does.
+  UserAllergenPreferences get _ownPrefs {
+    final profile = _userService.currentUserProfile;
+    final declared = profile?.allergenPreferences;
+    if (declared != null) return declared;
+    if (profile?.settingsMerged ?? false) return _noPreferences;
+    return HouseholdService.widenWithSafetyFloor(_noPreferences);
+  }
+
+  static const _noPreferences = UserAllergenPreferences(
+    trackedAllergens: {},
+    trackedDietary: {},
+  );
 
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 

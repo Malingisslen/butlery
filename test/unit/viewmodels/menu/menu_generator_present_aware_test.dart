@@ -41,6 +41,7 @@ import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../infrastructure/helpers/own_preferences_stub.dart';
 
 class _MockHouseholdRosterService extends Mock
     implements HouseholdRosterService {}
@@ -148,7 +149,8 @@ void main() {
     menuService = MockMenuService();
     recipeService = MockUnifiedRecipeService();
     userService = MockUserService();
-    when(() => userService.allergenPreferences).thenReturn(
+    stubOwnPreferences(
+      userService,
       const UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
     );
     // The signed-in user's settings were read and hold no allergies — a
@@ -303,9 +305,7 @@ void main() {
       // single-user filtering — which must still apply the user's own
       // allergens (here gluten), never silently ship an unfiltered menu.
       when(() => hhRepo.getForUser(any())).thenAnswer((_) async => []);
-      when(
-        () => userService.allergenPreferences,
-      ).thenReturn(_prefs({'gluten'}));
+      stubOwnPreferences(userService, _prefs({'gluten'}));
       generator.filterByAllergens = true;
       generator.presentMemberIds = [_kid];
       usePool([
@@ -430,11 +430,11 @@ void main() {
 
     test('total failure with no household, user never set preferences: the '
         'floor applies but no diet is imposed', () async {
-      // What UserService.allergenPreferences returns for an unset profile —
-      // it carries tracked diets, which must not reach this path.
+      // The profile carries no preferences at all; the generator must not
+      // substitute the defaults, whose tracked diets would reach this path.
       when(
-        () => userService.allergenPreferences,
-      ).thenReturn(UserAllergenPreferences.defaults);
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(_self, settingsMerged: true));
       when(() => roster.tryGetRoster(any())).thenAnswer((_) async => null);
       generator
         ..filterByDietary = true

@@ -21,6 +21,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/helpers/own_preferences_stub.dart';
 
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
@@ -46,7 +47,8 @@ void main() {
     mockUserService = MockUserService();
 
     // Default: no tracked allergens = no filtering
-    when(() => mockUserService.allergenPreferences).thenReturn(
+    stubOwnPreferences(
+      mockUserService,
       const UserAllergenPreferences(
         trackedAllergens: {},
         trackedDietary: {},
@@ -621,7 +623,8 @@ void main() {
       () {
         menuGenerator.filterByDietary = true;
 
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {},
             trackedDietary: {'vegetarisk'},
@@ -656,7 +659,8 @@ void main() {
     test('should keep UNKNOWN dietary when includeUnknownInMenu is true', () {
       menuGenerator.filterByDietary = true;
 
-      when(() => mockUserService.allergenPreferences).thenReturn(
+      stubOwnPreferences(
+        mockUserService,
         const UserAllergenPreferences(
           trackedAllergens: {},
           trackedDietary: {'vegetarisk'},
@@ -692,7 +696,8 @@ void main() {
         // and slipping untagged recipes past the user's only-proven-safe choice.
         menuGenerator.filterByDietary = true;
 
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {},
             trackedDietary: {'vegetarisk'},
@@ -719,7 +724,8 @@ void main() {
       () {
         menuGenerator.filterByDietary = true;
 
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {},
             trackedDietary: {'vegetarisk'},
@@ -772,7 +778,8 @@ void main() {
         menuGenerator.filterByAllergens = true;
 
         // User tracks both gluten and mjölk
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {'gluten', 'mjölk'},
             trackedDietary: {},
@@ -808,7 +815,8 @@ void main() {
       menuGenerator.filterByAllergens = true;
 
       // User tracks both gluten and mjölk
-      when(() => mockUserService.allergenPreferences).thenReturn(
+      stubOwnPreferences(
+        mockUserService,
         const UserAllergenPreferences(
           trackedAllergens: {'gluten', 'mjölk'},
           trackedDietary: {},
@@ -842,7 +850,8 @@ void main() {
         menuGenerator.filterByAllergens = true;
 
         // User tracks both, strict mode excludes UNKNOWN
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {'gluten', 'mjölk'},
             trackedDietary: {},
@@ -882,7 +891,8 @@ void main() {
         menuGenerator.filterByAllergens = true;
 
         // User tracks both, tolerant mode keeps UNKNOWN
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {'gluten', 'mjölk'},
             trackedDietary: {},
@@ -917,7 +927,8 @@ void main() {
       () {
         menuGenerator.filterByAllergens = true;
 
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {'gluten', 'mjölk'},
             trackedDietary: {},
@@ -979,7 +990,8 @@ void main() {
       () {
         menuGenerator.filterByAllergens = true;
 
-        when(() => mockUserService.allergenPreferences).thenReturn(
+        stubOwnPreferences(
+          mockUserService,
           const UserAllergenPreferences(
             trackedAllergens: {'gluten', 'mjölk'},
             trackedDietary: {},

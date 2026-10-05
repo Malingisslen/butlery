@@ -85,4 +85,126 @@ void main() {
       expect(prefs.trackedDietary, {'vegetarisk', 'vegansk'});
     });
   });
+
+  group(
+    'includeUnknownInMenu default (Malin 2026-10-05: OFF with an allergy)',
+    () {
+      const withAllergy = UserAllergenPreferences(
+        trackedAllergens: {'nötter'},
+        trackedDietary: {},
+      );
+      const dietOnly = UserAllergenPreferences(
+        trackedAllergens: {},
+        trackedDietary: {'vegansk'},
+      );
+      const nothing = UserAllergenPreferences(
+        trackedAllergens: {},
+        trackedDietary: {},
+      );
+
+      test('undecided and tracking an allergen reads false', () {
+        expect(withAllergy.includeUnknownInMenu, isFalse);
+        expect(withAllergy.includeUnknownInMenuChoice, isNull);
+      });
+
+      test('undecided with only a diet, or nothing at all, reads true', () {
+        expect(dietOnly.includeUnknownInMenu, isTrue);
+        expect(nothing.includeUnknownInMenu, isTrue);
+      });
+
+      test('an explicit answer wins over the derived default, both ways', () {
+        expect(
+          withAllergy.copyWith(includeUnknownInMenu: true).includeUnknownInMenu,
+          isTrue,
+        );
+        expect(
+          nothing.copyWith(includeUnknownInMenu: false).includeUnknownInMenu,
+          isFalse,
+        );
+      });
+
+      test('ticking the first allergen flips an undecided switch off, and '
+          'unticking the last flips it back on', () {
+        final ticked = nothing.trackAllergen('gluten');
+        expect(ticked.includeUnknownInMenuChoice, isNull);
+        expect(ticked.includeUnknownInMenu, isFalse);
+        expect(ticked.untrackAllergen('gluten').includeUnknownInMenu, isTrue);
+      });
+
+      test('defaults suggest four allergens and therefore read false', () {
+        expect(
+          UserAllergenPreferences.defaults.includeUnknownInMenuChoice,
+          isNull,
+        );
+        expect(UserAllergenPreferences.defaults.includeUnknownInMenu, isFalse);
+      });
+
+      test('fromFirestore keeps a stored bool and treats anything else as '
+          'undecided', () {
+        Map<String, dynamic> doc(Object? value) => {
+          'trackedAllergens': ['gluten'],
+          'trackedDietary': <String>[],
+          if (value != 'ABSENT') 'includeUnknownInMenu': value,
+        };
+
+        expect(
+          UserAllergenPreferences.fromFirestore(doc(true)).includeUnknownInMenu,
+          isTrue,
+        );
+        expect(
+          UserAllergenPreferences.fromFirestore(
+            doc(false),
+          ).includeUnknownInMenuChoice,
+          isFalse,
+        );
+        expect(
+          UserAllergenPreferences.fromFirestore(
+            doc(null),
+          ).includeUnknownInMenuChoice,
+          isNull,
+        );
+        expect(
+          UserAllergenPreferences.fromFirestore(
+            doc('true'),
+          ).includeUnknownInMenuChoice,
+          isNull,
+        );
+        expect(
+          UserAllergenPreferences.fromFirestore(
+            doc('ABSENT'),
+          ).includeUnknownInMenu,
+          isFalse,
+        );
+      });
+
+      test('toFirestore writes the raw answer, null included, so a merge write '
+          'clears an earlier explicit one', () {
+        expect(withAllergy.toFirestore()['includeUnknownInMenu'], isNull);
+        expect(
+          withAllergy.toFirestore().containsKey('includeUnknownInMenu'),
+          isTrue,
+        );
+        expect(
+          withAllergy
+              .copyWith(includeUnknownInMenu: true)
+              .toFirestore()['includeUnknownInMenu'],
+          isTrue,
+        );
+      });
+
+      test('equality distinguishes undecided from an explicit answer', () {
+        expect(
+          withAllergy,
+          isNot(withAllergy.copyWith(includeUnknownInMenu: false)),
+        );
+        expect(
+          withAllergy,
+          const UserAllergenPreferences(
+            trackedAllergens: {'nötter'},
+            trackedDietary: {},
+          ),
+        );
+      });
+    },
+  );
 }

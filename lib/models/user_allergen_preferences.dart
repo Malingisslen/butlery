@@ -20,9 +20,9 @@ class UserAllergenPreferences {
   /// Show coverage percentage.
   final bool showCoverage;
 
-  /// Whether to include recipes with UNKNOWN allergen status in menu generation.
-  /// When false, only recipes with FREE status pass allergen filtering.
-  final bool includeUnknownInMenu;
+  /// The user's own answer to "show recipes with UNKNOWN allergen status in
+  /// menu suggestions", or null when they never touched the switch.
+  final bool? _includeUnknownInMenu;
 
   const UserAllergenPreferences({
     required this.trackedAllergens,
@@ -30,8 +30,18 @@ class UserAllergenPreferences {
     this.showOnCards = true,
     this.showOnDetail = true,
     this.showCoverage = true,
-    this.includeUnknownInMenu = true,
-  });
+    bool? includeUnknownInMenu,
+  }) : _includeUnknownInMenu = includeUnknownInMenu;
+
+  /// Whether recipes with UNKNOWN status pass the menu's allergen and dietary
+  /// filters. Until the user decides, the switch is OFF for anyone who tracks
+  /// an allergen (Malin, 2026-10-05: an allergy means only recipes proven free
+  /// reach the menu) and ON for everyone else.
+  bool get includeUnknownInMenu =>
+      _includeUnknownInMenu ?? trackedAllergens.isEmpty;
+
+  /// The stored answer behind [includeUnknownInMenu]; null means undecided.
+  bool? get includeUnknownInMenuChoice => _includeUnknownInMenu;
 
   /// Default preferences with common allergens.
   static const defaults = UserAllergenPreferences(
@@ -48,10 +58,13 @@ class UserAllergenPreferences {
     showOnCards: true,
     showOnDetail: true,
     showCoverage: true,
-    includeUnknownInMenu: true,
   );
 
   /// Creates from Firestore map.
+  ///
+  /// `includeUnknownInMenu` is read raw rather than through `safeBool`: an
+  /// absent or null value is "undecided", which [includeUnknownInMenu]
+  /// resolves from the tracked allergens, not a stored true.
   factory UserAllergenPreferences.fromFirestore(Map<String, dynamic>? data) {
     if (data == null) return defaults;
 
@@ -76,11 +89,9 @@ class UserAllergenPreferences {
         'showCoverage',
         defaultValue: true,
       ),
-      includeUnknownInMenu: SerializationUtils.safeBool(
-        data,
-        'includeUnknownInMenu',
-        defaultValue: true,
-      ),
+      includeUnknownInMenu: data['includeUnknownInMenu'] is bool
+          ? data['includeUnknownInMenu'] as bool
+          : null,
     );
   }
 
@@ -92,7 +103,9 @@ class UserAllergenPreferences {
       'showOnCards': showOnCards,
       'showOnDetail': showOnDetail,
       'showCoverage': showCoverage,
-      'includeUnknownInMenu': includeUnknownInMenu,
+      // Written even when null: the settings doc is saved with merge, so an
+      // omitted key would leave an earlier explicit answer standing.
+      'includeUnknownInMenu': _includeUnknownInMenu,
     };
   }
 
@@ -111,7 +124,7 @@ class UserAllergenPreferences {
       showOnCards: showOnCards ?? this.showOnCards,
       showOnDetail: showOnDetail ?? this.showOnDetail,
       showCoverage: showCoverage ?? this.showCoverage,
-      includeUnknownInMenu: includeUnknownInMenu ?? this.includeUnknownInMenu,
+      includeUnknownInMenu: includeUnknownInMenu ?? _includeUnknownInMenu,
     );
   }
 
@@ -196,7 +209,7 @@ class UserAllergenPreferences {
           showOnCards == other.showOnCards &&
           showOnDetail == other.showOnDetail &&
           showCoverage == other.showCoverage &&
-          includeUnknownInMenu == other.includeUnknownInMenu;
+          _includeUnknownInMenu == other._includeUnknownInMenu;
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -208,7 +221,7 @@ class UserAllergenPreferences {
     showOnCards,
     showOnDetail,
     showCoverage,
-    includeUnknownInMenu,
+    _includeUnknownInMenu,
   );
 
   @override

@@ -22,6 +22,7 @@ import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/helpers/own_preferences_stub.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/menu/menu_scoring.dart';
@@ -113,7 +114,8 @@ void main() {
       // availableRecipes. Default to empty prefs (no filtering) for the
       // baseline tests; the BUT-1317 group overrides this per-test.
       mockUserService = MockUserService();
-      when(() => mockUserService.allergenPreferences).thenReturn(
+      stubOwnPreferences(
+        mockUserService,
         const UserAllergenPreferences(
           trackedAllergens: {},
           trackedDietary: {},
@@ -814,7 +816,7 @@ void main() {
         required UserAllergenPreferences prefs,
         required List<Recipe> recipes,
       }) {
-        when(() => mockUserService.allergenPreferences).thenReturn(prefs);
+        stubOwnPreferences(mockUserService, prefs);
         mockRecipeService.setRecipeState(
           recipes: recipes,
           currentUserId: testUserId,
