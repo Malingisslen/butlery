@@ -1,0 +1,103 @@
+# Publishes the legal pages (privacy policy + terms, sv/en) to their OWN hosting
+# site, butlery-legal.web.app, by hand.
+#
+# MANUAL ONLY (workflow_dispatch), behind the `production` environment's
+# reviewer gate like deploy-firebase.yml. Nothing else deploys hosting.
+#
+# Deliberately NOT the app's site (target `app`): that would publish the whole
+# Flutter web app to the public before any store review, and would need a
+# Flutter build and carry the app's service worker. This site holds static
+# files only: hosting/legal/ (the page shells) plus assets/legal/*.md copied to
+# assets/legal/, the same bytes the app bundles — so the hosted text and the
+# in-app text cannot drift. No build step, no Flutter, no .env.
+#
+# Secrets used: FIREBASE_SERVICE_ACCOUNT (see deploy-firebase.yml header).
+#
+# First run: the site `butlery-legal` must exist in the project. The job tries
+# to create it and carries on if it already exists; if the id is taken by
+# another Firebase project the create step fails loudly — pick another id in
+# .firebaserc (`targets.butlery-app-1.hosting.legal`) and rerun.
+name: Deploy Hosting (legal pages)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY to publish the current ref to butlery-legal.web.app"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-hosting-legal
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - name: Refuse without the confirmation word
+        if: inputs.confirm != 'DEPLOY'
+        run: |
+          echo "::error::Type DEPLOY in the confirm field to publish. Nothing was deployed." >&2
+          exit 1
+
+      - uses: actions/checkout@v6
+
+      - name: Assemble the site
+        # Pages at the root, markdown under assets/legal/ (the path legal.js
+        # fetches). Fails if any of the eight files is missing or empty, so a
+        # rename in assets/legal/ cannot publish a page that renders nothing.
+        run: |
+          rm -rf build/legal-site
+          mkdir -p build/legal-site/assets/legal
+          cp hosting/legal/* build/legal-site/
+          cp assets/legal/privacy_policy_sv.md assets/legal/privacy_policy_en.md \
+             assets/legal/terms_of_service_sv.md assets/legal/terms_of_service_en.md \
+             build/legal-site/assets/legal/
+          cp web/favicon.png build/legal-site/favicon.png
+          for f in privacy-sv.html privacy-en.html terms-sv.html terms-en.html index.html legal.js legal.css \
+                   assets/legal/privacy_policy_sv.md assets/legal/privacy_policy_en.md \
+                   assets/legal/terms_of_service_sv.md assets/legal/terms_of_service_en.md; do
+            test -s "build/legal-site/$f" || { echo "::error::build/legal-site/$f missing or empty" >&2; exit 1; }
+          done
+          ls -R build/legal-site
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@15.13.0
+
+      - name: Authenticate to Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured (see deploy-firebase.yml header)." >&2
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+
+      - name: Ensure the legal site exists
+        run: |
+          SITE=$(node -e "console.log(require('./.firebaserc').targets['butlery-app-1'].hosting.legal[0])")
+          echo "SITE=$SITE" >> "$GITHUB_ENV"
+          if firebase hosting:sites:list --project butlery-app-1 --json | grep -q "\"$SITE\""; then
+            echo "Site $SITE exists."
+          else
+            firebase hosting:sites:create "$SITE" --project butlery-app-1 --non-interactive
+          fi
+
+      - name: Deploy hosting target legal
+        run: |
+          firebase deploy --only hosting:legal --project butlery-app-1 --non-interactive \
+            --message "legal pages ${GITHUB_SHA::7} via deploy-hosting.yml"
+          echo "Published: https://${SITE}.web.app/privacy-sv.html"
