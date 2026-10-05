@@ -156,6 +156,7 @@ class SwedishPluralization {
     'fläder': 'fläder',
     'lager': 'lager',
     'peppar': 'peppar',
+    'salt': 'salt',
     'ingefära': 'ingefära',
 
     // Compound -socker/-pulver invariants (prevent -er stripping)
@@ -305,19 +306,27 @@ class SwedishPluralization {
       return plural;
     }
 
-    // Handle compound ingredient names (e.g., "burk tomatsås")
     final parts = singular.split(' ');
     if (parts.length > 1) {
       final firstWord = parts[0];
-      final rest = parts.sublist(1).join(' ');
-
-      // Only pluralize first word if it's not a measurement unit
       if (isMeasurementUnit(firstWord.toLowerCase())) {
-        return singular; // Keep unchanged for measurement units
-      } else {
-        final firstPlural = _pluralizeWord(firstWord);
-        return '$firstPlural $rest';
+        return singular;
       }
+      // A counted container or food first ("burk tomatsås", "lök med blast")
+      // carries the plural.
+      if (_isCountNoun(firstWord)) {
+        return '${_pluralizeWord(firstWord)} ${parts.sublist(1).join(' ')}';
+      }
+      // Otherwise the noun is last and the words before it describe it
+      // ("stor lök" -> "stora lökar"). A noun the tables do not know is left
+      // as written: guessing gave "vitor fiskfiléer" and "oljor till fritering".
+      final last = parts.last;
+      if (!_isKnownNoun(last)) return singular;
+      return [
+        for (final word in parts.sublist(0, parts.length - 1))
+          _pluralAdjective(word),
+        _pluralizeWord(last),
+      ].join(' ');
     }
 
     return _pluralizeWord(singular);
@@ -358,6 +367,66 @@ class SwedishPluralization {
     return units.contains(word);
   }
 
+  static const Map<String, String> _specialCases = {
+    'lasagneplatt': 'lasagneplattor',
+    'krossade tomat': 'krossade tomater',
+    'krossad tomat': 'krossade tomater',
+    'lök': 'lökar',
+    'potatis': 'potatisar',
+    'tomat': 'tomater',
+    'morot': 'morötter',
+    'gurka': 'gurkor',
+    'paprika': 'paprikor',
+    'citron': 'citroner',
+    'vitlök': 'vitlökar',
+    'champinjon': 'champinjoner',
+    'svamp': 'svampar',
+    'äpple': 'äpplen',
+    'banan': 'bananer',
+    'apelsin': 'apelsiner',
+    'avokado': 'avokados',
+    'burk': 'burkar',
+    'påse': 'påsar',
+    'förpackning': 'förpackningar',
+    'flaska': 'flaskor',
+    'flicka': 'flickor',
+    'ask': 'askar',
+    'kött': 'kött', // Invariant
+    'fisk': 'fisk', // Invariant
+    'mjöl': 'mjöl', // Invariant
+    'socker': 'socker', // Invariant
+    'ris': 'ris', // Invariant
+    'pasta': 'pasta', // Invariant
+    'bröd': 'bröd', // Invariant
+    'smör': 'smör', // Invariant
+    'grädde': 'grädde', // Invariant
+    'mjölk': 'mjölk', // Invariant
+    'vatten': 'vatten', // Invariant
+  };
+
+  /// A noun whose plural differs from its singular in the tables, so counting
+  /// it is meaningful.
+  static bool _isCountNoun(String word) {
+    final lower = word.toLowerCase();
+    final plural = _specialCases[lower] ?? irregularPlurals[lower];
+    return plural != null && plural != lower;
+  }
+
+  /// A count noun in either form ("lök" or "lökar").
+  static bool _isKnownNoun(String word) =>
+      _isCountNoun(word) || _reversePlurals.containsKey(word.toLowerCase());
+
+  /// Plural form of an attributive adjective: stor -> stora, hackad ->
+  /// hackade, mogen -> mogna. Words already ending in -a or -e are kept.
+  static String _pluralAdjective(String word) {
+    final lower = word.toLowerCase();
+    if (lower == 'liten' || lower == 'litet') return 'små';
+    if (lower.endsWith('a') || lower.endsWith('e')) return word;
+    if (lower.endsWith('ad')) return '${word}e';
+    if (lower.endsWith('en')) return '${word.substring(0, word.length - 2)}na';
+    return '${word}a';
+  }
+
   static String _pluralizeWord(String word) {
     final lower = word.toLowerCase();
 
@@ -367,47 +436,9 @@ class SwedishPluralization {
       return word;
     }
 
-    // Special cases for specific words
-    final specialCases = {
-      'lasagneplatt': 'lasagneplattor',
-      'krossade tomat': 'krossade tomater',
-      'krossad tomat': 'krossade tomater',
-      'lök': 'lökar',
-      'potatis': 'potatisar',
-      'tomat': 'tomater',
-      'morot': 'morötter',
-      'gurka': 'gurkor',
-      'paprika': 'paprikor',
-      'citron': 'citroner',
-      'vitlök': 'vitlökar',
-      'champinjon': 'champinjoner',
-      'svamp': 'svampar',
-      'äpple': 'äpplen',
-      'banan': 'bananer',
-      'apelsin': 'apelsiner',
-      'avokado': 'avokados',
-      'burk': 'burkar',
-      'påse': 'påsar',
-      'förpackning': 'förpackningar',
-      'flaska': 'flaskor',
-      'flicka': 'flickor',
-      'ask': 'askar',
-      'kött': 'kött', // Invariant
-      'fisk': 'fisk', // Invariant
-      'mjöl': 'mjöl', // Invariant
-      'socker': 'socker', // Invariant
-      'ris': 'ris', // Invariant
-      'pasta': 'pasta', // Invariant
-      'bröd': 'bröd', // Invariant
-      'smör': 'smör', // Invariant
-      'grädde': 'grädde', // Invariant
-      'mjölk': 'mjölk', // Invariant
-      'vatten': 'vatten', // Invariant
-    };
-
-    if (specialCases.containsKey(lower)) {
+    if (_specialCases.containsKey(lower)) {
       // Preserve original case structure
-      final special = specialCases[lower]!;
+      final special = _specialCases[lower]!;
       if (word.isNotEmpty && word[0].toUpperCase() == word[0]) {
         // First letter uppercase
         return special[0].toUpperCase() + special.substring(1);
