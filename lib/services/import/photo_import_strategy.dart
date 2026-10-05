@@ -18,7 +18,6 @@
 /// - Swedish measurement units preserved (dl, msk, tsk, krm)
 /// **Usage Examples:**
 /// ```dart
-/// // From PhotoImportViewModel
 /// final result = await importManager.autoImport('photo', options: {
 ///   'imageBytes': imageBytes,
 ///   'sourceType': 'camera', // or 'gallery'
@@ -95,9 +94,9 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   @override
   bool canHandle(String input) {
-    // Accept 'photo' input or any non-empty string when used with options
-    final trimmed = input.trim().toLowerCase();
-    return trimmed == 'photo' || trimmed.isNotEmpty;
+    // Only the photo marker: the image itself travels in `options`, so any
+    // other text is a link or a paste and must not count as a photo attempt.
+    return input.trim().toLowerCase() == 'photo';
   }
 
   @override

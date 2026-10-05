@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 /// Fire-and-forget logger for recipe parse events via Cloud Function.
-/// Used by both RecipeParserService and UrlImportStrategy.
+/// [ImportManager] is its only caller: one event per import (BUT-2238).
 class ParseEventLogger {
   // Lazy so the Firebase app doesn't have to be initialised at construction.
   // Integration/unit tests that only exercise parsing logic (no Firebase)
-  // would otherwise throw "No Firebase App '[DEFAULT]'" just from creating
-  // a UrlImportStrategy.
+  // would otherwise throw "No Firebase App '[DEFAULT]'".
   FirebaseFunctions? _functionsCache;
   // logParseEvent deploys to europe-west1 (setGlobalOptions in functions/src
   // index.ts). The default instance targets us-central1, so calling it there
@@ -19,39 +19,9 @@ class ParseEventLogger {
   FirebaseFunctions get _functions =>
       _functionsCache ??= FirebaseFunctions.instanceFor(region: 'europe-west1');
 
-  void logEvent({
-    required String? url,
-    required String source,
-    required bool success,
-    bool fromCache = false,
-    required int parseTimeMs,
-    String? parserVersion,
-    String? domain,
-    String? successfulTier,
-    double? finalQuality,
-    bool? usedLlm,
-    double? totalCostSek,
-    List<Map<String, dynamic>>? tierAttempts,
-    bool unknownDomain = false,
-    String? promptVersion,
-  }) {
+  void log(ImportEvent event) {
     try {
-      final payload = <String, dynamic>{
-        'url': url,
-        'source': source,
-        'success': success,
-        'fromCache': fromCache,
-        'parseTimeMs': parseTimeMs,
-        'parserVersion': ?parserVersion,
-        'domain': ?domain,
-        'successfulTier': ?successfulTier,
-        'finalQuality': ?finalQuality,
-        'usedLlm': ?usedLlm,
-        'totalCostSek': ?totalCostSek,
-        'tierAttempts': ?tierAttempts,
-        if (unknownDomain) 'unknownDomain': true,
-        'promptVersion': ?promptVersion,
-      };
+      final payload = event.toPayload();
 
       unawaited(
         _functions

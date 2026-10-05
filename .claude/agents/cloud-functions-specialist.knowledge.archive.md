@@ -20713,3 +20713,20 @@ to do for the service count; and the `maintenance-dispatchers.ts` edit RE-COUNTE
 diff struck "nine" correctly). "six" was verified accurate on the day: cleanup-audit-logs,
 cleanup-expired-social-requests, cleanup-deleted-ingredients, cleanup-old-notifications,
 purge-expired, plus this job.
+
+### 2026-10-05 — BUT-2238 cache hits reach site_configs counters [review]
+First pass on `logParseEvent` (commit dded85e, later 7a69423): the CF counter lines were
+unchanged, but the app's new single event per import (`ImportManager._finishImport`) now
+sent cache hits with `channel: link`, `url = input`, `success: true`. Before, cache hits
+logged nothing and manager events carried `url: null`, so only `UrlImportStrategy` fed
+`site_configs`. A cached recipe would have inflated `successCount` → `SiteConfig.successRate`
+→ `isReliable` (`recipe_parser_service.dart` raises the threshold for reliable domains),
+masking a site whose selectors broke. Filed HIGH/blocking. Also noted: `UserAssisted` used to
+count as success and `assistance` now counts as failure (the coordinator decided failure is
+correct and recorded it in the plan); `parserVersion` was no longer sent (Dart fix);
+`success` was a separate client flag beside `outcome`.
+Re-review (uncommitted delta on 7a69423): `countsForSite` (domain && channel=link &&
+!fromCache && strategy not in youtube/tiktok/instagram/cache), `isLoggable`,
+`success: outcome === "recipe"`; 10/10 green, tsc clean, coordinator's mutation probes red
+on each term. Passed. Residual noted Low: the test asserts only `youtube` from
+`NOT_SITE_PARSERS`, so removing `tiktok`/`instagram` alone stays green.
