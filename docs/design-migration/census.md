@@ -18,7 +18,7 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 17, MISSING 5, PARTIAL 9, TESTED 50.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 15, MISSING 5, PARTIAL 11, TESTED 50.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
@@ -29,9 +29,9 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt` | BUILT_NOT_REACHABLE | BUT-2140 |
 | `TR::FLOW::03::foto-ocr::otolkad-text` | MISSING | BUT-2158 |
 | `TR::FLOW::03::granska::fält-med-låg-säkerhet` | PARTIAL | BUT-2158 |
-| `TR::FLOW::03::hämtar::betalvägg` | BUILT_NOT_REACHABLE | BUT-2168 |
+| `TR::FLOW::03::hämtar::betalvägg` | PARTIAL | BUT-2168 |
 | `TR::FLOW::03::hämtar::privat-trasig-länk` | PARTIAL | BUT-2168 |
-| `TR::FLOW::03::hämtar::sidan-har-inget-recept` | BUILT_NOT_REACHABLE | BUT-2168 |
+| `TR::FLOW::03::hämtar::sidan-har-inget-recept` | PARTIAL | BUT-2168 |
 | `TR::FLOW::05::person::blockerad` | PARTIAL | BUT-2169 |
 | `TR::FLOW::06::aterstall::satt-nytt` | MISSING | BUT-2170 |
 | `TR::FLOW::06::byt-epost::omverifiering-bada` | MISSING | BUT-2171 |

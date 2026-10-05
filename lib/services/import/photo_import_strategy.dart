@@ -121,7 +121,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (imageBytes == null) {
         return ImportResult.failure(
           'No image data provided. Please include imageBytes in options parameter.',
-          errorCode: ImportErrorCode.ocrFailed,
           metadata: {
             'strategy': strategyName,
             'error_type': 'missing_image_data',
@@ -133,7 +132,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (imageBytes.isEmpty) {
         return ImportResult.failure(
           'Image data is empty',
-          errorCode: ImportErrorCode.ocrFailed,
           metadata: {
             'strategy': strategyName,
             'error_type': 'empty_image_data',

@@ -22,6 +22,7 @@ import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -164,13 +165,15 @@ class ImportManager {
       List.unmodifiable(_strategies);
 
   /// Of two strategy failures, keep the one that knows its cause: the first
-  /// failure carrying an [ImportErrorCode] wins over any without one.
+  /// failure carrying an [ImportErrorCode] wins over any without one, and
+  /// [ImportErrorCode.unknown] counts as not knowing.
   static ImportManagerResult _keepBetterFailure(
     ImportManagerResult? kept,
     ImportManagerResult next,
-  ) => kept == null || (kept.errorCode == null && next.errorCode != null)
-      ? next
-      : kept;
+  ) => kept == null || (!_knowsCause(kept) && _knowsCause(next)) ? next : kept;
+
+  static bool _knowsCause(ImportManagerResult r) =>
+      r.errorCode != null && r.errorCode != ImportErrorCode.unknown;
 
   /// The answer when no strategy produced a recipe: the kept strategy
   /// failure with its message, code and metadata, or the generic line when
