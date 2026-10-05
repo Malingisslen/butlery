@@ -126,11 +126,15 @@ class ButleryAncestorFocusRing extends StatefulWidget {
   const ButleryAncestorFocusRing({
     required this.child,
     this.borderRadius = BorderRadius.zero,
+    this.bounds = FocusRingBounds.child,
     super.key,
   });
 
   final Widget child;
   final BorderRadius borderRadius;
+
+  /// What the ring goes around.
+  final FocusRingBounds bounds;
 
   @override
   State<ButleryAncestorFocusRing> createState() =>
@@ -167,6 +171,7 @@ class _ButleryAncestorFocusRingState extends State<ButleryAncestorFocusRing> {
       // inside it (a card's heart or menu) has focus, which would ring both.
       focused: _node?.hasPrimaryFocus ?? false,
       borderRadius: widget.borderRadius,
+      bounds: widget.bounds,
       child: widget.child,
     );
   }
@@ -196,9 +201,19 @@ class ButleryTab extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The tab is laid out at its label's width, so the TabBar's label-sized
+    // plate line is the word plus its overhang (Komponentark v1:106).
     return ButleryAncestorFocusRing(
-      child: ButleryControlFocus.box(
-        child: Tab(text: text, icon: icon, child: child),
+      bounds: FocusRingBounds.minTouchTarget,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: ButleryControlFocus.minSize,
+        ),
+        child: Align(
+          widthFactor: 1,
+          heightFactor: 1,
+          child: Tab(text: text, icon: icon, child: child),
+        ),
       ),
     );
   }

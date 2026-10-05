@@ -78,12 +78,6 @@ class NavigationThemes {
   /// drawn in Komponentark v1:106, :112-113. A view that
   /// sets its own labelColor (friends_list_view.dart,
   /// group_shared_content_section.dart) still overrides this.
-  ///
-  /// Deviation from the drawing, not an interpretation: the drawing sizes
-  /// the line from the word (Komponentark v1:106, Grafisk manual v6:261).
-  /// [TabBarIndicatorSize.label] measures the whole [ButleryTab], whose
-  /// focus box is at least 48 dp wide, so for a word narrower than 48 dp the
-  /// line is 48 dp + 5 px per side.
   static TabBarThemeData tabBarTheme(ColorScheme cs) {
     final plateLine = cs.brightness == Brightness.dark
         ? AppColorsDark.progressIndicator

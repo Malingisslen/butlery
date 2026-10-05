@@ -9,6 +9,8 @@
 /// Depends on Core Module for authentication and database access.
 library;
 
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
@@ -381,6 +383,13 @@ class ContentModule implements DIModule {
       },
       dispose: (s) => s.close(),
     );
+
+    // The cold-start load runs before sign-in, when the ingredients read is
+    // still denied, so the list is fetched here instead of during the first
+    // save. No-op once the registry is enriched.
+    if (app.isRegistered<IngredientRegistryService>()) {
+      unawaited(app<IngredientRegistryService>().enrichFromFirestore());
+    }
   }
 
   @override
