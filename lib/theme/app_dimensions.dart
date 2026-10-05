@@ -577,7 +577,7 @@ class AppDimensions {
 
   /// How tall a card is relative to its width, in the LIST toggle's grid.
   ///
-  /// One caller: `LayoutComponents.responsiveListGrid` on Mina recept, which
+  /// One caller: `SliverResponsiveListGrid` on Mina recept, which
   /// lays out DETAILED cards in a grid on tablet and desktop and a plain list
   /// on a phone. The grid toggle no longer reads it — that layout sizes each
   /// row to its tallest card and needs no ratio at all (BUT-1911).

@@ -1,9 +1,7 @@
 // HEM-HERO: Hem's header and the recipe library scroll as one.
 //
 // Skarmar v12 del 1 #hemrecept (:124-150): "hälsning + ikväll överst,
-// receptbiblioteket direkt under". The library is built as Mina recept builds
-// it: a fixed search row above a primary list (or the grid toggle's
-// ContentSizedGrid) with no controller of its own. At 320 x 568 dp with 200 %
+// receptbiblioteket direkt under". At 320 x 568 dp with 200 %
 // text the header is at its tallest; scrolling the library must take it off
 // the screen and leave every recipe reachable.
 
@@ -212,5 +210,149 @@ void main() {
 
     expect(offsets, isNotEmpty);
     expect(offsets.last, greaterThan(0));
+  });
+
+  group('the pinned library header', () {
+    const greeting = ValueKey('hem-greeting');
+    const pinned = ValueKey('pinned');
+    const headerHeight = 300.0;
+
+    Future<GlobalKey<NestedScrollViewState>> pumpPinned(
+      WidgetTester tester, {
+      void Function(BuildContext context)? onTheme,
+      Widget? body,
+    }) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final nestedKey = GlobalKey<NestedScrollViewState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Builder(
+            builder: (context) {
+              onTheme?.call(context);
+              return Scaffold(
+                body: HemLibraryScroll(
+                  nestedKey: nestedKey,
+                  header: const SizedBox(
+                    key: greeting,
+                    height: headerHeight,
+                    child: Text('Hej Malin'),
+                  ),
+                  pinned: const SizedBox(
+                    key: pinned,
+                    height: 80,
+                    child: Text('Dina recept'),
+                  ),
+                  body:
+                      body ??
+                      HemLibraryScroll.sliverBody(
+                        slivers: [
+                          SliverList.builder(
+                            itemCount: _count,
+                            itemBuilder: (_, i) => _card(i),
+                          ),
+                        ],
+                      ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return nestedKey;
+    }
+
+    /// Drags on a recipe by exactly the greeting's height, which the outer
+    /// scroll takes in full before the library moves.
+    Future<void> scrollHemAway(WidgetTester tester) async {
+      await tester.drag(
+        find.byKey(const ValueKey('card-0')),
+        const Offset(0, -headerHeight),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('stays at the top once Hem has scrolled away', (tester) async {
+      await pumpPinned(tester);
+      expect(find.byKey(greeting), findsOneWidget);
+      expect(tester.getTopLeft(find.byKey(pinned)).dy, headerHeight);
+
+      // Further than the greeting, so the library scrolls too.
+      await tester.drag(
+        find.byKey(const ValueKey('card-0')),
+        const Offset(0, -headerHeight - 200),
+      );
+      await tester.pumpAndSettle();
+
+      final greetingFinder = find.byKey(greeting);
+      expect(
+        greetingFinder.evaluate().isEmpty ||
+            tester.getBottomLeft(greetingFinder).dy <= 0,
+        isTrue,
+        reason: 'the greeting has left the screen',
+      );
+      expect(find.byKey(pinned), findsOneWidget);
+      expect(tester.getTopLeft(find.byKey(pinned)).dy, 0);
+    });
+
+    testWidgets('the first recipe starts under the header, not beneath it', (
+      tester,
+    ) async {
+      final nestedKey = await pumpPinned(tester);
+      await scrollHemAway(tester);
+
+      // The premise: Hem is gone and the library itself has not moved, so
+      // the first recipe is where the body begins.
+      final inner = nestedKey.currentState!.innerController;
+      expect(inner.position.pixels, 0);
+      expect(tester.getTopLeft(find.byKey(pinned)).dy, 0);
+
+      expect(
+        tester.getTopLeft(find.byKey(const ValueKey('card-0'))).dy,
+        tester.getBottomLeft(find.byKey(pinned)).dy,
+      );
+    });
+
+    // A body shorter than the screen (the empty library, an error, no
+    // results): once Hem has scrolled away it must start below the header.
+    testWidgets('a short body starts under the header, not beneath it', (
+      tester,
+    ) async {
+      const short = ValueKey('short');
+      await pumpPinned(
+        tester,
+        body: HemLibraryScroll.boxBody(
+          const SizedBox(key: short, height: 100, child: Text('Tomt')),
+        ),
+      );
+      await tester.drag(find.byKey(short), const Offset(0, -1000));
+      await tester.pumpAndSettle();
+
+      expect(tester.getTopLeft(find.byKey(pinned)).dy, 0);
+      expect(
+        tester.getTopLeft(find.byKey(short)).dy,
+        tester.getBottomLeft(find.byKey(pinned)).dy,
+      );
+    });
+
+    testWidgets('is painted in the page colour, so recipes do not show '
+        'through it', (tester) async {
+      late Color pageColour;
+      await pumpPinned(
+        tester,
+        onTheme: (context) =>
+            pageColour = Theme.of(context).scaffoldBackgroundColor,
+      );
+
+      final box = tester.widget<ColoredBox>(
+        find
+            .ancestor(of: find.byKey(pinned), matching: find.byType(ColoredBox))
+            .first,
+      );
+      expect(box.color, pageColour);
+    });
   });
 }

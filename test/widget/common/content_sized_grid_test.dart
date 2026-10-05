@@ -1,6 +1,5 @@
-// BUT-1911: the index arithmetic in `ContentSizedGrid` is the whole widget, and
-// its only production caller renders a grid of recipe cards whose own suite
-// covers one full row. Everything the arithmetic can get wrong — a short last
+// BUT-1911: the index arithmetic in `ContentSizedGrid` is the whole widget.
+// Everything the arithmetic can get wrong — a short last
 // row, the gap between rows, a single column, an empty list — lives here.
 library;
 
@@ -241,5 +240,86 @@ void main() {
       reason: 'a lazy list must not build all 400 cells for a 600px viewport',
     );
     expect(built, contains(0));
+  });
+
+  group('SliverContentSizedGrid', () {
+    Future<void> pumpSliver(
+      WidgetTester tester, {
+      required int itemCount,
+      required int columns,
+      double spacing = 16,
+      double Function(int index)? heightOf,
+    }) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomScrollView(
+              slivers: [
+                SliverContentSizedGrid(
+                  itemCount: itemCount,
+                  columns: columns,
+                  spacing: spacing,
+                  itemBuilder: (context, index) =>
+                      cell(index, height: heightOf?.call(index) ?? 40),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('a short last row keeps the column width of a full row', (
+      tester,
+    ) async {
+      await pumpSliver(tester, itemCount: 3, columns: 2);
+
+      final first = tester.getRect(find.byKey(const ValueKey('cell-0')));
+      final second = tester.getRect(find.byKey(const ValueKey('cell-1')));
+      final last = tester.getRect(find.byKey(const ValueKey('cell-2')));
+
+      expect(last.width, first.width);
+      expect(last.left, first.left, reason: 'it starts in the first column');
+      expect(
+        last.top,
+        greaterThan(first.bottom),
+        reason: 'on a row of its own',
+      );
+      expect(second.left - first.right, 16);
+    });
+
+    testWidgets('a row is as tall as its tallest cell', (tester) async {
+      await pumpSliver(
+        tester,
+        itemCount: 2,
+        columns: 2,
+        heightOf: (i) => i == 0 ? 40 : 120,
+      );
+
+      expect(tester.getRect(find.byKey(const ValueKey('cell-1'))).height, 120);
+      expect(tester.getRect(find.byKey(const ValueKey('cell-0'))).height, 120);
+    });
+
+    testWidgets('as many rows as the items fill, spaced, with no gap under '
+        'the last', (tester) async {
+      await pumpSliver(tester, itemCount: 4, columns: 2, spacing: 24);
+
+      final row1 = tester.getRect(find.byKey(const ValueKey('cell-0')));
+      final row2 = tester.getRect(find.byKey(const ValueKey('cell-2')));
+      expect(row2.top - row1.bottom, 24);
+
+      // Two 40px rows and one 24px gap: 104px, so a 60px viewport scrolls
+      // 44. A third row, or a gap under the second, makes it more.
+      tester.view.physicalSize = const Size(800, 60);
+      await tester.pump();
+      final position = tester
+          .state<ScrollableState>(find.byType(Scrollable))
+          .position;
+      expect(position.maxScrollExtent, 44);
+    });
   });
 }

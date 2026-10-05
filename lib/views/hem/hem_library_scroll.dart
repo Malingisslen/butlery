@@ -14,7 +14,10 @@
 // narrow phone makes the header tall, and it still leaves the screen.
 //
 // Interpretation: scrolling the library moves the header out; the search and
-// filter row in the body stays (it is not part of Hem's header).
+// filter row stays (it is not part of Hem's header). It is a pinned sliver
+// under the header rather than part of the body: the body is only as tall as
+// what the header leaves, which a large text size can bring to nearly nothing
+// (BUT-2254).
 library;
 
 import 'package:flutter/material.dart';
@@ -25,6 +28,7 @@ class HemLibraryScroll extends StatelessWidget {
     super.key,
     this.nestedKey,
     this.header,
+    this.pinned,
     required this.body,
     this.onLibraryScrolled,
   });
@@ -37,21 +41,61 @@ class HemLibraryScroll extends StatelessWidget {
   /// mode).
   final Widget? header;
 
+  /// The library's own header (its title row, search and filters): it
+  /// scrolls up with [header] and then stays at the top.
+  final Widget? pinned;
+
   /// The library. Its vertical scrollable must be `primary` and have no
-  /// controller of its own.
+  /// controller of its own, and with a [pinned] header it must start with
+  /// [overlapInjector] (see [sliverBody] and [boxBody]).
   final Widget body;
 
   /// The library's own scroll offset, on every vertical scroll of it
   /// (BUT-1028 persistence).
   final ValueChanged<double>? onLibraryScrolled;
 
+  /// Takes the [pinned] header's height off the top of the body: a pinned
+  /// sliver gives up its layout extent while it still paints, so without
+  /// this the body's first row would sit under it. Only valid inside [body].
+  static Widget overlapInjector(BuildContext context) => SliverOverlapInjector(
+    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+  );
+
+  /// A [body] made of [slivers]: one primary scroll view, below the pinned
+  /// header.
+  static Widget sliverBody({required List<Widget> slivers, Key? key}) =>
+      Builder(
+        builder: (context) => CustomScrollView(
+          key: key,
+          primary: true,
+          slivers: [overlapInjector(context), ...slivers],
+        ),
+      );
+
+  /// A [body] holding one [child] that fills what the pinned header leaves.
+  static Widget boxBody(Widget child, {bool scrolls = false}) => sliverBody(
+    slivers: [SliverFillRemaining(hasScrollBody: scrolls, child: child)],
+  );
+
   @override
   Widget build(BuildContext context) {
     final header = this.header;
+    final pinned = this.pinned;
     return NestedScrollView(
       key: nestedKey,
       headerSliverBuilder: (context, _) => [
         if (header != null) SliverToBoxAdapter(child: header),
+        if (pinned != null)
+          SliverOverlapAbsorber(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+            sliver: PinnedHeaderSliver(
+              // Opaque, so the cards do not show through it.
+              child: ColoredBox(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: pinned,
+              ),
+            ),
+          ),
       ],
       body: NotificationListener<ScrollUpdateNotification>(
         onNotification: (notification) {

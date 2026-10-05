@@ -258,12 +258,8 @@ void main() {
   });
 
   group('a grid tile holds its content at every text size', () {
-    // These cases build their grid from `ContentSizedGrid`, the SAME widget
-    // Mina recept builds its grid from — imported, not reproduced. The
-    // previous version of this suite imported the production aspect ratio for
-    // the same reason, and the reason outlived the number: a layout copied
-    // into a test goes stale silently, and the suite then reports on a grid
-    // the app no longer ships.
+    // These cases build their grid from `ContentSizedGrid` — imported, not
+    // reproduced.
     //
     // The widths are held to ONE standard — clean everywhere — and that is the
     // change. The old suite had to record a boundary instead, because an

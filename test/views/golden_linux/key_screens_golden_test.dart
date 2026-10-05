@@ -61,12 +61,13 @@ final _screens = <_KeyScreen>[
   _KeyScreen('mer', host: moreHost),
   _KeyScreen('vantar_pa_synk', host: syncQueueHost),
   const _KeyScreen('inloggning', row: 'start::DEFAULT'),
-  // The recipe detail at 200 % text.
+  // The recipe detail and Mina recept at 200 % text.
   const _KeyScreen(
     'receptdetalj_200',
     row: 'receptdetalj::DEFAULT',
     textScale: 2.0,
   ),
+  _KeyScreen('mina_recept_200', host: minaReceptHost, textScale: 2.0),
 ];
 
 void main() {
@@ -79,7 +80,7 @@ void main() {
   });
 
   test('every key screen names a harness row or a host', () {
-    expect(_screens, hasLength(13));
+    expect(_screens, hasLength(14));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);
