@@ -518,6 +518,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           if (doc.id == uid) continue;
           try {
             final profile = fromFirestore(doc);
+            if (profile.isHidden) continue;
             if (!seen.contains(profile.uid)) {
               results.add(profile);
               seen.add(profile.uid);

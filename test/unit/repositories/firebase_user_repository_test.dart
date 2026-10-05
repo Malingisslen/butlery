@@ -862,6 +862,24 @@ void main() {
         expect(visible.map((p) => p.uid), ['user-1']);
       });
 
+      test('leaves out a hidden profile found by its email', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          'user-1',
+          _createUserProfile(
+              'user-1',
+              displayName: 'Hidden Anna',
+              email: 'anna@example.com',
+              allowEmailSearch: true,
+            ).toFirestoreEditable()
+            ..['isHidden'] = true,
+        );
+
+        final results = await repository.searchProfiles('anna@example.com');
+
+        expect(results, isEmpty);
+      });
+
       test('should return empty list for empty query', () async {
         // Act
         final results = await repository.searchProfiles('');
