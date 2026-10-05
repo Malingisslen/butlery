@@ -320,30 +320,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
           .toList();
       instructions.addAll(lines);
     } else if (rawInstructions is List) {
-      for (final item in rawInstructions) {
-        if (item is String && item.trim().isNotEmpty) {
-          instructions.add(item.trim());
-        } else if (item is Map) {
-          // HowToStep or HowToSection
-          final text = item['text'] ?? item['name'] ?? '';
-          if (text is String && text.trim().isNotEmpty) {
-            instructions.add(text.trim());
-          }
-
-          // Handle HowToSection with itemListElement
-          final itemList = item['itemListElement'];
-          if (itemList is List) {
-            for (final subItem in itemList) {
-              if (subItem is Map) {
-                final subText = subItem['text'] ?? subItem['name'] ?? '';
-                if (subText is String && subText.trim().isNotEmpty) {
-                  instructions.add(subText.trim());
-                }
-              }
-            }
-          }
-        }
-      }
+      instructions.addAll(recipeInstructionTexts(rawInstructions));
     }
 
     if (instructions.isEmpty) {

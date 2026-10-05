@@ -7,6 +7,8 @@
 /// - Fallback: CSS selector extraction when JSON-LD unavailable
 /// - Validation: Quality scoring to ensure >90% completeness
 
+import 'package:html/dom.dart';
+import 'package:html/parser.dart' as html_parser;
 import 'package:butlery/services/extraction/site_parsers/recipe_quality_scorer.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
 
@@ -26,12 +28,15 @@ abstract class RecipeSiteParser {
   /// 4. Validate quality and return result
   /// Returns `null` if extraction fails or quality is too low.
   Map<String, dynamic>? parseRecipe(String html) {
+    // One parse feeds every step below (BUT-2026).
+    final document = html_parser.parse(html);
+
     // Try standard schema.org extraction first
-    var recipe = extractRecipeFromHtml(html);
+    var recipe = extractRecipeFromDocument(document).data;
 
     if (recipe != null) {
       // Enhance with site-specific fields
-      recipe = enhanceRecipe(recipe, html);
+      recipe = enhanceRecipe(recipe, document);
 
       // Validate quality
       // MED-7: meetsMinimumQuality requires 80% completeness (see RecipeQualityScorer)
@@ -43,7 +48,7 @@ abstract class RecipeSiteParser {
     }
 
     // Fallback: Try site-specific CSS selector extraction
-    recipe = extractWithCssSelectors(html);
+    recipe = extractWithCssSelectors(document);
 
     if (recipe != null) {
       final quality = scoreRecipe(recipe);
@@ -72,16 +77,18 @@ abstract class RecipeSiteParser {
   /// **Example (ICA.se):**
   /// ```dart
   /// @override
-  /// Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
-  ///   // Extract difficulty from HTML
-  ///   final difficulty = _extractDifficulty(html);
+  /// Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, Document doc) {
+  ///   final difficulty = _extractDifficulty(doc);
   ///   if (difficulty != null) {
   ///     recipe['difficulty'] = difficulty;
   ///   }
   ///   return recipe;
   /// }
   /// ```
-  Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
+  Map<String, dynamic> enhanceRecipe(
+    Map<String, dynamic> recipe,
+    Document doc,
+  ) {
     // Default: no enhancements
     return recipe;
   }
@@ -92,8 +99,7 @@ abstract class RecipeSiteParser {
   /// **Example:**
   /// ```dart
   /// @override
-  /// Map<String, dynamic>? extractWithCssSelectors(String html) {
-  ///   final doc = parse(html);
+  /// Map<String, dynamic>? extractWithCssSelectors(Document doc) {
   ///   final title = doc.querySelector('h1.recipe-title')?.text;
   ///   final ingredients = doc.querySelectorAll('.ingredient-list li')
   ///     .map((e) => e.text.trim()).toList();
@@ -107,7 +113,7 @@ abstract class RecipeSiteParser {
   ///   return null;
   /// }
   /// ```
-  Map<String, dynamic>? extractWithCssSelectors(String html) {
+  Map<String, dynamic>? extractWithCssSelectors(Document doc) {
     // Default: no CSS fallback
     return null;
   }

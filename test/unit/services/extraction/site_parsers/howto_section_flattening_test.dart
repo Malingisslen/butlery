@@ -1,53 +1,22 @@
-/// Every site parser must flatten a `HowToSection` before it filters steps.
-///
-/// The four parsers each call `flattenRecipeInstructions`, but only the Arla
-/// fixture actually contains a section, so deleting the call from the other
-/// three left every suite green. This file sends one sectioned page through
-/// all four, so each call site is pinned by something.
-///
-/// `HowToSection` is standard schema.org, not an Arla quirk — any of these
-/// sites can start emitting it (BUT-2020).
+/// One fixture holding schema.org shapes goes through the four site
+/// parsers, `SchemaOrgRecipeExtractor` and the quality scorer here, and
+/// through `SchemaOrgTier` in its own suite. `HowToSection` is standard
+/// schema.org, not an Arla quirk (BUT-2020).
 library;
+
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/extraction/site_parsers/arla_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/ica_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/koket_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/recept_recipe_parser.dart';
+import 'package:butlery/services/extraction/site_parsers/recipe_quality_scorer.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
+import 'package:butlery/services/import/extractors/schema_org_recipe_extractor.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
 
-const _sectionedPage = '''
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Recipe",
-    "name": "Sektionerat recept",
-    "description": "Stegen ligger i en HowToSection.",
-    "totalTime": "PT30M",
-    "recipeYield": "4 portioner",
-    "image": "https://example.test/bild.jpg",
-    "recipeIngredient": ["400 g kassler", "1 msk senap", "2 tomater"],
-    "recipeInstructions": [
-      {
-        "@type": "HowToSection",
-        "name": "Rubrik som inte är ett steg",
-        "itemListElement": [
-          {"@type": "HowToStep", "text": "Steg ett."},
-          {"@type": "HowToStep", "text": "Steg två."},
-          {"@type": "HowToStep", "text": "Steg tre."}
-        ]
-      }
-    ]
-  }
-  </script>
-</head>
-<body></body>
-</html>
-''';
+import '../../../../fixtures/schema_org/instruction_shapes.dart';
 
 void main() {
   final parsers = <String, RecipeSiteParser>{
@@ -58,26 +27,34 @@ void main() {
   };
 
   parsers.forEach((site, parser) {
-    group(site, () {
-      test('flattens a HowToSection into its steps', () {
-        final recipe = parser.parseRecipe(_sectionedPage);
+    test('$site reads the instruction shapes the shared way', () {
+      final recipe = parser.parseRecipe(instructionShapesPage);
 
-        expect(recipe, isNotNull, reason: 'the page failed to parse at all');
-        final steps = recipe!['recipeInstructions'] as List;
-        expect(steps, hasLength(3));
-        expect((steps.first as Map)['text'], equals('Steg ett.'));
-      });
-
-      test('does not promote the section heading to a step', () {
-        final recipe = parser.parseRecipe(_sectionedPage)!;
-        final steps = recipe['recipeInstructions'] as List;
-
-        expect(
-          steps.map((s) => (s as Map)['text']),
-          isNot(contains('Rubrik som inte är ett steg')),
-        );
-      });
+      expect(recipe, isNotNull, reason: 'the page failed to parse at all');
+      expect(recipe!['recipeInstructions'], equals(instructionShapesSteps));
     });
+  });
+
+  test(
+    'SchemaOrgRecipeExtractor reads the instruction shapes the shared way',
+    () {
+      final data = {'recipeInstructions': jsonDecode(instructionShapesJson)};
+
+      expect(
+        SchemaOrgRecipeExtractor.extractInstructions(data),
+        equals(instructionShapesSteps),
+      );
+    },
+  );
+
+  test('the quality scorer counts the shared steps', () {
+    final score = RecipeQualityScorer.score({
+      'name': 'x',
+      'recipeIngredient': ['1 ägg'],
+      'recipeInstructions': jsonDecode(instructionShapesJson),
+    });
+
+    expect(score.instructionCount, instructionShapesSteps.length);
   });
 
   group('flattenRecipeInstructions', () {

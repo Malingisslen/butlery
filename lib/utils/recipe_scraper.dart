@@ -53,9 +53,14 @@ Map<String, dynamic>? extractRecipeFromHtml(String html) {
 }
 
 /// Detailed extraction that reports whether structured data blocks existed.
-RecipeExtractionResult extractRecipeFromHtmlDetailed(String html) {
+RecipeExtractionResult extractRecipeFromHtmlDetailed(String html) =>
+    extractRecipeFromDocument(html_parser.parse(html));
+
+/// [extractRecipeFromHtmlDetailed] on a page the caller already parsed, so a
+/// caller that reads the same page again does not parse it twice.
+RecipeExtractionResult extractRecipeFromDocument(Document document) {
   // Primary extraction: Attempt JSON-LD structured data first
-  final jsonLdResult = _extractJsonLd(html);
+  final jsonLdResult = _extractJsonLd(document);
   if (jsonLdResult.data != null) {
     return RecipeExtractionResult(
       data: jsonLdResult.data,
@@ -64,7 +69,6 @@ RecipeExtractionResult extractRecipeFromHtmlDetailed(String html) {
   }
 
   // Fallback extraction: Parse Microdata format for broader compatibility
-  final document = html_parser.parse(html);
   final recipeElements = document.querySelectorAll(
     '[itemscope][itemtype="http://schema.org/Recipe"], '
     '[itemscope][itemtype="https://schema.org/Recipe"]',
@@ -93,12 +97,14 @@ class _JsonLdResult {
 /// Checks whether a JSON-LD @type value represents a Recipe.
 /// Handles plain string ("Recipe"), URL-format ("https://schema.org/Recipe"),
 /// and array-wrapped variants (["Recipe"]).
-bool _isRecipeType(dynamic type) {
+bool _isRecipeType(dynamic type) => _isSchemaType(type, 'Recipe');
+
+bool _isSchemaType(dynamic type, String name) {
   if (type is String) {
-    return type == 'Recipe' || type.endsWith('/Recipe');
+    return type == name || type.endsWith('/$name');
   }
   if (type is List) {
-    return type.any((item) => item is String && _isRecipeType(item));
+    return type.any((item) => item is String && _isSchemaType(item, name));
   }
   return false;
 }
@@ -153,13 +159,12 @@ bool isJsonLdScriptOpeningTag(String openingTag) {
 }
 
 /// Private helper: extracts JSON-LD of type "Recipe" if present.
-_JsonLdResult _extractJsonLd(String html) {
+_JsonLdResult _extractJsonLd(Document document) {
   // Read the attribute off the PARSED document rather than matching raw
   // source. Arla.se writes `type="application/ld&#x2B;json"` — the plus sign
   // as a character reference — which a regex over the source never matches
   // while a compliant parser resolves it (BUT-2020).
-  final scripts = html_parser
-      .parse(html)
+  final scripts = document
       .querySelectorAll('script')
       .where((e) => isJsonLdMediaType(e.attributes['type']))
       .toList();
@@ -294,10 +299,6 @@ Map<String, dynamic> _parseRecipeMicrodata(Element root) {
 /// section carries a non-empty `itemListElement`. A section with an empty or
 /// absent one is kept whole, because there is nothing to lift out and its own
 /// `text` would otherwise be lost.
-///
-/// `schema_org_tier.dart` and `SchemaOrgRecipeExtractor._collectInstructionSteps`
-/// read the same schema shape and disagree with this one. Folding them together
-/// is its own change.
 List<dynamic> flattenRecipeInstructions(dynamic value) {
   if (value is! List) return const [];
 
@@ -317,4 +318,31 @@ List<dynamic> flattenRecipeInstructions(dynamic value) {
     flattened.add(entry);
   }
   return flattened;
+}
+
+/// The step texts of a `recipeInstructions` list: sections are flattened
+/// first, a string is a step, and a map is a step by its `text`. A step that
+/// carries only a `name` is read by that name, but a section's `name` is a
+/// heading and never a step.
+List<String> recipeInstructionTexts(List<dynamic> value) {
+  final steps = <String>[];
+  for (final entry in flattenRecipeInstructions(value)) {
+    final text = switch (entry) {
+      String() => entry,
+      Map() => _stepText(entry),
+      _ => null,
+    };
+    if (text == null) continue;
+    final trimmed = text.trim();
+    if (trimmed.isNotEmpty) steps.add(trimmed);
+  }
+  return steps;
+}
+
+String? _stepText(Map<dynamic, dynamic> entry) {
+  final text = entry['text'];
+  if (text != null) return text is String ? text : null;
+  if (_isSchemaType(entry['@type'], 'HowToSection')) return null;
+  final name = entry['name'];
+  return name is String ? name : null;
 }

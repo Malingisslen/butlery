@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Extracts Recipe objects from schema.org JSON-LD data.
 class SchemaOrgRecipeExtractor {
@@ -76,13 +77,7 @@ class SchemaOrgRecipeExtractor {
 
     if (instructions == null) return [];
 
-    if (instructions is List) {
-      final steps = <String>[];
-      for (final instruction in instructions) {
-        _collectInstructionSteps(instruction, steps);
-      }
-      return steps.where((s) => s.isNotEmpty).toList();
-    }
+    if (instructions is List) return recipeInstructionTexts(instructions);
 
     if (instructions is String && instructions.trim().isNotEmpty) {
       final steps = instructions
@@ -99,39 +94,6 @@ class SchemaOrgRecipeExtractor {
     }
 
     return [];
-  }
-
-  /// Flattens one `recipeInstructions` element into [steps].
-  ///
-  /// schema.org allows three shapes here: a bare string, a `HowToStep`
-  /// ({ text }), and a `HowToSection` whose actual steps live nested under
-  /// `itemListElement`. The previous code only read `text` on the top-level
-  /// map, so HowToSection recipes (common on sites that group steps into
-  /// "Förberedelse"/"Tillagning") yielded ZERO instructions. We recurse into
-  /// `itemListElement` so sectioned steps are collected too.
-  static void _collectInstructionSteps(
-    dynamic instruction,
-    List<String> steps,
-  ) {
-    if (instruction is String) {
-      steps.add(instruction.trim());
-      return;
-    }
-
-    if (instruction is Map) {
-      final section = instruction['itemListElement'];
-      if (section is List) {
-        for (final child in section) {
-          _collectInstructionSteps(child, steps);
-        }
-        return;
-      }
-
-      final text = instruction['text'];
-      if (text != null && text.toString().trim().isNotEmpty) {
-        steps.add(text.toString().trim());
-      }
-    }
   }
 
   /// Strips price annotations like "($0.18)", "$7.95*" from ingredient text.

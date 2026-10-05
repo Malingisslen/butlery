@@ -33,6 +33,8 @@ import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/schema_org_tier.dart';
 
+import '../../../../fixtures/schema_org/instruction_shapes.dart';
+
 class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 /// Stub IngredientParsingStrategy that bypasses CRF loading entirely.
@@ -631,12 +633,20 @@ void main() {
       final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
       final result = await tier.parse(ctx);
 
-      // 2 section names + 3 nested step texts = 5 entries (section
-      // headers stay so the user keeps the structural cue).
       final steps = result.recipe!.instructions.value!;
       expect(steps, contains('Mix flour.'));
       expect(steps, contains('Knead.'));
       expect(steps, contains('Spread sauce.'));
+    });
+
+    test('reads the instruction shapes the shared way', () async {
+      final jsonLd =
+          '{"@type":"Recipe","name":"x","recipeIngredient":["1 c"],'
+          '"recipeInstructions":$instructionShapesJson}';
+      final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
+      final result = await tier.parse(ctx);
+
+      expect(result.recipe!.instructions.value, equals(instructionShapesSteps));
     });
 
     /// Numbered prefixes like "1. " / "2) " are duplicate to the list

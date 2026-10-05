@@ -16,6 +16,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:html/parser.dart' as html_parser;
 import 'package:butlery/services/extraction/site_parsers/arla_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/ica_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_quality_scorer.dart';
@@ -135,8 +136,7 @@ void main() {
     });
 
     test('HowToSection is flattened, so its steps survive', () {
-      // Cause 2. The steps sit in `itemListElement` under one section; the
-      // filter downstream keeps only maps carrying a top-level `text`.
+      // Cause 2. The steps sit in `itemListElement` under one section.
       final extracted = extractRecipeFromHtml(real)!;
       final raw = extracted['recipeInstructions'] as List;
       expect(raw, hasLength(1), reason: 'one section in the source');
@@ -144,18 +144,14 @@ void main() {
 
       final enhanced = parser.enhanceRecipe(
         Map<String, dynamic>.from(extracted),
-        real,
+        html_parser.parse(real),
       );
       final steps = enhanced['recipeInstructions'] as List;
       expect(steps, hasLength(4));
-      expect((steps.first as Map)['text'], equals('Platshållarsteg ett.'));
+      expect(steps.first, equals('Platshållarsteg ett.'));
 
-      // The section's own name is a heading, not a step. schema_org_tier
-      // emits it as one; this path deliberately does not.
-      expect(
-        steps.map((s) => (s as Map)['text']),
-        isNot(contains('Första instruktionen')),
-      );
+      // The section's own name is a heading, not a step.
+      expect(steps, isNot(contains('Första instruktionen')));
     });
 
     test('the flattened recipe clears the quality bar', () {
@@ -175,7 +171,7 @@ void main() {
         // Arla puts ingredients in a table — name in a <th>, amount in a
         // <td> after it. Every selector the parser tries wants an <li>, so
         // extractWithCssSelectors finds no ingredients and gives up.
-        expect(parser.extractWithCssSelectors(real), isNull);
+        expect(parser.extractWithCssSelectors(html_parser.parse(real)), isNull);
 
         // The table really is there and really does hold the rows, so this
         // is the selectors missing them rather than an empty fixture.

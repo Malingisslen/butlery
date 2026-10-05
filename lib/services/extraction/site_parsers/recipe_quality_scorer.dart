@@ -191,26 +191,7 @@ class RecipeQualityScorer {
   static List<String> _extractInstructions(dynamic value) {
     if (value == null) return [];
 
-    if (value is List) {
-      final steps = <String>[];
-
-      // A HowToSection holds its steps in `itemListElement`, so without
-      // flattening the loop below scores a sectioned recipe as having no
-      // instructions at all and fails it on quality (BUT-2020).
-      for (final instruction in flattenRecipeInstructions(value)) {
-        if (instruction is String) {
-          steps.add(instruction.trim());
-        } else if (instruction is Map) {
-          // HowToStep format
-          final text = instruction['text'];
-          if (text != null && text.toString().trim().isNotEmpty) {
-            steps.add(text.toString().trim());
-          }
-        }
-      }
-
-      return steps.where((s) => s.isNotEmpty).toList();
-    }
+    if (value is List) return recipeInstructionTexts(value);
 
     if (value is String && value.trim().isNotEmpty) {
       return [value.trim()];
