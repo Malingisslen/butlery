@@ -22,6 +22,7 @@ import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/helpers/own_preferences_stub.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/menu/menu_scoring.dart';
@@ -109,11 +110,11 @@ void main() {
       mockAnalyticsService = _MockAnalyticsService();
 
       // BUT-1317: the personal flow now filters by allergen/dietary prefs by
-      // default, so the VM resolves UserService.allergenPreferences during
-      // availableRecipes. Default to empty prefs (no filtering) for the
-      // baseline tests; the BUT-1317 group overrides this per-test.
+      // default. Default to empty prefs (no filtering) for the baseline
+      // tests; the BUT-1317 group overrides this per-test.
       mockUserService = MockUserService();
-      when(() => mockUserService.allergenPreferences).thenReturn(
+      stubOwnPreferences(
+        mockUserService,
         const UserAllergenPreferences(
           trackedAllergens: {},
           trackedDietary: {},
@@ -773,8 +774,8 @@ void main() {
     // -- BUT-1317: Personal flow allergen/dietary safety -----------------------
     //
     // The personal weekly-menu flow must filter out recipes containing the
-    // user's tracked allergens / failing dietary prefs BY DEFAULT (sourced
-    // from userService.allergenPreferences, honoring includeUnknownInMenu).
+    // user's tracked allergens / failing dietary prefs BY DEFAULT (honoring
+    // includeUnknownInMenu).
     // Before BUT-1317 the MenuViewModel constructed MenuGenerator with the
     // filter flags defaulting OFF, so a nut-allergic user could be served nut
     // recipes. These tests construct the real MenuViewModel (exercising the
@@ -814,7 +815,7 @@ void main() {
         required UserAllergenPreferences prefs,
         required List<Recipe> recipes,
       }) {
-        when(() => mockUserService.allergenPreferences).thenReturn(prefs);
+        stubOwnPreferences(mockUserService, prefs);
         mockRecipeService.setRecipeState(
           recipes: recipes,
           currentUserId: testUserId,

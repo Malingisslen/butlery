@@ -9,6 +9,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
@@ -158,6 +159,19 @@ class HouseholdService extends BaseService {
     return HouseholdAllergenAggregate.degraded(preferences: _floorOnly);
   }
 
+  /// What the MENU filters by for the signed-in user alone (BUT-2085,
+  /// BUT-1694) — read by the generator AND the opt-out dialog that names what
+  /// it stops protecting, so the two cannot drift. Not
+  /// [UserService.allergenPreferences], which substitutes `defaults`, diets
+  /// included, for an untouched screen; untouched means "no allergies"
+  /// (BUT-1663) only when the settings were read, else the floor applies.
+  static UserAllergenPreferences ownMenuPreferences(UserProfile? profile) {
+    final declared = profile?.allergenPreferences;
+    if (declared != null) return declared;
+    if (profile?.settingsMerged ?? false) return UserAllergenPreferences.none;
+    return _floorOnly;
+  }
+
   /// [base] widened with the common-allergen floor and the UNKNOWN escape
   /// hatch shut — the answer for a set of diners this device could not read.
   /// Dietary choices pass through untouched, for the reason given on
@@ -175,7 +189,7 @@ class HouseholdService extends BaseService {
   /// hatch shut so only recipes proven free get through. Kept in one place —
   /// it is the most safety-critical value in this file and two copies would
   /// drift.
-  UserAllergenPreferences get _floorOnly => _buildPreferences(
+  static UserAllergenPreferences get _floorOnly => _buildPreferences(
     allergens: _allergenSafetyFloor,
     dietary: const {},
     includeUnknown: false,
