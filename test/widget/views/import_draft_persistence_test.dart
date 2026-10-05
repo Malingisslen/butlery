@@ -1,4 +1,4 @@
-/// BUT-1204 widget gates for the URL-import and text-import draft persistence —
+/// BUT-1204 widget gates for the text-import draft persistence —
 /// the view-glue the BUT-904 AutoSaveManager migration left untested. The
 /// manager + its codec are unit-proven; these prove the wiring: restore the
 /// persisted draft into the field on mount, and persist on keystroke under the
@@ -19,14 +19,12 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/fran_sociala_medier_view.dart';
-import 'package:butlery/views/import_via_url_view.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../test_support/base_unit_test.dart';
 
 class _MockTextImportViewModel extends Mock implements TextImportViewModel {}
 
-const _kUrlKey = 'url_import_draft_v1';
 const _kTextKey = 'text_import_draft_v1';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -44,8 +42,6 @@ void main() {
   });
 
   setUp(() async {
-    // TestServiceLocator already registers a mock UrlImportViewModel via
-    // MockFactory; the text VM is registered per-test below.
     await TestServiceLocator.initialize();
     production.ServiceLocator.initialize(DIContainer());
   });
@@ -56,40 +52,6 @@ void main() {
 
   tearDownAll(() async {
     await BaseUnitTest.teardownUnit();
-  });
-
-  group('URL import draft', () {
-    testWidgets('restores the persisted URL into the field on mount', (
-      tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({
-        _kUrlKey: 'https://example.com/recipe',
-      });
-
-      await tester.pumpWidget(_wrap(const ImportViaUrlView()));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('https://example.com/recipe'),
-        findsOneWidget,
-        reason: 'a persisted url_import_draft_v1 must repopulate the field',
-      );
-    });
-
-    testWidgets('persists the URL under the byte-identical key on keystroke', (
-      tester,
-    ) async {
-      SharedPreferences.setMockInitialValues(<String, Object>{});
-
-      await tester.pumpWidget(_wrap(const ImportViaUrlView()));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField).first, 'https://x.com/r');
-      await tester.pumpAndSettle();
-
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_kUrlKey), 'https://x.com/r');
-    });
   });
 
   group('Text import draft', () {

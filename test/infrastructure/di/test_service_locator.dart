@@ -54,7 +54,6 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/family_rating.dart';
 
 // ViewModel imports
-import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -502,11 +501,6 @@ class TestServiceLocator {
     // Settings ViewModel
     getIt.registerFactory(
       () => MockFactory.createSettingsViewModel(),
-    );
-
-    // URL Import ViewModel
-    getIt.registerFactory<UrlImportViewModel>(
-      () => MockFactory.createUrlImportViewModel(),
     );
 
     // Photo Import ViewModel

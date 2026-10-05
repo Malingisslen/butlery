@@ -108,14 +108,6 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logManualCopyFallback({
-    required String platform,
-    String? reason,
-  }) async {
-    // No-op: Analytics not supported
-  }
-
-  @override
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,

@@ -1,4 +1,4 @@
-/// Base ViewModel for all import operations (text, URL, photo, archive) with unified workflow and validation.
+/// Base ViewModel for all import operations with unified workflow and validation.
 
 // lib/viewmodels/import_base_viewmodel.dart
 
@@ -80,8 +80,7 @@ abstract class ImportBaseViewModel extends BaseViewModel
   Future<Recipe?> parseTextToRecipe(String text, {String? url}) async {
     // BUT-1360 (mirrors BUT-610): offline pre-check — fail fast before the
     // Cloud-Function parse round-trip. Without this an offline parse spins ~60s
-    // on the client timeout above before the user sees anything. Covers both
-    // call sites (TextImportMixin and UrlImportMixin performImport).
+    // on the client timeout above before the user sees anything.
     if (!isOnline) {
       setError(AppLocale.current.importOfflineMessage);
       return null;
@@ -374,103 +373,5 @@ mixin TextImportMixin on ImportBaseViewModel {
         ? '${_inputText.substring(0, 50)}...'
         : _inputText,
     'hasValidInput': hasValidInput,
-  };
-}
-
-mixin UrlImportMixin on ImportBaseViewModel {
-  String _url = '';
-  String _extractedText = '';
-
-  String get url => _url;
-  String get extractedText => _extractedText;
-  bool get hasExtractedText => _extractedText.isNotEmpty;
-  bool get canFetch => _url.trim().isNotEmpty && _isValidUrl(_url);
-
-  @override
-  bool get canImport => hasExtractedText;
-
-  void updateUrl(String url) {
-    if (isDisposed) return;
-
-    _url = url;
-    clearError();
-
-    // Clear previous results if URL changed
-    _extractedText = '';
-    clearImportData();
-
-    notifyListeners();
-  }
-
-  bool _isValidUrl(String url) {
-    try {
-      final uri = Uri.parse(url.trim());
-      return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
-    } catch (e) {
-      return false;
-    }
-  }
-
-  @protected
-  Future<String> fetchContentFromUrl(String url);
-
-  Future<void> fetchFromUrl() async {
-    if (!canFetch) {
-      setError(AppLocale.current.importProvideUrl);
-      return;
-    }
-
-    final trimmedUrl = _url.trim();
-    setSourceUrl(trimmedUrl);
-
-    try {
-      final extractedText = await executeAsync<String>(
-        () => fetchContentFromUrl(trimmedUrl),
-      );
-      if (isDisposed) return;
-      _extractedText = extractedText;
-      notifyListeners();
-    } catch (_) {
-      // executeAsync always surfaces a Swedish error banner via setError before
-      // it rethrows. Swallow the rethrow here so a fetch failure (network /
-      // SSRF block / timeout) doesn't escape as an unhandled async error — the
-      // UI error state is the user-facing outcome. _extractedText is left
-      // untouched so any prior extraction is preserved. As a belt-and-braces
-      // guard, surface a generic Swedish error if somehow none was set.
-      if (isDisposed) return;
-      if (!hasError) {
-        setError(AppLocale.current.errorUnexpected);
-      }
-    }
-  }
-
-  @override
-  Future<void> performImport() async {
-    if (!hasExtractedText) {
-      setError(AppLocale.current.importNoContent);
-      return;
-    }
-
-    final recipe = await parseTextToRecipe(_extractedText, url: sourceUrl);
-    preserveOrSetParsedRecipe(recipe);
-  }
-
-  @override
-  String get importType => 'url';
-
-  void clearUrl() {
-    if (isDisposed) return;
-
-    _url = '';
-    _extractedText = '';
-    clearImportData();
-  }
-
-  @override
-  Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'url': _url,
-    'hasExtractedText': hasExtractedText,
-    'canFetch': canFetch,
   };
 }

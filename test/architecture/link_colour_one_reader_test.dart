@@ -40,7 +40,6 @@ const _namedLinkFiles = [
   'lib/views/hem/hem_empty_state.dart',
   'lib/views/hem/hem_plan_states.dart',
   'lib/views/legal/markdown_body.dart',
-  'lib/views/receive_share_view.dart',
   'lib/widgets/common/feedback/inline_error.dart',
   'lib/widgets/common/linkified_text.dart',
   'lib/widgets/menu/parsed_extraction_chips.dart',

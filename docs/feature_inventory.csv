@@ -30,7 +30,6 @@ REC-14,Personal tags & collections,Recipe Management,Partial,"Home cook creates 
 REC-15,Tag detail + automation rules,Recipe Management,Partial,"Home cook defines rules that auto-apply a tag to matching recipes","View untested"
 REC-16,Voice recipe search (Tala in din sökning),Recipe Management,Verified,"User speaks a search query; on-device Swedish transcription lands in the search box as typed text","voice plan Phase 2a, shipped 2026-07-14; widget-tested (transcript → onSearchChanged, opt-in default off); reuses VoicePromptButton + on-device KB-Whisper, audio never uploaded"
 IMP-01,URL import (single + batch),Recipe Import,Verified,"Home cook pastes one or several recipe links to import them",
-IMP-02,Recipe-index (listing-page) expansion,Recipe Import,Partial,"User pasting a category page imports every recipe it links to","No dedicated expander test"
 IMP-03,Smart (unified) import,Recipe Import,Verified,"User pastes a URL or text and the app figures out what to do",
 IMP-04,Photo / OCR import (multi-page),Recipe Import,Verified,"User photographs cookbook pages to digitize heirloom recipes",
 IMP-05,Text / paste import,Recipe Import,Verified,"User pastes recipe text from anywhere and it gets structured",

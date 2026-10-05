@@ -134,7 +134,7 @@ not new systems.
 
 ## P2 — Flow consolidation & dead code
 
-- [ ] **Unify the two URL import pipelines** (M) → BUT-1480 — OS share sheet AND '/importViaUrl' use the
+- [x] **Unify the two URL import pipelines** (M) → BUT-1480 (done by BUT-2240) — OS share sheet AND '/importViaUrl' use the
   legacy WebScraper path (no platform pipelines/cache/rate-limit/telemetry; YouTube shares
   get a body scrape instead of transcripts). Route both into `ImportManager.autoImport`.
 - [ ] **Delete `TagGenerator.generate()`** (L, mostly test re-homing) → BUT-1481 — ~175-line dead

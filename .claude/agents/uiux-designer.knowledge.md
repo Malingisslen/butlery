@@ -152,7 +152,7 @@ systematic false positives (heuristic limit — not bugs in the audit).
 **False-positive heuristics — the audit script naturally over-reports these:**
 - `Semantics(...)` is **inside** the `InkWell`/`GestureDetector` body, not above it (e.g. `cooking_session_card.dart`, `family_presence_bar.dart`).
 - The widget is **conditionally** wrapped: `semanticLabel == null ? bare : Semantics(...)` (e.g. `debounced_button.dart`, `social_builder_components.socialCard`, `lagg_till_recept_view._AddRecipeButton`).
-- The tap target's only purpose is **keyboard dismissal** (`onTap: () => FocusScope.of(context).unfocus()`) — no semantic meaning to convey (e.g. `import_via_url_view.dart`, `smart_import_view.dart`).
+- The tap target's only purpose is **keyboard dismissal** (`onTap: () => FocusScope.of(context).unfocus()`) — no semantic meaning to convey (e.g. `smart_import_view.dart`).
 - The widget is a **disabled placeholder** (`onTap: null`) for a future feature (e.g. `substitution_bottom_sheet.dart`).
 - Parent `Semantics` lives **>10 lines** above the tap target — heuristic proximity window misses it (e.g. `recipe_card.dart`, `main_view_header.dart`, `shopping_item_tiles.dart`).
 

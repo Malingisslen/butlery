@@ -17,6 +17,8 @@ import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/voice_import_strategy.dart';
+import 'package:butlery/services/import/file_import_strategy.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
@@ -144,10 +146,6 @@ class ImportManager {
 
   void _initializeStrategies() {
     // Register available import strategies in priority order.
-    // FileImportStrategy is deliberately NOT registered: its canHandle()
-    // always returns false (file import is picker-driven, not text-driven),
-    // so it was unreachable in the auto loops (BUT-1487). The picker path
-    // constructs it directly via FileImportViewModel.
     _strategies.addAll([
       ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
       UrlImportStrategy(
@@ -158,6 +156,8 @@ class ImportManager {
       // 5. Voice dictation — canHandle() always false (explicitly launched
       // from the voice wizard, never auto-selected).
       VoiceImportStrategy(),
+      // 6. File — canHandle() always false (picker-driven, see importFile).
+      FileImportStrategy(),
     ]);
   }
 
@@ -535,7 +535,7 @@ class ImportManager {
     Duration elapsed,
   ) async {
     if (result.rateLimitDenied != null) return;
-    _eventLogger.log(
+    _record(
       ImportEvent.fromResult(
         result,
         channel: channel,
@@ -543,9 +543,57 @@ class ImportManager {
         elapsed: elapsed,
       ),
     );
+  }
+
+  void _record(ImportEvent event) {
+    _eventLogger.log(event);
     // Not awaited: the quota write retries on a transient error, and an
     // offline failure must reach the user without waiting for it.
-    unawaited(_recordUsage(channel));
+    unawaited(_recordUsage(event.channel));
+    unawaited(_trackImport(event));
+  }
+
+  Future<void> _trackImport(ImportEvent event) async {
+    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    if (analytics == null) return;
+    try {
+      final source = event.channel.name;
+      await analytics.logImportStarted(source: source);
+      if (event.success) await analytics.logImportSuccess(source: source);
+    } catch (e) {
+      AppLogger.debug('ImportManager: Failed to log import analytics: $e');
+    }
+  }
+
+  /// File entry point (BUT-2240): every recipe in one picked CSV, Excel or
+  /// Paprika file, for the batch preview. A cancelled picker is not an
+  /// import, so it is neither limited nor measured.
+  Future<FileImportResult> importFile() async {
+    final strategy = _strategies.whereType<FileImportStrategy>().firstOrNull;
+    final file = await strategy?.pickFile();
+    if (strategy == null || file == null) {
+      return const FileImportResult.cancelled();
+    }
+
+    final limitResult = await _rateLimiter?.checkLimit(
+      ImportOperation.basic('auto'),
+    );
+    if (limitResult is RateLimitDenied) {
+      return FileImportResult.rateLimit(limitResult);
+    }
+
+    final stopwatch = Stopwatch()..start();
+    final recipes = await strategy.importPicked(file);
+    _record(
+      ImportEvent(
+        channel: ImportChannel.file,
+        strategy: ImportEvent.strategyId(strategy.strategyName),
+        outcome: recipes.isEmpty ? 'failure' : 'recipe',
+        parseTimeMs: stopwatch.elapsedMilliseconds,
+        errorCode: recipes.isEmpty ? ImportErrorCode.parsingFailed.name : null,
+      ),
+    );
+    return FileImportResult(recipes);
   }
 
   Future<void> _recordUsage(ImportChannel channel) async {

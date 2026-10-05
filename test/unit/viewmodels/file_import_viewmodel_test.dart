@@ -7,22 +7,33 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/import/file_import_strategy.dart';
+import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/file_import_viewmodel.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
 
-class _FakeStrategy extends FileImportStrategy {
-  _FakeStrategy({this.result = const [], this.throws = false});
-  final List<Recipe> result;
+class _FakeImportManager extends Fake implements ImportManager {
+  _FakeImportManager({
+    this.result = const FileImportResult([]),
+    this.throws = false,
+  });
+  final FileImportResult result;
   final bool throws;
 
   @override
-  Future<List<Recipe>> importMultiple({Map<String, dynamic>? options}) async {
+  Future<FileImportResult> importFile() async {
     if (throws) throw Exception('boom');
     return result;
   }
 }
+
+const _denied = RateLimitDenied(
+  message: 'nej',
+  retryAfter: Duration(minutes: 1),
+  limitType: LimitType.perMinute,
+  suggestedAction: FallbackAction.retryLater,
+);
 
 Recipe _recipe(String id) => RecipeFactory.build(id: id, title: 'R$id');
 
@@ -30,7 +41,9 @@ void main() {
   group('FileImportViewModel.parseFile', () {
     test('returns parsed recipes and clears loading on success', () async {
       final vm = FileImportViewModel(
-        strategy: _FakeStrategy(result: [_recipe('1'), _recipe('2')]),
+        importManager: _FakeImportManager(
+          result: FileImportResult([_recipe('1'), _recipe('2')]),
+        ),
       );
       addTearDown(vm.dispose);
 
@@ -43,9 +56,7 @@ void main() {
     test(
       'returns empty and sets the no-recipes status when none found',
       () async {
-        final vm = FileImportViewModel(
-          strategy: _FakeStrategy(result: const []),
-        );
+        final vm = FileImportViewModel(importManager: _FakeImportManager());
         addTearDown(vm.dispose);
 
         final parsed = await vm.parseFile();
@@ -60,9 +71,11 @@ void main() {
     );
 
     test(
-      'returns empty and surfaces a generic error when the strategy throws',
+      'returns empty and surfaces a generic error when the import manager throws',
       () async {
-        final vm = FileImportViewModel(strategy: _FakeStrategy(throws: true));
+        final vm = FileImportViewModel(
+          importManager: _FakeImportManager(throws: true),
+        );
         addTearDown(vm.dispose);
 
         final parsed = await vm.parseFile();
@@ -74,9 +87,24 @@ void main() {
     );
   });
 
+  test('a refused import says why and returns nothing', () async {
+    final vm = FileImportViewModel(
+      importManager: _FakeImportManager(
+        result: const FileImportResult.rateLimit(_denied),
+      ),
+    );
+    addTearDown(vm.dispose);
+
+    final parsed = await vm.parseFile();
+
+    expect(parsed, isEmpty);
+    expect(vm.isLoading, isFalse);
+    expect(vm.statusMessage, equals(_denied.swedishMessage));
+  });
+
   group('FileImportViewModel.importSelected', () {
     test('resets when nothing was selected', () async {
-      final vm = FileImportViewModel(strategy: _FakeStrategy());
+      final vm = FileImportViewModel(importManager: _FakeImportManager());
       addTearDown(vm.dispose);
 
       await vm.importSelected(const []);

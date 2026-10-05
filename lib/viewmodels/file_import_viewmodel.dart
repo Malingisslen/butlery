@@ -4,7 +4,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/import/file_import_strategy.dart';
+import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
@@ -12,10 +12,10 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 /// out of [FileImportView] (MVVM). The view keeps the one thing the VM can't:
 /// presenting the batch-preview screen and reading the user's selection back.
 class FileImportViewModel extends BaseViewModel {
-  FileImportViewModel({FileImportStrategy? strategy})
-    : _strategy = strategy ?? FileImportStrategy();
+  FileImportViewModel({ImportManager? importManager})
+    : _importManager = importManager ?? ServiceLocator.get<ImportManager>();
 
-  final FileImportStrategy _strategy;
+  final ImportManager _importManager;
 
   String? _statusMessage;
   int _importedCount = 0;
@@ -42,14 +42,20 @@ class FileImportViewModel extends BaseViewModel {
     _statusMessage = AppLocale.current.importSelectingFile;
     setLoading(true);
     try {
-      final parsed = await _strategy.importMultiple();
-      if (parsed.isEmpty) {
+      final result = await _importManager.importFile();
+      final denied = result.rateLimitDenied;
+      if (denied != null) {
+        _statusMessage = denied.swedishMessage;
+        setLoading(false);
+        return const [];
+      }
+      if (result.recipes.isEmpty) {
         _statusMessage = AppLocale.current.importNoFileOrNoRecipes;
         setLoading(false);
         return const [];
       }
       setLoading(false);
-      return parsed;
+      return result.recipes;
     } catch (e) {
       AppLogger.error('File import (parse) failed', e);
       _statusMessage = AppLocale.current.errorGeneric;

@@ -11,8 +11,7 @@ class ImportEvent {
   final ImportChannel channel;
 
   /// The strategy that gave the final answer, as a short id the Cloud
-  /// Function validates: `url`, `text`, `photo`, `voice`, `youtube`,
-  /// `tiktok`, `instagram`, `archive`, `cache` or `unknown`.
+  /// Function validates: one of [strategyIds].
   final String strategy;
 
   /// `recipe`, `assistance` or `failure`.
@@ -96,6 +95,7 @@ class ImportEvent {
     'voice',
     'text',
     'archive',
+    'file',
     'unknown',
   ];
 
