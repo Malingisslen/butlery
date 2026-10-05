@@ -110,4 +110,89 @@ void main() {
 
     expect(await service.getInitialSharedImages(), isEmpty);
   });
+
+  test('non-Android platform never asks the channel for shared text', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'getInitialText') return 'https://www.ica.se/r';
+      return null;
+    });
+
+    final service = IncomingShareService(channel: channel);
+    addTearDown(service.dispose);
+
+    expect(await service.getInitialSharedText(), isNull);
+  });
+
+  group('shared text (BUT-2241)', () {
+    test('getInitialSharedText returns the native text', () async {
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'getInitialText') return 'https://www.ica.se/r';
+        return null;
+      });
+
+      final service = IncomingShareService(channel: channel);
+      addTearDown(service.dispose);
+
+      expect(await service.getInitialSharedText(), 'https://www.ica.se/r');
+    });
+
+    test('getInitialSharedText is null for blank or missing text', () async {
+      for (final native in <Object?>[null, '  ', 42]) {
+        messenger.setMockMethodCallHandler(channel, (call) async => native);
+        final service = IncomingShareService(channel: channel);
+        addTearDown(service.dispose);
+
+        expect(await service.getInitialSharedText(), isNull, reason: '$native');
+      }
+    });
+
+    test('getInitialSharedText is null on a PlatformException', () async {
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        throw PlatformException(code: 'boom');
+      });
+
+      final service = IncomingShareService(channel: channel);
+      addTearDown(service.dispose);
+
+      expect(await service.getInitialSharedText(), isNull);
+    });
+
+    test('warm-start onText call emits on textStream', () async {
+      final service = IncomingShareService(channel: channel);
+      addTearDown(service.dispose);
+
+      final emitted = expectLater(service.textStream, emits('2 dl mjölk'));
+
+      await messenger.handlePlatformMessage(
+        channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          const MethodCall('onText', '2 dl mjölk'),
+        ),
+        (_) {},
+      );
+
+      await emitted;
+    });
+
+    test('warm-start blank onText does not emit', () async {
+      final service = IncomingShareService(channel: channel);
+      addTearDown(service.dispose);
+
+      var emitted = false;
+      final sub = service.textStream.listen((_) => emitted = true);
+      addTearDown(sub.cancel);
+
+      await messenger.handlePlatformMessage(
+        channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          const MethodCall('onText', '   '),
+        ),
+        (_) {},
+      );
+      await pumpEventQueue();
+
+      expect(emitted, isFalse);
+    });
+  });
 }

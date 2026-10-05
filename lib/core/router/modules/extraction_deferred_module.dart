@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/router/shared_import_route.dart';
 
 // Deferred imports for extraction views
 import 'package:butlery/views/smart_import_view.dart' deferred as smart_import;
@@ -57,12 +58,13 @@ class ExtractionDeferredModule implements DeferredModule {
   Widget buildRoute(String routeName, RouteSettings settings) {
     switch (routeName) {
       case Routes.smartImport:
-        // A String argument is a URL shared into the app (web-share) to prefill.
-        return smart_import.SmartImportView(
-          initialUrl: settings.arguments is String
-              ? settings.arguments as String
-              : null,
-        );
+        final arguments = settings.arguments;
+        return switch (arguments) {
+          SmartImportRouteArgs(:final url, :final autoStart) =>
+            smart_import.SmartImportView(initialUrl: url, autoStart: autoStart),
+          String() => smart_import.SmartImportView(initialUrl: arguments),
+          _ => smart_import.SmartImportView(),
+        };
 
       case Routes.photoImport:
         // BUT-941: a List<String> argument is photo paths shared into the app

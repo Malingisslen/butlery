@@ -237,7 +237,6 @@ class AppRouter {
           double? ocrConfidence;
 
           if (arguments is String) {
-            // Legacy plain-text argument (pre-BUT-928 callers)
             initialText = arguments;
           } else if (arguments is Map<String, dynamic>) {
             initialText = arguments['text'] as String?;

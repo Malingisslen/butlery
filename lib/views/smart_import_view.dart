@@ -35,11 +35,13 @@ import 'package:butlery/views/smart_import/import_result_handler.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
-  /// URL handed in by the OS share sheet (web-share into the app). When set it
-  /// prefills the import field and takes precedence over the clipboard check.
+  /// When set it prefills the import field and takes precedence over the
+  /// clipboard check.
   final String? initialUrl;
 
-  const SmartImportView({super.key, this.initialUrl});
+  final bool autoStart;
+
+  const SmartImportView({super.key, this.initialUrl, this.autoStart = false});
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +49,19 @@ class SmartImportView extends StatelessWidget {
       create: (_) => SmartImportViewModel(
         importManager: ServiceLocator.get<ImportManager>(),
       ),
-      child: _SmartImportViewContent(initialUrl: initialUrl),
+      child: _SmartImportViewContent(
+        initialUrl: initialUrl,
+        autoStart: autoStart,
+      ),
     );
   }
 }
 
 class _SmartImportViewContent extends StatefulWidget {
   final String? initialUrl;
+  final bool autoStart;
 
-  const _SmartImportViewContent({this.initialUrl});
+  const _SmartImportViewContent({this.initialUrl, this.autoStart = false});
 
   @override
   State<_SmartImportViewContent> createState() =>
@@ -75,12 +81,13 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
       final viewModel = context.read<SmartImportViewModel>();
 
-      // A URL shared into the app (web-share) wins over the clipboard. Prefill
+      // A URL wins over the clipboard. Prefill
       // the field and sync the VM (programmatic text doesn't fire onChanged).
       final shared = widget.initialUrl;
       if (shared != null && shared.isNotEmpty) {
         _inputController.text = shared;
         viewModel.updateInput(shared);
+        if (widget.autoStart) await _handleImport(context, viewModel);
         return;
       }
 
