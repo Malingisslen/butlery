@@ -7025,6 +7025,14 @@
   "llmUnknownRecipe": "Unknown recipe",
   "llmMustBeLoggedIn": "You must be logged in to use AI features.",
   "llmServiceOverloaded": "The AI service is temporarily overloaded. Try again in a moment.",
+  "llmCostCeilingDay": "You have used today's AI help. Try again tomorrow.",
+  "@llmCostCeilingDay": {
+    "description": "LLM error: the user has reached the daily AI cost ceiling (BUT-2243)"
+  },
+  "llmCostCeilingMonth": "You have used this month's AI help. Try again next month.",
+  "@llmCostCeilingMonth": {
+    "description": "LLM error: the user has reached the monthly AI cost ceiling (BUT-2243)"
+  },
   "llmInvalidArgument": "Invalid argument: {error}",
   "@llmInvalidArgument": {
     "placeholders": {

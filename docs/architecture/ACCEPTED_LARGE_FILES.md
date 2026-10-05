@@ -123,7 +123,6 @@ Already modular services or well-organized modules within service facades. Furth
 | `social_recipe_operations.dart` | 512 | Social recipe sharing/rating ops |
 | `notification_service.dart` | 764 | Push notification dispatch |
 | `share_service.dart` | 612 | Multi-content type sharing — recipes, menus, shopping lists |
-| `import_rate_limiter.dart` | 525 | Single-responsibility Firestore rate-limiter; coherent single concern |
 | `base_social_coordinator.dart` | 534 | Abstract base coordinator using Template Method pattern; no mixed concerns |
 | `tiktok_pipeline.dart` | 519 | Single 4-tier import pipeline for one platform; coherent extraction strategy |
 | `recipe_persistence_manager.dart` | 518 | Focused manager for atomic save/fork/delete delegated from form VM |

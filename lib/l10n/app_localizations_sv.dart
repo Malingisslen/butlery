@@ -10726,6 +10726,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.';
 
   @override
+  String get llmCostCeilingDay =>
+      'Du har använt dagens AI-hjälp. Försök igen i morgon.';
+
+  @override
+  String get llmCostCeilingMonth =>
+      'Du har använt månadens AI-hjälp. Försök igen nästa månad.';
+
+  @override
   String llmInvalidArgument(String error) {
     return 'Ogiltigt argument: $error';
   }

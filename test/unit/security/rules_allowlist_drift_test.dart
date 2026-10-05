@@ -96,6 +96,7 @@ import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'rules_source.dart';
@@ -245,11 +246,22 @@ const _allowlists = <_Allowlist>[
         'lib/models/realtime/realtime_menu.dart RealtimeMenu.toFirestore, '
         'written whole by ConflictResolutionModule.performUpdate (BUT-2151)',
   ),
+  // BUT-2243: the block now holds two lists, the `imports` one first. The
+  // stamp limb is the only one that excludes `llm_cost`, so its entry anchors
+  // there and the `imports` entry anchors on the block.
   _Allowlist(
     label: 'users/{uid}/rate_limits stamp',
     mustContain: 'lastDocId',
-    anchor: 'match /rate_limits/{type}',
+    anchor: "type != 'llm_cost'",
     writer: 'lib/repositories/firebase/rate_limit_stamp.dart stampRateLimit',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/rate_limits/imports',
+    mustContain: 'importsThisMinute',
+    anchor: 'match /rate_limits/{type}',
+    writer:
+        'lib/services/import/models/rate_limit_models.dart '
+        'UsageLimits.toFirestore, written whole by ImportRateLimiter.recordUsage',
   ),
 ];
 
@@ -433,6 +445,12 @@ Map<String, Set<String>> _writtenKeys() => {
   ).toFirestore().keys.toSet(),
   // Hand-built map; `stampRateLimit` is its only writer.
   'users/{uid}/rate_limits stamp': {'lastWrite', 'expireAt', 'lastDocId'},
+  // Every key is emitted unconditionally, so the default instance is already
+  // the widest set.
+  'users/{uid}/rate_limits/imports': const UsageLimits()
+      .toFirestore()
+      .keys
+      .toSet(),
   // Every optional argument set, so the set is the widest the writer sends.
   'realtime_resources (menu)': RealtimeMenu.fromMenuCategories(
     menuTitle: 'm',
@@ -815,6 +833,34 @@ void main() {
     );
   });
 
+  // BUT-2243: the reverse direction, kept out of the per-entry loop for the
+  // reason the header gives. This list is the only thing standing between a
+  // client and the keys the server's cost ledger used to share the document
+  // with, so a key the writer does not send is not a harmless widening here.
+  test('the rate_limits/imports allowlist admits exactly what UsageLimits '
+      'writes', () {
+    final allowed = _allowlistAfter(
+      rules,
+      'match /rate_limits/{type}',
+      'importsThisMinute',
+    );
+    final sent = const UsageLimits().toFirestore().keys.toSet();
+
+    expect(
+      allowed,
+      sent,
+      reason:
+          'rate_limits/imports allowlist and UsageLimits.toFirestore() differ.\n'
+          '  allowed only: ${(allowed.difference(sent).toList()..sort())}\n'
+          '  sent only:    ${(sent.difference(allowed).toList()..sort())}',
+    );
+    expect(
+      allowed.where((k) => k.toLowerCase().contains('cost')),
+      isEmpty,
+      reason: 'the AI cost lives in the server-written llm_cost doc only',
+    );
+  });
+
   test('every keys().hasOnly allowlist is guarded here or knowingly excluded', () {
     // The census. Without it, a new allowlist lands unguarded and
     // nothing says so — which is precisely how the five drifts of 2026-08-12
@@ -861,9 +907,11 @@ void main() {
     // comparison for the same reason.
     // BUT-2151 added realtime_resources: one keys().hasOnly, guarded above in
     // _allowlists.
+    // BUT-2243 added rate_limits/imports: one keys().hasOnly, guarded above in
+    // _allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      44,
+      45,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

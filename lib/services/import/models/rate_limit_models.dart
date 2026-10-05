@@ -3,7 +3,6 @@
 /// These models support Firestore-persisted rate limiting with:
 /// - Per-minute, per-hour, per-day limits
 /// - Separate limits for basic imports vs LLM operations
-/// - Cost tracking for LLM operations
 
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -213,14 +212,6 @@ class UsageLimits {
   final int llmExtractionsToday;
   final int llmVisionToday;
 
-  // Cost tracking
-  final double llmCostToday;
-  final double llmCostThisMonth;
-
-  // Month tracking
-  final int llmOperationsThisMonth;
-  final DateTime? monthWindowStart;
-
   const UsageLimits({
     this.importsThisMinute = 0,
     this.minuteWindowStart,
@@ -231,10 +222,6 @@ class UsageLimits {
     this.llmEnhancementsToday = 0,
     this.llmExtractionsToday = 0,
     this.llmVisionToday = 0,
-    this.llmCostToday = 0.0,
-    this.llmCostThisMonth = 0.0,
-    this.llmOperationsThisMonth = 0,
-    this.monthWindowStart,
   });
 
   /// Total LLM operations today
@@ -262,16 +249,11 @@ class UsageLimits {
       llmEnhancementsToday: data['llmEnhancementsToday'] as int? ?? 0,
       llmExtractionsToday: data['llmExtractionsToday'] as int? ?? 0,
       llmVisionToday: data['llmVisionToday'] as int? ?? 0,
-      llmCostToday: (data['llmCostToday'] as num?)?.toDouble() ?? 0.0,
-      llmCostThisMonth: (data['llmCostThisMonth'] as num?)?.toDouble() ?? 0.0,
-      llmOperationsThisMonth: data['llmOperationsThisMonth'] as int? ?? 0,
-      monthWindowStart: SerializationUtils.parseDateTimeValue(
-        data['monthWindowStart'],
-      ),
     );
   }
 
-  /// Convert to Firestore data
+  /// Convert to Firestore data. `firestore.rules` admits these keys on
+  /// `rate_limits/imports`; the AI cost lives in [ServerLlmCost].
   Map<String, dynamic> toFirestore() {
     return {
       'importsThisMinute': importsThisMinute,
@@ -283,12 +265,58 @@ class UsageLimits {
       'llmEnhancementsToday': llmEnhancementsToday,
       'llmExtractionsToday': llmExtractionsToday,
       'llmVisionToday': llmVisionToday,
-      'llmCostToday': llmCostToday,
-      'llmCostThisMonth': llmCostThisMonth,
-      'llmOperationsThisMonth': llmOperationsThisMonth,
-      'monthWindowStart': monthWindowStart,
       'expireAt': Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
     };
+  }
+}
+
+/// The AI cost ledger at `users/{uid}/rate_limits/llm_cost` (BUT-2243).
+///
+/// Written only by the Cloud Functions (`llm_cost_ledger.ts`); the app reads
+/// it to warn early. The server decides: it refuses the call itself when a
+/// ceiling is reached. Days and months are UTC calendar windows, keyed exactly
+/// as the server keys them.
+class ServerLlmCost {
+  static const docId = 'llm_cost';
+
+  /// Spend in the current UTC day and month; 0 when the stored key is stale.
+  final double costToday;
+  final double costThisMonth;
+
+  const ServerLlmCost({this.costToday = 0.0, this.costThisMonth = 0.0});
+
+  factory ServerLlmCost.fromFirestore(
+    Map<String, dynamic>? data,
+    DateTime now,
+  ) {
+    if (data == null) return const ServerLlmCost();
+    double read(String key) => (data[key] as num?)?.toDouble() ?? 0.0;
+    return ServerLlmCost(
+      costToday: data['dayKey'] == dayKeyOf(now) ? read('costToday') : 0.0,
+      costThisMonth: data['monthKey'] == monthKeyOf(now)
+          ? read('costThisMonth')
+          : 0.0,
+    );
+  }
+
+  /// `YYYY-MM-DD` in UTC, the server's `utcDayKey`.
+  static String dayKeyOf(DateTime instant) =>
+      instant.toUtc().toIso8601String().substring(0, 10);
+
+  /// `YYYY-MM` in UTC, the server's `utcMonthKey`.
+  static String monthKeyOf(DateTime instant) =>
+      instant.toUtc().toIso8601String().substring(0, 7);
+
+  /// The next UTC midnight after [now].
+  static DateTime dayResetAfter(DateTime now) {
+    final u = now.toUtc();
+    return DateTime.utc(u.year, u.month, u.day + 1);
+  }
+
+  /// The first instant of the next UTC month after [now].
+  static DateTime monthResetAfter(DateTime now) {
+    final u = now.toUtc();
+    return DateTime.utc(u.year, u.month + 1);
   }
 }
 
@@ -306,7 +334,7 @@ class ImportRateLimits {
   static const int llmExtractionsPerDay = 10;
   static const int llmVisionPerDay = 10;
 
-  // Cost limits (in USD)
+  // Cost limits (in USD). The server's `LLM_COST_CEILINGS` enforces them.
   static const double llmCostPerDay = 0.50;
   static const double llmCostPerMonth = 10.00;
 

@@ -50,6 +50,7 @@ import { runReconcileBlockMirrors } from "../social/sync-block-mirror";
 import { runSweepErasureHolds } from "../moderation/erasure-hold";
 import { runSweepRetainedReporterReports } from "../moderation/reporter-retention";
 import { runNorthStarWeekly } from "../scheduled/north-star-weekly";
+import { runImportTierWeekly } from "../analytics/import-tier-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
 import { updateRecipeRatingStats } from "../ratings/update-recipe-rating-stats";
@@ -149,6 +150,7 @@ export const SNAPSHOT_PRODUCER_TASKS = [
 export const WEEKLY_REPORT_TASKS: MaintenanceTask[] = [
   { name: "weeklyActivityDigest", run: () => runWeeklyActivityDigest(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "northStarWeekly", run: () => runNorthStarWeekly(), timeoutMs: TASK_TIMEOUT_MS },
+  { name: "importTierWeekly", run: () => runImportTierWeekly(), timeoutMs: TASK_TIMEOUT_MS },
   // BUT-1917. The block mirror is a safety control whose failure is SILENT: a
   // missing entry lets a blocked person keep acting and nothing on any screen
   // says so, so `retry: true` on the trigger is not the whole story. A task
