@@ -3,7 +3,7 @@
 /// Dietary statuses use tri-valued logic:
 /// - FREE: Recipe is safe for this diet (proven)
 /// - CONTAINS: Recipe contains excluded ingredients
-/// - UNKNOWN: Coverage < 100% or unknown ingredients
+/// - UNKNOWN: No excluded ingredient matched, and coverage < 100%
 library;
 
 /// Single dietary configuration.

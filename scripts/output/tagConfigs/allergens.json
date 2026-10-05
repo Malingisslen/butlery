@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": 2,
-  "updatedAt": "2026-07-02T10:32:59.875207Z",
+  "version": 3,
+  "updatedAt": "2026-10-05T07:03:41.485408Z",
   "updatedBy": "migration-script",
   "displayOrder": [
     "gluten",
@@ -427,8 +427,7 @@
       "key": "skaldjur",
       "triggerProperties": [
         "crustacean",
-        "mollusc",
-        "seafood"
+        "mollusc"
       ],
       "tags": {
         "sv": {
