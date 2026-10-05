@@ -18,6 +18,10 @@ class FirebaseCookingSessionRepository {
   FirebaseCookingSessionRepository({required FirebaseDatabase database})
     : _database = database;
 
+  /// Same check as PresenceService: with no databaseURL, `ref()` throws
+  /// synchronously, and from [watchSessions] that throw reaches a widget.
+  bool get _configured => _database.app.options.databaseURL != null;
+
   /// Root node for all cooking session presence data.
   static const String _rootPath = 'cooking_sessions';
 
@@ -36,6 +40,7 @@ class FirebaseCookingSessionRepository {
     required String groupId,
     required CookingSession session,
   }) async {
+    if (!_configured) return;
     try {
       final ref = _userRef(groupId, session.userId);
       // Register the disconnect handler BEFORE the set so a crash between
@@ -65,6 +70,7 @@ class FirebaseCookingSessionRepository {
     required int currentStep,
     required int totalSteps,
   }) async {
+    if (!_configured) return;
     try {
       final ref = _userRef(groupId, userId);
       await ref.update({
@@ -82,6 +88,7 @@ class FirebaseCookingSessionRepository {
     required String groupId,
     required String userId,
   }) async {
+    if (!_configured) return;
     try {
       final ref = _userRef(groupId, userId);
       await ref.onDisconnect().cancel();
@@ -98,6 +105,7 @@ class FirebaseCookingSessionRepository {
   /// no members are cooking. Entries are parsed leniently — a malformed row
   /// is skipped rather than crashing the stream.
   Stream<List<CookingSession>> watchSessions(String groupId) {
+    if (!_configured) return Stream.value(const <CookingSession>[]);
     return _groupRef(groupId).onValue.map((event) {
       final raw = event.snapshot.value;
       if (raw == null) return const <CookingSession>[];

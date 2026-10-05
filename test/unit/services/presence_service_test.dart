@@ -946,6 +946,46 @@ void main() {
     );
   });
 
+  // The group page watched its other members through these and went grey:
+  // with no databaseURL, `ref()` throws synchronously inside initState.
+  group('reads without a databaseURL', () {
+    late _DbHarness harness;
+    late PresenceService service;
+
+    setUp(() {
+      harness = _DbHarness(databaseURL: null);
+      when(() => harness.db.ref(any())).thenThrow(
+        StateError('Cannot parse Firebase url'),
+      );
+      service = _buildService(
+        harness: harness,
+        authRepo: _MockAuthRepository(),
+        firestore: FakeFirebaseFirestore(),
+      );
+    });
+
+    tearDown(() async {
+      await service.dispose();
+    });
+
+    test('getMultiplePresenceStream emits an empty map', () async {
+      final map = await service.getMultiplePresenceStream(['uA', 'uB']).first;
+
+      expect(map, isEmpty);
+      verifyNever(() => harness.db.ref(any()));
+    });
+
+    test('getPresenceStream emits null', () async {
+      expect(await service.getPresenceStream('uA').first, isNull);
+      verifyNever(() => harness.db.ref(any()));
+    });
+
+    test('isUserOnline answers false', () async {
+      expect(await service.isUserOnline('uA'), isFalse);
+      verifyNever(() => harness.db.ref(any()));
+    });
+  });
+
   group('getMultiplePresenceStream', () {
     late _DbHarness harness;
     late _MockAuthRepository authRepo;

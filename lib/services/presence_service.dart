@@ -107,6 +107,13 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
+  /// No Firebase app in this repo sets a databaseURL, and `ref()` then throws
+  /// synchronously (on web a JS SDK fatal). Every RTDB entry point checks this
+  /// first: a throw from a stream getter lands in a widget's initState and
+  /// greys out the whole screen, as the group page did once it had a second
+  /// member to watch.
+  bool get _rtdbConfigured => _database.app.options.databaseURL != null;
+
   @override
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -118,10 +125,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
         return;
       }
 
-      // Skip RTDB if no databaseURL is configured — calling ref() would
-      // trigger a Firebase JS SDK fatal() that logs to console even though
-      // Dart catches the exception.
-      if (_database.app.options.databaseURL == null) {
+      if (!_rtdbConfigured) {
         AppLogger.warning('RTDB not configured — presence tracking disabled');
         return;
       }
@@ -230,6 +234,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   /// Stream a single user's presence from RTDB.
   Stream<UserPresence?> getPresenceStream(String userId) {
+    if (!_rtdbConfigured) return Stream.value(null);
     return _database.ref('presence/$userId').onValue.map((event) {
       if (event.snapshot.value == null) return null;
       final data = Map<dynamic, dynamic>.from(
@@ -243,7 +248,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
   Stream<Map<String, UserPresence>> getMultiplePresenceStream(
     List<String> userIds,
   ) {
-    if (userIds.isEmpty) return Stream.value({});
+    if (userIds.isEmpty || !_rtdbConfigured) return Stream.value({});
 
     final latestValues = <String, UserPresence>{};
     final controller = StreamController<Map<String, UserPresence>>.broadcast();
@@ -351,6 +356,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
   }
 
   Future<bool> isUserOnline(String userId) async {
+    if (!_rtdbConfigured) return false;
     try {
       final snapshot = await _database.ref('presence/$userId').get();
       if (!snapshot.exists || snapshot.value == null) return false;

@@ -11,6 +11,7 @@
 
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -27,6 +28,16 @@ class _MockOnDisconnect extends Mock implements OnDisconnect {}
 class _MockDatabaseEvent extends Mock implements DatabaseEvent {}
 
 class _MockDataSnapshot extends Mock implements DataSnapshot {}
+
+class _MockFirebaseApp extends Mock implements FirebaseApp {}
+
+FirebaseOptions _options({String? databaseURL}) => FirebaseOptions(
+  apiKey: 'k',
+  appId: '1:0:web:0',
+  messagingSenderId: '0',
+  projectId: 'p',
+  databaseURL: databaseURL,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -81,7 +92,46 @@ void main() {
       return refFor(path);
     });
 
+    final app = _MockFirebaseApp();
+    when(
+      () => app.options,
+    ).thenReturn(_options(databaseURL: 'https://x.firebaseio.com'));
+    when(() => database.app).thenReturn(app);
+
     repository = FirebaseCookingSessionRepository(database: database);
+  });
+
+  // No Firebase app in the repo sets a databaseURL, and `ref()` then throws
+  // synchronously. From watchSessions that throw reached a widget's initState.
+  group('without a databaseURL', () {
+    setUp(() {
+      final app = _MockFirebaseApp();
+      when(() => app.options).thenReturn(_options());
+      when(() => database.app).thenReturn(app);
+      when(() => database.ref(any())).thenThrow(
+        StateError('Cannot parse Firebase url'),
+      );
+    });
+
+    test('watchSessions emits an empty list without touching RTDB', () async {
+      final sessions = await repository.watchSessions(groupId).first;
+
+      expect(sessions, isEmpty);
+      verifyNever(() => database.ref(any()));
+    });
+
+    test('the writes return without touching RTDB', () async {
+      await repository.startSession(groupId: groupId, session: buildSession());
+      await repository.updateStep(
+        groupId: groupId,
+        userId: userId,
+        currentStep: 1,
+        totalSteps: 3,
+      );
+      await repository.endSession(groupId: groupId, userId: userId);
+
+      verifyNever(() => database.ref(any()));
+    });
   });
 
   group('startSession', () {
