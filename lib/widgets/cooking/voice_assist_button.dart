@@ -48,7 +48,7 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
   static const double _buttonEdge = 56;
 
   late final AnimationController _pulse = AnimationController(
-    duration: AppMotion.pulse,
+    duration: AppMotion.pulseHalf,
     vsync: this,
   );
 

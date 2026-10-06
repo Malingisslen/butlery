@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Custom search box with Butlery styling.
 ///
@@ -136,7 +137,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
     return ButleryFocusRing(
       focused: _isFocused,
       child: AnimatedContainer(
-        duration: AppDimensions.animationDurationFast.respectingMotion(context),
+        duration: AppMotion.micro.respectingMotion(context),
         decoration: InputThemes.searchBoxDecoration,
         child: TextField(
           controller: _controller,

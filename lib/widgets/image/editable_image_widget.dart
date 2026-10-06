@@ -17,6 +17,7 @@ import 'package:butlery/widgets/image/components/empty_image_state.dart';
 import 'package:butlery/widgets/image/components/edit_actions_panel.dart';
 import 'package:butlery/widgets/image/components/primary_badge.dart';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Editable image widget with individual progress tracking for recipe editing.
 class EditableImageWidget extends StatefulWidget {
@@ -356,7 +357,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     }
     _pageController.animateToPage(
       index,
-      duration: AppDimensions.animationDurationCommon,
+      duration: AppMotion.standard,
       curve: Curves.easeInOut,
     );
   }
@@ -429,7 +430,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       _currentIndex = newUrls.length - 1;
       _pageController.animateToPage(
         _currentIndex,
-        duration: AppDimensions.animationDurationCommon,
+        duration: AppMotion.standard,
         curve: Curves.easeInOut,
       );
     }

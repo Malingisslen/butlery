@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Quick filter chip data model.
 class QuickFilterOption {
@@ -222,7 +223,7 @@ class _QuickChipState extends State<_QuickChip> {
               child: AnimatedContainer(
                 duration: AnimationUtils.getDuration(
                   context,
-                  AppDimensions.animationDurationFast,
+                  AppMotion.micro,
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingMd,

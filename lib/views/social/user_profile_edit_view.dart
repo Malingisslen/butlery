@@ -34,6 +34,9 @@ import 'package:butlery/views/social/user_profile_edit/cooking_identity_section.
 import 'package:butlery/views/social/user_profile_edit/privacy_section.dart';
 import 'package:butlery/views/social/user_profile_edit/preferences_sections.dart';
 
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _errorClearWait = Duration(milliseconds: 500);
+
 class UserProfileEditView extends StatefulWidget {
   const UserProfileEditView({super.key});
 
@@ -342,7 +345,7 @@ class _UserProfileEditViewContentState
               viewModel.updateDisplayName(value);
               // Clear previous validation errors when user types
               if (viewModel.displayNameError != null) {
-                Future.delayed(AppDimensions.animationDurationLong, () {
+                Future.delayed(_errorClearWait, () {
                   if (mounted && _displayNameController.text == value) {
                     _checkDisplayNameAvailability();
                   }

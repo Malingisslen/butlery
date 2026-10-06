@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 
@@ -69,7 +70,7 @@ class PlateLine extends StatefulWidget {
   static const double pulseMinOpacity = 0.4;
 
   /// En halv puls (full opacitet till [pulseMinOpacity]).
-  static const Duration pulseHalfCycle = Duration(milliseconds: 1200);
+  static const Duration pulseHalfCycle = AppMotion.pulseHalf;
 
   /// Det obestämda segmentet. Nyckeln finns för prov, inte för identitet i
   /// appen.

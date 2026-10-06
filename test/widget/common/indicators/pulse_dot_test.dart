@@ -94,11 +94,13 @@ void main() {
           .transform
           .entry(0, 0);
 
+      // One loop is AppMotion.pulse: full at half, back at the start
+      // (produktbeslut R8-9 = A).
       expect(scale(), closeTo(0.5, 0.005));
       await tester.pump(AppMotion.pulse ~/ 2);
-      expect(scale(), lessThan(0.95));
-      await tester.pump(AppMotion.pulse ~/ 2);
       expect(scale(), closeTo(1.0, 0.005));
+      await tester.pump(AppMotion.pulse ~/ 2);
+      expect(scale(), closeTo(0.5, 0.005));
     });
 
     testWidgets('reduce-motion skips the Transform.scale wrapper', (

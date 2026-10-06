@@ -1,7 +1,6 @@
 // lib/widgets/social/collaborative/collaborative_indicators.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
@@ -14,6 +13,7 @@ import 'package:butlery/widgets/social/collaborative/components/collaborative_pa
 import 'package:butlery/widgets/social/collaborative/components/collaborative_live_widgets.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_permissions_widgets.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_connection_widgets.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Collaborative Indicators API
 /// This class provides a unified API for collaborative editing indicators:
@@ -147,7 +147,7 @@ class CollaborativeIndicators {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = AppDimensions.animationDurationCommon,
+    Duration animationDuration = AppMotion.standard,
   }) {
     return CollaborativeLiveWidgets.editIndicator(
       editorName: editorName,

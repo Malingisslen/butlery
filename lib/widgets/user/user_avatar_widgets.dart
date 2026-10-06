@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Avatar widgets and related functionality
 class UserAvatarWidgets {
@@ -71,8 +72,8 @@ class UserAvatarWidgets {
                       effectiveBackgroundColor,
                       effectiveTextColor,
                     ),
-                    fadeInDuration: AppDimensions.animationDurationCommon,
-                    fadeOutDuration: AppDimensions.animationDurationCommon,
+                    fadeInDuration: AppMotion.standard,
+                    fadeOutDuration: AppMotion.standard,
                   ),
                 )
               : _buildInitialsAvatar(

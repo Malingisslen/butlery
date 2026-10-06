@@ -1,10 +1,12 @@
 // lib/widgets/common/profile/utils/result_displayer.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _afterDialogWait = Duration(milliseconds: 300);
 
 /// Utility for displaying operation results via snackbars.
 ///
@@ -36,7 +38,7 @@ class ResultDisplayer {
 
       Navigator.of(context).pop();
 
-      Future.delayed(AppDimensions.animationDurationCommon, () {
+      Future.delayed(_afterDialogWait, () {
         _showSnackBarDirect(scaffoldMessenger, message, closeLabel);
       });
     } else {

@@ -46,6 +46,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// BUT-557: the container-level navigation landmark (WCAG 1.3.1).
 Widget navigationLandmark({
@@ -277,7 +278,7 @@ class _BottomNavTab extends StatelessWidget {
                   AnimatedContainer(
                     duration: AnimationUtils.getDuration(
                       context,
-                      AppDimensions.animationDurationFast,
+                      AppMotion.micro,
                     ),
                     height: AppDimensions.bottomNavMarkerThickness,
                     width: isSelected ? _textWidth(label, style) : 0,

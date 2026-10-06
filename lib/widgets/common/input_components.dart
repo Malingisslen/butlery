@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 
 // The three modules this facade imports directly. More in `common/input/`
@@ -8,6 +7,9 @@ import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/widgets/common/input/instruction_editor.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _checkboxDebounce = Duration(milliseconds: 300);
 
 /// Facade for input components. Delegates to specialized input modules.
 class InputComponents {
@@ -53,7 +55,7 @@ class InputComponents {
     required bool value,
     required ValueChanged<bool?>? onChanged,
     Color? activeColor,
-    Duration debounceDuration = AppDimensions.animationDurationCommon,
+    Duration debounceDuration = _checkboxDebounce,
   }) {
     return DebouncedCheckbox(
       value: value,

@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -39,7 +40,7 @@ class PlatformBadgeWidget extends StatelessWidget {
     return AnimatedOpacity(
       duration: AnimationUtils.getDuration(
         context,
-        AppDimensions.animationDurationMedium,
+        AppMotion.micro,
       ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(

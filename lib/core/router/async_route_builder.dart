@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/widgets/common/routing/deferred_route_loader.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Builder for creating routes that load deferred modules
 class AsyncRouteBuilder {
@@ -48,7 +49,7 @@ class AsyncRouteBuilder {
           if (!AnimationUtils.shouldAnimate(context)) return child;
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
-          const curve = Curves.easeInOut;
+          const curve = AppMotion.curve;
           final tween = Tween(
             begin: begin,
             end: end,
@@ -62,7 +63,7 @@ class AsyncRouteBuilder {
           if (!AnimationUtils.shouldAnimate(context)) return child;
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
-          const curve = Curves.easeInOut;
+          const curve = AppMotion.curve;
           final tween = Tween(
             begin: begin,
             end: end,
@@ -76,7 +77,7 @@ class AsyncRouteBuilder {
           if (!AnimationUtils.shouldAnimate(context)) return child;
           const begin = 0.0;
           const end = 1.0;
-          const curve = Curves.elasticOut;
+          const curve = AppMotion.curve;
           final tween = Tween(
             begin: begin,
             end: end,
@@ -91,13 +92,13 @@ class AsyncRouteBuilder {
   static Duration _getTransitionDuration(RouteAnimationType animationType) {
     switch (animationType) {
       case RouteAnimationType.fade:
-        return const Duration(milliseconds: 300);
+        return AppMotion.standard;
       case RouteAnimationType.slideFromBottom:
-        return const Duration(milliseconds: 400);
+        return AppMotion.standard;
       case RouteAnimationType.slideFromRight:
-        return const Duration(milliseconds: 300);
+        return AppMotion.standard;
       case RouteAnimationType.scale:
-        return const Duration(milliseconds: 600);
+        return AppMotion.standard;
     }
   }
 }

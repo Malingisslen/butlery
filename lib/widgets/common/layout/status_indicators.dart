@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Status indicators for app state display
 /// This module provides widgets for displaying app status like
@@ -181,7 +182,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
     }
 
     return AnimatedSwitcher(
-      duration: AppDimensions.animationDurationCommon,
+      duration: AppMotion.standard,
       transitionBuilder: (child, animation) => SizeTransition(
         sizeFactor: animation,
         axisAlignment: -1.0,
