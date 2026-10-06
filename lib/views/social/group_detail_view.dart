@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/dialogs/menu_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/group_shopping_list_selection_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/messaging/poll_creation_dialog.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -325,7 +326,16 @@ class _GroupDetailViewState extends State<GroupDetailView>
         context,
         what: _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
       );
+      return;
     }
+
+    // The vote happens in the group chat, and nothing on this page shows it,
+    // so staying here left the person with a closed dialog and no poll.
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChatViewFacade(conversationId: conversationId),
+      ),
+    );
   }
 
   /// ✅ REFACTORED: Leave group with ownership succession handling (MVVM pattern)

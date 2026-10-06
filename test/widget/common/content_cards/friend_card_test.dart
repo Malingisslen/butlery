@@ -226,6 +226,36 @@ void main() {
       expect(find.text('Vill bli din vän'), findsOneWidget);
     });
 
+    testWidgets('names the sender, on the card and on both buttons', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            senderName: 'Erik Sandell',
+            onAccept: () {},
+            onDecline: () {},
+          ),
+        ),
+      );
+      expect(find.text('Erik Sandell'), findsOneWidget);
+      expect(find.text('Vänförfrågan'), findsNothing);
+      expect(find.bySemanticsLabel('Acceptera Erik Sandell'), findsOneWidget);
+      expect(find.bySemanticsLabel('Avböj Erik Sandell'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('a blank sender name falls back to the generic title', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(FriendRequestCard(friendRequest: _request(), senderName: ' ')),
+      );
+      expect(find.text('Vänförfrågan'), findsOneWidget);
+    });
+
     testWidgets('renders the optional message when present', (tester) async {
       await tester.pumpWidget(
         _wrap(

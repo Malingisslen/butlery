@@ -10,7 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/content_cards/friend_card.dart' as cards;
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -69,8 +69,11 @@ class FriendRequestCard {
     FriendRequest request,
     FriendsViewModel viewModel,
   ) {
-    return ContentCard.friendRequest(
+    final profile = viewModel.getUserProfile(request.fromUserId);
+    return cards.FriendRequestCard(
       friendRequest: request,
+      senderName: profile?.displayName,
+      senderAvatarUrl: profile?.avatarUrl,
       onAccept: () => _acceptRequest(context, request, viewModel),
       onDecline: () => _rejectRequest(context, request, viewModel),
     );
