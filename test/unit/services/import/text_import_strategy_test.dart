@@ -226,8 +226,7 @@ void main() {
         // its only gluten row and could resolve FREE. Note "Mjöl:" was NOT a
         // regression: before the carve-out it was already dropped here, by
         // isValidIngredient's orphan-fragment rule (5 chars, single token, no
-        // digit). The 6-character "Mjölk:" is the row that rides through with
-        // its colon; that asymmetry is the decided BUT-1714 call.
+        // digit).
         group('a gluten-free collider cannot swallow the rescued row', () {
           const colliders = {
             'Mjöl': '1 msk potatismjöl',
@@ -273,8 +272,27 @@ void main() {
           });
         });
 
-        test('the rescue is gluten-scoped — a dairy word is not routed '
-            'through it', () async {
+        // BUT-2242: these markers reach the block-marker branch rather than
+        // the ingredient-header check, and must open the ingredient side. A
+        // bare row like "mjölk" is what is lost if they open the steps.
+        for (final marker in ['Detta behövs:', 'Det här behöver du:']) {
+          test('"$marker" opens the ingredient list', () async {
+            final flat = await flatIngredients(
+              'Kaka\n'
+              '$marker\n'
+              '2 dl socker\n'
+              '3 ägg\n'
+              'mjölk\n'
+              'Gör så här:\n'
+              'Blanda och grädda i ugnen.',
+            );
+
+            expect(flat, containsAll(['2 dl socker', '3 ägg', 'mjölk']));
+          });
+        }
+
+        test('a lone dairy word with a colon is kept colon-stripped too '
+            '(BUT-2242)', () async {
           final flat = await flatIngredients(
             'Kaka\n'
             'Ingredienser:\n'
@@ -285,15 +303,8 @@ void main() {
             'Blanda och grädda i ugnen.',
           );
 
-          // Measured, not assumed (2026-07-30): on THIS path "Mjölk:" never
-          // reached the heading heuristic at all — `looksLikeIngredient` lists
-          // "mjölk" as an ingredient word, so the line has always ridden
-          // through as a plain row, colon and all. That predates the carve-out
-          // and is untouched by it; the assertion that matters here is that the
-          // gluten rescue did not claim it, and colon-stripping — the rescue's
-          // signature — is exactly what distinguishes the two.
-          expect(flat, isNot(contains('mjölk')));
-          expect(flat, contains('mjölk:'));
+          expect(flat, contains('mjölk'));
+          expect(flat, isNot(contains('mjölk:')));
         });
 
         test('a real component heading is still a heading, not an '
@@ -568,9 +579,7 @@ void main() {
     // Felkartan punkt 2 (2026-10-05): a pasted recipe's rows WITHOUT a
     // quantity ("ägg", "parmesanost", "sojasås") were read as headings and
     // dropped, and every allergen on such a row went with them. These cases
-    // pin the opposite direction: a bare word is a row unless its vocabulary
-    // or its shape (a capitalised word opening a paragraph above quantity
-    // rows) says heading.
+    // pin the opposite direction.
     group('Quantity-less ingredient rows are kept (felkartan punkt 2)', () {
       List<String> ingredientsOf(ImportResult result) =>
           (result.recipe?.ingredients ?? const <String>[])
@@ -655,10 +664,9 @@ void main() {
       );
 
       test(
-        'a capitalised word opening a paragraph above quantity rows is a heading',
+        'a capitalised word opening a paragraph above quantity rows is a row '
+        '(BUT-2242)',
         () async {
-          // With and without an "Ingredienser" marker: under the marker every
-          // valid-looking line is a row unless its shape says heading.
           for (final marker in ['', 'Ingredienser\n']) {
             final text =
                 'Lasagne\n\n'
@@ -671,11 +679,7 @@ void main() {
                 'Gör så här\n'
                 'Varva och grädda.';
             final ings = ingredientsOf(await strategy.import(text));
-            expect(
-              ings,
-              isNot(contains('ostsås')),
-              reason: 'marker: "$marker"',
-            );
+            expect(ings, contains('ostsås'), reason: 'marker: "$marker"');
             expect(ings, contains('50 g smör'));
             expect(ings, contains('6 dl mjölk'));
           }

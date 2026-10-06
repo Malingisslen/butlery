@@ -921,6 +921,24 @@ void main() {
         expect(strategy.receivedLines, ['Mjöl', '2 dl socker']);
       },
     );
+
+    // BUT-2242, Malin 2026-10-06.
+    test(
+      'a lone ingredient word with a colon stays a row, colon stripped',
+      () async {
+        final tier = SiteConfigTier(
+          ingredientStrategy: strategy,
+          preloadedConfig: fullConfig(),
+        );
+        final ctx = urlContextFor(
+          htmlWith(ingredients: ['Mjölk:', '2 dl socker']),
+        );
+
+        await tier.parse(ctx);
+
+        expect(strategy.receivedLines, ['Mjölk', '2 dl socker']);
+      },
+    );
   });
 
   group('tier identity', () {

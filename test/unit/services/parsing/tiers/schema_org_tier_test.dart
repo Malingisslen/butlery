@@ -886,6 +886,42 @@ void main() {
       },
     );
 
+    // BUT-2242, Malin 2026-10-06.
+    test(
+      'a lone ingredient word with a colon stays a row, colon stripped',
+      () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kaka",
+  "recipeIngredient": ["Mjölk:", "2 dl socker"],
+  "recipeInstructions": ["Baka."]
+}
+''');
+        await tier.parse(urlContextFor(html));
+
+        expect(strategy.receivedLines, ['Mjölk', '2 dl socker']);
+      },
+    );
+
+    test('a colon-stripped row under a heading keeps its group', () async {
+      final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kaka",
+  "recipeIngredient": ["Deg:", "Mjölk:", "2 dl socker"],
+  "recipeInstructions": ["Baka."]
+}
+''');
+      final result = await tier.parse(urlContextFor(html));
+
+      expect(strategy.receivedLines, ['Mjölk', '2 dl socker']);
+      expect(result.recipe!.ingredients.value!.map((i) => i.section), [
+        'Deg',
+        'Deg',
+      ]);
+    });
+
     test(
       'a generic block marker entry ("Ingredienser") is dropped and clears '
       'the group',
@@ -1023,6 +1059,24 @@ void main() {
 
         expect(strategy.receivedLines, ['Deg:', '2 dl gradde']);
       });
+
+      // BUT-2242: off means "no grouping", never "lose an allergen".
+      test(
+        'capture off ⇒ "Mjölk:" is still forwarded colon-stripped',
+        () async {
+          final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Sas",
+  "recipeIngredient": ["Mjölk:", "2 dl gradde"],
+  "recipeInstructions": ["Koka."]
+}
+''');
+          await tier.parse(urlContextFor(html));
+
+          expect(strategy.receivedLines, ['Mjölk', '2 dl gradde']);
+        },
+      );
 
       test(
         'capture off ⇒ heading lines pass through as ingredients (today)',

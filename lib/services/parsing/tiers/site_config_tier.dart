@@ -9,7 +9,7 @@ import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
-import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -279,9 +279,13 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     final cleaned = texts
         .map((t) => t.replaceAll(RegExp(r'\s+'), ' ').trim())
         .where((t) => t.isNotEmpty)
-        .where((t) => !RecipeSectionDetector.isGenericBlockMarker(t))
-        .where((t) => RecipeSectionDetector.componentSubHeadingLabel(t) == null)
-        .map((t) => RecipeSectionDetector.bareGlutenIngredientLabel(t) ?? t)
+        .map((t) => (t, LineRoles.of(t)))
+        .where(
+          (e) =>
+              e.$2.kind == LineRoleKind.ingredient ||
+              e.$2.kind == LineRoleKind.undecided,
+        )
+        .map((e) => e.$2.label ?? e.$1)
         .toList();
 
     return _ingredientStrategy.parseLines(

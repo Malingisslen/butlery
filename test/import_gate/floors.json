@@ -11,7 +11,7 @@
     },
     "text": {
       "recall": 0.9675,
-      "headingLeaks": 1,
+      "headingLeaks": 3,
       "titleExact": 29,
       "stepsExact": 11,
       "portionsExact": 0,

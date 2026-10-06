@@ -8,7 +8,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
-import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -255,30 +255,33 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     // The kill switch turns off GROUPING. A block title is not a group and
     // is never an ingredient, so it leaves the list on both sides of it.
     if (!isSectionCaptureEnabled) {
-      final entries = rawLines
-          .where((line) => !RecipeSectionDetector.isGenericBlockMarker(line))
-          .toList();
+      final entries = [
+        for (final line in rawLines)
+          if (LineRoles.of(line) case final role
+              when role.kind != LineRoleKind.blockMarker)
+            role.kind == LineRoleKind.ingredient ? role.label! : line,
+      ];
       return (entries, const <String?>[]);
     }
     final lines = <String>[];
     final sections = <String?>[];
     String? current;
     for (final line in rawLines) {
-      if (RecipeSectionDetector.isGenericBlockMarker(line)) {
-        current = null;
-        continue;
-      }
-      final label = RecipeSectionDetector.componentSubHeadingLabel(line);
-      if (label != null) {
-        current = label;
-      } else {
-        // BUT-1714: a refused bare gluten word re-enters WITHOUT its colon —
-        // lookup strips no punctuation, so "Mjöl:" would query `mjol:` and
-        // leave the row unmatched. Every other line rides through untouched.
-        lines.add(
-          RecipeSectionDetector.bareGlutenIngredientLabel(line) ?? line,
-        );
-        sections.add(current);
+      final role = LineRoles.of(line);
+      switch (role.kind) {
+        case LineRoleKind.blockMarker:
+          current = null;
+        case LineRoleKind.heading:
+          current = role.label;
+        case LineRoleKind.ingredient:
+          // BUT-1714/BUT-2242: the row re-enters WITHOUT its colon — lookup
+          // strips no punctuation, so "Mjöl:" would query `mjol:` and leave
+          // the row unmatched.
+          lines.add(role.label!);
+          sections.add(current);
+        case LineRoleKind.undecided:
+          lines.add(line);
+          sections.add(current);
       }
     }
     return (lines, sections);

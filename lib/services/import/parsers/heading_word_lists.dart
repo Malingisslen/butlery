@@ -43,9 +43,7 @@ class HeadingWordLists {
   ///
   /// Deliberately gluten-only, not all fourteen EU allergens: this is the set
   /// where the "heading" reading is implausible (no Swedish recipe groups its
-  /// components under "Råg:") while the miss is a coeliac-relevant one. Dairy,
-  /// egg and nut words keep the colon-wins contract for now — widening the set
-  /// is a separate, evidenced decision, not a sprint-time reflex.
+  /// components under "Råg:") while the miss is a coeliac-relevant one.
   static const bareGlutenWords = {
     'mjöl',
     'vete',

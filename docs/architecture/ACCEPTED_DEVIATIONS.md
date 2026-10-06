@@ -5476,3 +5476,31 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   "`globalRecipeCache` create keeps the old `rateLimitWrite`, pending BUT-1826." The
   `match /globalRecipeCache/{docId}` block is deleted from `firestore.rules`; `rateLimitWrite`
   stays defined there with no caller.
+
+## BUT-2242 — one line classification for the text and URL paths (2026-10-06)
+
+- **SUPERSEDES the "every other allergen keeps colon-wins" half of BUT-1714 (Malin, 2026-10-06,
+  decision card "Ingrediens").** Retired: "Every other allergen — dairy, egg, soy, nuts — keeps
+  the colon-wins contract." `LineRoles.of` (`lib/services/import/parsers/line_role.dart`) now
+  returns an ingredient, colon stripped, for a colon-terminated ONE-word label that
+  `RecipeSectionDetector.looksLikeIngredient` accepts ("Mjölk:" → "Mjölk"), on the text path,
+  in `SwedishLineClassifier` (both its ingredient and sectionHeader branches), and in the
+  schema.org and site-config tiers. "Soja:" stays a heading because `looksLikeIngredient`
+  refuses "Soja". The gluten carve-out is unchanged.
+  Pinned in `line_classification_conformance_test.dart`.
+- **A capitalised bare word opening a paragraph above a quantity row is an ingredient
+  (Malin, 2026-10-06, decision card "Ingrediens").** `TextImportStrategy` keeps
+  "Parmesanost" above "2 dl grädde" as a row; a real component heading in that shape
+  ("Ostsås", "Köttfärssås") is kept as a row too. The import gate's text corpus counts those
+  two lasagne headings as heading leaks.
+- **D3: a colon-less vocabulary heading ("Till servering") groups the rows below it on the
+  URL path only.** The text path drops the line and does not group. Neither path keeps it as
+  an ingredient. Pinned in the conformance test.
+- **D4: `SwedishLineClassifier` on its own takes a bare first line as the recipe title.** The
+  conformance fixtures therefore never put the tested line first. Pinned in the same test.
+- **D5: a multi-word colon label that `looksLikeIngredient` accepts ("Till kyckling:") is a
+  heading on the URL path and an ingredient, colon kept, on the text path.** The text path's
+  `_ingredientSubHeading` vetoes such a label as a heading. Pinned in the conformance test.
+- **The text path's sub-heading length limit is now the shared one.** `_ingredientSubHeading`
+  defers to `componentSubHeadingLabel` (label ≤ 40 characters, no word cap) instead of its own
+  ≤ 30 characters and ≤ 4 words.
