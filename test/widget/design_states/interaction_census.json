@@ -166,7 +166,7 @@
     },
     {
       "row_id": "CSR::ROLE::combobox::EXPANDED",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "control": "DropdownButtonFormField through the theme, as in the recipe form and settings",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::combobox::EXPANDED (light)",
@@ -176,8 +176,7 @@
           "name": "CSR::ROLE::combobox::EXPANDED (dark)"
         }
       ],
-      "ticket": null,
-      "known_finding": "BUT-2176"
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::link::DEFAULT",

@@ -10,7 +10,10 @@
 /// for DISABLED. Then five checks:
 ///
 /// - semantics: the flag of that state (isFocused, isSelected, isChecked,
-///   isToggled, isExpanded, isEnabled false), or the role for DEFAULT;
+///   isToggled, isExpanded, isEnabled false), or the role for DEFAULT. An
+///   open combobox is the exception: its list is a modal route, which takes
+///   the page and the combobox out of the semantics tree, so the check is
+///   that a menu that names its route is in the tree with a focused item;
 /// - hitbox: at least 48 x 48 dp (tokens.json touchTarget.min);
 /// - visible: the state paints differently from the state it is told apart
 ///   from (DEFAULT, or EXPANDED for COLLAPSED), and among the changed pixels
@@ -455,6 +458,38 @@ bool _semantics(String role, String state, SemanticsData d) {
   };
 }
 
+/// The open list of [combobox] is where a screen reader is: the combobox has
+/// left the tree, and a menu that names its route holds a focused item.
+/// Reading the combobox's own node here would read a detached copy.
+bool _menuAnnounced(WidgetTester tester, SemanticsNode combobox) {
+  bool focusedItem(SemanticsNode n) {
+    final d = n.getSemanticsData();
+    if (d.role == SemanticsRole.menuItem &&
+        d.flagsCollection.isFocused == ui.Tristate.isTrue) {
+      return true;
+    }
+    var found = false;
+    n.visitChildren((c) => !(found = focusedItem(c)));
+    return found;
+  }
+
+  bool menu(SemanticsNode n) {
+    final d = n.getSemanticsData();
+    if (d.role == SemanticsRole.menu &&
+        d.flagsCollection.namesRoute &&
+        focusedItem(n)) {
+      return true;
+    }
+    var found = false;
+    n.visitChildren((c) => !(found = menu(c)));
+    return found;
+  }
+
+  final view = tester.binding.renderViews.single;
+  final root = view.owner!.semanticsOwner!.rootSemanticsNode!;
+  return !combobox.attached && menu(root);
+}
+
 // ─── the run ────────────────────────────────────────────────────────────
 
 Future<void> _pumpHost(
@@ -546,9 +581,12 @@ Future<Set<String>> _run(
       await _pumpHost(tester, c.build(enabled: false), theme, _hostWidth);
   }
 
-  final data = tester.getSemantics(target()).getSemanticsData();
+  final node = tester.getSemantics(target());
   if (!reached) failed.add('reached');
-  if (!_semantics(role, state, data)) failed.add('semantics');
+  final told = role == 'combobox' && state == 'EXPANDED'
+      ? _menuAnnounced(tester, node)
+      : _semantics(role, state, node.getSemanticsData());
+  if (!told) failed.add('semantics');
 
   final box = tester.getSize((c.box ?? c.target)());
   if (box.width < 48 || box.height < 48) failed.add('hitbox');
