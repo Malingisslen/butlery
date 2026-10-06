@@ -902,8 +902,8 @@ void main() {
         final householdRepo = _MockHouseholdRepository();
         final household = Household.create(creatorId: 'test-user-123');
         when(
-          () => householdRepo.getForUser(any()),
-        ).thenAnswer((_) async => [household]);
+          () => householdRepo.getActiveForUser(any()),
+        ).thenAnswer((_) async => household);
         TestServiceLocator.registerSingleton<HouseholdRepository>(
           householdRepo,
         );

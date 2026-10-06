@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Status:** Draft. To be reviewed by legal counsel and published at a stable URL (planned: `butlery.se/privacy` once BUT-680 lands).
-**Last updated:** 2026-09-18
+**Last updated:** 2026-10-06
 **Effective:** TBD upon publication.
 
 ## 1. Who we are
@@ -28,6 +28,10 @@ We do NOT collect: precise geolocation, payment data (no monetization yet), micr
 ## 3. Allergens and dietary preferences
 
 Allergen and dietary preference data may be treated as health-adjacent data under Apple's iOS Privacy Manifest framework (declared as `NSPrivacyCollectedDataTypeHealthAndFitness`). We use this data solely to (a) filter recipes you should avoid and (b) personalize menu suggestions. We do not share allergen data with third parties beyond the processors listed in Section 7.
+
+**Shared allergies within your household (if you have consented):**
+
+If you choose to share your allergy list with your household, its members — including anyone who joins later — can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Allergy information is health data and is therefore processed on the basis of your **explicit consent (Art. 9(2)(a))**. Sharing is off by default, is per person, and can be withdrawn at any time, upon which the list is deleted immediately. The data never leaves your household, is never shared with third parties, and is not part of any public or aggregated figure.
 
 ## 4. Legal basis (GDPR Article 6)
 

@@ -20,6 +20,8 @@ library;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
@@ -406,6 +408,119 @@ void main() {
           .doc('preferences')
           .get();
       expect(s.data()?['allergenPreferences'], isNotNull);
+    });
+
+    group('carries the member\'s own shares in the same write (BUT-2267)', () {
+      HouseholdAllergenShare share({
+        String userId = _alice,
+        bool consent = true,
+      }) => HouseholdAllergenShare(
+        householdId: 'hh-1',
+        userId: userId,
+        trackedAllergens: const {'jordnötter'},
+        trackedDietary: const {},
+        includeUnknownInMenu: true,
+        consentGranted: consent,
+        consentVersion: HouseholdAllergenShare.currentConsentVersion,
+        consentGrantedAt: DateTime.utc(2026, 8, 12),
+        updatedAt: DateTime.utc(2026, 10, 6),
+      );
+      const prefs = UserAllergenPreferences(
+        trackedAllergens: {'jordnötter'},
+        trackedDietary: {},
+      );
+      Future<Map<String, dynamic>?> settingsOf(
+        FakeFirebaseFirestore fs,
+      ) async =>
+          (await fs
+                  .collection('users')
+                  .doc(_alice)
+                  .collection('settings')
+                  .doc('preferences')
+                  .get())
+              .data();
+
+      test('the share is overwritten with the new list', () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore
+            .collection('household_allergen_shares')
+            .doc(share().id)
+            .set({
+              ...share().toFirestore(),
+              'trackedAllergens': ['jordnötter', 'ägg'],
+            });
+
+        await _repo(
+          firestore,
+        ).updateAllergenPreferences(_alice, prefs, sharedCopies: [share()]);
+
+        final stored = await firestore
+            .collection('household_allergen_shares')
+            .doc(share().id)
+            .get();
+        expect(
+          HouseholdAllergenShare.fromMap(
+            stored.id,
+            stored.data()!,
+          ).trackedAllergens,
+          {'jordnötter'},
+        );
+        expect(await settingsOf(firestore), isNotNull);
+      });
+
+      test('a share revoked before the write is not re-created', () async {
+        final firestore = FakeFirebaseFirestore();
+
+        await expectLater(
+          _repo(
+            firestore,
+          ).updateAllergenPreferences(_alice, prefs, sharedCopies: [share()]),
+          throwsA(anything),
+        );
+        final stored = await firestore
+            .collection('household_allergen_shares')
+            .doc(share().id)
+            .get();
+        expect(stored.exists, isFalse);
+      });
+
+      test(
+        'a share about someone else is refused and nothing is written',
+        () async {
+          final firestore = FakeFirebaseFirestore();
+
+          await expectLater(
+            _repo(firestore).updateAllergenPreferences(
+              _alice,
+              prefs,
+              sharedCopies: [share(userId: _bob)],
+            ),
+            throwsA(isA<SecurityViolationException>()),
+          );
+          expect(await settingsOf(firestore), isNull);
+        },
+      );
+
+      test(
+        'a share without consent is refused and nothing is written',
+        () async {
+          final firestore = FakeFirebaseFirestore();
+
+          await expectLater(
+            _repo(firestore).updateAllergenPreferences(
+              _alice,
+              prefs,
+              sharedCopies: [share(consent: false)],
+            ),
+            throwsA(isA<SecurityViolationException>()),
+          );
+          expect(await settingsOf(firestore), isNull);
+          final shares = await firestore
+              .collection('household_allergen_shares')
+              .get();
+          expect(shares.docs, isEmpty);
+        },
+      );
     });
   });
 

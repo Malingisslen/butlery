@@ -6,8 +6,10 @@
 /// getForUser/ensureForUser/isMember resolution helpers.
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
@@ -18,9 +20,17 @@ const _malin = 'user-malin';
 const _johan = 'user-johan';
 const _stranger = 'user-stranger';
 
+class _MockFunctions extends Mock implements FirebaseFunctions {}
+
+class _MockCallable extends Mock implements HttpsCallable {}
+
+class _MockResult extends Mock
+    implements HttpsCallableResult<Map<String, dynamic>> {}
+
 FirebaseHouseholdRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _malin,
+  FirebaseFunctions? functions,
 }) {
   final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
@@ -31,6 +41,7 @@ FirebaseHouseholdRepository _repo(
   return FirebaseHouseholdRepository(
     firestore: firestore,
     authRepository: mockAuth,
+    functions: functions,
   );
 }
 
@@ -319,5 +330,98 @@ void main() {
       expect(await repo.validateDeletePermission(_stranger, hh.id), isFalse);
       expect(await repo.isMember(hh.id, _stranger), isTrue);
     });
+  });
+
+  group('getActiveForUser (BUT-2267)', () {
+    // Johan has his own solo household and has joined Malin's group household.
+    Household solo() => Household(
+      id: 'a-johan-solo',
+      name: Household.defaultName,
+      members: [
+        HouseholdMember(
+          userId: _johan,
+          permission: SharedListPermission.admin,
+          addedAt: DateTime.utc(2025, 1, 1),
+        ),
+      ],
+      createdBy: _johan,
+      createdAt: DateTime.utc(2025, 1, 1),
+      updatedAt: DateTime.utc(2025, 1, 1),
+    );
+    Household joined() => Household(
+      id: 'z-malin-group',
+      name: Household.defaultName,
+      members: [
+        HouseholdMember(
+          userId: _malin,
+          permission: SharedListPermission.admin,
+          addedAt: DateTime.utc(2026, 1, 1),
+        ),
+        HouseholdMember(
+          userId: _johan,
+          permission: SharedListPermission.view,
+          addedAt: DateTime.utc(2026, 1, 1),
+        ),
+      ],
+      createdBy: _malin,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+      sourceGroupId: 'g1',
+      sourceGroupOwnerId: _malin,
+    );
+
+    test('the joined group household wins over the older solo one', () async {
+      final fs = FakeFirebaseFirestore();
+      await _seed(fs, solo());
+      await _seed(fs, joined());
+      final repo = _repo(fs, authedUserId: _johan);
+
+      expect((await repo.getActiveForUser(_johan))!.id, 'z-malin-group');
+      // ensureForUser hands the same one to the family views, and creates
+      // nothing beside it.
+      expect((await repo.ensureForUser(_johan)).id, 'z-malin-group');
+      expect(await repo.getForUser(_johan), hasLength(2));
+    });
+
+    test('no household answers null', () async {
+      final repo = _repo(FakeFirebaseFirestore(), authedUserId: _stranger);
+      expect(await repo.getActiveForUser(_stranger), isNull);
+    });
+  });
+
+  group('joinGroupHousehold', () {
+    test(
+      'calls the callable with the group and returns its household',
+      () async {
+        final functions = _MockFunctions();
+        final callable = _MockCallable();
+        final result = _MockResult();
+        when(
+          () => functions.httpsCallable('joinGroupHousehold'),
+        ).thenReturn(callable);
+        when(
+          () => callable.call<Map<String, dynamic>>(any()),
+        ).thenAnswer((_) async => result);
+        when(() => result.data).thenReturn({'householdId': 'hh-joined'});
+
+        final repo = _repo(
+          FakeFirebaseFirestore(),
+          authedUserId: _johan,
+          functions: functions,
+        );
+        final id = await repo.joinGroupHousehold(
+          ownerId: _malin,
+          groupId: 'g1',
+        );
+
+        expect(id, 'hh-joined');
+        verify(
+          () => callable.call<Map<String, dynamic>>({
+            'ownerId': _malin,
+            'groupId': 'g1',
+          }),
+        ).called(1);
+      },
+    );
   });
 }

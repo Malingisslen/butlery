@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 5, 2026
-**Version:** 1.3.1
+**Last updated:** October 6, 2026
+**Version:** 1.4.0
 
 ---
 
@@ -108,6 +108,10 @@ We use your personal data for the following purposes:
 - Suggest weekly menus and recipe enhancements
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
+
+**Shared allergies within your household (if you have consented):**
+
+If you choose to share your allergy list with your household, its members — including anyone who joins later — can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Allergy information is health data and is therefore processed on the basis of your **explicit consent (Art. 9(2)(a))**. Sharing is off by default, is per person, and can be withdrawn at any time, upon which the list is deleted immediately. The data never leaves your household, is never shared with third parties, and is not part of any public or aggregated figure.
 
 ### 5.3 Community ratings ("Butlery-betyget") — legitimate interest, not consent
 
@@ -337,7 +341,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 5, 2026
+**Last change:** October 6, 2026
 **Version history:** Available upon request
 
 ---

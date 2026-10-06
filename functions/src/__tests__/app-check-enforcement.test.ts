@@ -53,6 +53,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "acceptGroupInvitation", // social/accept-group-invitation.ts — BUT-2265 join a group (enforceAppCheck: true)
   "sendGroupInvitations", // social/send-group-invitations.ts — BUT-2270 invite several to a group (enforceAppCheck: true)
   "findUserByEmail", // social/find-user-by-email.ts — BUT-2264 friend search by exact address (enforceAppCheck: true)
+  "joinGroupHousehold", // family/join-group-household.ts — BUT-2267 join a group's household (enforceAppCheck: true)
   "setProfileSearchability", // social/set-profile-searchability.ts — minor search opt-in (enforceAppCheck: true)
   // BUT-1838: the chat-group membership callables. They replaced
   // `leaveGroupConversation`, which is deleted — its entry went with it, and

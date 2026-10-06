@@ -18,6 +18,7 @@ import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_allergen_share_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
+import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
@@ -449,6 +450,57 @@ void main() {
           expect(shares, isEmpty);
         },
       );
+
+      group('the read declines above its cap rather than clip (BUT-2267)', () {
+        const cap =
+            FirebaseHouseholdAllergenShareRepository.maxHouseholdMembers;
+        List<String> roster(int n) => [
+          _malin,
+          for (var i = 1; i < n; i++) 'member-$i',
+        ];
+        Future<void> seedShares(Iterable<String> userIds) async {
+          for (final uid in userIds) {
+            final share = _share(userId: uid);
+            await fs
+                .collection('household_allergen_shares')
+                .doc(share.id)
+                .set(share.toFirestore());
+          }
+        }
+
+        test('a household exactly at the cap is read in full', () async {
+          await _seedHousehold(fs, members: roster(cap));
+          await seedShares(roster(cap));
+
+          final shares = await _repo(fs).getByHousehold(_householdId);
+
+          expect(shares, hasLength(cap));
+        });
+
+        test('one member over the cap throws', () async {
+          await _seedHousehold(fs, members: roster(cap + 1));
+          await seedShares(const [_malin]);
+
+          await expectLater(
+            _repo(fs).getByHousehold(_householdId),
+            throwsA(isA<HouseholdTooLargeForSharesException>()),
+          );
+        });
+
+        test('more share rows than the cap throws, even on a roster within '
+            'it', () async {
+          // Rows left behind by people who have left are what makes this
+          // reachable: a clipped page could drop a CURRENT member's share and
+          // read as "they never shared".
+          await _seedHousehold(fs, members: roster(cap));
+          await seedShares([...roster(cap), 'departed']);
+
+          await expectLater(
+            _repo(fs).getByHousehold(_householdId),
+            throwsA(isA<HouseholdTooLargeForSharesException>()),
+          );
+        });
+      });
     });
 
     test(

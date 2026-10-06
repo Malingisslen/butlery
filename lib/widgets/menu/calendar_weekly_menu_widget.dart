@@ -71,7 +71,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     });
   }
 
-  /// Read-only roster resolution (mirrors the generator's `getForUser` path —
+  /// Read-only roster resolution (mirrors the generator's `getActiveForUser` path —
   /// opening the menu must never CREATE a household). Any failure keeps the
   /// presence UI hidden; presence is an optional layer, never a blocker.
   Future<void> _loadRoster() async {
@@ -81,9 +81,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
       final uid = permission?.currentUserId;
       if (uid == null || householdRepo == null || rosterService == null) return;
-      final households = await householdRepo.getForUser(uid);
-      if (households.isEmpty || !mounted) return;
-      final roster = await rosterService.getRoster(households.first.id);
+      final household = await householdRepo.getActiveForUser(uid);
+      if (household == null || !mounted) return;
+      final roster = await rosterService.getRoster(household.id);
       if (!mounted) return;
       setState(() => _roster = roster);
     } catch (_) {

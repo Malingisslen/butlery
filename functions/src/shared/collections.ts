@@ -49,6 +49,11 @@ export const Collections = {
   // with no uniqueness across accounts, so anything keyed on it must carry the
   // owner too.
   friendCategories: "friend_categories",
+  // BUT-2267: the shared household and its members' allergen shares. The Dart
+  // spellings are `FirestoreCollections.households` and
+  // `FirestoreCollections.householdAllergenShares`.
+  households: "households",
+  householdAllergenShares: "household_allergen_shares",
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",

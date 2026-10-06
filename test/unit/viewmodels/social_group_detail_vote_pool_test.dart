@@ -92,17 +92,15 @@ void main() {
       final household = _MockHouseholdService();
       when(() => household.hasHousehold).thenReturn(false);
       final householdRepo = _MockHouseholdRepository();
-      when(() => householdRepo.getForUser(_self)).thenAnswer(
-        (_) async => [
-          Household(
-            id: 'hh1',
-            name: Household.defaultName,
-            members: const [],
-            createdBy: _self,
-            createdAt: DateTime(2026),
-            updatedAt: DateTime(2026),
-          ),
-        ],
+      when(() => householdRepo.getActiveForUser(_self)).thenAnswer(
+        (_) async => Household(
+          id: 'hh1',
+          name: Household.defaultName,
+          members: const [],
+          createdBy: _self,
+          createdAt: DateTime(2026),
+          updatedAt: DateTime(2026),
+        ),
       );
       final dinerRepo = _MockDinerProfileRepository();
       when(() => dinerRepo.getByHousehold('hh1')).thenAnswer(

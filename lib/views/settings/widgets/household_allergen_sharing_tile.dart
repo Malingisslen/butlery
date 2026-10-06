@@ -86,11 +86,22 @@ class _HouseholdAllergenSharingTileState
       final userId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
       if (households == null || shares == null || userId == null) return;
 
-      final mine = await households.getForUser(userId);
-      if (mine.isEmpty) return; // no household → the row stays hidden
-      final household = mine.first;
+      // The same household the menu reads shares from (BUT-2267).
+      final household = await households.getActiveForUser(userId);
+      if (household == null) return; // no household → the row stays hidden
       final householdId = household.id;
-      final own = await shares.getOwn(householdId);
+      HouseholdAllergenShare? own;
+      var corrupt = false;
+      try {
+        own = await shares.getOwn(householdId);
+      } on FormatException catch (e) {
+        // A row of their own whose body disagrees with its path. `getOwn`
+        // refuses it, rightly, but hiding the row would leave this member no
+        // way to withdraw it (DPIA R7, seventh gate). Shown ON: switching it
+        // off revokes by path, which a corrupt row does not stop.
+        AppLogger.warning('Own allergen share is unreadable: $e');
+        corrupt = true;
+      }
 
       // A household DOCUMENT is not somebody to share with. `ensureForUser`
       // creates a solo `households/{id}` the first time anyone opens Min
@@ -102,8 +113,8 @@ class _HouseholdAllergenSharingTileState
       // whose consent record is unusable comes back null; the replace branch
       // on grant handles that one, and a solo member can no longer reach it,
       // because the row is hidden for them.) This row is the only
-      // revoke path that exists — `shares.revoke` has no other caller and no
-      // Cloud Function does it — so hiding it from someone who HAS shared
+      // revoke path that exists — `shares.revoke` has no other caller — so
+      // hiding it from someone who HAS shared
       // would make taking a consent back impossible, which is precisely what
       // Art. 7(3) forbids and what this file's header promises. A roster can
       // shrink under a live share: the account-deletion cascade removes a
@@ -112,11 +123,15 @@ class _HouseholdAllergenSharingTileState
       // `toSet()` because a duplicated self row would otherwise re-open the
       // offer; the sibling FriendCategory roster has needed that dedupe
       // (BUT-1663).
-      if (own == null && household.memberUserIds.toSet().length < 2) return;
+      if (own == null &&
+          !corrupt &&
+          household.memberUserIds.toSet().length < 2) {
+        return;
+      }
       if (!mounted) return;
       setState(() {
         _householdId = householdId;
-        _isSharing = own != null;
+        _isSharing = own != null || corrupt;
       });
     } catch (e) {
       // Leaving the row hidden is the honest outcome: we cannot say whether

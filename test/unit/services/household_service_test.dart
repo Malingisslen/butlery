@@ -148,7 +148,14 @@ void main() {
   /// never look like "nobody shared".
   late _MockHouseholdRepository lastHouseholdRepository;
 
-  void useShares(List<HouseholdAllergenShare>? shares, {bool enabled = true}) {
+  void useShares(
+    List<HouseholdAllergenShare>? shares, {
+    bool enabled = true,
+    Household? household,
+    Object? shareError,
+    List<Household> ownHouseholds = const [],
+    Object? ownHouseholdsError,
+  }) {
     final householdRepository = _MockHouseholdRepository();
     final shareRepository = _MockShareRepository();
     lastHouseholdRepository = householdRepository;
@@ -179,19 +186,24 @@ void main() {
     when(() => permissions.currentUserId).thenReturn('owner');
     TestServiceLocator.registerSingleton<PermissionService>(permissions);
 
-    when(() => householdRepository.getForUser('owner')).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh-doc',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: 'owner',
-          createdAt: DateTime.utc(2026, 1, 1),
-          updatedAt: DateTime.utc(2026, 1, 1),
-        ),
-      ],
+    when(() => householdRepository.getActiveForUser('owner')).thenAnswer(
+      (_) async =>
+          household ??
+          Household(
+            id: 'hh-doc',
+            name: Household.defaultName,
+            members: const [],
+            createdBy: 'owner',
+            createdAt: DateTime.utc(2026, 1, 1),
+            updatedAt: DateTime.utc(2026, 1, 1),
+          ),
     );
+    when(() => householdRepository.getForUser('owner')).thenAnswer((_) async {
+      if (ownHouseholdsError != null) throw ownHouseholdsError;
+      return [?household, ...ownHouseholds];
+    });
     when(() => shareRepository.getByHousehold('hh-doc')).thenAnswer((_) async {
+      if (shareError != null) throw shareError;
       if (shares == null) {
         throw StateError('the household roster could not be read');
       }
@@ -232,7 +244,7 @@ void main() {
   setUp(() => useShares(const []));
 
   group('a member who shared their own list (BUT-1693)', () {
-    test('the feature ships OFF by default', () {
+    test('the feature ships ON by default (BUT-2267)', () {
       // Asked of the REAL service with a remote config that has no value for
       // it, which is what a device sees before any rollout — so this pins the
       // shipped default, not a stub.
@@ -247,7 +259,7 @@ void main() {
         FeatureFlagService(remoteConfig: remoteConfig).isEnabled(
           FeatureFlags.enableHouseholdAllergenSharing,
         ),
-        isFalse,
+        isTrue,
       );
     });
 
@@ -276,7 +288,7 @@ void main() {
         );
         // The half of "nothing is read" that the preferences cannot show: no
         // query on a user-visible path.
-        verifyNever(() => lastHouseholdRepository.getForUser(any()));
+        verifyNever(() => lastHouseholdRepository.getActiveForUser(any()));
       },
     );
 
@@ -891,5 +903,204 @@ void main() {
       expect(widened.trackedDietary, {'vegansk'});
       expect(widened.includeUnknownInMenu, isFalse);
     });
+  });
+
+  group('the joined household (BUT-2267)', () {
+    Household linked({
+      required String createdBy,
+      required String groupId,
+      List<String> members = const ['owner'],
+    }) => Household(
+      id: 'hh-doc',
+      name: Household.defaultName,
+      members: [
+        for (final uid in members)
+          HouseholdMember(
+            userId: uid,
+            permission: SharedListPermission.view,
+            addedAt: DateTime.utc(2026, 1, 1),
+          ),
+      ],
+      createdBy: createdBy,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+      sourceGroupId: groupId,
+      sourceGroupOwnerId: createdBy,
+    );
+
+    test('a household too large for the share read gets the floor and is '
+        'degraded, never read as "nobody shared"', () async {
+      stubSelf();
+      stubOtherMember('partner');
+      stubOtherMember('kid');
+      useShares(
+        const [],
+        shareError: const HouseholdTooLargeForSharesException('too large'),
+      );
+
+      final aggregate = await service.aggregateAllergenPreferences();
+
+      expect(aggregate.isRosterComplete, isFalse);
+      expect(
+        aggregate.preferences.trackedAllergens,
+        containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+      );
+    });
+
+    test('the roster includes the group the household is linked to, not only '
+        'the first household-marked group', () async {
+      when(() => categoriesOps.categoriesList).thenReturn([
+        FriendCategory(
+          id: 'first',
+          ownerId: 'owner',
+          name: 'Första',
+          friendUserIds: ['partner'],
+          isHousehold: true,
+        ),
+        FriendCategory(
+          id: 'linked',
+          ownerId: 'owner',
+          name: 'Fredagsmiddag',
+          friendUserIds: ['joiner', 'pending'],
+          isHousehold: true,
+        ),
+      ]);
+      stubSelf();
+      stubOtherMember('joiner');
+      stubOtherMember('pending');
+      stubOtherMember('partner');
+      useShares(
+        [
+          _share('joiner', allergens: {'jordnötter'}),
+        ],
+        household: linked(
+          createdBy: 'owner',
+          groupId: 'linked',
+          members: const ['owner', 'joiner'],
+        ),
+      );
+
+      final aggregate = await service.aggregateAllergenPreferences();
+
+      // 'pending' is in the group but has not joined: still on the roster,
+      // so still on the floor, exactly as before sharing existed.
+      expect(aggregate.preferences.trackedAllergens, contains('jordnötter'));
+      expect(
+        aggregate.preferences.trackedAllergens,
+        containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+      );
+      verify(() => userService.lookupUserProfile('pending')).called(1);
+      verify(() => userService.lookupUserProfile('partner')).called(1);
+    });
+
+    test(
+      'a member who joined someone else\'s group keeps their own '
+      'household-marked group on the roster',
+      () async {
+        // Anna joined Bertil's household; her own group (partner, kid) is
+        // still who she eats with, and their allergens are not shared into
+        // Bertil's household, so they get the floor.
+        stubSelf();
+        stubOtherMember('host');
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares(
+          [
+            _share('host', allergens: {'sesam'}),
+          ],
+          household: linked(
+            createdBy: 'host',
+            groupId: 'hosts-group',
+            members: const ['host', 'owner'],
+          ),
+        );
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.preferences.trackedAllergens, contains('sesam'));
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+        verify(() => userService.lookupUserProfile('host')).called(1);
+        verify(() => userService.lookupUserProfile('partner')).called(1);
+        verify(() => userService.lookupUserProfile('kid')).called(1);
+      },
+    );
+
+    test(
+      'a member who joined someone else\'s household keeps the roster of the '
+      'household they created',
+      () async {
+        when(() => categoriesOps.categoriesList).thenReturn([]);
+        stubSelf();
+        stubOtherMember('host');
+        stubOtherMember('spouse');
+        useShares(
+          [
+            _share('host', allergens: {'sesam'}),
+          ],
+          household: linked(
+            createdBy: 'host',
+            groupId: 'hosts-group',
+            members: const ['host', 'owner'],
+          ),
+          ownHouseholds: [
+            Household(
+              id: 'own-hh',
+              name: Household.defaultName,
+              members: [
+                for (final uid in const ['owner', 'spouse'])
+                  HouseholdMember(
+                    userId: uid,
+                    permission: SharedListPermission.admin,
+                    addedAt: DateTime.utc(2026, 1, 1),
+                  ),
+              ],
+              createdBy: 'owner',
+              createdAt: DateTime.utc(2026, 1, 1),
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+        );
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        verify(() => userService.lookupUserProfile('spouse')).called(1);
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+      },
+    );
+
+    test(
+      'a joined household whose member cannot read their own households is '
+      'degraded, never aggregated over the joined roster alone',
+      () async {
+        when(() => categoriesOps.categoriesList).thenReturn([]);
+        stubSelf();
+        stubOtherMember('host');
+        useShares(
+          [
+            _share('host', allergens: {'sesam'}),
+          ],
+          household: linked(
+            createdBy: 'host',
+            groupId: 'hosts-group',
+            members: const ['host', 'owner'],
+          ),
+          ownHouseholdsError: StateError('offline'),
+        );
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.isRosterComplete, isFalse);
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+      },
+    );
   });
 }

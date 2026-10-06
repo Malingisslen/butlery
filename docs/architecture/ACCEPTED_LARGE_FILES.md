@@ -65,7 +65,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_recipe_repository.dart` | 1064 | Recipe CRUD + sync/caching — module-extracted (tag/query/gdpr-export ops) per BUT-536 (was 931, drifted to 1104, now 998) |
 | `base_shared_content_repository.dart` | 818 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 647 | Storage operations — upload, resize, cache |
-| `firebase_user_repository.dart` | 874 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
+| `firebase_user_repository.dart` | 910 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
 | `firebase_ingredient_repository.dart` | 562 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 510 | Explicit facade coordinating three focused sub-repositories |
 | `firebase_data_export_repository.dart` | 1218 | Read-only GDPR export gateway — funnels residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. +94 from BUT-1774/1775/1798 (shared_content legs repointed, and the shopping-list leg that had never been exported at all). +69 from BUT-1832 (the per-poll vote probe, its read budget and its failure logging). +26 from BUT-1957 (the `users/{uid}/notifications` export leg). +72 from BUT-1992 (three `users/{uid}` export legs the deletion cascade already erased, and the settings read widened from one document to its collection). Row refreshed 2026-09-16 (BUT-1693 added the household-allergen-share export leg). |
@@ -97,7 +97,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
-| `user_service.dart` | 1083 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
+| `user_service.dart` | 1098 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1251 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 687 | Add/remove/block friends operations |

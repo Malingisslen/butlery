@@ -3387,6 +3387,38 @@
   "indicatorBackOnline": "Back online",
   "householdToggle": "Mark as household",
   "householdToggleDescription": "Household allergens are combined for menu planning",
+  "householdJoinTitle": "Join the household",
+  "@householdJoinTitle": {
+    "description": "BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet"
+  },
+  "householdJoinSubtitle": "Then you can choose to share your allergies, so the menu accounts for them.",
+  "@householdJoinSubtitle": {
+    "description": "BUT-2267: under householdJoinTitle; joining shares nothing by itself"
+  },
+  "householdJoinAction": "Join",
+  "@householdJoinAction": {
+    "description": "BUT-2267: button that joins the household (opens a confirm dialog first)"
+  },
+  "householdJoinConfirmBody": "You become a member of the household. Your allergies are not shared until you choose to in Settings. You leave the household by leaving the group.",
+  "@householdJoinConfirmBody": {
+    "description": "BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave"
+  },
+  "householdJoinFailed": "Could not join the household just now. Please try again.",
+  "@householdJoinFailed": {
+    "description": "BUT-2267: joining the household failed"
+  },
+  "householdJoinedTitle": "You are in the household",
+  "@householdJoinedTitle": {
+    "description": "BUT-2267: group page, after joining the household"
+  },
+  "householdJoinedSubtitle": "Share your allergies in Settings, so the menu accounts for them.",
+  "@householdJoinedSubtitle": {
+    "description": "BUT-2267: under householdJoinedTitle; points to the sharing setting"
+  },
+  "householdOpenSettings": "Settings",
+  "@householdOpenSettings": {
+    "description": "BUT-2267: opens Settings, where the allergy-sharing switch is"
+  },
   "menuVoteTitle": "Vote on recipe",
   "menuVoteSuggestAlternative": "Suggest alternative",
   "menuVoteResolved": "Vote resolved",

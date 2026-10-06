@@ -110,6 +110,24 @@ function validHouseholdBody(
   };
 }
 
+// What a client may create since BUT-2267: the creator alone, as admin, with
+// no group link. Every create test below differs from this in ONE field.
+function soloHouseholdBody(
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    name: "Vårt hushåll",
+    members: [{ userId: ADMIN_MEMBER, permission: "admin", addedAt: new Date() }],
+    memberUserIds: [ADMIN_MEMBER],
+    memberPermissions: { [ADMIN_MEMBER]: "admin" },
+    createdBy: ADMIN_MEMBER,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    schemaVersion: 1,
+    ...extra,
+  };
+}
+
 // Minimal valid diner profile (adult => no consent required).
 function validDinerBody(
   extra: Record<string, unknown> = {}
@@ -202,14 +220,51 @@ test("households: unauthenticated user cannot read the household", async () => {
 
 // --- create ---
 
-// H4: creator seeds themselves as admin, projections consistent => allowed.
+// H4: creator seeds themselves alone as admin, projections consistent => allowed.
 test("households: creator can create a consistent admin-seeded household", async () => {
   const ctx = env.authenticatedContext(ADMIN_MEMBER);
   await assertSucceeds(
     ctx
       .firestore()
       .doc(`households/h-create-ok-${RUN}`)
-      .set(validHouseholdBody())
+      .set(soloHouseholdBody())
+  );
+});
+
+// BUT-2267: a client cannot seat anyone else at create.
+test("households: create that seats a second member is denied", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/h-create-two-${RUN}`)
+      .set(
+        soloHouseholdBody({
+          members: [
+            { userId: ADMIN_MEMBER, permission: "admin", addedAt: new Date() },
+            { userId: STRANGER, permission: "view", addedAt: new Date() },
+          ],
+          memberUserIds: [ADMIN_MEMBER, STRANGER],
+          memberPermissions: { [ADMIN_MEMBER]: "admin", [STRANGER]: "view" },
+        })
+      )
+  );
+});
+
+// BUT-2267: the group link is server-written.
+test("households: create carrying a group link is denied", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/h-create-link-${RUN}`)
+      .set(soloHouseholdBody({ sourceGroupId: "g1" }))
+  );
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/h-create-link2-${RUN}`)
+      .set(soloHouseholdBody({ sourceGroupOwnerId: ADMIN_MEMBER }))
   );
 });
 
@@ -220,7 +275,7 @@ test("households: create with createdBy != auth.uid is denied", async () => {
     ctx
       .firestore()
       .doc(`households/h-create-otherowner-${RUN}`)
-      .set(validHouseholdBody({ createdBy: EDITOR }))
+      .set(soloHouseholdBody({ createdBy: EDITOR }))
   );
 });
 
@@ -232,12 +287,8 @@ test("households: create where creator is not admin is denied", async () => {
       .firestore()
       .doc(`households/h-create-notadmin-${RUN}`)
       .set(
-        validHouseholdBody({
-          memberPermissions: {
-            [ADMIN_MEMBER]: "edit",
-            [EDITOR]: "edit",
-            [VIEWER]: "view",
-          },
+        soloHouseholdBody({
+          memberPermissions: { [ADMIN_MEMBER]: "edit" },
         })
       )
   );
@@ -252,7 +303,7 @@ test("households: create where creator is absent from memberUserIds is denied", 
       .doc(`households/h-create-absent-${RUN}`)
       // createdBy=STRANGER but STRANGER is not in the member set/perms.
       .set(
-        validHouseholdBody({
+        soloHouseholdBody({
           createdBy: STRANGER,
         })
       )
@@ -266,10 +317,10 @@ test("households: create with inconsistent memberUserIds vs memberPermissions is
     ctx
       .firestore()
       .doc(`households/h-create-inconsistent-${RUN}`)
-      // memberUserIds has an extra uid not present in memberPermissions.keys().
+      // memberPermissions has a key memberUserIds does not.
       .set(
-        validHouseholdBody({
-          memberUserIds: [ADMIN_MEMBER, EDITOR, VIEWER, STRANGER],
+        soloHouseholdBody({
+          memberPermissions: { [ADMIN_MEMBER]: "admin", [STRANGER]: "view" },
         })
       )
   );
@@ -278,7 +329,7 @@ test("households: create with inconsistent memberUserIds vs memberPermissions is
 // H9: missing a required field (name) => denied (hasRequiredFields).
 test("households: create missing a required field is denied", async () => {
   const ctx = env.authenticatedContext(ADMIN_MEMBER);
-  const body = validHouseholdBody();
+  const body = soloHouseholdBody();
   delete (body as Record<string, unknown>).name;
   await assertFails(
     ctx.firestore().doc(`households/h-create-noname-${RUN}`).set(body)
@@ -353,19 +404,139 @@ test("households: admin cannot modify createdAt", async () => {
   );
 });
 
+// BUT-2267: membership and the group link are server-written. Each differs
+// from the allowed rename above in the one field it writes.
+test("households: admin cannot add a member", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({
+        memberUserIds: [ADMIN_MEMBER, EDITOR, VIEWER, STRANGER],
+        [`memberPermissions.${STRANGER}`]: "view",
+      })
+  );
+});
+
+test("households: admin cannot change memberUserIds alone", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({ memberUserIds: [ADMIN_MEMBER, EDITOR, VIEWER, STRANGER] })
+  );
+});
+
+test("households: admin cannot remove a member", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({
+        memberUserIds: [ADMIN_MEMBER, EDITOR],
+        memberPermissions: { [ADMIN_MEMBER]: "admin", [EDITOR]: "edit" },
+      })
+  );
+});
+
+test("households: admin cannot change a member's permission", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({ [`memberPermissions.${VIEWER}`]: "admin" })
+  );
+});
+
+test("households: admin cannot rewrite the members list", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({ members: [] })
+  );
+});
+
+test("households: admin cannot set the group link", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({ sourceGroupId: "g1" })
+  );
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`households/${HOUSEHOLD_ID}`)
+      .update({ sourceGroupOwnerId: ADMIN_MEMBER })
+  );
+});
+
 // --- delete ---
 
-// H16: admin member can delete the household.
-test("households: admin member can delete the household", async () => {
+// H16: the admin who is its only member can delete the household.
+test("households: sole admin member can delete the household", async () => {
   await env.withSecurityRulesDisabled(async (admin) => {
     await admin
       .firestore()
       .doc(`households/h-del-${RUN}`)
-      .set(validHouseholdBody());
+      .set(soloHouseholdBody());
   });
   const ctx = env.authenticatedContext(ADMIN_MEMBER);
   await assertSucceeds(
     ctx.firestore().doc(`households/h-del-${RUN}`).delete()
+  );
+});
+
+// H16b: an admin cannot delete a household someone has joined (BUT-2267).
+test("households: admin cannot delete a household with a joined member", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`households/h-del-joined-${RUN}`)
+      .set(
+        soloHouseholdBody({
+          members: [
+            { userId: ADMIN_MEMBER, permission: "admin", addedAt: new Date() },
+            { userId: VIEWER, permission: "view", addedAt: new Date() },
+          ],
+          memberUserIds: [ADMIN_MEMBER, VIEWER],
+          memberPermissions: { [ADMIN_MEMBER]: "admin", [VIEWER]: "view" },
+          sourceGroupId: "g-del",
+          sourceGroupOwnerId: ADMIN_MEMBER,
+        })
+      );
+  });
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx.firestore().doc(`households/h-del-joined-${RUN}`).delete()
+  );
+});
+
+// H16c: a lone member without admin cannot delete the household.
+test("households: lone non-admin member cannot delete the household", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`households/h-del-lone-${RUN}`)
+      .set(
+        soloHouseholdBody({
+          members: [
+            { userId: ADMIN_MEMBER, permission: "view", addedAt: new Date() },
+          ],
+          memberPermissions: { [ADMIN_MEMBER]: "view" },
+        })
+      );
+  });
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx.firestore().doc(`households/h-del-lone-${RUN}`).delete()
   );
 });
 

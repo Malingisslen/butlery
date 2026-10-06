@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -735,18 +737,39 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   @override
   Future<void> updateAllergenPreferences(
     String userId,
-    UserAllergenPreferences preferences,
-  ) async {
+    UserAllergenPreferences preferences, {
+    List<HouseholdAllergenShare> sharedCopies = const [],
+  }) async {
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
       currentUserId: currentUser,
       targetUserId: userId,
       operation: 'update allergen preferences',
     );
+    for (final share in sharedCopies) {
+      // The share repository's own write guard, repeated because this write
+      // does not go through it: only a consented statement about oneself.
+      if (share.userId != currentUser || !share.isValidConsent) {
+        throw SecurityViolationException(
+          'An allergen share may only be updated by its member, under consent',
+          details: 'share=${share.id}',
+        );
+      }
+    }
 
-    await _settingsDoc(userId).set({
+    final batch = firestore.batch();
+    batch.set(_settingsDoc(userId), {
       'allergenPreferences': preferences.toFirestore(),
     }, SetOptions(merge: true));
+    for (final share in sharedCopies) {
+      batch.update(
+        firestore
+            .collection(FirestoreCollections.householdAllergenShares)
+            .doc(share.id),
+        share.toFirestore(),
+      );
+    }
+    await batch.commit();
 
     logPermissionCheck(
       userId: currentUser,
