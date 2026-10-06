@@ -186,6 +186,21 @@ void main() {
       },
     );
 
+    // R8-11 = A: every underlined link on the sign-in screen, the two in the
+    // consent text and the two in the footer, is text.link (#8A5212 light).
+    testWidgets('every underlined link is text.link', (tester) async {
+      await pumpRegisterMode(tester);
+      final links = tester
+          .widgetList<Text>(find.byType(Text))
+          .where((t) => t.style?.decoration == TextDecoration.underline)
+          .toList();
+      expect(links, hasLength(4));
+      for (final link in links) {
+        expect(link.style?.color, const Color(0xFF8A5212));
+        expect(link.style?.decorationColor, const Color(0xFF8A5212));
+      }
+    });
+
     testWidgets('inline links expose a named link role to screen readers', (
       tester,
     ) async {

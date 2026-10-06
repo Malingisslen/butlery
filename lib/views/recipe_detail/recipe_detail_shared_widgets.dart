@@ -15,6 +15,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -88,8 +89,9 @@ abstract final class RecipeDetailSharedWidgets {
               Flexible(
                 child: Text(
                   context.l10n.recipeSourceFrom(Uri.tryParse(url)?.host ?? url),
+                  // text.link (R8-11 = A).
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurfaceVariant,
+                    color: context.modeColors.textLink,
                     decoration: TextDecoration.underline,
                   ),
                 ),

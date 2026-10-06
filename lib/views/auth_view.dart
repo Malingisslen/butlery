@@ -633,10 +633,11 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
+  // text.link (R8-11 = A).
   TextStyle _termsLinkStyle(ColorScheme cs) => AppTextStyles.bodySmall.copyWith(
-    color: cs.onPrimaryContainer,
+    color: context.modeColors.textLink,
     decoration: TextDecoration.underline,
-    decorationColor: cs.onPrimaryContainer,
+    decorationColor: context.modeColors.textLink,
   );
 
   void _navigateToTerms() =>
@@ -666,9 +667,9 @@ class _AuthViewState extends State<AuthView> {
                   child: Text(
                     context.l10n.authTermsOfService,
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: cs.onPrimaryContainer,
+                      color: context.modeColors.textLink,
                       decoration: TextDecoration.underline,
-                      decorationColor: cs.onPrimaryContainer,
+                      decorationColor: context.modeColors.textLink,
                     ),
                   ),
                 ),
@@ -691,9 +692,9 @@ class _AuthViewState extends State<AuthView> {
                   child: Text(
                     context.l10n.profilePrivacyPolicy,
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: cs.onPrimaryContainer,
+                      color: context.modeColors.textLink,
                       decoration: TextDecoration.underline,
-                      decorationColor: cs.onPrimaryContainer,
+                      decorationColor: context.modeColors.textLink,
                     ),
                   ),
                 ),
