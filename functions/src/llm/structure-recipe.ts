@@ -23,6 +23,7 @@ import {
 import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
+import { withCostLedger } from "../middleware/llm_cost_ledger";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
 import { captureLlmSample, domainFromUrl } from "./llm-sample-capture";
@@ -85,10 +86,10 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     cors: ["https://butlery.app", "https://www.butlery.app"],
     enforceAppCheck: true,
   },
-  withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
+  withCostLedger(withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
     // Authentication is handled by withRateLimit middleware
     return runStructureRecipe(request.data, hashUid(request.auth!.uid));
-  })
+  }))
 );
 
 /**

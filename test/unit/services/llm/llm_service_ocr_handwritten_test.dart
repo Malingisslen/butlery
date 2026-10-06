@@ -31,10 +31,7 @@ class _FakeRateLimiter extends Fake implements ImportRateLimiter {
       );
 
   @override
-  Future<void> recordUsage(
-    ImportOperation operation, {
-    double? llmCost,
-  }) async {}
+  Future<void> recordUsage(ImportOperation operation) async {}
 }
 
 class _FakeConsentService extends Fake implements ConsentService {

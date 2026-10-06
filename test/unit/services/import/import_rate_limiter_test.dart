@@ -3,12 +3,13 @@
 /// - Per-minute / per-hour / per-day basic import limits (inclusive boundary).
 /// - LLM-type quotas (enhancement/extraction/vision share day-window; they
 ///   reset together).
-/// - Daily and monthly USD cost caps.
+/// - Daily and monthly USD cost ceilings, read from the server-written ledger
+///   `rate_limits/llm_cost` (BUT-2243).
 /// - Fail-closed behaviour when Firestore throws.
 /// - Anonymous (unauthenticated) callers are allowed but not tracked.
 /// - Time-window reset semantics — counters drop to 1 at exactly windowSize
 ///   elapsed, persist below it.
-/// - Cache invalidation after `recordUsage`.
+/// - Cache invalidation after `recordUsage`, and a cache keyed to the user.
 /// - Cold start: a fresh user with no persisted state allows the full quota.
 /// - `getUsageStats` returns persisted state; `isLlmAvailable` reflects daily
 ///   LLM cap.
@@ -18,6 +19,8 @@
 /// because `runTransaction` works there for plain set/get without
 /// `FieldValue.increment` or `serverTimestamp`.
 library;
+
+import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -41,6 +44,13 @@ const _uid = 'user-rate-limit-1';
 // is local).
 final _t0 = DateTime(2026, 5, 24, 12, 0, 0);
 
+// The cost ceilings are UTC calendar windows, so their tests run on a UTC
+// clock and seed the ledger with literal keys for this instant. 18:00 UTC on
+// 24 May: six hours to the day's reset, seven days and six hours to June's.
+final _tUtc = DateTime.utc(2026, 5, 24, 18);
+const _today = '2026-05-24';
+const _thisMonth = '2026-05';
+
 /// Build a [UsageLimits] doc into Firestore at /users/{uid}/rate_limits/imports.
 Future<void> _seedUsage(
   FakeFirebaseFirestore firestore,
@@ -53,6 +63,29 @@ Future<void> _seedUsage(
       .collection('rate_limits')
       .doc('imports')
       .set(usage.toFirestore());
+}
+
+/// Write the server's AI cost ledger at /users/{uid}/rate_limits/llm_cost, the
+/// shape `functions/src/middleware/llm_cost_ledger.ts` writes.
+Future<void> _seedLedger(
+  FirebaseFirestore firestore,
+  String uid, {
+  required double costToday,
+  required String dayKey,
+  required double costThisMonth,
+  required String monthKey,
+}) async {
+  await firestore
+      .collection('users')
+      .doc(uid)
+      .collection('rate_limits')
+      .doc('llm_cost')
+      .set({
+        'costToday': costToday,
+        'dayKey': dayKey,
+        'costThisMonth': costThisMonth,
+        'monthKey': monthKey,
+      });
 }
 
 /// Read back the persisted usage doc (or empty if absent).
@@ -148,7 +181,6 @@ void main() {
 
         expect(stats.importsThisMinute, 0);
         expect(stats.importsToday, 0);
-        expect(stats.llmCostToday, 0.0);
       });
     });
 
@@ -186,7 +218,6 @@ void main() {
           expect(usage.minuteWindowStart, _t0);
           expect(usage.hourWindowStart, _t0);
           expect(usage.dayWindowStart, _t0);
-          expect(usage.monthWindowStart, _t0);
         },
       );
     });
@@ -511,13 +542,20 @@ void main() {
             llmEnhancementsToday: 20,
             llmExtractionsToday: 10,
             llmVisionToday: 10,
-            llmCostToday: 100.0, // way over $0.50 cap
-            dayWindowStart: _t0,
+            dayWindowStart: _tUtc,
           ),
+        );
+        await _seedLedger(
+          firestore,
+          _uid,
+          costToday: 100.0, // way over the $0.50 ceiling
+          dayKey: _today,
+          costThisMonth: 100.0,
+          monthKey: _thisMonth,
         );
 
         final result = await withClock(
-          Clock.fixed(_t0.add(const Duration(hours: 1))),
+          Clock.fixed(_tUtc.add(const Duration(hours: 1))),
           () => limiter.checkLimit(ImportOperation.basic('url')),
         );
 
@@ -533,25 +571,24 @@ void main() {
       /// `requiresLlm` operation with a `null` llmType still runs cost gating.
       /// (This guards against the `case null: break;` swallowing the cost branch.)
       test('LLM op with null type still enforces daily cost cap', () async {
-        await _seedUsage(
+        await _seedUsage(firestore, _uid, UsageLimits(dayWindowStart: _tUtc));
+        await _seedLedger(
           firestore,
           _uid,
-          UsageLimits(
-            llmCostToday: 0.49, // 1 cent under
-            dayWindowStart: _t0,
-          ),
+          costToday: 0.50,
+          dayKey: _today,
+          costThisMonth: 0.50,
+          monthKey: _thisMonth,
         );
 
-        // Synthetic op: requiresLlm=true, llmType=null, estimatedCost = 0.10.
         const op = ImportOperation(
           requiresLlm: true,
           llmType: null,
           sourceType: 'url',
-          estimatedCost: 0.10, // 0.49 + 0.10 = 0.59 > 0.50
         );
 
         final result = await withClock(
-          Clock.fixed(_t0.add(const Duration(hours: 1))),
+          Clock.fixed(_tUtc),
           () => limiter.checkLimit(op),
         );
 
@@ -560,99 +597,207 @@ void main() {
       });
     });
 
-    group('cost caps', () {
-      /// Daily cost cap is $0.50. Using `>` (not `>=`) — exactly equal is OK,
-      /// strictly greater denies. Pin this so a future `>= ` change can't
-      /// silently shrink the cap.
+    // BUT-2243: the ceilings compare the server's ledger
+    // with the same `>=` and in the same order as the server's
+    // `checkCostCeiling`, and add no estimate for the call about to be made.
+    group('cost ceilings from the server ledger', () {
+      const extraction = ImportOperation(
+        requiresLlm: true,
+        llmType: LlmOperationType.fullExtraction,
+        sourceType: 'url',
+        estimatedCost: 0.03,
+      );
+
+      Future<RateLimitResult> checkAt(DateTime now) =>
+          withClock(Clock.fixed(now), () => limiter.checkLimit(extraction));
+
       test(
-        'daily cost: exact-equal allowed, strictly-greater denied',
+        'today at exactly the daily ceiling denies until UTC midnight',
         () async {
-          // Operation costs $0.03 (fullExtraction).
-          const op = ImportOperation(
-            requiresLlm: true,
-            llmType: LlmOperationType.fullExtraction,
-            sourceType: 'url',
-            estimatedCost: 0.03,
-          );
-
-          // 0.47 + 0.03 = 0.50 → NOT greater than 0.50 → allowed.
-          await _seedUsage(
+          await _seedLedger(
             firestore,
             _uid,
-            UsageLimits(
-              llmCostToday: 0.47,
-              dayWindowStart: _t0,
-            ),
-          );
-          final exact = await withClock(
-            Clock.fixed(_t0.add(const Duration(hours: 1))),
-            () => limiter.checkLimit(op),
-          );
-          expect(
-            exact,
-            isA<RateLimitAllowed>(),
-            reason: 'cost cap uses strict > — exact-equal must be allowed',
+            costToday: 0.50,
+            dayKey: _today,
+            costThisMonth: 0.50,
+            monthKey: _thisMonth,
           );
 
-          // 0.48 + 0.03 = 0.51 → strictly greater → denied.
-          // Use a fresh limiter to drop the 30s in-memory cache.
-          final freshLimiter = ImportRateLimiter(
-            firestoreRepository: firestoreRepo,
-            authRepository: auth,
-          );
-          await _seedUsage(
-            firestore,
-            _uid,
-            UsageLimits(
-              llmCostToday: 0.48,
-              dayWindowStart: _t0,
-            ),
-          );
-          final over = await withClock(
-            Clock.fixed(_t0.add(const Duration(hours: 1))),
-            () => freshLimiter.checkLimit(op),
-          );
-          expect(over, isA<RateLimitDenied>());
-          expect((over as RateLimitDenied).limitType, LimitType.costDaily);
+          final result = await checkAt(_tUtc);
+
+          expect(result, isA<RateLimitDenied>());
+          final denied = result as RateLimitDenied;
+          expect(denied.limitType, LimitType.costDaily);
+          expect(denied.retryAfter, const Duration(hours: 6));
+          expect(denied.suggestedAction, FallbackAction.skipLlm);
         },
       );
 
-      /// Monthly cost cap ($10) is checked independently of daily and must
-      /// deny even with daily cost low.
-      test('monthly cost cap denies when projected total > \$10', () async {
-        await _seedUsage(
+      // 0.4999 + the call's own 0.03 estimate is over the ceiling; the server
+      // lets this call through, so the app must too.
+      test(
+        'just below the daily ceiling allows, with no estimate added',
+        () async {
+          await _seedLedger(
+            firestore,
+            _uid,
+            costToday: 0.4999,
+            dayKey: _today,
+            costThisMonth: 0.4999,
+            monthKey: _thisMonth,
+          );
+
+          expect(await checkAt(_tUtc), isA<RateLimitAllowed>());
+        },
+      );
+
+      test(
+        'the month at exactly its ceiling denies until the next UTC month',
+        () async {
+          await _seedLedger(
+            firestore,
+            _uid,
+            costToday: 0.10,
+            dayKey: _today,
+            costThisMonth: 10.0,
+            monthKey: _thisMonth,
+          );
+
+          final result = await checkAt(_tUtc);
+
+          expect(result, isA<RateLimitDenied>());
+          final denied = result as RateLimitDenied;
+          expect(denied.limitType, LimitType.costMonthly);
+          expect(denied.retryAfter, const Duration(days: 7, hours: 6));
+          expect(denied.suggestedAction, FallbackAction.skipLlm);
+        },
+      );
+
+      test(
+        'just below the monthly ceiling allows, with no estimate added',
+        () async {
+          await _seedLedger(
+            firestore,
+            _uid,
+            costToday: 0.10,
+            dayKey: _today,
+            costThisMonth: 9.9999,
+            monthKey: _thisMonth,
+          );
+
+          expect(await checkAt(_tUtc), isA<RateLimitAllowed>());
+        },
+      );
+
+      // Both ceilings reached: the server answers `llm_cost_month`, so the app
+      // must say "next month", not "tomorrow".
+      test('the month is checked before the day', () async {
+        await _seedLedger(
           firestore,
           _uid,
-          UsageLimits(
-            llmCostToday: 0.10,
-            dayWindowStart: _t0,
-            llmCostThisMonth: 9.98,
-            monthWindowStart: _t0,
+          costToday: 0.50,
+          dayKey: _today,
+          costThisMonth: 10.0,
+          monthKey: _thisMonth,
+        );
+
+        final result = await checkAt(_tUtc);
+
+        expect((result as RateLimitDenied).limitType, LimitType.costMonthly);
+      });
+
+      // The server writes the ledger after a call and nothing rewrites it at
+      // midnight, so yesterday's spend sits there under yesterday's key.
+      test('a ledger whose day key is yesterday does not deny today', () async {
+        await _seedLedger(
+          firestore,
+          _uid,
+          costToday: 5.0,
+          dayKey: '2026-05-23',
+          costThisMonth: 5.0,
+          monthKey: _thisMonth,
+        );
+
+        expect(await checkAt(_tUtc), isA<RateLimitAllowed>());
+      });
+
+      test(
+        'a ledger whose month key is last month does not deny this month',
+        () async {
+          await _seedLedger(
+            firestore,
+            _uid,
+            costToday: 0.10,
+            dayKey: _today,
+            costThisMonth: 50.0,
+            monthKey: '2026-04',
+          );
+
+          expect(await checkAt(_tUtc), isA<RateLimitAllowed>());
+        },
+      );
+
+      // A 30-second cache
+      // like the one on the import counters would let a user keep calling
+      // after the server has already refused.
+      test('the ledger is re-read on every check, not cached', () async {
+        await _seedLedger(
+          firestore,
+          _uid,
+          costToday: 0.10,
+          dayKey: _today,
+          costThisMonth: 0.10,
+          monthKey: _thisMonth,
+        );
+        expect(await checkAt(_tUtc), isA<RateLimitAllowed>());
+
+        await _seedLedger(
+          firestore,
+          _uid,
+          costToday: 0.50,
+          dayKey: _today,
+          costThisMonth: 0.50,
+          monthKey: _thisMonth,
+        );
+        final result = await checkAt(_tUtc.add(const Duration(seconds: 5)));
+
+        expect(result, isA<RateLimitDenied>());
+        expect((result as RateLimitDenied).limitType, LimitType.costDaily);
+      });
+
+      test('an unreadable ledger fails closed', () async {
+        final repo = _LedgerFailingRepository();
+        final failingLimiter = ImportRateLimiter(
+          firestoreRepository: repo,
+          authRepository: auth,
+        );
+        // Positive control, and it fills the import-counter cache, so the
+        // next check's only Firestore access is the ledger read.
+        expect(
+          await withClock(
+            Clock.fixed(_tUtc),
+            () => failingLimiter.checkLimit(extraction),
           ),
+          isA<RateLimitAllowed>(),
         );
 
-        const op = ImportOperation(
-          requiresLlm: true,
-          llmType: LlmOperationType.fullExtraction,
-          sourceType: 'url',
-          estimatedCost: 0.03, // 9.98 + 0.03 = 10.01 → over
-        );
-
+        repo.failFromNow = true;
         final result = await withClock(
-          Clock.fixed(_t0.add(const Duration(hours: 1))),
-          () => limiter.checkLimit(op),
+          Clock.fixed(_tUtc.add(const Duration(seconds: 5))),
+          () => failingLimiter.checkLimit(extraction),
         );
 
         expect(result, isA<RateLimitDenied>());
-        expect((result as RateLimitDenied).limitType, LimitType.costMonthly);
+        final denied = result as RateLimitDenied;
+        expect(denied.retryAfter, const Duration(seconds: 30));
+        expect(denied.suggestedAction, FallbackAction.retryLater);
       });
     });
 
     group('recordUsage counter math', () {
-      /// Recording an LLM op must increment BOTH the type-specific counter
-      /// AND the cost counters, and bump llmOperationsThisMonth.
+      /// Recording an LLM op increments the type-specific counter only.
       test(
-        'records LLM enhancement op: bumps day enhancements + cost + monthly',
+        'records LLM enhancement op into the enhancement counter only',
         () async {
           const op = ImportOperation(
             requiresLlm: true,
@@ -662,16 +807,13 @@ void main() {
           );
 
           await withClock(Clock.fixed(_t0), () async {
-            await limiter.recordUsage(op, llmCost: 0.01);
+            await limiter.recordUsage(op);
           });
 
           final after = await _readUsage(firestore, _uid);
           expect(after.llmEnhancementsToday, 1);
           expect(after.llmExtractionsToday, 0);
           expect(after.llmVisionToday, 0);
-          expect(after.llmCostToday, closeTo(0.01, 1e-9));
-          expect(after.llmCostThisMonth, closeTo(0.01, 1e-9));
-          expect(after.llmOperationsThisMonth, 1);
           expect(
             after.importsThisMinute,
             0,
@@ -688,7 +830,6 @@ void main() {
         await withClock(Clock.fixed(_t0), () async {
           await limiter.recordUsage(
             ImportOperation.withLlm('photo', LlmOperationType.vision),
-            llmCost: 0.04,
           );
         });
 
@@ -698,11 +839,10 @@ void main() {
         expect(after.llmExtractionsToday, 0);
       });
 
-      /// After a day-window roll, ALL daily LLM counters and the daily cost
-      /// reset together — they share `dayWindowStart`. A bug that forgot to
-      /// reset, say, `llmCostToday` would surface here.
+      /// After a day-window roll, ALL daily LLM counters reset together —
+      /// they share `dayWindowStart`.
       test(
-        'day rollover resets all LLM-per-day counters and llmCostToday',
+        'day rollover resets all LLM-per-day counters',
         () async {
           await _seedUsage(
             firestore,
@@ -711,19 +851,15 @@ void main() {
               llmEnhancementsToday: 20,
               llmExtractionsToday: 10,
               llmVisionToday: 10,
-              llmCostToday: 0.49,
               dayWindowStart: _t0,
-              llmCostThisMonth: 5.00,
-              monthWindowStart: _t0,
             ),
           );
 
-          // 25 hours later — day expired (>=24h), month still open.
+          // 25 hours later — day expired (>=24h).
           final later = _t0.add(const Duration(hours: 25));
           await withClock(Clock.fixed(later), () async {
             await limiter.recordUsage(
               ImportOperation.withLlm('url', LlmOperationType.enhancement),
-              llmCost: 0.01,
             );
           });
 
@@ -736,34 +872,20 @@ void main() {
           );
           expect(after.llmExtractionsToday, 0);
           expect(after.llmVisionToday, 0);
-          expect(
-            after.llmCostToday,
-            closeTo(0.01, 1e-9),
-            reason: 'reset to 0 then incremented by 0.01',
-          );
-
-          // Month carries on.
-          expect(after.monthWindowStart, _t0);
-          expect(after.llmCostThisMonth, closeTo(5.01, 1e-9));
         },
       );
 
-      /// recordUsage of a basic op must NOT bump any LLM counters and must
-      /// NOT bump cost. This guards against an `if (operation.requiresLlm)`
-      /// flip in `_updateUsage`.
+      /// recordUsage of a basic op must NOT bump any LLM counters. This
+      /// guards against an `if (operation.requiresLlm)` flip in `_updateUsage`.
       test(
-        'basic op recordUsage leaves LLM counters and cost untouched',
+        'basic op recordUsage leaves LLM counters untouched',
         () async {
           await _seedUsage(
             firestore,
             _uid,
             UsageLimits(
               llmEnhancementsToday: 3,
-              llmCostToday: 0.10,
-              llmCostThisMonth: 2.50,
-              llmOperationsThisMonth: 7,
               dayWindowStart: _t0,
-              monthWindowStart: _t0,
             ),
           );
 
@@ -780,16 +902,52 @@ void main() {
             3,
             reason: 'basic op must not touch enhancement counter',
           );
-          expect(after.llmCostToday, closeTo(0.10, 1e-9));
-          expect(after.llmCostThisMonth, closeTo(2.50, 1e-9));
-          expect(
-            after.llmOperationsThisMonth,
-            7,
-            reason: 'basic op must not increment monthly LLM op count',
-          );
           expect(after.importsToday, 1);
         },
       );
+
+      // BUT-2243 A1: the rules now admit only `UsageLimits.toFirestore()`'s
+      // keys on this doc, so a write that carried an old cost key along would
+      // be refused and the user's import counters would stop moving. Runs on
+      // a fake that honours `SetOptions(merge: true)` inside a transaction —
+      // the stock fake drops it, and a merge would then look like a whole-doc
+      // write here.
+      test('recordUsage over a doc holding the old cost keys writes the whole '
+          'doc and drops them', () async {
+        final mergeAware = _MergeHonouringFirestore();
+        final docRef = mergeAware
+            .collection('users')
+            .doc(_uid)
+            .collection('rate_limits')
+            .doc('imports');
+        await docRef.set({
+          ...UsageLimits(importsToday: 4, dayWindowStart: _t0).toFirestore(),
+          'llmCostToday': 0.42,
+          'llmCostThisMonth': 3.0,
+          'llmOperationsThisMonth': 9,
+          'monthWindowStart': Timestamp.fromDate(_t0),
+        });
+        final mergeLimiter = ImportRateLimiter(
+          firestoreRepository: FirestoreRepository(firestore: mergeAware),
+          authRepository: auth,
+        );
+
+        await withClock(
+          Clock.fixed(_t0.add(const Duration(minutes: 1))),
+          () => mergeLimiter.recordUsage(ImportOperation.basic('url')),
+        );
+
+        final stored = (await docRef.get()).data()!;
+        expect(
+          stored.keys.toSet(),
+          const UsageLimits().toFirestore().keys.toSet(),
+        );
+        expect(
+          stored['importsToday'],
+          5,
+          reason: 'the legacy doc was read, not replaced by an empty one',
+        );
+      });
     });
 
     group('cache invalidation', () {
@@ -841,6 +999,36 @@ void main() {
               'proves recordUsage invalidates the read cache',
         );
       });
+
+      // BUT-2243: the 30-second cache used to be keyed to nothing, so signing
+      // in as someone else within it showed them the previous account's
+      // counters.
+      test('an account switch within 30 s does not serve the previous '
+          "user's counters", () async {
+        await _seedUsage(
+          firestore,
+          _uid,
+          UsageLimits(importsThisMinute: 10, minuteWindowStart: _t0),
+        );
+        final first = await withClock(
+          Clock.fixed(_t0),
+          () => limiter.checkLimit(ImportOperation.basic('url')),
+        );
+        expect(
+          first,
+          isA<RateLimitDenied>(),
+          reason: 'premise: user A is at the per-minute cap, and is cached',
+        );
+
+        auth.setAuthState(userId: 'user-rate-limit-2');
+        final second = await withClock(
+          Clock.fixed(_t0.add(const Duration(seconds: 5))),
+          () => limiter.checkLimit(ImportOperation.basic('url')),
+        );
+
+        expect(second, isA<RateLimitAllowed>());
+        expect((second as RateLimitAllowed).remainingInWindow, 999);
+      });
     });
 
     group('helper APIs', () {
@@ -853,14 +1041,12 @@ void main() {
           UsageLimits(
             importsToday: 42,
             dayWindowStart: _t0,
-            llmCostToday: 0.25,
           ),
         );
 
         final stats = await limiter.getUsageStats();
 
         expect(stats.importsToday, 42);
-        expect(stats.llmCostToday, closeTo(0.25, 1e-9));
       });
 
       /// `isLlmAvailable` proxies `checkLimit` with an enhancement op. When
@@ -869,17 +1055,17 @@ void main() {
       test(
         'isLlmAvailable returns false when daily cost is over budget',
         () async {
-          await _seedUsage(
+          await _seedLedger(
             firestore,
             _uid,
-            UsageLimits(
-              llmCostToday: 0.60, // > $0.50
-              dayWindowStart: _t0,
-            ),
+            costToday: 0.60, // > $0.50
+            dayKey: _today,
+            costThisMonth: 0.60,
+            monthKey: _thisMonth,
           );
 
           final ok = await withClock(
-            Clock.fixed(_t0.add(const Duration(hours: 1))),
+            Clock.fixed(_tUtc),
             () => limiter.isLlmAvailable(),
           );
 
@@ -947,11 +1133,9 @@ void main() {
         expect(true, isTrue);
       });
 
-      /// BUT-1415: a transient transaction failure must be RETRIED — the LLM
-      /// call is already billed by the time we record, so silently dropping the
-      /// write overruns the cost ceiling. Two transient throws then success ⇒
-      /// 3 bounded attempts, and the cost is recorded EXACTLY once (retrying the
-      /// read-modify-write is safe: a thrown transaction never committed).
+      /// BUT-1415: a transient transaction failure must be RETRIED. Two
+      /// transient throws then success ⇒ 3 bounded attempts, and the op is
+      /// counted once.
       test(
         'recordUsage retries a transient transaction failure then records once '
         '(BUT-1415)',
@@ -967,7 +1151,6 @@ void main() {
           await withClock(Clock.fixed(_t0), () async {
             await flakyLimiter.recordUsage(
               ImportOperation.withLlm('url', LlmOperationType.fullExtraction),
-              llmCost: 0.02,
             );
           });
 
@@ -978,9 +1161,9 @@ void main() {
           );
           final after = await _readUsage(flaky, _uid);
           expect(
-            after.llmCostToday,
-            closeTo(0.02, 1e-9),
-            reason: 'cost recorded exactly once despite the retries',
+            after.llmExtractionsToday,
+            1,
+            reason: 'counted once despite the retries',
           );
         },
       );
@@ -1002,8 +1185,7 @@ class _ThrowingFirestoreRepository extends FirestoreRepository {
 /// BUT-1415: a fake whose `runTransaction` throws a transient
 /// `FirebaseException` for the first [failFirst] calls, then delegates to the
 /// real fake. Lets us prove `recordUsage` retries transient failures (reads +
-/// writes still go through the real fake store, so the recorded cost is
-/// observable afterwards).
+/// writes still go through the real fake store).
 class _FlakyFirestore extends FakeFirebaseFirestore {
   _FlakyFirestore({required this.failFirst});
 
@@ -1025,5 +1207,79 @@ class _FlakyFirestore extends FakeFirebaseFirestore {
       timeout: timeout,
       maxAttempts: maxAttempts,
     );
+  }
+}
+
+/// A FirestoreRepository that serves a working fake until [failFromNow] is
+/// set, then throws on every access — so a test can fill the import-counter
+/// cache first and make the ledger read the only thing that fails.
+class _LedgerFailingRepository extends FirestoreRepository {
+  _LedgerFailingRepository() : super(firestore: FakeFirebaseFirestore());
+
+  bool failFromNow = false;
+
+  @override
+  FirebaseFirestore get firestore {
+    if (failFromNow) throw StateError('Simulated ledger read failure');
+    return super.firestore;
+  }
+}
+
+/// The stock fake's transaction drops `SetOptions`, so a merge inside a
+/// transaction overwrites there while it merges in production. This one hands
+/// the handler a transaction that applies the options, so a test can tell a
+/// whole-document write from a merge.
+class _MergeHonouringFirestore extends FakeFirebaseFirestore {
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) {
+    return super.runTransaction(
+      (tx) => transactionHandler(_MergeHonouringTransaction(tx)),
+      timeout: timeout,
+      maxAttempts: maxAttempts,
+    );
+  }
+}
+
+class _MergeHonouringTransaction implements Transaction {
+  _MergeHonouringTransaction(this._inner);
+
+  final Transaction _inner;
+
+  @override
+  Future<DocumentSnapshot<T>> get<T extends Object?>(
+    DocumentReference<T> documentReference,
+  ) => _inner.get(documentReference);
+
+  @override
+  Transaction delete(DocumentReference documentReference) {
+    _inner.delete(documentReference);
+    return this;
+  }
+
+  @override
+  Transaction update(
+    DocumentReference documentReference,
+    Map<Object, Object?> data,
+  ) {
+    _inner.update(documentReference, data);
+    return this;
+  }
+
+  @override
+  Transaction set<T>(
+    DocumentReference<T> documentReference,
+    T data, [
+    SetOptions? options,
+  ]) {
+    if (options == null) {
+      _inner.set(documentReference, data);
+    } else {
+      unawaited(documentReference.set(data, options));
+    }
+    return this;
   }
 }

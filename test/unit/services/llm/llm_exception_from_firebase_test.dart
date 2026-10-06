@@ -18,9 +18,16 @@
 /// copy regresses, the parity check below catches it.
 library;
 
+// FirebaseFunctionsException's constructor is @protected; the server's denial
+// can only be built here this way.
+// ignore_for_file: invalid_use_of_protected_member
+
+import 'dart:io';
+
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/l10n/app_localizations_en.dart';
 import 'package:butlery/services/llm/llm_models.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -98,7 +105,92 @@ void main() {
       expect(ex.message, contains('some unrelated explosion'));
     });
 
-    test('Swedish ↔ English copy parity: all 6 codes have distinct messages', () {
+    // BUT-2243: the server's per-user AI cost ceiling arrives as
+    // `resource-exhausted` with `details.reason`. Without its own mapping the
+    // user is told the service is overloaded and to retry in a minute, when
+    // the answer is "tomorrow" or "next month".
+    group('the AI cost ceiling (BUT-2243)', () {
+      FirebaseFunctionsException ceiling(String reason) =>
+          FirebaseFunctionsException(
+            code: 'resource-exhausted',
+            message: 'Du har använt AI-hjälpen.',
+            details: {'reason': reason},
+          );
+
+      test('llm_cost_day maps to its own message, no one-minute retry', () {
+        final ex = LlmException.fromFirebase(ceiling('llm_cost_day'));
+
+        expect(ex.code, LlmException.costCeilingCode);
+        expect(ex.message, AppLocale.current.llmCostCeilingDay);
+        expect(ex.isRateLimited, isTrue);
+        expect(ex.retryAfter, isNull);
+      });
+
+      test('llm_cost_month maps to its own message, no one-minute retry', () {
+        final ex = LlmException.fromFirebase(ceiling('llm_cost_month'));
+
+        expect(ex.code, LlmException.costCeilingCode);
+        expect(ex.message, AppLocale.current.llmCostCeilingMonth);
+        expect(ex.isRateLimited, isTrue);
+        expect(ex.retryAfter, isNull);
+      });
+
+      test(
+        'the day and month messages differ, and neither is "overloaded"',
+        () {
+          expect(
+            AppLocale.current.llmCostCeilingDay,
+            isNot(AppLocale.current.llmCostCeilingMonth),
+          );
+          expect(
+            AppLocale.current.llmCostCeilingDay,
+            isNot(AppLocale.current.llmServiceOverloaded),
+          );
+          expect(
+            AppLocale.current.llmCostCeilingMonth,
+            isNot(AppLocale.current.llmServiceOverloaded),
+          );
+        },
+      );
+
+      for (final (label, details) in [
+        (
+          'the per-user call cap',
+          <String, Object>{'retryAfterSeconds': 30, 'remainingTokens': 0},
+        ),
+        ('the global cap', null),
+      ]) {
+        test('$label still maps to llmServiceOverloaded', () {
+          final ex = LlmException.fromFirebase(
+            FirebaseFunctionsException(
+              code: 'resource-exhausted',
+              message: 'x',
+              details: details,
+            ),
+          );
+
+          expect(ex.code, 'resource-exhausted');
+          expect(ex.message, AppLocale.current.llmServiceOverloaded);
+          expect(ex.retryAfter, const Duration(minutes: 1));
+        });
+      }
+
+      // The reason strings are typed in two languages. Read the server's out
+      // of its source so a rename there reddens here rather than sending the
+      // user back to "overloaded".
+      test('the server denies with exactly the two reasons mapped here', () {
+        final ts = File(
+          'functions/src/middleware/llm_cost_ledger.ts',
+        ).readAsStringSync();
+        final reasons = RegExp(
+          r'deny\(uid, "([a-z_]+)"',
+        ).allMatches(ts).map((m) => m.group(1)!).toSet();
+
+        expect(reasons, {'llm_cost_day', 'llm_cost_month'});
+      });
+    });
+
+    test('Swedish ↔ English copy parity: all 8 messages are distinct', () {
       // Catches a regression where two codes accidentally share the same copy
       // (e.g. timeout and unavailable both falling back to a generic string).
       final en = AppLocalizationsEn();
@@ -109,10 +201,12 @@ void main() {
         en.llmTimeout,
         en.llmTemporarilyUnavailable,
         en.llmGenericError('x'),
+        en.llmCostCeilingDay,
+        en.llmCostCeilingMonth,
       };
       expect(
         messages.length,
-        6,
+        8,
         reason:
             'Each Firebase error code must map to a distinct user-facing message',
       );

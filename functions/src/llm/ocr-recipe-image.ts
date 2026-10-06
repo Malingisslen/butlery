@@ -33,6 +33,7 @@ import {
   checkGlobalLimit,
   checkRateLimit,
 } from "../middleware/rate_limiter";
+import { withCostLedger } from "../middleware/llm_cost_ledger";
 import { scrubPii } from "./pii-scrubber";
 import { captureLlmSample } from "./llm-sample-capture";
 import { runStructureRecipe, buildLocaleInstruction } from "./structure-recipe";
@@ -119,14 +120,14 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     cors: ["https://butlery.app", "https://www.butlery.app"],
     enforceAppCheck: true,
   },
-  withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
+  withCostLedger(withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
     // Authentication is handled by withRateLimit middleware
     return runOcrRecipeImage({
       data: request.data,
       authUidHash: hashUid(request.auth!.uid),
       userId: request.auth!.uid,
     });
-  })
+  }))
 );
 
 // =============================================================================

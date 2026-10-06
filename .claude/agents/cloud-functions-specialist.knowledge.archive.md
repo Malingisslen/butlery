@@ -20730,3 +20730,23 @@ Re-review (uncommitted delta on 7a69423): `countsForSite` (domain && channel=lin
 `success: outcome === "recipe"`; 10/10 green, tsc clean, coordinator's mutation probes red
 on each term. Passed. Residual noted Low: the test asserts only `youtube` from
 `NOT_SITE_PARSERS`, so removing `tiktok`/`instagram` alone stays green.
+
+### 2026-10-05 — BUT-2243 server-side AI cost ledger, commit-gate review [middleware][llm]
+Reviewed staged `middleware/llm_cost_ledger.ts` (new), `__tests__/llm-cost-ledger.test.ts`
+(new), `llm/structure-recipe.ts` (wired `withCostLedger(withRateLimit("structureRecipe", ...))`).
+`npx ts-node src/__tests__/llm-cost-ledger.test.ts` 17/17 green; `npx tsc --noEmit -p .` clean.
+Verified: UTC keys via `toISOString().slice`, day+month rollover, `>=` boundary pinned both
+sides (0.5 denies, 0.4999 runs), fail-closed read (`unavailable`), auth before read (zero
+reads), transaction set without merge (sole writer), uid hashed on every log line, ledger
+outside the rate limiter, `rate_limits` TTL override present in `firestore.indexes.json`,
+rules stamp limb excludes `llm_cost`.
+Filed blocking: plan A2 says the wrapper's type REQUIRES `estimatedCost`, code has
+`estimatedCost?: number`; plan A4's "a thrown retry records ocrCost only" asserted nowhere
+(ocr-retry.test.ts BONUS 2 checks no cost). Info: the header's "overshoot is up to one minute
+burst of calls" does not match the bound (in-flight calls, limited per callable by token
+buckets maxTokens 10 / 5, both feeding one ledger) — strike the clause.
+Re-review (same day): bound now `TResponse extends { estimatedCost: number }`, record passes
+`result.estimatedCost`; header overshoot clause struck; ", as stated" struck from the test
+name; `ocr-retry.test.ts` BONUS 2 asserts `resp.estimatedCost === 0.011` (coordinator's probe:
+catch returning 0.005 reddens it). Ledger 17/17, ocr-retry 21/21, tsc clean, no unstaged
+drift under functions/. Passed.

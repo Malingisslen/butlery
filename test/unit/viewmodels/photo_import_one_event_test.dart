@@ -55,7 +55,7 @@ class _RecordingRateLimiter extends Fake implements ImportRateLimiter {
         );
 
   @override
-  Future<void> recordUsage(ImportOperation operation, {double? llmCost}) async {
+  Future<void> recordUsage(ImportOperation operation) async {
     recorded.add(operation);
   }
 }
