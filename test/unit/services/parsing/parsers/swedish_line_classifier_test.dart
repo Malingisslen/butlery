@@ -688,6 +688,37 @@ Vispa och stek.
         );
       });
 
+      // BUT-2242, Malin 2026-10-06: a lone ingredient word with a colon is an
+      // ingredient on this branch too, with grouping on and off.
+      for (final capture in [true, false]) {
+        test('a sectionHeader-classified "Mjölk:" stays, colon stripped '
+            '(capture $capture)', () {
+          final structure = SwedishLineClassifier.extractStructureFromSections(
+            [
+              const RecipeSection(
+                type: LineSectionType.ingredients,
+                lines: [
+                  ClassifiedLine(
+                    text: 'Mjölk:',
+                    type: LineType.sectionHeader,
+                    confidence: 0.9,
+                  ),
+                  ClassifiedLine(
+                    text: '2 dl socker',
+                    type: LineType.ingredient,
+                    confidence: 0.9,
+                  ),
+                ],
+              ),
+            ],
+            captureSubHeadings: capture,
+          );
+
+          expect(structure.ingredients, ['Mjölk', '2 dl socker']);
+          expect(structure.ingredientSections, [null, null]);
+        });
+      }
+
       test('a real component heading still sets the group', () {
         final structure = structureFor(const [
           ClassifiedLine(
