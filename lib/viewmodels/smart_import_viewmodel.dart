@@ -464,7 +464,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     setError(message);
     final failResult = ImportFailed(
       message,
-      routes: _routesFor(strategies),
+      routes: _routesFor(strategies, errorCode),
       errorCode: errorCode,
     );
     _lastResult = failResult;
@@ -476,15 +476,32 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// default manager's photo and text strategies are assumed. Pasting text
   /// is offered only in place of a link, and writing the recipe in by hand
   /// needs no strategy.
-  List<ImportRoute> _routesFor(List<String>? strategies) {
+  ///
+  /// The most helpful route stands first, by [errorCode]
+  /// (flows-roles-budget.md, flow 03 `hämtar`): a link that could not be
+  /// read or sits behind a login offers pasting the text first, and a page
+  /// without a recipe offers writing it in first. Any other cause keeps the
+  /// order above.
+  List<ImportRoute> _routesFor(
+    List<String>? strategies,
+    ImportErrorCode? errorCode,
+  ) {
     bool has(String kind) =>
         strategies == null ||
         strategies.any((name) => name.toLowerCase().contains(kind));
-    return [
+    final routes = [
       if (has('photo')) ImportRoute.photo,
       if (_detection?.isUrl == true && has('text')) ImportRoute.pasteText,
       ImportRoute.manual,
     ];
+    final first = switch (errorCode) {
+      ImportErrorCode.urlNotAccessible ||
+      ImportErrorCode.platformBlocked => ImportRoute.pasteText,
+      ImportErrorCode.noRecipeContent => ImportRoute.manual,
+      _ => null,
+    };
+    if (first != null && routes.remove(first)) routes.insert(0, first);
+    return routes;
   }
 
   /// Retry import without LLM (for rate limit fallback).

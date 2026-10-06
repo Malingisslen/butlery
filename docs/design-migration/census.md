@@ -7,18 +7,17 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 63 known failures and 2 residue lists are not empty
-- Known failures: 63 (a11y 12, contrast 5, interaction_checks 10, interactions 5, transitions 31)
+- **Migration complete:** NO: 54 known failures and 1 residue lists are not empty
+- Known failures: 54 (a11y 12, interaction_checks 10, interactions 5, transitions 27)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 20 registered in Linear
+- Tickets: 17 registered in Linear
 - Failures without a ticket: 0
-- Residue lists not empty: 2
-  - `test/architecture/icon_census_test.dart _residue: 393`
-  - `test/architecture/p7_type_and_space_scale_test.dart _rawFontSizeAllowlist: 1`
+- Residue lists not empty: 1
+  - `test/architecture/icon_census_test.dart _residue: 390`
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 15, MISSING 5, PARTIAL 11, TESTED 50.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 15, MISSING 5, PARTIAL 7, TESTED 54.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
@@ -29,9 +28,6 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt` | BUILT_NOT_REACHABLE | BUT-2140 |
 | `TR::FLOW::03::foto-ocr::otolkad-text` | MISSING | BUT-2158 |
 | `TR::FLOW::03::granska::fält-med-låg-säkerhet` | PARTIAL | BUT-2158 |
-| `TR::FLOW::03::hämtar::betalvägg` | PARTIAL | BUT-2168 |
-| `TR::FLOW::03::hämtar::privat-trasig-länk` | PARTIAL | BUT-2168 |
-| `TR::FLOW::03::hämtar::sidan-har-inget-recept` | PARTIAL | BUT-2168 |
 | `TR::FLOW::05::person::blockerad` | PARTIAL | BUT-2169 |
 | `TR::FLOW::06::aterstall::satt-nytt` | MISSING | BUT-2170 |
 | `TR::FLOW::06::byt-epost::omverifiering-bada` | MISSING | BUT-2171 |
@@ -40,7 +36,6 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::06::mfa::ominloggning-kravs` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::06::mfa::paslagning-kraver-reservkoder` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::06::mfa::utmaning-maskerad-ledtrad` | BUILT_NOT_REACHABLE | BUT-2142 |
-| `TR::FLOW::06::verifieringslank::utgangen` | PARTIAL | BUT-2172 |
 | `TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv` | PARTIAL | BUT-2160 |
 | `TR::FLOW::07::nekad::funktionen-kvar` | PARTIAL | BUT-2160 |
 | `TR::FLOW::08::ko::beroendekedja-misslyckas` | BUILT_NOT_REACHABLE | BUT-2162 |
@@ -77,15 +72,10 @@ Required: 33; MISSING 1, PARTIAL 4, TESTED 28. Unspecified in block 288 (not tes
 
 ## Contrast pairs
 
-Declared pairs: 35. Measured in both modes: 30, of which under their floor: 0; unmeasurable (no generated member): 5. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
+Declared pairs: 32. Measured in both modes: 32, of which under their floor: 0; unmeasurable (no generated member): 0. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
-| `dataScale.onFill.step1 on dataScale.sequential[0]` | BUT-2191 |
-| `dataScale.onFill.step2 on dataScale.sequential[1]` | BUT-2191 |
-| `dataScale.onFill.step3 on dataScale.sequential[2]` | BUT-2191 |
-| `dataScale.onFill.step4 on dataScale.sequential[3]` | BUT-2191 |
-| `dataScale.onFill.step5 on dataScale.sequential[4]` | BUT-2191 |
 
 ## Accessibility matrix
 
@@ -96,8 +86,8 @@ Known findings: 12 (ceiling 12) in 12 cases (view, state, mode, width, text scal
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687db277c6018`); generated files say tokens 1.13 (light) and 1.13 (dark).
-- Semantic keys: 46; with a generated member: 46
+tokens.json 1.13 (sha256 `f5bcf844d33b5c6907745b03b4ee1cf1850a55266c084ef24dd4c003333c56de`); generated files say tokens 1.13 (light) and 1.13 (dark).
+- Semantic keys: 53; with a generated member: 53
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
 | Semantic key without a member | Ticket |
@@ -105,7 +95,7 @@ tokens.json 1.13 (sha256 `031cb8817a51cff87317124c56183ff4b791ae977e5a8ed9577687
 
 ## Icon residue
 
-Material icons with no Butlery glyph yet: 393 uses of 178 icons in 174 files (Material icon uses found in lib code: 393).
+Material icons with no Butlery glyph yet: 390 uses of 178 icons in 173 files (Material icon uses found in lib code: 390).
 Rows still listed for files that are deleted (not counted): `lib/widgets/common/feedback/snackbar_widgets.dart`, `lib/widgets/common/indicators/sync_indicator.dart`.
 
 ## Known failures by ticket
@@ -122,17 +112,14 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2160 | transitions 2 |  |
 | BUT-2162 | transitions 8 |  |
 | BUT-2163 | transitions 1 |  |
-| BUT-2168 | transitions 3 |  |
 | BUT-2169 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
 | BUT-2171 | transitions 1 |  |
-| BUT-2172 | transitions 1 |  |
 | BUT-2173 | transitions 1 |  |
 | BUT-2174 | transitions 1 |  |
 | BUT-2175 | transitions 2 |  |
 | BUT-2176 | interaction_checks 2, interactions 1 |  |
 | BUT-2177 | interaction_checks 4, interactions 2 |  |
-| BUT-2191 | contrast 5 | Contrast pairs in tokens.json with no generated app member (dataScale.*; the semantic ones are delivered) |
 | BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 
 ## Ratchets and adoption lists
@@ -155,16 +142,16 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_adoption_test.dart` | `_barResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
 | `package4_adoption_test.dart` | `_exclusiveHeroFiles` | ALLOWANCE | LIVE | 2 | 2 | 2 |
 | `package4_adoption_test.dart` | `_snackBarResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
-| `package4_t3_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 16 | 16 | 16 |
+| `package4_t3_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_topBarFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_inkSnackbarFiles` | ADOPTION | LIVE | 11 | 11 | 11 |
 | `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 80 | 80 | 80 |
 | `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
-| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 176 | 397 | 393 |
+| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 175 | 394 | 390 |
 | `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | LIVE | 2 | 2 | 0 |
 | `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 2 | 3 | 3 |
-| `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 1 | 1 | 1 |
+| `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 0 | 0 | 0 |
 | `p7_type_and_space_scale_test.dart` | `_retiredSpacing` | BAN | LIVE | 19 | 19 | 19 |
 | `legacy_retirement_test.dart` | `_retired` | BAN | LIVE | 22 | 22 | 22 |
 | `opacity_ladder_ratchet_test.dart` | `_residue` | RESIDUE | LIVE | 0 | 0 | 0 |
@@ -180,13 +167,13 @@ Code only: comments are not counted; generated l10n is left out.
 | `AppSpecificColors` | 10 | `lib/theme/app_mode_colors.dart`, `lib/theme/app_specific_colors.dart` | app-specific decoration colours (lib/theme/app_specific_colors.dart) |
 | `SeasonalAccent*` | 0 |  | retired seasonal tint (Q7-01 = A) |
 | `CupertinoColors` | 0 |  | Cupertino palette |
-| `Icons.<name>` | 393 | 174 files | Material icons; the residue is listed in icon_census_test |
+| `Icons.<name>` | 390 | 173 files | Material icons; the residue is listed in icon_census_test |
 | `CupertinoIcons.<name>` | 0 |  | banned by icon_census_test |
 | `AdaptiveAppBar(` | 0 |  | retired for ButleryTopBar (B-45) |
 | `CircularProgressIndicator(` | 0 |  | Material spinner; PlateLine is the only loading indicator (B-18) |
 | `LinearProgressIndicator(` | 1 | `lib/widgets/common/indicators/plate_line.dart` | PlateLine draws on it (package4_adoption_test _package7Components) |
 | `commonOk` | 0 |  | "OK" as a label (content-style-guide.md:77) |
-| `fontSize: <number>` | 17 | `lib/theme/app_text_styles.dart`, `lib/widgets/cooking/step_timer_widget.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
+| `fontSize: <number>` | 18 | `lib/theme/app_text_styles.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
 | `Color(0x…) outside lib/theme` | 4 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/brand/butlery_lockup.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
 | `BorderRadius.circular(<number>)` | 2 | `lib/views/menu_placement/placement_widgets.dart`, `lib/views/recipe_detail/handlers/recipe_shopping_handler.dart` | raw corner radii |
 | `AppDimensions.opacity*` | 0 |  | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |

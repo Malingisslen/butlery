@@ -112,10 +112,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
 
-  test('a broken link (404) says the page could not be reached', () async {
+  test('a broken link (404) says the link could not be read', () async {
     final r = await _importWith(http.Response('', 404));
     expect(r.errorCode, ImportErrorCode.urlNotAccessible);
-    expect(r.message, 'Kunde inte nå sidan');
+    expect(r.message, 'Länken kunde inte läsas');
   });
 
   test('a 403 says the page requires login', () async {
@@ -145,7 +145,7 @@ void main() {
       ),
     );
     expect(r.errorCode, ImportErrorCode.noRecipeContent);
-    expect(r.message, 'Inget recept hittades');
+    expect(r.message, 'Vi hittade inget recept på sidan');
   });
 
   test(
