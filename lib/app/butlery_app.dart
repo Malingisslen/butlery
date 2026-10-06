@@ -20,8 +20,7 @@ import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 import 'package:butlery/core/bootstrap/handlers/incoming_share_handler.dart';
 import 'package:butlery/core/constants/routes.dart' as app_routes;
-import 'package:butlery/core/keyboard/app_actions.dart';
-import 'package:butlery/core/keyboard/app_shortcuts.dart';
+import 'package:butlery/core/keyboard/app_keyboard_layer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/observers/consent_aware_analytics_observer.dart';
 import 'package:butlery/core/observers/interaction_route_observer.dart';
@@ -62,6 +61,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 
 /// Fallback shown when bootstrap throws before [ButleryApp] can start. The
 /// "Restart App" button calls [onRestart] (wired to `main` in `main.dart`) so
@@ -788,10 +788,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
             ),
             child: child,
           );
-          // Keyboard layer (BUT-521): Shortcuts + Actions wrap the entire
-          // navigator subtree so Esc / Cmd+K / Cmd+1-3 etc. work on every
-          // route. `Focus(autofocus)` is required so the Shortcuts widget
-          // is the focus root that receives unhandled key events.
+          // Keyboard layer (BUT-521).
           //
           // Must stay INSIDE this builder. Being here puts it below
           // `DefaultTextEditingShortcuts`, hence nearer a focused field, so it
@@ -799,27 +796,22 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           // `core/keyboard/app_actions.dart` compensates by disabling itself
           // while a text field has focus. Hoisting this above `MaterialApp`
           // inverts that ordering and silently makes the guard pointless.
-          return MaintenanceModeGate(
-            child: Shortcuts(
-              shortcuts: AppShortcuts.bindings,
-              child: Actions(
-                actions: AppActions.dispatch(),
-                child: Focus(
-                  autofocus: true,
-                  child: SafeArea(
-                    top: false, // Let AppBar handle top
-                    bottom: true, // Always protect bottom from system nav bar
-                    left: false,
-                    right: false,
-                    child: Stack(
-                      children: [
-                        RepaintBoundary(
-                          key: feedbackRepaintBoundaryKey,
-                          child: clampedChild,
-                        ),
-                        const FeedbackFAB(),
-                      ],
-                    ),
+          return ButleryAppFocusRing(
+            child: MaintenanceModeGate(
+              child: AppKeyboardLayer(
+                child: SafeArea(
+                  top: false, // Let AppBar handle top
+                  bottom: true, // Always protect bottom from system nav bar
+                  left: false,
+                  right: false,
+                  child: Stack(
+                    children: [
+                      RepaintBoundary(
+                        key: feedbackRepaintBoundaryKey,
+                        child: clampedChild,
+                      ),
+                      const FeedbackFAB(),
+                    ],
                   ),
                 ),
               ),

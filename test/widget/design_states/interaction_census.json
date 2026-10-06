@@ -272,7 +272,7 @@
     },
     {
       "row_id": "CSR::ROLE::radio::FOCUSED",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "control": "RadioListTile in a RadioGroup through the theme, as in the settings and tag dialogs",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::radio::FOCUSED (light)",
@@ -290,8 +290,7 @@
           "name": "the week choice radios sit in the shared focus grip"
         }
       ],
-      "ticket": null,
-      "known_finding": "BUT-2148"
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::radio::SELECTED",
@@ -387,7 +386,7 @@
     },
     {
       "row_id": "CSR::ROLE::switch::FOCUSED",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "control": "SwitchListTile through the theme, the settings pattern (19 uses in lib/)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::switch::FOCUSED (light)",
@@ -401,8 +400,7 @@
           "name": "$name: keyboard focus draws the $mode ring outside a 48 dp box"
         }
       ],
-      "ticket": null,
-      "known_finding": "BUT-2148"
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::switch::SELECTED",

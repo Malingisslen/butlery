@@ -53,6 +53,7 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
@@ -511,6 +512,8 @@ Future<void> _pumpHost(
       key: _boundary,
       child: MaterialApp(
         theme: theme,
+        // As the app wraps every route (butlery_app.dart).
+        builder: ButleryAppFocusRing.builder,
         locale: const Locale('sv'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
