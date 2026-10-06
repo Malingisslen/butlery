@@ -31,7 +31,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `tag_result.dart` | 982 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
 | `conversation.dart` | 501 | Conversation model — serialization, participant and read-status tracking, plus the BUT-1838 history cut-off the list row and search filter both go through. Sat at exactly 500 until BUT-1854 (2026-09-11) made the cut-off's comparison shared with the Art. 15 export; that comparison was moved OUT to `history_cutoff.dart` rather than kept here, so what remains over the limit is the delegation and its import. Splitting further would separate `canReadMessageAt`, `historyQueryStartFor` and `joinedLaterAt` — three questions about one stamp that are only correct read together. |
-| `recipe_form_state.dart` | 989 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. |
+| `recipe_form_state.dart` | 992 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. |
 | `unified_shopping_item.dart` | 927 | Shopping item model — serialization, category, unit conversion |
 | `invitation_target.dart` | 652 | Invitation model — many invitation type variants |
 | `realtime_menu.dart` | 620 | Realtime menu model with collaboration operations |
@@ -118,7 +118,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_shopping_service.dart` | 826 | Shopping service facade |
 | `realtime_recipe_service.dart` | 525 | Explicit facade; delegates to RecipeContentOperations + RecipeParticipants |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
-| `file_import_strategy.dart` | 599 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
+| `file_import_strategy.dart` | 643 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
 | `search_service.dart` | 538 | Recipe/content search service |
 | `social_recipe_operations.dart` | 512 | Social recipe sharing/rating ops |
 | `notification_service.dart` | 764 | Push notification dispatch |
@@ -229,7 +229,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `menu_preview_view.dart` | 531 | Shared menu preview screen |
 | `chat_action_handler.dart` | 723 | Chat action handling — extracted from messaging view; single handler class. The size guard matches on basename only, so a stale figure here reddens nothing; re-measure with `wc -l` in the same call that stages. |
 | `notification_preferences_view.dart` | 527 | Notification preferences settings screen — category toggles + quiet hours. Row refreshed 2026-08-14 (585 → 524 when BUT-1783 removed the sound/vibration section, → 527 when the digest dropdown became enum-driven). Still over 500, so the row stays. |
-| `smart_import_viewmodel.dart` | 614 | Smart import pipeline VM — delegates to ImportManager |
+| `smart_import_viewmodel.dart` | 716 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 685 | Shopping list UI — drag/reorder, categories, collaborative |
 | `cooking_mode_view.dart` | 815 | Full cooking mode screen — timer, steps, landscape layout (drifted +103 from 585 — BUT-550 reconciled 2026-05-28) |
 | `unified_shopping_viewmodel.dart` | 739 | Shopping list VM — personal + collaborative, sync |
