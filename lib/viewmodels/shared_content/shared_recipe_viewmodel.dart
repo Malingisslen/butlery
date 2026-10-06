@@ -29,7 +29,10 @@
 
 // lib/viewmodels/shared_content/shared_recipe_viewmodel.dart
 
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -41,12 +44,17 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   late final SocialRecipeCoordinator _socialRecipeCoordinator;
+  final Future<RecipeOperationResult> Function(Recipe) _addPersonalRecipe;
 
   SharedRecipeViewModel({
     SocialRecipeCoordinator? socialRecipeCoordinator,
+    Future<RecipeOperationResult> Function(Recipe)? addPersonalRecipe,
     super.permissionService,
     super.friendsService,
-  }) {
+  }) : _addPersonalRecipe =
+           addPersonalRecipe ??
+           ((recipe) => ServiceLocator.get<UnifiedRecipeService>().personal
+               .addUnifiedRecipe(recipe)) {
     _socialRecipeCoordinator =
         socialRecipeCoordinator ??
         ServiceLocator.get<SocialRecipeCoordinator>();
@@ -197,9 +205,26 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     );
   }
 
-  /// Import shared recipe using copy-on-write pattern: joins as viewer
-  /// until the first edit, at which point the coordinator creates the
-  /// owning copy.
+  /// The recipe to show for [sharedRecipe]: the full one when the sharer's
+  /// grant lets us read it, otherwise the summary the share row carries.
+  Future<Recipe> loadFullRecipe(SharedRecipe sharedRecipe) async {
+    try {
+      return await _socialRecipeCoordinator.getSharedRecipeSource(
+            sharedRecipe,
+          ) ??
+          sharedRecipe.contentSnapshot;
+    } catch (e) {
+      AppLogger.warning('Could not load shared recipe ${sharedRecipe.id}: $e');
+      return sharedRecipe.contentSnapshot;
+    }
+  }
+
+  /// Puts the user's own copy of [sharedRecipe] in Mina recept and marks the
+  /// share imported. Returns null when no copy was made.
+  ///
+  /// The copy goes through the same path as forking a recipe, so it gets a new
+  /// id and the current user as owner. The sharer's personal tags and own
+  /// rating are theirs and stay behind.
   Future<String?> importSharedRecipe(
     SharedRecipe sharedRecipe, {
     String? newTitle,
@@ -207,10 +232,27 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     return await executeOperation(
       'Import recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        return await _socialRecipeCoordinator.joinSharedRecipe(
+        final source = await _socialRecipeCoordinator.getSharedRecipeSource(
+          sharedRecipe,
+        );
+        if (source == null) return null;
+
+        final saved = await _addPersonalRecipe(
+          source.copyWith(
+            title: newTitle,
+            personalTagIds: const <String>[],
+            rating: null,
+          ),
+        );
+        if (!saved.isSuccess) return null;
+
+        // The copy exists now, so a failed mark only leaves the share listed;
+        // reporting failure would invite a second copy.
+        await _socialRecipeCoordinator.joinSharedRecipe(
           sharedRecipeId: sharedRecipe.id,
           newTitle: newTitle,
         );
+        return sharedRecipe.id;
       },
     );
   }

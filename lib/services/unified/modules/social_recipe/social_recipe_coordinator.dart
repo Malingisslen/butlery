@@ -9,7 +9,6 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
-import 'package:butlery/services/user_service.dart' as user_service;
 // Temporarily disabled notification imports
 // import 'package:butlery/services/notifications/notification_service.dart' as notif;
 // import 'package:butlery/services/notifications/notification_types.dart';
@@ -40,7 +39,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   final RecipeServiceAdapter _serviceAdapter;
   late final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final String? Function() _getCurrentUserId;
-  final Future<Recipe?> Function(String) _getRecipe;
 
   /// Notification service for social notifications (temporarily disabled)
   // late final notif.NotificationService? _notificationService;
@@ -65,8 +63,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }) : _serviceAdapter =
            serviceAdapter ??
            SocialRecipeCoordinator._createDefaultServiceAdapter(),
-       _getCurrentUserId = getCurrentUserId,
-       _getRecipe = getRecipe {
+       _getCurrentUserId = getCurrentUserId {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
 
@@ -272,67 +269,34 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     // when NotificationService dependency is available in this coordinator
   }
 
-  /// Create recipe invitation using SharedRecipe model for universal invitation system
+  /// Shares [recipeId] with friends: grants them read on the recipe and writes
+  /// the "Delat med mig" row. Returns the recipe id, or null when either write
+  /// failed.
+  ///
+  /// BUT-2268: this used to write the row alone. The row carries only a summary
+  /// (title, picture, portions, time, description), so a friend opened a recipe
+  /// with no ingredients or steps and had nothing to import. The grant is the
+  /// same one a group share makes.
   Future<String?> createRecipeInvitation({
     required String recipeId,
     required List<String> inviteeUserIds,
     String? message,
     bool allowCollaboration = false,
   }) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      AppLogger.error('Cannot create recipe invitation: No authenticated user');
-      return null;
-    }
-
-    try {
-      AppLogger.info(
-        '📨 Creating recipe invitation for recipe $recipeId to ${inviteeUserIds.length} users',
-      );
-
-      final recipe = await _getRecipe(recipeId);
-      if (recipe == null) {
-        AppLogger.error('Recipe not found: $recipeId');
-        return null;
-      }
-
-      final userService = ServiceLocator.get<user_service.UserService>();
-      final currentUserProfile = userService.currentUserProfile;
-      if (currentUserProfile == null) {
-        AppLogger.error('Cannot get current user profile for invitation');
-        return null;
-      }
-
-      final sharedRecipe = SharedRecipe.create(
-        originalRecipeId: recipeId,
-        sharedByUserId: currentUserId, // Already checked for null above
-        sharedByDisplayName: currentUserProfile.displayName,
-        sharedToUserIds: inviteeUserIds,
-        shareMessage: message,
-        allowCollaboration: allowCollaboration,
-        recipeSnapshot: recipe,
-      );
-
-      // Note (Issue #014): Pass recipientIds separately since arrays removed from model
-      final invitationId = await _sharedRecipeRepository.createSharedRecipe(
-        sharedRecipe,
-        recipientIds: inviteeUserIds,
-      );
-
-      AppLogger.success(
-        ' Recipe invitation created successfully: $invitationId',
-      );
-      AppLogger.info(
-        '📥 Recipients will see invitation in "Delat med mig" view',
-      );
-
+    final result = await _sharingService.shareRecipeWithUsers(
+      recipeId,
+      inviteeUserIds,
+      allowCollaboration
+          ? ResourcePermission.editor
+          : ResourcePermission.viewer,
+      message: message,
+    );
+    if (result.accessGranted) {
       await sendRecipeInvitationNotifications(recipeId, inviteeUserIds);
-
-      return invitationId;
-    } catch (e) {
-      AppLogger.error('Failed to create recipe invitation: $e');
-      return null;
     }
+    // A partial share granted the read but wrote no row, so the friend cannot
+    // find it yet; the sender is offered a retry, which is idempotent.
+    return result.fullyShared ? recipeId : null;
   }
 
   /// Share recipe with friends using invitation system
@@ -488,6 +452,10 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     return _importedStatusCache[recipeId] ?? false;
   }
 
+  /// The full recipe behind [shared], or null when the reader cannot read it.
+  Future<Recipe?> getSharedRecipeSource(SharedRecipe shared) =>
+      _sharedRecipeRepository.getSourceRecipe(shared);
+
   /// Join shared recipe for viewing with true copy-on-write (copy created on first edit).
   Future<String?> joinSharedRecipe({
     required String sharedRecipeId,
@@ -514,6 +482,9 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
         sharedRecipeId,
         currentUserId,
       );
+      // The card reads this cache, so without it the button kept offering
+      // "Importera" until the next full reload.
+      _importedStatusCache[sharedRecipeId] = true;
 
       AppLogger.success(
         ' Joined shared recipe as viewer (copy-on-write ready)',
