@@ -252,6 +252,11 @@ class FriendRequestCard extends StatelessWidget {
   final EdgeInsets? margin;
   final EdgeInsets? padding;
 
+  /// The request itself carries only the sender's uid, so the caller looks the
+  /// name up. Without it the person accepting cannot tell who asked.
+  final String? senderName;
+  final String? senderAvatarUrl;
+
   const FriendRequestCard({
     super.key,
     required this.friendRequest,
@@ -260,7 +265,12 @@ class FriendRequestCard extends StatelessWidget {
     this.onTap,
     this.margin,
     this.padding,
+    this.senderName,
+    this.senderAvatarUrl,
   });
+
+  String? get _name =>
+      senderName?.trim().isNotEmpty == true ? senderName!.trim() : null;
 
   @override
   Widget build(BuildContext context) {
@@ -322,7 +332,7 @@ class FriendRequestCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    context.l10n.friendRequestTitle,
+                    _name ?? context.l10n.friendRequestTitle,
                     style: AppTextStyles.titleMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -356,8 +366,8 @@ class FriendRequestCard extends StatelessWidget {
 
   Widget _buildSenderAvatar(BuildContext context) {
     return SocialAvatarComponents.avatar(
-      imageUrl: null, // FriendRequest doesn't store sender avatar directly
-      displayName: '', // No sender display name available
+      imageUrl: senderAvatarUrl,
+      displayName: _name ?? '',
       size: ImageSize.large, // 50px corresponds to large size
     );
   }
@@ -376,6 +386,9 @@ class FriendRequestCard extends StatelessWidget {
               ),
               child: Text(
                 context.l10n.friendDecline,
+                semanticsLabel: _name == null
+                    ? null
+                    : context.l10n.a11yDeclineFriendRequestFrom(_name!),
                 style: AppTextStyles.labelMediumMuted,
               ),
             ),
@@ -391,6 +404,9 @@ class FriendRequestCard extends StatelessWidget {
               ),
               child: Text(
                 context.l10n.friendAccept,
+                semanticsLabel: _name == null
+                    ? null
+                    : context.l10n.a11yAcceptFriendRequestFrom(_name!),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
