@@ -24,16 +24,6 @@ class KnownInteractionFinding {
   final String reason;
 }
 
-const _comboboxExpanded = KnownInteractionFinding(
-  checks: {'semantics'},
-  ticket: 'BUT-2176',
-  reason:
-      "The open dropdown is drawn, but its node still says collapsed: Flutter's "
-      'DropdownButton sets _isMenuExpanded without setState '
-      '(flutter/lib/src/material/dropdown.dart, _handleTap), so a screen '
-      'reader is not told the list is open.',
-);
-
 const _linkDefault = KnownInteractionFinding(
   checks: {'hitbox'},
   ticket: 'BUT-2177',
@@ -72,8 +62,6 @@ const _switchFocused = KnownInteractionFinding(
 
 /// Keyed by `CSR::ROLE::<role>::<STATE> (light|dark)`.
 const Map<String, KnownInteractionFinding> knownInteractionFindings = {
-  'CSR::ROLE::combobox::EXPANDED (light)': _comboboxExpanded,
-  'CSR::ROLE::combobox::EXPANDED (dark)': _comboboxExpanded,
   'CSR::ROLE::link::DEFAULT (light)': _linkDefault,
   'CSR::ROLE::link::DEFAULT (dark)': _linkDefault,
   'CSR::ROLE::link::FOCUSED (light)': _linkFocused,
