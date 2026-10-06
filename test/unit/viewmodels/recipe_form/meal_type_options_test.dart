@@ -29,8 +29,7 @@ void main() {
       );
     });
 
-    // The value that motivated the ticket: text import writes it
-    // (`text_import_strategy.dart:990`) and no list in the app contains it.
+    // The value that motivated the ticket: no list in the app contains it.
     test('a value the app does not offer is prepended, once, and selected', () {
       final options = RecipeFormState.mealTypeOptions('Huvudrätt');
 
@@ -44,9 +43,7 @@ void main() {
       );
     });
 
-    test('the assisted import default is carried the same way', () {
-      // `assisted_import_viewmodel.dart:77` defaults to this and writes it into
-      // the recipe, which is then handed straight to the form.
+    test('an English value is carried the same way', () {
       final options = RecipeFormState.mealTypeOptions('dinner');
 
       expect(options.selected, 'dinner');

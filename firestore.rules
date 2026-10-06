@@ -584,15 +584,27 @@ service cloud.firestore {
       }
 
       // P3-06: Rate limit tracking subcollection.
-      // `imports` (import and LLM usage counters) and `friendSearchMigrated`
-      // (a one-time flag) share this subcollection but are not burst stamps, so
-      // they keep plain owner writes.
+      // `imports` (the app's import counters) and `friendSearchMigrated` (a
+      // one-time flag) share this subcollection but are not burst stamps.
+      // `llm_cost` is the AI cost ledger: written only by the Cloud Functions
+      // (functions/src/middleware/llm_cost_ledger.ts), read-only here, so a
+      // client cannot reset its own cost ceiling (BUT-2243). Any other
+      // server-owned doc added here must be excluded from the stamp limb too.
       match /rate_limits/{type} {
         allow read: if isOwner(userId);
-        allow write: if isOwner(userId)
-          && (type == 'imports' || type == 'friendSearchMigrated');
+        allow write: if isOwner(userId) && type == 'friendSearchMigrated';
+        // Mirrors `UsageLimits.toFirestore()`; no cost key, and no delete.
+        allow create, update: if isOwner(userId)
+          && type == 'imports'
+          && request.resource.data.keys().hasOnly([
+            'importsThisMinute', 'minuteWindowStart',
+            'importsThisHour', 'hourWindowStart',
+            'importsToday', 'dayWindowStart',
+            'llmEnhancementsToday', 'llmExtractionsToday', 'llmVisionToday',
+            'expireAt']);
         allow create, update: if isOwner(userId)
           && type != 'imports' && type != 'friendSearchMigrated'
+          && type != 'llm_cost'
           && request.resource.data.keys().hasOnly(['lastWrite', 'expireAt', 'lastDocId'])
           && request.resource.data.lastWrite == request.time
           && request.resource.data.expireAt is timestamp

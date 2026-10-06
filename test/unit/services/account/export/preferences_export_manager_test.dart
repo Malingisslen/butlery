@@ -1084,6 +1084,24 @@ void main() {
       expect(note, contains('report_throttle'));
     });
 
+    // BUT-2243: `rate_limits` now also holds the server-written AI cost
+    // ledger. The exemption inherits BUT-2040's verdict, so the sentence is
+    // what tells the data subject that a cost figure exists at all.
+    test('the rate_limits exemption names the AI cost counters', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+      final note = result['data_minimisation'] as String;
+
+      expect(note, contains('import and AI usage counters'));
+      expect(
+        note,
+        contains('what your AI use has cost today and this month'),
+      );
+    });
+
     test('the three included collections reach the bundle', () async {
       final manager = PreferencesExportManager(
         dataExportRepository: _FakeAccountSubsRepository(

@@ -1,7 +1,7 @@
 /// BUT-2239: `structure-recipe.ts` returns the model's cost on an
-/// unparseable answer, so the client limiter must count it, for both the
-/// whole-recipe and the ingredient-line entry point. A kill-switch answer
-/// costs nothing and must not use up a daily slot.
+/// unparseable answer, so the client limiter must count the call against the
+/// daily AI quota, for both the whole-recipe and the ingredient-line entry
+/// point. A kill-switch answer costs nothing and must not use up a daily slot.
 library;
 
 import 'package:butlery/models/account/user_consent.dart';
@@ -13,7 +13,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _RecordingRateLimiter extends Fake implements ImportRateLimiter {
-  final recorded = <double?>[];
+  final recorded = <LlmOperationType?>[];
 
   @override
   Future<RateLimitResult> checkLimit(ImportOperation operation) async =>
@@ -23,11 +23,8 @@ class _RecordingRateLimiter extends Fake implements ImportRateLimiter {
       );
 
   @override
-  Future<void> recordUsage(
-    ImportOperation operation, {
-    double? llmCost,
-  }) async {
-    recorded.add(llmCost);
+  Future<void> recordUsage(ImportOperation operation) async {
+    recorded.add(operation.llmType);
   }
 }
 
@@ -83,22 +80,23 @@ void main() {
     service = serviceAnswering(0.0012);
   });
 
-  test('a failed structureRecipe call is recorded with its cost', () async {
+  test('a billed failed structureRecipe call uses up an extraction', () async {
     final response = await service.structureRecipe(text: 'Pannkakor');
 
     expect(response.success, isFalse);
-    expect(limiter.recorded, [0.0012]);
+    expect(limiter.recorded, [LlmOperationType.fullExtraction]);
   });
 
   test(
-    'a failed parseIngredientLines call is recorded with its cost',
+    'a billed failed parseIngredientLines call uses up an ingredient-line '
+    'slot',
     () async {
       final response = await service.parseIngredientLines(
         lines: ['2 dl mjölk'],
       );
 
       expect(response.success, isFalse);
-      expect(limiter.recorded, [0.0012]);
+      expect(limiter.recorded, [LlmOperationType.ingredientLines]);
     },
   );
 

@@ -85,7 +85,7 @@ class RecipeFormState extends ChangeNotifier {
   /// widened to include whatever that recipe actually carries.
   ///
   /// `mealType` is a free-form `String` and writers disagree with
-  /// [mealTypes]: text import can produce `'Huvudrätt'`.
+  /// [mealTypes].
   /// `DropdownButtonFormField` asserts in its CONSTRUCTOR —
   /// so on every build, not just the first — that exactly one item matches its
   /// value. Binding `items:` to [mealTypes] while `initialValue:` holds one of
@@ -100,9 +100,7 @@ class RecipeFormState extends ChangeNotifier {
   /// The stored value is offered PLAIN and first, not flagged as retired the
   /// way `personal_tag_rule_dialog.dart` flags a withdrawn tag property.
   /// Nothing was ever removed from [mealTypes] — these values come from writers
-  /// that never agreed with it — and no code can say whether `'Huvudrätt'`
-  /// means Lunch or Middag. Only the user can, so the value stays visible and
-  /// selected until they choose otherwise.
+  /// that never agreed with it.
   ///
   /// No trimming and no case folding: `'lunch'` sits beside `'Lunch'` as two
   /// near-identical rows. That is honest under "this must not change what any
@@ -118,8 +116,7 @@ class RecipeFormState extends ChangeNotifier {
   /// One consequence, so it is not read as a bug: the widening keys off the
   /// CURRENT value. The injected row IS selectable — picking it re-stores the
   /// same value and the row stays — but picking an OFFERED row drops it, and it
-  /// cannot be got back in that session. That is what "visible and selected
-  /// until they choose otherwise" means.
+  /// cannot be got back in that session.
   static ({List<String> values, String? selected}) mealTypeOptions(
     String storedValue,
   ) => (

@@ -5,7 +5,6 @@
 /// - Image-to-recipe OCR (ocrRecipeImage)
 /// - Selective ingredient line parsing (parseIngredientLines)
 /// - Rate limiting integration
-/// - Cost tracking
 library;
 
 import 'dart:typed_data';
@@ -368,14 +367,19 @@ class LlmService extends BaseService {
       final success = _isSuccessful(response);
       final cost = _extractCost(response);
       if (success || (recordUsageOnFailure && cost > 0)) {
-        await _rateLimiter.recordUsage(operation, llmCost: cost);
+        await _rateLimiter.recordUsage(operation);
       }
 
       return response;
     } on FirebaseFunctionsException catch (e) {
-      _backendBreaker.recordFailure();
+      final error = LlmException.fromFirebase(e);
+      // The user's AI cost ceiling is an answer from a healthy backend, not
+      // an outage, so it must not trip the breaker.
+      if (error.code != LlmException.costCeilingCode) {
+        _backendBreaker.recordFailure();
+      }
       AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
-      throw LlmException.fromFirebase(e);
+      throw error;
     } catch (e) {
       _backendBreaker.recordFailure();
       AppLogger.error('LlmService: Unexpected error - $e');

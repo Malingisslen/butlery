@@ -38,16 +38,18 @@ if (admin.apps.length === 0) {
 }
 
 import {
-  runTaskChain,
-  MaintenanceTask,
   DAILY_ANALYTICS_TASKS,
   WEEKLY_REPORT_TASKS,
   SNAPSHOT_PRODUCER_TASKS,
+  deadDrainQueues,
+} from "../scheduled/maintenance-dispatchers";
+import {
+  runTaskChain,
+  MaintenanceTask,
   CHAIN_DEADLINE_MS,
   CHAIN_TIMEOUT_SECONDS,
   TASK_TIMEOUT_MS,
-  deadDrainQueues,
-} from "../scheduled/maintenance-dispatchers";
+} from "../scheduled/task-chain";
 
 let totalRun = 0;
 let totalFailed = 0;
@@ -107,15 +109,16 @@ async function testRegistryMembership(): Promise<void> {
   // BUT-1917 appended `reconcileBlockMirrors`. It goes LAST deliberately: it is
   // a safety net rather than a report, so if the chain's budget runs out it is
   // the right task to lose — a week's missed reconciliation is recoverable by
-  // the next pass, whereas the two reports are the chain's reason to exist.
+  // the next pass, whereas the reports are the chain's reason to exist.
   const expectedWeekly = [
     "weeklyActivityDigest",
     "northStarWeekly",
+    "importTierWeekly",
     "reconcileBlockMirrors",
   ];
   const actualWeekly = WEEKLY_REPORT_TASKS.map((t) => t.name);
   record(
-    "WEEKLY_REPORT_TASKS holds the digest, the report, then the mirror sweep",
+    "WEEKLY_REPORT_TASKS holds the digest, the reports, then the mirror sweep",
     JSON.stringify(actualWeekly) === JSON.stringify(expectedWeekly),
     `got ${JSON.stringify(actualWeekly)}`,
   );

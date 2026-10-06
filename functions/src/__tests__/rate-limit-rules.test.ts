@@ -9,8 +9,10 @@
  *     `<groupId>/<pingId>` for pings), and the previous stamp is
  *     older than the type's window.
  *   - The bucket accepts exactly `lastWrite`, `expireAt`, `lastDocId` from its
- *     owner, at server time, and never a client delete. `imports` and
- *     `friendSearchMigrated` keep plain owner writes.
+ *     owner, at server time, and never a client delete. `imports` takes the
+ *     app's counters and no cost key, and is not deletable;
+ *     `friendSearchMigrated` keeps plain owner writes; `llm_cost` is
+ *     read-only to its owner (BUT-2243).
  *   - `messages` carry no burst guard (ADR-0020).
  *
  * Each guarded type gets the same four cases, and each DENY differs from its
@@ -533,14 +535,78 @@ test("rate_limits: writing another user's stamp is denied", async () => {
   );
 });
 
-test("rate_limits: the owner writes the imports counters freely", async () => {
+/**
+ * The keys `UsageLimits.toFirestore()` writes, as the app sends them (a whole
+ * document, no merge). No cost key: the AI cost lives in `llm_cost` (BUT-2243).
+ */
+function importsBody(): Record<string, unknown> {
+  return {
+    importsThisMinute: 1, minuteWindowStart: new Date(),
+    importsThisHour: 1, hourWindowStart: new Date(),
+    importsToday: 1, dayWindowStart: new Date(),
+    llmEnhancementsToday: 0, llmExtractionsToday: 0, llmVisionToday: 0,
+    expireAt: new Date(Date.now() + 90 * DAY_MS),
+  };
+}
+
+/** The shape `llm_cost_ledger.ts` writes. */
+function ledgerBody(): Record<string, unknown> {
+  return {
+    costToday: 0, dayKey: "2026-02-02", costThisMonth: 0, monthKey: "2026-02",
+    operationsThisMonth: 0, updatedAt: new Date(),
+    expireAt: new Date(Date.now() + 40 * DAY_MS),
+  };
+}
+
+async function seed(docPath: string, data: Record<string, unknown>): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(docPath).set(data);
+  });
+}
+
+test("imports: the owner writes the app's counters (control)", async () => {
   const uid = `rl-imports-${RUN}`;
   const db = env.authenticatedContext(uid, CLAIMS).firestore();
-  await assertSucceeds(
-    db
-      .doc(`users/${uid}/rate_limits/imports`)
-      .set({ importsThisMinute: 1, llmCostToday: 0.1 }, { merge: true })
-  );
+  await assertSucceeds(db.doc(`users/${uid}/rate_limits/imports`).set(importsBody()));
+});
+
+for (const key of ["llmCostToday", "llmCostThisMonth", "llmOperationsThisMonth", "monthWindowStart"]) {
+  test(`imports: the same write carrying the legacy key ${key} is denied`, async () => {
+    const uid = `rl-imports-cost-${key}-${RUN}`;
+    const db = env.authenticatedContext(uid, CLAIMS).firestore();
+    await assertFails(
+      db.doc(`users/${uid}/rate_limits/imports`).set({ ...importsBody(), [key]: 0 })
+    );
+  });
+}
+
+test("imports: a merge that adds a cost key is denied, one that adds a counter is not", async () => {
+  const uid = `rl-imports-merge-${RUN}`;
+  const ref = `users/${uid}/rate_limits/imports`;
+  await seed(ref, importsBody());
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  await assertFails(db.doc(ref).set({ llmCostThisMonth: 0 }, { merge: true }));
+  await assertSucceeds(db.doc(ref).set({ importsToday: 2 }, { merge: true }));
+});
+
+test("imports: a doc still holding a legacy cost key is overwritten by the app's whole-doc write", async () => {
+  const uid = `rl-imports-legacy-${RUN}`;
+  const ref = `users/${uid}/rate_limits/imports`;
+  await seed(ref, { ...importsBody(), llmCostToday: 0.3, llmCostThisMonth: 1 });
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  // A merge would keep the legacy keys in request.resource and be refused,
+  // which is why the app writes the whole document.
+  await assertFails(db.doc(ref).set({ importsToday: 2 }, { merge: true }));
+  await assertSucceeds(db.doc(ref).set(importsBody()));
+});
+
+test("imports: the owner cannot delete it; the migration flag stays deletable (control)", async () => {
+  const uid = `rl-imports-del-${RUN}`;
+  await seed(`users/${uid}/rate_limits/imports`, importsBody());
+  await seed(`users/${uid}/rate_limits/friendSearchMigrated`, { migratedAt: new Date() });
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  await assertFails(db.doc(`users/${uid}/rate_limits/imports`).delete());
+  await assertSucceeds(db.doc(`users/${uid}/rate_limits/friendSearchMigrated`).delete());
 });
 
 test("rate_limits: the owner writes the friendSearchMigrated flag", async () => {
@@ -554,8 +620,50 @@ test("rate_limits: the owner writes the friendSearchMigrated flag", async () => 
 test("rate_limits: another user cannot write someone's imports counters", async () => {
   const db = env.authenticatedContext(`rl-imports-intruder-${RUN}`, CLAIMS).firestore();
   await assertFails(
-    db.doc(`users/rl-imports-victim-${RUN}/rate_limits/imports`).set({ llmCostToday: 0 })
+    db.doc(`users/rl-imports-victim-${RUN}/rate_limits/imports`).set(importsBody())
   );
+});
+
+test("llm_cost: the owner reads the ledger, another user cannot", async () => {
+  const uid = `rl-ledger-read-${RUN}`;
+  const ref = `users/${uid}/rate_limits/llm_cost`;
+  await seed(ref, ledgerBody());
+  await assertSucceeds(env.authenticatedContext(uid, CLAIMS).firestore().doc(ref).get());
+  await assertFails(
+    env.authenticatedContext(`rl-ledger-snoop-${RUN}`, CLAIMS).firestore().doc(ref).get()
+  );
+});
+
+test("llm_cost: the owner cannot create it", async () => {
+  const uid = `rl-ledger-create-${RUN}`;
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  await assertFails(db.doc(`users/${uid}/rate_limits/llm_cost`).set(ledgerBody()));
+});
+
+test("llm_cost: a stamp-shaped create is denied where a burst type accepts it (control)", async () => {
+  const uid = `rl-ledger-stamp-${RUN}`;
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  await assertFails(db.doc(`users/${uid}/rate_limits/llm_cost`).set(stamp("x")));
+  await assertSucceeds(db.doc(`users/${uid}/rate_limits/comments`).set(stamp("x")));
+});
+
+test("llm_cost: the owner cannot overwrite, zero or delete an existing ledger", async () => {
+  const uid = `rl-ledger-reset-${RUN}`;
+  const ref = `users/${uid}/rate_limits/llm_cost`;
+  await seed(ref, { ...ledgerBody(), costToday: 0.5, costThisMonth: 3 });
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  await assertFails(db.doc(ref).set(stamp("x")));
+  await assertFails(db.doc(ref).set({ costToday: 0 }, { merge: true }));
+  await assertFails(db.doc(ref).delete());
+});
+
+test("llm_cost: an imports-shaped or empty whole-doc write over the ledger is denied", async () => {
+  const uid = `rl-ledger-wipe-${RUN}`;
+  const ref = `users/${uid}/rate_limits/llm_cost`;
+  await seed(ref, { ...ledgerBody(), costToday: 0.5, costThisMonth: 3 });
+  const db = env.authenticatedContext(uid, CLAIMS).firestore();
+  await assertFails(db.doc(ref).set(importsBody()));
+  await assertFails(db.doc(ref).set({}));
 });
 
 // ---- the guard ADR-0020 removed

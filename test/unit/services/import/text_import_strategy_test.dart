@@ -925,6 +925,9 @@ Ingredienser:
           'Lunch - Sallad med kyckling': 'Lunch',
           'Middag: Laxfilé med potatis': 'Middag',
           'Fika - Kanelbullar': 'Fika',
+          // "Huvudrätt" is the dinner slot, in the label form and inline.
+          'Typ: Huvudrätt\nKöttbullar': 'Middag',
+          'Huvudrätt - Lasagne': 'Middag',
           // Nothing in the text names a meal: the recipe must land where the
           // menu generator looks for "7 middagar", as the URL import does.
           'Pannkakor': 'Middag',
