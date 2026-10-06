@@ -58,6 +58,12 @@ class ImportSucceeded extends SmartImportResult {
   const ImportSucceeded(this.recipe);
 }
 
+/// Pasted text held several recipes - let the user pick which to save.
+class ImportSucceededMultiple extends SmartImportResult {
+  final List<Recipe> recipes;
+  const ImportSucceededMultiple(this.recipes);
+}
+
 /// Import needs user assistance - show AssistedImportDialog.
 class ImportNeedsUserHelp extends SmartImportResult {
   final String extractedText;
@@ -340,9 +346,20 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       _setPhase(ImportPhase.fetching);
       _lastStepBeforeError = 1;
 
+      // Text holding several recipes takes the text import's path, so two
+      // pasted recipes become two instead of one merged recipe.
+      final input = _input.trim();
+      if (_detection?.isUrl != true &&
+          ImportManager.recipeBlocks(input).length > 1) {
+        _setPhase(ImportPhase.analyzing);
+        final batch = await _importManager.autoParseMulti(input);
+        await _clearPendingImportUrl();
+        return await _handleBatchResult(batch);
+      }
+
       // Execute import via ImportManager with real phase callbacks
       final result = await _importManager.autoImport(
-        _input.trim(),
+        input,
         onProgress: _progressTracker.onProgress,
       );
 
@@ -412,6 +429,48 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     final successResult = ImportSucceeded(result.recipe!);
     _lastResult = successResult;
     return successResult;
+  }
+
+  Future<SmartImportResult> _handleBatchResult(BatchImportResult batch) async {
+    final recipes = batch.successfulRecipes;
+    if (recipes.length > 1) {
+      _setPhase(ImportPhase.complete);
+      final successResult = ImportSucceededMultiple(recipes);
+      _lastResult = successResult;
+      return successResult;
+    }
+    if (batch.results.isEmpty) {
+      return _fail(AppLocale.current.importErrorNotImported);
+    }
+    return _handleImportResult(
+      batch.results.firstWhere(
+        (r) => r.isSuccess && r.recipe != null,
+        orElse: () => batch.results.first,
+      ),
+    );
+  }
+
+  /// Saves the recipes ticked in the multi-recipe picker; false on the first
+  /// refused save, with the error set.
+  Future<bool> saveSelectedRecipes(List<Recipe> recipes) async {
+    clearError();
+    try {
+      for (final recipe in recipes) {
+        final result = await _importManager.saveImportedRecipe(recipe);
+        if (!result.isSuccess) {
+          AppLogger.error(
+            'Multi-recipe save failed: ${result.errorMessage.orEmpty()}',
+          );
+          setError(AppLocale.current.recipeSaveFailed);
+          return false;
+        }
+      }
+      return true;
+    } catch (e) {
+      AppLogger.error('Multi-recipe save failed', e);
+      setError(AppLocale.current.recipeSaveFailed);
+      return false;
+    }
   }
 
   /// Handle recipe from AssistedImportDialog.

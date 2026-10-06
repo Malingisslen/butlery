@@ -792,12 +792,9 @@ class ImportManager {
     return batch;
   }
 
-  Future<BatchImportResult> _autoParseMulti(
-    String input, {
-    ImportStrategy? preferredStrategy,
-    Map<String, dynamic>? options,
-    DocumentLayout? layout,
-  }) async {
+  /// The recipe blocks [autoParseMulti] parses [input] as, one per recipe.
+  /// Deterministic and free, so a caller can ask before choosing a path.
+  static List<String> recipeBlocks(String input, {DocumentLayout? layout}) {
     // [layout] is where the words sat on the page, when a reader measured
     // them. Only the photo path can supply it; the paste path never can, so it
     // stays optional and null reproduces today's behaviour exactly.
@@ -818,10 +815,16 @@ class ImportManager {
     // page's median type size under the leading trim and cost a real recipe
     // title; `frame_trim.dart` carries the executed case.
     final trimmed = withoutFrameNoise(input, layout);
-    final blocks = MultiRecipeSplitter().split(
-      trimmed.text,
-      layout: trimmed.layout,
-    );
+    return MultiRecipeSplitter().split(trimmed.text, layout: trimmed.layout);
+  }
+
+  Future<BatchImportResult> _autoParseMulti(
+    String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+    DocumentLayout? layout,
+  }) async {
+    final blocks = recipeBlocks(input, layout: layout);
 
     final results = <ImportManagerResult>[];
     final recipes = <Recipe>[];
