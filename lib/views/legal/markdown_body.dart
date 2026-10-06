@@ -6,15 +6,14 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
 /// `-`/`*` bullets, paragraphs, plus inline `**bold**` and `[text](url)` links.
 ///
 /// We render this in-house rather than pull in `flutter_markdown` (discontinued
-/// upstream) for one screen. Parsing and link-recognizer creation happen once
-/// in [initState]; `build` only assembles styled spans, so there is no
-/// per-frame gesture-recognizer leak.
+/// upstream) for one screen.
 class MarkdownBody extends StatefulWidget {
   final String data;
 
@@ -86,8 +85,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     return scheme == 'http' || scheme == 'https';
   }
 
-  /// Splits a line into inline tokens, creating (and tracking) a tap recognizer
-  /// for every link so it can be disposed with the widget.
+  /// Splits a line into inline tokens.
   List<_Token> _tokenize(String text) {
     final tokens = <_Token>[];
     final pattern = RegExp(r'\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)]+)\)');
@@ -144,17 +142,14 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           _TokenKind.link => WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
-            child: Semantics(
-              link: true,
-              label: t.text,
-              child: GestureDetector(
-                onTap: () => _launch(t.url!),
-                child: Text(
-                  t.text,
-                  style: base.copyWith(
-                    color: linkColor,
-                    decoration: TextDecoration.underline,
-                  ),
+            child: ButleryLink(
+              semanticLabel: t.text,
+              onTap: () => _launch(t.url!),
+              child: Text(
+                t.text,
+                style: base.copyWith(
+                  color: linkColor,
+                  decoration: TextDecoration.underline,
                 ),
               ),
             ),

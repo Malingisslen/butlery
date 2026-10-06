@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 class LinkifiedText {
   const LinkifiedText._();
@@ -81,13 +82,10 @@ class LinkifiedText {
             WidgetSpan(
               alignment: PlaceholderAlignment.baseline,
               baseline: TextBaseline.alphabetic,
-              child: Semantics(
-                link: true,
-                label: context.l10n.a11yLinkTo(url),
-                child: GestureDetector(
-                  onTap: () => _openUrl(url),
-                  child: Text(url, style: effectiveLinkStyle),
-                ),
+              child: ButleryLink(
+                semanticLabel: context.l10n.a11yLinkTo(url),
+                onTap: () => _openUrl(url),
+                child: Text(url, style: effectiveLinkStyle),
               ),
             ),
           );

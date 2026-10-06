@@ -91,14 +91,14 @@ void main() {
     ) async {
       await open(tester, AppTheme.lightTheme);
 
+      // The guidelines link below the reasons has the grip too.
       final rows = find.descendant(
         of: find.byType(AlertDialog),
-        matching: find.byType(ButleryControlFocus),
+        matching: find.byWidgetPredicate(
+          (w) => w is ButleryControlFocus && w.child is RadioListTile<String>,
+        ),
       );
       expect(rows, findsNWidgets(5));
-      for (final row in tester.widgetList<ButleryControlFocus>(rows)) {
-        expect(row.child, isA<RadioListTile<String>>());
-      }
       for (final element in rows.evaluate()) {
         final size = (element.renderObject! as RenderBox).size;
         expect(size.height, greaterThanOrEqualTo(48));

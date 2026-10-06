@@ -25,7 +25,7 @@ import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -413,10 +413,9 @@ class _AuthViewState extends State<AuthView> {
                     Expanded(
                       // BUT-1426: the inline ToS / Privacy links were
                       // TapGestureRecognizer spans — no link role, no
-                      // accessible name, invisible to the a11y audit scanner.
-                      // Each link is now a Semantics(link:)+GestureDetector
-                      // widget; the plain-label words toggle the checkbox,
-                      // mirroring the age-confirm row above.
+                      // accessible name.
+                      // The plain-label words toggle the checkbox, mirroring
+                      // the age-confirm row above.
                       child: Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
@@ -437,15 +436,12 @@ class _AuthViewState extends State<AuthView> {
                               ),
                             ),
                           ),
-                          Semantics(
-                            link: true,
-                            label: context.l10n.a11yTermsOfServiceLink,
-                            child: GestureDetector(
-                              onTap: _navigateToTerms,
-                              child: Text(
-                                context.l10n.authTermsOfService,
-                                style: _termsLinkStyle(cs),
-                              ),
+                          ButleryLink(
+                            semanticLabel: context.l10n.a11yTermsOfServiceLink,
+                            onTap: _navigateToTerms,
+                            child: Text(
+                              context.l10n.authTermsOfService,
+                              style: _termsLinkStyle(cs),
                             ),
                           ),
                           Text(
@@ -454,15 +450,12 @@ class _AuthViewState extends State<AuthView> {
                               color: cs.onSurface,
                             ),
                           ),
-                          Semantics(
-                            link: true,
-                            label: context.l10n.a11yPrivacyPolicyLink,
-                            child: GestureDetector(
-                              onTap: _navigateToPrivacy,
-                              child: Text(
-                                context.l10n.profilePrivacyPolicy,
-                                style: _termsLinkStyle(cs),
-                              ),
+                          ButleryLink(
+                            semanticLabel: context.l10n.a11yPrivacyPolicyLink,
+                            onTap: _navigateToPrivacy,
+                            child: Text(
+                              context.l10n.profilePrivacyPolicy,
+                              style: _termsLinkStyle(cs),
                             ),
                           ),
                         ],
@@ -651,57 +644,53 @@ class _AuthViewState extends State<AuthView> {
 
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Semantics(
-              link: true,
-              label: context.l10n.a11yTermsOfServiceLink,
-              child: PressFill(
-                surface: PressSurface.base,
-                child: InkWell(
-                  onTap: () =>
-                      Navigator.pushNamed(context, Routes.termsOfService),
-                  child: Text(
-                    context.l10n.authTermsOfService,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: context.modeColors.textLink,
-                      decoration: TextDecoration.underline,
-                      decorationColor: context.modeColors.textLink,
-                    ),
-                  ),
+      // The links' 48 dp boxes stand in for the vertical padding the row had.
+      // The equal side padding keeps the gap on both sides of the dot the
+      // same when a link's text is narrower than its 48 dp box.
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
+            child: ButleryLink(
+              semanticLabel: context.l10n.a11yTermsOfServiceLink,
+              onTap: _navigateToTerms,
+              child: Text(
+                context.l10n.authTermsOfService,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
+                  decorationColor: context.modeColors.textLink,
                 ),
               ),
             ),
-            Text(
-              ' \u00B7 ',
-              style: AppTextStyles.labelMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+          ),
+          Text(
+            '\u00B7',
+            style: AppTextStyles.labelMedium.copyWith(
+              color: cs.onSurfaceVariant,
             ),
-            Semantics(
-              link: true,
-              label: context.l10n.a11yPrivacyPolicyLink,
-              child: PressFill(
-                surface: PressSurface.base,
-                child: InkWell(
-                  onTap: () =>
-                      Navigator.pushNamed(context, Routes.privacyPolicy),
-                  child: Text(
-                    context.l10n.profilePrivacyPolicy,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: context.modeColors.textLink,
-                      decoration: TextDecoration.underline,
-                      decorationColor: context.modeColors.textLink,
-                    ),
-                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
+            child: ButleryLink(
+              semanticLabel: context.l10n.a11yPrivacyPolicyLink,
+              onTap: _navigateToPrivacy,
+              child: Text(
+                context.l10n.profilePrivacyPolicy,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
+                  decorationColor: context.modeColors.textLink,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
