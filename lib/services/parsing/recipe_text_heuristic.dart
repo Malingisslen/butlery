@@ -43,8 +43,7 @@ class RecipeTextHeuristic {
     caseSensitive: false,
   );
 
-  /// Returns true when [text] has enough recipe signal to be worth an LLM
-  /// parse: at least one measurement AND one cooking verb, OR ≥3 total signal
+  /// Returns true when [text] has enough recipe signal: at least one measurement AND one cooking verb, OR ≥3 total signal
   /// hits (covers an ingredient-only paste with several amounts but no verbs).
   static bool looksLikeRecipe(String text) {
     if (text.trim().length < 10) return false;

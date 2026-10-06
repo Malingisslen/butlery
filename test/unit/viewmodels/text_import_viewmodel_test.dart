@@ -5,7 +5,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
-import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
@@ -33,13 +32,11 @@ BatchImportResult _singleResult(Recipe recipe) => BatchImportResult(
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager with setImportManagerState() method
-// - MockTextImportStrategy with enhanced stubbing support
 
 void main() {
   group('TextImportViewModel', () {
     late TextImportViewModel viewModel;
     late MockImportManager mockImportManager;
-    late MockTextImportStrategy mockTextStrategy; // Centralized mock
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -55,26 +52,6 @@ void main() {
 
       // Create centralized mocks
       mockImportManager = MockImportManager();
-      mockTextStrategy = MockTextImportStrategy();
-
-      // Configure default mock result for text parsing using mocktail stubbing
-      when(
-        () => mockTextStrategy.import(any(), options: any(named: 'options')),
-      ).thenAnswer(
-        (_) async => ImportResult.success(
-          RecipeFactory.build(
-            title: 'Parsed Recipe',
-            description: 'Recipe parsed from text',
-            ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
-            instructions: ['Vispa ihop', 'Stek i pannan'],
-          ),
-        ),
-      );
-
-      // Configure ImportManager using centralized setImportManagerState()
-      mockImportManager.setImportManagerState(
-        textImportStrategy: mockTextStrategy,
-      );
 
       // Configure autoImport for text strategy approach
       when(
@@ -325,7 +302,7 @@ void main() {
           // Intent: the social-media view binds the parse button's spinner and
           // its double-tap guard to `viewModel.isParsing` (fran_sociala_medier_
           // view lines 335/338). parseText must flip isParsing (== isLoading)
-          // true for the whole Cloud Function round-trip so the "Tolkar..."
+          // true so the "Tolkar..."
           // spinner shows and a second tap is blocked mid-parse — then back to
           // false on completion.
           viewModel.updateInputText('Recipe text');

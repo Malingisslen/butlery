@@ -79,7 +79,7 @@ class ImportEventsTracker extends BaseTracker {
   }
 
   /// BUT-1037: user dismissed the "doesn't look like a recipe" warn dialog
-  /// instead of forcing the import — one paid LLM parse avoided. [source]
+  /// instead of forcing the import. [source]
   /// identifies the import surface (e.g. `text_paste`).
   Future<void> logWarnDialogCancelled({required String source}) async {
     await logEvent(

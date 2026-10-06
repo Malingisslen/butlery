@@ -3822,7 +3822,7 @@
     {
       "id": "flow-imp-1",
       "label": "Fotoimport (OCR)",
-      "description": "Kamera/galleri-bild går genom flerleverantörs-OCR (OCR.space, Google Vision, Tesseract) och tolkas med samma regelbaserade textparser som klistra-in-flödet, inte den ML-kaskad (CRF/NER/ONNX) som bara körs för URL-import. Handskriven-togglen (BUT-1460) hoppar över kvalitetsgrinden och går direkt till Gemini Vision via en dedikerad handskriven-prompt; samma modell används som Tier-4-reservväg när tecken-OCR eller textparsern misslyckas på tryckt text.",
+      "description": "Kamera/galleri-bild går genom flerleverantörs-OCR (OCR.space, Google Vision, Tesseract) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Handskriven-togglen (BUT-1460) hoppar över kvalitetsgrinden och går direkt till Gemini Vision via en dedikerad handskriven-prompt; samma modell används som Tier-4-reservväg när tecken-OCR eller textparsern misslyckas på tryckt text.",
       "features": [
         "IMP-04",
         "ENG-09"
@@ -3967,7 +3967,7 @@
     {
       "id": "flow-imp-2",
       "label": "Text/klistra in-import",
-      "description": "Inklistrad text (från extern app, klippbord eller efter social/URL-extraktion) körs genom samma regelbaserade textparser som fotoimporten — ingen ML-kaskad, ingen skillnad mot foto-vägens parsning bortsett från att OCR-steget saknas.",
+      "description": "Inklistrad text (från extern app, klippbord eller efter social/URL-extraktion) körs genom samma regelbaserade textparser som fotoimporten — ingen skillnad mot foto-vägens parsning bortsett från att OCR-steget saknas.",
       "features": [
         "IMP-05"
       ],
@@ -4214,7 +4214,7 @@
     {
       "id": "flow-imp-4",
       "label": "Filimport & arkiv",
-      "description": "Två separata, oberoende vägar: (1) CSV/Excel/Paprika-arkiv-filer väljs och parsas lokalt via ImportManager.importFile() (kvot och importhändelse; regex/XLSX-läsning, ingen LLM) och sparas sedan direkt via UnifiedRecipeService, förbi ImportManager. (2) Butlerys bundlade receptarkiv (curerade recept i appdata) filtreras/väljs och sparas i batch, också förbi ImportManager — ArchiveImportStrategy är på samma sätt registrerad men oanvänd av denna vy.",
+      "description": "Två separata, oberoende vägar: (1) CSV/Excel/Paprika-arkiv-filer väljs och parsas lokalt via ImportManager.importFile() (kvot och importhändelse; regex/XLSX-läsning, ingen LLM) och sparas sedan direkt via UnifiedRecipeService, förbi ImportManager. (2) Butlerys bundlade receptarkiv (curerade recept i appdata) filtreras/väljs och sparas i batch, också förbi ImportManager — ArchiveImportStrategy är registrerad men oanvänd av denna vy.",
       "features": [
         "IMP-08",
         "IMP-09"
@@ -4339,7 +4339,7 @@
     {
       "id": "flow-imp-5",
       "label": "Assisterad import",
-      "description": "En 3-stegsguide där användaren TRYCKER FRAM ingrediens- och instruktionsrader från extraherad/OCR:ad/inklistrad text, styrd av rena regel-heuristiker (nyckelord, radmönster) — själva radplockningen i guiden är fortfarande ren heuristik. Den ML-baserade ingrediensrad-kaskaden (CRF → NER/ONNX → selektiv LLM) körs sedan BUT-1501 även för klistra in-/foto-/röst-importer via TextImportStrategy (den fyller BARA det additiva structuredIngredients-fältet; den platta ingredienslistan som allergimärkningen läser rörs aldrig), men matas inte av guidens manuella radval. Sedan BUT-1501 ankrar guiden dessutom en PII-skrubbad korrigeringssnapshot (BUT-1469-loopen) från det färdiga receptet, så senare redigeringar diffas till aktivt lärande — tidigare var endast Tier-1 URL-importer kopplade till parsing_corrections.",
+      "description": "En 3-stegsguide där användaren TRYCKER FRAM ingrediens- och instruktionsrader från extraherad/OCR:ad/inklistrad text, styrd av rena regel-heuristiker (nyckelord, radmönster) — själva radplockningen i guiden är fortfarande ren heuristik. Den ML-baserade ingrediensrad-kaskaden (CRF → NER/ONNX) körs sedan BUT-1501 även för klistra in-/foto-/röst-importer via TextImportStrategy (den fyller BARA det additiva structuredIngredients-fältet; den platta ingredienslistan som allergimärkningen läser rörs aldrig), men matas inte av guidens manuella radval. Sedan BUT-1501 ankrar guiden dessutom en PII-skrubbad korrigeringssnapshot (BUT-1469-loopen) från det färdiga receptet, så senare redigeringar diffas till aktivt lärande — tidigare var endast Tier-1 URL-importer kopplade till parsing_corrections.",
       "features": [
         "IMP-10",
         "IMP-11",

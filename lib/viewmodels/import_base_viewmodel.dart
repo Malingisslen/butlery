@@ -1,4 +1,4 @@
-/// Base ViewModel for all import operations with unified workflow and validation.
+/// Base ViewModel for all import operations.
 
 // lib/viewmodels/import_base_viewmodel.dart
 

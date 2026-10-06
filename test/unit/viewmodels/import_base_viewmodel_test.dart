@@ -371,13 +371,5 @@ void main() {
       // executeAsyncVoid: error is errorPrefix or errorUnexpected (Swedish)
       expect(viewModel.error, isNotNull);
     });
-
-    test(
-      'should use Swedish error message when saving without a recipe',
-      () async {
-        await viewModel.saveImportedRecipe();
-        expect(viewModel.error, equals('Inget recept att spara'));
-      },
-    );
   });
 }

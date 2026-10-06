@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
-import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
@@ -53,7 +52,7 @@ class MockStreamedResponse extends Mock implements http.StreamedResponse {
 // BUT-1171: drives the REAL backing fields (`_ocrText` / `_imageBytes`) via the
 // production `@visibleForTesting` seams instead of shadow fields + getter
 // overrides. The previous double diverged from production state — `ocrText`
-// returned the shadow value while `performImport` / `saveImportedRecipe` read
+// returned the shadow value while `saveImportedRecipe` read
 // the empty real field — so those paths never ran against the data the test
 // set. Now `ocrText`, `hasOcrResult`, `imageBytes`, `hasImage`, `clearPhoto`
 // and `debugState` are all inherited from production and observe the same
@@ -161,23 +160,6 @@ void main() {
       mockImportManager = MockImportManager();
       mockImagePicker = MockImagePicker();
       mockHttpClient = MockHttpClient();
-
-      // Configure ImportManager mock using centralized setImportManagerState()
-      final mockTextStrategy = MockTextImportStrategy();
-      when(
-        () => mockTextStrategy.import(any(), options: any(named: 'options')),
-      ).thenAnswer((_) async {
-        return ImportResult.success(
-          RecipeFactory.build(
-            title: 'Parsed from OCR',
-            description: 'Recipe parsed from OCR text',
-          ),
-        );
-      });
-
-      mockImportManager.setImportManagerState(
-        textImportStrategy: mockTextStrategy,
-      );
 
       when(() => mockImportManager.autoImport(any())).thenAnswer((_) async {
         return ImportManagerResult.success(
@@ -1227,5 +1209,3 @@ void main() {
     });
   });
 }
-
-// Using centralized MockTextImportStrategy from production_mocks.dart

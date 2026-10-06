@@ -137,9 +137,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
         return false;
       }
 
-      // Preserve the prior source-URL attribution: the old single-recipe path
-      // applied `sourceUrl` to the parsed recipe, so carry it across every
-      // recipe in the batch here too.
+      // Preserve the prior source-URL attribution.
       final url = sourceUrl;
       final recipes = url == null
           ? parsed
