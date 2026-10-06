@@ -161,6 +161,7 @@ class FirebaseSharedShoppingRepository
   Future<String> createSharedShoppingList(
     SharedShoppingList sharedShoppingList, {
     required List<String> recipientIds,
+    List<String>? groupIds,
   }) async {
     final uid = requireCurrentUserId();
 
@@ -176,7 +177,10 @@ class FirebaseSharedShoppingRepository
     }
 
     // Create the shared shopping list document
-    final listId = await createSharedContent(sharedShoppingList);
+    final listId = await createSharedContent(
+      sharedShoppingList,
+      groupIds: groupIds,
+    );
 
     // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
     for (final recipientId in recipientIds) {

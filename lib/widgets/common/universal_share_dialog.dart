@@ -51,6 +51,10 @@ class UniversalShareDialog extends StatefulWidget {
   final bool isBulkSharing; // Indicates if this is bulk sharing
   final String? menuName; // Optional menu name for menu sharing
 
+  /// Groups ticked when the dialog opens, e.g. the group whose page it was
+  /// opened from (BUT-2271).
+  final List<String> initialGroupIds;
+
   const UniversalShareDialog({
     super.key,
     required this.content,
@@ -61,6 +65,7 @@ class UniversalShareDialog extends StatefulWidget {
     this.availableGroups,
     this.isBulkSharing = false,
     this.menuName,
+    this.initialGroupIds = const [],
   });
 
   /// Factory constructors for type safety
@@ -88,6 +93,7 @@ class UniversalShareDialog extends StatefulWidget {
     String? initialMessage,
     List<UserProfile>? availableFriends,
     List<FriendCategory>? availableGroups,
+    List<String> initialGroupIds = const [],
   }) {
     return UniversalShareDialog(
       content: menu,
@@ -97,6 +103,7 @@ class UniversalShareDialog extends StatefulWidget {
       initialMessage: initialMessage,
       availableFriends: availableFriends,
       availableGroups: availableGroups,
+      initialGroupIds: initialGroupIds,
     );
   }
 
@@ -106,6 +113,7 @@ class UniversalShareDialog extends StatefulWidget {
     String? initialMessage,
     List<UserProfile>? availableFriends,
     List<FriendCategory>? availableGroups,
+    List<String> initialGroupIds = const [],
   }) {
     return UniversalShareDialog(
       content: shoppingList,
@@ -114,6 +122,7 @@ class UniversalShareDialog extends StatefulWidget {
       initialMessage: initialMessage,
       availableFriends: availableFriends,
       availableGroups: availableGroups,
+      initialGroupIds: initialGroupIds,
     );
   }
 
@@ -204,6 +213,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     _hasFriends =
         (widget.availableFriends?.isNotEmpty ?? false) ||
         (widget.availableGroups?.isNotEmpty ?? false);
+
+    _selectedGroupIds.addAll(widget.initialGroupIds);
+    if (widget.initialGroupIds.isNotEmpty) {
+      _selectedTab = ShareTargetType.groups;
+    }
   }
 
   @override

@@ -16,6 +16,7 @@ import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/shared_content_member.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 
 abstract class BaseSharedContentRepository<T>
     extends BaseFirebaseRepository<T> {
@@ -113,6 +114,7 @@ abstract class BaseSharedContentRepository<T>
   Future<String> createSharedContent(
     T entity, {
     List<String>? initialSharedToUserIds,
+    List<String>? groupIds,
   }) async {
     final uid = requireCurrentUserId();
 
@@ -143,6 +145,12 @@ abstract class BaseSharedContentRepository<T>
       // `addMember`, which arrayUnions them into this same field, exactly as
       // before.
       entityData['sharedToUserIds'] = initialSharedToUserIds ?? <String>[uid];
+      // The groups the share was made to, so a group page can tell "shared
+      // with this group" from "shared privately with someone in it"
+      // (BUT-2271). `sharedToUserIds` alone cannot.
+      if (groupIds != null && groupIds.isNotEmpty) {
+        entityData[sharedContentGroupIdsField] = groupIds;
+      }
       final batch = firestore.batch();
       batch.set(docRef, entityData);
       stampRateLimit(

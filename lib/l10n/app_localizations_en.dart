@@ -5655,6 +5655,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'All your friends are already members of this group, or you have already sent invitations to them.';
 
   @override
+  String get groupSharedContentLoadFailed =>
+      'The shared content could not be loaded.';
+
+  @override
   String get groupCouldNotLoadMembers => 'Could not load group members';
 
   @override

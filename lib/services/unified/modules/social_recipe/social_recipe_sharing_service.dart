@@ -88,6 +88,10 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     /// picking groups. Absent means a plain user share, recorded as 'direct'.
     Map<String, List<String>>? grantsByUserId,
     String? message,
+
+    /// BUT-2271: the groups picked, recorded on the discovery row so a group
+    /// page can find it.
+    List<String>? groupIds,
   }) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -253,6 +257,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
           await _sharedRecipeRepository.createSharedRecipe(
             sharedRecipe,
             recipientIds: userIds,
+            groupIds: groupIds,
           );
           secondaryError = null;
           AppLogger.debug('✅ Recipe also written to shared_recipes collection');
@@ -348,6 +353,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         allMemberIds.toList(),
         permission,
         grantsByUserId: grantsByUserId,
+        groupIds: groupIds,
       )).fullyShared;
 
       if (success) {

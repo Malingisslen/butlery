@@ -182,6 +182,7 @@ class FirebaseSharedMenuRepository
   Future<String> createSharedMenu(
     SharedMenu sharedMenu, {
     required List<String> recipientIds,
+    List<String>? groupIds,
   }) async {
     final uid = requireCurrentUserId();
 
@@ -197,7 +198,7 @@ class FirebaseSharedMenuRepository
     }
 
     // Create the shared menu document
-    final menuId = await createSharedContent(sharedMenu);
+    final menuId = await createSharedContent(sharedMenu, groupIds: groupIds);
 
     // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
     for (final recipientId in recipientIds) {

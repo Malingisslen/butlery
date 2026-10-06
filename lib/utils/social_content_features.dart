@@ -126,8 +126,9 @@ class SocialContentFeatures {
     String contentType,
     List<String> friendIds,
     String message,
-    dynamic service,
-  ) async {
+    dynamic service, {
+    List<String>? groupIds,
+  }) async {
     try {
       if (contentType == 'shopping_list' && service is UnifiedShoppingService) {
         // Get the shopping list
@@ -141,6 +142,7 @@ class SocialContentFeatures {
           friendIds,
           message,
           service,
+          groupIds,
         );
 
         if (!success) {
@@ -234,6 +236,7 @@ class SocialContentFeatures {
     List<String> friendIds,
     String message,
     UnifiedShoppingService service,
+    List<String>? groupIds,
   ) async {
     try {
       // Get current user information
@@ -275,6 +278,7 @@ class SocialContentFeatures {
       await sharedShoppingRepository.createSharedShoppingList(
         validatedSharedShoppingList,
         recipientIds: validFriendIds,
+        groupIds: groupIds,
       );
 
       return true;

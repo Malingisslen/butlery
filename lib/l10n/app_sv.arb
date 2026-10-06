@@ -3779,6 +3779,10 @@
   "importWebsite": "Webbsida",
   "groupAddMembers": "Lägg till medlemmar",
   "groupAllFriendsAlreadyMembers": "Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.",
+  "groupSharedContentLoadFailed": "Det delade innehållet kunde inte hämtas.",
+  "@groupSharedContentLoadFailed": {
+    "description": "Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271)."
+  },
   "groupCouldNotLoadMembers": "Kunde inte ladda gruppmedlemmar",
   "groupLeaveRosterIncomplete": "Vi kunde inte läsa alla medlemmar. Försök igen.",
   "groupCouldNotTransferOwnership": "Kunde inte överföra ägande. Försök igen.",

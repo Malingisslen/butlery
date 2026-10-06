@@ -42,6 +42,7 @@
 /// await sharedRecipeRepo.markAsDismissed(recipeId, userId);
 /// ```
 
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -223,6 +224,7 @@ class FirebaseSharedRecipeRepository
   Future<String> createSharedRecipe(
     SharedRecipe sharedRecipe, {
     required List<String> recipientIds,
+    List<String>? groupIds,
   }) async {
     final uid = requireCurrentUserId();
 
@@ -251,6 +253,11 @@ class FirebaseSharedRecipeRepository
       await Future.wait(
         recipientIds.map((id) => addMember(existingId, id, addedBy: uid)),
       );
+      if (groupIds != null && groupIds.isNotEmpty) {
+        await getCollectionRef().doc(existingId).update({
+          sharedContentGroupIdsField: FieldValue.arrayUnion(groupIds),
+        });
+      }
       AppLogger.info(
         '♻️ Reusing existing shared recipe $existingId (idempotent)',
       );
@@ -261,6 +268,7 @@ class FirebaseSharedRecipeRepository
     final recipeId = await createSharedContent(
       sharedRecipe,
       initialSharedToUserIds: [sharedRecipe.sharedByUserId],
+      groupIds: groupIds,
     );
 
     // Add all recipients concurrently — each addMember also appends to sharedToUserIds
