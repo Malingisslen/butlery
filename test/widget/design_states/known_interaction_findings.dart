@@ -25,5 +25,4 @@ class KnownInteractionFinding {
 }
 
 /// Keyed by `CSR::ROLE::<role>::<STATE> (light|dark)`.
-const Map<String, KnownInteractionFinding> knownInteractionFindings = {
-};
+const Map<String, KnownInteractionFinding> knownInteractionFindings = {};
