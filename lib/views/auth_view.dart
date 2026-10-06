@@ -647,8 +647,9 @@ class _AuthViewState extends State<AuthView> {
       // The links' 48 dp boxes stand in for the vertical padding the row had.
       // The equal side padding keeps the gap on both sides of the dot the
       // same when a link's text is narrower than its 48 dp box.
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(
@@ -667,10 +668,13 @@ class _AuthViewState extends State<AuthView> {
               ),
             ),
           ),
-          Text(
-            '\u00B7',
-            style: AppTextStyles.labelMedium.copyWith(
-              color: cs.onSurfaceVariant,
+          // A separator, not content: a screen reader reads the two links.
+          ExcludeSemantics(
+            child: Text(
+              '\u00B7',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ),
           Padding(
