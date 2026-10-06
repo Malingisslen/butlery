@@ -26,7 +26,9 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/voice_import_strategy.dart';
+import 'package:butlery/services/import/voice_transcript_assembler.dart';
 import 'package:butlery/services/parsing/parse_event_logger.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -147,6 +149,36 @@ void main() {
       expect(VoiceImportStrategy().canHandle(_assembledTranscript), isFalse);
     });
   });
+
+  // Resa 11: a dictated "tre deciliter vetemjöl" was saved as amount 1 and
+  // "tre ägg" with no amount, and the saved recipe had lost its voice stamp.
+  // Real parse, real form: the path the voice view hands to the editor.
+  test(
+    'spoken amounts and the voice stamp survive to the saved recipe',
+    () async {
+      final transcript = assembleRecipeText(
+        title: 'Pannkakor',
+        ingredientsTranscript:
+            'tre deciliter vetemjöl, sex deciliter mjölk, tre ägg',
+        stepsTranscript: 'Vispa ihop. Stek.',
+      );
+      final imported = await VoiceImportStrategy().import(transcript);
+
+      final saved = RecipeFormState(
+        initialRecipe: imported.recipe,
+        isTemplate: true,
+      ).createRecipe();
+
+      expect(
+        saved.core.structuredIngredients!.map((i) => (i.amount, i.name)),
+        [(3, 'vetemjöl'), (6, 'mjölk'), (3, 'ägg')],
+      );
+      expect(
+        saved.core.sourceArtefact?.type,
+        SourceArtefactType.voiceDictation,
+      );
+    },
+  );
 
   group('ImportManager.importVoiceTranscript', () {
     test('routes through the telemetry choke point: one parse event with '
