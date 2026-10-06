@@ -36,9 +36,6 @@ class _TestImportViewModel extends ImportBaseViewModel {
   _TestImportViewModel({required super.importManager});
 
   @override
-  Future<void> performImport() async {}
-
-  @override
   String get importType => 'test';
 }
 
@@ -51,10 +48,7 @@ void main() {
   late HeirloomBridge bridge;
   late _TestImportViewModel vm;
 
-  final imported = RecipeFactory.build(
-    id: 'recipe-123',
-    title: 'Pannkakor',
-  );
+  final imported = RecipeFactory.build(id: 'recipe-123', title: 'Pannkakor');
 
   setUpAll(() async {
     await TestServiceLocator.initialize();
@@ -155,9 +149,7 @@ void main() {
       'pending draft + upload returns null → save blocked, error surfaced',
       () async {
         bridge.setDraft(
-          HeirloomDraft(
-            imageBytes: Uint8List.fromList([1, 2, 3, 4]),
-          ),
+          HeirloomDraft(imageBytes: Uint8List.fromList([1, 2, 3, 4])),
         );
         when(
           () => mockStorage.uploadImageData(
@@ -202,9 +194,7 @@ void main() {
         // moved after the storage call, this test catches it.
         fakePermission.setPermissionState(currentUserId: null);
         bridge.setDraft(
-          HeirloomDraft(
-            imageBytes: Uint8List.fromList([1, 2, 3]),
-          ),
+          HeirloomDraft(imageBytes: Uint8List.fromList([1, 2, 3])),
         );
 
         final ok = await vm.saveImportedRecipe();

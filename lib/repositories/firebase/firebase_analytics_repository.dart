@@ -140,10 +140,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }) async {
     try {
       final sanitized = await _sanitize(parameters);
-      await _analytics.logEvent(
-        name: name,
-        parameters: sanitized,
-      );
+      await _analytics.logEvent(name: name, parameters: sanitized);
     } catch (e) {
       AppLogger.error('Analytics event logging failed: $e');
     }
@@ -297,34 +294,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logExtractionError({
-    required String url,
-    required String platform,
-    required String error,
-    String? errorType,
-    String imageFormat = 'unknown',
-  }) async {
-    final String category = AnalyticsBuckets.categorizeError(error);
-
-    await logEvent(
-      name: AnalyticsEvents.extractionError,
-      parameters: {
-        'platform': platform,
-        'error_category': category,
-        'error_type': errorType ?? 'unknown',
-        'error_message': error.substring(
-          0,
-          error.length > 100 ? 100 : error.length,
-        ),
-        'url_domain': Uri.tryParse(url)?.host ?? 'invalid_url',
-        'image_format': imageFormat,
-      },
-    );
-
-    AppLogger.info('📊 Extraction error logged: $platform - $category');
-  }
-
-  @override
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
@@ -343,14 +312,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logRecipeShared({
-    required String method,
-  }) async {
+  Future<void> logRecipeShared({required String method}) async {
     await logEvent(
       name: AnalyticsEvents.recipeShared,
-      parameters: {
-        'method': method,
-      },
+      parameters: {'method': method},
     );
   }
 
@@ -384,10 +349,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }) async {
     await logEvent(
       name: AnalyticsEvents.menuGenerated,
-      parameters: {
-        'recipe_count': recipeCount,
-        'method': method,
-      },
+      parameters: {'recipe_count': recipeCount, 'method': method},
     );
   }
 

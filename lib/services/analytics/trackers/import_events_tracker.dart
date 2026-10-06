@@ -1,7 +1,6 @@
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
-import 'package:butlery/services/content_detector_service.dart';
 
 /// Tracks import-related analytics events
 class ImportEventsTracker extends BaseTracker {
@@ -75,10 +74,7 @@ class ImportEventsTracker extends BaseTracker {
   }) async {
     await logEvent(
       name: AnalyticsEvents.importCancelled,
-      parameters: {
-        'source': source,
-        'session_id': ?sessionId,
-      },
+      parameters: {'source': source, 'session_id': ?sessionId},
     );
   }
 
@@ -89,23 +85,6 @@ class ImportEventsTracker extends BaseTracker {
     await logEvent(
       name: AnalyticsEvents.importWarnDialogCancelled,
       parameters: {'source': source},
-    );
-  }
-
-  /// Log extraction error (exempt from consent - error tracking)
-  Future<void> logExtractionError({
-    required String url,
-    required SourcePlatform platform,
-    required String error,
-    String? errorType,
-    String imageFormat = 'unknown',
-  }) async {
-    await repository.logExtractionError(
-      url: url,
-      platform: platform.toString().split('.').last,
-      error: error,
-      errorType: errorType,
-      imageFormat: imageFormat,
     );
   }
 }

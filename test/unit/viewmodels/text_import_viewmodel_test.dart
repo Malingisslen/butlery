@@ -123,9 +123,7 @@ void main() {
       );
 
       // Create viewModel
-      viewModel = TextImportViewModel(
-        importManager: mockImportManager,
-      );
+      viewModel = TextImportViewModel(importManager: mockImportManager);
     });
 
     tearDown(() async {
@@ -300,6 +298,27 @@ void main() {
         expect(viewModel.error, contains('Import misslyckades'));
       });
 
+      test('a failed re-parse keeps the edited recipe (BUT-924)', () async {
+        viewModel.updateInputText('Recipe text');
+        expect(await viewModel.parseText(), isTrue);
+        // ignore: invalid_use_of_protected_member
+        viewModel.setParsedRecipe(
+          viewModel.parsedRecipe!.copyWith(title: 'User-edited title'),
+        );
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(Exception('Parsing failed'));
+
+        expect(await viewModel.parseText(), isFalse);
+
+        expect(viewModel.parsedRecipe?.title, 'User-edited title');
+        expect(viewModel.error, contains('Import misslyckades'));
+      });
+
       test(
         'parseText drives isParsing during the parse (BUT-960 spinner)',
         () async {
@@ -419,72 +438,6 @@ void main() {
         expect(viewModel.hasParsedRecipe, isFalse);
         expect(viewModel.parsedRecipe, isNull);
         expect(notificationCount, greaterThan(0));
-      });
-    });
-
-    group('Import and Save', () {
-      test('should complete import workflow successfully', () async {
-        // Arrange
-        viewModel.updateInputText('Recipe text');
-
-        // Act
-        final result = await viewModel.importAndSave();
-
-        // Assert
-        expect(result, isTrue);
-        expect(viewModel.hasParsedRecipe, isTrue);
-        expect(viewModel.error, isNull);
-        // Verify through ImportManager - internal strategy calls can't be verified
-        verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-      });
-
-      test('should handle save failure', () async {
-        // Arrange
-        viewModel.updateInputText('Recipe text');
-        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
-          (_) async => ImportManagerResult.failure(
-            'Failed to save',
-            strategy: 'text',
-          ),
-        );
-
-        // Act
-        final result = await viewModel.importAndSave();
-
-        // Assert
-        expect(result, isFalse);
-      });
-
-      test('should not save without valid input', () async {
-        // Arrange
-        viewModel.updateInputText('');
-
-        // Act
-        final result = await viewModel.importAndSave();
-
-        // Assert
-        expect(result, isFalse);
-        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
-      });
-
-      test('should handle import error', () async {
-        // Arrange
-        viewModel.updateInputText('Recipe text');
-        // importAndSave() still routes through completeImport → performImport →
-        // strategy.import (the single-recipe path), NOT autoParseMulti, so the
-        // strategy is the seam to fault-inject here.
-        when(
-          () => mockTextStrategy.import(any(), options: any(named: 'options')),
-        ).thenThrow(Exception('Import failed'));
-
-        // Act — executeAsync rethrows after setting error
-        try {
-          await viewModel.importAndSave();
-        } catch (_) {}
-
-        // Assert
-        expect(viewModel.hasError, isTrue);
-        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
       });
     });
 
@@ -905,10 +858,7 @@ Grädda i våffeljärn tills gyllene.''';
         expect(suggestions.length, equals(1));
         expect(
           suggestions[0],
-          anyOf(
-            contains('ser bra ut'),
-            contains('portion'),
-          ),
+          anyOf(contains('ser bra ut'), contains('portion')),
         );
       });
     });
@@ -919,7 +869,7 @@ Grädda i våffeljärn tills gyllene.''';
         viewModel.updateInputText('Recipe text');
         await viewModel.parseText();
 
-        // Act - validateImportData is part of complete import workflow
+        // Act
         final hasRecipe = viewModel.hasParsedRecipe;
 
         // Assert
@@ -1047,7 +997,7 @@ Grädda i våffeljärn tills gyllene.''';
         await viewModel.parseText();
         viewModel.clearInput();
         viewModel.updateInputText('Third recipe');
-        await viewModel.importAndSave();
+        await viewModel.parseText();
 
         // Assert
         expect(viewModel.inputText, equals('Third recipe'));

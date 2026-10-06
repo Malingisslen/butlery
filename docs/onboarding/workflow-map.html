@@ -4214,7 +4214,7 @@
     {
       "id": "flow-imp-4",
       "label": "Filimport & arkiv",
-      "description": "Två separata, oberoende vägar: (1) CSV/Excel/Paprika-arkiv-filer parsas lokalt (regex/XLSX-läsning, ingen LLM) och sparas direkt via UnifiedRecipeService — förbi ImportManager helt, så FileImportStrategy är registrerad i ImportManager men den dedikerade filimport-UI:n anropar den aldrig. (2) Butlerys bundlade receptarkiv (curerade recept i appdata) filtreras/väljs och sparas i batch, också förbi ImportManager — ArchiveImportStrategy är på samma sätt registrerad men oanvänd av denna vy.",
+      "description": "Två separata, oberoende vägar: (1) CSV/Excel/Paprika-arkiv-filer väljs och parsas lokalt via ImportManager.importFile() (kvot och importhändelse; regex/XLSX-läsning, ingen LLM) och sparas sedan direkt via UnifiedRecipeService, förbi ImportManager. (2) Butlerys bundlade receptarkiv (curerade recept i appdata) filtreras/väljs och sparas i batch, också förbi ImportManager — ArchiveImportStrategy är på samma sätt registrerad men oanvänd av denna vy.",
       "features": [
         "IMP-08",
         "IMP-09"
@@ -4229,8 +4229,15 @@
         },
         {
           "from": "vm-file-import",
+          "to": "svc-import-manager",
+          "payload": "importFile() (kvotkontroll + importhändelse)",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
+          "from": "svc-import-manager",
           "to": "svc-file-import-strategy",
-          "payload": "importMultiple()",
+          "payload": "pickFile() + importPicked()",
           "transport": "method-call",
           "verified": true
         },
@@ -4243,8 +4250,15 @@
         },
         {
           "from": "svc-file-import-strategy",
-          "to": "vm-file-import",
+          "to": "svc-import-manager",
           "payload": "List<Recipe> (parsad från CSV/Excel/arkiv-export)",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
+          "from": "svc-import-manager",
+          "to": "vm-file-import",
+          "payload": "FileImportResult (recept eller kvotavslag)",
           "transport": "method-call",
           "verified": true
         },

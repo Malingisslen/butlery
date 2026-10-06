@@ -216,10 +216,8 @@ abstract final class AnalyticsEvents {
   static const importStarted = 'import_started';
   static const importSuccess = 'import_success';
   static const importCancelled = 'import_cancelled';
-  // BUT-1037: user backed out of the "doesn't look like a recipe" warn dialog,
-  // so we avoided a wasted paid LLM parse. Measures cost saved.
+  // BUT-1037: user backed out of the "doesn't look like a recipe" warn dialog.
   static const importWarnDialogCancelled = 'import_warn_dialog_cancelled';
-  static const extractionError = 'extraction_error';
   static const importTierSucceeded = 'import_tier_succeeded';
   static const importTierFailed = 'import_tier_failed';
 

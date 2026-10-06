@@ -34,7 +34,6 @@ class MockAnalyticsRepository extends Mock implements AnalyticsRepository {
   // - setAnalyticsCollectionEnabled()
   // - logImportStarted()
   // - logImportSuccess()
-  // - logExtractionError()
   // - logRecipeCreated()
   // - logRecipeShared()
   // - logRecipeCooked()

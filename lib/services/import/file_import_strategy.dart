@@ -17,9 +17,8 @@ import 'package:butlery/core/utils/logger.dart';
 class FileImportStrategy extends ImportStrategy {
   final FileContentProvider _contentProvider;
 
-  FileImportStrategy({
-    FileContentProvider? contentProvider,
-  }) : _contentProvider = contentProvider ?? DefaultFileContentProvider();
+  FileImportStrategy({FileContentProvider? contentProvider})
+    : _contentProvider = contentProvider ?? DefaultFileContentProvider();
   @override
   String get strategyName => 'File Import (CSV/Excel)';
 
@@ -108,18 +107,6 @@ class FileImportStrategy extends ImportStrategy {
       return ImportResult.failure(
         'Could not parse file content. Please check the file format.',
       );
-    }
-  }
-
-  /// Import multiple recipes from file
-  Future<List<Recipe>> importMultiple({Map<String, dynamic>? options}) async {
-    try {
-      final file = await pickFile();
-      if (file == null) return [];
-      return await importPicked(file, options: options);
-    } catch (e) {
-      AppLogger.error('File import failed', e);
-      return [];
     }
   }
 

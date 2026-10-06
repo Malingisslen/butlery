@@ -5,7 +5,6 @@
 /// Define as a Firebase Analytics audience or BigQuery query over these events.
 
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
-import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
@@ -74,10 +73,7 @@ class AnalyticsService extends BaseService {
   /// custom error reaction) should still call [logEvent] directly. Sites
   /// using domain-specific tracker methods (e.g. `logRecipeShared`) are
   /// unaffected.
-  static void tryLog(
-    String name, {
-    Map<String, Object>? parameters,
-  }) {
+  static void tryLog(String name, {Map<String, Object>? parameters}) {
     try {
       final analytics = ServiceLocator.tryGet<AnalyticsService>();
       if (analytics == null) return;
@@ -312,20 +308,6 @@ class AnalyticsService extends BaseService {
     required String source,
     String? sessionId,
   }) => _importTracker.logImportCancelled(source: source, sessionId: sessionId);
-
-  Future<void> logExtractionError({
-    required String url,
-    required SourcePlatform platform,
-    required String error,
-    String? errorType,
-    String imageFormat = 'unknown',
-  }) => _importTracker.logExtractionError(
-    url: url,
-    platform: platform,
-    error: error,
-    errorType: errorType,
-    imageFormat: imageFormat,
-  );
 
   Future<void> logRecipeCreated({
     required String source,
