@@ -268,9 +268,6 @@ class RecipeManagementHandler {
                     .map(
                       (friend) => CheckboxListTile(
                         title: Text(friend.displayName),
-                        subtitle: friend.email.isNotEmpty
-                            ? Text(friend.email)
-                            : null,
                         value: selectedIds.contains(friend.uid),
                         activeColor: dialogCs.primary,
                         onChanged: (v) => setDialogState(() {

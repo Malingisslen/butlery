@@ -259,28 +259,14 @@ class ShareTargetSelectionEnhanced {
                   : null,
             ),
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                friend.email,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (isExistingCollaborator) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
-                Text(
-                  context
-                      .l10n
-                      .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
+          subtitle: isExistingCollaborator
+              ? Text(
+                  context.l10n.shareAlreadySharingList,
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                ),
-              ],
-            ],
-          ),
+                )
+              : null,
           trailing: Checkbox(
             value: isSelected,
             onChanged: isExistingCollaborator

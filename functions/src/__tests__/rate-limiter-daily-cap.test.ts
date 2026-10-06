@@ -321,6 +321,16 @@ const cases: UnitCase[] = [
       );
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: findUserByEmail daily cap is 100",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.findUserByEmail.dailyLimit,
+        100,
+        "findUserByEmail.dailyLimit"
+      );
+    },
+  },
   // The coverage promise itself, rather than a count of the entries that keep
   // it. Every previous wording quantified ("three", then "FOUR") and went stale
   // by ADDITION with its own bytes untouched — twice. This case fails on the
@@ -335,6 +345,7 @@ const cases: UnitCase[] = [
         "createChatGroup",
         "ensureCategoryChat",
         "sendGroupInvitations",
+        "findUserByEmail",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

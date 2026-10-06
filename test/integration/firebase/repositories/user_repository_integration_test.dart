@@ -230,28 +230,6 @@ void main() {
         ); // Excludes current user
       });
 
-      test('should search by email when allowed', () async {
-        // Arrange
-        await fakeFirestore.collection('public_profiles').doc('email-user').set(
-          {
-            'uid': 'email-user',
-            'displayName': 'Email User',
-            'displayNameLower': 'email user',
-            'email': 'unique@example.com',
-            'allowEmailSearch': true,
-            'isSearchable': true,
-            'joinedAt': TestFieldValues.serverTimestamp(),
-          },
-        );
-
-        // Act
-        final results = await repository.searchProfiles('unique@example.com');
-
-        // Assert
-        expect(results, hasLength(1));
-        expect(results.first.email, equals('unique@example.com'));
-      });
-
       test('should respect isSearchable flag', () async {
         // Arrange
         await fakeFirestore

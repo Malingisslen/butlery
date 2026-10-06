@@ -153,6 +153,26 @@ void main() {
         );
       });
 
+      // BUT-2264: the public document carries no address, so the signed-in
+      // user's own address comes from Auth.
+      test('own profile takes its address from Auth', () async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile.copyWith(email: ''));
+
+        await userService.initialize();
+
+        expect(userService.currentUserProfile?.email, 'test@example.com');
+      });
+
       test('should initialize without user when not authenticated', () async {
         // Arrange
         mockAuthRepository.setAuthState(

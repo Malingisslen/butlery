@@ -679,7 +679,8 @@ void main() {
         // Assert
         expect(retrieved.uid, equals(profile.uid));
         expect(retrieved.displayName, equals(profile.displayName));
-        expect(retrieved.email, equals(profile.email));
+        // BUT-2264: the address never reaches the public profile.
+        expect(retrieved.email, isEmpty);
         expect(retrieved.friendsCount, equals(profile.friendsCount));
       });
 
@@ -777,7 +778,7 @@ void main() {
 
         // Assert
         expect(firestoreData['displayName'], equals(profile.displayName));
-        expect(firestoreData['email'], equals(profile.email));
+        expect(firestoreData.containsKey('email'), isFalse);
         expect(firestoreData['friendsCount'], equals(profile.friendsCount));
       });
     });

@@ -312,13 +312,11 @@ class _CreateGroupConversationViewState
   ) {
     final isSelected = viewModel.isMemberSelected(friend.uid);
 
-    // One node per friend: the card carries the name, the e-mail when
-    // there is one, the selected state and the tap.
+    // One node per friend: the card carries the name, the selected state and
+    // the tap.
     return SelectionCard(
       isSelected: isSelected,
-      semanticLabel: friend.email.isEmpty
-          ? friend.displayName
-          : '${friend.displayName}, ${friend.email}',
+      semanticLabel: friend.displayName,
       onTap: () => viewModel.toggleMemberSelection(friend.uid),
       child: ExcludeSemantics(
         child: Row(
@@ -339,13 +337,6 @@ class _CreateGroupConversationViewState
                         ? AppTextStyles.bodyLargeBold
                         : AppTextStyles.bodyLarge,
                   ),
-                  if (friend.email.isNotEmpty)
-                    Text(
-                      friend.email,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
                 ],
               ),
             ),

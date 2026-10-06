@@ -307,8 +307,7 @@ class UserProfile with JsonSerializableMixin {
   /// Check if profile matches search term
   bool matchesSearchTerm(String query) {
     final normalizedQuery = query.toLowerCase();
-    return displayName.toLowerCase().contains(normalizedQuery) ||
-        (allowEmailSearch && email.toLowerCase().contains(normalizedQuery));
+    return displayName.toLowerCase().contains(normalizedQuery);
   }
 
   /// Get initials for avatar fallback
@@ -381,10 +380,12 @@ class UserProfile with JsonSerializableMixin {
   }
 
   /// Convert to Firestore format (public fields only — written to public_profiles)
+  ///
+  /// BUT-2264: no `email`. Every signed-in account can read public_profiles;
+  /// the address stays in Auth.
   Map<String, dynamic> toFirestore() {
     return {
       'displayName': displayName,
-      'email': email,
       'avatarUrl': avatarUrl,
       // BUT-1454 (BUT-674): default-private search-suppression for minors. A
       // compliant 15–17-year-old (`isMinor`, set server-authoritatively by the

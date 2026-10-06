@@ -585,7 +585,10 @@ class UserService extends ChangeNotifier
       // NYTT: Skapa base user document i 'users' collection för friends system
       await _ensureBaseUserDocument(user.uid);
 
-      _currentUserProfile = await _repository.fetchProfile(user.uid);
+      // BUT-2264: the address is not on the public document; Auth holds it.
+      _currentUserProfile = (await _repository.fetchProfile(
+        user.uid,
+      ))?.copyWith(email: user.email.orEmpty());
 
       // NY: Om profil inte finns, skapa en automatiskt
       if (_currentUserProfile == null && user.email != null) {

@@ -40,7 +40,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { serverTimestamp } from "firebase/firestore";
+import { deleteField, serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-age-gate-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -602,7 +602,6 @@ function publicProfileBody(
 ): Record<string, unknown> {
   return {
     displayName: "Anna",
-    email: "anna@example.com",
     isSearchable: false,
     ...extra,
   };
@@ -723,6 +722,47 @@ test("public_profiles: server write of minor isSearchable:true survives; client 
       .doc(`public_profiles/${uid}`)
       .set({ isSearchable: true }, { merge: true })
   );
+});
+
+// ============================================================================
+// PUBLIC_PROFILES — BUT-2264 the address is never published
+//
+// Every signed-in account can read public_profiles, so the owner may not write
+// `email` there. A document written before the change may keep it until the
+// owner removes it, and removing it is allowed.
+// ============================================================================
+
+// PE1: a create carrying an address is refused; the same body without it passes.
+test("public_profiles: create with email is refused, without it allowed", async () => {
+  const uid = `pp-email-create-${RUN}`;
+  const ctx = env.authenticatedContext(uid);
+  const ref = ctx.firestore().doc(`public_profiles/${uid}`);
+  await assertFails(ref.set(publicProfileBody({ email: "anna@example.com" })));
+  await assertSucceeds(ref.set(publicProfileBody()));
+});
+
+// PE2: the owner cannot add an address to a document that has none.
+test("public_profiles: owner cannot add email by update", async () => {
+  const uid = `pp-email-add-${RUN}`;
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody());
+  const ref = env.authenticatedContext(uid).firestore()
+    .doc(`public_profiles/${uid}`);
+  await assertFails(ref.set({ email: "anna@example.com" }, { merge: true }));
+  await assertSucceeds(ref.set({ displayName: "Anna B" }, { merge: true }));
+});
+
+// PE3: on a document that still carries one, the owner cannot change it, may
+// make an unrelated edit, and may remove it.
+test("public_profiles: an old address can be removed, not changed", async () => {
+  const uid = `pp-email-old-${RUN}`;
+  await seedDoc(`public_profiles/${uid}`,
+    publicProfileBody({ email: "anna@example.com" }));
+  const ref = env.authenticatedContext(uid).firestore()
+    .doc(`public_profiles/${uid}`);
+  await assertFails(ref.set({ email: "ny@example.com" }, { merge: true }));
+  await assertSucceeds(ref.set({ displayName: "Anna B" }, { merge: true }));
+  await assertSucceeds(
+    ref.update({ email: deleteField() }));
 });
 
 // ============================================================================

@@ -87,8 +87,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           _filteredFriends = _friends;
         } else {
           _filteredFriends = _friends.where((friend) {
-            return friend.displayName.toLowerCase().contains(query) ||
-                friend.email.toLowerCase().contains(query);
+            return friend.displayName.toLowerCase().contains(query);
           }).toList();
         }
       });
@@ -278,7 +277,6 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         return CheckboxListTile(
           key: ValueKey(friend.uid),
           title: Text(friend.displayName),
-          subtitle: Text(friend.email),
           value: isSelected,
           onChanged: (bool? selected) {
             if (mounted) {

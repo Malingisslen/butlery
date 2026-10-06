@@ -7,6 +7,8 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -182,12 +184,33 @@ void main() {
         expect(doc.exists, isTrue);
         final data = doc.data()!;
         expect(data['displayName'], equals('Test User'));
-        expect(data['email'], equals('test@example.com'));
+        // BUT-2264: the address is never published.
+        expect(data.containsKey('email'), isFalse);
         expect(
           data['displayNameLower'],
           equals('test user'),
         ); // Searchable index
       });
+
+      test(
+        'saveProfile removes an address an older save left (BUT-2264)',
+        () async {
+          await _seedUserProfile(fakeFirestore, 'user-123', {
+            ..._createUserProfile('user-123').toFirestore(),
+            'email': 'old@example.com',
+          });
+
+          await repository.saveProfile(_createUserProfile('user-123'));
+
+          final data =
+              (await fakeFirestore
+                      .collection('public_profiles')
+                      .doc('user-123')
+                      .get())
+                  .data()!;
+          expect(data.containsKey('email'), isFalse);
+        },
+      );
 
       test('saveProfile preserves server-owned friendsCount/isHidden/hiddenAt '
           'when the in-memory profile is stale (merge, not overwrite)', () async {
@@ -864,23 +887,6 @@ void main() {
         expect(visible.map((p) => p.uid), ['user-1']);
       });
 
-      test('leaves out a hidden profile found by its email', () async {
-        await _seedUserProfile(
-          fakeFirestore,
-          'user-1',
-          _createUserProfile(
-            'user-1',
-            displayName: 'Hidden Anna',
-            email: 'anna@example.com',
-            allowEmailSearch: true,
-          ).toFirestoreEditable()..['isHidden'] = true,
-        );
-
-        final results = await repository.searchProfiles('anna@example.com');
-
-        expect(results, isEmpty);
-      });
-
       test('should return empty list for empty query', () async {
         // Act
         final results = await repository.searchProfiles('');
@@ -923,23 +929,86 @@ void main() {
             'FakeFirebaseFirestore does not support composite index queries (isSearchable + displayNameLower range)',
       );
 
-      test('should search by email when email search is allowed', () async {
-        // Arrange
-        await _seedUserProfile(
-          fakeFirestore,
-          'user-1',
-          _createUserProfile(
+      // BUT-2264: the address is not on the public document, so the exact
+      // match is the server's answer.
+      group('by exact address', () {
+        late _MockFunctions functions;
+        late _MockCallable callable;
+        late FirebaseUserRepository withFunctions;
+
+        setUp(() {
+          functions = _MockFunctions();
+          callable = _MockCallable();
+          when(() => functions.httpsCallable(any())).thenReturn(callable);
+          withFunctions = FirebaseUserRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepo,
+            timestampProvider: const TestTimestampProvider(),
+            functions: functions,
+          );
+        });
+
+        void answer(String? uid) => when(
+          () => callable.call<Map<dynamic, dynamic>>(any()),
+        ).thenAnswer((_) async => _FakeCallableResult({'uid': uid}));
+
+        test('returns the profile the server finds', () async {
+          await _seedUserProfile(
+            fakeFirestore,
             'user-1',
-            email: 'john@example.com',
-            allowEmailSearch: true,
-          ).toFirestore(),
-        );
+            _createUserProfile('user-1', displayName: 'Johan').toFirestore(),
+          );
+          answer('user-1');
 
-        // Act
-        final results = await repository.searchProfiles('john@example.com');
+          final results = await withFunctions.searchProfiles(
+            'John@Example.com',
+          );
 
-        // Assert
-        expect(results.any((p) => p.email == 'john@example.com'), isTrue);
+          expect(results.map((p) => p.uid), ['user-1']);
+          verify(() => functions.httpsCallable('findUserByEmail')).called(1);
+          verify(
+            () => callable.call<Map<dynamic, dynamic>>({
+              'email': 'john@example.com',
+            }),
+          ).called(1);
+        });
+
+        test('leaves out a hidden profile the server names', () async {
+          await _seedUserProfile(
+            fakeFirestore,
+            'user-1',
+            _createUserProfile(
+              'user-1',
+              displayName: 'Hidden Anna',
+            ).toFirestoreEditable()..['isHidden'] = true,
+          );
+          answer('user-1');
+
+          expect(
+            await withFunctions.searchProfiles('anna@example.com'),
+            isEmpty,
+          );
+        });
+
+        test('finds nobody when the server finds nobody', () async {
+          await _seedUserProfile(
+            fakeFirestore,
+            'user-1',
+            _createUserProfile('user-1', displayName: 'Johan').toFirestore(),
+          );
+          answer(null);
+
+          expect(
+            await withFunctions.searchProfiles('john@example.com'),
+            isEmpty,
+          );
+        });
+
+        test('a query without @ never asks the server', () async {
+          await withFunctions.searchProfiles('john');
+
+          verifyNever(() => functions.httpsCallable(any()));
+        });
       });
 
       test('should sort results with exact matches first', () async {
@@ -1165,7 +1234,7 @@ void main() {
         // Assert
         expect(retrieved.uid, equals(profile.uid));
         expect(retrieved.displayName, equals(profile.displayName));
-        expect(retrieved.email, equals(profile.email));
+        expect(retrieved.email, isEmpty);
         expect(retrieved.isSearchable, equals(profile.isSearchable));
         expect(retrieved.allowEmailSearch, equals(profile.allowEmailSearch));
         expect(retrieved.friendsCount, equals(profile.friendsCount));
@@ -1198,7 +1267,7 @@ void main() {
 
         // Assert
         expect(firestoreData['displayName'], equals(profile.displayName));
-        expect(firestoreData['email'], equals(profile.email));
+        expect(firestoreData.containsKey('email'), isFalse);
         expect(firestoreData['isSearchable'], equals(profile.isSearchable));
         expect(firestoreData['friendsCount'], equals(profile.friendsCount));
       });
@@ -1521,6 +1590,18 @@ void main() {
 }
 
 // ===== TEST HELPERS =====
+
+class _MockFunctions extends Mock implements FirebaseFunctions {}
+
+class _MockCallable extends Mock implements HttpsCallable {}
+
+/// Fake, not Mock: `HttpsCallableResult.data` reads a private field.
+class _FakeCallableResult extends Fake
+    implements HttpsCallableResult<Map<dynamic, dynamic>> {
+  _FakeCallableResult(this.data);
+  @override
+  final Map<dynamic, dynamic> data;
+}
 
 /// One recorded call to the spy audit repository's logPermissionCheck.
 class _AuditCall {
