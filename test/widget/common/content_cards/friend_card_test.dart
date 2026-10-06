@@ -131,7 +131,6 @@ void main() {
       );
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
-
   });
 
   group('FriendCard - interaction', () {
