@@ -10,6 +10,8 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
 import 'package:butlery/services/import/xlsx_reader.dart';
 import 'package:butlery/services/import/decompression_guard.dart';
+import 'package:butlery/services/import/parsers/line_role.dart';
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// File import strategy for CSV and Excel files
@@ -543,18 +545,35 @@ class FileImportStrategy extends ImportStrategy {
     final name = json['name'] as String?;
     if (name == null || name.isEmpty) return null;
 
-    final ingredientLines = (json['ingredients'] as String?)
-        .orEmpty()
-        .split('\n')
-        .where((l) => l.trim().isNotEmpty)
-        .toList();
+    // A colon-terminated heading ("Garnering:") groups the rows below it, as
+    // on the URL and text paths; as an ingredient it left the recipe's
+    // allergens unknown.
+    final ingredientLines = <String>[];
+    final sections = <String?>[];
+    String? section;
+    for (final line in (json['ingredients'] as String?).orEmpty().split('\n')) {
+      if (line.trim().isEmpty) continue;
+      final role = line.trim().endsWith(':') ? LineRoles.of(line) : null;
+      switch (role?.kind) {
+        case LineRoleKind.heading:
+          section = role!.label;
+        case LineRoleKind.blockMarker:
+          section = null;
+        case LineRoleKind.ingredient:
+          ingredientLines.add(role!.label!);
+          sections.add(section);
+        case LineRoleKind.undecided || null:
+          ingredientLines.add(line);
+          sections.add(section);
+      }
+    }
     final directionLines = (json['directions'] as String?)
         .orEmpty()
         .split('\n')
         .where((l) => l.trim().isNotEmpty)
         .toList();
 
-    return _createRecipeFromData({
+    final recipe = _createRecipeFromData({
       'title': name,
       'description': (json['description'] as String?).orEmpty(),
       'ingredients': ingredientLines.join('\n'),
@@ -564,10 +583,43 @@ class FileImportStrategy extends ImportStrategy {
       'rating': '${json['rating'] ?? ''}',
       'servings': (json['servings'] as String?).orEmpty(),
       'time': (json['total_time'] as String?).orEmpty(),
-      'mealtype':
-          (json['categories'] as List?).firstOrNull as String? ?? 'Middag',
+      'mealtype': _paprikaMealType(json['categories']),
     });
+    if (recipe == null || sections.every((s) => s == null)) return recipe;
+    return recipe.copyWith(
+      structuredIngredients: StructuredIngredientDeriver.deriveAll(
+        recipe.ingredients,
+        sections: sections,
+      ),
+    );
   }
+
+  /// Paprika categories are the user's own labels ("Desserts", "Favoriter");
+  /// only one that names a meal type sets it.
+  static const _paprikaMealTypes = {
+    'breakfast': 'Frukost',
+    'frukost': 'Frukost',
+    'lunch': 'Lunch',
+    'dinner': 'Middag',
+    'middag': 'Middag',
+    'dessert': 'Dessert',
+    'desserts': 'Dessert',
+    'desserter': 'Dessert',
+    'efterrätt': 'Dessert',
+    'efterrätter': 'Dessert',
+    'snack': 'Mellanmål',
+    'snacks': 'Mellanmål',
+    'mellanmål': 'Mellanmål',
+    'fika': 'Fika',
+  };
+
+  static String _paprikaMealType(Object? categories) =>
+      (categories is List ? categories : const [])
+          .whereType<String>()
+          .map((c) => _paprikaMealTypes[c.trim().toLowerCase()])
+          .nonNulls
+          .firstOrNull ??
+      'Middag';
 
   ImportResult _importFromJson(Uint8List bytes) {
     final decoded = jsonDecode(utf8.decode(bytes));
