@@ -105,17 +105,15 @@ void main() {
     when(() => perm.currentUserId).thenReturn(_self);
 
     final hhRepo = _MockHouseholdRepository();
-    when(() => hhRepo.getForUser(_self)).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh1',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: _self,
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      ],
+    when(() => hhRepo.getActiveForUser(_self)).thenAnswer(
+      (_) async => Household(
+        id: 'hh1',
+        name: Household.defaultName,
+        members: const [],
+        createdBy: _self,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
     );
 
     roster = _MockHouseholdRosterService();

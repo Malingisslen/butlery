@@ -148,7 +148,12 @@ void main() {
   /// never look like "nobody shared".
   late _MockHouseholdRepository lastHouseholdRepository;
 
-  void useShares(List<HouseholdAllergenShare>? shares, {bool enabled = true}) {
+  void useShares(
+    List<HouseholdAllergenShare>? shares, {
+    bool enabled = true,
+    Household? household,
+    Object? shareError,
+  }) {
     final householdRepository = _MockHouseholdRepository();
     final shareRepository = _MockShareRepository();
     lastHouseholdRepository = householdRepository;
@@ -179,19 +184,20 @@ void main() {
     when(() => permissions.currentUserId).thenReturn('owner');
     TestServiceLocator.registerSingleton<PermissionService>(permissions);
 
-    when(() => householdRepository.getForUser('owner')).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh-doc',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: 'owner',
-          createdAt: DateTime.utc(2026, 1, 1),
-          updatedAt: DateTime.utc(2026, 1, 1),
-        ),
-      ],
+    when(() => householdRepository.getActiveForUser('owner')).thenAnswer(
+      (_) async =>
+          household ??
+          Household(
+            id: 'hh-doc',
+            name: Household.defaultName,
+            members: const [],
+            createdBy: 'owner',
+            createdAt: DateTime.utc(2026, 1, 1),
+            updatedAt: DateTime.utc(2026, 1, 1),
+          ),
     );
     when(() => shareRepository.getByHousehold('hh-doc')).thenAnswer((_) async {
+      if (shareError != null) throw shareError;
       if (shares == null) {
         throw StateError('the household roster could not be read');
       }
@@ -232,7 +238,7 @@ void main() {
   setUp(() => useShares(const []));
 
   group('a member who shared their own list (BUT-1693)', () {
-    test('the feature ships OFF by default', () {
+    test('the feature ships ON by default (BUT-2267)', () {
       // Asked of the REAL service with a remote config that has no value for
       // it, which is what a device sees before any rollout — so this pins the
       // shipped default, not a stub.
@@ -247,7 +253,7 @@ void main() {
         FeatureFlagService(remoteConfig: remoteConfig).isEnabled(
           FeatureFlags.enableHouseholdAllergenSharing,
         ),
-        isFalse,
+        isTrue,
       );
     });
 
@@ -276,7 +282,7 @@ void main() {
         );
         // The half of "nothing is read" that the preferences cannot show: no
         // query on a user-visible path.
-        verifyNever(() => lastHouseholdRepository.getForUser(any()));
+        verifyNever(() => lastHouseholdRepository.getActiveForUser(any()));
       },
     );
 
@@ -891,5 +897,124 @@ void main() {
       expect(widened.trackedDietary, {'vegansk'});
       expect(widened.includeUnknownInMenu, isFalse);
     });
+  });
+
+  group('the joined household (BUT-2267)', () {
+    Household linked({
+      required String createdBy,
+      required String groupId,
+      List<String> members = const ['owner'],
+    }) => Household(
+      id: 'hh-doc',
+      name: Household.defaultName,
+      members: [
+        for (final uid in members)
+          HouseholdMember(
+            userId: uid,
+            permission: SharedListPermission.view,
+            addedAt: DateTime.utc(2026, 1, 1),
+          ),
+      ],
+      createdBy: createdBy,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+      sourceGroupId: groupId,
+      sourceGroupOwnerId: createdBy,
+    );
+
+    test('a household too large for the share read gets the floor and is '
+        'degraded, never read as "nobody shared"', () async {
+      stubSelf();
+      stubOtherMember('partner');
+      stubOtherMember('kid');
+      useShares(
+        const [],
+        shareError: const HouseholdTooLargeForSharesException('too large'),
+      );
+
+      final aggregate = await service.aggregateAllergenPreferences();
+
+      expect(aggregate.isRosterComplete, isFalse);
+      expect(
+        aggregate.preferences.trackedAllergens,
+        containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+      );
+    });
+
+    test('the roster is the group the household is linked to, not the first '
+        'household-marked group', () async {
+      when(() => categoriesOps.categoriesList).thenReturn([
+        FriendCategory(
+          id: 'first',
+          ownerId: 'owner',
+          name: 'Första',
+          friendUserIds: ['partner'],
+          isHousehold: true,
+        ),
+        FriendCategory(
+          id: 'linked',
+          ownerId: 'owner',
+          name: 'Fredagsmiddag',
+          friendUserIds: ['joiner', 'pending'],
+          isHousehold: true,
+        ),
+      ]);
+      stubSelf();
+      stubOtherMember('joiner');
+      stubOtherMember('pending');
+      stubOtherMember('partner');
+      useShares(
+        [
+          _share('joiner', allergens: {'jordnötter'}),
+        ],
+        household: linked(
+          createdBy: 'owner',
+          groupId: 'linked',
+          members: const ['owner', 'joiner'],
+        ),
+      );
+
+      final aggregate = await service.aggregateAllergenPreferences();
+
+      // 'pending' is in the group but has not joined: still on the roster,
+      // so still on the floor, exactly as before sharing existed.
+      expect(aggregate.preferences.trackedAllergens, contains('jordnötter'));
+      expect(
+        aggregate.preferences.trackedAllergens,
+        containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+      );
+      verify(() => userService.lookupUserProfile('pending')).called(1);
+      verifyNever(() => userService.lookupUserProfile('partner'));
+    });
+
+    test(
+      'a member who joined someone else\'s group, with that group not on '
+      'this device, is aggregated over the household\'s roster and not their '
+      'own group',
+      () async {
+        // The joiner's own household-marked group is a different set of people
+        // from the household whose shares they read.
+        stubSelf();
+        stubOtherMember('host');
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares(
+          [
+            _share('host', allergens: {'sesam'}),
+          ],
+          household: linked(
+            createdBy: 'host',
+            groupId: 'hosts-group',
+            members: const ['host', 'owner'],
+          ),
+        );
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.preferences.trackedAllergens, {'sesam'});
+        verify(() => userService.lookupUserProfile('host')).called(1);
+        verifyNever(() => userService.lookupUserProfile('partner'));
+      },
+    );
   });
 }

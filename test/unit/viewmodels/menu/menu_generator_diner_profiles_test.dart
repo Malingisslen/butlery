@@ -101,17 +101,15 @@ void main() {
       );
 
   void familyOf(List<DinerProfile> diners) {
-    when(() => householdRepo.getForUser(_self)).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh1',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: _self,
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      ],
+    when(() => householdRepo.getActiveForUser(_self)).thenAnswer(
+      (_) async => Household(
+        id: 'hh1',
+        name: Household.defaultName,
+        members: const [],
+        createdBy: _self,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
     );
     when(() => dinerRepo.getByHousehold('hh1')).thenAnswer((_) async => diners);
   }

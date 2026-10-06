@@ -13,6 +13,7 @@ import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/family/own_allergen_share_mirror.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -872,7 +873,15 @@ class UserService extends ChangeNotifier
         '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}',
       );
 
-      await _repository.updateAllergenPreferences(userId, preferences);
+      final sharedCopies = await const OwnAllergenShareMirror().sharesFor(
+        userId,
+        preferences,
+      );
+      await _repository.updateAllergenPreferences(
+        userId,
+        preferences,
+        sharedCopies: sharedCopies,
+      );
 
       _currentUserProfile = _currentUserProfile!.copyWith(
         allergenPreferences: preferences,

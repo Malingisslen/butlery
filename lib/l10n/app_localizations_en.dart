@@ -5043,6 +5043,34 @@ class AppLocalizationsEn extends AppLocalizations {
       'Household allergens are combined for menu planning';
 
   @override
+  String get householdJoinTitle => 'Join the household';
+
+  @override
+  String get householdJoinSubtitle =>
+      'Then you can choose to share your allergies, so the menu accounts for them.';
+
+  @override
+  String get householdJoinAction => 'Join';
+
+  @override
+  String get householdJoinConfirmBody =>
+      'You become a member of the household. Your allergies are not shared until you choose to in Settings. You leave the household by leaving the group.';
+
+  @override
+  String get householdJoinFailed =>
+      'Could not join the household just now. Please try again.';
+
+  @override
+  String get householdJoinedTitle => 'You are in the household';
+
+  @override
+  String get householdJoinedSubtitle =>
+      'Share your allergies in Settings, so the menu accounts for them.';
+
+  @override
+  String get householdOpenSettings => 'Settings';
+
+  @override
   String get menuVoteTitle => 'Vote on recipe';
 
   @override

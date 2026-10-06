@@ -322,6 +322,9 @@ class TestServiceLocator {
     when(
       () => householdRepo.getForUser(any()),
     ).thenAnswer((_) async => const []);
+    when(
+      () => householdRepo.getActiveForUser(any()),
+    ).thenAnswer((_) async => null);
     getIt.registerSingleton<HouseholdRepository>(householdRepo);
 
     final dinerRepo = _MockDinerProfileRepository();

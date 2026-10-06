@@ -5048,6 +5048,34 @@ class AppLocalizationsSv extends AppLocalizations {
       'Hushållets allergier sammanställs för menyplanering';
 
   @override
+  String get householdJoinTitle => 'Gå med i hushållet';
+
+  @override
+  String get householdJoinSubtitle =>
+      'Sedan kan du välja att dela dina allergier, så att menyn räknar med dem.';
+
+  @override
+  String get householdJoinAction => 'Gå med';
+
+  @override
+  String get householdJoinConfirmBody =>
+      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.';
+
+  @override
+  String get householdJoinFailed =>
+      'Det gick inte att gå med i hushållet just nu. Försök igen.';
+
+  @override
+  String get householdJoinedTitle => 'Du är med i hushållet';
+
+  @override
+  String get householdJoinedSubtitle =>
+      'Dela dina allergier under Inställningar, så räknar menyn med dem.';
+
+  @override
+  String get householdOpenSettings => 'Inställningar';
+
+  @override
   String get menuVoteTitle => 'Rösta om recept';
 
   @override

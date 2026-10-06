@@ -10,6 +10,10 @@ import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/models/household_allergen_share.dart';
+import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
 
@@ -21,6 +25,11 @@ import '../../infrastructure/di/test_service_locator.dart';
 /// Local mocktail subclass — the production [FakeAuthRepository] extends
 /// [Fake] (BUT-1074) and cannot be used with `when(...)`.
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockShareRepository extends Mock
+    implements HouseholdAllergenShareRepository {}
 
 class _MockProfileSearchabilityService extends Mock
     implements ProfileSearchabilityService {}
@@ -1270,6 +1279,95 @@ void main() {
             true,
           ),
         ).called(1);
+      });
+    });
+
+    group('Allergen settings and the household share (BUT-2267, DPIA R4)', () {
+      final share = HouseholdAllergenShare(
+        householdId: 'hh-1',
+        userId: 'test_user_123',
+        trackedAllergens: const {'ägg'},
+        trackedDietary: const {},
+        includeUnknownInMenu: true,
+        consentGranted: true,
+        consentVersion: HouseholdAllergenShare.currentConsentVersion,
+        consentGrantedAt: DateTime.utc(2026, 8, 12),
+        updatedAt: DateTime.utc(2026, 8, 12),
+      );
+      const prefs = UserAllergenPreferences(
+        trackedAllergens: {'jordnötter'},
+        trackedDietary: {},
+      );
+      late _MockShareRepository shares;
+
+      setUp(() async {
+        registerFallbackValue(<HouseholdAllergenShare>[]);
+        registerFallbackValue(prefs);
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+        await userService.initialize();
+
+        final households = _MockHouseholdRepository();
+        when(() => households.getForUser('test_user_123')).thenAnswer(
+          (_) async => [Household.create(creatorId: 'test_user_123')],
+        );
+        shares = _MockShareRepository();
+        when(() => shares.getOwn(any())).thenAnswer((_) async => share);
+        TestServiceLocator.registerMock<HouseholdRepository>(households);
+        TestServiceLocator.registerMock<HouseholdAllergenShareRepository>(
+          shares,
+        );
+        when(
+          () => mockUserRepository.updateAllergenPreferences(
+            any(),
+            prefs,
+            sharedCopies: any(named: 'sharedCopies'),
+          ),
+        ).thenAnswer((_) async {});
+      });
+
+      test(
+        'the save hands the repository the share with the new list',
+        () async {
+          expect(await userService.updateAllergenPreferences(prefs), isTrue);
+
+          final captured =
+              verify(
+                    () => mockUserRepository.updateAllergenPreferences(
+                      'test_user_123',
+                      prefs,
+                      sharedCopies: captureAny(named: 'sharedCopies'),
+                    ),
+                  ).captured.single
+                  as List<HouseholdAllergenShare>;
+          expect(captured.single.trackedAllergens, {'jordnötter'});
+          expect(captured.single.id, share.id);
+        },
+      );
+
+      test('a share that cannot be read stops the save', () async {
+        when(() => shares.getOwn(any())).thenThrow(StateError('offline'));
+
+        expect(await userService.updateAllergenPreferences(prefs), isFalse);
+        verifyNever(
+          () => mockUserRepository.updateAllergenPreferences(
+            any(),
+            any(),
+            sharedCopies: any(named: 'sharedCopies'),
+          ),
+        );
       });
     });
 

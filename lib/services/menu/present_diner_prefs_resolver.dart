@@ -49,10 +49,10 @@ class PresentDinerPrefsResolver {
 
     final List<HouseholdRosterMember>? roster;
     try {
-      // Read-only: `getForUser`, never `ensureForUser`.
-      final households = await householdRepo.getForUser(uid);
-      if (households.isEmpty) return null;
-      roster = await rosterService.tryGetRoster(households.first.id);
+      // Read-only: `getActiveForUser`, never `ensureForUser`.
+      final household = await householdRepo.getActiveForUser(uid);
+      if (household == null) return null;
+      roster = await rosterService.tryGetRoster(household.id);
     } catch (e) {
       AppLogger.warning('Present-diner roster read failed: $e');
       return _unreadable(uid);
@@ -152,10 +152,10 @@ class PresentDinerPrefsResolver {
 
     final List<DinerProfile> diners;
     try {
-      final households = await householdRepo.getForUser(uid);
-      diners = households.isEmpty
+      final household = await householdRepo.getActiveForUser(uid);
+      diners = household == null
           ? const []
-          : await dinerRepo.getByHousehold(households.first.id);
+          : await dinerRepo.getByHousehold(household.id);
     } catch (e) {
       AppLogger.warning('Household diner profile read failed: $e');
       return (

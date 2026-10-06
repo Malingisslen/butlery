@@ -172,17 +172,15 @@ void main() {
     final perm = _MockPermissionService();
     when(() => perm.currentUserId).thenReturn(_self);
     hhRepo = _MockHouseholdRepository();
-    when(() => hhRepo.getForUser(any())).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh1',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: _self,
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      ],
+    when(() => hhRepo.getActiveForUser(any())).thenAnswer(
+      (_) async => Household(
+        id: 'hh1',
+        name: Household.defaultName,
+        members: const [],
+        createdBy: _self,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
     );
     roster = _MockHouseholdRosterService();
     when(() => roster.tryGetRoster(any())).thenAnswer(
@@ -304,7 +302,7 @@ void main() {
       // With no household the present path cannot run, so we fall through to
       // single-user filtering — which must still apply the user's own
       // allergens (here gluten), never silently ship an unfiltered menu.
-      when(() => hhRepo.getForUser(any())).thenAnswer((_) async => []);
+      when(() => hhRepo.getActiveForUser(any())).thenAnswer((_) async => null);
       stubOwnPreferences(userService, _prefs({'gluten'}));
       generator.filterByAllergens = true;
       generator.presentMemberIds = [_kid];
@@ -524,7 +522,9 @@ void main() {
 
     test('a household lookup that throws is treated as a total failure, not '
         'as an error or an empty union', () async {
-      when(() => hhRepo.getForUser(any())).thenThrow(StateError('offline'));
+      when(
+        () => hhRepo.getActiveForUser(any()),
+      ).thenThrow(StateError('offline'));
       generator.presentMemberIds = [_self];
       usePool([
         floorSafe('nuts', {'jordnötter': TriState.contains}),

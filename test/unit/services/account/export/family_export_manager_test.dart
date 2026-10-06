@@ -206,4 +206,49 @@ void main() {
       );
     },
   );
+
+  test('a member of two households gets both: the active one at the top, the '
+      'other beside it (BUT-2267)', () async {
+    // Malin joined a friend's group household and keeps her own. Both hold
+    // data about her, so an access request that exported one would be short.
+    final joined = Household(
+      id: 'hh-joined',
+      name: Household.defaultName,
+      members: [
+        HouseholdMember(
+          userId: 'host',
+          permission: SharedListPermission.admin,
+          addedAt: DateTime.utc(2026, 2, 1),
+        ),
+        HouseholdMember(
+          userId: _malin,
+          permission: SharedListPermission.view,
+          addedAt: DateTime.utc(2026, 2, 1),
+        ),
+      ],
+      createdBy: 'host',
+      createdAt: DateTime.utc(2026, 2, 1),
+      updatedAt: DateTime.utc(2026, 2, 1),
+      sourceGroupId: 'g1',
+      sourceGroupOwnerId: 'host',
+    );
+    await fs.collection('households').doc(joined.id).set(joined.toFirestore());
+
+    final out = await manager.exportFamily(_malin);
+
+    expect(out['household_id'], 'hh-joined');
+    expect(out['diner_profiles_count'], 0);
+    final others = out['other_households'] as List;
+    expect(others, hasLength(1));
+    final other = others.single as Map;
+    expect(other['household_id'], _hh);
+    expect(other['diner_profiles_count'], 1);
+    expect(other['family_ratings_count'], 2);
+  });
+
+  test('a single household exports no other_households key', () async {
+    final out = await manager.exportFamily(_malin);
+    expect(out['household_id'], _hh);
+    expect(out.containsKey('other_households'), isFalse);
+  });
 }

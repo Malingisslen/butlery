@@ -851,17 +851,15 @@ void main() {
           final dinerRepo = _MockDinerProfileRepository();
           final permission = _MockPermissionService();
           when(() => permission.currentUserId).thenReturn('u1');
-          when(() => householdRepo.getForUser('u1')).thenAnswer(
-            (_) async => [
-              Household(
-                id: 'hh1',
-                name: Household.defaultName,
-                members: const [],
-                createdBy: 'u1',
-                createdAt: DateTime(2026),
-                updatedAt: DateTime(2026),
-              ),
-            ],
+          when(() => householdRepo.getActiveForUser('u1')).thenAnswer(
+            (_) async => Household(
+              id: 'hh1',
+              name: Household.defaultName,
+              members: const [],
+              createdBy: 'u1',
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+            ),
           );
           when(() => dinerRepo.getByHousehold('hh1')).thenAnswer(
             (_) async => [

@@ -1,5 +1,6 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
@@ -113,11 +114,15 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Decrement public recipe count when a recipe is deleted or made private
   Future<void> decrementPublicRecipeCount(String userId);
 
-  /// Update allergen preferences for a user
+  /// Update allergen preferences for a user, and in the SAME batch every
+  /// allergen share of theirs in [sharedCopies] (DPIA R4, BUT-2267): either
+  /// both land or neither does, so a household never filters on a list its
+  /// owner has already changed.
   Future<void> updateAllergenPreferences(
     String userId,
-    UserAllergenPreferences preferences,
-  );
+    UserAllergenPreferences preferences, {
+    List<HouseholdAllergenShare> sharedCopies = const [],
+  });
 
   /// BUT-1220: persist the one-time activity-feed hint flag with a targeted
   /// single-field `update()` — never a full-document set. A background/automatic

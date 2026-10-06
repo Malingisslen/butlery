@@ -8485,6 +8485,54 @@ abstract class AppLocalizations {
   /// **'Hushållets allergier sammanställs för menyplanering'**
   String get householdToggleDescription;
 
+  /// BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå med i hushållet'**
+  String get householdJoinTitle;
+
+  /// BUT-2267: under householdJoinTitle; joining shares nothing by itself
+  ///
+  /// In sv, this message translates to:
+  /// **'Sedan kan du välja att dela dina allergier, så att menyn räknar med dem.'**
+  String get householdJoinSubtitle;
+
+  /// BUT-2267: button that joins the household (opens a confirm dialog first)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå med'**
+  String get householdJoinAction;
+
+  /// BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave
+  ///
+  /// In sv, this message translates to:
+  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.'**
+  String get householdJoinConfirmBody;
+
+  /// BUT-2267: joining the household failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att gå med i hushållet just nu. Försök igen.'**
+  String get householdJoinFailed;
+
+  /// BUT-2267: group page, after joining the household
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är med i hushållet'**
+  String get householdJoinedTitle;
+
+  /// BUT-2267: under householdJoinedTitle; points to the sharing setting
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela dina allergier under Inställningar, så räknar menyn med dem.'**
+  String get householdJoinedSubtitle;
+
+  /// BUT-2267: opens Settings, where the allergy-sharing switch is
+  ///
+  /// In sv, this message translates to:
+  /// **'Inställningar'**
+  String get householdOpenSettings;
+
   /// No description provided for @menuVoteTitle.
   ///
   /// In sv, this message translates to:
