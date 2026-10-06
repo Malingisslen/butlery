@@ -112,17 +112,13 @@ class ActionButtons {
       );
     }
 
-    final result = Semantics(
-      label: semanticLabel ?? label,
-      button: true,
-      enabled: effectiveOnPressed != null,
-      child: sized,
-    );
-
-    if (!enablePressAnimation) return result;
+    // The Material button is the one button node and carries the name
+    // (`semanticsLabel` on its text); a Semantics wrapper here would read it
+    // twice (BUT-2253, ui-conventions rule 6).
+    if (!enablePressAnimation) return sized;
     return AnimatedPressable(
       enabled: effectiveOnPressed != null,
-      child: result,
+      child: sized,
     );
   }
 
@@ -194,12 +190,7 @@ class ActionButtons {
             busyLabel: loadingText,
             child: sized,
           )
-        : Semantics(
-            label: label,
-            button: true,
-            enabled: true,
-            child: sized,
-          );
+        : sized;
 
     final Widget result = margin != null
         ? Padding(padding: margin, child: button)
@@ -329,17 +320,10 @@ class ActionButtons {
       );
     }
 
-    final result = Semantics(
-      label: label,
-      button: true,
-      enabled: effectiveOnPressed != null,
-      child: sized,
-    );
-
-    if (!enablePressAnimation) return result;
+    if (!enablePressAnimation) return sized;
     return AnimatedPressable(
       enabled: effectiveOnPressed != null,
-      child: result,
+      child: sized,
     );
   }
 
@@ -460,9 +444,8 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Explicit Semantics mirrors the idiom used by the other buttons in this
-    // file — tooltip alone doesn't always surface on the semantic tree when
-    // the IconButton is nested under interactive ancestors.
+    // Tooltip alone doesn't always surface on the semantic tree when the
+    // IconButton is nested under interactive ancestors.
     return Semantics(
       label: semanticLabel,
       button: true,
