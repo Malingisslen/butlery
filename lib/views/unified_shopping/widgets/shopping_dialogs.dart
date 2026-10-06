@@ -16,6 +16,7 @@ import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_ope
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Main facade for shopping dialog coordination
 class ShoppingDialogs {
@@ -175,8 +176,8 @@ class ShoppingDialogs {
         AppLogger.info(
           'Showing share dialog for list: ${viewModel.activeList!.name}',
         );
-        await showDialog(
-          context: context,
+        await showUniversalShareSheet(
+          context,
           builder: (context) => UniversalShareDialog.shoppingList(
             shoppingList: viewModel.activeList!,
             viewModel: shareViewModel,

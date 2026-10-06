@@ -1,4 +1,4 @@
-// lib/widgets/universal_share_dialog.dart - FACADE PATTERN
+// lib/widgets/common/universal_share_dialog.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -10,7 +10,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -184,8 +183,8 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   String _searchQuery = '';
   bool allowCollaboration = false;
 
-  /// What went wrong with the last share, shown in the dialog itself: the
-  /// dialog stays open, so a snackbar would sit under its barrier.
+  /// What went wrong with the last share, shown in the sheet itself: the
+  /// sheet stays open, so a snackbar would sit under its barrier.
   String? _failure;
 
   @override
@@ -228,35 +227,31 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // No hand-written shape: the dialog theme's radius 8 (Komponentark
-    // v1:336) applies, as for every other dialog (BUT-1237).
-    return Dialog(
+    // A sheet body (showUniversalShareSheet): the sheet route draws the
+    // surface and the handle. The keyboard inset pads the whole column so the
+    // actions stay above the keyboard.
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
+    final maxHeight =
+        (MediaQuery.sizeOf(context).height - inset) *
+        AppDimensions.sheetMaxHeightFraction;
+    return Padding(
+      padding: EdgeInsets.only(bottom: inset),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppDimensions.buttonWidthXLarge + 170,
-          maxHeight: 650,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            boxShadow: AppShadows.floating,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(),
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: _buildScrollableContent(),
-                ),
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeader(),
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: _buildScrollableContent(),
               ),
-              // Action buttons outside scroll view to fix web hit-testing (BUG-019)
-              if (_hasFriends) _buildActionButtons(),
-            ],
-          ),
+            ),
+            // Action buttons outside scroll view to fix web hit-testing (BUG-019)
+            if (_hasFriends) _buildActionButtons(),
+          ],
         ),
       ),
     );
@@ -467,7 +462,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           _selectedMode,
         );
 
-        // Show success and close dialog
+        // Show success and close the sheet
         Navigator.pop(context, true);
 
         SnackBarUtils.showSuccess(context, successMessage);

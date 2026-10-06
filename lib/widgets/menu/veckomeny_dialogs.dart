@@ -16,6 +16,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Dialog helpers for the Veckomeny (weekly menu) view.
 /// Extracts dialog logic from the main view for better separation of concerns.
@@ -77,8 +78,8 @@ class VeckomenyDialogs {
     }
     if (!context.mounted) return;
 
-    showDialog(
-      context: context,
+    showUniversalShareSheet(
+      context,
       builder: (context) => UniversalShareDialog.menu(
         menu: menuViewModel.menu,
         menuName: menuName,
