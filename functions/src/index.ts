@@ -189,6 +189,12 @@ export { sendGroupInvitations } from "./social/send-group-invitations";
 // BUT-2264: exact-address friend search without publishing the address.
 export { findUserByEmail } from "./social/find-user-by-email";
 
+// BUT-2267: a member of a group marked as household joins the shared
+// household, and the trigger removes anyone the group no longer holds, with
+// their allergen share. Household membership is written only here.
+export { joinGroupHousehold } from "./family/join-group-household";
+export { onHouseholdGroupWritten } from "./family/on-household-group-written";
+
 // BUT-1629: the only path by which a minor can become searchable. The rules
 // hard-deny (BUT-1626) blocks every CLIENT write of isSearchable:true for a
 // minor; this Admin-SDK callable is the audited server-side exception.

@@ -1201,24 +1201,33 @@ service cloud.firestore {
       allow read: if isAuthenticated()
         && request.auth.uid in resource.data.memberUserIds;
 
-      // Creator seeds themselves as admin; projections must agree with the set
-      // of members (rules trust the projections for every membership lookup).
+      // Creator seeds themselves as admin, ALONE; projections must agree with
+      // the set of members (rules trust the projections for every membership
+      // lookup). BUT-2267: membership is written only by Cloud Functions
+      // (`joinGroupHousehold`, `onHouseholdGroupWritten`, the deletion
+      // cascade), because a household member can read every other member's
+      // shared allergen list. A client that could seat someone else could
+      // point that person's next share at a household they never chose, and
+      // one that could remove a member would leave that member's share behind
+      // (DPIA R7). The group link is server-written for the same reason.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.createdBy
-        && request.auth.uid in request.resource.data.memberUserIds
+        && request.resource.data.memberUserIds == [request.auth.uid]
         && request.resource.data.memberPermissions[request.auth.uid] == 'admin'
         && request.resource.data.memberUserIds.toSet()
              == request.resource.data.memberPermissions.keys().toSet()
+        && !('sourceGroupId' in request.resource.data)
+        && !('sourceGroupOwnerId' in request.resource.data)
         && hasRequiredFields(['name', 'members', 'memberUserIds',
              'memberPermissions', 'createdBy', 'createdAt', 'updatedAt']);
 
-      // Admin-only update; createdBy/createdAt immutable; projections stay consistent.
+      // Admin-only update of the household itself (its name); membership,
+      // createdBy/createdAt and the group link are immutable to clients.
       allow update: if isAuthenticated()
         && request.auth.uid in resource.data.memberUserIds
         && resource.data.memberPermissions[request.auth.uid] == 'admin'
-        && cannotModify(['createdBy', 'createdAt'])
-        && request.resource.data.memberUserIds.toSet()
-             == request.resource.data.memberPermissions.keys().toSet();
+        && cannotModify(['createdBy', 'createdAt', 'members', 'memberUserIds',
+             'memberPermissions', 'sourceGroupId', 'sourceGroupOwnerId']);
 
       // Admin-only delete.
       allow delete: if isAuthenticated()

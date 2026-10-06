@@ -2254,11 +2254,18 @@ export async function deleteFamilyData(
           .filter((m) => m.userId !== uid)
       : [];
     const newCreatedBy = data.createdBy === uid ? remaining[0] : data.createdBy;
+    // BUT-2267: a household linked to the erased user's group names them in
+    // `sourceGroupOwnerId`. The group goes with them, so the link does too.
+    const ownGroupLink = data.sourceGroupOwnerId === uid ? {
+      sourceGroupId: admin.firestore.FieldValue.delete(),
+      sourceGroupOwnerId: admin.firestore.FieldValue.delete(),
+    } : {};
     await hhDoc.ref.update({
       members,
       memberUserIds: admin.firestore.FieldValue.arrayRemove(uid),
       [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
       createdBy: newCreatedBy,
+      ...ownGroupLink,
     });
   }
   return true;

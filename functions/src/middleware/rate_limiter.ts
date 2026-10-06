@@ -153,6 +153,13 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
     dailyLimit: 50,
   },
+  // BUT-2267. Joining is idempotent and writes one household document, so a
+  // burst bucket without a daily cap.
+  joinGroupHousehold: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
   // BUT-1856. Same numbers as `createChatGroup` on purpose: this callable can
   // create a group and does so through `createChatGroupWithDeps`, bypassing the
   // create bucket entirely, so anything looser here would quietly raise the
