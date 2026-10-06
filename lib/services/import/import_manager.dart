@@ -768,6 +768,23 @@ class ImportManager {
     DocumentLayout? layout,
     ImportChannel? channel = ImportChannel.text,
   }) async {
+    // Same limit as autoImport; an already measured import was checked when
+    // it was counted.
+    if (channel != null) {
+      final limitResult = await _rateLimiter?.checkLimit(
+        ImportOperation.basic('auto'),
+      );
+      if (limitResult is RateLimitDenied) {
+        return BatchImportResult(
+          results: [ImportManagerResult.rateLimit(limitResult)],
+          successfulRecipes: const [],
+          errors: [limitResult.message],
+          totalProcessed: 0,
+          successCount: 0,
+          failureCount: 1,
+        );
+      }
+    }
     final stopwatch = Stopwatch()..start();
     final batch = await _autoParseMulti(
       input,

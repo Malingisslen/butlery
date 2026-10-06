@@ -410,6 +410,31 @@ Blanda allt och rulla till bollar.''';
       );
     });
 
+    test('a refused limit on two recipes is ImportRateLimited', () async {
+      const denied = RateLimitDenied(
+        message: 'limit',
+        retryAfter: Duration(minutes: 5),
+        limitType: LimitType.perHour,
+        suggestedAction: FallbackAction.retryLater,
+      );
+      when(() => mockImportManager.autoParseMulti(any())).thenAnswer(
+        (_) async => BatchImportResult(
+          results: [ImportManagerResult.rateLimit(denied)],
+          successfulRecipes: const [],
+          errors: const ['limit'],
+          totalProcessed: 0,
+          successCount: 0,
+          failureCount: 1,
+        ),
+      );
+
+      viewModel.updateInput(twoRecipes);
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportRateLimited>());
+      expect((r as ImportRateLimited).rateLimitResult, same(denied));
+    });
+
     test('one recipe still goes through autoImport', () async {
       final recipe = RecipeFactory.build(title: 'Pannkakor');
       when(

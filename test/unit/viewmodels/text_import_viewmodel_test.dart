@@ -5,6 +5,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
@@ -273,6 +274,35 @@ void main() {
         expect(result, isFalse);
         expect(viewModel.hasParsedRecipe, isFalse);
         expect(viewModel.error, contains('Import misslyckades'));
+      });
+
+      test('a refused import limit says so, not "import failed"', () async {
+        const denied = RateLimitDenied(
+          message: 'limit',
+          retryAfter: Duration(minutes: 5),
+          limitType: LimitType.perHour,
+          suggestedAction: FallbackAction.retryLater,
+        );
+        viewModel.updateInputText('Some text');
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => BatchImportResult(
+            results: [ImportManagerResult.rateLimit(denied)],
+            successfulRecipes: const [],
+            errors: const ['limit'],
+            totalProcessed: 0,
+            successCount: 0,
+            failureCount: 1,
+          ),
+        );
+
+        expect(await viewModel.parseText(), isFalse);
+        expect(viewModel.error, denied.swedishMessage);
       });
 
       test('a failed re-parse keeps the edited recipe (BUT-924)', () async {
