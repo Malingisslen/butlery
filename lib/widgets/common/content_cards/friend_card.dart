@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -367,7 +368,7 @@ class FriendRequestCard extends StatelessWidget {
   Widget _buildSenderAvatar(BuildContext context) {
     return SocialAvatarComponents.avatar(
       imageUrl: senderAvatarUrl,
-      displayName: _name ?? '',
+      displayName: _name.orEmpty(),
       size: ImageSize.large, // 50px corresponds to large size
     );
   }
