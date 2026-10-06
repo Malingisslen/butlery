@@ -5,6 +5,7 @@
 // tillganglighetshandoff:177 (role status, announced on transition, glyph
 // decorative), Skarmar v12 del 4 #hemoffline (single line, comma in the
 // screen-reader label).
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 /// Lightweight mock that extends ChangeNotifier so listeners work.
 class _MockOfflineService extends ChangeNotifier implements OfflineService {
@@ -112,6 +114,47 @@ void main() {
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
+
+    // R8-2 = A: one step darker than the warning tint while pressed or
+    // hovered: raised in light mode, the step on raised in dark mode.
+    for (final (brightness, step) in const [
+      (Brightness.light, Color(0xFFE6EAD9)),
+      (Brightness.dark, Color(0xFF17251D)),
+    ]) {
+      testWidgets('a pressed or hovered offline banner is one step darker '
+          '(${brightness.name})', (tester) async {
+        mockOffline.setOnline(false);
+        await tester.pumpWidget(
+          _themedApp(
+            StatusIndicators.offlineIndicator(onTap: () {}),
+            brightness: brightness,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final title = find
+            .descendant(
+              of: find.byKey(_offlineKey),
+              matching: find.byType(Text),
+            )
+            .first;
+        expect(paintsInkFill(tester, title, step), isFalse);
+
+        final gesture = await holdPress(tester, title);
+        expect(paintsInkFill(tester, title, step), isTrue);
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(paintsInkFill(tester, title, step), isFalse);
+
+        final mouse = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
+        await mouse.addPointer(location: Offset.zero);
+        addTearDown(mouse.removePointer);
+        await mouse.moveTo(tester.getCenter(title));
+        await tester.pumpAndSettle();
+        expect(paintsInkFill(tester, title, step), isTrue);
+      });
+    }
 
     // BUT-2182: the e-mail verification screen can show before a signed-in
     // user's services exist, and keeps the same banner after they do.

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/views/recipe_detail/recipe_source_artefact_sheet.dart';
-import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -23,6 +22,7 @@ import 'package:butlery/views/recipe_detail/recipe_menu_role.dart';
 import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
+import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
@@ -66,7 +66,6 @@ import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 import 'package:butlery/services/shopping/recipe_pantry_check.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -459,7 +458,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 // the button its full 48 dp tap target.
                 leading: Padding(
                   padding: const EdgeInsets.all(AppDimensions.space4),
-                  child: _HeroButton(
+                  child: RecipeHeroButton(
                     icon: ButleryIcons.arrowLeft,
                     onPressed: () => Navigator.pop(context),
                     tooltip: widget.backTo == null
@@ -542,7 +541,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         label: recipe.isFavorite
                             ? context.l10n.favoritesRemove
                             : context.l10n.favoritesAdd,
-                        child: _HeroButton(
+                        child: RecipeHeroButton(
                           icon: recipe.isFavorite
                               ? ButleryIcons.favourite
                               : ButleryIcons.favouriteOutline,
@@ -573,7 +572,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       identifier: 'btn-share-friends',
                       button: true,
                       label: context.l10n.recipeShareWithFriends,
-                      child: _HeroButton(
+                      child: RecipeHeroButton(
                         icon: ButleryIcons.users,
                         onPressed: () =>
                             _actions.showSocialShareDialog(context),
@@ -589,7 +588,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       identifier: 'btn-share-recipe',
                       button: true,
                       label: context.l10n.recipeShareExternal,
-                      child: _HeroButton(
+                      child: RecipeHeroButton(
                         icon: ButleryIcons.share2,
                         onPressed: () => _actions.shareRecipe(context),
                         tooltip: context.l10n.recipeShareExternal,
@@ -607,7 +606,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     Padding(
                       key: const ValueKey('test-recipe-detail-add-to-list'),
                       padding: AppDimensions.paddingVertical4,
-                      child: _HeroButton(
+                      child: RecipeHeroButton(
                         icon: ButleryIcons.shoppingCart,
                         onPressed: () => _actions.showAddToCartConfirmation(
                           context,
@@ -631,7 +630,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       // menu opens Edit/Copy/Delete/Report, so the SR name must
                       // describe the menu, not one item (WCAG 4.1.2).
                       label: context.l10n.a11yRecipeMoreActions,
-                      child: _HeroMenuButton(
+                      child: RecipeHeroMenuButton<_MenuAction>(
                         icon: ButleryIcons.moreVertical,
                         itemBuilder: (context) {
                           final menuCs = Theme.of(context).colorScheme;
@@ -1346,101 +1345,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 }
 
-/// UI Redesign: Hero button with solid cream background and green icon.
-/// Used for back button and action buttons in recipe detail hero image.
-/// Diameter of the paper ring behind a hero icon button (Komponentark
-/// v1:81-89 draws 40 px). The hitbox around it is 48 dp.
-const double _paperRingSize = 40;
-
-/// An icon button on the media hero: an ink icon in a paper ring, 48 dp
-/// hitbox, the canonical focus ring around the hitbox (Komponentark
-/// v1:81-89 "Ikonknappar i pappersringar"; Grafisk manual v6:381).
-///
-/// Paper and ink are the same in both modes, because the ring stands on a
-/// photo, not on the theme's surface: onPrimary is paper #F5F4ED and
-/// primary is ink #24382C in both schemes (lib/theme/app_colors.dart
-/// lightColorScheme and darkColorScheme).
-class _HeroButton extends StatelessWidget {
-  const _HeroButton({
-    required this.icon,
-    required this.onPressed,
-    this.tooltip,
-  });
-
-  final IconData icon;
-  final VoidCallback onPressed;
-  final String? tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    // Tooltip alone gives screen readers a hint, not a "button" role —
-    // wrap explicitly so callers without their own Semantics ancestor
-    // (e.g. the back button at AppBar.leading) still announce correctly.
-    final tappable = ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      child: Material(
-        type: MaterialType.transparency,
-        child: PressUnchanged(
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onPressed();
-            },
-            child: SizedBox(
-              width: AppDimensions.minTouchTarget,
-              height: AppDimensions.minTouchTarget,
-              child: Center(
-                child: _PaperRing(
-                  child: ButleryIcon(
-                    icon,
-                    color: cs.primary,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final hasTooltip = tooltip != null && tooltip!.isNotEmpty;
-    final labelled = hasTooltip
-        ? Semantics(
-            label: context.l10n.a11yHeroButton(tooltip!),
-            button: true,
-            child: Tooltip(message: tooltip!, child: tappable),
-          )
-        : tappable;
-    return labelled;
-  }
-}
-
-/// The 40 px paper circle behind a hero icon.
-class _PaperRing extends StatelessWidget {
-  const _PaperRing({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      key: const ValueKey('recipe-detail-paper-ring'),
-      width: _paperRingSize,
-      height: _paperRingSize,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onPrimary,
-        shape: BoxShape.circle,
-      ),
-      child: child,
-    );
-  }
-}
-
 /// The sticky action bar over the bottom navigation (Komponentark v1
 /// "Sticky action bar": "Börja laga" and "Lägg 2 varor", 1 px top edge, the
 /// content's side margin; Skarmar v12 del 1 'Receptdetalj').
@@ -1660,47 +1564,5 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
         SnackBar(content: Text(context.l10n.commonErrorOccurred)),
       );
     }
-  }
-}
-
-/// UI Redesign: Hero menu button with solid cream background for popup menus.
-class _HeroMenuButton extends StatelessWidget {
-  const _HeroMenuButton({
-    required this.icon,
-    required this.itemBuilder,
-    required this.onSelected,
-  });
-
-  final IconData icon;
-  final List<PopupMenuEntry<_MenuAction>> Function(BuildContext) itemBuilder;
-  final void Function(_MenuAction) onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    // The same paper ring as the other hero buttons (Komponentark v1:81-89).
-    return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      child: SizedBox(
-        width: AppDimensions.minTouchTarget,
-        height: AppDimensions.minTouchTarget,
-        child: PressFill(
-          surface: PressSurface.base,
-          child: PopupMenuButton<_MenuAction>(
-            padding: EdgeInsets.zero,
-            icon: _PaperRing(
-              child: ButleryIcon(
-                icon,
-                color: cs.primary,
-                size: AppDimensions.iconSizeM,
-              ),
-            ),
-            itemBuilder: itemBuilder,
-            onSelected: onSelected,
-          ),
-        ),
-      ),
-    );
   }
 }

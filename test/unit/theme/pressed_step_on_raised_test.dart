@@ -197,11 +197,10 @@ void main() {
       expect(paintsInkFill(tester, target, flutterHover), isTrue);
     });
 
-    // In dark mode the step on raised is the add button's glyph colour, so
-    // the glyph would vanish under it.
-    testWidgets('a hovered add button keeps its old hover ($mode)', (
-      tester,
-    ) async {
+    // R8-1 = A: the saffron plus turns action.primaryPressed behind a paper
+    // glyph while pressed or hovered, and is saffron behind ink at rest.
+    testWidgets('a pressed or hovered add button turns the pressed saffron '
+        '($mode)', (tester) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Theme(
@@ -211,20 +210,36 @@ void main() {
         ),
       );
       final button = find.byType(ButleryAddButton);
+      final surface = find
+          .descendant(of: button, matching: find.byType(Material))
+          .first;
+      final glyph = find.descendant(
+        of: button,
+        matching: find.byWidgetPredicate((w) => w is Icon),
+      );
+      Color? fill() => tester.widget<Material>(surface).color;
+      Color? ink() => tester.widget<Icon>(glyph).color;
+      expect(fill(), const Color(0xFFCE7C1E));
+      expect(ink(), const Color(0xFF17251D));
+
+      final gesture = await holdPress(tester, glyph);
+      expect(fill(), const Color(0xFF9A5C14));
+      expect(ink(), const Color(0xFFF5F4ED));
+      // The fill is the press: no theme highlight is painted over it.
+      expect(paintsInkFill(tester, glyph, theme.highlightColor), isFalse);
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(fill(), const Color(0xFFCE7C1E));
+      expect(ink(), const Color(0xFF17251D));
+
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer(location: Offset.zero);
       addTearDown(mouse.removePointer);
       await mouse.moveTo(tester.getCenter(button));
       await tester.pumpAndSettle();
-      final glyph = find.descendant(
-        of: button,
-        matching: find.byWidgetPredicate((w) => w is Icon),
-      );
-      expect(paintsInkFill(tester, glyph, flutterHover), isTrue);
-      // In dark mode the glyph is the step's colour too.
-      if (theme.brightness == Brightness.light) {
-        expect(paintsInkFill(tester, glyph, step), isFalse);
-      }
+      expect(fill(), const Color(0xFF9A5C14));
+      expect(ink(), const Color(0xFFF5F4ED));
+      expect(paintsInkFill(tester, glyph, theme.hoverColor), isFalse);
     });
 
     // A FloatingActionButton rests on ink.

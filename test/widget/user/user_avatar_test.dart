@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -453,6 +455,61 @@ void main() {
 
         // Tappable avatar wraps its content in InkWell + Semantics(button: true).
         expect(find.byType(InkWell), findsOneWidget);
+      });
+    });
+
+    // R8-4 = C: a profile photo scales to 97 % while pressed; initials keep
+    // the press the design session has not decided (PressUnchanged).
+    group('press', () {
+      double scale(WidgetTester tester) => tester
+          .widget<AnimatedScale>(
+            find.descendant(
+              of: find.byType(UserAvatar),
+              matching: find.byType(AnimatedScale),
+            ),
+          )
+          .scale;
+
+      testWidgets('a pressed photo avatar scales to 97 % and still taps', (
+        tester,
+      ) async {
+        var tapped = false;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: UserAvatar(
+              displayName: 'Erik Eriksson',
+              imageUrl: 'https://example.com/avatar.jpg',
+              onTap: () => tapped = true,
+            ),
+          ),
+        );
+        final avatar = find.byType(UserAvatar);
+        expect(scale(tester), 1);
+        final gesture = await holdPress(tester, avatar);
+        expect(scale(tester), PressScale.pressedScale);
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(scale(tester), 1);
+        expect(tapped, isTrue);
+      });
+
+      testWidgets('an initials avatar keeps the old press and never scales', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: UserAvatar(displayName: 'Erik Eriksson', onTap: () {}),
+          ),
+        );
+        final avatar = find.byType(UserAvatar);
+        expect(
+          find.descendant(of: avatar, matching: find.byType(PressScale)),
+          findsNothing,
+        );
+        expect(
+          find.descendant(of: avatar, matching: find.byType(PressUnchanged)),
+          findsOneWidget,
+        );
       });
     });
   });

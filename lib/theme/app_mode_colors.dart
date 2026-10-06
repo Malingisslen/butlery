@@ -121,6 +121,11 @@ abstract final class AppModeColors {
   /// on the photo behind it (B102). The translucent overlayPaperCard stays for
   /// pills directly on a photo.
   static Color surfacePaperOnPhoto() => AppColors.cardWhite;
+
+  /// semantic surface.raised light #E6EAD9, in both modes: a paper ring on a
+  /// photo while it is pressed or hovered (produktbeslut R8-3 = A).
+  static Color surfaceRaisedOnPhoto() =>
+      AppColors.lightColorScheme.surfaceContainerHighest;
 }
 
 /// The mode-aware colour set for members that have no ColorScheme slot.
