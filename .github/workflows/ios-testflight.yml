@@ -1,0 +1,154 @@
+# Builds a signed iOS release and uploads it to App Store Connect, where it
+# appears under TestFlight for the closed test group (BUT-447).
+#
+# MANUAL ONLY (workflow_dispatch), behind the `production` environment's
+# reviewer gate like deploy-hosting.yml.
+#
+# Signing is Xcode's automatic, cloud-managed signing driven by an App Store
+# Connect API key: no certificate or provisioning profile is stored in the
+# repo or in secrets. The key needs the Admin role, because creating the cloud
+# distribution certificate is an Admin permission.
+#
+# Secrets used:
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY  App Store Connect API key
+#                                               (ASC_PRIVATE_KEY = the whole
+#                                               AuthKey_<id>.p8 text)
+#   FREE_RASP_TEAM_ID                           Apple team id; a release build
+#                                               without it stops at startup
+#                                               (device_integrity_service.dart)
+#   OCR_API_KEY, OCR_API_URL                    same .env as build-validation.yml
+#
+# Firebase reads lib/firebase_options.dart, so no GoogleService-Info.plist is
+# needed for the build.
+name: iOS TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type UPLOAD to build the current ref and send it to TestFlight"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  upload:
+    runs-on: macos-latest
+    environment: production
+    timeout-minutes: 60
+    steps:
+      - name: Refuse without the confirmation word
+        if: inputs.confirm != 'UPLOAD'
+        run: |
+          echo "::error::Type UPLOAD in the confirm field to build and upload. Nothing was uploaded." >&2
+          exit 1
+
+      - name: Refuse without the signing secrets
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          FREE_RASP_TEAM_ID: ${{ secrets.FREE_RASP_TEAM_ID }}
+        run: |
+          missing=""
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY FREE_RASP_TEAM_ID; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repo secrets:$missing" >&2
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Create .env from secrets
+        run: |
+          cat > .env << 'ENVEOF'
+          ENV=production
+          OCR_API_KEY=${{ secrets.OCR_API_KEY }}
+          OCR_API_URL=${{ secrets.OCR_API_URL }}
+          FREE_RASP_TEAM_ID=${{ secrets.FREE_RASP_TEAM_ID }}
+          ENVEOF
+
+      - name: Write the App Store Connect key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY_PATH"
+          grep -q "BEGIN PRIVATE KEY" "$KEY_PATH" || { echo "::error::ASC_PRIVATE_KEY does not look like a .p8 file (no BEGIN PRIVATE KEY line)." >&2; exit 1; }
+          echo "ASC_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # --config-only writes the Dart build settings (defines, obfuscation,
+      # build number) into Generated.xcconfig; the signed build itself is
+      # xcodebuild's, because only xcodebuild accepts the API key.
+      # The run number is the build number: App Store Connect refuses a build
+      # number it has already seen for the same version.
+      - name: Configure the Flutter build
+        run: |
+          flutter build ios --release --config-only \
+            --obfuscate --split-debug-info=build/debug-info \
+            --dart-define-from-file=.env \
+            --build-number=${{ github.run_number }}
+
+      - name: Archive (signed)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ios/Runner.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Export and upload to App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportOptionsPlist ios/exportOptions-appstore.plist \
+            -exportPath build/ios/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "Uploaded build ${{ github.run_number }}. It shows in App Store Connect → TestFlight once Apple has processed it."
+
+      - name: Keep the symbol files
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-debug-info-${{ github.run_number }}
+          path: build/debug-info
+          retention-days: 90
+
+      - name: Remove the key file
+        if: always()
+        run: rm -f "$RUNNER_TEMP"/AuthKey_*.p8

@@ -38,16 +38,8 @@ Debug builds (`flutter run`, `flutter test`) work without any defines.
 
 ### `FREE_RASP_TEAM_ID`
 
-The Talsec team id assigned when the freeRASP licence was issued.
-
-1. Sign in to <https://docs.talsec.app>.
-2. Account → Team — copy the team id (alphanumeric, ~10 chars).
-3. Save it to the secrets store (1Password / GCP Secret Manager) under
-   `freerasp/team-id`.
-
-This is **not** the same as your Apple Developer Team ID. Talsec uses
-its own team identifier; the iOS Apple Team ID is set elsewhere
-(`ios/Runner.xcodeproj`).
+The Apple Developer Team ID: developer.apple.com/account → Membership
+details → Team ID. It is the repo secret `FREE_RASP_TEAM_ID`.
 
 ### `FREE_RASP_ANDROID_CERT_HASH`
 

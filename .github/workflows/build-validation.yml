@@ -184,6 +184,7 @@ jobs:
         ENV=production
         OCR_API_KEY=${{ secrets.OCR_API_KEY }}
         OCR_API_URL=${{ secrets.OCR_API_URL }}
+        FREE_RASP_TEAM_ID=${{ secrets.FREE_RASP_TEAM_ID }}
         ENVEOF
 
     - name: Decode google-services.json
