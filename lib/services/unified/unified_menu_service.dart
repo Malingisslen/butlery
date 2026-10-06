@@ -434,6 +434,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     required List<String> inviteeUserIds,
     String? message,
     bool allowCollaboration = false,
+    List<String>? groupIds,
   }) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -496,6 +497,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         final invitationId = await _sharedMenuRepository.createSharedMenu(
           sharedMenu,
           recipientIds: inviteeUserIds,
+          groupIds: groupIds,
         );
 
         AppLogger.success(
@@ -522,6 +524,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     required List<String> friendIds,
     String? message,
     bool allowCollaboration = false,
+    List<String>? groupIds,
   }) async {
     final invitationId = await createMenuInvitation(
       menuTitle: menuTitle,
@@ -529,6 +532,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       inviteeUserIds: friendIds,
       message: message,
       allowCollaboration: allowCollaboration,
+      groupIds: groupIds,
     );
 
     return invitationId != null;

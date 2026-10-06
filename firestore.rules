@@ -870,11 +870,7 @@ service cloud.firestore {
     // ========================================
 
     match /shared_content/{contentId} {
-      // List is permitted to the sharer OR a recipient. The recipient branch
-      // is required because the group shared-content query filters by
-      // `sharedToUserIds arrayContainsAny [...]` (recipients reading what was
-      // shared with them) — without it the entire query is permission-denied
-      // for every recipient (the normal case) and silently returns empty.
+      // List is permitted to the sharer OR a recipient.
       // The rules engine evaluates this per candidate document, so a recipient
       // can only list documents whose sharedToUserIds actually contains their
       // uid; it does not widen access to docs they were not shared into.
@@ -903,8 +899,7 @@ service cloud.firestore {
       // membership this collection can be QUERIED on. The recipient's `list`
       // branch above reads it and nothing else — there is no `isSharedMember`
       // limb on `list` — and every reader that arrives by query rather than by
-      // document id filters on it: the group shared-content feed
-      // (`arrayContainsAny` over the group's uids), the Art. 15 export, and the
+      // document id filters on it: the Art. 15 export, and the
       // Art. 17 cascade's scrub. A row created without it is reachable only by
       // someone who already knows its id, which is the same silent loss
       // BUT-1812 produced, arrived at from the other direction.

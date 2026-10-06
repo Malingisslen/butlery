@@ -64,7 +64,10 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 /// Records every `createSharedRecipe` call + lets the test program a throw.
 class _FakeSharedRecipeRepo extends Fake
     implements FirebaseSharedRecipeRepository {
-  final List<({SharedRecipe doc, List<String> recipientIds})> calls = [];
+  final List<
+    ({SharedRecipe doc, List<String> recipientIds, List<String>? groupIds})
+  >
+  calls = [];
 
   /// When set, EVERY call throws this (models a persistent failure).
   Object? throwOnCreate;
@@ -79,11 +82,16 @@ class _FakeSharedRecipeRepo extends Fake
   Future<String> createSharedRecipe(
     SharedRecipe sharedRecipe, {
     required List<String> recipientIds,
+    List<String>? groupIds,
   }) async {
     attemptCount++;
     if (throwOnCreate != null) throw throwOnCreate!;
     if (attemptCount <= failFirstNAttempts) throw transientError;
-    calls.add((doc: sharedRecipe, recipientIds: recipientIds));
+    calls.add((
+      doc: sharedRecipe,
+      recipientIds: recipientIds,
+      groupIds: groupIds,
+    ));
     return sharedRecipe.id;
   }
 }
@@ -971,6 +979,35 @@ void main() {
         isFalse,
         reason: 'the sharer is the owner, not a sharee, and is never revocable',
       );
+    });
+
+    test('the discovery row names the group, so the group page finds it '
+        '(BUT-2271)', () async {
+      fakeFriends.categoriesById['grp-fam'] = FriendCategory(
+        id: 'grp-fam',
+        ownerId: 'me-uid',
+        name: 'Familj',
+        friendUserIds: const ['me-uid', 'mom-uid'],
+      );
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+
+      await h.build().shareRecipeWithGroups('r1', [
+        'grp-fam',
+      ], ResourcePermission.viewer);
+
+      expect(h.repo.calls.single.groupIds, ['grp-fam']);
+    });
+
+    test('a plain friend share names no group', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+
+      await h.build().shareRecipeWithUsers('r1', [
+        'mom-uid',
+      ], ResourcePermission.viewer);
+
+      expect(h.repo.calls.single.groupIds, isNull);
     });
 
     test('a member in TWO groups carries both reasons', () async {
