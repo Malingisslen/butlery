@@ -108,5 +108,8 @@ void main() {
 
     verifyNever(friends.initialize);
     expect(find.textContaining('Erik'), findsWidgets);
+    // BUT-2250: recipe share opens the bottom sheet, not a dialog.
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.byType(Dialog), findsNothing);
   });
 }

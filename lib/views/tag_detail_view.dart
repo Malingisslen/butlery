@@ -31,6 +31,7 @@ import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Full-screen view for viewing and editing a single personal tag.
 class TagDetailView extends StatelessWidget {
@@ -345,8 +346,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
       if (!context.mounted) return;
 
-      await showDialog(
-        context: context,
+      await showUniversalShareSheet(
+        context,
         builder: (dialogContext) => UniversalShareDialog.personalTag(
           tagId: tag.id,
           tagName: tag.name,

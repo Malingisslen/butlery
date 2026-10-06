@@ -30,6 +30,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -501,8 +502,8 @@ class MenuPreviewView extends StatelessWidget {
     }
     if (!context.mounted) return;
 
-    await showDialog(
-      context: context,
+    await showUniversalShareSheet(
+      context,
       builder: (context) => ChangeNotifierProvider.value(
         value: shareViewModel,
         child: UniversalShareDialog.menu(

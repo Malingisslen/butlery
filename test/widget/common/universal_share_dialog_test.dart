@@ -346,7 +346,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(find.byType(Column), findsWidgets);
         expect(tester.takeException(), isNull);
       });
@@ -377,7 +376,6 @@ void main() {
             createLocalizedTestApp(child: dialog),
           );
 
-          expect(find.byType(Dialog), findsOneWidget);
           expect(tester.takeException(), isNull);
         }
       });
@@ -395,7 +393,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     });
@@ -414,7 +411,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
@@ -431,7 +427,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
@@ -470,7 +465,6 @@ void main() {
         );
 
         expect(find.text('Hej! Prova denna underbara ratt!'), findsWidgets);
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     });

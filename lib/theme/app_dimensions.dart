@@ -246,6 +246,10 @@ class AppDimensions {
   /// Large dialog max height (800px)
   static const double dialogMaxHeightLarge = 800.0;
 
+  /// Tallest a modal sheet may grow, as a fraction of the screen height
+  /// above the keyboard.
+  static const double sheetMaxHeightFraction = 0.9;
+
   /// Minimum touch target size (Material Design requirement)
   static const double minTouchTarget = 48.0;
 

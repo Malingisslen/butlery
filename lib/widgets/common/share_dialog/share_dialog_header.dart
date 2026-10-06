@@ -23,19 +23,16 @@ class ShareDialogHeader {
       content,
     );
 
-    // The share surface opens as a dialog, so it has X at the top right and
-    // no handle (Komponentark v1:99: "Ark: 12 px överkant + handtag i
-    // border-control. Dialog: X uppe till höger i stället"). The header
-    // stands on the dialog's own surface with the title in 14/700, as the
-    // share sheet draws it (Skarmar v12 del 3 'Dela-ark'); the subtitle is
-    // text.secondary, not the title colour at a lower opacity
+    // The header stands on the sheet's own surface with the title in 14/700,
+    // as the share sheet draws it (Skarmar v12 del 3 'Dela-ark'); the
+    // subtitle is text.secondary, not the title colour at a lower opacity
     // (tokens.json:40-53).
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.paddingL,
-        AppDimensions.paddingL,
         AppDimensions.spacingSm,
+        AppDimensions.paddingL,
         AppDimensions.spacingSm,
       ),
       child: Row(
@@ -69,11 +66,6 @@ class ShareDialogHeader {
                 ),
               ],
             ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            tooltip: context.l10n.commonClose,
-            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurface),
           ),
         ],
       ),

@@ -14,6 +14,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Recipe social action handler
 /// Handles social features: sharing to friends/groups, comments, and user profile management.
@@ -40,8 +41,8 @@ class RecipeSocialHandler {
     if (!context.mounted) return;
     final availableGroups = friendsService.categoriesList;
 
-    await showDialog(
-      context: context,
+    await showUniversalShareSheet(
+      context,
       builder: (context) => ChangeNotifierProvider.value(
         value: shareViewModel,
         child: UniversalShareDialog.recipe(

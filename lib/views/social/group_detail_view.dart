@@ -44,6 +44,7 @@ import 'package:butlery/views/social/group_detail/group_action_buttons.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/widgets/social/activity_pings_feed.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Group detail view with member management and sharing capabilities.
 class GroupDetailView extends StatefulWidget {
@@ -470,8 +471,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
     final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
-    await showDialog(
-      context: context,
+    await showUniversalShareSheet(
+      context,
       builder: (context) => ChangeNotifierProvider.value(
         value: shareViewModel,
         child: UniversalShareDialog.menu(
@@ -509,8 +510,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
     final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
-    await showDialog(
-      context: context,
+    await showUniversalShareSheet(
+      context,
       builder: (context) => ChangeNotifierProvider.value(
         value: shareViewModel,
         child: UniversalShareDialog.shoppingList(

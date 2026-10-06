@@ -34,6 +34,7 @@ import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
 abstract final class PersonalTagDialogs {
@@ -214,8 +215,8 @@ abstract final class PersonalTagDialogs {
 
       if (!context.mounted) return;
 
-      await showDialog(
-        context: context,
+      await showUniversalShareSheet(
+        context,
         builder: (dialogContext) => UniversalShareDialog.personalTag(
           tagId: tag.id,
           tagName: tag.name,
