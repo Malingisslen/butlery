@@ -23,52 +23,77 @@ class IngredientParser {
   static Set<String> get standaloneUnits => UnitDefinitions.standaloneUnits;
 
   /// Spoken amounts, as dictation transcribes them ("tre deciliter mjölk").
+  static const Map<String, int> _wholeNumberWords = {
+    'en': 1,
+    'ett': 1,
+    'två': 2,
+    'tre': 3,
+    'fyra': 4,
+    'fem': 5,
+    'sex': 6,
+    'sju': 7,
+    'åtta': 8,
+    'nio': 9,
+    'tio': 10,
+    'elva': 11,
+    'tolv': 12,
+  };
+
   /// Longer phrases first: alternation takes the first branch that matches.
-  static const Map<String, String> _numberWords = {
+  static final Map<String, String> _numberWords = {
     'en halv': '0,5',
     'ett halvt': '0,5',
     'ett par': '2',
     'halva': '0,5',
     'halvt': '0,5',
     'halv': '0,5',
-    'en': '1',
-    'ett': '1',
-    'två': '2',
-    'tre': '3',
-    'fyra': '4',
-    'fem': '5',
-    'sex': '6',
-    'sju': '7',
-    'åtta': '8',
-    'nio': '9',
-    'tio': '10',
-    'elva': '11',
-    'tolv': '12',
+    for (final e in _wholeNumberWords.entries) e.key: '${e.value}',
   };
 
   /// Only the line's FIRST word is read as an amount, and only when a word
-  /// follows it, so "en" inside a name ("gul lök en stor") stays text. Dart's `\b`
-  /// is ASCII-only, hence the explicit whitespace lookahead.
+  /// follows it, so "en" inside a name ("gul lök en stor") stays text. Dart's
+  /// `\b` is ASCII-only, hence the explicit whitespace lookahead. A line that
+  /// is nothing but "en halv" or "ett par" has no amount to read.
   static final RegExp _leadingNumberWordRe = RegExp(
-    '^(${_numberWords.keys.join('|')})(?=\\s+[^\\d\\s])',
+    '^(${_numberWords.keys.join('|')})'
+    r'(?!\s+(?:halvt?|par)$)(?=\s+[^\d\s])',
     caseSensitive: false,
     unicode: true,
   );
 
+  /// "en och en halv", "2 och en halv", "halvannan": one and a half, said.
+  /// Read before [_leadingNumberWordRe], whose "en" would claim the first word.
+  static final RegExp _andAHalfRe = RegExp(
+    '^(?:halvannan|(\\d+|${_wholeNumberWords.keys.join('|')}) och en halv)'
+    r'(?=\s+[^\d\s])',
+    caseSensitive: false,
+    unicode: true,
+  );
+
+  static String _spokenAmountToNumerals(String text) {
+    final half = _andAHalfRe.firstMatch(text);
+    if (half != null) {
+      final base = half[1]?.toLowerCase();
+      final whole = base == null
+          ? 1
+          : int.tryParse(base) ?? _wholeNumberWords[base]!;
+      return '$whole,5${text.substring(half.end)}';
+    }
+    return text.replaceFirstMapped(
+      _leadingNumberWordRe,
+      (m) => _numberWords[m[1]!.toLowerCase()]!,
+    );
+  }
+
   /// Normalizes whitespace, separates attached units, and turns a leading
-  /// Swedish number word into digits.
+  /// Swedish number word into a numeral.
   static String _normalizeWhitespace(String text) {
-    return text
-        .trim()
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .replaceFirstMapped(
-          _leadingNumberWordRe,
-          (m) => _numberWords[m[1]!.toLowerCase()]!,
-        )
-        .replaceAllMapped(
-          RegExp(r'(\d)([a-zåäöA-ZÅÄÖ])'),
-          (m) => '${m[1]} ${m[2]}',
-        );
+    return _spokenAmountToNumerals(
+      text.trim().replaceAll(RegExp(r'\s+'), ' '),
+    ).replaceAllMapped(
+      RegExp(r'(\d)([a-zåäöA-ZÅÄÖ])'),
+      (m) => '${m[1]} ${m[2]}',
+    );
   }
 
   /// Parses Swedish quantity strings (delegates to QuantityParser).

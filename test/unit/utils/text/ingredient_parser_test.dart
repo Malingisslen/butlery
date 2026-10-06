@@ -435,6 +435,39 @@ void main() {
         });
       }
 
+      // Review of resa 11: a line that is only the phrase must not be cut
+      // into an amount and the rest of the phrase.
+      for (final line in ['en halv', 'ett halvt', 'ett par', 'Ett par']) {
+        test('"$line" alone is left as it was', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, 1.0);
+          expect(r.name, line.toLowerCase());
+        });
+      }
+
+      for (final (line, quantity, unit, name) in [
+        ('en och en halv dl mjölk', 1.5, 'dl', 'mjölk'),
+        ('två och en halv dl grädde', 2.5, 'dl', 'grädde'),
+        ('2 och en halv dl grädde', 2.5, 'dl', 'grädde'),
+        ('halvannan liter vatten', 1.5, 'liter', 'vatten'),
+      ]) {
+        test('"$line" → $quantity $unit $name', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, quantity);
+          expect(r.unit, unit);
+          expect(r.name, name);
+        });
+      }
+
+      test('"en och en halv" is one amount, not two ingredients', () {
+        final parts = IngredientParser.parseCompoundIngredient(
+          'en och en halv dl mjölk',
+        );
+        expect(parts.map((p) => (p.quantity, p.unit, p.name)), [
+          (1.5, 'dl', 'mjölk'),
+        ]);
+      });
+
       test('a spoken amount after och is its own, not inherited', () {
         final parts = IngredientParser.parseCompoundIngredient(
           'tre ägg och en gul lök',
