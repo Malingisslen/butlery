@@ -14,7 +14,8 @@ import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/widgets/common/universal_share_dialog.dart' show ShareMode;
+import 'package:butlery/widgets/common/universal_share_dialog.dart'
+    show ShareMode;
 
 import '../../helpers/user_profile_factory.dart';
 import '../../test_support/base_unit_test.dart';

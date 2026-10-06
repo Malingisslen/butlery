@@ -405,7 +405,10 @@ void main() {
 
       test('a group share writes groupIds on the shared_content row', () async {
         final listId = await repository.createSharedShoppingList(
-          createSharedShoppingList(id: 'group-list', sharedByUserId: testUserId),
+          createSharedShoppingList(
+            id: 'group-list',
+            sharedByUserId: testUserId,
+          ),
           recipientIds: [testFriendId],
           groupIds: ['grp-1'],
         );
@@ -415,7 +418,10 @@ void main() {
 
       test('a share with no group writes no groupIds key', () async {
         final listId = await repository.createSharedShoppingList(
-          createSharedShoppingList(id: 'plain-list', sharedByUserId: testUserId),
+          createSharedShoppingList(
+            id: 'plain-list',
+            sharedByUserId: testUserId,
+          ),
           recipientIds: [testFriendId],
         );
 
