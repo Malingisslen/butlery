@@ -15,9 +15,8 @@
 //   CSR::ROLE::<roll>::FOCUSED).
 //
 // Ringen bär fokus ensam. Därför tar greppet bort den fokuserade tonplattan
-// (Theme.focusColor, som i dag är saffran, app_theme.dart:88, och
-// komponentteman som lägger en overlay i fokuserat läge). Opacitet är aldrig
-// ett tillstånd (tokens.json:40-53).
+// (Theme.focusColor och komponentteman som lägger en overlay i fokuserat
+// läge). Opacitet är aldrig ett tillstånd (tokens.json:40-53).
 
 import 'dart:math' as math;
 
