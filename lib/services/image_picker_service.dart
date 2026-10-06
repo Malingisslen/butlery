@@ -402,6 +402,16 @@ class ImagePickerService extends BaseService {
         );
       }
 
+      // Same as the single-pick path: on web each path is a blob URL, and the
+      // file checks below throw there, which the catch turned into an empty
+      // pick that looked like a cancel.
+      if (kIsWeb) {
+        return ImagePickOutcome(
+          permission: permission,
+          files: [for (final xFile in limitedFiles) File(xFile.path)],
+        );
+      }
+
       // Convert to File and validate
       final files = <File>[];
       for (int i = 0; i < limitedFiles.length; i++) {
