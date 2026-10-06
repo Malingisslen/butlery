@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 /// Reusable report dialog for any content type.
 ///
@@ -274,23 +275,20 @@ class _GuidelinesNote extends StatelessWidget {
           TextSpan(text: '$prefix '),
           // BUT-1446: WidgetSpan + Semantics(link:) so the guidelines link is
           // announced as a link with a name (was an inline TapGestureRecognizer
-          // — no link role, invisible to the a11y audit scanner). Dropping the
+          // — no link role). Dropping the
           // recognizer also lets this be a StatelessWidget.
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
-            child: Semantics(
-              link: true,
-              label: linkText,
-              child: GestureDetector(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(Routes.communityGuidelines),
-                child: Text(
-                  linkText,
-                  style: base.copyWith(
-                    color: context.modeColors.textLink,
-                    decoration: TextDecoration.underline,
-                  ),
+            child: ButleryLink(
+              semanticLabel: linkText,
+              onTap: () =>
+                  Navigator.of(context).pushNamed(Routes.communityGuidelines),
+              child: Text(
+                linkText,
+                style: base.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
                 ),
               ),
             ),

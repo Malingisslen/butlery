@@ -54,6 +54,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
@@ -328,6 +329,11 @@ final _controls = <String, _Control>{
     build: ({required enabled}) =>
         LinkifiedText.from('Källa: https://example.com/recept'),
     target: () => find.text('https://example.com/recept'),
+    // The tap area, not the link's outer box.
+    box: () => find.descendant(
+      of: find.byType(ButleryLink),
+      matching: find.byType(InkWell),
+    ),
   ),
   'menuitem': _Control(
     build: ({required enabled}) => PopupMenuButton<int>(

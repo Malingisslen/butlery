@@ -180,8 +180,8 @@
     },
     {
       "row_id": "CSR::ROLE::link::DEFAULT",
-      "status": "PARTIAL",
-      "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), the same GestureDetector-in-Semantics(link) pattern as the recipe source link and the terms links",
+      "status": "TESTED",
+      "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), a ButleryLink in running text",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::link::DEFAULT (light)",
       "also": [
@@ -190,13 +190,12 @@
           "name": "CSR::ROLE::link::DEFAULT (dark)"
         }
       ],
-      "ticket": null,
-      "known_finding": "BUT-2177"
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::link::FOCUSED",
-      "status": "MISSING",
-      "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), the same GestureDetector-in-Semantics(link) pattern as the recipe source link and the terms links",
+      "status": "TESTED",
+      "control": "LinkifiedText.from (lib/widgets/common/linkified_text.dart), a ButleryLink in running text",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::link::FOCUSED (light)",
       "also": [
@@ -205,8 +204,7 @@
           "name": "CSR::ROLE::link::FOCUSED (dark)"
         }
       ],
-      "ticket": "BUT-2177",
-      "reason": "A link cannot take keyboard focus at all, so the state does not exist in the app."
+      "ticket": null
     },
     {
       "row_id": "CSR::ROLE::menuitem::DEFAULT",
