@@ -630,6 +630,74 @@ void main() {
       });
     });
 
+    group('Visibility (BUT-2269)', () {
+      const recipeId = 'recipe-1';
+
+      Future<List<String>> visibleIds() async =>
+          (await repository.getCommentsForRecipe(
+            recipeId,
+          )).map((c) => c.id).toList();
+
+      test(
+        'a recipient sees comments shared with them and their own',
+        () async {
+          await _seedComment(
+            fakeFirestore,
+            'shared',
+            _createComment(recipeId, 'owner', id: 'shared'),
+            recipeOwnerId: 'owner',
+            sharedWithUserIds: ['user-123'],
+          );
+          await _seedComment(
+            fakeFirestore,
+            'mine',
+            _createComment(recipeId, 'user-123', id: 'mine'),
+            recipeOwnerId: 'owner',
+          );
+          await _seedComment(
+            fakeFirestore,
+            'not-shared',
+            _createComment(recipeId, 'owner', id: 'not-shared'),
+            recipeOwnerId: 'owner',
+            sharedWithUserIds: ['someone-else'],
+          );
+
+          expect(await visibleIds(), unorderedEquals(['shared', 'mine']));
+        },
+      );
+
+      test('a comment matching two queries is listed once', () async {
+        await _seedComment(
+          fakeFirestore,
+          'own-on-own',
+          _createComment(recipeId, 'user-123', id: 'own-on-own'),
+          sharedWithUserIds: ['user-123'],
+        );
+
+        expect(await visibleIds(), ['own-on-own']);
+      });
+
+      test('the stream merges the queries the same way', () async {
+        await _seedComment(
+          fakeFirestore,
+          'shared',
+          _createComment(recipeId, 'owner', id: 'shared'),
+          recipeOwnerId: 'owner',
+          sharedWithUserIds: ['user-123'],
+        );
+        await _seedComment(
+          fakeFirestore,
+          'mine',
+          _createComment(recipeId, 'user-123', id: 'mine'),
+          recipeOwnerId: 'owner',
+        );
+
+        final first = await repository.getCommentsStream(recipeId).first;
+
+        expect(first.map((c) => c.id), unorderedEquals(['shared', 'mine']));
+      });
+    });
+
     group('Get Replies', () {
       test('should retrieve all replies to a comment', () async {
         // Arrange
@@ -1012,27 +1080,20 @@ void main() {
         expect(stats.lastCommentAt, isNull);
       });
 
-      test(
-        'should return accurate count via aggregation even above 500',
-        () async {
-          // Arrange - Create more than 500 comments
-          const recipeId = 'recipe-1';
-          for (int i = 0; i < 600; i++) {
-            await _seedComment(
-              fakeFirestore,
-              'comment-$i',
-              _createComment(recipeId, 'user-$i', id: 'comment-$i'),
-            );
-          }
+      test('counts at most 500 comments', () async {
+        const recipeId = 'recipe-1';
+        for (int i = 0; i < 600; i++) {
+          await _seedComment(
+            fakeFirestore,
+            'comment-$i',
+            _createComment(recipeId, 'user-$i', id: 'comment-$i'),
+          );
+        }
 
-          // Act
-          final stats = await repository.getCommentStatistics(recipeId);
+        final stats = await repository.getCommentStatistics(recipeId);
 
-          // Assert
-          // count() aggregation returns true count; only likes fetch is limited to 500
-          expect(stats.totalComments, equals(600));
-        },
-      );
+        expect(stats.totalComments, equals(500));
+      });
     });
 
     group('Comment Model Integration', () {
@@ -1090,6 +1151,11 @@ Future<void> _seedComment(
   String commentId,
   RecipeComment comment, {
   List<String>? imageUrls,
+  // Every comment the app writes carries its recipe's owner, and the read
+  // rule (and so the repository's queries) depends on it. The repository's
+  // signed-in user owns the recipe unless a test says otherwise.
+  String? recipeOwnerId = 'user-123',
+  List<String>? sharedWithUserIds,
 }) async {
   final data = <String, dynamic>{
     'recipeId': comment.recipeId,
@@ -1109,6 +1175,8 @@ Future<void> _seedComment(
   if (imageUrls != null) {
     data['imageUrls'] = imageUrls;
   }
+  if (recipeOwnerId != null) data['recipeOwnerId'] = recipeOwnerId;
+  if (sharedWithUserIds != null) data['sharedWithUserIds'] = sharedWithUserIds;
 
   await firestore.collection('recipe_comments').doc(commentId).set(data);
 }
