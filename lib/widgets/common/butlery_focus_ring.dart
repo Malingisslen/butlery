@@ -112,6 +112,10 @@ class ButleryFocusRing extends StatefulWidget {
   static const double inflate =
       AppDimensions.focusRingOffset + AppDimensions.focusRingWidth / 2;
 
+  /// How many rings are showing right now. The app-level ring
+  /// (`ButleryAppFocusRing`) stays away while a control draws its own.
+  static final ValueNotifier<int> showing = ValueNotifier<int>(0);
+
   @override
   State<ButleryFocusRing> createState() => _ButleryFocusRingState();
 }
@@ -142,7 +146,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
     if (widget.bounds == FocusRingBounds.child || !mounted) return whole;
     final root = context.findRenderObject();
     if (root is! RenderBox) return whole;
-    return _textFieldBox(root) ?? whole;
+    return textFieldInputBox(root) ?? whole;
   }
 
   @override
@@ -160,6 +164,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
 
   @override
   void dispose() {
+    _count(false);
     FocusManager.instance.removeHighlightModeListener(_onHighlightMode);
     super.dispose();
   }
@@ -175,6 +180,14 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
       _observedFocus = hasFocus;
       _sync();
     });
+  }
+
+  bool _counted = false;
+
+  void _count(bool visible) {
+    if (visible == _counted) return;
+    _counted = visible;
+    ButleryFocusRing.showing.value += visible ? 1 : -1;
   }
 
   bool _syncScheduled = false;
@@ -198,6 +211,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
     } else if (_portal.isShowing) {
       _portal.hide();
     }
+    _count(_visible);
   }
 
   @override
@@ -265,7 +279,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
 /// So: find the RenderEditable, then walk up to the first ancestor that has
 /// such a leaf as a direct child. The helper, error and counter line are
 /// separate children of the decorator, outside the box.
-Rect? _textFieldBox(RenderBox root) {
+Rect? textFieldInputBox(RenderBox root) {
   RenderEditable? editable;
   void findEditable(RenderObject node) {
     if (editable != null) return;

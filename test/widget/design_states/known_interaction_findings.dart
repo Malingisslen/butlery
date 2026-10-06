@@ -24,28 +24,5 @@ class KnownInteractionFinding {
   final String reason;
 }
 
-const _radioFocused = KnownInteractionFinding(
-  checks: {'ring'},
-  ticket: 'BUT-2148',
-  reason:
-      'RadioListTile shows focus as the saffron focusColor fill '
-      '(app_theme.dart focusColor) and draws no ring. The Radio inside '
-      'ButleryControlFocus has the ring (butlery_control_focus_test.dart).',
-);
-
-const _switchFocused = KnownInteractionFinding(
-  checks: {'ring'},
-  ticket: 'BUT-2148',
-  reason:
-      'SwitchListTile shows focus as the saffron focusColor fill and draws no '
-      'ring. The Switch inside ButleryControlFocus has the ring '
-      '(butlery_control_focus_test.dart).',
-);
-
 /// Keyed by `CSR::ROLE::<role>::<STATE> (light|dark)`.
-const Map<String, KnownInteractionFinding> knownInteractionFindings = {
-  'CSR::ROLE::radio::FOCUSED (light)': _radioFocused,
-  'CSR::ROLE::radio::FOCUSED (dark)': _radioFocused,
-  'CSR::ROLE::switch::FOCUSED (light)': _switchFocused,
-  'CSR::ROLE::switch::FOCUSED (dark)': _switchFocused,
-};
+const Map<String, KnownInteractionFinding> knownInteractionFindings = {};

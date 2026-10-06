@@ -219,19 +219,11 @@ void main() {
       }
     });
 
-    test(
-      'the theme draws no focus tint (Grafisk manual v6:209)',
-      () {
-        for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
-          expect(theme.focusColor.a, 0);
-        }
-      },
-      skip:
-          'ThemeData.focusColor is still saffron. About 145 lib files have '
-          'an InkWell or ListTile whose only keyboard focus cue is that '
-          'tint, and D3 forbids removing a cue before the ring is on the '
-          'same control. Tracked in BUT-2148 (Q-P7-02).',
-    );
+    test('the theme draws no focus tint (Grafisk manual v6:209)', () {
+      for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+        expect(theme.focusColor.a, 0);
+      }
+    });
   });
 }
 
