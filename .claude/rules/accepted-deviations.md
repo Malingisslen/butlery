@@ -175,3 +175,5 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - A failed dish scrub is logged, not reported, as in `scrubLastEditor` (BUT-2214, 2026-10-03)
 - RESOLVED 2026-10-03 — Malin: the remaining TEXT_CONTRAST matrix findings are a measurement difference (token pairs clear WCAG; Flutter measures rendered glyphs) and stay listed in `known_a11y_findings.dart` (BUT-2196)
 - The mirror's fail-open and its ignored `truncated` flag now also cover `messages` create in a GROUP and `realtime_menus/{id}/votes`; a DM (two participants) is gated EXACTLY on `blocks/{other}_{me}` for both the conversation create and the message create. One-directional everywhere. Do not harmonise the DM arm onto the mirror "for one shape" (BUT-2017, 2026-10-05)
+- SUPERSEDES the leave/removal entry: `onHouseholdGroupWritten` removes a member the linked group no longer holds and deletes their share; clients cannot change household membership (BUT-2267, 2026-10-06)
+- SUPERSEDES "NOT BUILT" in the `getByHousehold` cap entry: it throws `HouseholdTooLargeForSharesException` above 20, and `joinGroupHousehold` refuses at 20 (BUT-2267, 2026-10-06)
