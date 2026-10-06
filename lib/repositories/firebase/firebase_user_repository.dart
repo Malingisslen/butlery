@@ -410,14 +410,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         'searchProfiles: Attempting indexed search for query: $normalizedQuery',
       );
 
-      // Server-side isHidden filter avoids paying read cost on suspended
-      // profiles AND keeps the result count honest \u2014 a client-side drop
-      // would silently shrink the returned set below `limit`. The fallback
-      // paths below still client-filter as defence in depth (e.g., legacy
-      // profiles missing the field).
+      // isHidden is filtered here, not in the query: only moderation ever
+      // writes the field (the owner's save drops it, BUT-1285), and an
+      // equality filter excludes every doc that lacks it, so a server-side
+      // `isHidden == false` matched nobody who was never moderated.
       final nameQuery = await collection
           .where('isSearchable', isEqualTo: true)
-          .where('isHidden', isEqualTo: false)
           .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
           .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
           .limit(limit)
@@ -427,6 +425,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       for (final doc in nameQuery.docs) {
         if (doc.id == uid) continue;
         final profile = fromFirestore(doc);
+        if (profile.isHidden) continue;
         if (!seen.contains(profile.uid)) {
           results.add(profile);
           seen.add(profile.uid);
@@ -519,6 +518,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           if (doc.id == uid) continue;
           try {
             final profile = fromFirestore(doc);
+            if (profile.isHidden) continue;
             if (!seen.contains(profile.uid)) {
               results.add(profile);
               seen.add(profile.uid);

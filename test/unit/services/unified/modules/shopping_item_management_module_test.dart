@@ -65,6 +65,8 @@
 ///     wraps each in a `UnifiedShoppingItem` before batching.
 library;
 
+import 'dart:async';
+
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart'
@@ -108,8 +110,13 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   final List<String> removedItemIds = [];
   final List<List<String>> removedBatches = [];
 
+  /// Holds addItem open the way an offline Firestore write does: it settles
+  /// only when the test completes it.
+  Completer<void>? holdAddItem;
+
   @override
   Future<void> addItem(String listId, UnifiedShoppingItem item) async {
+    await holdAddItem?.future;
     if (throwOnAddItem != null) throw throwOnAddItem!;
     addedItems.add(item);
   }
@@ -457,7 +464,7 @@ void main() {
     /// and surfaces as false. The bug-shape: a regression dropping the
     /// catch would crash the UI from a flaky network call.
     test(
-      'returns false on repo failure without mutating local state',
+      'returns false on repo failure and takes the row back out',
       () async {
         lists.add(_seedList(id: 'L'));
         activeListId = 'L';
@@ -467,9 +474,30 @@ void main() {
 
         expect(ok, isFalse);
         expect(lists.first.items, isEmpty);
-        expect(notifyCalls, 0);
       },
     );
+
+    test('shows the row while the write is still pending', () async {
+      lists.add(_seedList(id: 'L'));
+      activeListId = 'L';
+      when(() => mockLookup.lookupFromRaw(any())).thenAnswer(
+        (_) async => IngredientLookupResult.fromLists(
+          matched: const [],
+          unmatched: const [],
+        ),
+      );
+      fakeRepo.holdAddItem = Completer<void>();
+
+      final pending = buildModule().addItemToActiveList(name: 'Mjölk');
+      await pumpEventQueue();
+
+      expect(lists.first.items.map((i) => i.name), ['Mjölk']);
+      expect(notifyCalls, 1);
+
+      fakeRepo.holdAddItem!.complete();
+      expect(await pending, isTrue);
+      expect(lists.first.items, hasLength(1));
+    });
   });
 
   // -------------------------------------------------------------------------

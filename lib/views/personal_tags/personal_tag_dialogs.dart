@@ -202,6 +202,8 @@ abstract final class PersonalTagDialogs {
   ) async {
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      if (!friendsService.isInitialized) await friendsService.initialize();
+      if (!context.mounted) return;
       final friends = friendsService.friends;
       final groups = friendsService.categoriesList;
 

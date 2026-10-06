@@ -2,6 +2,7 @@
 // Preview of shared menus with all recipes
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -493,6 +494,12 @@ class MenuPreviewView extends StatelessWidget {
   Future<void> _shareMenu(BuildContext context) async {
     final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    try {
+      if (!friendsService.isInitialized) await friendsService.initialize();
+    } catch (e) {
+      AppLogger.warning('Friends list load before share failed: $e');
+    }
+    if (!context.mounted) return;
 
     await showDialog(
       context: context,

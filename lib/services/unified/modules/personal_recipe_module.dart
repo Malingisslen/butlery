@@ -313,16 +313,19 @@ class PersonalRecipeModule with StreamManagementMixin {
 
   /// Save a recipe directly without re-tagging or personal tag rules.
   /// Used by batch retag to avoid double-tagging and rate limiter throttling.
+  ///
+  /// The sync runs as an 'update': both sync paths write only for 'create'
+  /// and 'update', so any other operation name never reaches Firebase.
   Future<void> saveRecipeRaw(Recipe recipe) async {
     await _saveToCache(recipe);
 
     if (kIsWeb) {
-      final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'retag');
+      final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'update');
       if (!syncSuccess) {
         throw Exception('Failed to sync retagged recipe to Firebase');
       }
     } else {
-      _startBackgroundRecipeSync(recipe, 'retag');
+      _startBackgroundRecipeSync(recipe, 'update');
     }
   }
 

@@ -195,6 +195,18 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     );
   }
 
+  /// Join a group via the server-side `acceptGroupInvitation` callable
+  /// (BUT-2265). The group rules admit only the owner and existing members,
+  /// so an invitee cannot add itself; the function validates the invitation
+  /// and the friendship and writes the membership under the Admin SDK.
+  /// Throws on failure.
+  Future<void> acceptGroupInvitationViaFunction(String invitationId) async {
+    final callable = _functions.httpsCallable('acceptGroupInvitation');
+    await callable.call<Map<String, dynamic>>(
+      <String, dynamic>{'invitationId': invitationId},
+    );
+  }
+
   /// Accept a friend request. Delegates to the server-side callable (B1); the
   /// parties and request status are derived server-side from the request doc,
   /// so [userId1]/[userId2] are no longer used on the client (kept for the

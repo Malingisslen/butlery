@@ -336,6 +336,34 @@ void main() {
       });
     });
 
+    group('Raw save (batch re-tag)', () {
+      // "Uppdatera alla recept" saves through saveRecipeRaw. It used to sync
+      // under an operation name neither sync path writes for, so the new tags
+      // never reached Firebase.
+      test('writes the recipe to Firebase', () async {
+        final adapter = _RecordingAdapter();
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+        );
+
+        await module.saveRecipeRaw(testRecipe);
+        await pumpEventQueue();
+
+        expect(adapter.updatedIds, ['test-recipe-1']);
+        expect(
+          module.getSyncStatus('test-recipe-1'),
+          RecipeSyncStatus.synced,
+        );
+      });
+    });
+
     group('Import', () {
       test('should fail import when not authenticated', () async {
         currentUserId = null;
@@ -385,4 +413,14 @@ void main() {
       });
     });
   });
+}
+
+class _RecordingAdapter extends MockRecipeServiceAdapter {
+  final List<String> updatedIds = [];
+
+  @override
+  Future<bool> updateRecipe(Recipe recipe) async {
+    updatedIds.add(recipe.id);
+    return true;
+  }
 }
