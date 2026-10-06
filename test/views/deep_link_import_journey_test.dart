@@ -177,6 +177,55 @@ void main() {
       expect(settings.arguments, '2 dl mjölk\n3 ägg');
     });
 
+    // Resa 11: processPendingDeepLink cleared the link AFTER processDeepLink
+    // had parked it again for a signed-out user, so login found nothing.
+    // The gate sits before the path dispatch, so every link kind shares it.
+    for (final (name, deepLink, route) in [
+      (
+        'shared text',
+        'butlery://import?text=${Uri.encodeComponent('2 dl mjölk\n3 ägg')}',
+        Routes.fromSocialMedia,
+      ),
+      (
+        'friend invite',
+        'https://butlery.app/invite?id=aaaaaaaaaaaaaaaaaaaa'
+            '&from=bbbbbbbbbbbbbbbbbbbb&type=friend',
+        Routes.friendRequests,
+      ),
+    ]) {
+      testWidgets('a $name received signed out opens after login', (
+        tester,
+      ) async {
+        final auth = MockFactory.createAuthRepository();
+        TestServiceLocator.registerMock<AuthRepository>(auth);
+        await tester.pumpWidget(_testApp(observer: observer));
+        await tester.pumpAndSettle();
+        final context = tester.element(find.byType(Scaffold).first);
+        final before = observer.pushed.length;
+
+        await tester.runAsync(() async {
+          await handler.processDeepLink(deepLink, context);
+          // App start runs this once more while still signed out.
+          await handler.processPendingDeepLink(context);
+        });
+        expect(observer.pushed.length, before);
+
+        auth.setAuthState(
+          isAuthenticated: true,
+          user: MockFactory.createMockUser(uid: 'journey-test-user'),
+        );
+        await tester.runAsync(() async {
+          await handler.processPendingDeepLink(context);
+        });
+        await tester.pumpAndSettle(const Duration(seconds: 3));
+
+        expect(
+          observer.pushed.skip(before).map((r) => r.settings.name),
+          [route],
+        );
+      });
+    }
+
     testWidgets(
       'unknown butlery:// host pushes nothing',
       (tester) async {

@@ -92,10 +92,12 @@ class DeepLinkHandler {
   /// This should be called once the app is fully initialized and has
   /// a valid navigation context available.
   Future<void> processPendingDeepLink(BuildContext context) async {
-    if (_pendingDeepLink != null) {
-      await processDeepLink(_pendingDeepLink!, context);
-      _pendingDeepLink = null;
-    }
+    final link = _pendingDeepLink;
+    if (link == null) return;
+    // Cleared before processing: a signed-out user's link is parked again
+    // inside processDeepLink and must survive until login.
+    _pendingDeepLink = null;
+    await processDeepLink(link, context);
   }
 
   /// Whether a `butlery://` custom-scheme URI should be dropped because its
