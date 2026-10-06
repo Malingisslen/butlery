@@ -452,6 +452,15 @@ void main() {
           },
         );
 
+        final invitations = MockFriendsInvitationsOperations();
+        mockParentService.setFriendsState(invitations: invitations);
+        when(
+          () => invitations.sendGroupInvitations(
+            userIds: any(named: 'userIds'),
+            groupId: any(named: 'groupId'),
+          ),
+        ).thenAnswer((_) async => {'friend_1': true, 'friend_2': true});
+
         // Act
         final categoryId = await operations.createCategoryWithFriends(
           name: 'New Group',
@@ -461,6 +470,13 @@ void main() {
 
         // Assert
         expect(categoryId, isNotNull);
+        // BUT-2270: both friends in ONE call; one call each lost the second.
+        verify(
+          () => invitations.sendGroupInvitations(
+            userIds: ['friend_1', 'friend_2'],
+            groupId: categoryId!,
+          ),
+        ).called(1);
         expect(initialCategories.length, equals(1));
         expect(initialCategories.first.name, equals('New Group'));
       });

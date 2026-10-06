@@ -107,14 +107,11 @@ class FriendsCategoriesOperations {
       // This prevents the "0 invites sent" issue when trying to invite initial members later
       if (initialMemberIds != null && initialMemberIds.isNotEmpty) {
         try {
-          int sentCount = 0;
-          for (final memberId in initialMemberIds) {
-            final sent = await _getInvitations().sendGroupInvitationToUser(
-              userId: memberId,
-              groupId: categoryId,
-            );
-            if (sent) sentCount++;
-          }
+          final results = await _getInvitations().sendGroupInvitations(
+            userIds: initialMemberIds,
+            groupId: categoryId,
+          );
+          final sentCount = results.values.where((sent) => sent).length;
           AppLogger.success(
             '✅ Category created with $sentCount invitations sent: $name',
           );

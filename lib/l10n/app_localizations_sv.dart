@@ -17452,6 +17452,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupInvitationCancelFailed => 'Inbjudan kunde inte avbrytas.';
 
   @override
+  String groupInvitationsPartlyFailed(int failed, int total) {
+    return '$failed av $total inbjudningar kunde inte skickas.';
+  }
+
+  @override
   String get conversationStartFailed => 'Konversationen kunde inte startas.';
 
   @override

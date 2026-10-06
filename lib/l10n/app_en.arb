@@ -13346,6 +13346,14 @@
   "@groupInvitationCancelFailed": {
     "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
   },
+  "groupInvitationsPartlyFailed": "{failed} of {total} invitations could not be sent.",
+  "@groupInvitationsPartlyFailed": {
+    "description": "BUT-2270: shown after creating or adding to a group when some of the invitations were not sent (not a friend, already invited, or unavailable).",
+    "placeholders": {
+      "failed": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "conversationStartFailed": "The conversation could not be started.",
   "@conversationStartFailed": {
     "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."

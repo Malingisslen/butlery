@@ -137,6 +137,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 10,
     refillIntervalMs: 60000,
   },
+  // BUT-2270. One call carries up to 50 invitations, which the client path
+  // could only send one per 10 s.
+  sendGroupInvitations: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+    dailyLimit: 50,
+  },
   // BUT-1856. Same numbers as `createChatGroup` on purpose: this callable can
   // create a group and does so through `createChatGroupWithDeps`, bypassing the
   // create bucket entirely, so anything looser here would quietly raise the

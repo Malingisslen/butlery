@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -160,10 +161,19 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         icon: _selectedEmoji,
-        initialMemberIds: _selectedFriendIds.toList(),
       );
 
       if (categoryId != null) {
+        // Invited here rather than through `createCategory` so the dialog
+        // learns who was not reached and can say so (BUT-2270).
+        final invitees = _selectedFriendIds.toList();
+        final failed = invitees.isEmpty
+            ? 0
+            : (await friendsService.invitations.sendGroupInvitations(
+                userIds: invitees,
+                groupId: categoryId,
+              )).values.where((sent) => !sent).length;
+
         // Get the created category to return it
         final createdCategory = friendsService.categories.getCategoryById(
           categoryId,
@@ -174,6 +184,15 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         await _draftManager.clear();
 
         if (mounted) {
+          if (failed > 0) {
+            SnackBarUtils.showWarning(
+              context,
+              context.l10n.groupInvitationsPartlyFailed(
+                failed,
+                invitees.length,
+              ),
+            );
+          }
           Navigator.of(context).pop(createdCategory);
         }
       } else {

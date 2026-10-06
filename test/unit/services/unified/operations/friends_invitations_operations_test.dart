@@ -317,10 +317,8 @@ void main() {
     });
 
     group('Group Invitations', () {
-      test('the saved invitation id carries neither party uid', () async {
-        const inviteeUid = 'invitee-uid-456';
-        final categoriesOps = MockFriendsCategoriesOperations()
-          ..setCategoriesState(
+      MockFriendsCategoriesOperations groupOps() =>
+          MockFriendsCategoriesOperations()..setCategoriesState(
             friendCategories: [
               FriendCategory(
                 id: 'group-1',
@@ -331,30 +329,61 @@ void main() {
               ),
             ],
           );
-        mockParentService.setFriendsState(categories: categoriesOps);
-        when(
-          () => mockFriendsRepository.saveInvitation(any()),
-        ).thenAnswer((_) async {});
 
-        final senderUid = mockParentService.currentUserId;
-        expect(senderUid, isNotNull, reason: 'premise: a signed-in sender');
+      test('several friends go out in ONE server call, and only the ones the '
+          'server sent are recorded (BUT-2270)', () async {
+        mockParentService.setFriendsState(categories: groupOps());
+        when(
+          () => mockFriendsRepository.sendGroupInvitations(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => {'anna': 'inv-a', 'cecilia': 'inv-c'});
+
+        final results = await operations.sendGroupInvitations(
+          userIds: ['anna', 'bo', 'cecilia'],
+          groupId: 'group-1',
+          customMessage: 'Välkomna',
+        );
+
+        expect(results, {'anna': true, 'bo': false, 'cecilia': true});
+        verify(
+          () => mockFriendsRepository.sendGroupInvitations(
+            groupId: 'group-1',
+            userIds: ['anna', 'bo', 'cecilia'],
+            message: 'Välkomna',
+          ),
+        ).called(1);
+        final recorded = mockParentService.sentInvitationsList
+            .map((i) => (i.toUserId, i.id, i.groupName))
+            .toList();
+        expect(
+          recorded,
+          unorderedEquals([
+            ('anna', 'inv-a', 'Familjen'),
+            ('cecilia', 'inv-c', 'Familjen'),
+          ]),
+        );
+      });
+
+      test('a failed server call sends nobody', () async {
+        mockParentService.setFriendsState(categories: groupOps());
+        when(
+          () => mockFriendsRepository.sendGroupInvitations(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenThrow(Exception('offline'));
 
         final ok = await operations.sendGroupInvitationToUser(
-          userId: inviteeUid,
+          userId: 'anna',
           groupId: 'group-1',
         );
 
-        expect(ok, isTrue);
-        final captured = verify(
-          () => mockFriendsRepository.saveInvitation(captureAny()),
-        ).captured;
-        expect(captured, hasLength(1), reason: 'premise: saveInvitation ran');
-        final invitation = captured.single as GroupInvitation;
-        expect(invitation.fromUserId, senderUid);
-        expect(invitation.toUserId, inviteeUid);
-        expect(invitation.id, isNotEmpty);
-        expect(invitation.id, isNot(contains(senderUid)));
-        expect(invitation.id, isNot(contains(inviteeUid)));
+        expect(ok, isFalse);
+        expect(mockParentService.sentInvitationsList, isEmpty);
       });
 
       group('accepting (BUT-2265)', () {

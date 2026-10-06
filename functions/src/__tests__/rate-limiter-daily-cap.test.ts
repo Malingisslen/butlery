@@ -310,6 +310,17 @@ const cases: UnitCase[] = [
       );
     },
   },
+  // BUT-2270. One call writes up to 50 invitations.
+  {
+    name: "RATE_LIMIT_CONFIGS: sendGroupInvitations daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.sendGroupInvitations.dailyLimit,
+        50,
+        "sendGroupInvitations.dailyLimit"
+      );
+    },
+  },
   // The coverage promise itself, rather than a count of the entries that keep
   // it. Every previous wording quantified ("three", then "FOUR") and went stale
   // by ADDITION with its own bytes untouched — twice. This case fails on the
@@ -323,6 +334,7 @@ const cases: UnitCase[] = [
         "importRecipe",
         "createChatGroup",
         "ensureCategoryChat",
+        "sendGroupInvitations",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

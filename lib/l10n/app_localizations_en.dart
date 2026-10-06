@@ -17430,6 +17430,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'The invitation could not be cancelled.';
 
   @override
+  String groupInvitationsPartlyFailed(int failed, int total) {
+    return '$failed of $total invitations could not be sent.';
+  }
+
+  @override
   String get conversationStartFailed =>
       'The conversation could not be started.';
 
