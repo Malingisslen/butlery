@@ -91,7 +91,6 @@ function validFriendCategoryBody(extra: Record<string, unknown> = {}): Record<st
 function validPublicProfileBody(extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     displayName: "Anna",
-    email: "anna@example.com",
     isSearchable: true,
     isHidden: false,
     ...extra,

@@ -262,26 +262,6 @@ class AppDimensions {
   /// Thick border width
   static const double borderWidthThick = 2.0;
 
-  /// Fast animation duration (150ms)
-  static const Duration animationDurationFast = Duration(milliseconds: 150);
-
-  /// Medium animation duration (200ms)
-  static const Duration animationDurationMedium = Duration(milliseconds: 200);
-
-  /// Common animation duration (300ms)
-  static const Duration animationDurationCommon = Duration(milliseconds: 300);
-
-  /// Slow animation duration (350ms)
-  static const Duration animationDurationSlow = Duration(milliseconds: 350);
-
-  /// Long animation duration (500ms)
-  static const Duration animationDurationLong = Duration(milliseconds: 500);
-
-  /// Extended animation duration (1200ms)
-  static const Duration animationDurationExtended = Duration(
-    milliseconds: 1200,
-  );
-
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
 
@@ -577,7 +557,7 @@ class AppDimensions {
 
   /// How tall a card is relative to its width, in the LIST toggle's grid.
   ///
-  /// One caller: `LayoutComponents.responsiveListGrid` on Mina recept, which
+  /// One caller: `SliverResponsiveListGrid` on Mina recept, which
   /// lays out DETAILED cards in a grid on tablet and desktop and a plain list
   /// on a phone. The grid toggle no longer reads it — that layout sizes each
   /// row to its tallest card and needs no ratio at all (BUT-1911).

@@ -234,6 +234,12 @@ class RecipeManagementHandler {
     Recipe recipe,
   ) async {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    try {
+      if (!friendsService.isInitialized) await friendsService.initialize();
+    } catch (e) {
+      AppLogger.warning('Friends list load before collaboration failed: $e');
+    }
+    if (!context.mounted) return;
     final friends = friendsService.friendsList;
 
     if (friends.isEmpty) {
@@ -262,9 +268,6 @@ class RecipeManagementHandler {
                     .map(
                       (friend) => CheckboxListTile(
                         title: Text(friend.displayName),
-                        subtitle: friend.email.isNotEmpty
-                            ? Text(friend.email)
-                            : null,
                         value: selectedIds.contains(friend.uid),
                         activeColor: dialogCs.primary,
                         onChanged: (v) => setDialogState(() {

@@ -179,6 +179,16 @@ export { onProfileUpdated } from "./social/on-profile-updated";
 // themselves into a victim's friends list and read private cook_snaps.
 export { acceptFriendRequest } from "./social/accept-friend-request";
 
+// BUT-2265: joining a group. The group rules admit only the owner and existing
+// members, so an invitee's own write was always refused.
+export { acceptGroupInvitation } from "./social/accept-group-invitation";
+
+// BUT-2270: a group's invitations in one call. The client's one-per-10-seconds
+// limit on social requests dropped every invitation after the first.
+export { sendGroupInvitations } from "./social/send-group-invitations";
+// BUT-2264: exact-address friend search without publishing the address.
+export { findUserByEmail } from "./social/find-user-by-email";
+
 // BUT-1629: the only path by which a minor can become searchable. The rules
 // hard-deny (BUT-1626) blocks every CLIENT write of isSearchable:true for a
 // minor; this Admin-SDK callable is the audited server-side exception.

@@ -398,6 +398,37 @@ void main() {
       });
     });
 
+    group('BUT-2271: the share names its groups', () {
+      Future<Map<String, dynamic>> row(String id) async =>
+          (await fakeFirestore.collection('shared_content').doc(id).get())
+              .data()!;
+
+      test('a group share writes groupIds on the shared_content row', () async {
+        final listId = await repository.createSharedShoppingList(
+          createSharedShoppingList(
+            id: 'group-list',
+            sharedByUserId: testUserId,
+          ),
+          recipientIds: [testFriendId],
+          groupIds: ['grp-1'],
+        );
+
+        expect((await row(listId))['groupIds'], ['grp-1']);
+      });
+
+      test('a share with no group writes no groupIds key', () async {
+        final listId = await repository.createSharedShoppingList(
+          createSharedShoppingList(
+            id: 'plain-list',
+            sharedByUserId: testUserId,
+          ),
+          recipientIds: [testFriendId],
+        );
+
+        expect((await row(listId)).containsKey('groupIds'), isFalse);
+      });
+    });
+
     // ===== STATUS MANAGEMENT =====
 
     group('Status Management', () {

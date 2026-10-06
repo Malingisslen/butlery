@@ -124,12 +124,16 @@ void main() {
       () => mockInvitations.getSentInvitations(),
     ).thenReturn(testInvitations);
     when(
-      () => mockInvitations.sendGroupInvitationToUser(
-        userId: any(named: 'userId'),
+      () => mockInvitations.sendGroupInvitations(
+        userIds: any(named: 'userIds'),
         groupId: any(named: 'groupId'),
         customMessage: any(named: 'customMessage'),
       ),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer(
+      (inv) async => {
+        for (final id in inv.namedArguments[#userIds] as List<String>) id: true,
+      },
+    );
 
     viewModel = AddMembersToGroupViewModel(
       userService: MockUserService(),
@@ -330,21 +334,44 @@ void main() {
       );
 
       expect(result, isTrue);
-      verify(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: 'friend-1',
+      // BUT-2270: one call for everyone. One call per friend tripped the
+      // database's one-request-per-10-s limit after the first.
+      final captured = verify(
+        () => mockInvitations.sendGroupInvitations(
+          userIds: captureAny(named: 'userIds'),
           groupId: testGroupId,
           customMessage: 'Välkommen!',
         ),
-      ).called(1);
-      verify(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: 'friend-2',
-          groupId: testGroupId,
-          customMessage: 'Välkommen!',
-        ),
-      ).called(1);
+      ).captured;
+      expect(captured, hasLength(1));
+      expect(captured.single, unorderedEquals(['friend-1', 'friend-2']));
+      expect(viewModel.sentCount, 2);
     });
+
+    test(
+      'some invitations failing says how many, and keeps the rest',
+      () async {
+        when(
+          () => mockInvitations.sendGroupInvitations(
+            userIds: any(named: 'userIds'),
+            groupId: any(named: 'groupId'),
+            customMessage: any(named: 'customMessage'),
+          ),
+        ).thenAnswer((_) async => {'friend-1': true, 'friend-2': false});
+        viewModel.toggleFriendSelection('friend-1');
+        viewModel.toggleFriendSelection('friend-2');
+
+        final result = await viewModel.sendInvitations();
+
+        expect(result, isTrue);
+        expect(viewModel.sentCount, 1);
+        expect(viewModel.getInvitationStatusForUser('friend-2'), 'failed');
+        expect(
+          viewModel.invitationError,
+          AppLocale.current.groupInvitationsPartlyFailed(1, 2),
+        );
+      },
+    );
 
     test('should clear selections after success', () async {
       viewModel.toggleFriendSelection('friend-1');
@@ -361,12 +388,12 @@ void main() {
 
     test('should handle invitation failure', () async {
       when(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => mockInvitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
-      ).thenAnswer((_) async => false);
+      ).thenAnswer((_) async => {'friend-1': false});
 
       viewModel.toggleFriendSelection('friend-1');
       final result = await viewModel.sendInvitations();
@@ -393,8 +420,8 @@ void main() {
       final result = await viewModel.sendInvitations();
       expect(result, isFalse);
       verifyNever(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => mockInvitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
@@ -403,8 +430,8 @@ void main() {
 
     test('should handle service exception', () async {
       when(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => mockInvitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),

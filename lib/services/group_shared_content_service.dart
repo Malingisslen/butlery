@@ -53,7 +53,7 @@ class SharedContentItem {
     switch (type) {
       case 'shopping_list':
         return data['title'] ??
-            data['listTitle'] ??
+            data['listName'] ??
             AppLocale.current.labelUntitledList;
       case 'menu':
         return data['title'] ??
@@ -143,29 +143,14 @@ class GroupSharedContentService extends BaseService {
       final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return [];
 
-      final allMemberIds = group.allMemberIds;
-
-      AppLogger.debug(
-        '🔍 [${contentType.toUpperCase()}] Querying for group: ${group.name}',
-      );
-      AppLogger.debug('   All IDs for query: $allMemberIds');
-
       final docs = await _repository.getSharedContent(
-        memberIds: allMemberIds,
+        viewerId: currentUserId,
+        groupId: group.id,
         contentType: contentType,
       );
-
-      AppLogger.debug('   Found ${docs.length} $contentType items');
-
-      final items = docs
+      return docs
           .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
           .toList();
-
-      if (items.isNotEmpty) {
-        AppLogger.debug('   First item: ${items[0].title}');
-      }
-
-      return items;
     } catch (e) {
       AppLogger.warning('Failed to fetch shared $contentType for group: $e');
       return [];
@@ -176,23 +161,21 @@ class GroupSharedContentService extends BaseService {
     FriendCategory group,
     String contentType,
   ) {
-    try {
-      final userId = _permissionService.currentUserId;
-      if (userId == null) return Stream.value([]);
+    final userId = _permissionService.currentUserId;
+    if (userId == null) return Stream.value([]);
 
-      return _repository
-          .streamSharedContent(
-            memberIds: group.allMemberIds,
-            contentType: contentType,
-          )
-          .map(
-            (docs) => docs
-                .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
-                .toList(),
-          );
-    } catch (e) {
-      AppLogger.warning('Failed to stream shared $contentType: $e');
-      return Stream.value([]);
-    }
+    // A refused or failed query reaches the caller as a stream error, so the
+    // group page can say so instead of loading forever (BUT-2271).
+    return _repository
+        .streamSharedContent(
+          viewerId: userId,
+          groupId: group.id,
+          contentType: contentType,
+        )
+        .map(
+          (docs) => docs
+              .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
+              .toList(),
+        );
   }
 }

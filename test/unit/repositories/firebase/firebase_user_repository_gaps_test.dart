@@ -436,24 +436,6 @@ void main() {
       expect(await repo.searchProfiles(''), isEmpty);
       expect(await repo.searchProfiles('   '), isEmpty);
     });
-
-    test('searchProfiles also matches by email when query contains @ and '
-        'allowEmailSearch is true', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: 'me');
-      await _seedProfile(
-        firestore,
-        _profile(
-          uid: 'u1',
-          displayName: 'Bertil',
-          email: 'target@x.com',
-          allowEmailSearch: true,
-        ),
-      );
-
-      final results = await repo.searchProfiles('target@x.com');
-      expect(results.map((p) => p.uid), contains('u1'));
-    });
   });
 
   group('isDisplayNameAvailable', () {

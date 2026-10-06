@@ -5655,6 +5655,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'All your friends are already members of this group, or you have already sent invitations to them.';
 
   @override
+  String get groupSharedContentLoadFailed =>
+      'The shared content could not be loaded.';
+
+  @override
   String get groupCouldNotLoadMembers => 'Could not load group members';
 
   @override
@@ -17436,6 +17440,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupInvitationCancelFailed =>
       'The invitation could not be cancelled.';
+
+  @override
+  String groupInvitationsPartlyFailed(int failed, int total) {
+    return '$failed of $total invitations could not be sent.';
+  }
 
   @override
   String get conversationStartFailed =>

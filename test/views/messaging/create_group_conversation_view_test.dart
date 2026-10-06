@@ -25,7 +25,6 @@ import '../design_states/state_harness.dart';
 class _MockFriends extends Mock implements UnifiedFriendsService {}
 
 const _anna = 'Anna Lindqvist';
-const _annaLabel = 'Anna Lindqvist, anna@example.se';
 const _cecilia = 'Cecilia Berg';
 
 /// The one TAPPABLE semantics node whose label names [name]. Once a friend
@@ -77,8 +76,8 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('a friend is one control: the name and e-mail, a tap, and the '
-      'selected state the tap toggles', (tester) async {
+  testWidgets('a friend is one control: the name, a tap, and the selected '
+      'state the tap toggles', (tester) async {
     final handle = tester.ensureSemantics();
     await pumpView(tester);
 
@@ -89,12 +88,12 @@ void main() {
     expect(all, hasLength(1), reason: 'one node announces $_anna');
 
     var data = _friendNode(_anna).getSemanticsData();
-    expect(data.label, _annaLabel);
+    expect(data.label, _anna);
     expect(data.flagsCollection.isButton, isTrue);
     expect(data.flagsCollection.isSelected, Tristate.isFalse);
 
     // The screen reader's own activation, not a pointer tap.
-    tester.semantics.tap(find.semantics.byLabel(_annaLabel));
+    tester.semantics.tap(find.semantics.byLabel(_anna));
     await tester.pump();
 
     data = _friendNode(_anna).getSemanticsData();
@@ -104,7 +103,7 @@ void main() {
       Tristate.isFalse,
     );
 
-    tester.semantics.tap(find.semantics.byLabel(_annaLabel));
+    tester.semantics.tap(find.semantics.byLabel(_anna));
     await tester.pump();
 
     expect(
@@ -114,12 +113,16 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('a friend without an e-mail is announced by the name alone', (
+  // BUT-2264: an older public profile may still carry an address; it is
+  // neither shown nor announced.
+  testWidgets('a friend is announced by the name alone, never the address', (
     tester,
   ) async {
     final handle = tester.ensureSemantics();
     await pumpView(tester);
 
+    expect(_friendNode(_anna).getSemanticsData().label, _anna);
+    expect(find.text('anna@example.se'), findsNothing);
     expect(_friendNode(_cecilia).getSemanticsData().label, _cecilia);
     handle.dispose();
   });

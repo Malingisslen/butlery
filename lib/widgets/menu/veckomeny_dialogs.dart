@@ -70,10 +70,12 @@ class VeckomenyDialogs {
 
     List<UserProfile> availableFriends = [];
     try {
+      if (!friendsService.isInitialized) await friendsService.initialize();
       availableFriends = friendsService.friends;
     } catch (e) {
       AppLogger.warning('Kunde inte hämta vänner: $e');
     }
+    if (!context.mounted) return;
 
     showDialog(
       context: context,

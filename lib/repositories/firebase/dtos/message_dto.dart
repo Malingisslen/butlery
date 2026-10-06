@@ -80,7 +80,11 @@ class MessageDto {
       id: documentId ?? data['id'] as String,
       conversationId: data['conversationId'] as String,
       senderId: data['senderId'] as String,
-      senderDisplayName: data['senderDisplayName'] as String,
+      // A `lastMessage` projection that lacks it must not fail the
+      // whole conversation list.
+      senderDisplayName: data['senderDisplayName'] is String
+          ? data['senderDisplayName'] as String
+          : '',
       senderAvatarUrl: data['senderAvatarUrl'] as String?,
       content: data['content'] as String,
       type: MessageType.values.firstWhere(

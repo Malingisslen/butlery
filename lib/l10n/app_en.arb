@@ -3773,6 +3773,10 @@
   "importWebsite": "Website",
   "groupAddMembers": "Add members",
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
+  "groupSharedContentLoadFailed": "The shared content could not be loaded.",
+  "@groupSharedContentLoadFailed": {
+    "description": "Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271)."
+  },
   "groupCouldNotLoadMembers": "Could not load group members",
   "groupLeaveRosterIncomplete": "We could not load all group members. Please try again.",
   "groupCouldNotTransferOwnership": "Could not transfer ownership. Try again.",
@@ -13353,6 +13357,14 @@
   "groupInvitationCancelFailed": "The invitation could not be cancelled.",
   "@groupInvitationCancelFailed": {
     "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupInvitationsPartlyFailed": "{failed} of {total} invitations could not be sent.",
+  "@groupInvitationsPartlyFailed": {
+    "description": "BUT-2270: shown after creating or adding to a group when some of the invitations were not sent (not a friend, already invited, or unavailable).",
+    "placeholders": {
+      "failed": {"type": "int"},
+      "total": {"type": "int"}
+    }
   },
   "conversationStartFailed": "The conversation could not be started.",
   "@conversationStartFailed": {

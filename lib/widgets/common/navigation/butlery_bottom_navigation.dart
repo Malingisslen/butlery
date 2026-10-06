@@ -46,6 +46,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// BUT-557: the container-level navigation landmark (WCAG 1.3.1).
 Widget navigationLandmark({
@@ -277,7 +278,7 @@ class _BottomNavTab extends StatelessWidget {
                   AnimatedContainer(
                     duration: AnimationUtils.getDuration(
                       context,
-                      AppDimensions.animationDurationFast,
+                      AppMotion.micro,
                     ),
                     height: AppDimensions.bottomNavMarkerThickness,
                     width: isSelected ? _textWidth(label, style) : 0,
@@ -396,9 +397,8 @@ class ButleryAddButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(size / 2),
         child: SizedBox.square(
           dimension: size,
-          child: Material(
+          child: SaffronPress(
             key: buttonKey,
-            color: cs.secondary,
             shape: CircleBorder(
               side: ring
                   ? BorderSide(
@@ -408,18 +408,14 @@ class ButleryAddButton extends StatelessWidget {
                     )
                   : BorderSide.none,
             ),
-            clipBehavior: Clip.antiAlias,
-            child: PressUnchanged(
-              child: InkWell(
-                onTap: onPressed,
-                customBorder: const CircleBorder(),
-                child: ExcludeSemantics(
-                  child: ButleryIcon(
-                    ButleryIcons.navAdd,
-                    color: cs.onSecondary,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                ),
+            onTap: onPressed,
+            builder: (context, pressed) => ExcludeSemantics(
+              child: ButleryIcon(
+                ButleryIcons.navAdd,
+                color: pressed
+                    ? AppModeColors.onActionPrimaryPressed(cs.brightness)
+                    : cs.onSecondary,
+                size: AppDimensions.iconSizeL,
               ),
             ),
           ),

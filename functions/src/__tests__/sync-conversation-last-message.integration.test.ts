@@ -160,6 +160,7 @@ async function run(): Promise<void> {
     await writeAndFire(M1, {
       conversationId: CONV,
       senderId: `a-${RUN}`,
+      senderDisplayName: "Anna",
       content: "hej",
       type: "text",
       status: "sent",
@@ -167,6 +168,10 @@ async function run(): Promise<void> {
     });
     const lm = await lastMessage();
     assert(lm !== null, "lastMessage must be set after first message");
+    assert(
+      lm!.senderDisplayName === "Anna",
+      `lastMessage.senderDisplayName must mirror the message, got ${lm!.senderDisplayName}`
+    );
     assert(lm!.id === M1, `lastMessage.id must be ${M1}, got ${lm!.id}`);
     assert(lm!.content === "hej", `lastMessage.content must be 'hej', got ${lm!.content}`);
     assert(lm!.senderId === `a-${RUN}`, "lastMessage.senderId must mirror the message");

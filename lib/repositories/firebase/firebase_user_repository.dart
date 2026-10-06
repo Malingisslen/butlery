@@ -1,6 +1,7 @@
 // lib/repositories/firebase/firebase_user_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -70,9 +71,17 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     AuthRepository? authRepository,
     super.auditRepository,
     super.timestampProvider,
-  }) : super(
-         authRepository: authRepository ?? FirebaseAuthRepository(),
-       );
+    FirebaseFunctions? functions,
+  }) : _injectedFunctions = functions,
+       super(authRepository: authRepository ?? FirebaseAuthRepository());
+
+  // Resolved lazily so constructing the repo in a unit test without Firebase
+  // never calls `FirebaseFunctions.instanceFor`.
+  final FirebaseFunctions? _injectedFunctions;
+  FirebaseFunctions? _functionsCache;
+  FirebaseFunctions get _functions => _functionsCache ??=
+      (_injectedFunctions ??
+      FirebaseFunctions.instanceFor(region: 'europe-west1'));
   @override
   String get collectionName => FirestoreCollections.publicProfiles;
 
@@ -157,7 +166,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // Validate required fields (uid is not in toFirestore, it's the document ID)
     validateRequiredFields(
       data: profile.toFirestore(),
-      requiredFields: ['displayName', 'email'],
+      requiredFields: ['displayName'],
       resourceType: 'user_profile',
     );
 
@@ -171,6 +180,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // (see the regression guard in firebase_user_repository_test.dart).
     final data = profile.toFirestoreEditable();
     data['displayNameLower'] = profile.displayName.toLowerCase();
+    // BUT-2264: clears an address an older save left on the public document.
+    data['email'] = FieldValue.delete();
     final settings = profile.toPrivateSettings();
     if (!writeHouseholdSize) {
       // Merge-writes only skip ABSENT keys — an explicit null would clear the
@@ -224,6 +235,20 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             // always read as the default false and the hint re-fired forever.
             hasSeenActivityFeedHint:
                 s['hasSeenActivityFeedHint'] as bool? ?? false,
+            // Written to this sub-doc by setAutoAddBoughtToPantry,
+            // markPantryAutoAddPrompted and the onboarding skip; without the
+            // merge they read as defaults after every login.
+            autoAddBoughtToPantry: SerializationUtils.safeBool(
+              s,
+              'autoAddBoughtToPantry',
+            ),
+            pantryAutoAddPrompted: SerializationUtils.safeBool(
+              s,
+              'pantryAutoAddPrompted',
+            ),
+            onboardingSkippedAt: SerializationUtils.parseDateTimeValue(
+              s['onboardingSkippedAt'],
+            ),
             // BUT-1322: householdSize is a private preference persisted only
             // in this settings sub-doc (toPrivateSettings) — merge it back or
             // the portion-scaling default always reads null.
@@ -396,14 +421,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         'searchProfiles: Attempting indexed search for query: $normalizedQuery',
       );
 
-      // Server-side isHidden filter avoids paying read cost on suspended
-      // profiles AND keeps the result count honest \u2014 a client-side drop
-      // would silently shrink the returned set below `limit`. The fallback
-      // paths below still client-filter as defence in depth (e.g., legacy
-      // profiles missing the field).
+      // isHidden is filtered here, not in the query: only moderation ever
+      // writes the field (the owner's save drops it, BUT-1285), and an
+      // equality filter excludes every doc that lacks it, so a server-side
+      // `isHidden == false` matched nobody who was never moderated.
       final nameQuery = await collection
           .where('isSearchable', isEqualTo: true)
-          .where('isHidden', isEqualTo: false)
           .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
           .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
           .limit(limit)
@@ -413,6 +436,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       for (final doc in nameQuery.docs) {
         if (doc.id == uid) continue;
         final profile = fromFirestore(doc);
+        if (profile.isHidden) continue;
         if (!seen.contains(profile.uid)) {
           results.add(profile);
           seen.add(profile.uid);
@@ -493,26 +517,19 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       }
     }
 
-    // Optional email search (only if not too many results already)
+    // BUT-2264: the address is not on the public document, so an exact-address
+    // search asks the server, which answers only for accounts that allow it.
     if (normalizedQuery.contains('@') && results.length < 5) {
       try {
-        final emailQuery = await collection
-            .where('allowEmailSearch', isEqualTo: true)
-            .where('email', isEqualTo: normalizedQuery)
-            .limit(5)
-            .get();
-        for (final doc in emailQuery.docs) {
-          if (doc.id == uid) continue;
-          try {
-            final profile = fromFirestore(doc);
-            if (!seen.contains(profile.uid)) {
-              results.add(profile);
-              seen.add(profile.uid);
-            }
-          } catch (docError) {
-            AppLogger.warning(
-              'searchProfiles: Skipping malformed email search document ${doc.id}: $docError',
-            );
+        final response = await _functions
+            .httpsCallable('findUserByEmail')
+            .call<Map<dynamic, dynamic>>({'email': normalizedQuery});
+        final foundUid = response.data['uid'];
+        if (foundUid is String && !seen.contains(foundUid)) {
+          final profile = await fetchProfile(foundUid);
+          if (profile != null && !profile.isHidden) {
+            results.add(profile);
+            seen.add(foundUid);
           }
         }
       } catch (emailError) {
@@ -591,9 +608,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update notification settings',
     );
 
-    await _settingsDoc(userId).set({
-      'notificationsEnabled': enabled,
-    }, SetOptions(merge: true));
+    await _settingsDoc(
+      userId,
+    ).set({'notificationsEnabled': enabled}, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -753,9 +770,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // merge:true single-field set touches only this field — it never overwrites
     // the public profile doc, so it can't clobber friendsCount (mutated by
     // friend-creation transactions) or moderator-owned isHidden/hiddenAt.
-    await _settingsDoc(userId).set({
-      'hasSeenActivityFeedHint': true,
-    }, SetOptions(merge: true));
+    await _settingsDoc(
+      userId,
+    ).set({'hasSeenActivityFeedHint': true}, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -778,9 +795,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // (toPrivateSettings). A merge:true single-field set touches only this field
     // and never overwrites the public profile doc, so it can't clobber
     // friendsCount (friend-creation transactions) or isHidden/hiddenAt.
-    await _settingsDoc(userId).set({
-      'autoAddBoughtToPantry': enabled,
-    }, SetOptions(merge: true));
+    await _settingsDoc(
+      userId,
+    ).set({'autoAddBoughtToPantry': enabled}, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -802,9 +819,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // BUT-1465: household-allergen-filter opt-out lives in the private settings
     // sub-doc (toPrivateSettings). A merge:true single-field set touches only
     // this field and never overwrites the public profile doc.
-    await _settingsDoc(userId).set({
-      'useHouseholdAllergens': enabled,
-    }, SetOptions(merge: true));
+    await _settingsDoc(
+      userId,
+    ).set({'useHouseholdAllergens': enabled}, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -823,9 +840,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'mark pantry auto-add prompted',
     );
 
-    await _settingsDoc(userId).set({
-      'pantryAutoAddPrompted': true,
-    }, SetOptions(merge: true));
+    await _settingsDoc(
+      userId,
+    ).set({'pantryAutoAddPrompted': true}, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,

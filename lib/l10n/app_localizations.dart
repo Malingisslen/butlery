@@ -9541,6 +9541,12 @@ abstract class AppLocalizations {
   /// **'Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.'**
   String get groupAllFriendsAlreadyMembers;
 
+  /// Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det delade innehållet kunde inte hämtas.'**
+  String get groupSharedContentLoadFailed;
+
   /// No description provided for @groupCouldNotLoadMembers.
   ///
   /// In sv, this message translates to:
@@ -28714,6 +28720,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inbjudan kunde inte avbrytas.'**
   String get groupInvitationCancelFailed;
+
+  /// BUT-2270: shown after creating or adding to a group when some of the invitations were not sent (not a friend, already invited, or unavailable).
+  ///
+  /// In sv, this message translates to:
+  /// **'{failed} av {total} inbjudningar kunde inte skickas.'**
+  String groupInvitationsPartlyFailed(int failed, int total);
 
   /// P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
   ///

@@ -157,6 +157,25 @@ void main() {
         expect(lastError, isNotNull);
       });
 
+      test('a created recipe carries parsed ingredients', () async {
+        // The menu's shopping list sums amounts from these; without them
+        // '1 gul lök' from three recipes became one row of 1.
+        final id = await module.createPersonalRecipe(
+          title: 'Kycklingcurry',
+          ingredients: ['1 gul lök', '2 msk currypulver', 'Salt'],
+          instructions: ['Koka'],
+        );
+        expect(id, isNotNull);
+
+        final saved = module.popLastCreatedRecipe()!;
+        final structured = saved.core.structuredIngredients!;
+        expect(structured[0].amount, 1);
+        expect(structured[0].name, 'gul lök');
+        expect(structured[1].amount, 2);
+        expect(structured[1].unit, 'msk');
+        expect(structured[2].amount, isNull);
+      });
+
       test('should fail update when not authenticated', () async {
         currentUserId = null;
         final result = await module.updatePersonalRecipe(testRecipe);
@@ -317,6 +336,34 @@ void main() {
       });
     });
 
+    group('Raw save (batch re-tag)', () {
+      // "Uppdatera alla recept" saves through saveRecipeRaw. It used to sync
+      // under an operation name neither sync path writes for, so the new tags
+      // never reached Firebase.
+      test('writes the recipe to Firebase', () async {
+        final adapter = _RecordingAdapter();
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+        );
+
+        await module.saveRecipeRaw(testRecipe);
+        await pumpEventQueue();
+
+        expect(adapter.updatedIds, ['test-recipe-1']);
+        expect(
+          module.getSyncStatus('test-recipe-1'),
+          RecipeSyncStatus.synced,
+        );
+      });
+    });
+
     group('Import', () {
       test('should fail import when not authenticated', () async {
         currentUserId = null;
@@ -366,4 +413,14 @@ void main() {
       });
     });
   });
+}
+
+class _RecordingAdapter extends MockRecipeServiceAdapter {
+  final List<String> updatedIds = [];
+
+  @override
+  Future<bool> updateRecipe(Recipe recipe) async {
+    updatedIds.add(recipe.id);
+    return true;
+  }
 }

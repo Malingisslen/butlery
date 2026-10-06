@@ -34,17 +34,18 @@ void main() {
     expect(AppMotion.pulse, const Duration(milliseconds: 1200));
   });
 
-  testWidgets('one pulse loop takes the dot from faint to full', (
+  // R8-9 = A: one loop is AppMotion.pulse, faint to full and back.
+  testWidgets('one pulse loop takes the dot to full and back', (
     tester,
   ) async {
     await tester.pumpWidget(app());
     expect(dotAlpha(tester), closeTo(0.3, 0.01));
 
     await tester.pump(AppMotion.pulse ~/ 2);
-    expect(dotAlpha(tester), lessThan(0.9));
+    expect(dotAlpha(tester), closeTo(1.0, 0.01));
 
     await tester.pump(AppMotion.pulse ~/ 2);
-    expect(dotAlpha(tester), closeTo(1.0, 0.01));
+    expect(dotAlpha(tester), closeTo(0.3, 0.01));
   });
 
   testWidgets('reduced motion: the dot stands still at full', (tester) async {

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Smart portion scaler with ingredient scaling and unit conversion
 /// This widget provides portion scaling functionality with support for both
@@ -66,7 +66,7 @@ class _PortionScalerState extends State<PortionScaler>
     );
 
     _animationController = AnimationController(
-      duration: AppDimensions.animationDurationFast,
+      duration: AppMotion.micro,
       vsync: this,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(

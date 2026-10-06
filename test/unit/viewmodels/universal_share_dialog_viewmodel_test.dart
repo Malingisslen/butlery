@@ -7,7 +7,17 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
+import 'package:butlery/models/shared_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart'
+    show ShareMode;
 
+import '../../helpers/user_profile_factory.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -16,8 +26,17 @@ import '../../infrastructure/di/test_service_locator.dart';
 class MockSocialRecipeCoordinator extends Mock
     implements SocialRecipeCoordinator {}
 
+class _Friends extends Mock implements UnifiedFriendsService {}
+
+class _Menus extends Mock implements UnifiedMenuService {}
+
+class _SharedShopping extends Mock
+    implements FirebaseSharedShoppingRepository {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  late UnifiedShoppingList shoppingList;
 
   late MockSocialRecipeCoordinator mockSocialRecipeCoordinator;
   late MockUnifiedShoppingService mockShoppingService;
@@ -282,18 +301,139 @@ void main() {
     });
   });
 
-  // Shopping list sharing tests skipped — the VM's shareShoppingList now
-  // delegates to SocialContentFeatures.shareContentWithFriends (a static
-  // utility that uses ServiceLocator internally), making it an integration
-  // concern. The old tests mocked shareListWithFriend which is no longer
-  // called by the VM.
-  //
+  group('UniversalShareDialogViewModel - Menu to a group (BUT-2271)', () {
+    test('a group-only share reaches its members, not the sharer, and the '
+        'row names the group', () async {
+      final friends = _Friends();
+      final menus = _Menus();
+      when(() => friends.currentUserId).thenReturn('me');
+      when(() => friends.getCategoryByIdInternal('g1')).thenReturn(
+        FriendCategory(
+          id: 'g1',
+          name: 'Hemma',
+          ownerId: 'me',
+          friendUserIds: const ['me', 'anna', 'bo'],
+        ),
+      );
+      when(
+        () => menus.shareMenuWithFriends(
+          menuTitle: any(named: 'menuTitle'),
+          menuSnapshot: any(named: 'menuSnapshot'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+          groupIds: any(named: 'groupIds'),
+        ),
+      ).thenAnswer((_) async => true);
+      TestServiceLocator.registerMock<UnifiedFriendsService>(friends);
+      TestServiceLocator.registerMock<UnifiedMenuService>(menus);
+
+      final ok = await viewModel.shareMenu(
+        menu: const {},
+        menuName: 'Veckan',
+        friendUserIds: const [],
+        groupIds: const ['g1'],
+      );
+
+      expect(ok, isTrue);
+      final captured = verify(
+        () => menus.shareMenuWithFriends(
+          menuTitle: 'Veckan',
+          menuSnapshot: any(named: 'menuSnapshot'),
+          friendIds: captureAny(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+          groupIds: captureAny(named: 'groupIds'),
+        ),
+      ).captured;
+      expect(captured[0], unorderedEquals(['anna', 'bo']));
+      expect(captured[1], ['g1']);
+    });
+  });
+
+  group('UniversalShareDialogViewModel - Shopping list to a group '
+      '(BUT-2271)', () {
+    late _SharedShopping repo;
+
+    setUp(() {
+      registerFallbackValue(
+        SharedShoppingList.create(
+          sharedByUserId: 'fallback',
+          sharedByDisplayName: 'fallback',
+          sharedToUserIds: const [],
+          shareMessage: '',
+          listName: 'fallback',
+        ),
+      );
+      final list = UnifiedShoppingList.personal(
+        name: 'Veckohandling',
+        ownerId: 'me',
+        ownerDisplayName: 'Malin',
+      );
+      shoppingList = list;
+      mockShoppingService.setShoppingState(
+        shareOps: mockSharingOperations,
+        isInitialized: true,
+        lists: [list],
+        currentUserId: 'me',
+      );
+
+      final friends = _Friends();
+      when(() => friends.currentUserId).thenReturn('me');
+      when(() => friends.getCategoryByIdInternal('g1')).thenReturn(
+        FriendCategory(
+          id: 'g1',
+          name: 'Hemma',
+          ownerId: 'me',
+          friendUserIds: const ['me', 'anna', 'bo'],
+        ),
+      );
+      TestServiceLocator.registerMock<UnifiedFriendsService>(friends);
+
+      final users = MockUserService();
+      when(
+        () => users.currentUserProfile,
+      ).thenReturn(testUserProfile(uid: 'me', displayName: 'Malin'));
+      TestServiceLocator.registerMock<UserService>(users);
+
+      repo = _SharedShopping();
+      when(
+        () => repo.createSharedShoppingList(
+          any(),
+          recipientIds: any(named: 'recipientIds'),
+          groupIds: any(named: 'groupIds'),
+        ),
+      ).thenAnswer((_) async => 'shared-1');
+      TestServiceLocator.registerMock<FirebaseSharedShoppingRepository>(repo);
+    });
+
+    for (final mode in ShareMode.values) {
+      test('${mode.name}: a group-only share invites the group\'s members, '
+          'not the sharer, and the row names the group', () async {
+        final ok = await viewModel.shareShoppingList(
+          shoppingList: shoppingList,
+          friendUserIds: const [],
+          groupIds: const ['g1'],
+          shareMode: mode,
+        );
+
+        expect(ok, isTrue, reason: viewModel.errorMessage);
+        final captured = verify(
+          () => repo.createSharedShoppingList(
+            any(),
+            recipientIds: captureAny(named: 'recipientIds'),
+            groupIds: captureAny(named: 'groupIds'),
+          ),
+        ).captured;
+        expect(captured[0], unorderedEquals(['anna', 'bo']));
+        expect(captured[1], ['g1']);
+      });
+    }
+  });
+
   // Bug 20 fix lives in shareShoppingList's COPY-mode branch, which now
   // surfaces the same "X inbjudna / Y överhoppade" summary the REALTIME branch
-  // already did, via the shared _surfaceSkippedSummary helper. The end-to-end
-  // success path is the same integration concern noted above; the unit-level
-  // guarantee we can assert here is that the summary the helper surfaces is a
-  // real, non-empty partial-success message (not a stale error / plain toast).
+  // already did, via the shared _surfaceSkippedSummary helper.
 
   group('UniversalShareDialogViewModel - Partial-share summary (bug 20)', () {
     test('partialSuccess validation carries a non-empty skipped summary', () {

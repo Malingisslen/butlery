@@ -128,12 +128,6 @@ class ShareTargetSelection {
             friend.displayName,
             style: AppTextStyles.contentTitle,
           ),
-          subtitle: Text(
-            friend.email,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
           trailing: Checkbox(
             value: isSelected,
             onChanged: (_) => onFriendToggled(friend.uid),

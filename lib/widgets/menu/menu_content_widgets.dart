@@ -682,11 +682,13 @@ class _MenuRecipeCard extends StatelessWidget {
                           surface: PressSurface.base,
                           child: InkWell(
                             onTap: () async {
+                              final pool = await viewModel
+                                  .getAvailableRecipesAsync();
+                              if (!context.mounted) return;
                               final selectedRecipe =
                                   await SuggestAlternativeSheet.show(
                                     context,
-                                    availableRecipes:
-                                        viewModel.availableRecipes,
+                                    availableRecipes: pool,
                                     excludeRecipeIds: [recipe.id],
                                   );
                               if (selectedRecipe != null) {

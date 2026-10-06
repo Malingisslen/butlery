@@ -23,6 +23,7 @@ import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
 /// HIGH-10: Recipe sync status for tracking background Firebase sync state.
 enum RecipeSyncStatus {
@@ -129,7 +130,7 @@ class PersonalRecipeModule with StreamManagementMixin {
     List<String> ingredients = const [],
     List<String> instructions = const [],
     List<String> imageUrls = const [],
-    String mealType = 'Lunch',
+    String mealType = 'Middag',
     int? portions,
     int? timeMinutes,
     double? rating,
@@ -157,6 +158,11 @@ class PersonalRecipeModule with StreamManagementMixin {
             title: title.trim(),
             description: description,
             ingredients: ingredients,
+            // Readers that sum or scale amounts (the menu's shopping list,
+            // portions) treat a recipe without these as unparsed lines.
+            structuredIngredients: StructuredIngredientDeriver.deriveAll(
+              ingredients,
+            ),
             instructions: instructions,
             mealType: mealType,
             createdBy: currentUserId,
@@ -307,16 +313,19 @@ class PersonalRecipeModule with StreamManagementMixin {
 
   /// Save a recipe directly without re-tagging or personal tag rules.
   /// Used by batch retag to avoid double-tagging and rate limiter throttling.
+  ///
+  /// The sync runs as an 'update': both sync paths write only for 'create'
+  /// and 'update', so any other operation name never reaches Firebase.
   Future<void> saveRecipeRaw(Recipe recipe) async {
     await _saveToCache(recipe);
 
     if (kIsWeb) {
-      final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'retag');
+      final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'update');
       if (!syncSuccess) {
         throw Exception('Failed to sync retagged recipe to Firebase');
       }
     } else {
-      _startBackgroundRecipeSync(recipe, 'retag');
+      _startBackgroundRecipeSync(recipe, 'update');
     }
   }
 

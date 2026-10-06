@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/repositories/firebase/comments/comment_likes_operations.dart';
+import 'package:butlery/repositories/firebase/comments/comment_visibility_queries.dart';
 
 /// Firebase implementation for recipe comments with threaded replies and like tracking.
 /// Supports recipe access validation via optional [RecipeAccessValidator] constructor parameter.
@@ -20,7 +21,7 @@ typedef RecipeAccessValidator =
     Future<bool> Function(String recipeId, String userId);
 
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
-    with CommentLikesOperations
+    with CommentLikesOperations, CommentVisibilityQueries
     implements CommentsRepository {
   final RecipeAccessValidator? _recipeAccessValidator;
   final RecipeOwnershipResolver? _recipeOwnershipResolver;
@@ -94,17 +95,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   }
 
   @override
-  Future<List<RecipeComment>> getCommentsForRecipe(String recipeId) async {
-    // ✅ PERFORMANCE FIX: Added limit to prevent loading hundreds of comments
-    // ✅ REPLY FIX: Removed parentCommentId filter to load both top-level and replies
-    final querySnapshot = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .orderBy('createdAt', descending: false)
-        .limit(50) // Load max 50 comments (including replies)
-        .get();
-
-    return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
-  }
+  Future<List<RecipeComment>> getCommentsForRecipe(String recipeId) =>
+      fetchVisibleComments(recipeId);
 
   @override
   Future<PaginatedComments> getCommentsPaginated(
@@ -385,66 +377,21 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   // [CommentLikesOperations] mixin to keep this file under the 500-line limit.
 
   @override
-  Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
-    // ✅ PERFORMANCE FIX: Added limit to prevent streaming large comment datasets
-    // ✅ REPLY FIX: Removed parentCommentId filter to stream both top-level and replies
-    return collection
-        .where('recipeId', isEqualTo: recipeId)
-        .orderBy('createdAt', descending: false)
-        .limit(50) // Stream max 50 comments (including replies)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs.map((doc) => fromFirestore(doc)).toList(),
-        );
-  }
+  Stream<List<RecipeComment>> getCommentsStream(String recipeId) =>
+      watchVisibleComments(recipeId);
 
   @override
   Future<CommentStatistics> getCommentStatistics(String recipeId) async {
-    // Optimized (#040): Use count() aggregation for totals - no document fetch needed
-    // This reduces reads from 500 full docs to 2 count queries + 1 limited fetch
-
-    // Count top-level comments (no parentCommentId)
-    // Use isNull instead of isEqualTo: null for Firestore compatibility
-    final topLevelCount = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .where('parentCommentId', isNull: true)
-        .count()
-        .get();
-
-    // Count replies (have parentCommentId)
-    // Note: Firestore doesn't support isNotEqualTo: null directly with count,
-    // so we calculate replies as total - topLevel
-    final totalCount = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .count()
-        .get();
-
-    final repliesCount = (totalCount.count ?? 0) - (topLevelCount.count ?? 0);
-
-    // Fetch only for likes sum and lastCommentAt (need actual values, not just counts)
-    // Limited to 500 most recent comments for performance
-    final likesSnapshot = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .orderBy('createdAt', descending: true)
-        .limit(500)
-        .get();
-
-    int totalLikes = 0;
-    DateTime? lastCommentAt;
-
-    for (final doc in likesSnapshot.docs) {
-      final data = doc.data();
-      totalLikes += (data['likesCount'] as int?) ?? 0;
-
-      // First doc is most recent due to orderBy descending
-      lastCommentAt ??= (data['createdAt'] as Timestamp?)?.toDate();
-    }
+    // Counted from the visible comments: a count() query cannot express the
+    // union of the three visibility queries.
+    final comments = await fetchVisibleComments(recipeId, limit: 500);
+    final topLevel = comments.where((c) => c.parentCommentId == null).length;
 
     return CommentStatistics(
-      totalComments: topLevelCount.count ?? 0,
-      totalReplies: repliesCount,
-      totalLikes: totalLikes,
-      lastCommentAt: lastCommentAt,
+      totalComments: topLevel,
+      totalReplies: comments.length - topLevel,
+      totalLikes: comments.fold(0, (total, c) => total + c.likesCount),
+      lastCommentAt: comments.isEmpty ? null : comments.last.createdAt,
     );
   }
 

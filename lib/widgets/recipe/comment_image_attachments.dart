@@ -39,25 +39,23 @@ class CommentImageAttachments extends StatelessWidget {
           return Semantics(
             label: context.l10n.a11yCommentImageThumbnail,
             button: true,
-            child: PressUnchanged(
-              child: InkWell(
-                onTap: () => _openViewer(context, index),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.zero,
-                  child: CachedNetworkImage(
-                    imageUrl: url,
-                    cacheKey: FirebaseUrlUtils.stableCacheKey(url),
-                    width: _thumbnailSize,
-                    height: _thumbnailSize,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) =>
-                        ColoredBox(color: cs.surfaceContainerHighest),
-                    errorWidget: (_, __, ___) => ColoredBox(
-                      color: cs.surfaceContainerHighest,
-                      child: ButleryIcon(
-                        Icons.broken_image,
-                        color: cs.onSurfaceVariant,
-                      ),
+            child: PressScale(
+              onTap: () => _openViewer(context, index),
+              child: ClipRRect(
+                borderRadius: BorderRadius.zero,
+                child: CachedNetworkImage(
+                  imageUrl: url,
+                  cacheKey: FirebaseUrlUtils.stableCacheKey(url),
+                  width: _thumbnailSize,
+                  height: _thumbnailSize,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) =>
+                      ColoredBox(color: cs.surfaceContainerHighest),
+                  errorWidget: (_, __, ___) => ColoredBox(
+                    color: cs.surfaceContainerHighest,
+                    child: ButleryIcon(
+                      Icons.broken_image,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                 ),

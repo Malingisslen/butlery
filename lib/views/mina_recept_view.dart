@@ -65,6 +65,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_sized_grid.dart';
+import 'package:butlery/widgets/common/responsive/sliver_responsive_list_grid.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
@@ -203,12 +204,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   final CookingSessionStreamHolder _sessionsHolder =
       CookingSessionStreamHolder();
 
-  /// BUT-1028: scroll-offset persistence for the recipe list. The list and
-  /// the grid attach to the PrimaryScrollController that Hem's
-  /// NestedScrollView provides (only one is mounted at a time), which links
-  /// them to the Hem header. The offset is read from their scroll
-  /// notifications and restored through the NestedScrollView's inner
-  /// controller.
+  /// BUT-1028: scroll-offset persistence for the recipe list. The offset is
+  /// read from the library's scroll notifications and restored through the
+  /// NestedScrollView's inner controller.
   final GlobalKey<NestedScrollViewState> _nestedScrollKey =
       GlobalKey<NestedScrollViewState>();
   late final PersistenceService _persistence;
@@ -451,15 +449,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                           onOpenMenu: () => mainTabSwitchRequest.value =
                               LayoutScaffolds.menuTab,
                         ),
-                  body: _buildLibrary(
+                  pinned: _buildLibrary(
                     context,
                     viewModel: viewModel,
-                    isOnline: isOnline,
-                    allergenPrefs: allergenPrefs,
                     personalTags: personalTags,
                     recipeCount: recipeCount,
                     libraryEmpty: libraryEmpty,
                   ),
+                  body: _buildContent(viewModel, isOnline, allergenPrefs),
                 ),
               ),
             ],
@@ -470,17 +467,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   /// The library under the Hem section: presence, the cooking card, search
-  /// and filters, and the recipes.
+  /// and filters.
   Widget _buildLibrary(
     BuildContext context, {
     required RecipeListViewModel viewModel,
-    required bool isOnline,
-    required UserAllergenPreferences allergenPrefs,
     required List<PersonalTag> personalTags,
     required int recipeCount,
     required bool libraryEmpty,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Q6-16 = B: the library's own header row under the Ikväll band,
         // "Dina recept · N" with Välj, the ingredient search and the
@@ -557,11 +553,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               trailing: MinaReceptSortChip(viewModel: viewModel),
             ),
           ),
-          // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
-          // gesture; self-dismisses once per device.
-          const SwipeHintBanner(),
         ],
-        Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
       ],
     );
   }
@@ -625,31 +617,28 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
   /// The grid toggle on Mina recept.
   ///
-  /// [ContentSizedGrid] rather than a `GridView`, and its doc carries the
-  /// measurements behind that (BUT-1911).
+  /// [SliverContentSizedGrid] rather than a `GridView`, and
+  /// [ContentSizedGrid]'s doc carries the measurements behind that
+  /// (BUT-1911).
   Widget _buildRecipeGrid(
     BuildContext context, {
     required RecipeListViewModel viewModel,
     required List<Recipe> recipes,
     required UserAllergenPreferences allergenPrefs,
   }) {
-    return ContentSizedGrid(
-      // Kept from the GridView this replaced. The two toggle branches are
-      // different widget types today, so the element is replaced with or
-      // without it — it is insurance for the day they converge, not the thing
-      // that keeps two Scrollables off one PrimaryScrollController.
-      key: const ValueKey('recipe-grid-scrollable'),
-      primary: true,
+    return SliverPadding(
       padding: AppDimensions.responsiveContentPadding(context),
-      spacing: AppDimensions.responsiveGridSpacing(context),
-      columns: AppDimensions.recipeGridColumns(context),
-      itemCount: recipes.length,
-      itemBuilder: (context, index) => MinaReceptRecipeCard(
-        viewModel: viewModel,
-        recipe: recipes[index],
-        allergenPrefs: allergenPrefs,
-        onDelete: (recipe) => _handleDeleteWithUndo(viewModel, recipe),
-        index: index,
+      sliver: SliverContentSizedGrid(
+        spacing: AppDimensions.responsiveGridSpacing(context),
+        columns: AppDimensions.recipeGridColumns(context),
+        itemCount: recipes.length,
+        itemBuilder: (context, index) => MinaReceptRecipeCard(
+          viewModel: viewModel,
+          recipe: recipes[index],
+          allergenPrefs: allergenPrefs,
+          onDelete: (recipe) => _handleDeleteWithUndo(viewModel, recipe),
+          index: index,
+        ),
       ),
     );
   }
@@ -660,10 +649,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     UserAllergenPreferences allergenPrefs,
   ) {
     if (viewModel.isLoading) {
-      return Column(
-        children: [
-          Expanded(child: StateWidget.skeletonRecipeList(itemCount: 5)),
-        ],
+      return HemLibraryScroll.boxBody(
+        StateWidget.skeletonRecipeList(itemCount: 5),
+        scrolls: true,
       );
     }
 
@@ -677,27 +665,31 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       hasError: viewModel.hasError,
       hasRecipes: recipes.isNotEmpty,
     )) {
-      return StateWidget.error(
-        message: viewModel.error!,
-        onAction: () {
-          viewModel.clearError();
-          viewModel.refresh();
-        },
-        actionLabel: context.l10n.commonRetry,
+      return HemLibraryScroll.boxBody(
+        StateWidget.error(
+          message: viewModel.error!,
+          onAction: () {
+            viewModel.clearError();
+            viewModel.refresh();
+          },
+          actionLabel: context.l10n.commonRetry,
+        ),
       );
     }
 
     if (recipes.isEmpty) {
-      return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-          ? const HemEmptyState()
-          : StateWidget.noSearchResults(
-              onAction: viewModel.searchQuery.isNotEmpty
-                  ? () => viewModel.updateSearch('')
-                  : viewModel.clearAllFilters,
-              actionLabel: viewModel.searchQuery.isNotEmpty
-                  ? context.l10n.searchClearSearch
-                  : context.l10n.searchClearFilters,
-            );
+      return HemLibraryScroll.boxBody(
+        viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
+            ? const HemEmptyState()
+            : StateWidget.noSearchResults(
+                onAction: viewModel.searchQuery.isNotEmpty
+                    ? () => viewModel.updateSearch('')
+                    : viewModel.clearAllFilters,
+                actionLabel: viewModel.searchQuery.isNotEmpty
+                    ? context.l10n.searchClearSearch
+                    : context.l10n.searchClearFilters,
+              ),
+      );
     }
 
     return RefreshIndicator(
@@ -715,73 +707,87 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           }
         }
       },
-      child: Column(
-        children: [
+      // BUT-2254: everything between the quick chips and the cards scrolls
+      // with the cards. In a Column above an Expanded grid it pushed the
+      // cards off a phone screen, and at 200 % text the grid got no height.
+      // HEM-HERO / BUT-1028: one primary scrollable with no controller of its
+      // own, attached to the PrimaryScrollController of Hem's
+      // NestedScrollView, which links it to the Hem header; the offset is
+      // persisted from its notifications (HemLibraryScroll).
+      child: HemLibraryScroll.sliverBody(
+        key: ValueKey(
+          viewModel.isGridView
+              ? 'recipe-grid-scrollable'
+              : 'recipe-list-scrollable',
+        ),
+        slivers: [
+          // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
+          // gesture; self-dismisses once per device.
+          if (!viewModel.isSelectionMode)
+            const SliverToBoxAdapter(child: SwipeHintBanner()),
           if (viewModel.hasError)
-            Padding(
-              padding: AppDimensions.responsiveContentPadding(context),
-              child: MinaReceptSectionError(
-                onRetry: () {
-                  viewModel.clearError();
-                  viewModel.refresh();
-                },
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: AppDimensions.responsiveContentPadding(context),
+                child: MinaReceptSectionError(
+                  onRetry: () {
+                    viewModel.clearError();
+                    viewModel.refresh();
+                  },
+                ),
               ),
             ),
           if (viewModel.showOnboardingBanner)
-            MinaReceptOnboardingBanner(viewModel: viewModel),
-          if (viewModel.showWelcomeBanner)
-            MinaReceptWelcomeBanner(viewModel: viewModel),
-          if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters) ...[
-            MinaReceptDiscoveryShelves(
-              queryVm: context.read<RecipeQueryViewModel>(),
-              seasonalMonthFuture: _seasonalMonthFuture,
-              seasonalHeroService: _seasonalHeroService,
+            SliverToBoxAdapter(
+              child: MinaReceptOnboardingBanner(viewModel: viewModel),
             ),
-          ],
-          Expanded(
-            // HEM-HERO / BUT-1028: no controller of its own. Both grid and
-            // list attach to the PrimaryScrollController of Hem's
-            // NestedScrollView, which links them to the Hem header; the offset
-            // is persisted from their notifications (HemLibraryScroll).
-            child: viewModel.isGridView
-                ? _buildRecipeGrid(
-                    context,
-                    viewModel: viewModel,
-                    recipes: recipes,
-                    allergenPrefs: allergenPrefs,
-                  )
-                : KeyedSubtree(
-                    key: const ValueKey('recipe-list-scrollable'),
-                    child: LayoutComponents.responsiveListGrid(
-                      items: recipes,
-                      tabletColumns: 2,
-                      desktopColumns: 3,
-                      spacing: AppDimensions.responsiveGridSpacing(context),
-                      padding: AppDimensions.responsiveContentPadding(
-                        context,
-                      ),
-                      shrinkWrap: false,
-                      gridChildAspectRatio: AppDimensions.recipeGridAspectRatio(
-                        context,
-                      ),
-                      animate: true,
-                      itemBuilder: (context, recipe) => MinaReceptRecipeCard(
-                        viewModel: viewModel,
-                        recipe: recipe,
-                        allergenPrefs: allergenPrefs,
-                        onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
-                        index: recipes.indexOf(recipe),
-                      ),
-                    ),
-                  ),
-          ),
-          if (viewModel.canLoadMore)
-            Padding(
+          if (viewModel.showWelcomeBanner)
+            SliverToBoxAdapter(
+              child: MinaReceptWelcomeBanner(viewModel: viewModel),
+            ),
+          if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters)
+            SliverToBoxAdapter(
+              child: MinaReceptDiscoveryShelves(
+                queryVm: context.read<RecipeQueryViewModel>(),
+                seasonalMonthFuture: _seasonalMonthFuture,
+                seasonalHeroService: _seasonalHeroService,
+              ),
+            ),
+          if (viewModel.isGridView)
+            _buildRecipeGrid(
+              context,
+              viewModel: viewModel,
+              recipes: recipes,
+              allergenPrefs: allergenPrefs,
+            )
+          else
+            SliverResponsiveListGrid<Recipe>(
+              items: recipes,
+              tabletColumns: 2,
+              desktopColumns: 3,
+              spacing: AppDimensions.responsiveGridSpacing(context),
               padding: AppDimensions.responsiveContentPadding(context),
-              child: ActionButtons.primaryButton(
+              gridChildAspectRatio: AppDimensions.recipeGridAspectRatio(
                 context,
-                label: context.l10n.recipeShowMore,
-                onPressed: () => viewModel.loadMore(),
+              ),
+              animate: true,
+              itemBuilder: (context, recipe) => MinaReceptRecipeCard(
+                viewModel: viewModel,
+                recipe: recipe,
+                allergenPrefs: allergenPrefs,
+                onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
+                index: recipes.indexOf(recipe),
+              ),
+            ),
+          if (viewModel.canLoadMore)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: AppDimensions.responsiveContentPadding(context),
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.recipeShowMore,
+                  onPressed: () => viewModel.loadMore(),
+                ),
               ),
             ),
         ],

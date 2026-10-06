@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// A widget that animates its child with a fade-in and scale entrance effect.
 ///
@@ -37,11 +37,9 @@ class AnimatedListItem extends StatefulWidget {
   final Duration staggerDelay;
 
   /// Total duration of the entrance animation.
-  /// Default: 400ms.
   final Duration duration;
 
   /// Animation curve.
-  /// Default: Curves.easeOut.
   final Curve curve;
 
   /// Starting scale value.
@@ -57,12 +55,18 @@ class AnimatedListItem extends StatefulWidget {
     super.key,
     required this.child,
     required this.index,
-    this.staggerDelay = const Duration(milliseconds: 50),
-    this.duration = const Duration(milliseconds: 400),
-    this.curve = Curves.easeOut,
+    this.staggerDelay = defaultStaggerDelay,
+    this.duration = AppMotion.standard,
+    this.curve = AppMotion.curve,
     this.startScale = 0.95,
-    this.maxStaggerDelay = AppDimensions.animationDurationLong,
+    this.maxStaggerDelay = defaultMaxStaggerDelay,
   });
+
+  /// A wait before an item starts, not motion (produktbeslut R8-9 = A).
+  static const Duration defaultStaggerDelay = Duration(milliseconds: 50);
+
+  /// The longest wait before an item starts, not motion (R8-9 = A).
+  static const Duration defaultMaxStaggerDelay = Duration(milliseconds: 500);
 
   @override
   State<AnimatedListItem> createState() => _AnimatedListItemState();
@@ -213,8 +217,8 @@ class AnimatedListBuilder extends StatelessWidget {
     this.controller,
     this.shrinkWrap = false,
     this.physics,
-    this.staggerDelay = const Duration(milliseconds: 50),
-    this.duration = const Duration(milliseconds: 400),
+    this.staggerDelay = AnimatedListItem.defaultStaggerDelay,
+    this.duration = AppMotion.standard,
   });
 
   @override

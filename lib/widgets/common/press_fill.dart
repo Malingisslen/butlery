@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
@@ -50,8 +51,100 @@ class PressFill extends StatelessWidget {
   }
 }
 
+/// Transparent while pressed or hovered, so the widget draws its own press;
+/// the theme's focus colour otherwise, so a keyboard user still sees focus.
+final WidgetStateProperty<Color?> _ownPress = WidgetStateProperty.resolveWith(
+  (states) =>
+      states.contains(WidgetState.pressed) ||
+          states.contains(WidgetState.hovered)
+      ? Colors.transparent
+      : null,
+);
+
+/// A saffron (action.primary) button that presses and hovers to
+/// action.primaryPressed, its glyph or label to text.onActionPrimaryPressed
+/// (produktbeslut R8-1 = A).
+class SaffronPress extends StatefulWidget {
+  const SaffronPress({
+    required this.shape,
+    required this.onTap,
+    required this.builder,
+    super.key,
+  });
+
+  final ShapeBorder shape;
+  final VoidCallback? onTap;
+
+  /// Builds the content; [pressed] picks its glyph and label colour.
+  final Widget Function(BuildContext context, bool pressed) builder;
+
+  @override
+  State<SaffronPress> createState() => _SaffronPressState();
+}
+
+class _SaffronPressState extends State<SaffronPress> {
+  bool _pressed = false;
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final on = _pressed || _hovered;
+    return Material(
+      color: on
+          ? AppModeColors.actionPrimaryPressed(brightness)
+          : AppModeColors.actionPrimary(brightness),
+      shape: widget.shape,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: widget.onTap,
+        customBorder: widget.shape,
+        overlayColor: _ownPress,
+        onHighlightChanged: (value) => setState(() => _pressed = value),
+        onHover: (value) => setState(() => _hovered = value),
+        child: widget.builder(context, on),
+      ),
+    );
+  }
+}
+
+/// A tappable photo: it scales to 97 % while pressed, with no colour and no
+/// opacity, and stands still under reduced motion. Hover changes nothing but
+/// the cursor (produktbeslut R8-4 = C).
+class PressScale extends StatefulWidget {
+  const PressScale({required this.onTap, required this.child, super.key});
+
+  static const double pressedScale = 0.97;
+
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  State<PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<PressScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final still = MediaQuery.disableAnimationsOf(context);
+    return InkWell(
+      onTap: widget.onTap,
+      overlayColor: _ownPress,
+      onHighlightChanged: (value) => setState(() => _pressed = value),
+      child: AnimatedScale(
+        scale: _pressed && !still ? PressScale.pressedScale : 1,
+        duration: AppMotion.micro,
+        curve: AppMotion.curve,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 /// Keeps the press and hover a widget had before BUT-2205 on a surface the
-/// rule does not cover: saffron, a warning tint, the error colour, a photo
+/// rule does not cover: the error colour, a photo
 /// or a scanned page. The design session decides them (BUT-2232).
 class PressUnchanged extends StatelessWidget {
   const PressUnchanged({required this.child, super.key});

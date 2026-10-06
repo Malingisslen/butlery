@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Available emoji reactions for comments.
 /// Maps internal key to display emoji.
@@ -97,7 +98,7 @@ class _EmojiButtonState extends State<_EmojiButton> {
           child: AnimatedContainer(
             duration: AnimationUtils.getDuration(
               context,
-              AppDimensions.animationDurationFast,
+              AppMotion.micro,
             ),
             padding: AppDimensions.paddingAll8,
             decoration: BoxDecoration(

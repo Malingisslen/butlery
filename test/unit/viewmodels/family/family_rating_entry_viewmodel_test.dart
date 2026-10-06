@@ -347,6 +347,33 @@ void main() {
     },
   );
 
+  test('save reports failure when a rating is not stored', () async {
+    final emma = await addDiner('Emma', DinerAgeBand.toddler);
+    final mockService = _MockFamilyRatingService();
+    // rateAsFamily answers null when its write failed.
+    when(
+      () => mockService.rateAsFamily(
+        recipeId: any(named: 'recipeId'),
+        householdId: any(named: 'householdId'),
+        memberId: any(named: 'memberId'),
+        memberType: any(named: 'memberType'),
+        stars: any(named: 'stars'),
+        enteredByUid: any(named: 'enteredByUid'),
+      ),
+    ).thenAnswer((_) async => null);
+    TestServiceLocator.registerSingleton<FamilyRatingService>(mockService);
+
+    final vm = FamilyRatingEntryViewModel(
+      recipeId: _recipe,
+      presentMemberIds: [emma],
+    );
+    await vm.load();
+    vm.setStars(emma, 4);
+
+    expect(await vm.save(), isFalse);
+    expect(vm.hasError, isTrue);
+  });
+
   test('setStars notifies listeners so the UI rebuilds', () async {
     await addDiner('Emma', DinerAgeBand.toddler);
     final vm = FamilyRatingEntryViewModel(recipeId: _recipe);

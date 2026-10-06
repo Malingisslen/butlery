@@ -224,6 +224,19 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   // ── Relationship operations (unchanged) ──
 
+  Future<void> acceptGroupInvitation(String invitationId) =>
+      _friendRelationshipRepo.acceptGroupInvitationViaFunction(invitationId);
+
+  Future<Map<String, String>> sendGroupInvitations({
+    required String groupId,
+    required List<String> userIds,
+    String? message,
+  }) => _friendRelationshipRepo.sendGroupInvitationsViaFunction(
+    groupId: groupId,
+    userIds: userIds,
+    message: message,
+  );
+
   @override
   Future<bool> areFriends(String userId1, String userId2) async {
     return await _friendRelationshipRepo.areFriends(userId1, userId2);

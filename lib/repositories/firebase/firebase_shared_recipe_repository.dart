@@ -42,9 +42,11 @@
 /// await sharedRecipeRepo.markAsDismissed(recipeId, userId);
 /// ```
 
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
 import 'package:butlery/repositories/firebase/base_view_repository.dart';
@@ -222,6 +224,7 @@ class FirebaseSharedRecipeRepository
   Future<String> createSharedRecipe(
     SharedRecipe sharedRecipe, {
     required List<String> recipientIds,
+    List<String>? groupIds,
   }) async {
     final uid = requireCurrentUserId();
 
@@ -250,6 +253,11 @@ class FirebaseSharedRecipeRepository
       await Future.wait(
         recipientIds.map((id) => addMember(existingId, id, addedBy: uid)),
       );
+      if (groupIds != null && groupIds.isNotEmpty) {
+        await getCollectionRef().doc(existingId).update({
+          sharedContentGroupIdsField: FieldValue.arrayUnion(groupIds),
+        });
+      }
       AppLogger.info(
         '♻️ Reusing existing shared recipe $existingId (idempotent)',
       );
@@ -260,6 +268,7 @@ class FirebaseSharedRecipeRepository
     final recipeId = await createSharedContent(
       sharedRecipe,
       initialSharedToUserIds: [sharedRecipe.sharedByUserId],
+      groupIds: groupIds,
     );
 
     // Add all recipients concurrently — each addMember also appends to sharedToUserIds
@@ -321,6 +330,27 @@ class FirebaseSharedRecipeRepository
   Future<void> markAsViewed(String recipeId, String userId) async {
     await addView(recipeId, userId);
     await decrementUnreadCounter(userId);
+  }
+
+  /// The recipe [shared] points at, read from its owner's collection, or null
+  /// when it is gone or the reader holds no grant on it.
+  ///
+  /// The share row carries only a summary; the read rides on the recipe's
+  /// `memberPermissions` grant, which the share itself writes.
+  Future<Recipe?> getSourceRecipe(SharedRecipe shared) async {
+    try {
+      final doc = await firestore
+          .collection(FirestoreCollections.users)
+          .doc(shared.sharedByUserId)
+          .collection(FirestoreCollections.recipes)
+          .doc(shared.originalRecipeId)
+          .get();
+      return doc.exists ? Recipe.fromFirestore(doc) : null;
+    } on FirebaseException catch (e) {
+      // A share made before BUT-2268 granted no read, and an unshare revokes it.
+      if (e.code == 'permission-denied') return null;
+      rethrow;
+    }
   }
 
   /// Mark shared recipe as imported by user (copy-on-write)

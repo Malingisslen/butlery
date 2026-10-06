@@ -15,6 +15,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 
+import '../../../infrastructure/helpers/ink_fill.dart';
+
 /// Records the names of routes pushed/popped so a test can assert which route a
 /// button navigated to without standing up the destination views.
 class _RouteSpyObserver extends NavigatorObserver {
@@ -151,5 +153,34 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(lastPushed(), Routes.importFromArchive);
+  });
+
+  // R8-1 = A: a saffron tile presses to action.primaryPressed. R7-2 = B: an
+  // ink tile presses to the step on ink.
+  testWidgets('a saffron tile presses to the pressed saffron, an ink tile to '
+      'the step on ink', (tester) async {
+    await pumpView(tester);
+    final saffron = find
+        .descendant(
+          of: find.byKey(const ValueKey('test-lagg-till-import-url')),
+          matching: find.byType(Material),
+        )
+        .first;
+    Color? fill() => tester.widget<Material>(saffron).color;
+    expect(fill(), const Color(0xFFCE7C1E));
+    final link = await holdPress(tester, saffron);
+    expect(fill(), const Color(0xFF9A5C14));
+    await link.cancel();
+    await tester.pumpAndSettle();
+    expect(fill(), const Color(0xFFCE7C1E));
+
+    final label = find.descendant(
+      of: find.byKey(const ValueKey('test-lagg-till-write-manually')),
+      matching: find.byType(Text),
+    );
+    final ink = await holdPress(tester, label);
+    expect(paintsInkFill(tester, label, const Color(0xFF17251D)), isTrue);
+    await ink.cancel();
+    await tester.pumpAndSettle();
   });
 }

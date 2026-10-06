@@ -5661,6 +5661,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.';
 
   @override
+  String get groupSharedContentLoadFailed =>
+      'Det delade innehållet kunde inte hämtas.';
+
+  @override
   String get groupCouldNotLoadMembers => 'Kunde inte ladda gruppmedlemmar';
 
   @override
@@ -17458,6 +17462,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get groupInvitationCancelFailed => 'Inbjudan kunde inte avbrytas.';
+
+  @override
+  String groupInvitationsPartlyFailed(int failed, int total) {
+    return '$failed av $total inbjudningar kunde inte skickas.';
+  }
 
   @override
   String get conversationStartFailed => 'Konversationen kunde inte startas.';

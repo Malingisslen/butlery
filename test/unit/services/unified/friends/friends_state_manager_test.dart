@@ -6,6 +6,7 @@ library;
 
 import 'dart:async';
 import 'package:flutter/foundation.dart' show FlutterError;
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
@@ -86,6 +87,9 @@ void main() {
         () => mockCategoryRepository.categoriesStream(testUserId),
       ).thenAnswer((_) => categoriesController.stream);
       when(
+        () => mockCategoryRepository.memberCategoriesStream(testUserId),
+      ).thenAnswer((_) => const Stream.empty());
+      when(
         () => mockFriendsRepository.friendProfilesStream(testUserId),
       ).thenAnswer((_) => friendsController.stream);
 
@@ -146,6 +150,46 @@ void main() {
         expect(stateManager.isLoading, isFalse);
         expect(stateManager.error, isNull);
         expect(stateManager.friends, isEmpty);
+      });
+
+      test('a load that outlasts the timeout still reaches the friends list '
+          'through the live listener', () {
+        fakeAsync((async) {
+          when(
+            () => mockFriendsRepository.fetchFriendIds(testUserId),
+          ).thenAnswer((_) => Completer<List<String>>().future);
+
+          stateManager.initialize();
+          async.elapse(const Duration(seconds: 11));
+          expect(stateManager.isInitialized, isTrue);
+
+          friendsController.add([
+            SocialFactory.createUserProfile(
+              uid: 'late_friend',
+              email: 'late@test.com',
+              displayName: 'Late Friend',
+            ),
+          ]);
+          async.flushMicrotasks();
+
+          expect(stateManager.friends.map((f) => f.uid), ['late_friend']);
+        });
+      });
+
+      test('overlapping calls share one load', () async {
+        final ids = Completer<List<String>>();
+        when(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).thenAnswer((_) => ids.future);
+
+        final first = stateManager.initialize();
+        final second = stateManager.initialize();
+        ids.complete(<String>[]);
+        await Future.wait([first, second]);
+
+        verify(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).called(1);
       });
 
       test('should initialize successfully', () async {

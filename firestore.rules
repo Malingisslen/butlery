@@ -787,7 +787,11 @@ service cloud.firestore {
 
       // Only profile owner can write — reject sensitive fields
       allow create: if isOwner(userId)
-        && hasRequiredFields(['displayName', 'email'])
+        && hasRequiredFields(['displayName'])
+        // BUT-2264: every signed-in account can read this document, so the
+        // address stays in Auth; friend search by address goes through the
+        // `findUserByEmail` callable.
+        && !('email' in request.resource.data)
         && request.resource.data.isSearchable is bool
         // BUT-1626: a minor may not create a searchable public profile. The
         // legitimate minor opt-in (deferred) writes via a trusted Cloud
@@ -815,6 +819,11 @@ service cloud.firestore {
           // so a hidden user cannot un-hide themselves.
           'isHidden', 'hiddenAt'
         ])
+        // BUT-2264: an address may be removed, never written or changed. A
+        // document saved before the change loses it on the owner's next
+        // profile save.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['email'])
+          || !('email' in request.resource.data))
         // BUT-1626: block a client update that flips a minor's profile to
         // searchable. Gated on the DIFF (only when isSearchable is being SET to
         // true), so a minor with a legacy true value can still edit their name /
@@ -882,11 +891,7 @@ service cloud.firestore {
     // ========================================
 
     match /shared_content/{contentId} {
-      // List is permitted to the sharer OR a recipient. The recipient branch
-      // is required because the group shared-content query filters by
-      // `sharedToUserIds arrayContainsAny [...]` (recipients reading what was
-      // shared with them) — without it the entire query is permission-denied
-      // for every recipient (the normal case) and silently returns empty.
+      // List is permitted to the sharer OR a recipient.
       // The rules engine evaluates this per candidate document, so a recipient
       // can only list documents whose sharedToUserIds actually contains their
       // uid; it does not widen access to docs they were not shared into.
@@ -915,8 +920,7 @@ service cloud.firestore {
       // membership this collection can be QUERIED on. The recipient's `list`
       // branch above reads it and nothing else — there is no `isSharedMember`
       // limb on `list` — and every reader that arrives by query rather than by
-      // document id filters on it: the group shared-content feed
-      // (`arrayContainsAny` over the group's uids), the Art. 15 export, and the
+      // document id filters on it: the Art. 15 export, and the
       // Art. 17 cascade's scrub. A row created without it is reachable only by
       // someone who already knows its id, which is the same silent loss
       // BUT-1812 produced, arrived at from the other direction.
@@ -959,19 +963,24 @@ service cloud.firestore {
         );
       }
 
+      // BUT-2268: the writer (BaseMetadataRepository.addMetadata) stamps
+      // `timestamp`, and a repeat view or import re-sets the same row, so the
+      // second write is an update.
       match /views/{userId} {
         allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-        allow create: if isAuthenticated()
+        allow create, update: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'viewedAt']);
+          && request.resource.data.userId == userId
+          && hasRequiredFields(['userId', 'timestamp']);
         allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /engagements/{userId} {
         allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-        allow create: if isAuthenticated()
+        allow create, update: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'action', 'engagedAt']);
+          && request.resource.data.userId == userId
+          && hasRequiredFields(['userId', 'action', 'timestamp']);
         allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 

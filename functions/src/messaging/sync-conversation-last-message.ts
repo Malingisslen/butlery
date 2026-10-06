@@ -83,6 +83,7 @@ const SURVIVOR_SCAN_LIMIT = 5;
 interface MessageWireFields {
   conversationId?: string;
   senderId?: string;
+  senderDisplayName?: string;
   content?: string;
   type?: string;
   status?: string;
@@ -138,6 +139,9 @@ function projectLastMessage(messageId: string, data: MessageWireFields) {
     id: messageId,
     conversationId: data.conversationId ?? null,
     senderId: data.senderId ?? null,
+    // `tx.update` replaces the whole map.
+    senderDisplayName:
+      typeof data.senderDisplayName === "string" ? data.senderDisplayName : "",
     content: data.content ?? "",
     type: data.type ?? "text",
     status: data.status ?? "sent",

@@ -3,7 +3,8 @@
 Entries, light and dark, pumped through the design-state harness
 (`test/views/design_states`): the key screens, Mina recept as the real
 `MinaReceptView` (a host in `golden_hosts.dart` that fakes the services under
-it), and the recipe detail again at 200 % text (`receptdetalj_200`). The PNGs in `goldens/` are made on Linux and
+it), and the recipe detail and Mina recept again at 200 % text
+(`receptdetalj_200`, `mina_recept_200`). The PNGs in `goldens/` are made on Linux and
 compared on Linux only, in the `views (ubuntu)` job of `test.yml`. On Windows
 and macOS the tests report as skipped, and `--update-goldens` refuses to run.
 

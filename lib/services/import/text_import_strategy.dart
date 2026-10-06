@@ -1126,7 +1126,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       return 'Fika';
     }
 
-    return 'Lunch';
+    // The menu generator matches a slot's meal type exactly, so a pasted
+    // recipe that says nothing lands where the URL and file imports put
+    // theirs; as 'Lunch' it was never picked for "7 middagar".
+    return 'Middag';
   }
 
   List<String> _extractTags(String text) {

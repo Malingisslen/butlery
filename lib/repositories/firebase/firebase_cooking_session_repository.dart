@@ -5,6 +5,7 @@
 // self-clear within seconds of the user going offline.
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -15,8 +16,18 @@ import 'package:butlery/models/cooking/cooking_session.dart';
 class FirebaseCookingSessionRepository {
   final FirebaseDatabase _database;
 
-  FirebaseCookingSessionRepository({required FirebaseDatabase database})
-    : _database = database;
+  final bool _isWeb;
+
+  FirebaseCookingSessionRepository({
+    required FirebaseDatabase database,
+    bool isWeb = kIsWeb,
+  }) : _database = database,
+       _isWeb = isWeb;
+
+  /// No Firebase app in this repo sets a databaseURL, and on web `ref()` then
+  /// fails with a JS SDK fatal that, from [watchSessions], reaches a widget.
+  /// Web only: the native plugins look the database up from the app instead.
+  bool get _configured => !_isWeb || _database.app.options.databaseURL != null;
 
   /// Root node for all cooking session presence data.
   static const String _rootPath = 'cooking_sessions';
@@ -36,6 +47,7 @@ class FirebaseCookingSessionRepository {
     required String groupId,
     required CookingSession session,
   }) async {
+    if (!_configured) return;
     try {
       final ref = _userRef(groupId, session.userId);
       // Register the disconnect handler BEFORE the set so a crash between
@@ -65,6 +77,7 @@ class FirebaseCookingSessionRepository {
     required int currentStep,
     required int totalSteps,
   }) async {
+    if (!_configured) return;
     try {
       final ref = _userRef(groupId, userId);
       await ref.update({
@@ -82,6 +95,7 @@ class FirebaseCookingSessionRepository {
     required String groupId,
     required String userId,
   }) async {
+    if (!_configured) return;
     try {
       final ref = _userRef(groupId, userId);
       await ref.onDisconnect().cancel();
@@ -98,6 +112,7 @@ class FirebaseCookingSessionRepository {
   /// no members are cooking. Entries are parsed leniently — a malformed row
   /// is skipped rather than crashing the stream.
   Stream<List<CookingSession>> watchSessions(String groupId) {
+    if (!_configured) return Stream.value(const <CookingSession>[]);
     return _groupRef(groupId).onValue.map((event) {
       final raw = event.snapshot.value;
       if (raw == null) return const <CookingSession>[];

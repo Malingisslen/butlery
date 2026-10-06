@@ -32,6 +32,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -536,7 +537,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final cs = Theme.of(context).colorScheme;
 
     return AnimatedContainer(
-      duration: AppDimensions.animationDurationFast.respectingMotion(context),
+      duration: AppMotion.micro.respectingMotion(context),
       width: 28,
       height: 28,
       decoration: BoxDecoration(

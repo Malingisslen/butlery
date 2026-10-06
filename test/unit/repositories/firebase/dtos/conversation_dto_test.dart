@@ -132,6 +132,27 @@ void main() {
       expect(restored.lastMessage, isNull);
     });
 
+    // The shape syncConversationLastMessage wrote before it carried the
+    // sender's name: the conversation list failed to load for everyone in it.
+    test('a lastMessage without senderDisplayName still parses', () async {
+      final firestore = FakeFirebaseFirestore();
+      final doc = await _writeAndRead(firestore, <String, dynamic>{
+        'participantIds': ['alice', 'bob'],
+        'lastMessage': <String, dynamic>{
+          'id': 'm1',
+          'conversationId': 'c1',
+          'senderId': 'alice',
+          'content': 'Vad ska vi äta?',
+          'type': 'poll',
+          'status': 'sent',
+          'sentAt': Timestamp.fromDate(DateTime.utc(2026, 10, 5)),
+        },
+      });
+      final restored = ConversationDto.fromFirestore(doc);
+      expect(restored.lastMessage?.senderId, 'alice');
+      expect(restored.lastMessage?.senderDisplayName, '');
+    });
+
     test('missing isGroup defaults to false', () async {
       final firestore = FakeFirebaseFirestore();
       final doc = await _writeAndRead(firestore, <String, dynamic>{});

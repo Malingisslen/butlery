@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -43,17 +42,12 @@ class SharedRecipeCard {
           surface: PressSurface.base,
           child: InkWell(
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            onTap: () {
-              if (!isRead) {
-                viewModel.recipeViewModel.markAsViewed(sharedRecipe);
-              }
-              // Use contentSnapshot which provides minimal recipe from denormalized fields
-              Navigator.pushNamed(
-                context,
-                Routes.recipeDetail,
-                arguments: sharedRecipe.contentSnapshot,
-              );
-            },
+            onTap: () => SharedContentActions.viewRecipe(
+              context,
+              viewModel,
+              sharedRecipe,
+              isRead: isRead,
+            ),
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
@@ -243,16 +237,12 @@ class SharedRecipeCard {
         Expanded(
           child: SocialBuilderComponents.socialActionButton(
             text: context.l10n.commonView,
-            onPressed: () {
-              if (!isRead) {
-                viewModel.recipeViewModel.markAsViewed(sharedRecipe);
-              }
-              Navigator.pushNamed(
-                context,
-                Routes.recipeDetail,
-                arguments: sharedRecipe.contentSnapshot,
-              );
-            },
+            onPressed: () => SharedContentActions.viewRecipe(
+              context,
+              viewModel,
+              sharedRecipe,
+              isRead: isRead,
+            ),
             icon: ButleryIcons.eye,
             outlined: true,
             compact: true,

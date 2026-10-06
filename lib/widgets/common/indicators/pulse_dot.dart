@@ -21,7 +21,7 @@ class PulseDot extends StatefulWidget {
   const PulseDot({
     required this.color,
     this.size = 8.0,
-    this.duration = AppMotion.pulse,
+    this.duration = AppMotion.pulseHalf,
     super.key,
   });
 

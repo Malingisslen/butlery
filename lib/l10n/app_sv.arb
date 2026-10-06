@@ -3779,6 +3779,10 @@
   "importWebsite": "Webbsida",
   "groupAddMembers": "Lägg till medlemmar",
   "groupAllFriendsAlreadyMembers": "Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.",
+  "groupSharedContentLoadFailed": "Det delade innehållet kunde inte hämtas.",
+  "@groupSharedContentLoadFailed": {
+    "description": "Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271)."
+  },
   "groupCouldNotLoadMembers": "Kunde inte ladda gruppmedlemmar",
   "groupLeaveRosterIncomplete": "Vi kunde inte läsa alla medlemmar. Försök igen.",
   "groupCouldNotTransferOwnership": "Kunde inte överföra ägande. Försök igen.",
@@ -13687,6 +13691,14 @@
   "groupInvitationCancelFailed": "Inbjudan kunde inte avbrytas.",
   "@groupInvitationCancelFailed": {
     "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "groupInvitationsPartlyFailed": "{failed} av {total} inbjudningar kunde inte skickas.",
+  "@groupInvitationsPartlyFailed": {
+    "description": "BUT-2270: shown after creating or adding to a group when some of the invitations were not sent (not a friend, already invited, or unavailable).",
+    "placeholders": {
+      "failed": {"type": "int"},
+      "total": {"type": "int"}
+    }
   },
   "conversationStartFailed": "Konversationen kunde inte startas.",
   "@conversationStartFailed": {

@@ -300,6 +300,50 @@ void main() {
     });
   });
 
+  group('sendGroupInvitations (BUT-2270)', () {
+    test('sends every invitee in one callable call and maps the sent ones '
+        'to their invitation ids', () async {
+      final functions = _MockFunctions();
+      final callable = _MockCallable();
+      final result = _MockCallableResult();
+      when(
+        () => functions.httpsCallable('sendGroupInvitations'),
+      ).thenReturn(callable);
+      when(() => result.data).thenReturn({
+        'sent': [
+          {'userId': 'anna', 'invitationId': 'inv-a'},
+        ],
+        'skipped': [
+          {'userId': 'bo', 'reason': 'not_friends'},
+        ],
+      });
+      when(
+        () => callable.call<Map<String, dynamic>>(any()),
+      ).thenAnswer((_) async => result);
+
+      final repo = _repo(
+        FakeFirebaseFirestore(),
+        authedUserId: _alice,
+        functions: functions,
+      );
+      final sent = await repo.sendGroupInvitations(
+        groupId: 'group-1',
+        userIds: ['anna', 'bo'],
+        message: 'Hej',
+      );
+
+      expect(sent, {'anna': 'inv-a'});
+      final captured = verify(
+        () => callable.call<Map<String, dynamic>>(captureAny()),
+      ).captured;
+      expect(captured.single, {
+        'groupId': 'group-1',
+        'userIds': ['anna', 'bo'],
+        'message': 'Hej',
+      });
+    });
+  });
+
   group('group invitation delegation', () {
     test('saveInvitation persists with original ID', () async {
       final firestore = FakeFirebaseFirestore();

@@ -431,12 +431,17 @@ void main() {
       ]);
       when(() => invitations.getSentInvitations()).thenReturn([]);
       when(
-        () => invitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => invitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
-      ).thenAnswer((_) async => true);
+      ).thenAnswer(
+        (inv) async => {
+          for (final id in inv.namedArguments[#userIds] as List<String>)
+            id: true,
+        },
+      );
     });
 
     tearDown(() async {
@@ -476,8 +481,8 @@ void main() {
         );
         // Downstream service NOT called
         verifyNever(
-          () => invitations.sendGroupInvitationToUser(
-            userId: any(named: 'userId'),
+          () => invitations.sendGroupInvitations(
+            userIds: any(named: 'userIds'),
             groupId: any(named: 'groupId'),
             customMessage: any(named: 'customMessage'),
           ),
@@ -512,8 +517,8 @@ void main() {
           reason: 'sendInvitations must succeed for matured accounts',
         );
         verify(
-          () => invitations.sendGroupInvitationToUser(
-            userId: 'friend-1',
+          () => invitations.sendGroupInvitations(
+            userIds: ['friend-1'],
             groupId: groupId,
             customMessage: any(named: 'customMessage'),
           ),

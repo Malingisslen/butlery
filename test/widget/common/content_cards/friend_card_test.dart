@@ -64,21 +64,11 @@ void main() {
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('detailed style shows email metadata by default', (
-      tester,
-    ) async {
+    // BUT-2264: another user's address is never shown, even when an older
+    // public profile still carries one.
+    testWidgets('never shows the address', (tester) async {
       await tester.pumpWidget(_wrap(FriendCard(user: _user())));
-      expect(find.text('anna@example.com'), findsOneWidget);
-    });
-
-    testWidgets('showMetadata=false hides the email row', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          FriendCard(user: _user(), showMetadata: false),
-        ),
-      );
       expect(find.text('anna@example.com'), findsNothing);
-      // Display name still rendered
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
@@ -139,18 +129,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Anna Andersson'), findsOneWidget);
-    });
-
-    testWidgets('empty email produces no metadata row in detailed style', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          FriendCard(user: _user(email: '')),
-        ),
-      );
-      expect(find.text('anna@example.com'), findsNothing);
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
   });
@@ -224,6 +202,36 @@ void main() {
       );
       expect(find.text('Vänförfrågan'), findsOneWidget);
       expect(find.text('Vill bli din vän'), findsOneWidget);
+    });
+
+    testWidgets('names the sender, on the card and on both buttons', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            senderName: 'Erik Sandell',
+            onAccept: () {},
+            onDecline: () {},
+          ),
+        ),
+      );
+      expect(find.text('Erik Sandell'), findsOneWidget);
+      expect(find.text('Vänförfrågan'), findsNothing);
+      expect(find.bySemanticsLabel('Acceptera Erik Sandell'), findsOneWidget);
+      expect(find.bySemanticsLabel('Avböj Erik Sandell'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('a blank sender name falls back to the generic title', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(FriendRequestCard(friendRequest: _request(), senderName: ' ')),
+      );
+      expect(find.text('Vänförfrågan'), findsOneWidget);
     });
 
     testWidgets('renders the optional message when present', (tester) async {

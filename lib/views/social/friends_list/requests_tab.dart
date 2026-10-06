@@ -32,16 +32,28 @@ class RequestsTab extends StatelessWidget {
         children: [
           const _DiscoverySection(),
           const SizedBox(height: AppDimensions.spacingXl),
-          // Request sections — rebuild only when request lists change
+          // Request sections — rebuild when the request lists change, and
+          // when a sender's profile arrives so their card can show who sent
+          // it.
           Selector<
             FriendsViewModel,
-            ({List<FriendRequest> incoming, List<FriendRequest> sent})
+            ({
+              List<FriendRequest> incoming,
+              List<FriendRequest> sent,
+              int namedIncoming,
+            })
           >(
-            selector: (_, vm) =>
-                (incoming: vm.incomingRequests, sent: vm.sentRequests),
+            selector: (_, vm) => (
+              incoming: vm.incomingRequests,
+              sent: vm.sentRequests,
+              namedIncoming: vm.incomingRequests
+                  .where((r) => vm.getUserProfile(r.fromUserId) != null)
+                  .length,
+            ),
             shouldRebuild: (prev, next) =>
                 prev.incoming.length != next.incoming.length ||
-                prev.sent.length != next.sent.length,
+                prev.sent.length != next.sent.length ||
+                prev.namedIncoming != next.namedIncoming,
             builder: (context, requests, _) {
               final vm = context.read<FriendsViewModel>();
               return Column(
