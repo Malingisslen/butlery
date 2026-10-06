@@ -176,15 +176,20 @@ class ShoppingItemManagementModule {
         priority: priority ?? 3,
       );
 
-      await repository.addItem(activeListId, item);
+      // Shown before the write, as toggleItemBought does: offline, a personal
+      // list's write only settles once the network is back, so an add that
+      // waited for it left the row invisible for as long as the shop had no
+      // reception.
+      _replaceItems(activeListId, (items) => [...items, item]);
 
-      // Update local state
-      final listIndex = lists.indexWhere((list) => list.id == activeListId);
-      if (listIndex >= 0) {
-        lists[listIndex] = lists[listIndex].copyWith(
-          items: [...lists[listIndex].items, item],
+      try {
+        await repository.addItem(activeListId, item);
+      } catch (e) {
+        _replaceItems(
+          activeListId,
+          (items) => items.where((i) => i.id != item.id).toList(),
         );
-        notifyListeners();
+        rethrow;
       }
 
       return item.id;
@@ -192,6 +197,18 @@ class ShoppingItemManagementModule {
       AppLogger.error('Failed to add item to active list: $e');
       return null;
     }
+  }
+
+  // Looked up by id on every call: a snapshot can rebuild `lists` while the
+  // write is in flight, so an index taken before it may point elsewhere.
+  void _replaceItems(
+    String listId,
+    List<UnifiedShoppingItem> Function(List<UnifiedShoppingItem>) change,
+  ) {
+    final index = lists.indexWhere((list) => list.id == listId);
+    if (index < 0) return;
+    lists[index] = lists[index].copyWith(items: change(lists[index].items));
+    notifyListeners();
   }
 
   /// Add multiple items to active list using batch operations for better performance
