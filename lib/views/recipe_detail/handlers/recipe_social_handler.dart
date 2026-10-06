@@ -29,11 +29,15 @@ class RecipeSocialHandler {
     // Fetch available friends and groups
     List<UserProfile> availableFriends = [];
     try {
+      // A dialog opened before the list has loaded would say there are no
+      // friends.
+      if (!friendsService.isInitialized) await friendsService.initialize();
       availableFriends = friendsService.friends;
     } catch (_) {
       // Silently continue with empty friends list
     }
 
+    if (!context.mounted) return;
     final availableGroups = friendsService.categoriesList;
 
     await showDialog(

@@ -40,6 +40,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   final RecipeServiceAdapter _serviceAdapter;
   late final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final String? Function() _getCurrentUserId;
+  final Future<Recipe?> Function(String) _getRecipe;
 
   /// Notification service for social notifications (temporarily disabled)
   // late final notif.NotificationService? _notificationService;
@@ -64,7 +65,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }) : _serviceAdapter =
            serviceAdapter ??
            SocialRecipeCoordinator._createDefaultServiceAdapter(),
-       _getCurrentUserId = getCurrentUserId {
+       _getCurrentUserId = getCurrentUserId,
+       _getRecipe = getRecipe {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
 
@@ -288,7 +290,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
         '📨 Creating recipe invitation for recipe $recipeId to ${inviteeUserIds.length} users',
       );
 
-      final recipe = await _serviceAdapter.getRecipeById(recipeId);
+      final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
         AppLogger.error('Recipe not found: $recipeId');
         return null;

@@ -80,17 +80,26 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
   String? get error => _error;
   bool get hasError => _error != null;
 
+  Future<void>? _initializing;
+
+  /// Overlapping callers share one load rather than each repeating the reads.
   Future<void> initialize() async {
     if (_isInitialized) {
       return;
     }
+    return _initializing ??= _initializeOnce().whenComplete(
+      () => _initializing = null,
+    );
+  }
 
+  Future<void> _initializeOnce() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
+    String? currentUserId;
     try {
-      final currentUserId = _repository.currentUserId;
+      currentUserId = _repository.currentUserId;
       if (currentUserId == null) {
         throw Exception('User not authenticated');
       }
@@ -109,6 +118,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       _isLoading = false;
     } on TimeoutException {
       // Proceed with whatever data loaded — individual methods catch their own errors
+      // The live listeners are what bring results to screens after this.
+      _setupRealtimeListeners(currentUserId!);
       _isInitialized = true;
       _isLoading = false;
       AppLogger.warning(

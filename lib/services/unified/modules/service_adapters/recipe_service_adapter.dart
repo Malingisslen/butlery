@@ -204,19 +204,6 @@ class RecipeServiceAdapter {
     }
   }
 
-  /// Get recipe by ID using repository pattern
-  Future<Recipe?> getRecipeById(String recipeId) async {
-    try {
-      // Use base repository method if available, otherwise implement lookup
-      // This is a temporary solution until the repository interface is expanded
-      AppLogger.warning('⚠️ getById not implemented in RecipeRepository');
-      return null;
-    } catch (e) {
-      AppLogger.error('❌ Failed to get recipe by ID via repository', e);
-      return null;
-    }
-  }
-
   /// Get recipes for user using repository pattern
   Future<List<Recipe>> getRecipesForUser(String userId) async {
     try {

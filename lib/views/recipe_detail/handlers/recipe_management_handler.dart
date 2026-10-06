@@ -234,6 +234,12 @@ class RecipeManagementHandler {
     Recipe recipe,
   ) async {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    try {
+      if (!friendsService.isInitialized) await friendsService.initialize();
+    } catch (e) {
+      AppLogger.warning('Friends list load before collaboration failed: $e');
+    }
+    if (!context.mounted) return;
     final friends = friendsService.friendsList;
 
     if (friends.isEmpty) {

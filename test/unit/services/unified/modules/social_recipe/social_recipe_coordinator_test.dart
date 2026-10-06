@@ -13,6 +13,8 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -21,6 +23,7 @@ import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../../infrastructure/factories/recipe_factory.dart';
+import '../../../../../infrastructure/factories/user_profile_factory.dart';
 
 class _MockSharedRecipeRepo extends Mock
     implements FirebaseSharedRecipeRepository {}
@@ -40,6 +43,15 @@ void main() {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(ResourcePermission.viewer);
       registerFallbackValue(RecipeFactory.build());
+      registerFallbackValue(
+        SharedRecipe.create(
+          originalRecipeId: 'fallback',
+          sharedByUserId: 'fallback',
+          sharedByDisplayName: 'fallback',
+          sharedToUserIds: const [],
+          recipeSnapshot: RecipeFactory.build(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -196,6 +208,39 @@ void main() {
       test('should update viewed status cache directly', () {
         coordinator.setViewedStatus('recipe-1', true);
         expect(coordinator.isRecipeViewed('recipe-1'), isTrue);
+      });
+    });
+
+    group('Share With Friends', () {
+      test('shares the recipe the service holds', () async {
+        final userService = MockUserService();
+        when(() => userService.currentUserProfile).thenReturn(
+          UserProfileFactory.build(uid: currentUserId),
+        );
+        TestServiceLocator.registerMock<UserService>(userService);
+        when(
+          () => mockSharedRecipeRepo.createSharedRecipe(
+            any(),
+            recipientIds: any(named: 'recipientIds'),
+          ),
+        ).thenAnswer((_) async => 'invitation-1');
+
+        final shared = await coordinator.shareRecipeWithFriends(
+          recipeId: 'recipe-2',
+          friendIds: ['friend-1'],
+        );
+
+        expect(shared, isTrue);
+        final captured = verify(
+          () => mockSharedRecipeRepo.createSharedRecipe(
+            captureAny(),
+            recipientIds: ['friend-1'],
+          ),
+        ).captured;
+        expect(
+          (captured.single as SharedRecipe).recipeTitle,
+          'Personal Recipe',
+        );
       });
     });
 
