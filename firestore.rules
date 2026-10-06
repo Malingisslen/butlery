@@ -947,19 +947,24 @@ service cloud.firestore {
         );
       }
 
+      // BUT-2268: the writer (BaseMetadataRepository.addMetadata) stamps
+      // `timestamp`, and a repeat view or import re-sets the same row, so the
+      // second write is an update.
       match /views/{userId} {
         allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-        allow create: if isAuthenticated()
+        allow create, update: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'viewedAt']);
+          && request.resource.data.userId == userId
+          && hasRequiredFields(['userId', 'timestamp']);
         allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /engagements/{userId} {
         allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-        allow create: if isAuthenticated()
+        allow create, update: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'action', 'engagedAt']);
+          && request.resource.data.userId == userId
+          && hasRequiredFields(['userId', 'action', 'timestamp']);
         allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 

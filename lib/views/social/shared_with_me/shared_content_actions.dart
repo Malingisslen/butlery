@@ -20,6 +20,21 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Handles import, dismiss, and other actions for shared content.
 class SharedContentActions {
   /// Import a shared recipe
+  /// Opens the shared recipe in full. The share row alone holds a summary
+  /// without ingredients or steps, which is what this used to show.
+  static Future<void> viewRecipe(
+    BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
+    SharedRecipe sharedRecipe, {
+    required bool isRead,
+  }) async {
+    final recipeViewModel = viewModel.recipeViewModel;
+    if (!isRead) recipeViewModel.markAsViewed(sharedRecipe);
+    final recipe = await recipeViewModel.loadFullRecipe(sharedRecipe);
+    if (!context.mounted) return;
+    await Navigator.pushNamed(context, Routes.recipeDetail, arguments: recipe);
+  }
+
   static Future<void> importRecipe(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
@@ -34,7 +49,9 @@ class SharedContentActions {
         context,
         context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle),
       );
-    } else if (context.mounted && viewModel.recipeViewModel.hasError) {
+    } else if (context.mounted) {
+      // The import path reports most failures by returning null without
+      // setting an error, so waiting for one left the button silent.
       SnackBarUtils.showFailure(
         context,
         what:

@@ -14,7 +14,6 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_recipe.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -23,7 +22,6 @@ import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../../infrastructure/factories/recipe_factory.dart';
-import '../../../../../infrastructure/factories/user_profile_factory.dart';
 
 class _MockSharedRecipeRepo extends Mock
     implements FirebaseSharedRecipeRepository {}
@@ -212,35 +210,95 @@ void main() {
     });
 
     group('Share With Friends', () {
-      test('shares the recipe the service holds', () async {
-        final userService = MockUserService();
-        when(() => userService.currentUserProfile).thenReturn(
-          UserProfileFactory.build(uid: currentUserId),
-        );
-        TestServiceLocator.registerMock<UserService>(userService);
+      void stubRowWrite() {
         when(
           () => mockSharedRecipeRepo.createSharedRecipe(
             any(),
             recipientIds: any(named: 'recipientIds'),
           ),
         ).thenAnswer((_) async => 'invitation-1');
+      }
+
+      // BUT-2268: the row alone carries no ingredients or steps, so the friend
+      // must also be able to read the recipe itself.
+      test('grants the friend read on the recipe and writes the row', () async {
+        stubRowWrite();
 
         final shared = await coordinator.shareRecipeWithFriends(
           recipeId: 'recipe-2',
           friendIds: ['friend-1'],
+          message: 'Testa den här',
         );
 
         expect(shared, isTrue);
+        expect(
+          testRecipesMap['recipe-2']!
+              .socialData
+              ?.memberPermissions?['friend-1'],
+          ResourcePermission.viewer,
+        );
         final captured = verify(
           () => mockSharedRecipeRepo.createSharedRecipe(
             captureAny(),
             recipientIds: ['friend-1'],
           ),
         ).captured;
-        expect(
-          (captured.single as SharedRecipe).recipeTitle,
-          'Personal Recipe',
+        final row = captured.single as SharedRecipe;
+        expect(row.recipeTitle, 'Personal Recipe');
+        expect(row.shareMessage, 'Testa den här');
+      });
+
+      test('collaboration grants edit', () async {
+        stubRowWrite();
+
+        await coordinator.shareRecipeWithFriends(
+          recipeId: 'recipe-2',
+          friendIds: ['friend-1'],
+          allowCollaboration: true,
         );
+
+        expect(
+          testRecipesMap['recipe-2']!
+              .socialData
+              ?.memberPermissions?['friend-1'],
+          ResourcePermission.editor,
+        );
+      });
+
+      test('fails when the recipe is missing, writing no row', () async {
+        final shared = await coordinator.shareRecipeWithFriends(
+          recipeId: 'no-such-recipe',
+          friendIds: ['friend-1'],
+        );
+
+        expect(shared, isFalse);
+        verifyNever(
+          () => mockSharedRecipeRepo.createSharedRecipe(
+            any(),
+            recipientIds: any(named: 'recipientIds'),
+          ),
+        );
+      });
+    });
+
+    group('Join Shared Recipe', () {
+      test('records the import so the card stops offering it', () async {
+        when(() => mockSharedRecipeRepo.getSharedRecipe('shared-1')).thenAnswer(
+          (_) async => SharedRecipe.create(
+            originalRecipeId: 'recipe-2',
+            sharedByUserId: 'friend-1',
+            sharedByDisplayName: 'Friend',
+            sharedToUserIds: [currentUserId],
+            recipeSnapshot: testRecipesMap['recipe-2']!,
+          ),
+        );
+        when(
+          () => mockSharedRecipeRepo.markAsImported(any(), any()),
+        ).thenAnswer((_) async {});
+
+        await coordinator.joinSharedRecipe(sharedRecipeId: 'shared-1');
+
+        expect(coordinator.isRecipeImported('shared-1'), isTrue);
       });
     });
 

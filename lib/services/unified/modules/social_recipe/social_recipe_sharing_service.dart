@@ -87,6 +87,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     /// BUT-1797: which group(s) reached each member, when this share came from
     /// picking groups. Absent means a plain user share, recorded as 'direct'.
     Map<String, List<String>>? grantsByUserId,
+    String? message,
   }) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -216,6 +217,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         sharedByUserId: currentUserId,
         sharedByDisplayName: _getCurrentUserDisplayName() ?? 'Unknown',
         sharedToUserIds: userIds,
+        shareMessage: message,
         recipeSnapshot: updatedRecipe,
         allowCollaboration:
             permission == ResourcePermission.admin ||
