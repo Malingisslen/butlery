@@ -241,7 +241,6 @@ class ContentCard extends StatelessWidget {
       onLongPress: onLongPress,
       showAvatar: showImage,
       showOnlineStatus: showOnlineStatus,
-      showMetadata: showMetadata,
       margin: margin,
       padding: padding,
       style: _mapToFriendCardStyle(style),

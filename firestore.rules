@@ -775,7 +775,11 @@ service cloud.firestore {
 
       // Only profile owner can write — reject sensitive fields
       allow create: if isOwner(userId)
-        && hasRequiredFields(['displayName', 'email'])
+        && hasRequiredFields(['displayName'])
+        // BUT-2264: every signed-in account can read this document, so the
+        // address stays in Auth; friend search by address goes through the
+        // `findUserByEmail` callable.
+        && !('email' in request.resource.data)
         && request.resource.data.isSearchable is bool
         // BUT-1626: a minor may not create a searchable public profile. The
         // legitimate minor opt-in (deferred) writes via a trusted Cloud
@@ -803,6 +807,11 @@ service cloud.firestore {
           // so a hidden user cannot un-hide themselves.
           'isHidden', 'hiddenAt'
         ])
+        // BUT-2264: an address may be removed, never written or changed. A
+        // document saved before the change loses it on the owner's next
+        // profile save.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['email'])
+          || !('email' in request.resource.data))
         // BUT-1626: block a client update that flips a minor's profile to
         // searchable. Gated on the DIFF (only when isSearchable is being SET to
         // true), so a minor with a legacy true value can still edit their name /

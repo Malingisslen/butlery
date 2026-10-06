@@ -26,7 +26,6 @@ class FriendCard extends StatelessWidget {
   final VoidCallback? onLongPress;
   final bool showAvatar;
   final bool showOnlineStatus;
-  final bool showMetadata;
   final EdgeInsets? margin;
   final EdgeInsets? padding;
   final FriendCardStyle style;
@@ -40,7 +39,6 @@ class FriendCard extends StatelessWidget {
     this.onLongPress,
     this.showAvatar = true,
     this.showOnlineStatus = false,
-    this.showMetadata = true,
     this.margin,
     this.padding,
     this.style = FriendCardStyle.detailed,
@@ -121,10 +119,6 @@ class FriendCard extends StatelessWidget {
                     const SizedBox(height: AppDimensions.spacingXs),
                     _buildSubtitle(context),
                   ],
-                  if (showMetadata) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    _buildUserMetadata(context),
-                  ],
                 ],
               ),
             ),
@@ -155,9 +149,7 @@ class FriendCard extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       leading: showAvatar ? _buildUserAvatar(context, size: 40) : null,
       title: _buildUserName(context),
-      subtitle: subtitle != null
-          ? _buildSubtitle(context)
-          : (showMetadata ? _buildUserMetadata(context) : null),
+      subtitle: subtitle != null ? _buildSubtitle(context) : null,
       trailing: trailing,
       onTap: onTap,
       onLongPress: onLongPress,
@@ -192,26 +184,6 @@ class FriendCard extends StatelessWidget {
   Widget _buildSubtitle(BuildContext context) {
     return Text(
       subtitle!,
-      style: AppTextStyles.metadataEmphasized,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
-  Widget _buildUserMetadata(BuildContext context) {
-    // Build metadata based on available user information
-    final metadata = <String>[];
-
-    if (user.email.isNotEmpty) {
-      metadata.add(user.email);
-    }
-
-    if (metadata.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Text(
-      metadata.join(' • '),
       style: AppTextStyles.metadataEmphasized,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,

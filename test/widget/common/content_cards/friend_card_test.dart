@@ -64,21 +64,11 @@ void main() {
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('detailed style shows email metadata by default', (
-      tester,
-    ) async {
+    // BUT-2264: another user's address is never shown, even when an older
+    // public profile still carries one.
+    testWidgets('never shows the address', (tester) async {
       await tester.pumpWidget(_wrap(FriendCard(user: _user())));
-      expect(find.text('anna@example.com'), findsOneWidget);
-    });
-
-    testWidgets('showMetadata=false hides the email row', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          FriendCard(user: _user(), showMetadata: false),
-        ),
-      );
       expect(find.text('anna@example.com'), findsNothing);
-      // Display name still rendered
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
@@ -142,17 +132,6 @@ void main() {
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('empty email produces no metadata row in detailed style', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          FriendCard(user: _user(email: '')),
-        ),
-      );
-      expect(find.text('anna@example.com'), findsNothing);
-      expect(find.text('Anna Andersson'), findsOneWidget);
-    });
   });
 
   group('FriendCard - interaction', () {
