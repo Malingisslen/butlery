@@ -5661,6 +5661,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.';
 
   @override
+  String get groupSharedContentLoadFailed =>
+      'Det delade innehållet kunde inte hämtas.';
+
+  @override
   String get groupCouldNotLoadMembers => 'Kunde inte ladda gruppmedlemmar';
 
   @override

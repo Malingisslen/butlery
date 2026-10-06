@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -196,6 +197,7 @@ class RecipeSharingManager {
         await _syncCollaborativeRecipeToSharedCollection(
           recipe: recipeToShare,
           memberIds: memberIds,
+          groupIds: categoryIds,
         );
         finalRecipeId = recipeId;
         AppLogger.success('✅ Collaborative recipe synced to shared collection');
@@ -235,6 +237,7 @@ class RecipeSharingManager {
           recipeTitle: recipeToShare.title,
           memberIds: memberIds,
           recipeData: recipeToShare,
+          groupIds: categoryIds,
         );
       }
 
@@ -574,6 +577,7 @@ class RecipeSharingManager {
   Future<void> _syncCollaborativeRecipeToSharedCollection({
     required Recipe recipe,
     required List<String> memberIds,
+    List<String>? groupIds,
   }) async {
     try {
       AppLogger.info('🔄 Syncing collaborative recipe to shared collection');
@@ -591,6 +595,7 @@ class RecipeSharingManager {
           ...memberIds,
         ], // Combine existing + new members
         recipeData: recipe,
+        groupIds: groupIds,
       );
 
       AppLogger.success('✅ Collaborative recipe synced to shared collection');
@@ -671,6 +676,7 @@ class RecipeSharingManager {
     // replaced with `.orEmpty()` to satisfy the BUT-581 arch guard. Typing the
     // parameter is the root-cause fix; both call sites already pass a Recipe.
     required Recipe recipeData,
+    List<String>? groupIds,
   }) async {
     try {
       final permissionService = ServiceLocator.get<PermissionService>();
@@ -756,6 +762,8 @@ class RecipeSharingManager {
         // spelling, so rows predating the fix stayed readable — retired
         // 2026-08-03 once it was established the project holds only test data.
         'sharedToUserIds': allUserIds,
+        if (groupIds != null && groupIds.isNotEmpty)
+          sharedContentGroupIdsField: groupIds,
         'isActive': true,
         'imageUrl': recipeData.imageUrls.isNotEmpty
             ? recipeData.imageUrls.first

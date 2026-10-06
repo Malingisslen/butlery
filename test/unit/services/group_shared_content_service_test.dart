@@ -7,231 +7,146 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import '../../infrastructure/factories/social_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
+// BUT-2271: the group page shows what was shared WITH THIS GROUP and that the
+// viewer can read. The query is on the viewer's own uid (the only shape the
+// `shared_content` list rule can prove) and the group is matched on
+// `groupIds`. fake_cloud_firestore does not enforce rules, so these tests pin
+// the selection; the rules side is the existing list-rule suite.
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
-  late FakePermissionService mockPermissionService;
+  late FakePermissionService permissionService;
   late GroupSharedContentService service;
 
-  const ownerId = 'owner-123';
-  const friend1Id = 'friend-1';
-  const friend2Id = 'friend-2';
+  const viewerId = 'viewer-1';
+  const friendId = 'friend-1';
+  const groupId = 'group-1';
 
-  Future<void> addSharedRecipe({
+  Future<void> addShare({
     required String id,
-    required String sharedByUserId,
-    required String recipeTitle,
-    required List<String> sharedToUserIds,
+    String contentType = 'recipe',
+    String sharedByUserId = friendId,
+    List<String> sharedToUserIds = const [friendId, viewerId],
+    List<String>? groupIds = const [groupId],
     DateTime? sharedAt,
   }) async {
     await fakeFirestore
         .collection(FirestoreCollections.sharedContent)
         .doc(id)
         .set({
-          'contentType': 'recipe',
+          'contentType': contentType,
           'sharedByUserId': sharedByUserId,
-          'sharedByDisplayName': 'Test User',
-          'recipeTitle': recipeTitle,
-          'originalRecipeId': 'original-$id',
+          'sharedByDisplayName': 'Anna',
+          'recipeTitle': 'Recept $id',
           'sharedToUserIds': sharedToUserIds,
-          'sharedAt': Timestamp.fromDate(sharedAt ?? DateTime(2026, 3, 1)),
+          'groupIds': ?groupIds,
+          'sharedAt': Timestamp.fromDate(sharedAt ?? DateTime(2026, 10, 1)),
         });
   }
 
+  final group = SocialFactory.createFriendCategory(
+    id: groupId,
+    createdBy: friendId,
+    memberIds: [viewerId],
+  );
+
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
-    mockPermissionService = FakePermissionService();
-    mockPermissionService.setPermissionState(
-      currentUserId: ownerId,
-      isAuthenticated: true,
-    );
+    permissionService = FakePermissionService()
+      ..setPermissionState(currentUserId: viewerId, isAuthenticated: true);
     service = GroupSharedContentService(
       repository: FirebaseGroupSharedContentRepository(
         firestore: fakeFirestore,
       ),
-      permissionService: mockPermissionService,
+      permissionService: permissionService,
     );
   });
 
-  group('getSharedRecipes', () {
-    test('queries sharedToUserIds with owner and all member IDs', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id, friend2Id],
-      );
+  test('shows a recipe shared with the group', () async {
+    await addShare(id: 'r1');
 
-      await addSharedRecipe(
-        id: 'recipe-1',
-        sharedByUserId: friend1Id,
-        recipeTitle: 'Köttbullar',
-        sharedToUserIds: [friend1Id, ownerId],
-      );
+    final result = await service.getSharedRecipes(group);
 
-      final result = await service.getSharedRecipes(group);
-
-      expect(result, hasLength(1));
-      expect(result[0].type, equals('recipe'));
-      expect(result[0].title, equals('Köttbullar'));
-      expect(result[0].sharedByUserId, equals(friend1Id));
-    });
-
-    test('returns SharedContentItem with correct display fields', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
-
-      await addSharedRecipe(
-        id: 'recipe-2',
-        sharedByUserId: ownerId,
-        recipeTitle: 'Pannkakor',
-        sharedToUserIds: [ownerId, friend1Id],
-        sharedAt: DateTime(2026, 2, 15),
-      );
-
-      final result = await service.getSharedRecipes(group);
-
-      expect(result, hasLength(1));
-      expect(result[0].id, equals('recipe-2'));
-      expect(result[0].sharedByDisplayName, equals('Test User'));
-    });
-
-    test('returns empty list when currentUserId is null', () async {
-      mockPermissionService.setPermissionState(
-        currentUserId: null,
-        isAuthenticated: false,
-      );
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
-
-      await addSharedRecipe(
-        id: 'recipe-3',
-        sharedByUserId: ownerId,
-        recipeTitle: 'Pasta',
-        sharedToUserIds: [ownerId, friend1Id],
-      );
-
-      final result = await service.getSharedRecipes(group);
-
-      expect(result, isEmpty);
-    });
-
-    test('handles empty group with only owner', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-      );
-
-      await addSharedRecipe(
-        id: 'recipe-4',
-        sharedByUserId: ownerId,
-        recipeTitle: 'Soppa',
-        sharedToUserIds: [ownerId],
-      );
-
-      final result = await service.getSharedRecipes(group);
-
-      expect(result, hasLength(1));
-      expect(result[0].title, equals('Soppa'));
-    });
-
-    test('does not return recipes shared with non-group members', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
-
-      await addSharedRecipe(
-        id: 'recipe-5',
-        sharedByUserId: 'stranger',
-        recipeTitle: 'Secret Recipe',
-        sharedToUserIds: ['stranger', 'other-user'],
-      );
-
-      final result = await service.getSharedRecipes(group);
-
-      expect(result, isEmpty);
-    });
-
-    test('returns multiple recipes sorted by sharedAt descending', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
-
-      await addSharedRecipe(
-        id: 'older',
-        sharedByUserId: ownerId,
-        recipeTitle: 'Older Recipe',
-        sharedToUserIds: [ownerId, friend1Id],
-        sharedAt: DateTime(2026, 1, 1),
-      );
-
-      await addSharedRecipe(
-        id: 'newer',
-        sharedByUserId: friend1Id,
-        recipeTitle: 'Newer Recipe',
-        sharedToUserIds: [friend1Id, ownerId],
-        sharedAt: DateTime(2026, 3, 1),
-      );
-
-      final result = await service.getSharedRecipes(group);
-
-      expect(result, hasLength(2));
-      expect(result[0].title, equals('Newer Recipe'));
-      expect(result[1].title, equals('Older Recipe'));
-    });
+    expect(result.map((i) => i.id), ['r1']);
+    expect(result.single.title, 'Recept r1');
+    expect(result.single.sharedByDisplayName, 'Anna');
   });
 
-  group('streamSharedRecipes', () {
-    test('includes group owner in allMemberIds', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
+  test(
+    'a private share between two members is NOT shown on the group page',
+    () async {
+      await addShare(id: 'private', groupIds: null);
+      await addShare(id: 'other-group', groupIds: const ['group-2']);
 
-      await addSharedRecipe(
-        id: 'recipe-stream-1',
-        sharedByUserId: friend1Id,
-        recipeTitle: 'Streamed Recipe',
-        sharedToUserIds: [ownerId],
-      );
+      expect(await service.getSharedRecipes(group), isEmpty);
+    },
+  );
 
-      final stream = service.streamSharedRecipes(group);
-      final result = await stream.first;
+  test('a group share the viewer is not a recipient of is not shown', () async {
+    await addShare(id: 'not-mine', sharedToUserIds: const [friendId]);
 
-      expect(result, hasLength(1));
-      expect(result[0].title, equals('Streamed Recipe'));
-    });
+    expect(await service.getSharedRecipes(group), isEmpty);
+  });
 
-    test('returns empty stream when userId is null', () async {
-      mockPermissionService.setPermissionState(
-        currentUserId: null,
-        isAuthenticated: false,
-      );
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
+  test('each tab gets only its own content type, newest first', () async {
+    await addShare(id: 'old', sharedAt: DateTime(2026, 9, 1));
+    await addShare(id: 'new', sharedAt: DateTime(2026, 10, 2));
+    await addShare(id: 'menu', contentType: 'menu');
+    await addShare(id: 'list', contentType: 'shopping_list');
 
-      final stream = service.streamSharedRecipes(group);
-      final result = await stream.first;
+    expect((await service.getSharedRecipes(group)).map((i) => i.id), [
+      'new',
+      'old',
+    ]);
+    expect((await service.getSharedMenus(group)).map((i) => i.id), ['menu']);
+    expect((await service.getSharedShoppingLists(group)).map((i) => i.id), [
+      'list',
+    ]);
+  });
 
-      expect(result, isEmpty);
-    });
+  test(
+    'a shared shopping list is titled by the listName it is written with',
+    () async {
+      await fakeFirestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc('l1')
+          .set({
+            'contentType': 'shopping_list',
+            'sharedByUserId': friendId,
+            'listName': 'Inköpslista v.41',
+            'sharedToUserIds': const [friendId, viewerId],
+            'groupIds': const [groupId],
+            'sharedAt': Timestamp.fromDate(DateTime(2026, 10, 1)),
+          });
 
-    test('initially emits empty list when no recipes exist', () async {
-      final group = SocialFactory.createFriendCategory(
-        createdBy: ownerId,
-        memberIds: [friend1Id],
-      );
+      final lists = await service.getSharedShoppingLists(group);
 
-      final stream = service.streamSharedRecipes(group);
+      expect(lists.single.title, 'Inköpslista v.41');
+    },
+  );
 
-      await expectLater(
-        stream,
-        emitsInOrder([isEmpty]),
-      );
-    });
+  test('signed out: nothing', () async {
+    permissionService.setPermissionState(
+      currentUserId: null,
+      isAuthenticated: false,
+    );
+    await addShare(id: 'r1');
+
+    expect(await service.getSharedRecipes(group), isEmpty);
+    expect(await service.streamSharedRecipes(group).first, isEmpty);
+  });
+
+  test('the stream follows a new share to the group', () async {
+    final stream = service.streamSharedRecipes(group);
+    final seen = <List<String>>[];
+    final sub = stream.listen(
+      (items) => seen.add([for (final i in items) i.id]),
+    );
+    await pumpEventQueue();
+    await addShare(id: 'r1');
+    await pumpEventQueue();
+    await sub.cancel();
+
+    expect(seen.first, isEmpty);
+    expect(seen.last, ['r1']);
   });
 }

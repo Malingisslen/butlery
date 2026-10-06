@@ -3773,6 +3773,10 @@
   "importWebsite": "Website",
   "groupAddMembers": "Add members",
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
+  "groupSharedContentLoadFailed": "The shared content could not be loaded.",
+  "@groupSharedContentLoadFailed": {
+    "description": "Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271)."
+  },
   "groupCouldNotLoadMembers": "Could not load group members",
   "groupLeaveRosterIncomplete": "We could not load all group members. Please try again.",
   "groupCouldNotTransferOwnership": "Could not transfer ownership. Try again.",

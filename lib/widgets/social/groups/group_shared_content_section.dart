@@ -38,12 +38,31 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late GroupSharedContentService _contentService;
+  late Stream<List<SharedContentItem>> _recipes;
+  late Stream<List<SharedContentItem>> _menus;
+  late Stream<List<SharedContentItem>> _shoppingLists;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _contentService = ServiceLocator.get<GroupSharedContentService>();
+    _subscribe();
+  }
+
+  // Built once per group, not in build(): a stream made inside build() is a
+  // new subscription on every rebuild, and each emission from the outer
+  // stream re-subscribed the inner two (BUT-2271).
+  void _subscribe() {
+    _recipes = _contentService.streamSharedRecipes(widget.group);
+    _menus = _contentService.streamSharedMenus(widget.group);
+    _shoppingLists = _contentService.streamSharedShoppingLists(widget.group);
+  }
+
+  @override
+  void didUpdateWidget(GroupSharedContentSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.group.id != widget.group.id) _subscribe();
   }
 
   @override
@@ -254,13 +273,13 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<SharedContentItem>>(
-      stream: _contentService.streamSharedRecipes(widget.group),
+      stream: _recipes,
       builder: (context, recipesSnapshot) {
         return StreamBuilder<List<SharedContentItem>>(
-          stream: _contentService.streamSharedMenus(widget.group),
+          stream: _menus,
           builder: (context, menusSnapshot) {
             return StreamBuilder<List<SharedContentItem>>(
-              stream: _contentService.streamSharedShoppingLists(widget.group),
+              stream: _shoppingLists,
               builder: (context, shoppingListsSnapshot) {
                 // Get data from snapshots or empty lists
                 final recipes = recipesSnapshot.data ?? [];
@@ -271,6 +290,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                   menus,
                   shoppingLists,
                 );
+
+                if (recipesSnapshot.hasError ||
+                    menusSnapshot.hasError ||
+                    shoppingListsSnapshot.hasError) {
+                  return StateWidget.error(
+                    message: context.l10n.groupSharedContentLoadFailed,
+                    onAction: () => setState(_subscribe),
+                  );
+                }
 
                 // Show loading if any stream is still loading
                 final isLoading =

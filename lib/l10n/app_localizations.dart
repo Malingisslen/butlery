@@ -9541,6 +9541,12 @@ abstract class AppLocalizations {
   /// **'Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.'**
   String get groupAllFriendsAlreadyMembers;
 
+  /// Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det delade innehållet kunde inte hämtas.'**
+  String get groupSharedContentLoadFailed;
+
   /// No description provided for @groupCouldNotLoadMembers.
   ///
   /// In sv, this message translates to:

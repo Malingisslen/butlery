@@ -354,6 +354,35 @@ void main() {
         },
       );
 
+      test('a share from a group names the group on its row, so the group '
+          'page finds it (BUT-2271)', () async {
+        mockParentService.setCollaborativeState(shouldSucceed: true);
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            imageUrl: any(named: 'imageUrl'),
+            actions: any(named: 'actions'),
+          ),
+        ).thenAnswer((_) async {});
+
+        await sharingManager.shareRecipe(
+          recipeId: 'personal_1',
+          memberIds: ['user_456'],
+          memberDisplayNames: {'user_456': 'Member One'},
+          categoryIds: ['grp-1'],
+        );
+
+        final repository =
+            app_provider.ServiceLocator.get<FirestoreRepository>()
+                as FakeFirestoreRepository;
+        final docs = await repository.collection('shared_content').get();
+        expect(docs.docs, hasLength(1), reason: 'premise: the row was written');
+        expect(docs.docs.single.data()['groupIds'], ['grp-1']);
+      });
+
       test(
         'BUT-1819: sanitizes its OWN shared_content payload, and does not '
         'mangle Swedish doing it',
@@ -773,6 +802,36 @@ void main() {
         // members holding `group:group_a` on a recipe whose panel cannot revoke
         // it — provenance recorded and unusable.
         expect(saved.socialData?.categoryIds, contains('group_a'));
+      });
+
+      test('a re-share from a group names the group on its shared_content '
+          'row, so the group page finds it (BUT-2271)', () async {
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            imageUrl: any(named: 'imageUrl'),
+            actions: any(named: 'actions'),
+          ),
+        ).thenAnswer((_) async {});
+
+        final id = await sharingManager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['user_999'],
+          memberDisplayNames: {'user_999': 'New Member'},
+          categoryIds: ['grp-1'],
+        );
+
+        expect(id, 'collab_1', reason: 'premise: the re-share branch ran');
+        final repository =
+            app_provider.ServiceLocator.get<FirestoreRepository>()
+                as FakeFirestoreRepository;
+        final docs = await repository.collection('shared_content').get();
+        expect(docs.docs, hasLength(1), reason: 'premise: the row was written');
+        expect(docs.docs.single.data()['recipeId'], 'collab_1');
+        expect(docs.docs.single.data()['groupIds'], ['grp-1']);
       });
 
       test('re-sharing to a group that contains the sharer grants the '
