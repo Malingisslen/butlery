@@ -138,7 +138,7 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
   },
   // BUT-2270. One call carries up to 50 invitations, which the client path
-  // could only send one per 10 s, so the daily cap is what bounds the total.
+  // could only send one per 10 s.
   sendGroupInvitations: {
     maxTokens: 5,
     refillRate: 5,

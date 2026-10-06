@@ -13,7 +13,7 @@
  * demands before it seats anyone.
  *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
- * Idempotent: an invitee who already has a pending invitation to this group
+ * An invitee who already has an unexpired pending invitation to this group
  * is skipped, not invited twice.
  */
 
@@ -136,7 +136,18 @@ export async function sendGroupInvitationsWithDeps(
     .where("groupId", "==", groupId)
     .where("status", "==", "pending")
     .get();
-  const alreadyInvited = new Set(pending.docs.map((d) => d.get("toUserId")));
+  // A pending row past `expiresAt` stays pending until the weekly cleanup job
+  // runs, while the invitee's app already shows it as expired.
+  const nowMs = Date.now();
+  const alreadyInvited = new Set(
+    pending.docs
+      .filter((d) => {
+        const expiresAt = d.get("expiresAt");
+        return expiresAt instanceof admin.firestore.Timestamp &&
+          expiresAt.toMillis() > nowMs;
+      })
+      .map((d) => d.get("toUserId")),
+  );
 
   const sent: SendGroupInvitationsResponse["sent"] = [];
   const skipped: SendGroupInvitationsResponse["skipped"] = [];

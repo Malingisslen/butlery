@@ -121,7 +121,7 @@ async function run_(): Promise<void> {
     );
     check(
       "re-send: nothing sent, all already_invited",
-      again.sent.length === 0 &&
+      again.sent.length === 0 && again.skipped.length === 3 &&
         again.skipped.every((x: { reason: string }) =>
           x.reason === "already_invited"),
       JSON.stringify(again),
@@ -160,10 +160,31 @@ async function run_(): Promise<void> {
   }
 
   {
+    // An invitation expired but still pending (the cleanup job has not run)
+    // must not block a fresh one.
+    const s = await seed("expired", 1);
+    const past = admin.firestore.Timestamp.fromMillis(Date.now() - 86400000);
+    await db.collection("social_requests").add({
+      type: "groupInvitation", fromUserId: s.owner, toUserId: s.friends[0],
+      groupId: s.groupId, status: "pending", sentAt: past, expiresAt: past,
+    });
+    const res = await sendGroupInvitationsWithDeps(
+      db, s.owner, s.groupId, s.friends, null,
+    );
+    check("expired pending invitation: a new one is sent",
+      res.sent.length === 1, JSON.stringify(res));
+  }
+
+  {
     const s = await seed("notowner", 1);
     const stranger = `stranger-${RUN}`;
+    // A group doc under the caller's own path whose ownerId is someone else,
+    // so the refusal comes from the owner check, not from a missing doc.
+    await db.doc(`users/${stranger}/friend_categories/${s.groupId}`).set({
+      name: "Lånad", ownerId: s.owner, friendUserIds: [s.owner],
+    });
     await expectThrows(
-      "refuses someone else's group",
+      "refuses a group the caller does not own",
       () => sendGroupInvitationsWithDeps(
         db, stranger, s.groupId, s.friends, null),
       "permission-denied",
@@ -174,8 +195,9 @@ async function run_(): Promise<void> {
         db, s.owner, `ghost-${RUN}`, s.friends, null),
       "permission-denied",
     );
-    check("refused calls wrote nothing",
-      (await pendingFor(s.owner, s.groupId)).length === 0);
+    const written = await db.collection("social_requests")
+      .where("toUserId", "==", s.friends[0]).get();
+    check("refused calls wrote nothing", written.empty);
   }
 
   console.log(`\n${run - failed}/${run} passed` +

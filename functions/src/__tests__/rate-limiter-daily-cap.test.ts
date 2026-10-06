@@ -310,8 +310,7 @@ const cases: UnitCase[] = [
       );
     },
   },
-  // BUT-2270. One call writes up to 50 invitations, so the daily cap bounds the
-  // total a single account can send.
+  // BUT-2270. One call writes up to 50 invitations.
   {
     name: "RATE_LIMIT_CONFIGS: sendGroupInvitations daily cap is 50",
     fn: async () => {
