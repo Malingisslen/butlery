@@ -442,8 +442,6 @@ void main() {
 
       test('the share is overwritten with the new list', () async {
         final firestore = FakeFirebaseFirestore();
-        // The old list holds an allergen the member has since removed; a
-        // merge would keep it filtering their household's menu.
         await firestore
             .collection('household_allergen_shares')
             .doc(share().id)
@@ -468,6 +466,22 @@ void main() {
           {'jordnötter'},
         );
         expect(await settingsOf(firestore), isNotNull);
+      });
+
+      test('a share revoked before the write is not re-created', () async {
+        final firestore = FakeFirebaseFirestore();
+
+        await expectLater(
+          _repo(
+            firestore,
+          ).updateAllergenPreferences(_alice, prefs, sharedCopies: [share()]),
+          throwsA(anything),
+        );
+        final stored = await firestore
+            .collection('household_allergen_shares')
+            .doc(share().id)
+            .get();
+        expect(stored.exists, isFalse);
       });
 
       test(

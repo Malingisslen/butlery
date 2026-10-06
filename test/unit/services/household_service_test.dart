@@ -153,6 +153,8 @@ void main() {
     bool enabled = true,
     Household? household,
     Object? shareError,
+    List<Household> ownHouseholds = const [],
+    Object? ownHouseholdsError,
   }) {
     final householdRepository = _MockHouseholdRepository();
     final shareRepository = _MockShareRepository();
@@ -196,6 +198,10 @@ void main() {
             updatedAt: DateTime.utc(2026, 1, 1),
           ),
     );
+    when(() => householdRepository.getForUser('owner')).thenAnswer((_) async {
+      if (ownHouseholdsError != null) throw ownHouseholdsError;
+      return [?household, ...ownHouseholds];
+    });
     when(() => shareRepository.getByHousehold('hh-doc')).thenAnswer((_) async {
       if (shareError != null) throw shareError;
       if (shares == null) {
@@ -941,8 +947,8 @@ void main() {
       );
     });
 
-    test('the roster is the group the household is linked to, not the first '
-        'household-marked group', () async {
+    test('the roster includes the group the household is linked to, not only '
+        'the first household-marked group', () async {
       when(() => categoriesOps.categoriesList).thenReturn([
         FriendCategory(
           id: 'first',
@@ -984,16 +990,16 @@ void main() {
         containsAll(UserAllergenPreferences.defaults.trackedAllergens),
       );
       verify(() => userService.lookupUserProfile('pending')).called(1);
-      verifyNever(() => userService.lookupUserProfile('partner'));
+      verify(() => userService.lookupUserProfile('partner')).called(1);
     });
 
     test(
-      'a member who joined someone else\'s group, with that group not on '
-      'this device, is aggregated over the household\'s roster and not their '
-      'own group',
+      'a member who joined someone else\'s group keeps their own '
+      'household-marked group on the roster',
       () async {
-        // The joiner's own household-marked group is a different set of people
-        // from the household whose shares they read.
+        // Anna joined Bertil's household; her own group (partner, kid) is
+        // still who she eats with, and their allergens are not shared into
+        // Bertil's household, so they get the floor.
         stubSelf();
         stubOtherMember('host');
         stubOtherMember('partner');
@@ -1011,9 +1017,89 @@ void main() {
 
         final aggregate = await service.aggregateAllergenPreferences();
 
-        expect(aggregate.preferences.trackedAllergens, {'sesam'});
+        expect(aggregate.preferences.trackedAllergens, contains('sesam'));
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
         verify(() => userService.lookupUserProfile('host')).called(1);
-        verifyNever(() => userService.lookupUserProfile('partner'));
+        verify(() => userService.lookupUserProfile('partner')).called(1);
+        verify(() => userService.lookupUserProfile('kid')).called(1);
+      },
+    );
+
+    test(
+      'a member who joined someone else\'s household keeps the roster of the '
+      'household they created',
+      () async {
+        when(() => categoriesOps.categoriesList).thenReturn([]);
+        stubSelf();
+        stubOtherMember('host');
+        stubOtherMember('spouse');
+        useShares(
+          [
+            _share('host', allergens: {'sesam'}),
+          ],
+          household: linked(
+            createdBy: 'host',
+            groupId: 'hosts-group',
+            members: const ['host', 'owner'],
+          ),
+          ownHouseholds: [
+            Household(
+              id: 'own-hh',
+              name: Household.defaultName,
+              members: [
+                for (final uid in const ['owner', 'spouse'])
+                  HouseholdMember(
+                    userId: uid,
+                    permission: SharedListPermission.admin,
+                    addedAt: DateTime.utc(2026, 1, 1),
+                  ),
+              ],
+              createdBy: 'owner',
+              createdAt: DateTime.utc(2026, 1, 1),
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+        );
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        verify(() => userService.lookupUserProfile('spouse')).called(1);
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+      },
+    );
+
+    test(
+      'a joined household whose member cannot read their own households is '
+      'degraded, never aggregated over the joined roster alone',
+      () async {
+        when(() => categoriesOps.categoriesList).thenReturn([]);
+        stubSelf();
+        stubOtherMember('host');
+        useShares(
+          [
+            _share('host', allergens: {'sesam'}),
+          ],
+          household: linked(
+            createdBy: 'host',
+            groupId: 'hosts-group',
+            members: const ['host', 'owner'],
+          ),
+          ownHouseholdsError: StateError('offline'),
+        );
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.isRosterComplete, isFalse);
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
       },
     );
   });

@@ -150,12 +150,20 @@ class PresentDinerPrefsResolver {
     final uid = permission.currentUserId;
     if (uid == null) return null;
 
-    final List<DinerProfile> diners;
+    final diners = <DinerProfile>[];
     try {
       final household = await householdRepo.getActiveForUser(uid);
-      diners = household == null
-          ? const []
-          : await dinerRepo.getByHousehold(household.id);
+      // A joined household is the active one, but the children of the
+      // household the user created still eat with them.
+      final ids = {
+        ?household?.id,
+        if (household != null && household.createdBy != uid)
+          for (final own in await householdRepo.getForUser(uid))
+            if (own.createdBy == uid) own.id,
+      };
+      for (final id in ids) {
+        diners.addAll(await dinerRepo.getByHousehold(id));
+      }
     } catch (e) {
       AppLogger.warning('Household diner profile read failed: $e');
       return (

@@ -136,10 +136,10 @@ class FamilyExportManager {
       // the active household at the top level as before, the rest beside it.
       final others = byId.where((h) => h.id != active.id).toList();
       return {
-        ...await _householdSection(active.id, userId),
+        ...await _householdSection(active, userId),
         if (others.isNotEmpty)
           'other_households': [
-            for (final h in others) await _householdSection(h.id, userId),
+            for (final h in others) await _householdSection(h, userId),
           ],
       };
     } catch (e) {
@@ -156,10 +156,16 @@ class FamilyExportManager {
   }
 
   Future<Map<String, dynamic>> _householdSection(
-    String householdId,
+    Household household,
     String userId,
   ) async {
-    final diners = await _diners.getByHousehold(householdId);
+    final householdId = household.id;
+    // The children of a household the requester JOINED are the host's family,
+    // not data about the requester; only the ones they entered themselves are.
+    final diners = [
+      for (final d in await _diners.getByHousehold(householdId))
+        if (household.createdBy == userId || d.createdBy == userId) d,
+    ];
 
     // Only the caller's own / caller-entered verdicts — never another
     // member's private rating.

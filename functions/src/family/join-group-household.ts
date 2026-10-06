@@ -154,7 +154,7 @@ export async function joinGroupHouseholdWithDeps(
     }
 
     if (memberIds.length >= MAX_HOUSEHOLD_MEMBERS) {
-      throw new HttpsError("resource-exhausted", "The household is full.");
+      throw new HttpsError("failed-precondition", "household-full");
     }
     tx.update(target.ref, {
       members: [...membersOf(data), caller],

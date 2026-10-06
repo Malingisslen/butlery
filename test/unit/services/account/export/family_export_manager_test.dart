@@ -246,6 +246,73 @@ void main() {
     expect(other['family_ratings_count'], 2);
   });
 
+  test('a household the requester joined exports only the diners they '
+      'entered, never the host\'s family (BUT-2267)', () async {
+    final joined = Household(
+      id: 'hh-joined',
+      name: Household.defaultName,
+      members: [
+        HouseholdMember(
+          userId: 'host',
+          permission: SharedListPermission.admin,
+          addedAt: DateTime.utc(2026, 2, 1),
+        ),
+        HouseholdMember(
+          userId: _malin,
+          permission: SharedListPermission.view,
+          addedAt: DateTime.utc(2026, 2, 1),
+        ),
+      ],
+      createdBy: 'host',
+      createdAt: DateTime.utc(2026, 2, 1),
+      updatedAt: DateTime.utc(2026, 2, 1),
+      sourceGroupId: 'g1',
+      sourceGroupOwnerId: 'host',
+    );
+    await fs.collection('households').doc(joined.id).set(joined.toFirestore());
+    Future<void> seedDiner(String id, String name, String createdBy) => fs
+        .collection(FirestoreCollections.dinerProfiles)
+        .doc(id)
+        .set(
+          DinerProfile.create(
+            householdId: joined.id,
+            name: name,
+            ageBand: DinerAgeBand.adult,
+            createdBy: createdBy,
+          ).toFirestore(),
+        );
+    await seedDiner('host-child', 'Värdens barn', 'host');
+    await seedDiner('malins-guest', 'Malins gäst', _malin);
+
+    final out = await manager.exportFamily(_malin);
+
+    expect(out['household_id'], 'hh-joined');
+    expect(out['diner_profiles_count'], 1);
+    final names = (out['diner_profiles'] as List)
+        .map((d) => (d as Map)['name'])
+        .toList();
+    expect(names, ['Malins gäst']);
+  });
+
+  test('a household the requester created exports every diner in it, '
+      'including ones another member entered', () async {
+    await fs
+        .collection(FirestoreCollections.dinerProfiles)
+        .doc('johans-guest')
+        .set(
+          DinerProfile.create(
+            householdId: _hh,
+            name: 'Johans gäst',
+            ageBand: DinerAgeBand.adult,
+            createdBy: _johan,
+          ).toFirestore(),
+        );
+
+    final out = await manager.exportFamily(_malin);
+
+    expect(out['diner_profiles_count'], 2);
+  });
+
   test('a single household exports no other_households key', () async {
     final out = await manager.exportFamily(_malin);
     expect(out['household_id'], _hh);

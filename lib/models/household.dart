@@ -310,7 +310,10 @@ class Household {
         'schemaVersion',
         defaultValue: 1,
       ),
-      sourceGroupId: SerializationUtils.safeNullableString(data, 'sourceGroupId'),
+      sourceGroupId: SerializationUtils.safeNullableString(
+        data,
+        'sourceGroupId',
+      ),
       sourceGroupOwnerId: SerializationUtils.safeNullableString(
         data,
         'sourceGroupOwnerId',
@@ -353,7 +356,10 @@ class Household {
         'schemaVersion',
         defaultValue: 1,
       ),
-      sourceGroupId: SerializationUtils.safeNullableString(json, 'sourceGroupId'),
+      sourceGroupId: SerializationUtils.safeNullableString(
+        json,
+        'sourceGroupId',
+      ),
       sourceGroupOwnerId: SerializationUtils.safeNullableString(
         json,
         'sourceGroupOwnerId',

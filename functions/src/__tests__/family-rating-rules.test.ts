@@ -480,17 +480,63 @@ test("households: admin cannot set the group link", async () => {
 
 // --- delete ---
 
-// H16: admin member can delete the household.
-test("households: admin member can delete the household", async () => {
+// H16: the admin who is its only member can delete the household.
+test("households: sole admin member can delete the household", async () => {
   await env.withSecurityRulesDisabled(async (admin) => {
     await admin
       .firestore()
       .doc(`households/h-del-${RUN}`)
-      .set(validHouseholdBody());
+      .set(soloHouseholdBody());
   });
   const ctx = env.authenticatedContext(ADMIN_MEMBER);
   await assertSucceeds(
     ctx.firestore().doc(`households/h-del-${RUN}`).delete()
+  );
+});
+
+// H16b: an admin cannot delete a household someone has joined (BUT-2267).
+test("households: admin cannot delete a household with a joined member", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`households/h-del-joined-${RUN}`)
+      .set(
+        soloHouseholdBody({
+          members: [
+            { userId: ADMIN_MEMBER, permission: "admin", addedAt: new Date() },
+            { userId: VIEWER, permission: "view", addedAt: new Date() },
+          ],
+          memberUserIds: [ADMIN_MEMBER, VIEWER],
+          memberPermissions: { [ADMIN_MEMBER]: "admin", [VIEWER]: "view" },
+          sourceGroupId: "g-del",
+          sourceGroupOwnerId: ADMIN_MEMBER,
+        })
+      );
+  });
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx.firestore().doc(`households/h-del-joined-${RUN}`).delete()
+  );
+});
+
+// H16c: a lone member without admin cannot delete the household.
+test("households: lone non-admin member cannot delete the household", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`households/h-del-lone-${RUN}`)
+      .set(
+        soloHouseholdBody({
+          members: [
+            { userId: ADMIN_MEMBER, permission: "view", addedAt: new Date() },
+          ],
+          memberPermissions: { [ADMIN_MEMBER]: "view" },
+        })
+      );
+  });
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertFails(
+    ctx.firestore().doc(`households/h-del-lone-${RUN}`).delete()
   );
 });
 

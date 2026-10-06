@@ -9,19 +9,35 @@ import 'package:butlery/services/permission_service.dart';
 /// it could tell at all, whether sharing is on, and the household when there
 /// is one.
 class ActiveHousehold {
-  const ActiveHousehold(this.household) : known = true, sharingOn = true;
+  const ActiveHousehold(this.household, {this.ownHouseholds = const []})
+    : known = true,
+      sharingOn = true,
+      readFailed = false;
   const ActiveHousehold.sharingOff()
     : household = null,
+      ownHouseholds = const [],
       known = true,
-      sharingOn = false;
-  const ActiveHousehold.unknown()
+      sharingOn = false,
+      readFailed = false;
+  const ActiveHousehold.unknown({this.readFailed = false})
     : household = null,
+      ownHouseholds = const [],
       known = false,
       sharingOn = false;
 
   final Household? household;
+
+  /// The households the user CREATED, other than [household]. Read only when
+  /// [household] is one they joined: joining someone else's household makes
+  /// it the active one, but the people of their own household still eat
+  /// with them, so its roster and diners must stay in the union.
+  final List<Household> ownHouseholds;
   final bool known;
   final bool sharingOn;
+
+  /// The households were asked for and the read failed, so the roster built
+  /// without them may be missing everyone the user eats with.
+  final bool readFailed;
 
   /// Off is KNOWLEDGE (an empty result, never a degraded one); a flag service
   /// or repository that is not there, or a read that failed, is IGNORANCE, and
@@ -42,12 +58,20 @@ class ActiveHousehold {
       return const ActiveHousehold.unknown();
     }
     try {
+      final household = await householdRepository.getActiveForUser(userId);
+      if (household == null || household.createdBy == userId) {
+        return ActiveHousehold(household);
+      }
       return ActiveHousehold(
-        await householdRepository.getActiveForUser(userId),
+        household,
+        ownHouseholds: [
+          for (final h in await householdRepository.getForUser(userId))
+            if (h.createdBy == userId && h.id != household.id) h,
+        ],
       );
     } catch (e) {
       AppLogger.warning('Could not read the active household: $e', logTag);
-      return const ActiveHousehold.unknown();
+      return const ActiveHousehold.unknown(readFailed: true);
     }
   }
 }

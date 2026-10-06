@@ -1229,9 +1229,11 @@ service cloud.firestore {
         && cannotModify(['createdBy', 'createdAt', 'members', 'memberUserIds',
              'memberPermissions', 'sourceGroupId', 'sourceGroupOwnerId']);
 
-      // Admin-only delete.
+      // Admin-only delete, and only of a household nobody else is in: the
+      // other members' allergen shares are deleted by the server, which a
+      // client delete would skip.
       allow delete: if isAuthenticated()
-        && request.auth.uid in resource.data.memberUserIds
+        && resource.data.memberUserIds == [request.auth.uid]
         && resource.data.memberPermissions[request.auth.uid] == 'admin';
     }
 

@@ -218,21 +218,37 @@ class HouseholdService extends BaseService {
 
   Future<HouseholdAllergenAggregate> _aggregatePreferences() async {
     final active = ActiveHousehold.resolve(serviceName);
-    final household = (await active).household;
+    final resolved = await active;
+    final household = resolved.household;
     // The group linked to the household whose shares are read. When that
     // group is not in this device's category list, the household's own roster
     // stands in; with no link, the first household-marked group.
     final linked = _linkedGroup(household);
-    final memberIds =
-        linked == null && household != null && household.isLinkedToGroup
-        ? household.memberUserIds
-        : _memberIdsOf(linked ?? getHousehold());
+    final selfId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    // A union, never a replacement: the user's own household and their own
+    // household-marked groups stay in when the active household is one they
+    // joined. Shares are still read from the active household only; a union
+    // can only widen what the menu filters.
+    final memberIds = <String>{
+      ...(linked == null && household != null && household.isLinkedToGroup
+          ? household.memberUserIds
+          : _memberIdsOf(linked ?? getHousehold())),
+      for (final own in resolved.ownHouseholds) ...own.memberUserIds,
+      for (final c in _friendsService.categories.categoriesList)
+        if (c.isHousehold && selfId != null && c.ownerId == selfId)
+          ...c.allMemberIds,
+    };
     // BUT-1663: `allMemberIds` is `[ownerId, ...friendUserIds]` and
     // `migrateOwnersAsMembers()` appends the owner INTO `friendUserIds` on
     // every login, so the owner arrives twice for any migrated household.
     // Dedupe before counting: the duplicate would list the same id twice in
     // the unresolved report.
-    return _resolveMembers(memberIds.toSet().toList(), active);
+    final aggregate = await _resolveMembers(memberIds.toList(), active);
+    if (!resolved.readFailed || !aggregate.isRosterComplete) return aggregate;
+    return HouseholdAllergenAggregate.degraded(
+      preferences: widenWithSafetyFloor(aggregate.preferences),
+      missingMemberIds: aggregate.missingMemberIds,
+    );
   }
 
   Future<HouseholdAllergenAggregate> _resolveMembers(

@@ -762,9 +762,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       'allergenPreferences': preferences.toFirestore(),
     }, SetOptions(merge: true));
     for (final share in sharedCopies) {
-      // A full overwrite, as `FirebaseHouseholdAllergenShareRepository.update`
-      // does: a merge would keep an allergen the member just removed.
-      batch.set(
+      batch.update(
         firestore
             .collection(FirestoreCollections.householdAllergenShares)
             .doc(share.id),

@@ -296,10 +296,16 @@ async function run_(): Promise<void> {
     }
     check("cap: household filled to the cap",
       (await household(s.soloId!)).memberUserIds.length === MAX_HOUSEHOLD_MEMBERS);
-    await expectThrows("cap: one more join refused",
-      () => joinGroupHouseholdWithDeps(
-        db, s.members[MAX_HOUSEHOLD_MEMBERS - 1], s.ref),
-      "resource-exhausted");
+    try {
+      await joinGroupHouseholdWithDeps(
+        db, s.members[MAX_HOUSEHOLD_MEMBERS - 1], s.ref);
+      check("cap: one more join refused", false, "expected a throw");
+    } catch (err) {
+      const { code, message } = err as { code?: string; message?: string };
+      check("cap: one more join refused as household-full",
+        code === "failed-precondition" && message === "household-full",
+        `code=${code} message=${message}`);
+    }
   }
 
   {
