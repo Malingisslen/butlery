@@ -1,7 +1,6 @@
 // lib/services/unified/operations/modules/invitation_validation_module.dart
 
 import 'package:butlery/models/group_invitation.dart';
-import 'package:collection/collection.dart';
 
 /// Module handling invitation validation logic.
 /// Provides email/phone validation, duplicate checking, and authentication validation.
@@ -37,34 +36,12 @@ class InvitationValidationModule {
     return invitations.any((i) => i.toUserId == phoneNumber);
   }
 
-  /// Check for duplicate group invitation to user
-  GroupInvitation? findDuplicateGroupInvitation({
-    required List<GroupInvitation> invitations,
-    required String userId,
-    required String groupId,
-  }) {
-    return invitations.firstWhereOrNull(
-      (inv) =>
-          inv.toUserId == userId &&
-          inv.groupId == groupId &&
-          inv.status == GroupInvitationStatus.pending,
-    );
-  }
-
   /// Validate user authentication and information
   bool canSendInvitation({
     required String? currentUserId,
     required String? currentUserDisplayName,
   }) {
     return currentUserId != null && currentUserDisplayName != null;
-  }
-
-  /// Validate invitation inputs for group invitation
-  bool validateGroupInvitationInputs({
-    required String userId,
-    required String groupId,
-  }) {
-    return userId.isNotEmpty && groupId.isNotEmpty;
   }
 
   /// Check if user information is available

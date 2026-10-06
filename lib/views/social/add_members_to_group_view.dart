@@ -404,14 +404,12 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             key: const ValueKey('addMembers.invite'),
             label: context.l10n.groupSendInvitations(viewModel.selectedCount),
             onPressed: () async {
-              // ✅ FIXED: Capture count BEFORE sending (sendInvitations clears selection)
-              final invitationCount = viewModel.selectedCount;
               final success = await viewModel.sendInvitations();
 
               if (mounted && success) {
                 SnackBarUtils.showSuccess(
                   context,
-                  context.l10n.groupInvitationsSent(invitationCount),
+                  context.l10n.groupInvitationsSent(viewModel.sentCount),
                 );
               }
             },

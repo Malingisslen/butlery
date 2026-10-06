@@ -258,17 +258,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         '📨 Skickar RIKTIGA gruppinbjudningar till ${selectedUserIds.length} vänner',
       );
 
-      // ✅ FIXED: Use proper group invitation method that saves to Firebase
-      final results = <String, bool>{};
-      for (final userId in selectedUserIds) {
-        final success = await _friendsService.invitations
-            .sendGroupInvitationToUser(
-              userId: userId,
-              groupId: groupId,
-              customMessage: personalMessage,
-            );
-        results[userId] = success;
-      }
+      final results = await _friendsService.invitations.sendGroupInvitations(
+        userIds: selectedUserIds,
+        groupId: groupId,
+        customMessage: personalMessage,
+      );
 
       // Update status based on results
       int successCount = 0;
@@ -297,9 +291,15 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         // Show specific error from UnifiedFriendsService if available
         if (_friendsService.hasError) {
           _setInvitationError(_friendsService.error!);
-        } else if (successCount == 0 && failureCount > 0) {
-          // All invitations failed
+        } else if (successCount == 0) {
           _setInvitationError(AppLocale.current.errorGeneric);
+        } else {
+          _setInvitationError(
+            AppLocale.current.groupInvitationsPartlyFailed(
+              failureCount,
+              selectedUserIds.length,
+            ),
+          );
         }
       }
 
@@ -321,6 +321,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       notifyListeners();
     }
   }
+
+  /// How many invitations the last send delivered; fewer than were selected
+  /// when some failed.
+  int get sentCount =>
+      _invitationStatus.values.where((status) => status == 'sent').length;
 
   /// Get status for a specific invitation
   String? getInvitationStatusForUser(String userId) {

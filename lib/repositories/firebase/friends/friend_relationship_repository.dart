@@ -207,6 +207,29 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     );
   }
 
+  /// Send a group's invitations through the `sendGroupInvitations` callable
+  /// (BUT-2270). The client create rule allows one social request per 10 s,
+  /// so sending them one by one dropped all but the first. Returns the sent
+  /// ones as invitee id to invitation id; the rest were skipped. Throws when
+  /// the call itself is refused.
+  Future<Map<String, String>> sendGroupInvitationsViaFunction({
+    required String groupId,
+    required List<String> userIds,
+    String? message,
+  }) async {
+    final callable = _functions.httpsCallable('sendGroupInvitations');
+    final result = await callable.call<Map<String, dynamic>>(<String, dynamic>{
+      'groupId': groupId,
+      'userIds': userIds,
+      'message': message,
+    });
+    final sent = (result.data['sent'] as List?) ?? const [];
+    return {
+      for (final entry in sent.cast<Map>())
+        entry['userId'] as String: entry['invitationId'] as String,
+    };
+  }
+
   /// Accept a friend request. Delegates to the server-side callable (B1); the
   /// parties and request status are derived server-side from the request doc,
   /// so [userId1]/[userId2] are no longer used on the client (kept for the

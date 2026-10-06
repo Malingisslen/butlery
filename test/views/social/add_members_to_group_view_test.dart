@@ -149,19 +149,12 @@ void main() {
   testWidgets('after sending, each friend announces the invitation result '
       'with the name', (tester) async {
     when(
-      () => invitations.sendGroupInvitationToUser(
-        userId: 'u-anna',
+      () => invitations.sendGroupInvitations(
+        userIds: any(named: 'userIds'),
         groupId: any(named: 'groupId'),
         customMessage: any(named: 'customMessage'),
       ),
-    ).thenAnswer((_) async => false);
-    when(
-      () => invitations.sendGroupInvitationToUser(
-        userId: 'u-cecilia',
-        groupId: any(named: 'groupId'),
-        customMessage: any(named: 'customMessage'),
-      ),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer((_) async => {'u-anna': false, 'u-cecilia': true});
     final handle = tester.ensureSemantics();
     await pumpView(tester);
 
@@ -190,12 +183,12 @@ void main() {
     testWidgets('${mode.name}: the failed-send notice is a surface.tint.danger '
         'fill with no border', (tester) async {
       when(
-        () => invitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => invitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
-      ).thenAnswer((_) async => false);
+      ).thenAnswer((_) async => {'u-anna': false});
       await pumpView(tester, mode: mode);
 
       await tester.tap(find.text('Anna Lindqvist'));
