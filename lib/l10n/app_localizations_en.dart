@@ -10708,6 +10708,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The AI service is temporarily overloaded. Try again in a moment.';
 
   @override
+  String get llmCostCeilingDay =>
+      'You have used today\'s AI help. Try again tomorrow.';
+
+  @override
+  String get llmCostCeilingMonth =>
+      'You have used this month\'s AI help. Try again next month.';
+
+  @override
   String llmInvalidArgument(String error) {
     return 'Invalid argument: $error';
   }

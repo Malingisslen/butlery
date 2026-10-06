@@ -722,6 +722,7 @@ async function testCoreEndToEnd(): Promise<void> {
       resp.rawText.length > 0 &&
       resp.retryCount === 1 &&
       resp.retryOutcome === "failure" &&
+      resp.estimatedCost === 0.011 &&
       state.structureRecipeCalls.length === 1;
     record(
       "BONUS: structureRecipe throws → retryCount=1, outcome=failure, rawText fallback preserved",
@@ -733,6 +734,7 @@ async function testCoreEndToEnd(): Promise<void> {
               `success=${resp.success}, recipe=${resp.recipe?.title}, ` +
               `rawTextLen=${resp.rawText?.length ?? 0}, ` +
               `retryCount=${resp.retryCount}, outcome=${resp.retryOutcome}, ` +
+              `cost=${resp.estimatedCost}, ` +
               `structureCalls=${state.structureRecipeCalls.length}`,
           }
     );

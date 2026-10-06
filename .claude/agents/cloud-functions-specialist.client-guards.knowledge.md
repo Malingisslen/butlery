@@ -34,4 +34,10 @@
   absolute-write arm, never the step arm.
 - `system_events` has no TTL — every enforced callable adds an unbounded
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
+- **A wrapper that reads a field off the handler's RESULT must REQUIRE it in its
+  generic bound** (`withCostLedger`: `TResponse extends { estimatedCost: number }`) —
+  an optional `?:` lets a newly wrapped callable compile and record 0 in silence.
+  The cost ledger sits OUTSIDE `withRateLimit` (a cost denial must not spend the
+  per-user bucket or the global counter), so it checks `request.auth` itself before
+  its read; pin both on source (`withCostLedger(withRateLimit("<op>",` once per file).
 

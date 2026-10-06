@@ -7083,6 +7083,14 @@
   "llmUnknownRecipe": "Okänt recept",
   "llmMustBeLoggedIn": "Du måste vara inloggad för att använda AI-funktioner.",
   "llmServiceOverloaded": "AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.",
+  "llmCostCeilingDay": "Du har använt dagens AI-hjälp. Försök igen i morgon.",
+  "@llmCostCeilingDay": {
+    "description": "LLM error: the user has reached the daily AI cost ceiling (BUT-2243)"
+  },
+  "llmCostCeilingMonth": "Du har använt månadens AI-hjälp. Försök igen nästa månad.",
+  "@llmCostCeilingMonth": {
+    "description": "LLM error: the user has reached the monthly AI cost ceiling (BUT-2243)"
+  },
   "llmInvalidArgument": "Ogiltigt argument: {error}",
   "@llmInvalidArgument": {
     "placeholders": {

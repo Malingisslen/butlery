@@ -18181,6 +18181,18 @@ abstract class AppLocalizations {
   /// **'AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.'**
   String get llmServiceOverloaded;
 
+  /// LLM error: the user has reached the daily AI cost ceiling (BUT-2243)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dagens AI-hjälp. Försök igen i morgon.'**
+  String get llmCostCeilingDay;
+
+  /// LLM error: the user has reached the monthly AI cost ceiling (BUT-2243)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt månadens AI-hjälp. Försök igen nästa månad.'**
+  String get llmCostCeilingMonth;
+
   /// No description provided for @llmInvalidArgument.
   ///
   /// In sv, this message translates to:

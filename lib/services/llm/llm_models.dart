@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 /// Mode for structuring recipe text.
 enum StructureMode {
@@ -389,6 +390,9 @@ class LlmException implements Exception {
     this.retryAfter,
   });
 
+  /// [code] of the server's per-user AI cost ceiling (BUT-2243).
+  static const costCeilingCode = 'llm-cost-ceiling';
+
   @override
   String toString() => 'LlmException: $message';
 
@@ -401,6 +405,21 @@ class LlmException implements Exception {
       return LlmException(
         l.llmMustBeLoggedIn,
         code: 'unauthenticated',
+      );
+    }
+
+    // BUT-2243: the server's per-user AI cost ceiling. Its own message and no
+    // one-minute retry: the ceiling lasts until the next UTC day or month.
+    final reason = error is FirebaseFunctionsException && error.details is Map
+        ? (error.details as Map)['reason']
+        : null;
+    if (reason == 'llm_cost_day' || reason == 'llm_cost_month') {
+      return LlmException(
+        reason == 'llm_cost_month'
+            ? l.llmCostCeilingMonth
+            : l.llmCostCeilingDay,
+        code: costCeilingCode,
+        isRateLimited: true,
       );
     }
 
