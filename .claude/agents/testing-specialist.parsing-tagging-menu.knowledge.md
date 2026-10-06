@@ -112,6 +112,11 @@
   for a line INSIDE its domain (a lone gluten word + colon), not by the two filters beside it.
 
 ### Menu & tagging domain
+- **`RecipeFactory.build` has NO `tagResult`/`tagOverrides` param; `RecipeBuilder` does.** Every
+  tagging-gated render (`recipe.tagResult != null` guards the card's allergen/dietary rows) is
+  UNREACHABLE from a factory-built fixture, so a test written on the factory passes vacuously
+  rather than failing to compile — that is how BUT-1780 shipped "fixed" with no badge ever on
+  screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or tag-related.
 - Weighted-random selectors: assert WEIGHT MATH via a `@visibleForTesting debug*` hook, never the
   sampled outcome; unrated == 1★ value; ceilings via `closeTo` at extremes.
 - Any feature persisting entity ids later intersected with a live collection needs a ZERO-INTERSECTION

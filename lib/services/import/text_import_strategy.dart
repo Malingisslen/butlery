@@ -1090,11 +1090,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     ).hasMatch(lowerText)) {
       return 'Frukost';
     }
+    // A "huvudrätt" is the dinner slot of the menu generator (Malin's
+    // decision, 2026-10-05), and the recipe form offers no such value.
     if (RegExp(
       r'typ\s*:\s*huvudrätt',
       caseSensitive: false,
     ).hasMatch(lowerText)) {
-      return 'Huvudrätt';
+      return 'Middag';
     }
     if (RegExp(r'typ\s*:\s*lunch', caseSensitive: false).hasMatch(lowerText)) {
       return 'Lunch';
@@ -1118,7 +1120,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
     if (lowerText.contains('lunch')) return 'Lunch';
     if (lowerText.contains('middag')) return 'Middag';
-    if (lowerText.contains('huvudrätt')) return 'Huvudrätt';
+    if (lowerText.contains('huvudrätt')) return 'Middag';
     if (lowerText.contains('dessert') || lowerText.contains('efterrätt')) {
       return 'Dessert';
     }
