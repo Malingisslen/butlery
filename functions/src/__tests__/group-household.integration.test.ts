@@ -32,6 +32,8 @@ const {
   onHouseholdGroupWritten,
 } = require("../family/on-household-group-written");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { deleteFamilyData } = require("../account/account-deletion-cascade");
 const {
   MAX_HOUSEHOLD_MEMBERS,
   householdIdForGroup,
@@ -413,6 +415,56 @@ async function run_(): Promise<void> {
     check("wrapper: a member removed from a household group is reconciled",
       JSON.stringify((await household(t.soloId!)).memberUserIds) ===
         JSON.stringify([t.owner]));
+  }
+
+  {
+    // The linked group's OWNER erases their account. The cascade and the
+    // group-deleted trigger can run in either order; both must end with the
+    // household, its diner profile and every joined member's share gone.
+    const endState = async (tag: string, cascadeFirst: boolean) => {
+      const s = await seed(tag, 2, { soloHousehold: true });
+      await joinGroupHouseholdWithDeps(db, s.members[0], s.ref);
+      await joinGroupHouseholdWithDeps(db, s.members[1], s.ref);
+      const a = await share(s.soloId!, s.members[0]);
+      const b = await share(s.soloId!, s.members[1]);
+      const diner = db.doc(`diner_profiles/diner${tag}${RUN}`);
+      await diner.set({
+        householdId: s.soloId, name: "Ella", createdBy: s.owner,
+      });
+
+      let triggerAfter: { householdIds: string[]; removed: string[] } | null =
+        null;
+      if (cascadeFirst) {
+        await deleteFamilyData(db, s.owner);
+        await groupRef(s.owner, s.groupId).delete();
+        triggerAfter = await reconcileGroupHousehold(db, s.ref);
+      } else {
+        await groupRef(s.owner, s.groupId).delete();
+        await reconcileGroupHousehold(db, s.ref);
+        await deleteFamilyData(db, s.owner);
+      }
+      return {
+        household: (await db.doc(`households/${s.soloId}`).get()).exists,
+        shareA: (await a.get()).exists,
+        shareB: (await b.get()).exists,
+        diner: (await diner.get()).exists,
+        triggerAfter,
+      };
+    };
+
+    const cascadeFirst = await endState("ownerdelA", true);
+    const triggerFirst = await endState("ownerdelB", false);
+    const gone = (e: typeof cascadeFirst) =>
+      !e.household && !e.shareA && !e.shareB && !e.diner;
+    check("owner erased, cascade first: household, diner and joined shares " +
+      "gone", gone(cascadeFirst), JSON.stringify(cascadeFirst));
+    check("owner erased, cascade first: the later trigger is a no-op",
+      cascadeFirst.triggerAfter !== null &&
+        cascadeFirst.triggerAfter.householdIds.length === 0 &&
+        cascadeFirst.triggerAfter.removed.length === 0,
+      JSON.stringify(cascadeFirst.triggerAfter));
+    check("owner erased, trigger first: the same end state",
+      gone(triggerFirst), JSON.stringify(triggerFirst));
   }
 
   console.log(`\n${run - failed}/${run} passed` +

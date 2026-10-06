@@ -1772,9 +1772,11 @@ test("family (shared): a verdict target entered for a diner is kept but attribut
   );
 });
 
-// BUT-2267: a household linked to the erased user's group names them in
-// `sourceGroupOwnerId`; that uid is erased with the link.
-test("family: a household linked to the erased owner's group loses the link", async () => {
+// BUT-2267: a household someone else created that names the erased user as
+// its group's owner (not a link `isOwnedLink` honours, so it is not torn down)
+// still carries their uid in `sourceGroupOwnerId`; that uid goes with the link.
+// The owned case is pinned in group-household.integration.test.ts.
+test("family: a household naming the erased user as group owner loses the link", async () => {
   const u = `link-owner-${RUN}`;
   const joiner = `link-joiner-${RUN}`;
   const hh = `hh-link-${RUN}`;
@@ -1786,7 +1788,7 @@ test("family: a household linked to the erased owner's group loses the link", as
     ],
     memberUserIds: [u, joiner],
     memberPermissions: { [u]: "admin", [joiner]: "view" },
-    createdBy: u,
+    createdBy: joiner,
     sourceGroupOwnerId: u,
     sourceGroupId: `g-${RUN}`,
   });
