@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -548,7 +549,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             return FadeTransition(opacity: animation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: AppMotion.standard,
         );
 
       case RouteAnimationType.slideFromBottom:
@@ -559,7 +560,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
-            const curve = Curves.easeInOut;
+            const curve = AppMotion.curve;
             final tween = Tween(
               begin: begin,
               end: end,
@@ -567,7 +568,7 @@ class AppRouter {
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 400),
+          transitionDuration: AppMotion.standard,
         );
 
       case RouteAnimationType.slideFromRight:
@@ -578,7 +579,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
-            const curve = Curves.easeInOut;
+            const curve = AppMotion.curve;
             final tween = Tween(
               begin: begin,
               end: end,
@@ -586,7 +587,7 @@ class AppRouter {
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: AppMotion.standard,
         );
 
       case RouteAnimationType.scale:
@@ -597,7 +598,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             const begin = 0.0;
             const end = 1.0;
-            const curve = Curves.elasticOut;
+            const curve = AppMotion.curve;
             final tween = Tween(
               begin: begin,
               end: end,
@@ -605,7 +606,7 @@ class AppRouter {
             final scaleAnimation = animation.drive(tween);
             return ScaleTransition(scale: scaleAnimation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 600),
+          transitionDuration: AppMotion.standard,
         );
     }
   }
@@ -644,7 +645,7 @@ class AppRouter {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = 0.0;
         const end = 1.0;
-        const curve = Curves.elasticOut;
+        const curve = AppMotion.curve;
         final tween = Tween(
           begin: begin,
           end: end,
@@ -652,7 +653,7 @@ class AppRouter {
         final scaleAnimation = animation.drive(tween);
         return ScaleTransition(scale: scaleAnimation, child: child);
       },
-      transitionDuration: const Duration(milliseconds: 600),
+      transitionDuration: AppMotion.standard,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/services/performance/optimized_image_loader.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 class RecipeImageWidget extends StatefulWidget {
   final List<String> imageUrls;
@@ -320,7 +321,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
 
     _pageController.animateToPage(
       index,
-      duration: AppDimensions.animationDurationCommon,
+      duration: AppMotion.standard,
       curve: Curves.easeInOut,
     );
   }
@@ -440,7 +441,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
 
     _pageController.animateToPage(
       index,
-      duration: AppDimensions.animationDurationCommon,
+      duration: AppMotion.standard,
       curve: Curves.easeInOut,
     );
   }

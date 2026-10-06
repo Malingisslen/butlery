@@ -17,6 +17,7 @@ import 'package:butlery/widgets/messaging/components/message_status_widget.dart'
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Message bubble component for chat messages.
 /// Uses extracted components from [MessageContentBuilder],
@@ -84,7 +85,7 @@ class _MessageBubbleState extends State<MessageBubble>
     super.initState();
     _swipeController = AnimationController(
       vsync: this,
-      duration: AppDimensions.animationDurationMedium,
+      duration: AppMotion.micro,
     );
     _swipeAnimation =
         Tween<Offset>(
@@ -105,7 +106,7 @@ class _MessageBubbleState extends State<MessageBubble>
     if (_reduceMotion) {
       _swipeController.duration = Duration.zero;
     } else {
-      _swipeController.duration = AppDimensions.animationDurationMedium;
+      _swipeController.duration = AppMotion.micro;
     }
   }
 

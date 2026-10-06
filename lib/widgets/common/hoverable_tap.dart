@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Lightweight web/desktop hover affordance for small interactive elements
 /// (badges, custom chips, inline tap-links) that aren't Material widgets and so
@@ -34,7 +34,7 @@ class _HoverableTapState extends State<HoverableTap> {
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedScale(
         scale: _hovered ? 1.04 : 1.0,
-        duration: AppDimensions.animationDurationFast,
+        duration: AppMotion.micro,
         curve: Curves.easeOut,
         child: widget.child,
       ),

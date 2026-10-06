@@ -15,7 +15,7 @@ class CollaborativeLiveWidgets {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = AppDimensions.animationDurationCommon,
+    Duration animationDuration = AppMotion.standard,
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
@@ -90,7 +90,7 @@ class _PulsingDotState extends State<_PulsingDot>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: AppMotion.pulse,
+      duration: AppMotion.pulseHalf,
       vsync: this,
     );
     _animation = Tween<double>(begin: 0.3, end: 1.0).animate(

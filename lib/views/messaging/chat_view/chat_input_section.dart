@@ -24,6 +24,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
 class ChatInputState {
@@ -440,7 +441,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     AnimatedContainer(
                       duration: AnimationUtils.getDuration(
                         context,
-                        AppDimensions.animationDurationMedium,
+                        AppMotion.micro,
                       ),
                       child: IconButton(
                         onPressed: _state.isComposing

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// A wrapper widget that adds scale-on-press feedback to any child widget.
 ///
@@ -45,7 +45,7 @@ class AnimatedPressable extends StatefulWidget {
     required this.child,
     this.enabled = true,
     this.pressedScale = 0.95,
-    this.duration = AppDimensions.animationDurationFast,
+    this.duration = AppMotion.micro,
     this.curve = Curves.easeOut,
     this.enableHapticFeedback = true,
   });

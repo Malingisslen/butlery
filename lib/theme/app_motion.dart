@@ -16,6 +16,11 @@ class AppMotion {
   /// R7-4 = B).
   static const Duration pulse = Duration(milliseconds: 1200);
 
+  /// Half of [pulse], derived and not a token: a pulse that runs
+  /// `repeat(reverse: true)` takes this each way, so one loop is [pulse]
+  /// (produktbeslut R8-9 = A).
+  static const Duration pulseHalf = Duration(milliseconds: 600);
+
   /// motion.easing.standard: cubic-bezier(0.33, 0, 0.2, 1).
   static const Curve curve = Cubic(0.33, 0, 0.2, 1);
 }

@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _defaultDebounce = Duration(milliseconds: 500);
+
 /// A button wrapper that prevents rapid successive taps through debouncing.
 /// Useful for preventing double-submits on forms and duplicate API calls.
 ///
@@ -66,7 +69,7 @@ class DebouncedButton extends StatefulWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.debounceDuration = AppDimensions.animationDurationLong,
+    this.debounceDuration = _defaultDebounce,
     this.showLoadingIndicator = false,
     this.loadingIndicator,
     this.busyLineColor,
@@ -195,7 +198,7 @@ class DebouncedElevatedButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.debounceDuration = AppDimensions.animationDurationLong,
+    this.debounceDuration = _defaultDebounce,
     this.style,
   });
 
@@ -224,7 +227,7 @@ class DebouncedTextButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.debounceDuration = AppDimensions.animationDurationLong,
+    this.debounceDuration = _defaultDebounce,
     this.style,
   });
 

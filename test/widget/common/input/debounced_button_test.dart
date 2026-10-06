@@ -13,7 +13,6 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/input/debounced_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -284,7 +283,7 @@ void main() {
         expect(find.text('Spara'), findsOneWidget);
         completer.complete();
         await tester.pump();
-        await tester.pump(AppDimensions.animationDurationLong);
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -308,7 +307,7 @@ void main() {
       expect(find.byType(ButtonPlateLine), findsNothing);
       completer.complete();
       await tester.pump();
-      await tester.pump(AppDimensions.animationDurationLong);
+      await tester.pump(const Duration(milliseconds: 500));
     });
 
     testWidgets('dispose during pending debounce timer does not throw', (
@@ -516,7 +515,7 @@ void main() {
       expect(taps, 2);
     });
 
-    testWidgets('default debounceDuration is animationDurationLong (500ms)', (
+    testWidgets('default debounceDuration is 500ms', (
       tester,
     ) async {
       var taps = 0;

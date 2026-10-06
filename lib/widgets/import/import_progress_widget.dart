@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// A simple 3-step progress indicator for import operations.
 class ImportProgressWidget extends StatelessWidget {
@@ -58,7 +59,7 @@ class ImportProgressWidget extends StatelessWidget {
     return AnimatedOpacity(
       duration: AnimationUtils.getDuration(
         context,
-        AppDimensions.animationDurationMedium,
+        AppMotion.micro,
       ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
@@ -129,7 +130,7 @@ class ImportProgressWidget extends StatelessWidget {
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
                   context,
-                  AppDimensions.animationDurationMedium,
+                  AppMotion.micro,
                 ),
                 child: Text(
                   _buildDisplayMessage(context),

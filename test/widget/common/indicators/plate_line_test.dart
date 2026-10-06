@@ -8,6 +8,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -72,6 +73,11 @@ void main() {
       expect(seg.left - track.left, closeTo(200 * 0.22, 0.01));
       expect(seg.width, closeTo(200 * 0.34, 0.01));
       expect(seg.height, PlateLine.thickness);
+    });
+
+    // R8-9 = A: one loop (down and back up) is AppMotion.pulse.
+    test('one loop is AppMotion.pulse', () {
+      expect(PlateLine.pulseHalfCycle * 2, AppMotion.pulse);
     });
 
     testWidgets('pulses in opacity and never moves sideways', (tester) async {

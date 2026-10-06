@@ -1,7 +1,9 @@
 // lib/services/extraction/extractors/instagram_content_extractor.dart
 
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _afterClickWait = Duration(milliseconds: 350);
 
 /// Instagram-specific content extraction with "mer" button expansion and multi-strategy parsing.
 class InstagramContentExtractor {
@@ -62,7 +64,7 @@ class InstagramContentExtractor {
         ''',
       );
 
-      await Future.delayed(AppDimensions.animationDurationSlow);
+      await Future.delayed(_afterClickWait);
     } catch (_) {
       // Continue even if clicking more button fails
     }

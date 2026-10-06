@@ -8,13 +8,18 @@ import 'dart:async';
 import 'package:butlery/core/constants/http_constants.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 
 // Extractor imports
 import 'package:butlery/services/extraction/extractors/instagram_content_extractor.dart';
 import 'package:butlery/services/extraction/extractors/recipe_site_content_extractor.dart';
 import 'package:butlery/services/extraction/extractors/social_platform_content_extractor.dart';
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _instagramSettleWait = Duration(milliseconds: 350);
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _pageSettleWait = Duration(milliseconds: 200);
 
 /// Headless web scraper with platform-specific content extraction.
 class WebScraper {
@@ -112,8 +117,8 @@ class WebScraper {
             hasExtracted = true;
 
             final delay = platform == pd.SourcePlatform.instagram
-                ? AppDimensions.animationDurationSlow
-                : AppDimensions.animationDurationMedium;
+                ? _instagramSettleWait
+                : _pageSettleWait;
 
             Future.delayed(delay, () async {
               if (!completer.isCompleted &&

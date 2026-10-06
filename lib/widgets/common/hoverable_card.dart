@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// A reusable wrapper that adds a subtle hover affordance to custom interactive
 /// cards on pointer-capable platforms (web / desktop). Flutter's built-in
@@ -30,7 +30,7 @@ class HoverableCard extends StatefulWidget {
     required this.hoverDecoration,
     this.margin,
     this.enabled = true,
-    this.duration = AppDimensions.animationDurationFast,
+    this.duration = AppMotion.micro,
     this.curve = Curves.easeOut,
   });
 

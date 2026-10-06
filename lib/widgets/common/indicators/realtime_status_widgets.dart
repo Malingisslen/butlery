@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Realtime status widget showing connection status
 class RealtimeStatusWidget extends StatelessWidget {
@@ -36,7 +37,7 @@ class RealtimeStatusWidget extends StatelessWidget {
             AnimatedSwitcher(
               duration: AnimationUtils.getDuration(
                 context,
-                AppDimensions.animationDurationCommon,
+                AppMotion.standard,
               ),
               child: Text(
                 statusEmoji,
@@ -49,7 +50,7 @@ class RealtimeStatusWidget extends StatelessWidget {
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
                   context,
-                  AppDimensions.animationDurationCommon,
+                  AppMotion.standard,
                 ),
                 child: Text(
                   statusDescription,
