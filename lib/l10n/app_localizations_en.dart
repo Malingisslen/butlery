@@ -9559,30 +9559,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorPleaseEnterValidUrl => 'Please enter a valid URL';
 
   @override
-  String get errorNoRecipeToValidate => 'No recipe to validate';
-
-  @override
   String get errorNoRecipeToSave => 'No recipe to save';
-
-  @override
-  String get importProvideText => 'Please provide text to import';
 
   @override
   String get importProvideUrl => 'Please provide a valid URL';
 
   @override
   String get importNoContent => 'No content could be extracted from the URL';
-
-  @override
-  String get errorRecipeTitleRequired => 'Recipe title is required';
-
-  @override
-  String get errorRecipeMustHaveIngredient =>
-      'Recipe must have at least one ingredient';
-
-  @override
-  String get errorRecipeMustHaveInstruction =>
-      'Recipe must have at least one instruction';
 
   @override
   String get errorImportConditionsNotMet => 'Import conditions not met';

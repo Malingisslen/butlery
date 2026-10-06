@@ -1,4 +1,4 @@
-/// Base ViewModel for all import operations with unified workflow and validation.
+/// Base ViewModel for all import operations.
 
 // lib/viewmodels/import_base_viewmodel.dart
 
@@ -38,8 +38,7 @@ abstract class ImportBaseViewModel extends BaseViewModel
            connectivity ??
            ServiceLocator.tryGet<ConnectivityMonitoringService>();
 
-  /// BUT-1360 offline pre-check: unknown/missing connectivity defaults to online
-  /// so the legacy parse path is never blocked when DI isn't wired.
+  /// BUT-1360 offline pre-check: unknown/missing connectivity defaults to online.
   bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   Recipe? get parsedRecipe => _parsedRecipe;
@@ -73,60 +72,7 @@ abstract class ImportBaseViewModel extends BaseViewModel
     clearState();
   }
 
-  Future<void> performImport();
   String get importType;
-
-  @protected
-  Future<Recipe?> parseTextToRecipe(String text, {String? url}) async {
-    // BUT-1360 (mirrors BUT-610): offline pre-check — fail fast before the
-    // Cloud-Function parse round-trip. Without this an offline parse spins ~60s
-    // on the client timeout above before the user sees anything.
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return null;
-    }
-
-    return await executeAsync<Recipe?>(
-      () async {
-        final strategy = importManager.getTextImportStrategy();
-        // BUT-960: parse is a Cloud Function round-trip. Without a client
-        // timeout, a server-side hang leaves the spinner forever. 60s is
-        // generous vs. the 30s OCR timeout — recipe parsing is heavier.
-        final result = await strategy
-            .import(text)
-            .timeout(
-              const Duration(seconds: 60),
-              onTimeout: () =>
-                  throw Exception(AppLocale.current.errorImportTimeout),
-            );
-
-        if (result.isSuccess && result.recipe != null) {
-          // Apply source URL attribution if provided
-          if (url != null) {
-            final recipe = result.recipe!;
-            final updatedRecipe = recipe.copyWith(sourceUrl: url);
-            return updatedRecipe;
-          }
-          return result.recipe;
-        } else {
-          throw Exception(
-            result.errorMessage ?? 'Failed to parse recipe from text',
-          );
-        }
-      },
-    );
-  }
-
-  /// BUT-924: assigns a freshly-parsed recipe but preserves the prior
-  /// parsedRecipe (and any user edits) when [recipe] is null. A null
-  /// here means parseTextToRecipe failed inside executeAsync — the error
-  /// state is already set, so the UI banner shows; we just shouldn't wipe
-  /// what the user was working on.
-  @protected
-  void preserveOrSetParsedRecipe(Recipe? recipe) {
-    if (recipe == null) return;
-    setParsedRecipe(recipe);
-  }
 
   Future<bool> saveImportedRecipe() async {
     if (_parsedRecipe == null) {
@@ -134,20 +80,18 @@ abstract class ImportBaseViewModel extends BaseViewModel
       return false;
     }
 
-    return await executeAsyncVoid(
-      () async {
-        // BUT-953: if PhotoImportView stashed a heirloom draft before
-        // navigating here, upload the scan + attach metadata before save.
-        // Upload failure blocks the save so the user sees the error instead
-        // of a false success toast.
-        await _attachHeirloomIfPending();
+    return await executeAsyncVoid(() async {
+      // BUT-953: if PhotoImportView stashed a heirloom draft before
+      // navigating here, upload the scan + attach metadata before save.
+      // Upload failure blocks the save so the user sees the error instead
+      // of a false success toast.
+      await _attachHeirloomIfPending();
 
-        final result = await _importManager.saveImportedRecipe(_parsedRecipe!);
-        if (!result.isSuccess) {
-          throw Exception(result.errorMessage ?? 'Failed to save recipe');
-        }
-      },
-    );
+      final result = await _importManager.saveImportedRecipe(_parsedRecipe!);
+      if (!result.isSuccess) {
+        throw Exception(result.errorMessage ?? 'Failed to save recipe');
+      }
+    });
   }
 
   /// BUT-953: consume any pending heirloom draft, upload the image, attach
@@ -191,10 +135,7 @@ abstract class ImportBaseViewModel extends BaseViewModel
         path: path,
         // Content-addressed → safe to cache for a year.
         cacheControl: 'public, max-age=31536000, immutable',
-        metadata: {
-          'purpose': 'heirloom',
-          'recipeId': recipeId,
-        },
+        metadata: {'purpose': 'heirloom', 'recipeId': recipeId},
       );
 
       if (url == null) {
@@ -219,53 +160,6 @@ abstract class ImportBaseViewModel extends BaseViewModel
       bridge.setDraft(draft);
       rethrow;
     }
-  }
-
-  @protected
-  bool validateImportData() {
-    if (_parsedRecipe == null) {
-      setError(AppLocale.current.errorNoRecipeToValidate);
-      return false;
-    }
-
-    if (_parsedRecipe!.title.trim().isEmpty) {
-      setError(AppLocale.current.errorRecipeTitleRequired);
-      return false;
-    }
-
-    if (_parsedRecipe!.ingredients.isEmpty) {
-      setError(AppLocale.current.errorRecipeMustHaveIngredient);
-      return false;
-    }
-
-    if (_parsedRecipe!.instructions.isEmpty) {
-      setError(AppLocale.current.errorRecipeMustHaveInstruction);
-      return false;
-    }
-
-    return true;
-  }
-
-  Future<bool> completeImport() async {
-    if (!canImport) {
-      setError(AppLocale.current.errorImportConditionsNotMet);
-      return false;
-    }
-
-    // Execute subclass-specific import logic
-    await performImport();
-
-    if (hasError || _parsedRecipe == null) {
-      return false;
-    }
-
-    // Validate imported recipe data
-    if (!validateImportData()) {
-      return false;
-    }
-
-    // Save recipe to collection
-    return await saveImportedRecipe();
   }
 
   @protected
@@ -350,17 +244,6 @@ mixin TextImportMixin on ImportBaseViewModel {
 
     _inputText = '';
     clearImportData();
-  }
-
-  @override
-  Future<void> performImport() async {
-    if (!hasValidInput) {
-      setError(AppLocale.current.importProvideText);
-      return;
-    }
-
-    final recipe = await parseTextToRecipe(_inputText.trim(), url: sourceUrl);
-    preserveOrSetParsedRecipe(recipe);
   }
 
   @override

@@ -13,6 +13,7 @@ import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
+import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
@@ -26,17 +27,6 @@ import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 /// Uses TextImportNormalizer for text preprocessing and RecipeSectionDetector for section classification.
 class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   static const _uuid = Uuid();
-
-  /// The generic block markers that open the ingredient block; every other
-  /// one opens the instructions.
-  static const _ingredientBlockMarkers = {
-    'ingrediens',
-    'ingredienser',
-    'ingredienserna',
-    'du behöver',
-    'detta behövs',
-    'det här behöver du',
-  };
 
   // BUT-1501: the shared CRF → BERT NER ingredient cascade (the same one URL
   // imports get via RecipeParserService). Resolved lazily and best-effort:
@@ -581,7 +571,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           line.endsWith(':') &&
           LineRoles.of(line).kind == LineRoleKind.blockMarker) {
         final marker = lowerLine.substring(0, lowerLine.length - 1).trim();
-        final ingredientSide = _ingredientBlockMarkers.contains(marker);
+        final ingredientSide = HeadingWordLists.ingredientBlockMarkers.contains(
+          marker,
+        );
         inIngredients = ingredientSide;
         inInstructions = !ingredientSide;
         afterIngredientRow = ingredientSide;

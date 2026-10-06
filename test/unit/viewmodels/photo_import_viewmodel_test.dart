@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
-import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
@@ -53,16 +52,14 @@ class MockStreamedResponse extends Mock implements http.StreamedResponse {
 // BUT-1171: drives the REAL backing fields (`_ocrText` / `_imageBytes`) via the
 // production `@visibleForTesting` seams instead of shadow fields + getter
 // overrides. The previous double diverged from production state — `ocrText`
-// returned the shadow value while `performImport` / `saveImportedRecipe` read
+// returned the shadow value while `saveImportedRecipe` read
 // the empty real field — so those paths never ran against the data the test
 // set. Now `ocrText`, `hasOcrResult`, `imageBytes`, `hasImage`, `clearPhoto`
 // and `debugState` are all inherited from production and observe the same
 // state the pipeline does. Only the camera/gallery pickers stay stubbed to keep
 // the OCR service and platform channels out of a unit test.
 class TestablePhotoImportViewModel extends PhotoImportViewModel {
-  TestablePhotoImportViewModel({
-    required super.importManager,
-  });
+  TestablePhotoImportViewModel({required super.importManager});
 
   void setTestImageBytes(Uint8List? bytes) => setImageBytesForTesting(bytes);
 
@@ -164,23 +161,6 @@ void main() {
       mockImagePicker = MockImagePicker();
       mockHttpClient = MockHttpClient();
 
-      // Configure ImportManager mock using centralized setImportManagerState()
-      final mockTextStrategy = MockTextImportStrategy();
-      when(
-        () => mockTextStrategy.import(any(), options: any(named: 'options')),
-      ).thenAnswer((_) async {
-        return ImportResult.success(
-          RecipeFactory.build(
-            title: 'Parsed from OCR',
-            description: 'Recipe parsed from OCR text',
-          ),
-        );
-      });
-
-      mockImportManager.setImportManagerState(
-        textImportStrategy: mockTextStrategy,
-      );
-
       when(() => mockImportManager.autoImport(any())).thenAnswer((_) async {
         return ImportManagerResult.success(
           RecipeFactory.build(
@@ -221,10 +201,7 @@ void main() {
 
       // Configure HTTP Client mock for OCR
       when(() => mockHttpClient.send(any())).thenAnswer(
-        (_) async => MockStreamedResponse(
-          jsonEncode(testOcrResponse),
-          200,
-        ),
+        (_) async => MockStreamedResponse(jsonEncode(testOcrResponse), 200),
       );
 
       // Create viewModel
@@ -544,51 +521,6 @@ void main() {
       });
     });
 
-    group('Manual Import', () {
-      test('should perform manual import from OCR text', () async {
-        // Arrange
-        viewModel.setTestOcrText('Recipe text from OCR');
-        final localMockTextStrategy = MockTextImportStrategy();
-        when(
-          () => localMockTextStrategy.import(
-            any(),
-            options: any(named: 'options'),
-          ),
-        ).thenAnswer((_) async {
-          return ImportResult.success(
-            RecipeFactory.build(
-              title: 'Manual Import',
-              description: 'Manually imported recipe',
-            ),
-          );
-        });
-
-        mockImportManager.setImportManagerState(
-          textImportStrategy: localMockTextStrategy,
-        );
-
-        // Act
-        await viewModel.performImport();
-
-        // Assert
-        expect(viewModel.hasParsedRecipe, isTrue);
-        expect(viewModel.parsedRecipe, isNotNull);
-        expect(viewModel.error, isNull);
-      });
-
-      test('should not import without OCR result', () async {
-        // Arrange - no OCR text set
-
-        // Act
-        await viewModel.performImport();
-
-        // Assert
-        expect(viewModel.hasParsedRecipe, isFalse);
-        expect(viewModel.hasError, isTrue);
-        expect(viewModel.error, equals('Vänligen ange text att tolka'));
-      });
-    });
-
     group('State Management', () {
       test('should clear photo and OCR data', () async {
         // Arrange
@@ -761,41 +693,6 @@ void main() {
         expect(saved, isTrue);
         expect(viewModel.hasParsedRecipe, isTrue);
         expect(viewModel.hasOcrResult, isTrue);
-      });
-
-      test('should handle manual import after failed auto-parse', () async {
-        // Arrange - Make auto-parse fail initially
-        viewModel.setTestImageBytes(testImageBytes);
-        viewModel.setTestOcrText(testOcrText);
-
-        // First auto-parse fails
-        when(
-          () => mockImportManager.autoImport(any()),
-        ).thenThrow(Exception('Auto-parse failed'));
-
-        try {
-          await mockImportManager.autoImport(viewModel.ocrText);
-        } catch (e) {
-          // Expected failure
-        }
-
-        expect(viewModel.hasParsedRecipe, isFalse); // Auto-parse failed
-        expect(viewModel.hasOcrResult, isTrue); // But OCR succeeded
-
-        // Reset mock for manual import
-        when(() => mockImportManager.autoImport(any())).thenAnswer((_) async {
-          return ImportManagerResult.success(
-            RecipeFactory.build(),
-            strategy: 'text',
-          );
-        });
-
-        // Perform manual import
-        await viewModel.performImport();
-
-        // Assert
-        expect(viewModel.hasParsedRecipe, isTrue);
-        expect(viewModel.parsedRecipe, isNotNull);
       });
     });
 
@@ -981,9 +878,7 @@ void main() {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(RecipeFactory.build(id: 'recipe-xyz'));
           bridge.setDraft(
-            HeirloomDraft(
-              imageBytes: Uint8List.fromList([1, 2, 3, 4]),
-            ),
+            HeirloomDraft(imageBytes: Uint8List.fromList([1, 2, 3, 4])),
           );
 
           final ok = await viewModel.saveImportedRecipe();
@@ -1150,77 +1045,71 @@ void main() {
       // These prove the handwritten branch runs BEFORE that gate (so a readable
       // handwritten photo the LLM could parse is never rejected first), while
       // the printed path still enforces it.
-      test(
-        'handwritten pick SKIPS the char-OCR quality gate and reaches the '
-        'vision path even on gate-rejecting bytes',
-        () async {
-          when(
-            () => mockImportManager.importSinglePhoto(
-              'photo',
-              options: any(named: 'options'),
-            ),
-          ).thenAnswer(
-            (_) async => ImportManagerResult.success(
-              RecipeFactory.build(title: 'Handskrivet', ingredients: ['1 ägg']),
-              strategy: 'photo',
-            ),
-          );
+      test('handwritten pick SKIPS the char-OCR quality gate and reaches the '
+          'vision path even on gate-rejecting bytes', () async {
+        when(
+          () => mockImportManager.importSinglePhoto(
+            'photo',
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => ImportManagerResult.success(
+            RecipeFactory.build(title: 'Handskrivet', ingredients: ['1 ägg']),
+            strategy: 'photo',
+          ),
+        );
 
-          viewModel.setHandwritten(true);
-          await viewModel.processPickedImageForTesting(
-            testImageBytes, // 5 bytes → the gate WOULD reject this
-            ImageSource.gallery,
-          );
+        viewModel.setHandwritten(true);
+        await viewModel.processPickedImageForTesting(
+          testImageBytes, // 5 bytes → the gate WOULD reject this
+          ImageSource.gallery,
+        );
 
-          expect(
-            viewModel.hasError,
-            isFalse,
-            reason: 'the quality gate must be skipped for handwritten',
-          );
-          verify(
-            () => mockImportManager.importSinglePhoto(
-              'photo',
-              options: any(named: 'options'),
-            ),
-          ).called(1);
-        },
-      );
+        expect(
+          viewModel.hasError,
+          isFalse,
+          reason: 'the quality gate must be skipped for handwritten',
+        );
+        verify(
+          () => mockImportManager.importSinglePhoto(
+            'photo',
+            options: any(named: 'options'),
+          ),
+        ).called(1);
+      });
 
-      test(
-        'printed (handwritten OFF) pick still ENFORCES the quality gate — '
-        'gate-rejecting bytes error out before any vision call',
-        () async {
-          when(
-            () => mockImportManager.importSinglePhoto(
-              'photo',
-              options: any(named: 'options'),
-            ),
-          ).thenAnswer(
-            (_) async => ImportManagerResult.success(
-              RecipeFactory.build(title: 'skall aldrig nas'),
-              strategy: 'photo',
-            ),
-          );
+      test('printed (handwritten OFF) pick still ENFORCES the quality gate — '
+          'gate-rejecting bytes error out before any vision call', () async {
+        when(
+          () => mockImportManager.importSinglePhoto(
+            'photo',
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => ImportManagerResult.success(
+            RecipeFactory.build(title: 'skall aldrig nas'),
+            strategy: 'photo',
+          ),
+        );
 
-          // Handwritten left OFF.
-          await viewModel.processPickedImageForTesting(
-            testImageBytes,
-            ImageSource.gallery,
-          );
+        // Handwritten left OFF.
+        await viewModel.processPickedImageForTesting(
+          testImageBytes,
+          ImageSource.gallery,
+        );
 
-          expect(
-            viewModel.hasError,
-            isTrue,
-            reason: 'the printed path must reject tiny images at the gate',
-          );
-          verifyNever(
-            () => mockImportManager.importSinglePhoto(
-              any(),
-              options: any(named: 'options'),
-            ),
-          );
-        },
-      );
+        expect(
+          viewModel.hasError,
+          isTrue,
+          reason: 'the printed path must reject tiny images at the gate',
+        );
+        verifyNever(
+          () => mockImportManager.importSinglePhoto(
+            any(),
+            options: any(named: 'options'),
+          ),
+        );
+      });
 
       test(
         'BUT-1460 review FIX 1: a handwritten pick clears the previous printed '
@@ -1320,5 +1209,3 @@ void main() {
     });
   });
 }
-
-// Using centralized MockTextImportStrategy from production_mocks.dart

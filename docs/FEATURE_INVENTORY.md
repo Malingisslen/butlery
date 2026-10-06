@@ -538,7 +538,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### IMP-05: Text / paste import ("Från sociala medier")
 - **Entry:** `/franSocialaMedier` — also landing for share-intent text, social extraction, single-photo OCR handoff.
 - **User story:** As a user, I want to paste recipe text copied from anywhere and have it structured so that content without a scrapable URL still imports.
-- **Expected behavior:** Paste/type (max 10000 chars), auto-saved draft. A cheap recipe-likeness heuristic warns before spending a paid LLM parse on non-recipe text (override allowed). Multi-recipe paste → picker; single → editor. 60s timeout message. Source URL attribution carried.
+- **Expected behavior:** Paste/type (max 10000 chars), auto-saved draft. A cheap recipe-likeness heuristic warns on non-recipe text (override allowed). Multi-recipe paste → picker; single → editor. 60s timeout message. Source URL attribution carried.
 - **Edge cases:** Empty; <10 chars rejected; non-recipe → confirm dialog; server hang → timeout message.
 - **Validation:** Non-empty + ≥10 chars.
 - **Test coverage:** Verified — `text_import_viewmodel_test.dart`, `text_import_strategy_test.dart`, `text_import_normalizer_test.dart`.

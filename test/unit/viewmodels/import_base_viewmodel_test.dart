@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
-import 'package:butlery/services/import/import_strategy.dart';
 
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -18,17 +17,6 @@ import 'package:butlery/core/providers/application_provider.dart'
 // Test implementation of ImportBaseViewModel
 class TestImportViewModel extends ImportBaseViewModel {
   TestImportViewModel({required super.importManager});
-
-  @override
-  Future<void> performImport() async {
-    if (!canImport) {
-      setError('Cannot import');
-      return;
-    }
-
-    final recipe = await parseTextToRecipe('Test recipe content');
-    setParsedRecipe(recipe);
-  }
 
   @override
   String get importType => 'test';
@@ -46,15 +34,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockImportManager mockImportManager;
-  late MockTextImportStrategy mockTextStrategy;
   late TestImportViewModel viewModel;
   late TestTextImportViewModel textViewModel;
-
-  // Default recipe returned by the text strategy stub
-  final defaultImportedRecipe = RecipeFactory.build(
-    title: 'Imported Recipe',
-    description: 'From text: test content',
-  );
 
   setUpAll(() async {
     await TestServiceLocator.initialize();
@@ -64,23 +45,9 @@ void main() {
 
   setUp(() async {
     mockImportManager = MockFactory.createImportManager();
-    mockTextStrategy = MockTextImportStrategy();
-
-    mockImportManager.setImportManagerState(
-      textImportStrategy: mockTextStrategy,
-      availableStrategies: [mockTextStrategy],
-    );
-
-    // Stub import() WITHOUT named options — matches production call site
-    when(
-      () => mockTextStrategy.import(any()),
-    ).thenAnswer((_) async => ImportResult.success(defaultImportedRecipe));
-
     when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
-      (_) async => ImportManagerResult.success(
-        RecipeFactory.build(),
-        strategy: 'test',
-      ),
+      (_) async =>
+          ImportManagerResult.success(RecipeFactory.build(), strategy: 'test'),
     );
 
     viewModel = TestImportViewModel(importManager: mockImportManager);
@@ -239,42 +206,6 @@ void main() {
   });
 
   group('ImportBaseViewModel - Import Operations', () {
-    test('should parse text to recipe successfully', () async {
-      final result = await viewModel.parseTextToRecipe('Test recipe content');
-
-      expect(result, isNotNull);
-      expect(result?.title, equals('Imported Recipe'));
-    });
-
-    test('should parse text with source URL', () async {
-      const url = 'https://example.com/recipe';
-
-      final result = await viewModel.parseTextToRecipe(
-        'Test recipe content',
-        url: url,
-      );
-
-      expect(result, isNotNull);
-      expect(result?.sourceUrl, equals(url));
-    });
-
-    test('should handle parse error', () async {
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.failure('Failed to parse recipe'));
-
-      // executeAsync rethrows — catch the exception
-      Object? caughtError;
-      try {
-        await viewModel.parseTextToRecipe('Invalid content');
-      } catch (e) {
-        caughtError = e;
-      }
-
-      expect(caughtError, isNotNull);
-      expect(viewModel.hasError, isTrue);
-    });
-
     test('should save imported recipe successfully', () async {
       final recipe = RecipeFactory.build(title: 'Test Recipe');
       viewModel.setParsedRecipe(recipe);
@@ -312,129 +243,6 @@ void main() {
       expect(viewModel.hasError, isTrue);
       // executeAsyncVoid sets errorPrefix or errorUnexpected
       expect(viewModel.error, isNotNull);
-    });
-
-    test('should complete full import workflow', () async {
-      final success = await viewModel.completeImport();
-
-      expect(success, isTrue);
-      expect(viewModel.hasParsedRecipe, isTrue);
-
-      verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-    });
-
-    test('should handle complete import with validation failure', () async {
-      when(() => mockTextStrategy.import(any())).thenAnswer(
-        (_) async => ImportResult.success(
-          RecipeFactory.build(
-            title: '',
-            ingredients: [],
-            instructions: [],
-          ),
-        ),
-      );
-
-      final success = await viewModel.completeImport();
-
-      expect(success, isFalse);
-      expect(viewModel.hasError, isTrue);
-      expect(viewModel.error, equals('Recepttitel kr\u00e4vs'));
-    });
-
-    test('should handle complete import when cannot import', () async {
-      textViewModel.updateInputText('');
-
-      final success = await textViewModel.completeImport();
-
-      expect(success, isFalse);
-      expect(textViewModel.hasError, isTrue);
-      expect(textViewModel.error, equals('Importvillkor inte uppfyllda'));
-    });
-
-    test('should perform import successfully', () async {
-      await viewModel.performImport();
-
-      expect(viewModel.hasParsedRecipe, isTrue);
-      expect(viewModel.parsedRecipe?.title, equals('Imported Recipe'));
-    });
-
-    test('should validate import data correctly', () {
-      // No recipe
-      expect(viewModel.validateImportData(), isFalse);
-      expect(viewModel.error, equals('Inget recept att validera'));
-
-      // Recipe with empty title
-      final invalidRecipe = RecipeFactory.build(title: '  ');
-      viewModel.setParsedRecipe(invalidRecipe);
-      expect(viewModel.validateImportData(), isFalse);
-      expect(viewModel.error, equals('Recepttitel kr\u00e4vs'));
-
-      // Recipe without ingredients
-      final noIngredientsRecipe = RecipeFactory.build(
-        title: 'Valid Title',
-        ingredients: [],
-      );
-      viewModel.setParsedRecipe(noIngredientsRecipe);
-      expect(viewModel.validateImportData(), isFalse);
-      expect(viewModel.error, contains('minst en ingrediens'));
-
-      // Recipe without instructions
-      final noInstructionsRecipe = RecipeFactory.build(
-        title: 'Valid Title',
-        ingredients: ['Ingredient 1'],
-        instructions: [],
-      );
-      viewModel.setParsedRecipe(noInstructionsRecipe);
-      expect(viewModel.validateImportData(), isFalse);
-      expect(viewModel.error, contains('minst en instruktion'));
-
-      // Valid recipe
-      viewModel.clearError();
-      final validRecipe = RecipeFactory.build(
-        title: 'Valid Title',
-        ingredients: ['Ingredient 1'],
-        instructions: ['Step 1'],
-      );
-      viewModel.setParsedRecipe(validRecipe);
-      expect(viewModel.validateImportData(), isTrue);
-      expect(viewModel.error, isNull);
-    });
-
-    test('should complete import workflow successfully', () async {
-      final recipe = RecipeFactory.build(
-        title: 'Complete Recipe',
-        ingredients: ['Ingredient 1'],
-        instructions: ['Step 1'],
-      );
-
-      viewModel = TestImportViewModel(importManager: mockImportManager);
-
-      when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
-        (_) async => ImportManagerResult.success(recipe, strategy: 'test'),
-      );
-
-      final success = await viewModel.completeImport();
-
-      expect(success, isTrue);
-      expect(viewModel.hasParsedRecipe, isTrue);
-    });
-
-    test('should handle complete import workflow errors', () async {
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.failure('Parse failed'));
-      textViewModel.updateInputText('Invalid recipe content');
-
-      // executeAsync rethrows — catch at test level
-      bool success;
-      try {
-        success = await textViewModel.completeImport();
-      } catch (_) {
-        success = false;
-      }
-
-      expect(success, isFalse);
-      expect(textViewModel.hasError, isTrue);
     });
 
     test('should update parsed recipe with new data', () {
@@ -522,30 +330,6 @@ void main() {
       expect(textViewModel.parsedRecipe, isNull);
     });
 
-    test('should perform text import successfully', () async {
-      textViewModel.updateInputText('Recipe content to import');
-
-      final recipe = RecipeFactory.build(title: 'Imported Recipe');
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.success(recipe));
-
-      await textViewModel.performImport();
-
-      expect(textViewModel.hasParsedRecipe, isTrue);
-      expect(textViewModel.parsedRecipe?.title, equals('Imported Recipe'));
-    });
-
-    test('should handle empty text on import', () async {
-      textViewModel.updateInputText('');
-
-      await textViewModel.performImport();
-
-      // Swedish locale: 'Ange text att importera'
-      expect(textViewModel.error, equals('Ange text att importera'));
-      expect(textViewModel.hasParsedRecipe, isFalse);
-    });
-
     test('should return correct import type', () {
       expect(textViewModel.importType, equals('text'));
     });
@@ -570,106 +354,7 @@ void main() {
     });
   });
 
-  group('ImportBaseViewModel - Integration Tests', () {
-    test('should complete full text import workflow', () async {
-      textViewModel.updateInputText('Recipe: Pasta');
-
-      final success = await textViewModel.completeImport();
-
-      expect(success, isTrue);
-      expect(textViewModel.hasParsedRecipe, isTrue);
-
-      verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-    });
-
-    test('should handle error recovery in workflow', () async {
-      // First attempt: strategy returns failure
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.failure('Parse error'));
-      textViewModel.updateInputText('Recipe content');
-
-      // completeImport -> performImport -> parseTextToRecipe -> executeAsync
-      // executeAsync rethrows the exception, so we catch it here
-      bool success;
-      try {
-        success = await textViewModel.completeImport();
-      } catch (_) {
-        success = false;
-      }
-      expect(success, isFalse);
-      expect(textViewModel.hasError, isTrue);
-
-      // Retry with valid data
-      textViewModel.clearError();
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.success(RecipeFactory.build()));
-
-      success = await textViewModel.completeImport();
-      expect(success, isTrue);
-      expect(textViewModel.hasError, isFalse);
-    });
-
-    test('should maintain state consistency through operations', () async {
-      textViewModel.updateInputText('Recipe 1');
-      await textViewModel.performImport();
-      final recipe1 = textViewModel.parsedRecipe;
-
-      textViewModel.clearInput();
-      textViewModel.updateInputText('Recipe 2');
-      await textViewModel.performImport();
-      final recipe2 = textViewModel.parsedRecipe;
-
-      expect(recipe1, isNotNull);
-      expect(recipe2, isNotNull);
-    });
-
-    test('should handle concurrent operations safely', () async {
-      final viewModels = <TestTextImportViewModel>[];
-
-      for (int i = 0; i < 5; i++) {
-        final vm = TestTextImportViewModel(importManager: mockImportManager);
-        viewModels.add(vm);
-        vm.updateInputText('Recipe $i');
-      }
-
-      final futures = viewModels.map((vm) => vm.performImport()).toList();
-      await Future.wait(futures);
-
-      expect(futures.length, equals(5));
-
-      for (final vm in viewModels) {
-        vm.dispose();
-      }
-    });
-  });
-
   group('ImportBaseViewModel - Error Scenarios', () {
-    test('should handle ImportManager not configured', () async {
-      final emptyManager = MockImportManager();
-      emptyManager.setImportManagerState(
-        textImportStrategy: null,
-        availableStrategies: [],
-      );
-
-      final vm = TestTextImportViewModel(importManager: emptyManager);
-      vm.updateInputText('Recipe content');
-
-      // performImport -> parseTextToRecipe -> executeAsync rethrows StateError
-      try {
-        await vm.performImport();
-      } catch (_) {
-        // Expected: rethrown from executeAsync
-      }
-
-      expect(vm.hasError, isTrue);
-      // executeAsync sets error to errorUnexpected (no errorPrefix)
-      expect(vm.error, isNotNull);
-
-      vm.dispose();
-    });
-
     test('should handle save exception', () async {
       final recipe = RecipeFactory.build();
       viewModel.setParsedRecipe(recipe);
@@ -685,102 +370,6 @@ void main() {
       expect(viewModel.hasError, isTrue);
       // executeAsyncVoid: error is errorPrefix or errorUnexpected (Swedish)
       expect(viewModel.error, isNotNull);
-    });
-
-    test('should handle parse exception via failure result', () async {
-      when(
-        () => mockTextStrategy.import(any()),
-      ).thenAnswer((_) async => ImportResult.failure('Parse exception'));
-
-      // executeAsync rethrows
-      Object? caught;
-      try {
-        await viewModel.parseTextToRecipe('Content');
-      } catch (e) {
-        caught = e;
-      }
-
-      expect(caught, isNotNull);
-      expect(viewModel.hasError, isTrue);
-    });
-
-    // BUT-924: re-parse failure must not wipe the previously-parsed recipe
-    // (user may have manually edited it since the last successful parse).
-    // executeAsync rethrows on failure, so the bug surface is "what state is
-    // left when the throw escapes performImport." Contract: recipe preserved,
-    // error visible.
-    test(
-      're-parse failure preserves previous recipe + sets error (BUT-924)',
-      () async {
-        final firstRecipe = RecipeFactory.build(title: 'First parse');
-
-        // Successful first parse.
-        when(() => mockTextStrategy.import(any())).thenAnswer(
-          (_) async => ImportResult.success(firstRecipe),
-        );
-        textViewModel.updateInputText('initial');
-        await textViewModel.performImport();
-        expect(textViewModel.parsedRecipe?.title, 'First parse');
-
-        // User edits — simulated by updating the parsed recipe in place.
-        textViewModel.setParsedRecipe(
-          firstRecipe.copyWith(title: 'User-edited title'),
-        );
-
-        // Re-parse fails (Cloud Function error, timeout, etc). performImport
-        // rethrows via executeAsync — caller must catch.
-        when(() => mockTextStrategy.import(any())).thenAnswer(
-          (_) async => ImportResult.failure('Parse exception'),
-        );
-        textViewModel.updateInputText('updated input');
-        try {
-          await textViewModel.performImport();
-        } catch (_) {
-          // Expected: executeAsync rethrows.
-        }
-
-        // BUT-924 contract: previous parse + user edit survives.
-        expect(textViewModel.hasParsedRecipe, isTrue);
-        expect(textViewModel.parsedRecipe?.title, 'User-edited title');
-        expect(textViewModel.hasError, isTrue);
-      },
-    );
-
-    // BUT-924: defensive guard — preserveOrSetParsedRecipe(null) is a no-op
-    // covers the future case where parseTextToRecipe returns null instead of
-    // throwing (e.g. if executeAsync swallowed via a future API change).
-    test('preserveOrSetParsedRecipe(null) is a no-op (BUT-924)', () {
-      final recipe = RecipeFactory.build(title: 'Keep me');
-      viewModel.setParsedRecipe(recipe);
-
-      viewModel.preserveOrSetParsedRecipe(null);
-
-      expect(viewModel.parsedRecipe?.title, 'Keep me');
-    });
-
-    test('should use Swedish error messages for validation', () async {
-      // Validation: no recipe
-      viewModel.validateImportData();
-      expect(viewModel.error, contains('Inget recept'));
-
-      // Save without recipe: Swedish locale
-      await viewModel.saveImportedRecipe();
-      expect(viewModel.error, equals('Inget recept att spara'));
-
-      // Validation: empty title
-      viewModel.setParsedRecipe(RecipeFactory.build(title: ''));
-      viewModel.validateImportData();
-      expect(viewModel.error, contains('Recepttitel'));
-
-      // Validation: no ingredients
-      viewModel.setParsedRecipe(RecipeFactory.build(ingredients: []));
-      viewModel.validateImportData();
-      expect(viewModel.error, contains('minst en ingrediens'));
-
-      // Validation: no instructions
-      viewModel.setParsedRecipe(RecipeFactory.build(instructions: []));
-      viewModel.validateImportData();
-      expect(viewModel.error, contains('minst en instruktion'));
     });
   });
 }

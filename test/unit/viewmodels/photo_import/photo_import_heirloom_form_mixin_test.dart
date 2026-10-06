@@ -12,9 +12,6 @@ class _HeirloomHost extends ImportBaseViewModel
   _HeirloomHost({required super.importManager});
 
   @override
-  Future<void> performImport() async {}
-
-  @override
   String get importType => 'test';
 }
 

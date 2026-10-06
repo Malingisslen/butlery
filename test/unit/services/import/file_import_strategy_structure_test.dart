@@ -53,13 +53,10 @@ class TestPlatformFile extends MockPlatformFile {
   final Uint8List? _bytes;
   final String? _path;
 
-  TestPlatformFile({
-    required String name,
-    Uint8List? bytes,
-    String? path,
-  }) : _name = name,
-       _bytes = bytes,
-       _path = path;
+  TestPlatformFile({required String name, Uint8List? bytes, String? path})
+    : _name = name,
+      _bytes = bytes,
+      _path = path;
 
   @override
   String get name => _name;
@@ -275,20 +272,6 @@ void main() {
         // Would verify Excel parsing if we could inject content
       });
 
-      test('should handle multiple sheets', () async {
-        // Arrange
-        // Would create Excel with multiple sheets
-        // const input = 'file://multi_sheet.xlsx';
-
-        // Act
-        // Multiple import would process all sheets
-        final results = await strategy.importMultiple();
-
-        // Assert
-        expect(results, isNotNull);
-        // Would verify all sheets are processed
-      });
-
       test('should handle Excel formulas and formatting', () async {
         // Arrange
         // Excel with formulas for servings calculation, etc.
@@ -361,58 +344,6 @@ void main() {
       });
     });
 
-    group('Batch Import', () {
-      test('should import multiple recipes from single file', () async {
-        // Arrange
-        // const multiRecipeCsv = '''Title,Ingredients,Instructions
-        // Recipe 1,Ingredients 1,Instructions 1
-        // Recipe 2,Ingredients 2,Instructions 2
-        // Recipe 3,Ingredients 3,Instructions 3
-        // ''';
-
-        // Act
-        final results = await strategy.importMultiple();
-
-        // Assert
-        expect(results, isNotNull);
-        // Would verify all rows are imported as separate recipes
-      });
-
-      test('should handle large files efficiently', () async {
-        // Arrange
-        // Create CSV with 100+ recipes
-        final largeContent = StringBuffer('Title,Ingredients,Instructions\n');
-        for (int i = 1; i <= 100; i++) {
-          largeContent.writeln('Recipe $i,Ingredients $i,Instructions $i');
-        }
-
-        // Act
-        final results = await strategy.importMultiple();
-
-        // Assert
-        expect(results, isNotNull);
-        // Would verify memory-efficient processing
-      });
-
-      test('should skip invalid rows and continue', () async {
-        // Arrange
-        // const mixedCsv = '''Title,Ingredients,Instructions
-        // Valid Recipe,Ingredients,Instructions
-        // ,Missing title,Instructions
-        // Another Valid,Ingredients,Instructions
-        // Invalid,,
-        // Final Recipe,Ingredients,Instructions
-        // ''';
-
-        // Act
-        final results = await strategy.importMultiple();
-
-        // Assert
-        // Would verify only valid rows are imported
-        expect(results, isNotNull);
-      });
-    });
-
     group('Error Handling', () {
       test('should handle missing required columns', () async {
         // Arrange
@@ -456,13 +387,7 @@ void main() {
 
         // Assert - FilePicker not initialized in tests
         expect(result.isSuccess, isFalse);
-        expect(
-          result.errorMessage,
-          anyOf(
-            contains('empty'),
-            isNotEmpty,
-          ),
-        );
+        expect(result.errorMessage, anyOf(contains('empty'), isNotEmpty));
       });
 
       test('should provide meaningful error messages', () async {

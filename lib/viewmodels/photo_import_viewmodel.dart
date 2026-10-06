@@ -260,7 +260,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// BUT-1171: test-only seams that populate the REAL backing fields the
   /// production import pipeline reads (`_ocrText`, `_imageBytes`). The former
   /// test double shadowed these with separate fields plus getter overrides, so
-  /// `performImport` / `saveImportedRecipe` ran against empty production state —
+  /// `saveImportedRecipe` ran against empty production state —
   /// a leak that masked the genuine save path and held three tests permanently
   /// red. Tests now set the real fields, exercising the production code.
   @visibleForTesting
@@ -589,19 +589,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
   @override
   void clearAll() => clearPhoto();
 
-  /// Manual parse of the OCR text — the fallback when auto-parse failed or
-  /// the user re-triggers import explicitly.
-  @override
-  Future<void> performImport() async {
-    if (!hasOcrResult) {
-      setError(AppLocale.current.errorPleaseEnterText);
-      return;
-    }
-
-    final recipe = await parseTextToRecipe(_ocrText);
-    preserveOrSetParsedRecipe(recipe);
-  }
-
   /// Shared camera/gallery pipeline: pick → validate (format, ≤15MB) →
   /// quality gate → OCR → combine → auto-parse.
   ///
@@ -672,9 +659,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
       if (!fileName.endsWith('.jpg') &&
           !fileName.endsWith('.jpeg') &&
           !fileName.endsWith('.png')) {
-        throw Exception(
-          AppLocale.current.errorImageFormatUnsupported,
-        );
+        throw Exception(AppLocale.current.errorImageFormatUnsupported);
       }
 
       // Read image bytes
@@ -868,9 +853,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // BUT-910: OCR is the expensive step — persist as soon as combined text
     // exists so nav-away can't lose it. Fire-and-forget; persist the first
     // page's bytes (the draft schema stages one image) alongside the full text.
-    unawaited(
-      persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText),
-    );
+    unawaited(persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText));
 
     await _autoParseOcrText(_ocrText, layout: layout);
   }

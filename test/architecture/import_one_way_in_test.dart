@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 final _bypass = RegExp(
-  r'\b(WebScraper|SocialMediaExtractor|RecipeParserService|FileImportStrategy)\b',
+  r'\b(WebScraper|SocialMediaExtractor|RecipeParserService|FileImportStrategy|getTextImportStrategy)\b',
 );
 
 /// Code without comments, so history in a comment is not a use.
@@ -43,6 +43,9 @@ void main() {
     test('catches a direct use', () {
       expect(_hits('final s = WebScraper();'), ['WebScraper']);
       expect(_hits('FileImportStrategy().pickFile()'), ['FileImportStrategy']);
+      expect(_hits('importManager.getTextImportStrategy().import(t)'), [
+        'getTextImportStrategy',
+      ]);
       expect(_hits('ServiceLocator.get<RecipeParserService>()'), [
         'RecipeParserService',
       ]);

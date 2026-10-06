@@ -16267,23 +16267,11 @@ abstract class AppLocalizations {
   /// **'Vänligen ange en giltig URL'**
   String get errorPleaseEnterValidUrl;
 
-  /// No description provided for @errorNoRecipeToValidate.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inget recept att validera'**
-  String get errorNoRecipeToValidate;
-
   /// No description provided for @errorNoRecipeToSave.
   ///
   /// In sv, this message translates to:
   /// **'Inget recept att spara'**
   String get errorNoRecipeToSave;
-
-  /// No description provided for @importProvideText.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ange text att importera'**
-  String get importProvideText;
 
   /// No description provided for @importProvideUrl.
   ///
@@ -16296,24 +16284,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inget innehåll kunde hämtas från URL:en'**
   String get importNoContent;
-
-  /// No description provided for @errorRecipeTitleRequired.
-  ///
-  /// In sv, this message translates to:
-  /// **'Recepttitel krävs'**
-  String get errorRecipeTitleRequired;
-
-  /// No description provided for @errorRecipeMustHaveIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Receptet måste ha minst en ingrediens'**
-  String get errorRecipeMustHaveIngredient;
-
-  /// No description provided for @errorRecipeMustHaveInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Receptet måste ha minst en instruktion'**
-  String get errorRecipeMustHaveInstruction;
 
   /// No description provided for @errorImportConditionsNotMet.
   ///

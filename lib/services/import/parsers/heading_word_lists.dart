@@ -19,12 +19,22 @@ class HeadingWordLists {
   /// `isInstructionHeader` (a loose `contains` check with other callers) to
   /// avoid changing multi-recipe splitting behaviour.
   static const genericBlockMarkers = {
+    ...ingredientBlockMarkers,
+    ...instructionBlockMarkers,
+  };
+
+  /// The [genericBlockMarkers] that open the ingredient block.
+  static const ingredientBlockMarkers = {
     'ingrediens',
     'ingredienser',
     'ingredienserna',
     'du behöver',
     'detta behövs',
     'det här behöver du',
+  };
+
+  /// The [genericBlockMarkers] that open the instructions.
+  static const instructionBlockMarkers = {
     'gör så här',
     'så gör du',
     'instruktion',

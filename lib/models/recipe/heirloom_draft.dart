@@ -1,8 +1,8 @@
 /// BUT-953: One-shot draft of the user's heirloom form, captured before
 /// navigation from photo-import to text-import.
 ///
-/// The heirloom form lives on `PhotoImportViewModel`, but recipe saves happen
-/// in `TextImportViewModel.completeImport()` after a route push. This value
+/// The heirloom form lives on `PhotoImportViewModel`, but the save that
+/// consumes it is `ImportBaseViewModel.saveImportedRecipe()`. This value
 /// object survives the navigation hop via `HeirloomBridge` so the heirloom
 /// upload can run against the actual parsed recipe id at save time.
 ///

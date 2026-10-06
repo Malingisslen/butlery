@@ -92,10 +92,7 @@ void main() {
         ).thenThrow(Exception('Firebase not initialized'));
 
         // Act & Assert
-        expect(
-          () => repository.initialize(),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => repository.initialize(), throwsA(isA<Exception>()));
       });
     });
 
@@ -103,23 +100,14 @@ void main() {
       test('should log custom event with parameters', () async {
         // Arrange
         const eventName = 'test_event';
-        final parameters = {
-          'param1': 'value1',
-          'param2': 42,
-        };
+        final parameters = {'param1': 'value1', 'param2': 42};
 
         // Act
-        await repository.logEvent(
-          name: eventName,
-          parameters: parameters,
-        );
+        await repository.logEvent(name: eventName, parameters: parameters);
 
         // Assert
         verify(
-          () => mockAnalytics.logEvent(
-            name: eventName,
-            parameters: parameters,
-          ),
+          () => mockAnalytics.logEvent(name: eventName, parameters: parameters),
         ).called(1);
       });
 
@@ -133,17 +121,11 @@ void main() {
         ).thenThrow(Exception('Analytics error'));
 
         // Act - Should not throw
-        await repository.logEvent(
-          name: 'test_event',
-          parameters: null,
-        );
+        await repository.logEvent(name: 'test_event', parameters: null);
 
         // Assert - Method was called despite error
         verify(
-          () => mockAnalytics.logEvent(
-            name: 'test_event',
-            parameters: null,
-          ),
+          () => mockAnalytics.logEvent(name: 'test_event', parameters: null),
         ).called(1);
       });
 
@@ -255,10 +237,7 @@ void main() {
         repository.setSessionId('sess-temp');
         repository.setSessionId(null);
 
-        await repository.logEvent(
-          name: 'test_event',
-          parameters: {'k': 'v'},
-        );
+        await repository.logEvent(name: 'test_event', parameters: {'k': 'v'});
 
         final captured =
             verify(
@@ -424,10 +403,7 @@ void main() {
         const platform = 'ica';
 
         // Act
-        await repository.logImportStarted(
-          source: source,
-          platform: platform,
-        );
+        await repository.logImportStarted(source: source, platform: platform);
 
         // Assert
         final captured =
@@ -474,73 +450,6 @@ void main() {
         // BUT-518: redundant — Firebase Analytics server-stamps every event.
         expect(captured.containsKey('timestamp'), isFalse);
       });
-
-      test('should log extraction error with categorization', () async {
-        // Arrange
-        const url = 'https://example.com/recipe';
-        const platform = 'unknown';
-        const error = 'Timeout while loading page';
-        const errorType = 'network';
-
-        // Act
-        await repository.logExtractionError(
-          url: url,
-          platform: platform,
-          error: error,
-          errorType: errorType,
-        );
-
-        // Assert
-        final captured =
-            verify(
-                  () => mockAnalytics.logEvent(
-                    name: 'extraction_error',
-                    parameters: captureAny(named: 'parameters'),
-                  ),
-                ).captured.single
-                as Map<String, Object>;
-
-        expect(captured['platform'], equals(platform));
-        expect(captured['error_category'], equals('timeout'));
-        expect(captured['error_type'], equals(errorType));
-        expect(captured['url_domain'], equals('example.com'));
-        // BUT-518: redundant — Firebase Analytics server-stamps every event.
-        expect(captured.containsKey('timestamp'), isFalse);
-      });
-
-      test('should categorize errors correctly', () async {
-        // Test different error messages
-        final testCases = [
-          ('Connection timeout', 'timeout'),
-          ('Ingen text hittades', 'no_content_found'),
-          ('Kunde inte ladda sidan', 'page_load_error'),
-          ('Okänd plattform', 'unknown_platform'),
-          ('Tekniskt fel uppstod', 'technical_error'),
-          ('CORS policy blocked', 'web_limitation'),
-          ('Unknown error', 'other'),
-        ];
-
-        for (final (error, expectedCategory) in testCases) {
-          // Act
-          await repository.logExtractionError(
-            url: 'https://test.com',
-            platform: 'test',
-            error: error,
-          );
-
-          // Assert
-          final captured =
-              verify(
-                    () => mockAnalytics.logEvent(
-                      name: 'extraction_error',
-                      parameters: captureAny(named: 'parameters'),
-                    ),
-                  ).captured.last
-                  as Map<String, Object>;
-
-          expect(captured['error_category'], equals(expectedCategory));
-        }
-      });
     });
 
     group('recipe events', () {
@@ -550,10 +459,7 @@ void main() {
         const hasImage = true;
 
         // Act
-        await repository.logRecipeCreated(
-          source: source,
-          hasImage: hasImage,
-        );
+        await repository.logRecipeCreated(source: source, hasImage: hasImage);
 
         // Assert
         final captured =
@@ -960,11 +866,7 @@ void main() {
       test('non-PII keys are untouched', () async {
         await repository.logEvent(
           name: 'menu_generated',
-          parameters: {
-            'recipe_count': 7,
-            'method': 'auto',
-            'source': 'url',
-          },
+          parameters: {'recipe_count': 7, 'method': 'auto', 'source': 'url'},
         );
         final captured =
             verify(
@@ -977,64 +879,6 @@ void main() {
         expect(captured['recipe_count'], equals(7));
         expect(captured['method'], equals('auto'));
         expect(captured['source'], equals('url'));
-      });
-    });
-
-    group('error handling', () {
-      test('should truncate long error messages', () async {
-        // Arrange
-        final longError = 'A' * 200; // 200 character error
-
-        // Act
-        await repository.logExtractionError(
-          url: 'https://test.com',
-          platform: 'test',
-          error: longError,
-        );
-
-        // Assert
-        final captured =
-            verify(
-                  () => mockAnalytics.logEvent(
-                    name: 'extraction_error',
-                    parameters: captureAny(named: 'parameters'),
-                  ),
-                ).captured.single
-                as Map<String, Object>;
-
-        final errorMessage = captured['error_message'] as String;
-        expect(errorMessage.length, equals(100)); // Truncated to 100 chars
-        expect(errorMessage, equals('A' * 100));
-      });
-
-      test('should handle invalid URLs gracefully', () async {
-        // Arrange
-        const invalidUrl = 'not-a-valid-url';
-
-        // Act
-        await repository.logExtractionError(
-          url: invalidUrl,
-          platform: 'test',
-          error: 'Test error',
-        );
-
-        // Assert
-        final captured =
-            verify(
-                  () => mockAnalytics.logEvent(
-                    name: 'extraction_error',
-                    parameters: captureAny(named: 'parameters'),
-                  ),
-                ).captured.single
-                as Map<String, Object>;
-
-        // For invalid URLs, Uri.tryParse may succeed but return empty host
-        // The production code should handle this case better, but for now
-        // we'll test the actual behavior
-        expect(
-          captured['url_domain'],
-          anyOf(equals('invalid_url'), equals('')),
-        );
       });
     });
   });
