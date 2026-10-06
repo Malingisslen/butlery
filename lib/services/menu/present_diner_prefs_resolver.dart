@@ -49,10 +49,10 @@ class PresentDinerPrefsResolver {
 
     final List<HouseholdRosterMember>? roster;
     try {
-      // Read-only: `getForUser`, never `ensureForUser`.
-      final households = await householdRepo.getForUser(uid);
-      if (households.isEmpty) return null;
-      roster = await rosterService.tryGetRoster(households.first.id);
+      // Read-only: `getActiveForUser`, never `ensureForUser`.
+      final household = await householdRepo.getActiveForUser(uid);
+      if (household == null) return null;
+      roster = await rosterService.tryGetRoster(household.id);
     } catch (e) {
       AppLogger.warning('Present-diner roster read failed: $e');
       return _unreadable(uid);
@@ -150,12 +150,20 @@ class PresentDinerPrefsResolver {
     final uid = permission.currentUserId;
     if (uid == null) return null;
 
-    final List<DinerProfile> diners;
+    final diners = <DinerProfile>[];
     try {
-      final households = await householdRepo.getForUser(uid);
-      diners = households.isEmpty
-          ? const []
-          : await dinerRepo.getByHousehold(households.first.id);
+      final household = await householdRepo.getActiveForUser(uid);
+      // A joined household is the active one, but the children of the
+      // household the user created still eat with them.
+      final ids = {
+        ?household?.id,
+        if (household != null && household.createdBy != uid)
+          for (final own in await householdRepo.getForUser(uid))
+            if (own.createdBy == uid) own.id,
+      };
+      for (final id in ids) {
+        diners.addAll(await dinerRepo.getByHousehold(id));
+      }
     } catch (e) {
       AppLogger.warning('Household diner profile read failed: $e');
       return (

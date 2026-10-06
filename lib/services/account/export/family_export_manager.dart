@@ -2,6 +2,7 @@
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
@@ -125,41 +126,21 @@ class FamilyExportManager {
       if (households.isEmpty) {
         return _empty(null);
       }
-      final householdId = households.first.id;
-
-      final diners = await _diners.getByHousehold(householdId);
-
-      // Only the caller's own / caller-entered verdicts — never another
-      // member's private rating.
-      final all = await _familyRatings.getForHousehold(householdId);
-      final mine = all
-          .where((r) => r.memberId == userId || r.enteredByUid == userId)
-          .toList();
-
+      // The query matched on `memberUserIds`; `pickActive` reads `members`.
+      // A row where the two disagree is still data about this user, so it is
+      // exported rather than dropped by the choice of which one leads.
+      final byId = [...households]..sort((a, b) => a.id.compareTo(b.id));
+      final active = Household.pickActive(households, userId) ?? byId.first;
+      // A member who joined a group's household is in it AND their own
+      // (BUT-2267). Each one holds data about them, so each one is exported:
+      // the active household at the top level as before, the rest beside it.
+      final others = byId.where((h) => h.id != active.id).toList();
       return {
-        'household_id': householdId,
-        'diner_profiles_count': diners.length,
-        'family_ratings_count': mine.length,
-        // Both sections serialise MODELS, not raw documents, and `toJson()`
-        // emits `toIso8601String()` on a `DateTime` that
-        // `SerializationUtils.parseDateTimeValue` built from
-        // `Timestamp.toDate()` — which is LOCAL, so the string carries neither
-        // `Z` nor an offset and passes through `sanitizeForJson` as a plain
-        // primitive. Normalised at this boundary rather than in the models:
-        // `toJson()` is also the local-cache and Firestore write format, so
-        // changing it there would be a migration.
-        'diner_profiles': [
-          for (final d in diners)
-            _utcStamps(d.toJson(), const [
-              'createdAt',
-              'updatedAt',
-              'guardianConsent.at',
-            ]),
-        ],
-        'family_ratings': [
-          for (final r in mine)
-            _utcStamps(r.toJson(), const ['createdAt', 'lastUpdatedAt']),
-        ],
+        ...await _householdSection(active, userId),
+        if (others.isNotEmpty)
+          'other_households': [
+            for (final h in others) await _householdSection(h, userId),
+          ],
       };
     } catch (e) {
       // Log the full error, but return a generic stable token + error_code so
@@ -172,6 +153,52 @@ class FamilyExportManager {
         'error_code': 'family-export-failed',
       };
     }
+  }
+
+  Future<Map<String, dynamic>> _householdSection(
+    Household household,
+    String userId,
+  ) async {
+    final householdId = household.id;
+    // The children of a household the requester JOINED are the host's family,
+    // not data about the requester; only the ones they entered themselves are.
+    final diners = [
+      for (final d in await _diners.getByHousehold(householdId))
+        if (household.createdBy == userId || d.createdBy == userId) d,
+    ];
+
+    // Only the caller's own / caller-entered verdicts — never another
+    // member's private rating.
+    final all = await _familyRatings.getForHousehold(householdId);
+    final mine = all
+        .where((r) => r.memberId == userId || r.enteredByUid == userId)
+        .toList();
+
+    return {
+      'household_id': householdId,
+      'diner_profiles_count': diners.length,
+      'family_ratings_count': mine.length,
+      // Both sections serialise MODELS, not raw documents, and `toJson()`
+      // emits `toIso8601String()` on a `DateTime` that
+      // `SerializationUtils.parseDateTimeValue` built from
+      // `Timestamp.toDate()` — which is LOCAL, so the string carries neither
+      // `Z` nor an offset and passes through `sanitizeForJson` as a plain
+      // primitive. Normalised at this boundary rather than in the models:
+      // `toJson()` is also the local-cache and Firestore write format, so
+      // changing it there would be a migration.
+      'diner_profiles': [
+        for (final d in diners)
+          _utcStamps(d.toJson(), const [
+            'createdAt',
+            'updatedAt',
+            'guardianConsent.at',
+          ]),
+      ],
+      'family_ratings': [
+        for (final r in mine)
+          _utcStamps(r.toJson(), const ['createdAt', 'lastUpdatedAt']),
+      ],
+    };
   }
 
   Map<String, dynamic> _utcStamps(

@@ -168,8 +168,8 @@ void main() {
           ),
     );
     when(
-      () => households.getForUser(_userId),
-    ).thenAnswer((_) async => household == null ? [] : [household]);
+      () => households.getActiveForUser(_userId),
+    ).thenAnswer((_) async => household);
     when(
       () => shares.getOwn(_householdId),
     ).thenAnswer((_) async => existingShare);
@@ -207,7 +207,7 @@ void main() {
       expect(find.byType(SwitchListTile), findsNothing);
       // And it did not even look: an off switch must not spend a read on a
       // collection the rules still deny.
-      verifyNever(() => households.getForUser(any()));
+      verifyNever(() => households.getActiveForUser(any()));
     });
 
     testWidgets('with no household to share into', (tester) async {
@@ -270,6 +270,29 @@ void main() {
     });
   });
 
+  testWidgets('a corrupt row of their own is shown ON so it can be withdrawn '
+      '(BUT-2267)', (tester) async {
+    // `getOwn` refuses a body that disagrees with its path. Hiding the row
+    // would leave the member no way to delete a row that names them, even in
+    // a household of one.
+    wire(household: _household(memberCount: 1));
+    when(
+      () => shares.getOwn(_householdId),
+    ).thenThrow(const FormatException('body disagrees with path'));
+
+    await pump(tester);
+
+    expect(
+      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+      isTrue,
+    );
+
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+
+    verify(() => shares.revoke(_householdId)).called(1);
+  });
+
   group('what the row says', () {
     testWidgets(
       'the mocks really are reachable — the row DOES appear when everything '
@@ -285,7 +308,7 @@ void main() {
         // The state is resolved once in initState and never re-read: a second
         // pair here would mean duplicated reads of a collection the rules
         // still gate.
-        verify(() => households.getForUser(_userId)).called(1);
+        verify(() => households.getActiveForUser(_userId)).called(1);
       },
     );
 

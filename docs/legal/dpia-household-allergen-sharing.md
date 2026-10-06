@@ -167,6 +167,13 @@ leaves the household, and never contributes to any public or aggregate figure.
 - **Mitigation:** the settings document and the share move in **one atomic
   write**. No eventual-consistency window, no server trigger in the write path.
 - **Residual:** Low.
+- **STATUS 2026-10-06 — built (BUT-2267).** `UserService.updateAllergenPreferences`
+  reads the member's own shares (`OwnAllergenShareMirror`) and
+  `FirebaseUserRepository.updateAllergenPreferences` writes the settings document and
+  every one of those shares in one `WriteBatch`. A share that cannot be read fails the
+  save. Evidence: `test/unit/services/family/own_allergen_share_mirror_test.dart`, the
+  BUT-2267 group in `test/unit/repositories/firebase/firebase_user_repository_gaps_test.dart`
+  and in `test/unit/services/user_service_test.dart`.
 
 ### R5 — Withdrawal erases the proof that consent was ever given
 - **What happens:** "delete on withdrawal" would also delete the record that the
@@ -262,6 +269,19 @@ leaves the household, and never contributes to any public or aggregate figure.
   own share document is corrupt could neither withdraw nor replace it. The repository's
   fail-loud read is deliberate and right; the UI's response to it is not. Render the row
   ON for that case before the flag is flipped.
+- **STATUS 2026-10-06 — built (BUT-2267).** Leaving and removal: the Cloud Function
+  `onHouseholdGroupWritten` fires on every write of the owner's household-marked group
+  and, in one transaction, removes from the linked household every member the group no
+  longer holds and deletes that member's share. Leaving the group, being removed from
+  it, the owner un-marking it and the owner deleting it all take this path. Clients can
+  no longer change a household's membership (`firestore.rules`). Sixth gate: the Cloud
+  Function `joinGroupHousehold`, behind "Gå med i hushållet" on the group page, adds a
+  member of a household-marked group to the owner's household as `view`. Seventh gate:
+  the settings row is shown ON for a corrupt own share, so it can be withdrawn.
+  Evidence: `functions/src/__tests__/group-household.integration.test.ts` (emulator),
+  the BUT-2267 cases in `functions/src/__tests__/family-rating-rules.test.ts`,
+  `test/widget/social/groups/group_household_join_tile_test.dart` and
+  `test/widget/views/settings/household_allergen_sharing_tile_test.dart`.
 
 ### R8 — The list leaks into a data export it does not belong in
 - **Position:** a member's own export contains their **own** shared list and
@@ -351,6 +371,11 @@ instruction. What is built, with its evidence:
 Open before the feature flag is switched on: R7's leave and removal triggers, the
 household-join flow (sixth gate), the corrupt-row settings case (seventh gate), and
 Annex B in the shipping privacy policy.
+
+**2026-10-06 (BUT-2267).** The four items above are built, and so is R4's atomic
+write; the evidence is in the STATUS entries under R4 and R7. Annex B is in
+`assets/legal/privacy_policy_sv.md` §5.2 (version 1.4.0), its English twin and
+`docs/legal/privacy_policy*.md`. The flag's default is now on.
 
 ## 9. Controller decisions & sign-off
 

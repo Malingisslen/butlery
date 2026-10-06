@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 5 oktober 2026
-**Version:** 1.3.1
+**Senast uppdaterad:** 6 oktober 2026
+**Version:** 1.4.0
 
 ---
 
@@ -108,6 +108,10 @@ Vi använder dina personuppgifter för följande ändamål:
 - Föreslå veckomenyer och receptförbättringar
 
 Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom EU – se avsnitt 6). Innehåll som tas fram med AI-stöd – som ett recept avläst från ett foto eller en föreslagen meny – skapas för att hjälpa dig och visas alltid för din granskning och redigering innan det sparas; du avgör vad du behåller. I linje med EU:s AI-förordning (förordning (EU) 2024/1689, artikel 50) informerar vi dig här när du tar emot AI-stött innehåll. Butlery använder inte AI-chattbottar, känsloigenkänning eller AI-genererat material som utges för att vara verkligt.
+
+**Delade allergier i hushållet (om du har samtyckt):**
+
+Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar — även de som går med senare — se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
 
 ### 5.3 Gemensamma betyg ("Butlery-betyget") – berättigat intresse, inte samtycke
 
@@ -338,7 +342,7 @@ Vid väsentliga ändringar:
 - 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 5 oktober 2026
+**Senaste ändring:** 6 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

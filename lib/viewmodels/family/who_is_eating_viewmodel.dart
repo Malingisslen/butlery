@@ -52,7 +52,7 @@ class WhoIsEatingViewModel extends BaseViewModel {
   /// Presence flow (BUT-1611): pass an explicit [seedMemberIds] (that meal
   /// slot's current selection; empty list = nobody, null-argument absent =
   /// everyone) and set [allowCreateHousehold] to false so opening the weekly
-  /// menu never CREATES a household — it uses the read-only `getForUser` path
+  /// menu never CREATES a household — it uses the read-only `getActiveForUser` path
   /// the menu already relies on, and renders nothing for a solo/absent account.
   Future<void> load({
     List<String>? seedMemberIds,
@@ -68,12 +68,12 @@ class WhoIsEatingViewModel extends BaseViewModel {
       if (allowCreateHousehold) {
         householdId = (await _householdRepository.ensureForUser(uid)).id;
       } else {
-        final households = await _householdRepository.getForUser(uid);
-        if (households.isEmpty) {
+        final household = await _householdRepository.getActiveForUser(uid);
+        if (household == null) {
           _roster = const [];
           return; // solo / no household — caller keeps the feature invisible
         }
-        householdId = households.first.id;
+        householdId = household.id;
       }
       _roster = await _rosterService.getRoster(householdId);
       final rosterIds = _roster.map((m) => m.memberId).toSet();

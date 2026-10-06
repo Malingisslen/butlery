@@ -34,6 +34,7 @@ const {
   MAX_BLOCK_SWEEP_ROWS,
   MAX_MIRROR_SWEEP_ROWS,
   deleteRealtimeMenus,
+  deleteFamilyData,
   deleteRealtimeResources,
 } = require("../account/account-deletion-cascade");
 
@@ -1031,6 +1032,62 @@ async function scenario_messagesInLeftConversationsAreReached(): Promise<void> {
  * BUT-1768. `ownerId`, never `userId` — the BUT-1396 trap that made
  * `deleteRealtimeRecipes` match zero documents for months.
  */
+/**
+ * BUT-2267: a household linked to the erased user's OWN group ends the way the
+ * group-deleted trigger ends it — every joined member out, their shares gone —
+ * and, with its owner gone too, it is torn down. Never re-pointed to a `view`
+ * member. The trigger-first order is the solo path; both orders are pinned
+ * end to end in group-household.integration.test.ts.
+ */
+async function scenario_ownedGroupHouseholdIsTornDown(): Promise<void> {
+  const db = new FakeFirestore();
+  const linked = {
+    name: "x",
+    members: [
+      { userId: UID, permission: "admin" },
+      { userId: OTHER, permission: "view" },
+      { userId: THIRD, permission: "view" },
+    ],
+    memberUserIds: [UID, OTHER, THIRD],
+    memberPermissions: { [UID]: "admin", [OTHER]: "view", [THIRD]: "view" },
+    createdBy: UID,
+    sourceGroupOwnerId: UID,
+    sourceGroupId: "g1",
+  };
+  db.set("households/owned", linked);
+  db.set("household_allergen_shares/owned_" + OTHER, { householdId: "owned" });
+  db.set("household_allergen_shares/owned_" + THIRD, { householdId: "owned" });
+  db.set("diner_profiles/ella", { householdId: "owned", createdBy: UID });
+  // The same shape created by someone else is not a link the trigger honours,
+  // so it keeps its members; only the erased uid leaves it.
+  db.set("households/notOwned", { ...linked, createdBy: OTHER });
+  db.set("household_allergen_shares/notOwned_" + OTHER, {
+    householdId: "notOwned",
+  });
+
+  // An ordinary shared household the erased user created stays for the
+  // others, as before BUT-2267.
+  const { sourceGroupOwnerId: _o, sourceGroupId: _g, ...plain } = linked;
+  db.set("households/plain", plain);
+
+  await deleteFamilyData(asDb(db), UID);
+
+  check("an unlinked shared household survives for the others",
+    db.has("households/plain"));
+  check("an owned group household is deleted", !db.has("households/owned"));
+  check("its joined members' shares are deleted",
+    !db.has("household_allergen_shares/owned_" + OTHER) &&
+      !db.has("household_allergen_shares/owned_" + THIRD));
+  check("its diner profile is deleted", !db.has("diner_profiles/ella"));
+  const kept = db.get("households/notOwned");
+  check("a household someone else created keeps its other members",
+    JSON.stringify(kept?.memberUserIds) === JSON.stringify([OTHER, THIRD]) &&
+      db.has("household_allergen_shares/notOwned_" + OTHER),
+    JSON.stringify(kept));
+  check("…and loses the erased uid from its link",
+    kept !== undefined && !("sourceGroupOwnerId" in kept));
+}
+
 async function scenario_realtimeMenusOwnedAreDeleted(): Promise<void> {
   const db = new FakeFirestore();
   db.set("realtime_menus/mine", {
@@ -9311,6 +9368,7 @@ async function main(): Promise<void> {
   await scenario_sharedContentItemAttributionIsScrubbed();
   await scenario_sharedContentItemScrubReportsItsOwnFailure();
   await scenario_anotherMembersLastMessageIsNotTombstoned();
+  await scenario_ownedGroupHouseholdIsTornDown();
   await scenario_realtimeMenusOwnedAreDeleted();
   await scenario_realtimeMenuLastEditorIsScrubbed();
   await scenario_ownedRealtimeMenuChildrenAreDeleted();

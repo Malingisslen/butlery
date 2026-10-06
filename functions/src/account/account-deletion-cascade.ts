@@ -2171,8 +2171,25 @@ export async function deleteFamilyData(
       ? (data.memberUserIds as unknown[]).filter((id) => typeof id === "string")
       : [];
     const remaining = (memberUserIds as string[]).filter((id) => id !== uid);
+    // BUT-2267: a household linked to the erased user's own group ends the way
+    // `onHouseholdGroupWritten` ends it when that group is deleted — the
+    // others removed, their shares deleted — and the erased owner was its
+    // last member, so it is torn down. Same end state whichever runs first;
+    // never re-pointed to a joined `view` member.
+    const ownsGroupLink = data.createdBy === uid &&
+      data.sourceGroupOwnerId === uid;
 
-    if (remaining.length === 0) {
+    if (remaining.length === 0 || ownsGroupLink) {
+      // Shares first, and awaited: once the household doc is gone a retry
+      // cannot find these rows again.
+      for (let i = 0; ownsGroupLink && i < remaining.length; i += 400) {
+        const batch = db.batch();
+        for (const id of remaining.slice(i, i + 400)) {
+          batch.delete(db.collection("household_allergen_shares")
+            .doc(`${hid}_${id}`));
+        }
+        await batch.commit();
+      }
       // Sole member → tear the whole household down. Delete children with
       // strict:true so a failed chunk THROWS (→ family_data marked failed →
       // household doc NOT deleted → uid stays in memberUserIds → the retry
@@ -2254,11 +2271,18 @@ export async function deleteFamilyData(
           .filter((m) => m.userId !== uid)
       : [];
     const newCreatedBy = data.createdBy === uid ? remaining[0] : data.createdBy;
+    // BUT-2267: a household linked to the erased user's group names them in
+    // `sourceGroupOwnerId`. The group goes with them, so the link does too.
+    const ownGroupLink = data.sourceGroupOwnerId === uid ? {
+      sourceGroupId: admin.firestore.FieldValue.delete(),
+      sourceGroupOwnerId: admin.firestore.FieldValue.delete(),
+    } : {};
     await hhDoc.ref.update({
       members,
       memberUserIds: admin.firestore.FieldValue.arrayRemove(uid),
       [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
       createdBy: newCreatedBy,
+      ...ownGroupLink,
     });
   }
   return true;

@@ -106,6 +106,13 @@ class Household {
   final DateTime updatedAt;
   final int schemaVersion;
 
+  /// The friend group marked as household that this household belongs to
+  /// (BUT-2267), as `users/{sourceGroupOwnerId}/friend_categories/
+  /// {sourceGroupId}`. Written only by Cloud Functions; null for a household
+  /// no group member has joined.
+  final String? sourceGroupId;
+  final String? sourceGroupOwnerId;
+
   const Household({
     required this.id,
     required this.name,
@@ -114,7 +121,47 @@ class Household {
     required this.createdAt,
     required this.updatedAt,
     this.schemaVersion = 1,
+    this.sourceGroupId,
+    this.sourceGroupOwnerId,
   });
+
+  /// Linked to a group by its owner. Only a household the group's owner
+  /// created counts: `createdBy` cannot be changed by a client, so a household
+  /// someone else made cannot borrow a stranger's group by naming it.
+  bool get isLinkedToGroup =>
+      sourceGroupId != null && sourceGroupOwnerId == createdBy;
+
+  /// The household [userId]'s menu, settings and family views use when they
+  /// belong to several. Every reader picks through here, so they all agree.
+  ///
+  /// In order: a household linked to the user's own household-marked group;
+  /// then one linked to a group they joined; then an unlinked one. Ties go to
+  /// the oldest, then the lowest id, so the answer does not depend on the
+  /// order a query returned them in.
+  static Household? pickActive(Iterable<Household> households, String userId) {
+    int rank(Household h) {
+      if (h.isLinkedToGroup && h.createdBy == userId) return 0;
+      if (h.isLinkedToGroup) return 1;
+      return 2;
+    }
+
+    Household? best;
+    for (final h in households) {
+      if (!h.isMember(userId)) continue;
+      if (best == null) {
+        best = h;
+        continue;
+      }
+      final byRank = rank(h).compareTo(rank(best));
+      final byAge = h.createdAt.compareTo(best.createdAt);
+      if (byRank < 0 ||
+          (byRank == 0 &&
+              (byAge < 0 || (byAge == 0 && h.id.compareTo(best.id) < 0)))) {
+        best = h;
+      }
+    }
+    return best;
+  }
 
   /// Default Swedish household name.
   static const String defaultName = 'Vårt hushåll';
@@ -223,6 +270,8 @@ class Household {
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       schemaVersion: schemaVersion,
+      sourceGroupId: sourceGroupId,
+      sourceGroupOwnerId: sourceGroupOwnerId,
     );
   }
 
@@ -236,6 +285,8 @@ class Household {
     'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
     'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
     'schemaVersion': schemaVersion,
+    'sourceGroupId': ?sourceGroupId,
+    'sourceGroupOwnerId': ?sourceGroupOwnerId,
   };
 
   factory Household.fromMap(String id, Map<String, dynamic> data) {
@@ -259,6 +310,14 @@ class Household {
         'schemaVersion',
         defaultValue: 1,
       ),
+      sourceGroupId: SerializationUtils.safeNullableString(
+        data,
+        'sourceGroupId',
+      ),
+      sourceGroupOwnerId: SerializationUtils.safeNullableString(
+        data,
+        'sourceGroupOwnerId',
+      ),
     );
   }
 
@@ -270,6 +329,8 @@ class Household {
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'schemaVersion': schemaVersion,
+    'sourceGroupId': ?sourceGroupId,
+    'sourceGroupOwnerId': ?sourceGroupOwnerId,
   };
 
   factory Household.fromJson(Map<String, dynamic> json) {
@@ -294,6 +355,14 @@ class Household {
         json,
         'schemaVersion',
         defaultValue: 1,
+      ),
+      sourceGroupId: SerializationUtils.safeNullableString(
+        json,
+        'sourceGroupId',
+      ),
+      sourceGroupOwnerId: SerializationUtils.safeNullableString(
+        json,
+        'sourceGroupOwnerId',
       ),
     );
   }

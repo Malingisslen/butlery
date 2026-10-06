@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -16,7 +17,7 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 /// Firestore rules are the authoritative second layer (see firestore.rules).
 class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
     implements HouseholdRepository {
-  /// A user belongs to ~1 household; 50 is a generous ceiling that also caps
+  /// 50 is a generous ceiling that also caps
   /// the read fan-out if the data is ever malformed.
   static const int _maxHouseholdsPerUser = 50;
 
@@ -25,7 +26,17 @@ class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
     required super.authRepository,
     super.auditRepository,
     super.timestampProvider,
-  });
+    FirebaseFunctions? functions,
+  }) : _injectedFunctions = functions;
+
+  /// Resolved lazily so constructing the repository never calls
+  /// `FirebaseFunctions.instanceFor`, which throws in unit tests that do not
+  /// initialise Firebase; only [joinGroupHousehold] needs it.
+  final FirebaseFunctions? _injectedFunctions;
+  FirebaseFunctions? _functionsCache;
+  FirebaseFunctions get _functions => _functionsCache ??=
+      (_injectedFunctions ??
+      FirebaseFunctions.instanceFor(region: 'europe-west1'));
 
   @override
   String get collectionName => FirestoreCollections.households;
@@ -109,11 +120,29 @@ class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
   }
 
   @override
+  Future<Household?> getActiveForUser(String userId) async =>
+      Household.pickActive(await getForUser(userId), userId);
+
+  @override
   Future<Household> ensureForUser(String userId) async {
-    final existing = await getForUser(userId);
-    if (existing.isNotEmpty) return existing.first;
+    final existing = await getActiveForUser(userId);
+    if (existing != null) return existing;
     AppLogger.info('Creating first household for ${userId.maskedUserId}');
     return create(Household.create(creatorId: userId));
+  }
+
+  @override
+  Future<String> joinGroupHousehold({
+    required String ownerId,
+    required String groupId,
+  }) async {
+    final result = await _functions
+        .httpsCallable('joinGroupHousehold')
+        .call<Map<String, dynamic>>(<String, dynamic>{
+          'ownerId': ownerId,
+          'groupId': groupId,
+        });
+    return result.data['householdId'] as String;
   }
 
   @override

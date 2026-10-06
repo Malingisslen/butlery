@@ -6,6 +6,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/groups/group_household_join_tile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -144,6 +145,10 @@ class GroupDetailHeader {
               contentPadding: EdgeInsets.zero,
             ),
           ],
+
+          // BUT-2267: a non-owner member joins the household. Hides itself
+          // for everyone it does not apply to.
+          GroupHouseholdJoinTile(group: group),
         ],
       ),
     );

@@ -101,17 +101,15 @@ void main() {
       );
 
   void familyOf(List<DinerProfile> diners) {
-    when(() => householdRepo.getForUser(_self)).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh1',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: _self,
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      ],
+    when(() => householdRepo.getActiveForUser(_self)).thenAnswer(
+      (_) async => Household(
+        id: 'hh1',
+        name: Household.defaultName,
+        members: const [],
+        createdBy: _self,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
     );
     when(() => dinerRepo.getByHousehold('hh1')).thenAnswer((_) async => diners);
   }
@@ -176,6 +174,40 @@ void main() {
 
     expect(await pool(), {'pasta', 'unknown'});
     expect(generator.lastPoolStats?.prefSource, MenuPrefSource.household);
+  });
+
+  test('a member who joined someone else\'s household keeps the children of '
+      'the household they created', () async {
+    familyOf([
+      child({'fisk'}),
+    ]);
+    final joined = Household(
+      id: 'hh-joined',
+      name: Household.defaultName,
+      members: const [],
+      createdBy: 'host',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+    final own = Household(
+      id: 'hh1',
+      name: Household.defaultName,
+      members: const [],
+      createdBy: _self,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+    when(
+      () => householdRepo.getActiveForUser(_self),
+    ).thenAnswer((_) async => joined);
+    when(
+      () => householdRepo.getForUser(_self),
+    ).thenAnswer((_) async => [joined, own]);
+    when(
+      () => dinerRepo.getByHousehold('hh-joined'),
+    ).thenAnswer((_) async => const []);
+
+    expect(await pool(), {'pasta', 'unknown'});
   });
 
   test('no family profiles: the pool and source are what the user alone '

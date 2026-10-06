@@ -5477,6 +5477,26 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   `match /globalRecipeCache/{docId}` block is deleted from `firestore.rules`; `rateLimitWrite`
   stays defined there with no caller.
 
+## BUT-2267 — household membership and the share cap (2026-10-06)
+
+- **SUPERSEDES the 2026-09-15 entry "Leaving or being removed from a household does NOT
+  delete that member's `household_allergen_shares` row" (BUT-2267, 2026-10-06).** Retired:
+  "Nothing in the app adds or removes a household member today —" and "Until then a
+  departed member's share is invisible to the household". `joinGroupHousehold` adds a
+  member of a household-marked friend group to the owner's household. `onHouseholdGroupWritten`
+  removes every member the linked group no longer holds and deletes that member's
+  `household_allergen_shares/{householdId}_{uid}` in the same transaction; leaving the
+  group, removal, un-marking and deleting the group all reach it. The `households` rules
+  refuse a client write to `members`, `memberUserIds`, `memberPermissions` or the link
+  fields. Pinned by `functions/src/__tests__/group-household.integration.test.ts`.
+- **SUPERSEDES the "NOT BUILT" clause of the 2026-09-16 `getByHousehold` cap entry
+  (BUT-2267, 2026-10-06).** Retired: "**NOT BUILT.** The cap is unreachable until a
+  household can hold a second member". `getByHousehold` throws
+  `HouseholdTooLargeForSharesException` when the roster or the share rows exceed
+  `maxHouseholdMembers`; `HouseholdService` reads that as unknown shares.
+  `joinGroupHousehold` refuses a join into a household already at
+  `MAX_HOUSEHOLD_MEMBERS`. Both constants are 20.
+
 ## BUT-2242 — one line classification for the text and URL paths (2026-10-06)
 
 - **SUPERSEDES the "every other allergen keeps colon-wins" half of BUT-1714 (Malin, 2026-10-06,

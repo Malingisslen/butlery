@@ -1772,6 +1772,51 @@ test("family (shared): a verdict target entered for a diner is kept but attribut
   );
 });
 
+// BUT-2267: a household someone else created that names the erased user as
+// its group's owner (not a link `isOwnedLink` honours, so it is not torn down)
+// still carries their uid in `sourceGroupOwnerId`; that uid goes with the link.
+// The owned case is pinned in group-household.integration.test.ts.
+test("family: a household naming the erased user as group owner loses the link", async () => {
+  const u = `link-owner-${RUN}`;
+  const joiner = `link-joiner-${RUN}`;
+  const hh = `hh-link-${RUN}`;
+  await db.collection("households").doc(hh).set({
+    name: "Länkat",
+    members: [
+      { userId: u, permission: "admin" },
+      { userId: joiner, permission: "view" },
+    ],
+    memberUserIds: [u, joiner],
+    memberPermissions: { [u]: "admin", [joiner]: "view" },
+    createdBy: joiner,
+    sourceGroupOwnerId: u,
+    sourceGroupId: `g-${RUN}`,
+  });
+  const linkedElsewhere = `hh-link-other-${RUN}`;
+  await db.collection("households").doc(linkedElsewhere).set({
+    name: "Annans",
+    members: [
+      { userId: joiner, permission: "admin" },
+      { userId: u, permission: "view" },
+    ],
+    memberUserIds: [joiner, u],
+    memberPermissions: { [joiner]: "admin", [u]: "view" },
+    createdBy: joiner,
+    sourceGroupOwnerId: joiner,
+    sourceGroupId: `g2-${RUN}`,
+  });
+
+  await deleteFamilyData(db, u);
+
+  const data = await dataAt(`households/${hh}`);
+  assert(!("sourceGroupOwnerId" in data) && !("sourceGroupId" in data),
+    `the erased owner's link is gone, got ${JSON.stringify(data)}`);
+  assert(!JSON.stringify(data).includes(u), "no trace of the erased uid");
+  const other = await dataAt(`households/${linkedElsewhere}`);
+  assert(other.sourceGroupOwnerId === joiner && other.sourceGroupId === `g2-${RUN}`,
+    "a link to someone else's group is left alone");
+});
+
 // Retry-safety: running deleteFamilyData twice must converge on the same
 // correct end state (no orphans, re-home stable) — the household membership
 // scrub is the LAST mutation precisely so an interrupted run re-runs cleanly.
