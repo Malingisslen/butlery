@@ -109,7 +109,7 @@ class ShareDialogHeader {
       case ShareContentType.personalTag:
         final tagData = content as Map<String, String>;
         return (
-          'Dela tagg med vanner',
+          context.l10n.shareTagWithFriends,
           tagData['tagName'].orEmpty(),
           ButleryIcons.tag,
         );

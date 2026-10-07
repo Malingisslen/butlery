@@ -2951,6 +2951,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareShoppingList => 'Share shopping list';
 
   @override
+  String get shareTagWithFriends => 'Share tag with friends';
+
+  @override
+  String get shareTag => 'Share tag';
+
+  @override
   String get shareSelectAtLeastOneFriend =>
       'Select at least one friend to share';
 

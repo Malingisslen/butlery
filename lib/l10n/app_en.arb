@@ -2086,6 +2086,8 @@
   "shareRecipeWithFriends": "Share recipe with friends",
   "shareMenuWithFriends": "Share weekly menu with friends",
   "shareShoppingList": "Share shopping list",
+  "shareTagWithFriends": "Share tag with friends",
+  "shareTag": "Share tag",
   "shareSelectAtLeastOneFriend": "Select at least one friend to share",
   "shareRecipesInCategories": "{recipes} recipes in {categories} categories",
   "@shareRecipesInCategories": {

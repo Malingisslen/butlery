@@ -38,7 +38,7 @@ class ShareDialogHelpers {
         case ShareContentType.shoppingList:
           return context.l10n.shareShoppingList;
         case ShareContentType.personalTag:
-          return 'Dela tagg';
+          return context.l10n.shareTag;
       }
     }
   }
@@ -102,7 +102,7 @@ class ShareDialogHelpers {
       case ShareContentType.shoppingList:
         return context.l10n.shareShoppingList;
       case ShareContentType.personalTag:
-        return 'Dela tagg med vanner';
+        return context.l10n.shareTagWithFriends;
     }
   }
 

@@ -4873,6 +4873,18 @@ abstract class AppLocalizations {
   /// **'Dela inköpslista'**
   String get shareShoppingList;
 
+  /// No description provided for @shareTagWithFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela tagg med vänner'**
+  String get shareTagWithFriends;
+
+  /// No description provided for @shareTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela tagg'**
+  String get shareTag;
+
   /// No description provided for @shareSelectAtLeastOneFriend.
   ///
   /// In sv, this message translates to:
