@@ -5610,3 +5610,15 @@ await her confirmation on the PR.
   from a screen loaded before the erasure puts the key back. Accepted, the same shape as
   BUT-1971's "A client that read the plan BEFORE an erasure can write the uid back." No test
   pins it: the writer is the Dart client, not the cascade.
+
+## BUT-2246 — blocking reaches the chat-list preview (2026-10-07)
+
+- **The BUT-2017 two-armed gate now also covers a `conversations` update that changes
+  `lastMessage`, and a sender's `messages` update that changes `content` (BUT-2246,
+  2026-10-07).** The second is the route `syncConversationLastMessage` copies into the
+  preview. Every room reads the caller's mirror, with its fail-open and its ignored
+  `truncated` flag; a DM also reads `blocks/{other}_{me}` exactly. One-directional. Updates
+  that change neither key are not gated, so a blocked person can still rename a group or
+  write `participantDisplayNames`. Option 2 in the
+  ticket (a server-written preview) was not taken; `lastMessage` stays client-written, so
+  BUT-1903's `lastMessage.sentAt` gap is unchanged.

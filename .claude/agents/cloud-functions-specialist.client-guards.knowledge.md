@@ -10,6 +10,9 @@
   as open, so a missing key, `null`, and a stripped `poll`/`metadata` each reopen it;
   a `!= false` or `get(k, true)` spelling passes a test that only sends `false`. Same for
   composite doc-id pins (`{recipeId}_{uid}`): one DENY per half, or dropping a half survives.
+  Same for a counterparty picked by position (`otherParticipant(participantIds)`): one DENY
+  with the refused caller at EACH index, per call site — a hard-coded `participantIds[1]`
+  survives every deny whose caller sits at `[0]`.
 - **A create-DENY test on a FIXED doc id is vacuous once any earlier test wrote that
   id** — the `set` evaluates as an UPDATE, and a `update: if false` path denies it
   whatever the create conjuncts say. `env.clearFirestore()` in `setup()` only clears

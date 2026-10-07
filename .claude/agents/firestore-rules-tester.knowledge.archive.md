@@ -6161,3 +6161,52 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Re-review same day: suite 16/16. cannotModify minus `blockHeld` now kills U7 alone; dropping
   the new members `notBlockedByAnyOf([userId])` kills M3 alone (M4, a different target with the same mirror, is its control
   and writes in `addMember`'s order: member row, then the parent arrayUnion).
+
+## 2026-10-07 — BUT-2246 commit-gate review (conversations `lastMessage` block gate)
+
+- Retired verbatim from the domain-facts chapter (superseded in place by the BUT-2246 bullet):
+  "**A block gate on `messages` create does not reach the `conversations` UPDATE limb, and
+  `lastMessage` is a client-written field there** (deny-list limb; BUT-1903's comment
+  already records it). Measured 2026-10-05 (BUT-2017): with `blocks/{blocker}_{blocked}`
+  standing, the blocked person's message create DENIES and their merge-set of
+  `lastMessage.content` onto the same DM document is ALLOWED — the chat-list preview is a
+  second write path into the blocker's screen. Any sentence saying a blocked person's
+  "writes" into a room are refused is true of `messages` only; probe the parent document's
+  update limb before passing it."
+- Suite on the diff: 110/110. Deny-always mutant on the new gate (`|| false`): 103/110, killing
+  L2, L5, L6 plus C10, C10B, C11, C11B (the pre-existing real-`ConversationDto` merge-set
+  tests), so the production send payload lands under the real gate.
+- Presence mutant (`affectedKeys().hasAny(['lastMessage'])` -> `'lastMessage' in
+  request.resource.data`): 110/110 SURVIVES. Standalone probe: real rules ALLOW a blocked
+  person's `lastReadTimestamps.{uid}` update on a DM storing a `lastMessage`; the mutant DENIES it.
+  L3's fixture (`seedRoom`) stores no `lastMessage`, so it cannot tell the two apart.
+- Standalone probe, real rules (file deleted in the same call): ALLOW — DM batch (message create
+  + DTO merge-set), group batch without mirror, group batch with non-overlapping mirror, dotted
+  `lastMessage.status` by a non-blocked sender, the blocker's DM send batch after the block,
+  blocked person's read receipt. DENY — blocked person's dotted `lastMessage.status`, and
+  `lastMessage: null`. ALLOW (residual routes) — blocked person's `update({content})` of their
+  own pre-block message in a DM and in a group (messages sender limb, no block gate; the CF's
+  `shouldReplaceLastMessage` `>=` tie projects the edit into the preview), blocked person's
+  merge of `participantDisplayNames.{self}` in a DM, `title` in a group.
+
+## 2026-10-07 — BUT-2246 re-review (edit gate on messages sender `allow update`)
+
+- Retired verbatim from domain-facts (BUT-2246 bullet, sentences superseded once the edit gate
+  landed): "Still OPEN after it,
+  measured 2026-10-07: the blocked person EDITS their own pre-block message (messages sender
+  `allow update` carries no block gate) and `syncConversationLastMessage` re-projects the
+  edit into `lastMessage` under the Admin SDK, because its `>=` tie rule exists precisely so
+  an edit refreshes the preview."
+- Retired verbatim from domain-facts (already stale before this ticket: `recipe_ratings`
+  update carries it since BUT-2057, and now two more update limbs): "**`isNotBlockedBy` sits on
+  CREATE limbs only** (`social_requests`, `recipe_comments`,
+  `recipe_ratings`, `user_notifications`) and is a bare `exists()` reading no field — so no
+  READ limb in `firestore.rules` is block-gated, and a sentence saying a change to the helper
+  would put it "on the read side" confuses reading the block doc's FIELDS with the read limb."
+- Runs on the re-staged bytes: conversations 116/116; cook-snaps-and-message-mod 51/51;
+  poll-votes 56/56; account-maturity 5/5; age-gate 42/42; rate-limit 76/76.
+- Edit-gate deny-always (`|| false`): conversations 114/116 (E2, E4); cook-snaps 47/51 (the
+  four sender-edit allows); poll-votes 53/56 (sender edit + two BUT-2092 "still editable"
+  cases). No BUT-2092 close test died, so `closePoll` (metadata only) never reaches the gate.
+- Edit-gate two-way mutant (adds `!exists(blocks/{me}_{other})`): conversations 116/116
+  SURVIVES — no edit test has the blocker editing with the block row standing.
