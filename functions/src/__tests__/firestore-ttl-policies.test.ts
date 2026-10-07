@@ -314,8 +314,76 @@ function ttlPoliciesDeclared(): void {
   );
 }
 
+/**
+ * BUT-1996. A TTL policy binds a collection-group ID, not a path, so the
+ * policy declared for the shared `ingredients` catalogue also covers
+ * `users/{uid}/ingredients` — the user's own library, which is kept until
+ * account deletion. It deletes nothing there only because no writer of that
+ * subcollection stamps the policy's field. This pins that.
+ *
+ * The writers are discovered, not listed: any Dart file under lib/ naming both
+ * `FirestoreCollections.users` and `FirestoreCollections.ingredients`, plus the
+ * model they serialise. A new writer is checked without anyone remembering to
+ * add it here.
+ */
+const USER_INGREDIENT_MODEL = "lib/models/tagging/ingredient_data.dart";
+
+function listDartFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listDartFiles(full));
+    else if (entry.name.endsWith(".dart")) out.push(full);
+  }
+  return out;
+}
+
+function userIngredientsCarryNoTtlField(): void {
+  const repoRoot = path.resolve(__dirname, "..", "..", "..");
+  const policy = loadOverrides().find(
+    (o) => o.collectionGroup === "ingredients" && o.ttl === true,
+  );
+  if (policy === undefined) {
+    // No policy on the group means nothing to arm; the set assertion above
+    // already reports the missing entry.
+    return;
+  }
+  const field = policy.fieldPath;
+
+  const writers = listDartFiles(path.join(repoRoot, "lib"))
+    .filter((file) => {
+      const src = fs.readFileSync(file, "utf8");
+      return (
+        src.includes("FirestoreCollections.users") &&
+        src.includes("FirestoreCollections.ingredients")
+      );
+    })
+    .map((file) => path.relative(repoRoot, file).split(path.sep).join("/"));
+
+  record(
+    "the users/{uid}/ingredients writer is found (the scan below is not vacuous)",
+    writers.includes(
+      "lib/repositories/firebase/firebase_user_ingredient_repository.dart",
+    ),
+    `found: ${writers.join(", ") || "none"} — if the repository moved or stopped naming FirestoreCollections, fix the discovery rather than this check`,
+  );
+
+  // A quoted key is how Dart writes a map field; a bare identifier in prose
+  // or a variable name is not a write.
+  const quotedKey = new RegExp(`['"]${field}['"]`);
+  for (const file of [...writers, USER_INGREDIENT_MODEL]) {
+    const src = fs.readFileSync(path.join(repoRoot, file), "utf8");
+    record(
+      `${file} writes no '${field}' key, so the ingredients TTL cannot reach users/{uid}/ingredients`,
+      !quotedKey.test(src),
+      `'${field}' is the field the collection-group TTL on \`ingredients\` deletes by, and that policy also covers users/{uid}/ingredients — stamping it there deletes the user's own ingredients. Use another field name.`,
+    );
+  }
+}
+
 function main(): void {
   ttlPoliciesDeclared();
+  userIngredientsCarryNoTtlField();
 
   let failed = 0;
   for (const r of results) {
