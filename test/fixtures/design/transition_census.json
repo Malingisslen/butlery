@@ -1033,7 +1033,7 @@
     {
       "id": "TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv",
       "flow": "07",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/views/permission_flow07_test.dart",
       "test_name": "library permanent no: Öppna inställningar, and write it yourself",
       "tests": [
@@ -1041,14 +1041,14 @@
           "file": "test/views/permission_flow07_test.dart",
           "name": "library permanent no: Öppna inställningar, and write it yourself",
           "group": "PhotoPermissionNoticeCard"
+        },
+        {
+          "file": "test/widget/recipe/recipe_image_permission_notice_test.dart",
+          "name": "library no: Fråga igen asks the library, and no fallback"
         }
       ],
       "ticket": null,
-      "reason": "Existing test (photo import).",
-      "known_gap": {
-        "ticket": "BUT-2160",
-        "reason": "Outside photo import (recipe images, comment form) there is no \"Skriv själv\" way on."
-      }
+      "reason": "Existing test (photo import). Recipe images and comments offer no \"Skriv själv\": Malin decided (BUT-2160, decision A, 2026-10-07) that photo import is where writing the recipe yourself is offered."
     },
     {
       "id": "TR::FLOW::07::kamera-utan-behorighet::galleri",
@@ -1073,7 +1073,7 @@
     {
       "id": "TR::FLOW::07::nekad::funktionen-kvar",
       "flow": "07",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/views/permission_flow07_test.dart",
       "test_name": "camera no: Fråga igen, and the library as the way on",
       "tests": [
@@ -1085,14 +1085,28 @@
         {
           "file": "test/views/permission_flow07_test.dart",
           "name": "Fråga igen asks the same source again, without our explanation"
+        },
+        {
+          "file": "test/widget/recipe/recipe_image_permission_notice_test.dart",
+          "name": "camera no: Fråga igen asks the camera again, and the library is the way on"
+        },
+        {
+          "file": "test/widget/recipe/recipe_image_permission_notice_test.dart",
+          "name": "Fråga igen asks without our explanation; a first ask has it"
+        },
+        {
+          "file": "test/widget/recipe/comment_form_widget_test.dart",
+          "name": "a no: Fråga igen asks again without our explanation",
+          "group": "photo library permission"
+        },
+        {
+          "file": "test/widget/recipe/comment_form_widget_test.dart",
+          "name": "limited: Välj fler bilder, and the picked image stays",
+          "group": "photo library permission"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import).",
-      "known_gap": {
-        "ticket": "BUT-2160",
-        "reason": "Outside photo import a denial does nothing (ImagePickerService.explainMediaPermission ignores denied and limited): no \"Fråga igen\"."
-      }
+      "reason": "Photo import, recipe images and the comment form each keep the function after a no and offer \"Fråga igen\", which asks without our explanation; limited access offers \"Välj fler bilder\" (BUT-2160)."
     },
     {
       "id": "TR::FLOW::07::notiser-avstangda-i-systemet::rad-overst",

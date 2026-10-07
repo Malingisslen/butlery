@@ -33,6 +33,7 @@ import 'package:butlery/views/photo_import/photo_page_strip.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
 
 /// Photo import view with OCR processing for recipe extraction.
@@ -763,22 +764,10 @@ class _PhotoImportViewContent extends StatelessWidget {
 }
 
 /// The permission notice on photo import, per flow 07
-/// (flows-roles-budget.md:98-106; produktregler.md:680-687):
-///
-/// - denied: says what is missing, offers "Fråga igen" and the fallback;
-/// - permanently denied: the same, with "Öppna inställningar" instead;
-/// - blocked by the device: says so, with no button to fix it — only the
-///   fallback, which is another way to the same recipe;
-/// - limited ("valda bilder"): its own state with "Välj fler bilder", never
-///   an error (Skarmar v12 etapp 3 #behfoton).
-///
-/// Fallbacks: no camera leads to the library, no library leads to writing
-/// the recipe yourself (flows-roles-budget.md:105).
-///
-/// Colours, both modes: the card is slot 834 in #behfoton, #E6EAD9 light =
-/// cs.surfaceContainerHighest and #24382C dark = cs.primary; text and glyph
-/// are cs.onSurface (#24382C light, #F5F4ED dark). The hint line is slot 620,
-/// #627061 light / #C9D3C4 dark.
+/// (flows-roles-budget.md:98-106): [MediaPermissionNoticeCard] with
+/// import's own words for a no and its fallbacks. No camera leads to the
+/// library, no library leads to writing the recipe yourself
+/// (flows-roles-budget.md:105).
 class PhotoPermissionNoticeCard extends StatelessWidget {
   const PhotoPermissionNoticeCard({
     super.key,
@@ -797,110 +786,20 @@ class PhotoPermissionNoticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final camera = notice.source == ImageSource.camera;
-    final outcome = notice.outcome;
-
-    final message = switch (outcome) {
-      OsPermissionOutcome.limited => l10n.permPhotosLimited,
-      OsPermissionOutcome.permanentlyDenied =>
-        camera
-            ? l10n.permCameraPermanentlyDenied
-            : l10n.permPhotosPermanentlyDenied,
-      OsPermissionOutcome.restricted =>
-        camera ? l10n.permCameraRestricted : l10n.permPhotosRestricted,
-      _ => camera ? l10n.permCameraDenied : l10n.permPhotosDenied,
-    };
-
-    final actions = <Widget>[
-      if (outcome == OsPermissionOutcome.denied)
-        OutlinedButton(
-          key: const ValueKey('permission-ask-again'),
-          style: ComponentThemes.outlinedButtonStyle(cs),
-          onPressed: onAskAgain,
-          child: Text(l10n.permAskAgain),
-        ),
-      if (outcome == OsPermissionOutcome.permanentlyDenied)
-        OutlinedButton(
-          key: const ValueKey('permission-open-settings'),
-          style: ComponentThemes.outlinedButtonStyle(cs),
-          onPressed: onOpenSettings,
-          child: Text(l10n.permOpenSettings),
-        ),
-      if (outcome == OsPermissionOutcome.limited)
-        OutlinedButton.icon(
-          key: const ValueKey('permission-choose-more'),
-          style: ComponentThemes.outlinedButtonStyle(cs),
-          onPressed: onOpenSettings,
-          icon: const ButleryIcon(ButleryIcons.plus),
-          label: Text(l10n.permPhotosChooseMore),
-        ),
-      if (!outcome.isUsable)
-        TextButton(
-          key: ValueKey(
-            camera
-                ? 'permission-fallback-gallery'
-                : 'permission-fallback-write',
-          ),
-          onPressed: camera ? onChooseFromGallery : onWriteYourself,
-          child: Text(
-            camera ? l10n.permFallbackGallery : l10n.permFallbackWriteYourself,
-          ),
-        ),
-    ];
-
-    return Container(
-      key: ValueKey('photo-permission-notice-${outcome.name}'),
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      color: cs.brightness == Brightness.dark
-          ? cs.primary
-          : cs.surfaceContainerHighest,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ExcludeSemantics(
-                child: ButleryIcon(
-                  camera ? Icons.no_photography_outlined : ButleryIcons.image,
-                  color: cs.onSurface,
-                  size: AppDimensions.iconSizeM,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Expanded(
-                child: Text(
-                  message,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (outcome == OsPermissionOutcome.limited) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-              l10n.permPhotosLimitedHint,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppModeColors.textBodyMuted(cs.brightness),
-              ),
-            ),
-          ],
-          if (actions.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
-            Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingXs,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: actions,
-            ),
-          ],
-        ],
+    return MediaPermissionNoticeCard(
+      source: notice.source,
+      outcome: notice.outcome,
+      deniedMessage: camera ? l10n.permCameraDenied : l10n.permPhotosDenied,
+      onAskAgain: onAskAgain,
+      onOpenSettings: onOpenSettings,
+      fallbackLabel: camera
+          ? l10n.permFallbackGallery
+          : l10n.permFallbackWriteYourself,
+      onFallback: camera ? onChooseFromGallery : onWriteYourself,
+      fallbackKey: ValueKey(
+        camera ? 'permission-fallback-gallery' : 'permission-fallback-write',
       ),
     );
   }
