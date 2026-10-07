@@ -5622,3 +5622,12 @@ await her confirmation on the PR.
   write `participantDisplayNames`. Option 2 in the
   ticket (a server-written preview) was not taken; `lastMessage` stays client-written, so
   BUT-1903's `lastMessage.sentAt` gap is unchanged.
+
+## BUT-2090 — offline departure wording (2026-10-07)
+
+- **SUPERSEDES the wording half of the BUT-1718 *Offline* residual (BUT-2090, 2026-10-07).**
+  Retired: "the user sees \"du saknar behörighet att redigera denna delade inköpslista\" on a
+  button that says \"Lämna listan\"". `narrowUpdatePayload` now throws
+  `OfflineAccessControlChangeException`, a `PermissionDeniedException` subtype, and
+  `shoppingFailureMessage` maps it to `errorNetwork`. The refusal itself is unchanged. The
+  *empty roster* residual of the same entry is unchanged and stays accepted.

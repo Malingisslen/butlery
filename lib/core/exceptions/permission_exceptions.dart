@@ -213,6 +213,22 @@ class StaleAccessControlBaseException extends PermissionDeniedException {
   }
 }
 
+/// BUT-2090: a membership change was refused because this device is offline
+/// and its copy of the list may be stale, so the change has to wait for a
+/// server read. The cause is the connection, not a missing right, and the
+/// user-facing message says so.
+///
+/// A [PermissionDeniedException] subtype so every existing handler keeps
+/// catching it.
+class OfflineAccessControlChangeException extends PermissionDeniedException {
+  OfflineAccessControlChangeException(
+    super.message, {
+    super.resource,
+    super.operation,
+    super.userId,
+  });
+}
+
 /// Exception thrown when attempting to access a resource that doesn't exist
 class ResourceNotFoundException implements Exception {
   final String message;

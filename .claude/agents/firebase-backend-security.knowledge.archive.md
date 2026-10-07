@@ -11054,3 +11054,23 @@ Analytics import_started/import_success go through ImportEventsTracker.hasAnalyt
 carry only channel.name. parse_events residual on erasure is BUT-1570 (accepted). Dart
 strategyIds and TS VALID_STRATEGIES compared by hand: equal sets. No strategyName other than
 the file strategy contains "file". Tests not executed: no flutter binary, no functions/node_modules.
+
+## 2026-10-07 — BUT-2090 part 2, offline departure wording (review, pass)
+
+Staged: OfflineAccessControlChangeException (PermissionDeniedException subtype, no toString
+override) thrown by ShoppingOfflineWriteModule.narrowUpdatePayload's cached-base refusal in
+place of the plain parent; shoppingFailureMessage gains an arm ahead of PermissionDeniedException
+mapping it to errorNetwork. Audit row (granted:false, before the throw) and the refusal predicate
+(privileged key in payload && baseIsCached) unchanged. Exact-type decisions: grep of lib for
+runtimeType / `PermissionDeniedException()` patterns found no security decision on the exact
+type; `is`/`on PermissionDeniedException` sites (queue_retry_policy, repositories, VMs) all hold
+for a subtype. runtimeType-keyed strings that WOULD change: queueErrorCode (offline queue, which
+carries no shopping lists per BUT-2162 F3-1) and AppLogger's analytics callback (dormant, and a
+class name is not personal data). Sinks: the parent's toString hardcodes the
+'PermissionDeniedException: ' label rather than reading runtimeType, so the subtype's text is
+byte-identical in developer.log, Crashlytics and the web reporter; on this path the only sink is
+AppLogger.warning in UnifiedShoppingService (device-local). Side effect worth knowing: logs
+cannot tell the offline refusal from a real denial by label. Both membership service paths
+(updateSharedListMembership, leaveSharedList) word failures through shoppingFailureMessage.
+Tests: the service suite's offline case reddens if the arm is removed or moved below the parent.
+Not executed by this reviewer (caller reported analyze clean, shopping suites green).

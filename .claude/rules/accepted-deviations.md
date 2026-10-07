@@ -133,6 +133,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - after the OWNER erases their account, the remaining members can leave one by one until `memberPermissions` is `{}` (BUT-1718, 2026-09-12)
 - a list already past the 200-contributor cap cannot be LEFT (BUT-1718, 2026-09-12)
 - leaving is impossible offline and says the wrong thing about why … The REFUSAL is correct and inherited deliberately (BUT-1718, 2026-09-12)
+- SUPERSEDES the wording half of "leaving is impossible offline and says the wrong thing about why": an offline membership change, a leave included, throws `OfflineAccessControlChangeException` and says `errorNetwork`; the refusal itself stands (BUT-2090, 2026-10-07)
 - Closing a meal poll LOCKS the poll first and writes the winning dish after, so a close can be spent with nothing planned (BUT-1925, 2026-09-12)
 - `readWeek` mints `readFailed: false` for a cached absence, so BUT-1928's guard does not fire (BUT-1925, 2026-09-12)
 - The cascade erases `shared_content/{id}/items` attribution … erasable, not exportable (BUT-1716, 2026-09-12)
