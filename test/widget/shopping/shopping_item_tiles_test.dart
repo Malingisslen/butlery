@@ -352,16 +352,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final editButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, ButleryIcons.pencil),
-        );
-        // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
-        expect(editButton.tooltip, 'Redigera Mjölk');
+        String tooltipOf(IconData icon) => tester
+            .widget<Tooltip>(
+              find
+                  .ancestor(
+                    of: find.widgetWithIcon(IconButton, icon),
+                    matching: find.byType(Tooltip),
+                  )
+                  .first,
+            )
+            .message!;
 
-        final deleteButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, ButleryIcons.trash2),
-        );
-        expect(deleteButton.tooltip, 'Ta bort Mjölk');
+        // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
+        expect(tooltipOf(ButleryIcons.pencil), 'Redigera Mjölk');
+        expect(tooltipOf(ButleryIcons.trash2), 'Ta bort Mjölk');
       });
     });
 
@@ -588,12 +592,9 @@ void main() {
         expect(editButton, findsOneWidget);
         expect(deleteButton, findsOneWidget);
 
-        final editButtonWidget = tester.widget<IconButton>(editButton);
-        final deleteButtonWidget = tester.widget<IconButton>(deleteButton);
-
-        // Tooltips mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
-        expect(editButtonWidget.tooltip, 'Redigera Mjölk');
-        expect(deleteButtonWidget.tooltip, 'Ta bort Mjölk');
+        // Labels mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
+        expect(find.bySemanticsLabel('Redigera Mjölk'), findsOneWidget);
+        expect(find.bySemanticsLabel('Ta bort Mjölk'), findsOneWidget);
       });
 
       testWidgets('maintains minimum touch target size', (
