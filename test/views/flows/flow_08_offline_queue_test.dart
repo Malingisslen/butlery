@@ -8,6 +8,7 @@
 library;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -156,7 +157,7 @@ void main() {
   }
 
   group('TR::FLOW::08::skrivning::koas', () {
-    testWidgets('a recipe created, edited and deleted offline stays on the '
+    testWidgets('a recipe created and edited offline stays on the '
         'phone, is queued in order and is not sent', (tester) async {
       final stored = await real(tester, () async {
         final keptId = await j.write('Linsgryta');
@@ -429,6 +430,45 @@ void main() {
         find.byKey(const ValueKey('signOut.pendingChanges')),
         findsNothing,
       );
+      await closeApp(tester);
+    });
+
+    testWidgets('"Logga ut och släng ändringarna" signs out and leaves '
+        'nothing of the queue on the phone, image copies included', (
+      tester,
+    ) async {
+      await real(tester, () async {
+        final id = await j.write('Linsgryta');
+        final picked = j.pickedImage('flow08-discard');
+        addTearDown(() {
+          if (picked.existsSync()) picked.deleteSync();
+        });
+        await j.offline.queueRecipeImage(picked.path, id, QueueJourney.uid);
+      });
+      final copies = Directory('${j.uploads.path}/${QueueJourney.uid}');
+      expect(copies.existsSync(), isTrue);
+      await pumpApp(tester);
+
+      await tester.tap(find.text('Logga ut'));
+      await until(
+        tester,
+        () => tester.any(find.byKey(const ValueKey('signOut.pendingChanges'))),
+      );
+      await tester.tap(find.text(_sv.signOutPendingDiscard));
+      await until(tester, () => profile.logouts == 1);
+
+      expect(copies.existsSync(), isFalse);
+      final left = await real(
+        tester,
+        () async => (
+          writes: await j.queued(),
+          uploads: await j.db.select(j.db.uploadQueueEntries).get(),
+        ),
+      );
+      expect(left.writes, isEmpty);
+      expect(left.uploads, isEmpty);
+      expect(j.writer.writes, isEmpty);
+      expect(j.uploaded, isEmpty);
       await closeApp(tester);
     });
   });

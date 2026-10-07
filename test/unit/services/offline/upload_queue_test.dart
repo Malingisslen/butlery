@@ -373,9 +373,10 @@ void main() {
     await saveOffline('r1');
     final id = await queueImage('r1');
     final copy = (await uploadRow(id))!.localPath;
-    final other = File('${Directory.systemTemp.path}/picked-other.jpg')
+    final otherDir = Directory.systemTemp.createTempSync('picked-other');
+    addTearDown(() => otherDir.deleteSync(recursive: true));
+    final other = File('${otherDir.path}/picked-other.jpg')
       ..writeAsBytesSync([9]);
-    addTearDown(other.deleteSync);
     final otherId = await withClock(
       Clock.fixed(t0),
       () => storage.queueRecipeImageForUser(other.path, 'r9', 'u2'),

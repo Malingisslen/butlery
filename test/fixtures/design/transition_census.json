@@ -1299,16 +1299,16 @@
       "flow": "08",
       "status": "TESTED",
       "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
-      "test_name": "a recipe created, edited and deleted offline stays on the phone, is queued in order and is not sent",
+      "test_name": "a recipe created and edited offline stays on the phone, is queued in order and is not sent",
       "tests": [
         {
           "file": "test/views/flows/flow_08_offline_queue_test.dart",
-          "name": "a recipe created, edited and deleted offline stays on the phone, is queued in order and is not sent",
+          "name": "a recipe created and edited offline stays on the phone, is queued in order and is not sent",
           "group": "TR::FLOW::08::skrivning::koas"
         }
       ],
       "ticket": null,
-      "reason": "New journey from PersonalRecipeModule: offline, create, edit and delete stay on the phone and wait in the queue in the order made; nothing reaches the server."
+      "reason": "New journey from PersonalRecipeModule: offline, create, edit and delete wait in the queue in the order made; nothing reaches the server."
     },
     {
       "id": "TR::FLOW::08::stale-data::tidsstampel",

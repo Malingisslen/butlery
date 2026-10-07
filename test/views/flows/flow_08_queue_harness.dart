@@ -256,8 +256,10 @@ class QueueJourney {
   Recipe? get lastCreated => recipes.popLastCreatedRecipe();
 
   /// A picked image outside the queue's folder.
-  File pickedImage(String name) =>
-      File('${Directory.systemTemp.path}/$name.jpg')..writeAsBytesSync([1, 2]);
+  File pickedImage(String name) {
+    final dir = Directory.systemTemp.createTempSync(name);
+    return File('${dir.path}/$name.jpg')..writeAsBytesSync([1, 2]);
+  }
 
   Future<List<QueueEntryRow>> queued() async => [
     for (final e in await db.select(db.syncQueueEntries).get())
